@@ -30,7 +30,7 @@
   },
   "host_guidance": {
     "system_only": "A verified SYSTEM package may start and serve ordinary dialogue without private MEMORY. Do not create or claim autobiographical recall merely because core operational SQLite exists.",
-    "memory_available_separately": "When a verified MEMORY package is separately available, prefer run.py memory-converge while the daemon is inactive. The convergence path accepts canonical and generator-v2 transport, performs safe v3 repack when required, attaches atomically, recovers/normalizes, rebuilds wake state as needed, and then evaluates the configured recall readiness policy before restart.",
+    "memory_available_separately": "When a verified MEMORY package is separately available, prefer run.py memory-converge while the daemon is inactive. The convergence path accepts canonical and generator-v2 transport, verifies uploaded bytes in place, exposes binary split ZIP parts as one seekable read-only stream, writes one candidate MEMORY tree on the target filesystem, streams v3 raw segments directly into their logical source files, validates the installed candidate, and atomically activates it only after all gates pass. Normal runtime convergence does not require a joined ZIP, a second transport copy, or a v3 repack. Legacy v3 repack remains available only as an explicit migration/export tool.",
     "memory_missing": "Treat MEMORY as absent_optional in the default mode. Core runtime readiness remains independent; recall and continuity claims remain disabled.",
     "memory_invalid": "Keep core runtime available, fail memory readiness closed, and do not use the invalid memory source for recall.",
     "autobiographical_claims": "memory_search_ready may be true for transactional-tier-only search. A positive autobiographical memory claim requires full_autobiographical_recall_ready=true plus local MEMORY provenance for the memory items actually used by the turn."
@@ -47,5 +47,13 @@
   "autobiographical_recall_readiness_field": "full_autobiographical_recall_ready",
   "autobiographical_claim_requires_local_provenance": true,
   "converge_entrypoint": "run.py memory-converge",
-  "converge_host_operation_kind": "memory-converge"
+  "converge_host_operation_kind": "memory-converge",
+  "runtime_attach_transport_strategy": "verified_streaming_single_candidate",
+  "runtime_attach_transport_copy_required": false,
+  "runtime_attach_joined_zip_required": false,
+  "runtime_attach_repack_required": false,
+  "runtime_attach_staging_same_filesystem_required": true,
+  "runtime_attach_cross_filesystem_copy_fallback": false,
+  "runtime_attach_disk_preflight_required": true,
+  "runtime_attach_v3_raw_segments_stream_to_logical_source": true
 }

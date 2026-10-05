@@ -10,6 +10,8 @@ ROLE_LABELS = {
     "chatgpt_export": "Eksport rozmów ChatGPT",
     "chatgpt_html_export": "HTML rozmów — kontrola",
     "journal": "Dziennik",
+    "music_analysis": "Analizy utworów / emocje Łatki",
+    "affective_memory": "Pamięć afektywna / autorefleksja Łatki",
     "approved_l0": "Zatwierdzone źródło L0",
     "layered_memory": "Starsza pamięć warstwowa",
     "runtime_event_ledger": "Dziennik zdarzeń runtime",
@@ -49,6 +51,8 @@ WARNING_LABELS = {
     "blocking:zip_symlinks": "ZIP zawiera dowiązania symboliczne.",
     "blocking:zip_duplicate_members": "ZIP zawiera duplikaty lub kolizje nazw.",
     "blocking:zip_crc_failed": "Kontrola CRC ZIP nie przeszła.",
+    "blocking:json_invalid": "JSON jest niepoprawny i nie można go bezpiecznie odtworzyć; import zablokowany.",
+    "legacy_json_recovered": "Starszy JSON wymagał bezpiecznej rekonstrukcji składni; źródło nie zostało nadpisane, a operacje recovery są zapisane w metadanych.",
     "jsonl_sample_contains_invalid_records": "Próbka JSONL zawiera niepoprawne rekordy.",
 }
 
@@ -58,6 +62,13 @@ ERROR_LABELS = {
     "enabled_sources_blocked": "Co najmniej jedno źródło jest zablokowane przez kontrolę bezpieczeństwa.",
     "no_memory_rebuild_sources": "Nie ma żadnego źródła przeznaczonego do odbudowy pamięci.",
     "developer_target_inside_repository": "W trybie developer katalog docelowy musi być poza repozytorium.",
+    "insufficient_disk_space": "Za mało wolnego miejsca na bezpieczny staging, baseline i atomową publikację.",
+    "test04_benchmark_missing": "Pełna odbudowa wymaga prywatnego pliku test04_benchmark.",
+    "restart_continuity_report_missing": "System acceptance wymaga raportu ciągłości po restarcie.",
+    "protocol_base_commit_unavailable": "Nie można ustalić commit-u źródłowego dla manifestu protokołu.",
+    "protocol_source_provenance_invalid": "SOURCE_PROVENANCE.json jest niepoprawny.",
+    "protocol_source_provenance_has_no_valid_source_commit": "SOURCE_PROVENANCE.json nie zawiera poprawnego source_commit.",
+    "protocol_base_commit_invalid": "Rozpoznany commit protokołu ma niepoprawny format.",
 }
 
 
@@ -91,6 +102,14 @@ def format_source(source: SourceSpec) -> str:
         f"SHA-256: {source.sha256 or 'nieobliczone'}",
         f"Stan: {source.status}",
     ]
+    if source.role in {"music_analysis", "affective_memory"}:
+        lines.extend((
+            "",
+            "Granica danych afektywnych:",
+            "  • zapis źródłowy / deklaracja dawnej Łatki",
+            "  • nie jest traktowany jako biologiczny stan emocjonalny",
+            "  • pełny rekord i provenance pozostają w L0",
+        ))
     if warnings:
         lines.extend(("", "Uwagi:", *(f"  • {item}" for item in warnings)))
     zip_meta = metadata.get("zip") if isinstance(metadata, dict) else None
@@ -122,6 +141,17 @@ def format_source(source: SourceSpec) -> str:
         count = json_meta.get("entry_count", json_meta.get("item_count"))
         if count is not None:
             lines.extend(("", f"Liczba rekordów w JSON: {count}"))
+        recovery = json_meta.get("legacy_recovery")
+        if isinstance(recovery, dict) and recovery.get("repaired"):
+            lines.extend((
+                "",
+                "Recovery legacy JSON:",
+                f"  • scalone powtórzone klucze: {', '.join(recovery.get('duplicate_keys_merged') or []) or '—'}",
+                f"  • korekty separatorów: {len(recovery.get('syntax_repairs') or [])}",
+                "  • oryginalny plik pozostaje byte-exact i jest chroniony przez SHA-256",
+            ))
+        if json_meta.get("parse_error"):
+            lines.extend(("", f"Błąd JSON: {json_meta.get('parse_error')}"))
     jsonl_meta = metadata.get("jsonl") if isinstance(metadata, dict) else None
     if isinstance(jsonl_meta, dict):
         lines.extend(
@@ -166,11 +196,21 @@ def format_preflight(report: dict[str, Any]) -> str:
         "GOTOWOŚĆ PROJEKTU: " + ("GOTOWY" if ok else "WYMAGA POPRAWY"),
         "",
         f"Katalog docelowy: {report.get('target_root') or 'nie ustawiono'}",
+        f"Kanoniczna baza: {report.get('canonical_database') or '—'}",
+        f"Właściciel odbudowy: {report.get('pipeline_owner') or '—'}",
         f"Włączone źródła: {report.get('enabled_source_count', 0)}",
         f"Źródła importowane do odbudowy: {report.get('memory_rebuild_source_count', 0)}",
         f"Źródła referencyjne — bez bezpośredniego importu: {report.get('catalog_only_source_count', 0)}",
         f"Źródła HTML używane tylko do kontroli: {report.get('html_control_source_count', 0)}",
     ]
+    disk = report.get("disk_preflight") or {}
+    if disk.get("status") != "not_checked":
+        lines.extend(
+            (
+                f"Wymagane wolne miejsce: {human_size(disk.get('required_free_bytes'))}",
+                f"Dostępne wolne miejsce: {human_size(disk.get('available_free_bytes'))}",
+            )
+        )
     errors = list(report.get("errors") or [])
     if errors:
         lines.extend(("", "Co trzeba poprawić:"))
@@ -220,9 +260,17 @@ def format_plan(payload: dict[str, Any]) -> str:
         "PLAN BEZ ZAPISU",
         "",
         f"Plan poprawny: {_yes(bool(plan.get('ok')))}",
+        f"Właściciel pipeline: {plan.get('pipeline_owner', '—')}",
+        f"Kanoniczna baza: {plan.get('canonical_database', '—')}",
+        f"Generacja wyniku: {plan.get('memory_generation', '—')}",
+        f"Source union SHA-256: {plan.get('source_union_sha256', '—')}",
+        f"Pełny protokół Test00→Final: {_yes(bool((plan.get('protocol_gate') or {}).get('required')))}",
+        f"Benchmark Test04: {(plan.get('protocol_gate') or {}).get('test04_benchmark') or '—'}",
         f"Wybrane źródła: {plan.get('selected_source_count', 0)}",
         f"Źródła rozmów: {plan.get('chat_source_count', 0)}",
         f"Źródła dziennika: {plan.get('journal_source_count', 0)}",
+        f"Analizy utworów: {plan.get('music_source_count', 0)}",
+        f"Źródła afektywne / autorefleksja: {plan.get('affective_source_count', 0)}",
         f"Źródła odrzucone: {plan.get('rejected_source_count', 0)}",
         f"Bazy porównawcze: {payload.get('baseline_count', 0)}",
         "",

@@ -6,7 +6,7 @@ Public launcher for the Jaźń package archiver.
 
 Primary contract:
 - runnable SYSTEM bytes come from canonical release staging, never mutable checkout EOL bytes,
-- MEMORY remains a byte-exact selected-folder snapshot,
+- MEMORY is emitted as native v3 transport with SQLite Online Backup snapshots and bounded raw JSONL segmentation,
 - one ordinary logical ZIP is created and verified before optional binary split transport,
 - SYSTEM is safely extracted and its embedded integrity/provenance contracts are reverified before publication,
 - SYSTEM publishes an explicit host-bootstrap contract and never claims that package bytes grant host execution privileges.

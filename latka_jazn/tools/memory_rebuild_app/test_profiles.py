@@ -12,18 +12,74 @@ from .read_only_validation import (
     validate_existing_database,
 )
 from .unified_memory import CANONICAL_DATABASE_NAME
+from .test_spec import get_test_spec
 from .unified_schema import quote
 
 PROFILE_NAMES = ("test01", "test02", "test03", "test04", "final")
 _COMPARE_TABLES = (
     "conversations", "nodes", "fts_docs", "journal_entries",
     "candidates", "experiences", "memory_records",
+    "memory_l0_sources", "memory_l0_records", "memory_l0_occurrences",
+    "memory_l0_affect_claims",
 )
+_SEMANTIC_FINGERPRINT_TABLES = tuple(dict.fromkeys((
+    *_COMPARE_TABLES,
+    "import_sources",
+    "import_source_aliases",
+    "conversation_occurrences",
+    "conversation_revisions",
+    "conversation_variant_payloads",
+    "import_conflicts",
+    "journal_sources",
+    "journal_entry_sources",
+    "journal_revisions",
+    "experience_domains",
+    "experience_sources",
+    "memory_evidence",
+    "working_memory_index",
+    "short_term_memory_index",
+    "promotion_requests",
+    "promotion_decisions",
+    "long_term_memory_index",
+    "sources",
+    "source_occurrences",
+    "links",
+    "verifications",
+    "memory_l0_sources",
+    "memory_l0_records",
+    "memory_l0_occurrences",
+    "memory_l0_assets",
+    "memory_l0_record_assets",
+    "memory_l0_affect_claims",
+    "memory_l0_conversations",
+    "memory_rebuild_projections",
+    "candidate_revisions",
+    "candidate_evidence",
+    "candidate_links",
+    "promotion_ledger",
+    "unified_migration_conflicts",
+    "runtime_memory_import_conflicts",
+)))
 _REQUIRED_TEST04_FIELDS = (
     "structural_integrity", "source_completeness", "same_target_idempotence",
     "fresh_rebuild_reproducibility", "test03_reconciliation", "recall",
     "multi_turn_review",
 )
+_VOLATILE_RECONCILIATION_COLUMNS = frozenset({
+    "created_at_utc",
+    "first_imported_at_utc",
+    "last_seen_at_utc",
+    "seen_at_utc",
+    "imported_at_utc",
+    "observed_at_utc",
+    "completed_at_utc",
+    "started_at_utc",
+    "updated_at_utc",
+    "first_seen_at_utc",
+    "first_seen_import_id",
+    "last_seen_import_id",
+    "import_id",
+})
 
 
 def _check(name: str, passed: bool, *, actual: Any = None, expected: Any = None,
@@ -56,24 +112,146 @@ def _pk_columns(con: sqlite3.Connection, table: str) -> list[str]:
     return [str(row[1]) for row in sorted((row for row in rows if int(row[5]) > 0), key=lambda row: int(row[5]))]
 
 
-def _stable_key_hashes(path: Path, table: str) -> set[str]:
+def _table_columns(path: Path, table: str) -> tuple[list[str], list[str]]:
     with open_read_only(path) as con:
-        exists = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
+        exists = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
         if not exists:
-            return set()
-        pk = _pk_columns(con, table)
-        columns = pk
-        if not columns:
-            info = list(con.execute(f"PRAGMA table_info({quote(table)})"))
-            columns = [str(row[1]) for row in info]
-        if not columns:
-            return set()
-        selected = ",".join(quote(item) for item in columns)
-        result: set[str] = set()
+            return [], []
+        info = list(con.execute(f"PRAGMA table_info({quote(table)})"))
+        columns = [str(row[1]) for row in info]
+        pk = [
+            str(row[1])
+            for row in sorted(
+                (row for row in info if int(row[5]) > 0),
+                key=lambda row: int(row[5]),
+            )
+        ]
+        return columns, pk
+
+
+def _projected_record_hashes(
+    path: Path,
+    table: str,
+    *,
+    columns: list[str],
+    key_columns: list[str],
+) -> dict[str, set[str]]:
+    if not columns:
+        return {}
+    selected = ",".join(quote(item) for item in columns)
+    key_indexes = [columns.index(item) for item in key_columns]
+    result: dict[str, set[str]] = {}
+    with open_read_only(path) as con:
         for row in con.execute(f"SELECT {selected} FROM {quote(table)}"):
-            payload = json.dumps(list(row), ensure_ascii=False, separators=(",", ":"), default=str)
-            result.add(hashlib.sha256(payload.encode("utf-8")).hexdigest())
+            values = list(row)
+            key_payload = [values[index] for index in key_indexes]
+            content_payload = dict(zip(columns, values))
+            key_encoded = json.dumps(
+                key_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            content_encoded = json.dumps(
+                content_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            key_hash = hashlib.sha256(key_encoded.encode("utf-8")).hexdigest()
+            content_hash = hashlib.sha256(content_encoded.encode("utf-8")).hexdigest()
+            result.setdefault(key_hash, set()).add(content_hash)
+    return result
+
+
+def _stable_record_hashes(path: Path, table: str) -> dict[str, set[str]]:
+    """Return stable-key -> content-hash variants for one table.
+
+    Reconciliation must detect the important case where a primary key survives
+    but its payload changes.  Multiple baseline databases may legitimately
+    contain different historical variants of one key, so values are sets.
+    """
+
+    with open_read_only(path) as con:
+        exists = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        if not exists:
+            return {}
+        info = list(con.execute(f"PRAGMA table_info({quote(table)})"))
+        columns = [str(row[1]) for row in info]
+        if not columns:
+            return {}
+        pk = _pk_columns(con, table)
+        key_columns = pk or columns
+        content_columns = [
+            column
+            for column in columns
+            if column not in _VOLATILE_RECONCILIATION_COLUMNS
+            or column in key_columns
+        ]
+        selected = ",".join(quote(item) for item in columns)
+        key_indexes = [columns.index(item) for item in key_columns]
+        content_indexes = [columns.index(item) for item in content_columns]
+        result: dict[str, set[str]] = {}
+        for row in con.execute(f"SELECT {selected} FROM {quote(table)}"):
+            values = list(row)
+            key_payload = [values[index] for index in key_indexes]
+            content_payload = {
+                column: values[index]
+                for column, index in zip(content_columns, content_indexes)
+            }
+            key_encoded = json.dumps(
+                key_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            content_encoded = json.dumps(
+                content_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            key_hash = hashlib.sha256(key_encoded.encode("utf-8")).hexdigest()
+            content_hash = hashlib.sha256(content_encoded.encode("utf-8")).hexdigest()
+            result.setdefault(key_hash, set()).add(content_hash)
         return result
+
+
+def semantic_database_fingerprint(database: str | Path) -> str:
+    """Fingerprint stable memory content while intentionally excluding metadata.
+
+    This avoids a self-reference loop: acceptance evidence is stored in
+    unified_memory_meta, but the evidence must still be bound to the actual
+    candidate memory content it accepted.
+    """
+
+    path = Path(database).expanduser().resolve()
+    payload: dict[str, dict[str, list[str]]] = {}
+    for table in _SEMANTIC_FINGERPRINT_TABLES:
+        records = _stable_record_hashes(path, table)
+        if records:
+            payload[table] = {
+                key: sorted(values)
+                for key, values in sorted(records.items())
+            }
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    )
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | Path]) -> dict[str, Any]:
@@ -81,39 +259,226 @@ def baseline_record_reconciliation(database: str | Path, roots: Iterable[str | P
     roots = list(roots)
     if not roots:
         return {"ok": False, "reason": "baseline_required", "tables": {}}
-    baseline_sets = {table: set() for table in _COMPARE_TABLES}
+    baseline_sets: dict[str, dict[str, set[str]]] = {
+        table: {} for table in _COMPARE_TABLES
+    }
+    target_sets: dict[str, dict[str, set[str]]] = {
+        table: {} for table in _COMPARE_TABLES
+    }
+    projection_details: dict[str, list[dict[str, Any]]] = {
+        table: [] for table in _COMPARE_TABLES
+    }
     files: list[Path] = []
     try:
         for raw in roots:
             files.extend(_baseline_files(Path(raw).expanduser().resolve()))
         for source in files:
             for table in _COMPARE_TABLES:
-                baseline_sets[table].update(_stable_key_hashes(source, table))
+                source_columns, source_pk = _table_columns(source, table)
+                target_columns, target_pk = _table_columns(target, table)
+                if not source_columns or not target_columns:
+                    continue
+                key_columns = [
+                    item
+                    for item in source_pk
+                    if item in target_columns
+                ]
+                if not key_columns:
+                    key_columns = [
+                        item
+                        for item in target_pk
+                        if item in source_columns
+                    ]
+                shared_columns = [
+                    item
+                    for item in target_columns
+                    if item in source_columns
+                    and (
+                        item not in _VOLATILE_RECONCILIATION_COLUMNS
+                        or item in key_columns
+                    )
+                ]
+                if not key_columns:
+                    key_columns = list(shared_columns)
+                for key_column in key_columns:
+                    if key_column not in shared_columns:
+                        shared_columns.insert(0, key_column)
+                if not shared_columns or not key_columns:
+                    continue
+
+                baseline_records = _projected_record_hashes(
+                    source,
+                    table,
+                    columns=shared_columns,
+                    key_columns=key_columns,
+                )
+                target_records = _projected_record_hashes(
+                    target,
+                    table,
+                    columns=shared_columns,
+                    key_columns=key_columns,
+                )
+                for key_hash, content_hashes in baseline_records.items():
+                    baseline_sets[table].setdefault(key_hash, set()).update(content_hashes)
+                for key_hash, content_hashes in target_records.items():
+                    target_sets[table].setdefault(key_hash, set()).update(content_hashes)
+                projection_details[table].append(
+                    {
+                        "baseline_database": source.name,
+                        "shared_columns": shared_columns,
+                        "key_columns": key_columns,
+                    }
+                )
+
         tables: dict[str, Any] = {}
         ok = True
         for table in _COMPARE_TABLES:
-            target_keys = _stable_key_hashes(target, table)
-            baseline_keys = baseline_sets[table]
+            target_records = target_sets[table]
+            baseline_records = baseline_sets[table]
+            baseline_keys = set(baseline_records)
+            target_keys = set(target_records)
             missing = baseline_keys - target_keys
+            changed = {
+                key
+                for key in baseline_keys & target_keys
+                if baseline_records[key].isdisjoint(target_records[key])
+            }
             tables[table] = {
                 "baseline_record_count": len(baseline_keys),
                 "target_record_count": len(target_keys),
                 "missing_record_count": len(missing),
+                "content_mismatch_count": len(changed),
                 "missing_record_key_sha256_samples": sorted(missing)[:25],
+                "content_mismatch_key_sha256_samples": sorted(changed)[:25],
+                "projections": projection_details[table],
             }
-            if missing:
+            if missing or changed:
                 ok = False
         return {
             "ok": ok,
             "baseline_database_count": len(files),
             "tables": tables,
-            "comparison": "stable_primary_key_presence",
+            "comparison": "shared_stable_columns_primary_key_and_content_hash_presence",
             "private_paths_persisted": False,
         }
     except (OSError, sqlite3.DatabaseError, ValueError) as exc:
         return {
             "ok": False, "reason": "baseline_read_error",
             "error_type": type(exc).__name__, "error": str(exc), "tables": {},
+        }
+
+
+def _affect_evidence_integrity(path: Path) -> dict[str, Any]:
+    """Verify that derived affect claims are an exact projection of RAW L0 evidence."""
+
+    if not path.is_file():
+        return {"ok": False, "reason": "database_missing"}
+    try:
+        with open_read_only(path) as con:
+            tables = {
+                str(row[0])
+                for row in con.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+            }
+            if "memory_l0_records" not in tables:
+                return {
+                    "ok": True,
+                    "status": "not_applicable_no_l0",
+                    "expected_claim_count": 0,
+                    "actual_claim_count": 0,
+                    "missing_claim_count": 0,
+                    "unexpected_claim_count": 0,
+                }
+
+            expected: set[tuple[str, str, str, str, str]] = set()
+            invalid_raw: list[str] = []
+            rows = con.execute(
+                "SELECT record_id,raw_json FROM memory_l0_records "
+                "WHERE is_current_revision=1 "
+                "AND source_kind IN ('journal','music_analysis','affective')"
+            ).fetchall()
+            for row in rows:
+                record_id = str(row["record_id"])
+                try:
+                    raw = json.loads(str(row["raw_json"] or "{}"))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    invalid_raw.append(record_id)
+                    continue
+                if not isinstance(raw, dict):
+                    continue
+                claims = raw.get("__jazn_affect_claims__")
+                if not isinstance(claims, list):
+                    continue
+                for claim in claims:
+                    if not isinstance(claim, dict):
+                        continue
+                    label = str(claim.get("label") or "").strip()
+                    if not label:
+                        continue
+                    normalized = " ".join(label.casefold().split())
+                    source_field = str(
+                        claim.get("source_field") or "unknown"
+                    ).strip() or "unknown"
+                    claim_kind = str(
+                        claim.get("claim_kind") or "explicit_source_label"
+                    ).strip()
+                    subject = str(claim.get("subject") or "latka").strip() or "latka"
+                    expected.add(
+                        (record_id, normalized, source_field, claim_kind, subject)
+                    )
+
+            actual: set[tuple[str, str, str, str, str]] = set()
+            invalid_boundaries: list[str] = []
+            if "memory_l0_affect_claims" in tables:
+                claim_rows = con.execute(
+                    "SELECT c.claim_id,c.record_id,c.normalized_label,c.source_field,"
+                    "c.claim_kind,c.subject,c.boundary "
+                    "FROM memory_l0_affect_claims AS c "
+                    "JOIN memory_l0_records AS r ON r.record_id=c.record_id "
+                    "WHERE r.is_current_revision=1 "
+                    "AND r.source_kind IN ('journal','music_analysis','affective')"
+                ).fetchall()
+                for claim in claim_rows:
+                    actual.add((
+                        str(claim["record_id"]),
+                        str(claim["normalized_label"]),
+                        str(claim["source_field"]),
+                        str(claim["claim_kind"]),
+                        str(claim["subject"]),
+                    ))
+                    if str(claim["boundary"]) != (
+                        "source_claimed_affect_not_biological_state"
+                    ):
+                        invalid_boundaries.append(str(claim["claim_id"]))
+
+            missing = expected - actual
+            unexpected = actual - expected
+            return {
+                "ok": not invalid_raw
+                and not missing
+                and not unexpected
+                and not invalid_boundaries,
+                "status": "checked",
+                "expected_claim_count": len(expected),
+                "actual_claim_count": len(actual),
+                "missing_claim_count": len(missing),
+                "unexpected_claim_count": len(unexpected),
+                "invalid_raw_record_count": len(invalid_raw),
+                "invalid_boundary_count": len(invalid_boundaries),
+                "missing_claim_samples": sorted(missing)[:25],
+                "unexpected_claim_samples": sorted(unexpected)[:25],
+                "invalid_raw_record_samples": sorted(invalid_raw)[:25],
+                "invalid_boundary_claim_samples": sorted(invalid_boundaries)[:25],
+                "truth_boundary": "source_claimed_affect_not_biological_state",
+                "derived_projection_only": True,
+            }
+    except (OSError, sqlite3.DatabaseError, ValueError) as exc:
+        return {
+            "ok": False,
+            "reason": "affect_evidence_integrity_error",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
         }
 
 
@@ -144,7 +509,14 @@ def _unresolved_conflicts(path: Path) -> dict[str, int]:
         return result
 
 
-def _load_acceptance_report(path: str | Path | None) -> dict[str, Any]:
+def _load_acceptance_report(
+    path: str | Path | None,
+    *,
+    expected_database_fingerprint: str | None = None,
+    expected_source_union_sha256: str | None = None,
+    expected_restore_run_id: str | None = None,
+    expected_protocol_run_id: str | None = None,
+) -> dict[str, Any]:
     if path is None:
         return {"ok": False, "reason": "full_test04_acceptance_report_required"}
     report_path = Path(path).expanduser().resolve()
@@ -162,12 +534,51 @@ def _load_acceptance_report(path: str | Path | None) -> dict[str, Any]:
     restart = final.get("restart_continuity", "not_run")
     required_ok = all(value == "passed" for value in required.values())
     html_ok = html in {"passed", "not_applicable"}
+
+    binding = payload.get("binding") if isinstance(payload, dict) else None
+    binding_payload = dict(binding) if isinstance(binding, dict) else {}
+    expected_binding = {
+        "database_semantic_fingerprint": expected_database_fingerprint,
+        "source_union_sha256": expected_source_union_sha256,
+        "restore_run_id": expected_restore_run_id,
+        "protocol_run_id": expected_protocol_run_id,
+    }
+    binding_checks = {
+        key: {
+            "required": bool(expected),
+            "expected": expected,
+            "actual": binding_payload.get(key),
+            "passed": (not expected) or binding_payload.get(key) == expected,
+        }
+        for key, expected in expected_binding.items()
+    }
+    binding_required = any(bool(value) for value in (
+        expected_source_union_sha256,
+        expected_restore_run_id,
+        expected_protocol_run_id,
+    ))
+    if binding_required:
+        binding_ok = (
+            bool(binding_payload)
+            and bool(expected_database_fingerprint)
+            and all(item["passed"] for item in binding_checks.values())
+        )
+    else:
+        # Compatibility path for old developer fixtures that predate bound
+        # canonical Studio candidates. Canonical reconstructed databases always
+        # carry restore/source/protocol lineage and therefore require binding.
+        binding_ok = True
+
     return {
-        "ok": required_ok and html_ok,
+        "ok": required_ok and html_ok and binding_ok,
         "required": required,
         "html_import_dry_run": html,
         "restart_continuity": restart,
         "system_acceptance_restart_passed": restart == "passed",
+        "binding_required": binding_required,
+        "binding_ok": binding_ok,
+        "binding": binding_payload,
+        "binding_checks": binding_checks,
         "source": "memory_sqlite_test04",
     }
 
@@ -184,6 +595,7 @@ def run_test_profile(
     selected = profile.strip().lower()
     if selected not in PROFILE_NAMES:
         raise ValueError(f"Nieznany profil {profile!r}. Dozwolone: {', '.join(PROFILE_NAMES)}")
+    spec = get_test_spec(selected)
     path = Path(database).expanduser().resolve()
     before = path.stat().st_mtime_ns if path.is_file() else None
     validation = validate_existing_database(path, full=full_validation, include_fts=True)
@@ -214,9 +626,45 @@ def run_test_profile(
         reconciliation = baseline_record_reconciliation(path, baselines)
         checks.append(_check(
             "test03_record_level_reconciliation", bool(reconciliation.get("ok")),
-            actual=reconciliation, expected="baseline required and no missing stable record keys",
+            actual=reconciliation, expected="baseline required and no missing stable keys or content mismatches",
         ))
-        acceptance = _load_acceptance_report(acceptance_report)
+        affect_integrity = _affect_evidence_integrity(path)
+        checks.append(_check(
+            "affect_evidence_projection_integrity",
+            bool(affect_integrity.get("ok")),
+            actual=affect_integrity,
+            expected=(
+                "every explicit RAW L0 affect claim is represented exactly once "
+                "with source_claimed_affect_not_biological_state boundary"
+            ),
+        ))
+        unified_meta: dict[str, str] = {}
+        if path.is_file():
+            with open_read_only(path) as con:
+                tables = {
+                    str(row[0])
+                    for row in con.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table'"
+                    )
+                }
+                if "unified_memory_meta" in tables:
+                    unified_meta = {
+                        str(row[0]): str(row[1])
+                        for row in con.execute(
+                            "SELECT key,value FROM unified_memory_meta"
+                        )
+                    }
+        acceptance = _load_acceptance_report(
+            acceptance_report,
+            expected_database_fingerprint=(
+                semantic_database_fingerprint(path) if path.is_file() else None
+            ),
+            expected_source_union_sha256=(
+                unified_meta.get("source_union_sha256") or None
+            ),
+            expected_restore_run_id=unified_meta.get("restore_run_id") or None,
+            expected_protocol_run_id=unified_meta.get("protocol_run_id") or None,
+        )
         acceptance_ok = bool(acceptance.get("ok"))
         if system_acceptance:
             acceptance_ok = acceptance_ok and bool(acceptance.get("system_acceptance_restart_passed"))
@@ -229,7 +677,27 @@ def run_test_profile(
             detail="system_acceptance=true requires restart_continuity=passed" if system_acceptance else "developer acceptance",
         ))
     ledger = {"ok": True, "status": "not_required"}
+    runtime_probe: dict[str, Any] = {"status": "not_required"}
     if selected == "final" and path.is_file():
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
+        runtime_probe = probe_unified_memory_database(path, full_integrity=full_validation)
+        checks.append(_check(
+            "native_unified_runtime_readiness",
+            bool(runtime_probe.get("full_autobiographical_recall_ready")),
+            actual={
+                "status": runtime_probe.get("status"),
+                "schema_identity": runtime_probe.get("schema_identity"),
+                "memory_search_ready": runtime_probe.get("memory_search_ready"),
+                "full_autobiographical_recall_ready": runtime_probe.get(
+                    "full_autobiographical_recall_ready"
+                ),
+                "missing_required_tables": runtime_probe.get("missing_required_tables"),
+                "missing_fts_objects": runtime_probe.get("missing_fts_objects"),
+                "fts_errors": runtime_probe.get("fts_errors"),
+            },
+            expected="full_autobiographical_recall_ready=true",
+        ))
         ledger = promotion_ledger_validation(path)
         checks.append(_check(
             "l2_l3_verified_from_promotion_ledger", bool(ledger.get("ok")), actual=ledger,
@@ -257,6 +725,9 @@ def run_test_profile(
     return {
         "ok": not blocking_failures,
         "profile": selected,
+        "owner_layer": spec.owner_layer,
+        "required_predecessors": list(spec.required_predecessors),
+        "gate_kind": spec.gate_kind,
         "database": str(path),
         "canonical_database_name": CANONICAL_DATABASE_NAME,
         "validation": validation,
@@ -265,6 +736,7 @@ def run_test_profile(
         "baseline_reconciliation": reconciliation,
         "test04_acceptance": acceptance,
         "promotion_ledger_validation": ledger,
+        "runtime_readiness_probe": runtime_probe,
         "checks": checks,
         "blocking_failures": blocking_failures,
         "warnings": warnings,
@@ -289,4 +761,10 @@ def baseline_counts(roots: Iterable[str | Path]) -> dict[str, int]:
     return result
 
 
-__all__ = ["PROFILE_NAMES", "baseline_counts", "baseline_record_reconciliation", "run_test_profile"]
+__all__ = [
+    "PROFILE_NAMES",
+    "baseline_counts",
+    "baseline_record_reconciliation",
+    "run_test_profile",
+    "semantic_database_fingerprint",
+]

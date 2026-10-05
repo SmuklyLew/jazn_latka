@@ -17,6 +17,7 @@ from latka_jazn.version import PACKAGE_VERSION
 
 from .application import MemoryRebuildApplicationService
 from .layout import build_studio_layout
+from .canonical_rebuild import canonical_database_path
 from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore
 from .settings import (
@@ -52,8 +53,17 @@ class PageItem:
 DESIGN_ITEMS: tuple[PageItem, ...] = (
     PageItem("project", "Projekt i źródła", "Projekt, źródła, baseline’y, role i pipeline’y."),
     PageItem("database", "Baza docelowa", "Jedna kanoniczna memory_jazn.sqlite3 i jej walidacja."),
-    PageItem("import", "Import źródeł", "Rozmowy, HTML, dzienniki, nowe wątki i migracja starych baz."),
+    PageItem(
+        "import",
+        "Import źródeł",
+        "Rozmowy, HTML, dzienniki, analizy utworów, źródła afektywne i migracja starych baz.",
+    ),
     PageItem("candidates", "Kandydaci pamięci", "Ręczny review L1 bez automatycznego L2/L3."),
+    PageItem(
+        "affect",
+        "Ślady afektywne / emocje",
+        "Read-only: jawne emocje i refleksje źródłowe z provenance, bez automatycznej promocji.",
+    ),
     PageItem("plan", "Plan bez zapisu", "Preflight i dokładny plan bez uruchamiania odbudowy."),
     PageItem("rebuild", "Wykonaj odbudowę", "Jawnie potwierdzony zapis zgodnie z aktualnym planem."),
     PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi Testami 01–04."),
@@ -165,7 +175,12 @@ def _project_setting_lines(project: dict[str, Any] | None) -> list[str]:
             continue
         if key == "unified_database_path":
             marker = "[READ-ONLY tutaj — zmień w „Baza docelowa”]"
-        elif key in {"test04_acceptance_report", "system_acceptance"}:
+        elif key in {
+            "test04_benchmark",
+            "test04_acceptance_report",
+            "restart_continuity_report",
+            "system_acceptance",
+        }:
             marker = "[EDYTOWALNE]"
         else:
             marker = "[READ-ONLY — rozszerzenie projektu]"
@@ -245,9 +260,7 @@ class StudioState:
         if configured:
             self.database = Path(configured).expanduser().resolve()
         elif loaded.target_root:
-            self.database = (
-                Path(loaded.target_root).expanduser().resolve() / "memory_jazn.sqlite3"
-            )
+            self.database = canonical_database_path(loaded.target_root)
         self.refresh()
         self.status = f"Projekt: {loaded.name}"
         self.status_kind = "ok"
@@ -885,7 +898,9 @@ def _edit_project_settings(state: StudioState, dialogs: DialogBackend) -> None:
             ("mode", f"Tryb: {project.mode}"),
             ("target_root", f"Katalog docelowy: {project.target_root}"),
             ("source_directory", f"Główny folder źródeł: {project.source_directory or '—'}"),
+            ("test04_benchmark", f"Prywatny benchmark Test04: {project.settings.get('test04_benchmark') or '—'}"),
             ("test04_acceptance_report", f"Raport Test04: {project.settings.get('test04_acceptance_report') or '—'}"),
+            ("restart_continuity_report", f"Raport ciągłości po restarcie: {project.settings.get('restart_continuity_report') or '—'}"),
             ("system_acceptance", f"System acceptance: {_yes_no(project.settings.get('system_acceptance', False))}"),
         ]
         for key, default in DEFAULT_SETTINGS.items():
@@ -936,17 +951,36 @@ def _edit_project_settings(state: StudioState, dialogs: DialogBackend) -> None:
                 project.target_root = resolved
             else:
                 project.source_directory = resolved
-        elif action == "test04_acceptance_report":
+        elif action in {
+            "test04_benchmark",
+            "test04_acceptance_report",
+            "restart_continuity_report",
+        }:
+            labels = {
+                "test04_benchmark": (
+                    "BENCHMARK TEST04",
+                    "Ścieżka prywatnego benchmarku Recall; puste = nie ustawiono:",
+                ),
+                "test04_acceptance_report": (
+                    "RAPORT TEST04",
+                    "Ścieżka prywatnego raportu; puste = nie ustawiono:",
+                ),
+                "restart_continuity_report": (
+                    "RAPORT CIĄGŁOŚCI",
+                    "Ścieżka raportu ciągłości po restarcie; puste = nie ustawiono:",
+                ),
+            }
+            title, prompt = labels[action]
             raw = dialogs.input(
-                "RAPORT TEST04",
-                "Ścieżka prywatnego raportu; puste = nie ustawiono:",
-                str(project.settings.get("test04_acceptance_report") or ""),
+                title,
+                prompt,
+                str(project.settings.get(action) or ""),
             )
             if raw is not None:
                 if raw.strip():
-                    project.settings["test04_acceptance_report"] = str(Path(raw).expanduser().resolve())
+                    project.settings[action] = str(Path(raw).expanduser().resolve())
                 else:
-                    project.settings.pop("test04_acceptance_report", None)
+                    project.settings.pop(action, None)
         elif action == "system_acceptance":
             new_value = not bool(project.settings.get("system_acceptance", False))
             if not _confirm_risk(dialogs, "system_acceptance", new_value):
@@ -1054,6 +1088,8 @@ def _handle_action(
         workflows.import_hub()
     elif action.kind == "candidates":
         workflows.candidates_hub()
+    elif action.kind == "affect":
+        workflows.affect_hub()
     elif action.kind == "plan":
         workflows.plan(compare=False)
     elif action.kind == "rebuild":

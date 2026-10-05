@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.103 converges grounded memory recall on the existing model-guided
-# language channel, enforces semantic component coverage and routes explicit
-# NLP/NLG capability questions away from ordinary-conversation fallbacks.
-DISTRIBUTION_VERSION = "16.3.25.5.103"
-PACKAGE_VERSION = "16.3.25.5.103"
-PACKAGE_RELEASE_NAME = "generative-dialogue-nlg-convergence"
+# v16.3.25.5.106 hardens low-amplification MEMORY convergence: streaming
+# attach now applies the shared archive resource policy before extraction,
+# durable metadata is flushed/fsynced before atomic replace, and MEMORY-only
+# generation emits native v3 transport with SQLite Online Backup snapshots.
+DISTRIBUTION_VERSION = "16.3.25.5.106"
+PACKAGE_VERSION = "16.3.25.5.106"
+PACKAGE_RELEASE_NAME = "memory-streaming-hardening-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

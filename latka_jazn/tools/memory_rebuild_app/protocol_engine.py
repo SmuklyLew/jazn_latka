@@ -969,6 +969,7 @@ class ProtocolEngine:
         benchmark: str | Path,
         *,
         test03_result: str | Path | Mapping[str, Any] | None = None,
+        candidate_reconciliation: Mapping[str, Any] | None = None,
         system_acceptance: bool = False,
         restart_continuity_report: str | Path | Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
@@ -979,12 +980,28 @@ class ProtocolEngine:
         prerequisite = (
             test03_result if test03_result is not None else self.results.get("test03")
         )
+        candidate_transition = candidate_reconciliation is not None
+        reconciliation_payload = (
+            dict(candidate_reconciliation)
+            if candidate_reconciliation is not None
+            else {}
+        )
         prerequisite_context, blocked = self._prerequisite_gate(
             "test04",
             "test03",
             prerequisite,
-            expected_database_sha256=current_database_sha256,
-            expected_database_fingerprint=current_database_fingerprint,
+            expected_database_sha256=(
+                None if candidate_transition else current_database_sha256
+            ),
+            expected_database_fingerprint=(
+                None if candidate_transition else current_database_fingerprint
+            ),
+            expected_source_inventory_fingerprint=(
+                self._source_inventory_fingerprint if candidate_transition else None
+            ),
+            expected_source_union_fingerprint=(
+                self._source_union_fingerprint if candidate_transition else None
+            ),
         )
         if blocked is not None:
             return blocked
@@ -996,9 +1013,43 @@ class ProtocolEngine:
         self._source_union_fingerprint = (
             str(prerequisite_artifacts.get("source_union_fingerprint") or "") or None
         )
-        self._database_fingerprint = (
-            str(prerequisite_artifacts.get("database_fingerprint") or "") or None
-        )
+        if candidate_transition and not bool(reconciliation_payload.get("ok")):
+            return self._record(
+                ProtocolArtifact(
+                    profile="test04",
+                    outcome=TestOutcome.BLOCKED.value,
+                    ok=False,
+                    run_id=self.run_id,
+                    checks=(
+                        {
+                            "name": "candidate_reconciliation_verified",
+                            "passed": False,
+                        },
+                    ),
+                    artifacts={
+                        "database": str(path),
+                        "database_sha256": current_database_sha256,
+                        "database_fingerprint": current_database_fingerprint,
+                        "source_inventory_fingerprint": self._source_inventory_fingerprint,
+                        "source_union_fingerprint": self._source_union_fingerprint,
+                        "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                        "candidate_transition": True,
+                        "candidate_reconciliation_sha256": _canonical_sha(
+                            reconciliation_payload
+                        ),
+                        "dependency_chain": [
+                            "test00",
+                            "test01",
+                            "test02",
+                            "test03",
+                            "test04",
+                        ],
+                    },
+                    blockers=("candidate_reconciliation_not_verified",),
+                    details={"candidate_reconciliation": reconciliation_payload},
+                )
+            )
+        self._database_fingerprint = current_database_fingerprint
         result = run_fts5_recall_benchmark(
             path, benchmark, output_root=self._ensure_root() / "test04", run_id="recall"
         )
@@ -1008,7 +1059,25 @@ class ProtocolEngine:
             system_acceptance=system_acceptance,
             restart_continuity_report=restart_continuity_report,
         )
-        self._database_sha256 = sha256_file(path)
+        if candidate_transition:
+            candidate_check = {
+                "name": "candidate_reconciliation_verified",
+                "passed": bool(reconciliation_payload.get("ok")),
+            }
+            checks = [*validation["checks"], candidate_check]
+            blockers = [
+                str(item["name"])
+                for item in checks
+                if not bool(item.get("passed"))
+            ]
+            validation = {
+                **validation,
+                "ok": not blockers,
+                "checks": checks,
+                "blockers": blockers,
+                "candidate_reconciliation": reconciliation_payload,
+            }
+        self._database_sha256 = current_database_sha256
         artifact = ProtocolArtifact(
             "test04", _protocol_outcome(bool(validation["ok"]), blocked=bool(validation["blockers"])), bool(validation["ok"]), self.run_id,
             tuple(validation["checks"]),
@@ -1021,6 +1090,18 @@ class ProtocolEngine:
                 "recall_private": result.get("private_report"),
                 "recall_sanitized": result.get("sanitized_report"),
                 "prerequisite_artifact_sha256": prerequisite_context["artifact_sha256"],
+                "candidate_transition": candidate_transition,
+                "candidate_reconciliation_sha256": (
+                    _canonical_sha(reconciliation_payload)
+                    if candidate_transition
+                    else None
+                ),
+                "test03_database_sha256": prerequisite_artifacts.get(
+                    "database_sha256"
+                ),
+                "test03_database_fingerprint": prerequisite_artifacts.get(
+                    "database_fingerprint"
+                ),
                 "dependency_chain": [
                     "test00",
                     "test01",
@@ -1166,17 +1247,44 @@ class ProtocolEngine:
         database = root / CANONICAL_DATABASE_NAME
         validation = validate_existing_database(database, full=True, include_fts=True)
         ledger = promotion_ledger_validation(database) if database.is_file() else {"ok": False}
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+
+        runtime_probe = (
+            probe_unified_memory_database(database, full_integrity=True)
+            if database.is_file()
+            else {"status": "missing", "full_autobiographical_recall_ready": False}
+        )
         test04 = _json_read(test04_result)
         checks = [
             {"name": "test04_passed", "passed": bool(test04.get("ok"))},
             {"name": "sqlite_backup_snapshot_exists", "passed": database.is_file()},
             {"name": "integrity_foreign_keys_fts", "passed": bool(validation.get("ok"))},
             {"name": "promotion_ledger_fail_closed", "passed": bool(ledger.get("ok"))},
+            {
+                "name": "native_unified_runtime_readiness",
+                "passed": bool(runtime_probe.get("full_autobiographical_recall_ready")),
+                "actual": {
+                    "status": runtime_probe.get("status"),
+                    "schema_identity": runtime_probe.get("schema_identity"),
+                    "memory_search_ready": runtime_probe.get("memory_search_ready"),
+                    "full_autobiographical_recall_ready": runtime_probe.get(
+                        "full_autobiographical_recall_ready"
+                    ),
+                },
+            },
             {"name": "private_manifest", "passed": (root / "final.private.json").is_file()},
             {"name": "sanitized_manifest", "passed": (root / "final.sanitized.json").is_file()},
             {"name": "runtime_not_activated", "passed": True},
         ]
-        return {"ok": all(item["passed"] for item in checks), "checks": checks, "blockers": [item["name"] for item in checks if not item["passed"]], "database_sha256": sha256_file(database) if database.is_file() else None, "validation": validation, "promotion_ledger_validation": ledger}
+        return {
+            "ok": all(item["passed"] for item in checks),
+            "checks": checks,
+            "blockers": [item["name"] for item in checks if not item["passed"]],
+            "database_sha256": sha256_file(database) if database.is_file() else None,
+            "validation": validation,
+            "promotion_ledger_validation": ledger,
+            "runtime_readiness_probe": runtime_probe,
+        }
 
     def validate(self, profile: str, artifact: str | Path | Mapping[str, Any], **kwargs: Any) -> dict[str, Any]:
         selected = profile.strip().lower()

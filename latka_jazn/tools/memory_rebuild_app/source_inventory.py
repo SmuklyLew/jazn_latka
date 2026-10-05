@@ -11,6 +11,11 @@ import stat
 import zipfile
 
 from .models import SourceSpec
+from .source_detection import (
+    DuplicateJsonKeyError,
+    load_json_strict,
+    load_legacy_affective_json,
+)
 
 _DATE_RE = re.compile(r"(?<!\d)(20\d{2})[._-](0[1-9]|1[0-2])[._-](0[1-9]|[12]\d|3[01])(?!\d)")
 _CHAT_MEMBER_RE = re.compile(r"(^|/)(conversations(?:[-_]\d+)?\.json)$", re.IGNORECASE)
@@ -193,15 +198,17 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
 
 
 def _sniff_json(path: Path) -> dict[str, Any]:
+    recovery: dict[str, Any] | None = None
     try:
-        raw = path.read_text(encoding="utf-8-sig")
-    except (OSError, UnicodeDecodeError):
-        return {}
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        return {}
+        payload = load_json_strict(path)
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateJsonKeyError) as exc:
+        try:
+            payload, recovery = load_legacy_affective_json(path)
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+            return {"parse_error": f"{type(exc).__name__}: {exc}"}
     result: dict[str, Any] = {"json_type": type(payload).__name__}
+    if recovery is not None:
+        result["legacy_recovery"] = recovery
     if isinstance(payload, dict):
         keys = sorted(str(key) for key in payload.keys())
         result["top_level_keys"] = keys[:100]
@@ -284,6 +291,12 @@ def _classification(path: Path, metadata: dict[str, Any]) -> tuple[str, str, str
         json_meta = metadata.get("json", {})
         keys = set(json_meta.get("top_level_keys") or [])
         first_keys = set(json_meta.get("first_item_keys") or [])
+        if json_meta.get("parse_error"):
+            return "unknown", "unknown", "excluded"
+        if "analizy" in keys or "analizy_utwor" in name or "music_anal" in name:
+            return "music_analysis", "assistant_claim", "memory_rebuild"
+        if {"latka_ai_pamiec", "pytania_z_ciszy", "relacje", "projekty_meta"} & keys:
+            return "affective_memory", "assistant_claim", "memory_rebuild"
         if any(token in name for token in ("journal", "dziennik")) or "entries" in keys:
             return "journal", "source_recorded", "memory_rebuild"
         if "mapping" in first_keys or json_meta.get("conversation_mapping"):
@@ -336,6 +349,10 @@ def inspect_source(
                 result.warnings.append("blocking:zip_crc_failed")
         elif path.suffix.casefold() == ".json":
             metadata["json"] = _sniff_json(path)
+            if metadata["json"].get("parse_error"):
+                result.warnings.append("blocking:json_invalid")
+            elif (metadata["json"].get("legacy_recovery") or {}).get("repaired"):
+                result.warnings.append("legacy_json_recovered")
         elif path.suffix.casefold() in {".jsonl", ".ndjson"}:
             metadata["jsonl"] = _sniff_jsonl(path)
             if metadata["jsonl"].get("sample_invalid_json"):

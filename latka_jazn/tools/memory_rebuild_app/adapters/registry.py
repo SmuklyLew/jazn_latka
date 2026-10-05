@@ -5,6 +5,7 @@ from typing import Iterable
 
 from ..intermediate import ImportAdapter
 from ..source_detection import SourceProbe
+from .affective_legacy import LegacyAffectiveJsonAdapter
 from .chatgpt_json import ChatGptJsonAdapter
 from .html import ChatHtmlAdapter
 from .journal import JournalAdapter
@@ -37,6 +38,7 @@ def default_adapter_registry() -> AdapterRegistry:
         ChatGptJsonAdapter(),
         JournalAdapter(),
         MusicAnalysisAdapter(),
+        LegacyAffectiveJsonAdapter(),
         LegacySqliteAdapter(),
     ))
 

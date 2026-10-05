@@ -1,0 +1,295 @@
+# Jaźń v16.3.25.5.104 — Memory Rebuild Studio reconstruction convergence
+
+## Cel
+
+Ta aktualizacja domyka rekonstrukcję Memory Rebuild Studio wokół jednej
+kanonicznej `memory_jazn.sqlite3`. Studio nie może publikować bazy tylko dlatego,
+że pomocnicza baza protokołu przeszła Test04. Kandydat, który ostatecznie trafia
+do `memory/sqlite/memory_jazn.sqlite3`, musi sam przejść migrację, reconciliation,
+runtime-native readiness, prywatny Recall Test04 oraz Final.
+
+Zmiana pozostaje fail-closed: nie aktywuje pamięci automatycznie, nie akceptuje
+L2/L3 bez jawnej decyzji i nie traktuje raportu z innego runu jako dowodu dla
+bieżącego kandydata.
+
+## P0 — Test04 i Final należą do publikowanego kandydata
+
+Kanoniczny przebieg Studio jest teraz rozdzielony na dwie fazy:
+
+1. Test00–03 weryfikują source fidelity, source union, kanoniczne L0,
+   projekcje i deterministyczną rekonstrukcję źródeł.
+2. Studio tworzy `stage_database`, migruje zweryfikowane snapshoty alpha/legacy,
+   importuje bieżący source union, sprawdza idempotencję, integralność,
+   reconciliation oraz runtime-native readiness.
+3. Test04 wykonuje prywatny benchmark Recall na dokładnie tej `stage_database`.
+4. Final wykonuje SQLite Backup API snapshot tej samej bazy.
+5. Dopiero po zaliczonym łańcuchu kandydat może zostać opublikowany.
+
+Przejście Test03 → candidate Test04 jest jawne. ProtocolEngine dopuszcza je tylko
+z `candidate_reconciliation.ok=true`; zachowuje source fingerprints, lineage
+Test03 i rejestruje hash reconciliation. Normalny Test04 bez candidate transition
+nadal wymaga identycznej bazy co Test03.
+
+## P0 — acceptance evidence jest związane z konkretnym kandydatem
+
+Raport `jazn_memory_rebuild_acceptance/v3.1` zawiera binding:
+
+- `database_semantic_fingerprint`;
+- `source_union_sha256`;
+- `restore_run_id`;
+- `protocol_run_id`.
+
+Final profile porównuje te wartości z bieżącą bazą. Zielony raport z innego
+kandydata, innego source union albo innego runu nie przechodzi.
+
+Fingerprint nie zależy od `unified_memory_meta`, aby nie tworzyć samoodwołania,
+ale obejmuje stabilną treść rozmów, dziennika, L0, wariantów, konfliktów,
+kandydatów i promotion ledger. Obejmuje również tabele proweniencji i evidence
+wpływające na exact provenance oraz review lineage, między innymi
+`import_sources`, `journal_sources`, `memory_evidence`,
+`candidate_evidence`, `sources`, `source_occurrences`, decyzje promocji i
+konflikty migracji. Operacyjne timestampy i identyfikatory importu są wyłączone.
+
+## P0 — runtime systemowy musi być zatrzymany
+
+Studio korzysta z istniejącego `target_preflight()` dla trybu `system`.
+Sprawdzenie odbywa się:
+
+- przed rozpoczęciem wykonania;
+- ponownie bezpośrednio przed podmianą live SQLite.
+
+Drugi gate zamyka race window, w którym daemon mógłby zostać uruchomiony podczas
+długiego Test00–04. Jeśli runtime wróci przed publikacją, operacja kończy się
+fail-closed.
+
+## P1 — prepared plan jest pełnym kontraktem wykonania
+
+Plan ma `execution_plan_sha256`. Hash obejmuje między innymi:
+
+- wersję pakietu;
+- canonical database;
+- source inventory i SHA-256;
+- source union;
+- stan istniejących baz;
+- trwałe sidecary `-wal` i `-journal` istniejącej bazy, jeśli występują;
+- prywatny benchmark Test04 i jego SHA-256;
+- restart continuity report i SHA-256;
+- protocol base commit i tryb system acceptance.
+
+Zmiana któregoś z tych wejść pomiędzy `plan()` i `run()` daje
+`prepared_plan_stale`.
+
+Po utworzeniu immutable baseline Studio ponownie hashuje wejścia, które nie mogą
+zmienić się w obrębie runu: źródła, benchmark Test04, restart evidence, source
+union, protocol base commit i tryb acceptance. Muszą być identyczne z planem
+operatora. Następnie **post-snapshot** stan istniejących baz i trwałych sidecarów
+jest zamrażany jako osobny publish guard. Bezpośrednio przed podmianą live SQLite
+pełny `execution_plan_sha256` jest porównywany właśnie z tym guardem.
+
+To rozróżnienie jest celowe: SQLite Backup API może podczas otwarcia zatrzymanej
+bazy legalnie znormalizować/recoverować własny WAL albo rollback journal.
+Normalizacja wykonana podczas ustanawiania baseline nie jest więc fałszywie
+traktowana jako TOCTOU, natomiast każda późniejsza zmiana źródła, benchmarku,
+restart evidence albo live SQLite kończy run fail-closed jako
+`execution_plan_changed_before_publish`. Gate nie ponawia początkowego wymogu
+wolnego miejsca, ponieważ staging i immutable baseline utworzone przez ten sam
+run legalnie zużywają wcześniej zarezerwowaną przestrzeń.
+
+Stan `-wal` jest częścią planu, ponieważ w trybie WAL zatwierdzone strony mogą
+pozostawać poza głównym plikiem SQLite do checkpointu. `-journal` również jest
+wiązaną i rollbackowaną częścią stanu, ponieważ SQLite może pozostawić hot
+rollback journal po przerwanym zapisie. `-shm` jest przenoszony przy publikacji,
+ale nie fingerprintowany jako trwała treść.
+
+## P1 — reconciliation wykrywa zmianę treści
+
+Dotychczasowe sprawdzenie obecności primary key było za słabe: ten sam klucz
+z inną treścią mógł wyglądać na zachowany.
+
+Nowe reconciliation:
+
+- porównuje stable key + content hash;
+- pracuje na wspólnych kolumnach source/target, zgodnie z mechaniką migratora;
+- ignoruje operacyjne pola czasu/importu;
+- toleruje nowe kolumny występujące wyłącznie w unified target;
+- zgłasza osobno brakujące klucze i content mismatch.
+
+Dzięki temu ewolucja schematu nie daje fałszywego błędu, ale rzeczywista utrata
+lub zmiana zachowywanej treści pozostaje blockerem.
+
+## P1 — atomowy final export i evidence path boundary
+
+`export_final_memory(..., overwrite=True)` ma rollback publikacji:
+
+1. istniejący target jest przenoszony do unikalnego backupu;
+2. staging jest przenoszony na target;
+3. jeśli drugi replace zawiedzie, stary target jest natychmiast odtwarzany.
+
+Ścieżki acceptance/baseline odczytywane z metadata muszą pozostać wewnątrz
+kanonicznego `memory_root`. Absolutny lub względny path escaping poza ten root
+jest odrzucany.
+
+Rollback live publikacji jest przechowywany poza katalogiem staging. Jeśli
+przywrócenie któregoś pliku po nieudanej publikacji samo zawiedzie, pozostałe
+restore są nadal podejmowane, a katalog rollback nie jest usuwany; wynik
+wskazuje `preserved_rollback_dir` do ręcznego recovery. Dzięki temu cleanup
+staging nie może skasować ostatniej kopii nierestaurowanego pliku.
+
+## P0 — usunięty circular import runtime
+
+CI ujawniło cykl:
+
+`unified_memory_runtime → memory_rebuild_app.__init__ → application/protocol_engine → unified_memory_runtime`.
+
+Runtime probe jest teraz importowany lokalnie dopiero w operacjach, które
+faktycznie go wykonują. Dzięki temu zwykły import runtime i startup nie zależy
+od inicjalizacji całej aplikacji Memory Rebuild.
+
+Dodany test uruchamia świeży interpreter i sprawdza import obu warstw, aby
+regresja nie wróciła.
+
+## Release identity
+
+Aktywne testy release identity oraz
+`latka_jazn/resources/startup_contract.json` zostały zsynchronizowane z
+`16.3.25.5.104-memory-rebuild-studio-reconstruction-convergence`.
+
+Historyczny raport v16.3.25.5.103 pozostaje bez zmian.
+
+## Testy regresyjne
+
+`tests/test_memory_rebuild_v24_studio_reconstruction.py` obejmuje między innymi:
+
+- publikację wyłącznie native-unified candidate;
+- alpha → beta z immutable baseline;
+- Test04/Final na dokładnym publish candidate;
+- binding acceptance evidence do candidate/source/run lineage;
+- zmianę semantic fingerprint po zmianie import provenance/evidence;
+- odrzucenie raportu z innego kandydata;
+- stale prepared plan po zmianie benchmarku;
+- prepublish plan gate po zmianie źródła już w trakcie runu;
+- same-key content mismatch;
+- zgodną ewolucję schematu z target-only columns;
+- path escape poza `memory_root`;
+- rollback final publish;
+- blokadę aktywnego runtime;
+- ponowny runtime gate bezpośrednio przed publikacją;
+- brak circular import w świeżym interpreterze.
+
+## Walidacja CI
+
+W toku prac CI wykryło i pomogło usunąć:
+
+- błąd Pyright w nowym teście — poprawiony przez jawne type narrowing bez
+  osłabienia konfiguracji;
+- P0 circular import runtime — usunięty;
+- cztery stare oczekiwania release identity `.103` — zsynchronizowane z `.104`.
+
+Run release-hardening po naprawie circular import i synchronizacji release
+identity przeszedł:
+
+- dependency contracts Linux/Windows dla wspieranych wersji Pythona;
+- Windows targeted runtime/path tests;
+- compile aktywnego Pythona;
+- Pyright/static type audit;
+- deterministic pack-generator freshness;
+- independent semantic route audit;
+- cognitive architecture audit;
+- host spawn + memory convergence regression set;
+- pełny deterministic pytest suite na Ubuntu;
+- clean checkout guard.
+
+Dalsze małe hardeningi prepublish runtime gate i WAL plan binding przechodzą
+niezależne active-tree Pyright i Stable Test Studio gates; release-hardening
+pozostaje źródłem prawdy dla końcowej walidacji HEAD.
+
+## Źródła techniczne
+
+- SQLite Write-Ahead Logging: https://sqlite.org/wal.html
+- SQLite temporary files / WAL and shared-memory files:
+  https://sqlite.org/tempfiles.html
+- Python `os.replace`: https://docs.python.org/3/library/os.html#os.replace
+- Python `sqlite3.Connection.backup`:
+  https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup
+
+## Granica prawdy
+
+Zielony Memory Rebuild dowodzi integralności i zaakceptowanych właściwości
+konkretnego artefaktu pamięci. Nie dowodzi świadomości, biologicznej pamięci ani
+prawdziwości każdej historycznej treści źródłowej. Final pozostaje zweryfikowanym
+artefaktem wejściowym do osobnego runtime/restore lifecycle; samo utworzenie lub
+wyeksportowanie bazy nie aktywuje Jaźni.
+
+
+## Affective source convergence
+
+Studio traktuje historyczne informacje o emocjach jako **evidence źródłowe**, a
+nie jako dowód biologicznego przeżycia. Granica zapisu jest jawna:
+`source_claimed_affect_not_biological_state`.
+
+Obsługiwane są trzy klasy danych:
+
+- dzienniki JSON/JSONL — jawne pola `emotions` / `emocje` są zachowywane w
+  RAW L0, dołączane do tekstu wyszukiwalnego i materializowane w pochodnym
+  indeksie `memory_l0_affect_claims`;
+- `analizy_utworow.json` — oprócz `emocje` indeksowane są również
+  `lustro_emocji_latki`, `refleksja_latki`, `moje_odczucia_latki`,
+  `notatka_introspekcyjna`, tematyka, związek z książką i podsumowanie;
+- historyczne pliki w rodzaju `extra_data.json` — dedykowany adapter
+  `affective-legacy-json/v16.3.25.5.104` importuje pamięć tożsamościową,
+  pytania z ciszy, relacje i meta-refleksje z pełnym provenance.
+
+Wypowiedzi Łatki w archiwach rozmów pozostają byte/source-faithful w L0 jako
+tekst roli `assistant`. Studio **nie wyprowadza automatycznie etykiet emocji z
+dowolnego tekstu rozmowy**. Dzięki temu zapis „czuję spokój” pozostaje
+odnajdywalnym dowodem źródłowym, ale nie jest bez osobnego modelu/review
+zamieniany na strukturalny stan afektywny.
+
+### Legacy JSON recovery
+
+Starsze pliki afektywne mogą zawierać błędy historycznego formatu. Dla źródła
+rozpoznanego jako legacy-affective Studio ma ograniczony, deterministyczny tryb
+recovery:
+
+- uzupełnia brakujący przecinek pomiędzy sąsiednimi obiektami w tablicy;
+- usuwa trailing comma wyłącznie poza stringami;
+- scala wartości powtórzonego klucza zamiast pozostawiać standardowemu parserowi
+  ciche nadpisanie wcześniejszej wartości.
+
+Źródłowy plik nie jest modyfikowany. SHA-256 nadal odnosi się do oryginalnych
+bajtów, a lista wykonanych korekt i scalonych kluczy jest zapisywana jako
+`legacy_json_recovery`. Jeżeli źródła nie da się jednoznacznie odtworzyć,
+pozostaje zablokowane fail-closed.
+
+`memory_l0_affect_claims` jest projekcją pochodną. Zawiera jawne etykiety,
+pole źródłowe, podmiot, typ claimu i boundary; pełny oryginalny rekord pozostaje
+w `raw_json`. Tabela uczestniczy w semantic fingerprint, więc zmiana evidence
+afektywnego unieważnia binding Test04/Final.
+
+Automatyczna promocja pozostaje wyłączona: `automatic_l2=False`,
+`automatic_l3=False`, `automatic_activation=False`.
+
+### Studio affect evidence browser
+
+Strona PROJEKTOWANIE zawiera read-only widok **Ślady afektywne / emocje**.
+Pokazuje liczbę claimów, rozkład po źródłach, najczęstsze etykiety oraz
+konkretny rekord źródłowy. Operator może filtrować po znormalizowanej etykiecie,
+ale z tego widoku nie może promować, edytować ani tworzyć pamięci L1/L2/L3.
+
+### Native recall of L0 affective evidence
+
+`LivingMemoryGateway` rozszerza natywny lane `memory_jazn` o read-only
+wyszukiwanie bieżących rekordów L0 dla `music_analysis` i `affective`.
+Zapytanie używa `memory_l0_fts`, jeśli indeks jest dostępny, z bezpiecznym
+fallbackiem do ograniczonego skanu LIKE. Wynik zachowuje:
+
+- `source_locator=memory_l0_records:<record_id>`;
+- pełne provenance rekordu;
+- jawne `affect_claims`;
+- `affect_boundary=source_claimed_affect_not_biological_state`;
+- `automatic_memory_promotion=False`.
+
+Ten lane nie zastępuje aktywnego `memory_records` i nie promuje L0. Umożliwia
+natomiast Recall bezpośrednio z zachowanych, źródłowych analiz i refleksji, co
+zamyka lukę, w której dane były obecne w Final, ale nie musiały być osiągalne
+przez zwykły `LivingMemoryGateway`.

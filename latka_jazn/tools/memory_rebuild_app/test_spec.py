@@ -31,6 +31,9 @@ class TestSpec:
     checks: tuple[str, ...]
     outputs: tuple[str, ...]
     truth_boundary: tuple[str, ...]
+    owner_layer: str
+    required_predecessors: tuple[str, ...]
+    gate_kind: str
     writes_test_artifacts: bool
     validator_profile: str | None = None
 
@@ -38,6 +41,9 @@ class TestSpec:
 TEST_SPECS: tuple[TestSpec, ...] = (
     TestSpec(
         profile="test00",
+        owner_layer="source_fidelity_and_union",
+        required_predecessors=(),
+        gate_kind="source_contract",
         label="Test 00 — Source Fidelity + domknięcie snapshotów",
         goal=(
             "Udowadnia, że każde źródło można zachować/odczytać bezstratnie oraz że wszystkie "
@@ -96,6 +102,9 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test01",
+        owner_layer="canonical_l0",
+        required_predecessors=("test00",),
+        gate_kind="schema_and_l0_contract",
         label="Test 01 — Kanoniczne, bezstratne L0 z source union",
         goal="Buduje izolowane, źródłowe L0 z pełnego zestawu wariantów zaakceptowanych przez Test00.",
         inputs=("zatwierdzony source union Test00", "manifest źródeł i ich SHA-256"),
@@ -120,6 +129,9 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test02",
+        owner_layer="derived_projections",
+        required_predecessors=("test01",),
+        gate_kind="projection_contract",
         label="Test 02 — Normalizacja i projekcje",
         goal="Buduje i sprawdza wyłącznie pochodne widoki/klasyfikacje bez zmiany surowego L0.",
         inputs=("wynik Test01", "reguły normalizacji i indeksowania"),
@@ -139,6 +151,9 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test03",
+        owner_layer="deterministic_reconstruction",
+        required_predecessors=("test02",),
+        gate_kind="reconstruction_integration",
         label="Test 03 — Deterministyczny pełny rebuild integracyjny",
         goal=(
             "Wykonuje świeżą odbudowę jednej memory_jazn.sqlite3 oraz udowadnia, że source union i "
@@ -172,6 +187,9 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="test04",
+        owner_layer="private_recall_acceptance",
+        required_predecessors=("test03",),
+        gate_kind="private_system_acceptance",
         label="Test 04 — Prywatna akceptacja pełnej bazy",
         goal="Mierzy kompletność, reproducibility i Recall na rzeczywistych prywatnych danych.",
         inputs=("zamrożony source union", "latest-export attestation", "prywatny benchmark Recall", "baseline Test03"),
@@ -205,11 +223,21 @@ TEST_SPECS: tuple[TestSpec, ...] = (
     ),
     TestSpec(
         profile="final",
+        owner_layer="release_artifact",
+        required_predecessors=("test04",),
+        gate_kind="export_and_readiness",
         label="Final — Freeze pełnej pamięci bazowej",
         goal="Zamraża zweryfikowaną bazę i dowody jako wejście do osobnego Verified Memory Restore.",
         inputs=("zaliczony Test04", "raporty Test00-04", "review/promotion ledgers"),
         readiness=("wszystkie blocking checks Test04 PASSED", "brak niejawnych automatycznych promocji"),
-        phases=("SQLite Backup API snapshot", "full validation", "FTS5 integrity", "manifest sealing", "sanitized export"),
+        phases=(
+            "SQLite Backup API snapshot",
+            "full validation",
+            "FTS5 integrity",
+            "runtime-native read-only probe",
+            "manifest sealing",
+            "sanitized export",
+        ),
         checks=(
             "snapshot SQLite jest spójny i powstaje przez API SQLite, nie surowe kopiowanie aktywnego WAL DB",
             "PRAGMA integrity_check oraz foreign_key_check są czyste",
@@ -218,6 +246,7 @@ TEST_SPECS: tuple[TestSpec, ...] = (
             "private + sanitized manifests zgadzają się po hashach",
             "source manifest i database manifest są kompletne",
             "promotion ledger pozostaje fail-closed bez jawnej decyzji",
+            "runtime-native probe potwierdza schema_identity i full_autobiographical_recall_ready=true",
         ),
         outputs=("final memory_jazn.sqlite3", "database/source/test manifests", "candidate/review ledger"),
         truth_boundary=("Final jest gotowym wejściem do Verified Memory Restore, nie aktywną Jaźnią.",),
@@ -229,6 +258,52 @@ TEST_SPECS: tuple[TestSpec, ...] = (
 TEST_SPEC_BY_PROFILE = {item.profile: item for item in TEST_SPECS}
 TEST_PROTOCOL_ORDER = tuple(item.profile for item in TEST_SPECS)
 
+
+
+def test_layer_contracts() -> tuple[dict[str, object], ...]:
+    return tuple(
+        {
+            "profile": item.profile,
+            "owner_layer": item.owner_layer,
+            "required_predecessors": item.required_predecessors,
+            "gate_kind": item.gate_kind,
+            "validator_profile": item.validator_profile,
+        }
+        for item in TEST_SPECS
+    )
+
+
+def validate_test_layer_contracts() -> dict[str, object]:
+    profiles = [item.profile for item in TEST_SPECS]
+    owners = [item.owner_layer for item in TEST_SPECS]
+    errors: list[str] = []
+    if len(set(profiles)) != len(profiles):
+        errors.append("duplicate_test_profile")
+    if len(set(owners)) != len(owners):
+        errors.append("duplicate_owner_layer")
+    index = {profile: position for position, profile in enumerate(profiles)}
+    for item in TEST_SPECS:
+        if not item.owner_layer:
+            errors.append(f"missing_owner_layer:{item.profile}")
+        if not item.gate_kind:
+            errors.append(f"missing_gate_kind:{item.profile}")
+        for predecessor in item.required_predecessors:
+            if predecessor not in index:
+                errors.append(f"unknown_predecessor:{item.profile}:{predecessor}")
+            elif index[predecessor] >= index[item.profile]:
+                errors.append(f"non_prior_predecessor:{item.profile}:{predecessor}")
+    if profiles and profiles[-1] != "final":
+        errors.append("final_not_last")
+    final = TEST_SPEC_BY_PROFILE.get("final")
+    if final is None or final.required_predecessors != ("test04",):
+        errors.append("final_must_depend_on_test04")
+    return {
+        "ok": not errors,
+        "profiles": profiles,
+        "owners": owners,
+        "contracts": test_layer_contracts(),
+        "errors": errors,
+    }
 
 def get_test_spec(profile: str) -> TestSpec:
     try:
@@ -243,4 +318,6 @@ __all__ = [
     "TestOutcome",
     "TestSpec",
     "get_test_spec",
+    "test_layer_contracts",
+    "validate_test_layer_contracts",
 ]

@@ -88,6 +88,8 @@ def _is_memory_excluded(_relative: PurePosixPath, name: str, is_dir: bool) -> st
         lower = name.casefold()
         if name in EXCLUDED_FILE_NAMES:
             return f"memory-file:{name}"
+        if lower.endswith(("-wal", "-shm")):
+            return "memory-sqlite-sidecar"
         if lower.endswith(_MEMORY_TRANSIENT_SUFFIXES):
             return "memory-transient-suffix"
     return None

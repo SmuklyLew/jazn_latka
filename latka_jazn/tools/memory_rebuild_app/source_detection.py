@@ -14,6 +14,133 @@ SOURCE_KINDS = (
 )
 
 
+class DuplicateJsonKeyError(ValueError):
+    """Raised when repeated JSON object keys would silently discard evidence."""
+
+
+def _unique_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKeyError(f"duplicate_json_key:{key}")
+        result[key] = value
+    return result
+
+
+def load_json_strict(path: str | Path) -> Any:
+    source = Path(path).expanduser().resolve()
+    return json.loads(
+        source.read_text(encoding="utf-8-sig"),
+        object_pairs_hook=_unique_object_pairs,
+    )
+
+
+_AFFECTIVE_SCHEMA_MARKERS = (
+    '"latka_ai_pamiec"',
+    '"pytania_z_ciszy"',
+    '"relacje"',
+    '"projekty_meta"',
+)
+
+
+def _looks_like_legacy_affective_json(raw: str) -> bool:
+    return sum(marker in raw for marker in _AFFECTIVE_SCHEMA_MARKERS) >= 2
+
+
+def _repair_legacy_json_syntax(raw: str) -> tuple[str, list[str]]:
+    """Repair only unambiguous separators outside JSON strings.
+
+    The source file is never modified.  Repairs are returned as evidence and are
+    limited to trailing commas and a missing comma between adjacent object
+    elements inside an array.
+    """
+
+    output: list[str] = []
+    notes: list[str] = []
+    stack: list[str] = []
+    in_string = False
+    escaped = False
+    length = len(raw)
+
+    def next_nonspace(index: int) -> str | None:
+        while index < length and raw[index].isspace():
+            index += 1
+        return raw[index] if index < length else None
+
+    for index, char in enumerate(raw):
+        if in_string:
+            output.append(char)
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+            output.append(char)
+            continue
+        if char in "[{":
+            stack.append(char)
+            output.append(char)
+            continue
+        if char in "]}":
+            if stack:
+                stack.pop()
+            output.append(char)
+            if (
+                char == "}"
+                and stack
+                and stack[-1] == "["
+                and next_nonspace(index + 1) == "{"
+            ):
+                output.append(",")
+                notes.append(f"inserted_missing_array_comma_after_offset:{index}")
+            continue
+        if char == "," and next_nonspace(index + 1) in {"]", "}"}:
+            notes.append(f"removed_trailing_comma_at_offset:{index}")
+            continue
+        output.append(char)
+
+    return "".join(output), notes
+
+
+def load_legacy_affective_json(path: str | Path) -> tuple[Any, dict[str, Any]]:
+    source = Path(path).expanduser().resolve()
+    raw = source.read_text(encoding="utf-8-sig")
+    if not _looks_like_legacy_affective_json(raw):
+        raise ValueError("legacy_affective_schema_markers_missing")
+
+    repaired, repairs = _repair_legacy_json_syntax(raw)
+    duplicate_keys: list[str] = []
+
+    def merge_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key not in result:
+                result[key] = value
+                continue
+            duplicate_keys.append(key)
+            previous = result[key]
+            if isinstance(previous, list) and isinstance(value, list):
+                result[key] = [*previous, *value]
+            else:
+                left = previous if isinstance(previous, list) else [previous]
+                right = value if isinstance(value, list) else [value]
+                result[key] = [*left, *right]
+        return result
+
+    payload = json.loads(repaired, object_pairs_hook=merge_pairs)
+    return payload, {
+        "repaired": bool(repairs or duplicate_keys),
+        "syntax_repairs": repairs,
+        "duplicate_keys_merged": sorted(set(duplicate_keys)),
+        "source_bytes_preserved": True,
+    }
+
+
 @dataclass(slots=True, frozen=True)
 class SourceProbe:
     path: str
@@ -138,8 +265,6 @@ def probe_source(path: str | Path) -> SourceProbe:
         return _classify_records(source, samples)
     if suffix == ".json":
         name_hints = _name_hints(source)
-        if "music" in name_hints:
-            return SourceProbe(str(source), "music", 0.95, ("path_hint:music",))
         try:
             if probe_json_source_kind(source) == "conversation":
                 return SourceProbe(str(source), "chat", 0.98, ("chat_export_probe",))
@@ -148,11 +273,35 @@ def probe_source(path: str | Path) -> SourceProbe:
         if source.stat().st_size > 64 * 1024 * 1024:
             return SourceProbe(str(source), "reference", 0.4, ("large_json_requires_explicit_type",))
         try:
-            payload = json.loads(source.read_text(encoding="utf-8-sig"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return SourceProbe(str(source), "reference", 0.0, ("invalid_json",))
+            payload = load_json_strict(source)
+            recovery: dict[str, Any] | None = None
+        except (OSError, UnicodeError, json.JSONDecodeError, DuplicateJsonKeyError) as exc:
+            try:
+                payload, recovery = load_legacy_affective_json(source)
+            except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+                return SourceProbe(
+                    str(source),
+                    "reference",
+                    0.0,
+                    (f"invalid_json:{type(exc).__name__}:{exc}",),
+                )
         if isinstance(payload, dict) and isinstance(payload.get("analizy"), list):
             return SourceProbe(str(source), "music", 0.99, ("json_schema:analizy",))
+        if "music" in name_hints and isinstance(payload, (dict, list)):
+            return SourceProbe(str(source), "music", 0.95, ("path_hint:music",))
+        if isinstance(payload, dict) and {
+            "latka_ai_pamiec", "pytania_z_ciszy", "relacje", "projekty_meta",
+        } & set(payload):
+            reasons = ["json_schema:legacy_affective_memory"]
+            if recovery and recovery.get("repaired"):
+                reasons.append("legacy_json_recovery_applied")
+            return SourceProbe(
+                str(source),
+                "affective",
+                0.99 if not recovery else 0.97,
+                tuple(reasons),
+                schema_keys=tuple(sorted(str(key).casefold() for key in payload))[:64],
+            )
         if isinstance(payload, dict) and isinstance(payload.get("entries"), list):
             samples = [item for item in payload["entries"][:8] if isinstance(item, dict)]
             probe = _classify_records(source, samples)
@@ -165,4 +314,12 @@ def probe_source(path: str | Path) -> SourceProbe:
     return SourceProbe(str(source), "reference", 0.2, ("unsupported_or_unknown_schema",))
 
 
-__all__ = ["SOURCE_KINDS", "SourceProbe", "iter_jsonl_objects", "probe_source"]
+__all__ = [
+    "DuplicateJsonKeyError",
+    "SOURCE_KINDS",
+    "SourceProbe",
+    "iter_jsonl_objects",
+    "load_json_strict",
+    "load_legacy_affective_json",
+    "probe_source",
+]

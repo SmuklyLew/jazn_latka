@@ -1,14 +1,38 @@
 from __future__ import annotations
 
+from contextlib import closing
 from dataclasses import dataclass, replace
+from datetime import datetime, timezone
 import fnmatch
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shlex
 import shutil
+import sqlite3
+import uuid
 from threading import Event
-from typing import Callable
+from typing import Any, Callable
+
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.memory.storage_limits import (
+    DEFAULT_MAX_SQLITE_FILE_BYTES,
+    DEFAULT_RAW_SEGMENT_MAX_BYTES,
+    DEFAULT_RAW_SEGMENT_TARGET_BYTES,
+)
+from latka_jazn.packaging.memory_package_types import (
+    MEMORY_FORMAT_VERSION_V3,
+    MEMORY_MANIFEST_SCHEMA_V3,
+    MEMORY_PACKAGE_MANIFEST_PATH,
+    MEMORY_RUNTIME_COMPATIBILITY_CONTRACT,
+    SQLITE_HEADER,
+    inspect_sqlite_memory_file,
+)
+from latka_jazn.packaging.memory_raw_segmentation import (
+    RawJsonlSegmenter,
+    RawMemorySegmentationPolicy,
+)
 
 from .errors import PackCancelled, PackIntegrityError
 from .models import PackPlan, ProgressEvent, SourceEntry
@@ -16,6 +40,10 @@ from .models import PackPlan, ProgressEvent, SourceEntry
 ProgressCallback = Callable[[ProgressEvent], None]
 _CHUNK = 4 * 1024 * 1024
 _SAMPLE = 64 * 1024
+_MEMORY_RAW_SEGMENT_TARGET_BYTES = DEFAULT_RAW_SEGMENT_TARGET_BYTES
+_MEMORY_RAW_SEGMENT_MAX_BYTES = DEFAULT_RAW_SEGMENT_MAX_BYTES
+_MEMORY_SQLITE_MAX_BYTES = DEFAULT_MAX_SQLITE_FILE_BYTES
+_MEMORY_TRANSPORT_CONTRACT = "jazn_memory_package_transport/v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +62,7 @@ class StagingResult:
     staging_mode: str = "source-folder-byte-copy"
     canonical_release_bytes: bool = False
     release_report: dict[str, object] | None = None
+    byte_exact_source_copy: bool = True
 
     def verification_metadata(self) -> dict[str, object]:
         if self.canonical_release_bytes:
@@ -53,8 +82,9 @@ class StagingResult:
             }
         return {
             "staging_mode": self.staging_mode,
-            "byte_exact_source_copy": True,
+            "byte_exact_source_copy": self.byte_exact_source_copy,
             "canonical_release_bytes": False,
+            "memory_native_v3": self.staging_mode == "memory-native-v3-staging",
             "eol_policy": "diagnostic_only",
             "eol_checked_count": self.eol_checked_count,
             "eol_skipped_count": self.eol_skipped_count,
@@ -180,6 +210,282 @@ def _eol_conforms(path: Path, expected: str, auto_text: bool) -> bool | None:
     return True
 
 
+def _is_sqlite_file(path: Path) -> bool:
+    try:
+        with path.open("rb") as handle:
+            return handle.read(len(SQLITE_HEADER)) == SQLITE_HEADER
+    except OSError:
+        return False
+
+
+def _write_json_durable(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + f".tmp-{uuid.uuid4().hex}")
+    try:
+        with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _snapshot_sqlite_memory(source: Path, target: Path) -> dict[str, Any]:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.unlink(missing_ok=True)
+    try:
+        with closing(connect_runtime_readonly(source, timeout_ms=30_000)) as source_connection:
+            with closing(sqlite3.connect(target, timeout=30.0)) as target_connection:
+                target_connection.execute("PRAGMA busy_timeout=30000")
+                source_connection.backup(
+                    target_connection,
+                    pages=2048,
+                    sleep=0.01,
+                )
+                target_connection.commit()
+                journal_row = target_connection.execute(
+                    "PRAGMA journal_mode=DELETE"
+                ).fetchone()
+                journal_mode = "" if journal_row is None else str(journal_row[0]).casefold()
+                if journal_mode != "delete":
+                    raise PackIntegrityError(
+                        f"SQLite snapshot could not switch to single-file journal mode: {source}"
+                    )
+                target_connection.commit()
+        target.with_name(target.name + "-wal").unlink(missing_ok=True)
+        target.with_name(target.name + "-shm").unlink(missing_ok=True)
+        report = inspect_sqlite_memory_file(target)
+    except Exception:
+        target.unlink(missing_ok=True)
+        raise
+    if report.get("ok") is not True:
+        target.unlink(missing_ok=True)
+        raise PackIntegrityError(
+            f"SQLite Online Backup snapshot failed integrity gates: {source}"
+        )
+    if target.stat().st_size > _MEMORY_SQLITE_MAX_BYTES:
+        target.unlink(missing_ok=True)
+        raise PackIntegrityError(
+            f"SQLite snapshot exceeds MEMORY package member limit: {source}"
+        )
+    return {
+        "path": str(target),
+        "size_bytes": int(report["size_bytes"]),
+        "sha256": str(report["sha256"]),
+        "quick_check": str(report["quick_check"]),
+        "foreign_key_error_count": int(report["foreign_key_error_count"]),
+        "user_version": int(report["user_version"]),
+        "application_id": int(report["application_id"]),
+        "database_identity": report.get("database_identity"),
+        "table_count": int(report["table_count"]),
+    }
+
+
+def _materialize_memory_v3_staging(
+    plan: PackPlan,
+    destination: Path,
+    *,
+    callback: ProgressCallback | None,
+    cancel_event: Event | None,
+) -> StagingResult:
+    destination = destination.resolve()
+    destination.mkdir(parents=True, exist_ok=True)
+    entries: list[SourceEntry] = []
+    hashes: dict[str, str] = {}
+    files: list[dict[str, object]] = []
+    databases: list[dict[str, object]] = []
+    raw_segments: list[dict[str, object]] = []
+
+    for entry in plan.entries:
+        _cancel(cancel_event)
+        relative = entry.archive_path.rstrip("/")
+        if relative == MEMORY_PACKAGE_MANIFEST_PATH:
+            continue
+        target = destination / Path(*PurePosixPath(relative).parts)
+        if entry.is_dir:
+            target.mkdir(parents=True, exist_ok=True)
+            entries.append(replace(entry, source=target))
+            continue
+
+        if _is_sqlite_file(entry.source):
+            report = _snapshot_sqlite_memory(entry.source, target)
+            digest = str(report["sha256"])
+            size = int(report["size_bytes"])
+            entries.append(SourceEntry(target, relative, size, False))
+            hashes[relative] = digest
+            files.append(
+                {
+                    "path": relative,
+                    "size_bytes": size,
+                    "sha256": digest,
+                    "classification": "memory_sqlite_snapshot",
+                }
+            )
+            databases.append(
+                {
+                    "path": relative,
+                    "role": "sqlite_memory",
+                    "snapshot_method": "sqlite_online_backup_api",
+                    "size_bytes": size,
+                    "sha256": digest,
+                    "user_version": report["user_version"],
+                    "application_id": report["application_id"],
+                    "database_identity": report["database_identity"],
+                }
+            )
+            _emit(
+                callback,
+                ProgressEvent(
+                    "staging",
+                    "SQLite Online Backup snapshot",
+                    size,
+                    size,
+                    relative,
+                ),
+            )
+            continue
+
+        if (
+            relative.lower().endswith(".jsonl")
+            and entry.size_bytes > _MEMORY_RAW_SEGMENT_TARGET_BYTES
+        ):
+            segmenter = RawJsonlSegmenter(
+                RawMemorySegmentationPolicy(
+                    target_segment_bytes=_MEMORY_RAW_SEGMENT_TARGET_BYTES,
+                    max_segment_bytes=_MEMORY_RAW_SEGMENT_MAX_BYTES,
+                )
+            )
+            descriptor = segmenter.segment(
+                entry.source,
+                source_relative=relative,
+                staging_root=destination,
+            )
+            raw_segments.append(descriptor.to_dict())
+            for segment in descriptor.segments:
+                segment_source = destination / Path(
+                    *PurePosixPath(segment.package_path).parts
+                )
+                entries.append(
+                    SourceEntry(
+                        segment_source,
+                        segment.package_path,
+                        int(segment.size_bytes),
+                        False,
+                    )
+                )
+                hashes[segment.package_path] = segment.sha256
+                files.append(
+                    {
+                        "path": segment.package_path,
+                        "size_bytes": int(segment.size_bytes),
+                        "sha256": segment.sha256,
+                        "classification": "memory_raw_segment",
+                    }
+                )
+            _emit(
+                callback,
+                ProgressEvent(
+                    "staging",
+                    "Segmentowanie MEMORY JSONL",
+                    int(descriptor.source_size_bytes),
+                    int(descriptor.source_size_bytes),
+                    relative,
+                ),
+            )
+            continue
+
+        digest = _copy_exact(
+            entry.source,
+            target,
+            expected_size=entry.size_bytes,
+            archive_path=relative,
+            callback=callback,
+            cancel_event=cancel_event,
+        )
+        entries.append(SourceEntry(target, relative, entry.size_bytes, False))
+        hashes[relative] = digest
+        files.append(
+            {
+                "path": relative,
+                "size_bytes": int(entry.size_bytes),
+                "sha256": digest,
+                "classification": "memory_file",
+            }
+        )
+
+    created = datetime.now(timezone.utc).isoformat()
+    member_limit = max(_MEMORY_RAW_SEGMENT_MAX_BYTES, _MEMORY_SQLITE_MAX_BYTES)
+    manifest: dict[str, object] = {
+        "schema_version": MEMORY_MANIFEST_SCHEMA_V3,
+        "memory_format_version": MEMORY_FORMAT_VERSION_V3,
+        "snapshot_id": str(uuid.uuid4()),
+        "created_at_utc": created,
+        "generated_at_utc": created,
+        "created_with_runtime": plan.package_version,
+        "compatibility": {
+            "contract": MEMORY_RUNTIME_COMPATIBILITY_CONTRACT,
+            "runtime_version_is_provenance_only": True,
+            "memory_format_version": MEMORY_FORMAT_VERSION_V3,
+            "manifest_schema": MEMORY_MANIFEST_SCHEMA_V3,
+        },
+        "file_count": len(files),
+        "files": sorted(files, key=lambda item: str(item["path"])),
+        "databases": sorted(databases, key=lambda item: str(item["path"])),
+        "raw_segments": sorted(
+            raw_segments,
+            key=lambda item: str(item.get("source_path") or ""),
+        ),
+        "package_member_limit_bytes": member_limit,
+        "raw_segment_member_limit_bytes": _MEMORY_RAW_SEGMENT_MAX_BYTES,
+        "sqlite_snapshot_member_limit_bytes": _MEMORY_SQLITE_MAX_BYTES,
+        "transport_contract": _MEMORY_TRANSPORT_CONTRACT,
+        "truth_boundary": (
+            "MEMORY package bytes are generated from a bounded native-v3 staging tree. "
+            "SQLite databases are consistent Online Backup API snapshots; WAL/SHM files "
+            "are transport-excluded. Oversized raw JSONL is represented only by exact "
+            "bounded segments and is reconstructed while attaching."
+        ),
+    }
+    manifest_path = destination / Path(*PurePosixPath(MEMORY_PACKAGE_MANIFEST_PATH).parts)
+    _write_json_durable(manifest_path, manifest)
+    manifest_digest = _sha(manifest_path)
+    entries.append(
+        SourceEntry(
+            manifest_path,
+            MEMORY_PACKAGE_MANIFEST_PATH,
+            manifest_path.stat().st_size,
+            False,
+        )
+    )
+    hashes[MEMORY_PACKAGE_MANIFEST_PATH] = manifest_digest
+
+    staged_plan = replace(
+        plan,
+        entries=tuple(entries),
+        source_total_size_bytes=sum(
+            item.size_bytes for item in entries if not item.is_dir
+        ),
+    )
+    return StagingResult(
+        staged_plan,
+        hashes,
+        eol_checked_count=0,
+        eol_skipped_count=len(files),
+        eol_warning_paths=(),
+        staging_mode="memory-native-v3-staging",
+        canonical_release_bytes=False,
+        release_report={
+            "memory_manifest_schema": MEMORY_MANIFEST_SCHEMA_V3,
+            "memory_format_version": MEMORY_FORMAT_VERSION_V3,
+            "sqlite_snapshot_count": len(databases),
+            "raw_segment_source_count": len(raw_segments),
+        },
+        byte_exact_source_copy=False,
+    )
+
+
 def materialize_source_staging(
     plan: PackPlan,
     destination: Path,
@@ -187,6 +493,13 @@ def materialize_source_staging(
     callback: ProgressCallback | None = None,
     cancel_event: Event | None = None,
 ) -> StagingResult:
+    if plan.request.content.value == "memory":
+        return _materialize_memory_v3_staging(
+            plan,
+            destination,
+            callback=callback,
+            cancel_event=cancel_event,
+        )
     destination = destination.resolve()
     destination.mkdir(parents=True, exist_ok=True)
     source_root = plan.request.source_root.resolve()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+import hashlib
 import sqlite3
 import uuid
 
@@ -18,8 +19,33 @@ from .memory_package_types import (
 from .memory_raw_segmentation import RawJsonlSegmenter, RawMemorySegmentationError
 
 
+def _inspect_materialized_raw_source(path: Path) -> dict[str, Any]:
+    digest = hashlib.sha256()
+    size = 0
+    newline_count = 0
+    last_byte = b""
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+            size += len(block)
+            newline_count += block.count(b"\n")
+            if block:
+                last_byte = block[-1:]
+    line_count = newline_count + (1 if size and last_byte != b"\n" else 0)
+    return {
+        "path": str(path),
+        "size_bytes": size,
+        "sha256": digest.hexdigest(),
+        "line_count": line_count,
+    }
+
+
 def verify_memory_package_manifest(
-    package_root: Path, *, runtime_root: Path | None = None, require_runtime_match: bool = False,
+    package_root: Path,
+    *,
+    runtime_root: Path | None = None,
+    require_runtime_match: bool = False,
+    installed_raw_segments: bool = False,
 ) -> dict[str, Any]:
     package_root = Path(package_root).expanduser().resolve()
     runtime_root = Path(runtime_root).expanduser().resolve() if runtime_root else package_root
@@ -83,6 +109,36 @@ def verify_memory_package_manifest(
             if not runtime_version_match:
                 warnings.append({"code": "memory_created_with_different_runtime", "created_with_runtime": created_with_runtime, "current_runtime": current_runtime, "policy": "provenance_only"})
 
+    materialized_raw_sources: set[str] = set()
+    transport_raw_segment_paths: set[str] = set()
+    if installed_raw_segments and schema == MEMORY_MANIFEST_SCHEMA_V3:
+        raw_for_install = payload.get("raw_segments")
+        if isinstance(raw_for_install, list):
+            for descriptor in raw_for_install:
+                if not isinstance(descriptor, dict):
+                    continue
+                source_path = str(descriptor.get("source_path") or "").replace("\\", "/").strip()
+                source_parts = Path(source_path).parts
+                if (
+                    source_path
+                    and not Path(source_path).is_absolute()
+                    and ".." not in source_parts
+                    and source_path.startswith("memory/")
+                ):
+                    materialized_raw_sources.add(source_path)
+                for segment in descriptor.get("segments") or []:
+                    if not isinstance(segment, dict):
+                        continue
+                    segment_path = str(segment.get("package_path") or "").replace("\\", "/").strip()
+                    segment_parts = Path(segment_path).parts
+                    if (
+                        segment_path
+                        and not Path(segment_path).is_absolute()
+                        and ".." not in segment_parts
+                        and segment_path.startswith("memory/")
+                    ):
+                        transport_raw_segment_paths.add(segment_path)
+
     files = payload.get("files")
     if not isinstance(files, list):
         errors.append({"code": "memory_package_files_invalid"}); files = []
@@ -103,6 +159,8 @@ def verify_memory_package_manifest(
         except ValueError:
             errors.append({"code": "memory_package_path_escapes_root", "path": relative}); continue
         if not target.is_file():
+            if installed_raw_segments and relative in transport_raw_segment_paths:
+                continue
             errors.append({"code": "memory_package_file_missing", "path": relative}); continue
         actual_size = target.stat().st_size; actual_sha = sha256_file(target)
         expected_size = int(item.get("size_bytes", -1)); expected_sha = str(item.get("sha256") or "").strip().lower()
@@ -113,7 +171,8 @@ def verify_memory_package_manifest(
 
     memory_root = package_root / "memory"
     actual_paths = {p.relative_to(package_root).as_posix() for p in memory_root.rglob("*") if p.is_file() and p.resolve() != manifest_path.resolve()} if memory_root.is_dir() else set()
-    for extra in sorted(actual_paths - expected_paths): errors.append({"code": "memory_package_unlisted_file", "path": extra})
+    allowed_actual_paths = expected_paths | (materialized_raw_sources if installed_raw_segments else set())
+    for extra in sorted(actual_paths - allowed_actual_paths): errors.append({"code": "memory_package_unlisted_file", "path": extra})
     declared_count = int(payload.get("file_count", -1))
     if declared_count != len(expected_paths): errors.append({"code": "memory_package_file_count_mismatch", "declared": declared_count, "actual": len(expected_paths)})
 
@@ -160,7 +219,17 @@ def verify_memory_package_manifest(
                 for segment_path in sorted(segment_paths - expected_paths):
                     errors.append({"code": "memory_raw_segment_not_in_files", "path": segment_path})
                 try:
-                    RawJsonlSegmenter.verify_descriptor(package_root, descriptor)
+                    materialized_target = package_root / Path(*source_path.split("/"))
+                    if installed_raw_segments and materialized_target.is_file():
+                        installed = _inspect_materialized_raw_source(materialized_target)
+                        if installed["size_bytes"] != int(descriptor.get("source_size_bytes", -1)):
+                            raise RawMemorySegmentationError("materialized raw source size mismatch")
+                        if installed["sha256"] != str(descriptor.get("source_sha256") or ""):
+                            raise RawMemorySegmentationError("materialized raw source SHA-256 mismatch")
+                        if installed["line_count"] != int(descriptor.get("source_line_count", -1)):
+                            raise RawMemorySegmentationError("materialized raw source line-count mismatch")
+                    else:
+                        RawJsonlSegmenter.verify_descriptor(package_root, descriptor)
                 except (RawMemorySegmentationError, OSError, ValueError) as exc:
                     errors.append({
                         "code": "memory_raw_segment_verification_failed",
@@ -219,5 +288,8 @@ def verify_memory_package_manifest(
         "runtime_version_is_provenance_only": schema in {MEMORY_MANIFEST_SCHEMA_V2, MEMORY_MANIFEST_SCHEMA_V3} or not require_runtime_match,
         "compatibility_contract": compatibility_contract, "declared_file_count": declared_count,
         "verified_file_count": verified_count, "sqlite_database_count": len(sqlite_paths), "database_reports": database_reports,
+        "installed_raw_segments": bool(installed_raw_segments and schema == MEMORY_MANIFEST_SCHEMA_V3),
+        "materialized_raw_source_count": len(materialized_raw_sources),
+        "transport_raw_segment_path_count": len(transport_raw_segment_paths),
         "errors": errors, "warnings": warnings, "truth_boundary": TRUTH_BOUNDARY,
     }

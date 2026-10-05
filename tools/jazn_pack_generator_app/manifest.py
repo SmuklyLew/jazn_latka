@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.packaging.memory_package_types import (
+    MEMORY_FORMAT_VERSION_V3,
+    MEMORY_MANIFEST_SCHEMA_V3,
+)
+
 from .constants import (
     GENERATOR_VERSION,
     HOST_BOOTSTRAP_CONTRACT_SCHEMA,
@@ -63,6 +68,14 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "auto_attach_entrypoint": "run.py runtime-bootstrap",
         "post_attach_restart_required": True,
         "legacy_transport_repack_supported": True,
+        "runtime_attach_transport_strategy": "verified_streaming_single_candidate",
+        "runtime_attach_transport_copy_required": False,
+        "runtime_attach_joined_zip_required": False,
+        "runtime_attach_repack_required": False,
+        "runtime_attach_staging_same_filesystem_required": True,
+        "runtime_attach_cross_filesystem_copy_fallback": False,
+        "runtime_attach_disk_preflight_required": True,
+        "runtime_attach_v3_raw_segments_stream_to_logical_source": True,
         "bootstrap_contract_member": (
             MEMORY_ATTACHMENT_CONTRACT_MEMBER if carries_system else None
         ),
@@ -310,7 +323,7 @@ def build_manifest(
 ) -> dict[str, Any]:
     host_bootstrap = validate_system_bootstrap_contract(plan)
     memory_attachment = build_memory_attachment_contract(plan)
-    return {
+    payload = {
         "schema_version": PACKAGE_MANIFEST_SCHEMA,
         "generator": "tools/jazn_pack_generator.py",
         "generator_version": GENERATOR_VERSION,
@@ -340,11 +353,15 @@ def build_manifest(
             "file_count": plan.file_count,
             "directory_count": plan.directory_count,
             "total_size_bytes": plan.source_total_size_bytes,
-            "byte_exact": True,
+            "byte_exact": bool(verification.get("byte_exact_source_copy", True)),
             "source_basis": (
                 "canonical_release"
                 if verification.get("canonical_release_bytes") is True
-                else "selected_folder"
+                else (
+                    "memory_native_v3"
+                    if verification.get("memory_native_v3") is True
+                    else "selected_folder"
+                )
             ),
             "staging_mode": str(verification.get("staging_mode") or "source-folder-byte-copy"),
             "entries": [
@@ -372,19 +389,30 @@ def build_manifest(
                 "SOURCE_PROVENANCE.json are reverified before publication. Package completeness is independent from "
                 "host execution capability and from private MEMORY readiness. A SYSTEM-only package is a complete core "
                 "runtime; a verified MEMORY package may be attached separately later. A packaged Secure MCP target does "
-                "not bundle or authenticate the external OpenAI tunnel control plane. MEMORY content, when requested, "
-                "remains a byte-exact filesystem snapshot outside the protected static SYSTEM inventory. Split mode cuts "
-                "one already-verified logical ZIP into binary transport parts."
+                "not bundle or authenticate the external OpenAI tunnel control plane. MEMORY-only packages use native v3 "
+                "staging with consistent SQLite snapshots and bounded JSONL transport; SYSTEM+MEMORY remains an explicit "
+                "combined export path. Split mode cuts one already-verified logical ZIP into binary transport parts."
             )
             if plan.request.content.value != "memory"
             else (
-                "MEMORY packages preserve the actual selected memory bytes. .gitattributes is diagnostic only for "
-                "folder snapshots. Per-file SHA-256 is rechecked against ZIP members; split mode cuts one logical ZIP "
-                "into binary transport parts. MEMORY is data only, never grants execution capability, and is attached "
-                "to a separately verified SYSTEM through the canonical memory-attach pipeline."
+                "MEMORY-only packages are generated as native v3 transport. Ordinary files remain byte-exact, active "
+                "SQLite databases are captured with the SQLite Online Backup API, and oversized raw JSONL is segmented "
+                "into bounded exact transport members. Per-file SHA-256 is rechecked against ZIP members; split mode cuts "
+                "one logical ZIP into binary transport parts. MEMORY is data only, never grants execution capability, "
+                "and is attached to a separately verified SYSTEM through the canonical memory-attach pipeline."
             )
         ),
     }
+    if plan.request.content.value == "memory":
+        payload.update(
+            {
+                "memory_manifest_schema": MEMORY_MANIFEST_SCHEMA_V3,
+                "memory_format_version": MEMORY_FORMAT_VERSION_V3,
+                "memory_transport_contract": "jazn_memory_package_transport/v1",
+                "cloud_attach_compatible": True,
+            }
+        )
+    return payload
 
 
 def write_manifest(path: Path, payload: dict[str, Any]) -> Path:

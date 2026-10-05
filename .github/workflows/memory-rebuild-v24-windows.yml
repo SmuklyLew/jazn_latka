@@ -69,6 +69,7 @@ jobs:
           tests/test_memory_rebuild_v24_unified.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
+          tests/test_memory_rebuild_v24_studio_reconstruction.py
 
       - name: Run Memory Rebuild v2.4 tests
         shell: pwsh
@@ -78,6 +79,7 @@ jobs:
           tests/test_memory_rebuild_v24_unified.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
+          tests/test_memory_rebuild_v24_studio_reconstruction.py
 
       - name: Clean checkout guard
         if: always()

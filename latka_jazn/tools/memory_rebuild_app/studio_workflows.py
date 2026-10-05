@@ -578,6 +578,173 @@ class StudioWorkflows:
                     ),
                 )
 
+    def affect_hub(self) -> None:
+        store = UnifiedMemoryDatabase(self.state.database)
+        if not self.state.database.is_file():
+            self.dialogs.message(
+                "ŚLADY AFEKTYWNE / EMOCJE",
+                "Baza nie istnieje. Najpierw utwórz lub wybierz memory_jazn.sqlite3.",
+            )
+            return
+
+        while True:
+            with store.connect(read_only=True) as con:
+                tables = {
+                    str(row[0])
+                    for row in con.execute(
+                        "SELECT name FROM sqlite_master "
+                        "WHERE type IN ('table','view')"
+                    )
+                }
+                if "memory_l0_affect_claims_current" not in tables:
+                    self.dialogs.message(
+                        "ŚLADY AFEKTYWNE / EMOCJE",
+                        (
+                            "Baza nie ma indeksu memory_l0_affect_claims_current.\n"
+                            "Uruchom migrację/odbudowę przez aktualne Studio.\n\n"
+                            "Granica: ten widok pokazuje deklaracje i zapisy źródłowe, "
+                            "a nie biologiczne stany emocjonalne."
+                        ),
+                    )
+                    return
+
+                total = int(con.execute(
+                    "SELECT COUNT(*) FROM memory_l0_affect_claims_current"
+                ).fetchone()[0])
+                distinct_labels = int(con.execute(
+                    "SELECT COUNT(DISTINCT normalized_label) "
+                    "FROM memory_l0_affect_claims_current"
+                ).fetchone()[0])
+                source_rows = con.execute(
+                    "SELECT source_kind,COUNT(*) AS n "
+                    "FROM memory_l0_affect_claims_current "
+                    "GROUP BY source_kind ORDER BY n DESC,source_kind"
+                ).fetchall()
+                top_rows = con.execute(
+                    "SELECT normalized_label,MIN(label) AS label,COUNT(*) AS n "
+                    "FROM memory_l0_affect_claims_current "
+                    "GROUP BY normalized_label ORDER BY n DESC,normalized_label "
+                    "LIMIT 20"
+                ).fetchall()
+
+            summary = (
+                f"Baza: {self.state.database}\n"
+                f"Jawne ślady afektywne: {total}\n"
+                f"Różne etykiety: {distinct_labels}\n"
+                "Granica: source-claimed affect / zapis źródłowy; "
+                "nie biologiczny stan emocjonalny.\n"
+                "Widok jest tylko do odczytu i niczego nie promuje do L1/L2/L3."
+            )
+            action = self.dialogs.choice(
+                "ŚLADY AFEKTYWNE / EMOCJE",
+                summary,
+                [
+                    ("summary", "Podsumowanie źródeł i najczęstszych etykiet"),
+                    ("list", "Lista najnowszych śladów"),
+                    ("search", "Szukaj po etykiecie emocji"),
+                    ("back", "Wróć"),
+                ],
+                default="summary",
+            )
+            if action in {None, "back"}:
+                return
+
+            if action == "summary":
+                payload = {
+                    "database": str(self.state.database),
+                    "claim_count": total,
+                    "distinct_label_count": distinct_labels,
+                    "claims_by_source_kind": {
+                        str(row["source_kind"]): int(row["n"])
+                        for row in source_rows
+                    },
+                    "top_labels": [
+                        {
+                            "label": str(row["label"]),
+                            "normalized_label": str(row["normalized_label"]),
+                            "count": int(row["n"]),
+                        }
+                        for row in top_rows
+                    ],
+                    "truth_boundary": (
+                        "source_claimed_affect_not_biological_state"
+                    ),
+                    "read_only": True,
+                    "automatic_promotion": False,
+                }
+                self.dialogs.message(
+                    "PODSUMOWANIE ŚLADÓW AFEKTYWNYCH",
+                    _json_text(payload),
+                )
+                continue
+
+            query = ""
+            if action == "search":
+                raw = self.dialogs.input(
+                    "SZUKAJ EMOCJI",
+                    "Etykieta lub jej fragment:",
+                    "",
+                )
+                if not raw or not raw.strip():
+                    continue
+                query = " ".join(raw.casefold().split())
+
+            with store.connect(read_only=True) as con:
+                params: list[Any] = []
+                where = ""
+                if query:
+                    where = "WHERE normalized_label LIKE ?"
+                    params.append(f"%{query}%")
+                params.append(300)
+                rows = con.execute(
+                    "SELECT claim_id,label,normalized_label,source_field,"
+                    "claim_kind,subject,boundary,source_kind,record_kind,"
+                    "title,content,event_time_start,role,provenance_json,"
+                    "source_name,source_sha256,adapter_id "
+                    "FROM memory_l0_affect_claims_current "
+                    f"{where} "
+                    "ORDER BY COALESCE(event_time_start,'') DESC,"
+                    "normalized_label,title LIMIT ?",
+                    params,
+                ).fetchall()
+
+            if not rows:
+                self.dialogs.message(
+                    "ŚLADY AFEKTYWNE / EMOCJE",
+                    "Brak pasujących jawnych claimów źródłowych.",
+                )
+                continue
+            selected = self.dialogs.choice(
+                "LISTA ŚLADÓW AFEKTYWNYCH",
+                (
+                    "To są deklaracje/zapisy źródłowe z pełnym provenance. "
+                    "Nie są automatycznie traktowane jako biologiczne przeżycia."
+                ),
+                [
+                    (
+                        str(row["claim_id"]),
+                        (
+                            f"{str(row['event_time_start'] or '—')[:19]} | "
+                            f"{row['label']} | {row['source_kind']} | "
+                            f"{str(row['title'] or row['record_kind'])[:70]}"
+                        ),
+                    )
+                    for row in rows
+                ] + [("__back__", "Wróć")],
+                default=str(rows[0]["claim_id"]),
+            )
+            if selected in {None, "__back__"}:
+                continue
+            item = next(
+                (row for row in rows if str(row["claim_id"]) == str(selected)),
+                None,
+            )
+            if item is not None:
+                self.dialogs.message(
+                    "SZCZEGÓŁ ŚLADU AFEKTYWNEGO",
+                    _json_text(dict(item)),
+                )
+
     def recall_hub(self) -> None:
         report = probe_unified_memory_database(
             self.state.database,
