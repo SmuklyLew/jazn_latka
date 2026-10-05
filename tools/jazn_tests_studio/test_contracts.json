@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.106",
-  "active_definition_count": 1921,
+  "system_version": "16.3.25.5.107",
+  "active_definition_count": 1929,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6476,21 +6476,22 @@
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
       "name": "test_public_deployment_builds_canonical_control_plane_commands_without_secrets",
       "purpose": "Public deployment builds canonical control plane commands without secrets",
-      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 11,
+      "assertion_count": 13,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 64
     },
     "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_rejects_non_loopback_daemon_and_non_https_resource": {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
@@ -6508,16 +6509,17 @@
         "DeploymentError"
       ],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 89
     },
-    "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_requires_oauth_credentials_and_allowed_hosts": {
+    "tests/test_chatgpt_public_mcp_deployment.py::test_public_deployment_requires_oauth_credentials_allowed_hosts_and_valid_supervisor_flag": {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
-      "name": "test_public_deployment_requires_oauth_credentials_and_allowed_hosts",
-      "purpose": "Public deployment requires oauth credentials and allowed hosts",
+      "name": "test_public_deployment_requires_oauth_credentials_allowed_hosts_and_valid_supervisor_flag",
+      "purpose": "Public deployment requires oauth credentials allowed hosts and valid supervisor flag",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -6531,38 +6533,83 @@
         "DeploymentError"
       ],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 103
     },
-    "tests/test_chatgpt_public_mcp_deployment.py::test_activation_requires_live_daemon_status_after_canonical_start": {
+    "tests/test_chatgpt_public_mcp_deployment.py::test_activation_requires_full_conversation_ready_status_and_exact_runtime_version": {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
-      "name": "test_activation_requires_live_daemon_status_after_canonical_start",
-      "purpose": "Activation requires live daemon status after canonical start",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_activation_requires_full_conversation_ready_status_and_exact_runtime_version",
+      "purpose": "Activation requires full conversation ready status and exact runtime version",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
+      "tags": [
+        "mcp",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_supervisor_is_reused_or_started_fail_closed": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_supervisor_is_reused_or_started_fail_closed",
+      "purpose": "Supervisor is reused or started fail closed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [
-        "DeploymentError"
-      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 159
     },
-    "tests/test_chatgpt_public_mcp_deployment.py::test_container_entrypoint_execs_gateway_only_after_runtime_is_ready": {
+    "tests/test_chatgpt_public_mcp_deployment.py::test_external_supervision_must_be_explicit": {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
-      "name": "test_container_entrypoint_execs_gateway_only_after_runtime_is_ready",
-      "purpose": "Container entrypoint execs gateway only after runtime is ready",
+      "name": "test_external_supervision_must_be_explicit",
+      "purpose": "External supervision must be explicit",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 200
+    },
+    "tests/test_chatgpt_public_mcp_deployment.py::test_container_entrypoint_execs_gateway_only_after_runtime_and_supervisor_ready": {
+      "path": "tests/test_chatgpt_public_mcp_deployment.py",
+      "name": "test_container_entrypoint_execs_gateway_only_after_runtime_and_supervisor_ready",
+      "purpose": "Container entrypoint execs gateway only after runtime and supervisor ready",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
@@ -6574,11 +6621,12 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 209
     },
     "tests/test_chatgpt_public_mcp_deployment.py::test_container_contract_is_non_root_and_never_exposes_private_daemon_port": {
       "path": "tests/test_chatgpt_public_mcp_deployment.py",
@@ -6594,11 +6642,12 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.mcp.deployment"
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 148
+      "line": 236
     },
     "tests/test_chatgpt_recovery_integrity.py::test_runtime_preflight_rejects_file_hash_mismatch_in_package_manifest": {
       "path": "tests/test_chatgpt_recovery_integrity.py",
@@ -41662,6 +41711,123 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_v163255107_memory_manifest_producer_gate.py::test_native_v3_generator_staging_is_exact_set_verified": {
+      "path": "tests/test_v163255107_memory_manifest_producer_gate.py",
+      "name": "test_native_v3_generator_staging_is_exact_set_verified",
+      "purpose": "Native v3 generator staging is exact set verified",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_v163255107_memory_manifest_producer_gate.py::test_generator_refuses_to_continue_when_exact_set_verification_fails": {
+      "path": "tests/test_v163255107_memory_manifest_producer_gate.py",
+      "name": "test_generator_refuses_to_continue_when_exact_set_verification_fails",
+      "purpose": "Generator refuses to continue when exact set verification fails",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "PackIntegrityError"
+      ],
+      "targets": [
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_v163255107_memory_manifest_producer_gate.py::test_memory_attachment_contract_requires_producer_exact_set_gate": {
+      "path": "tests/test_v163255107_memory_manifest_producer_gate.py",
+      "name": "test_memory_attachment_contract_requires_producer_exact_set_gate",
+      "purpose": "Memory attachment contract requires producer exact set gate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.packaging.memory_package_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_v163255107_persistent_remote_runtime_operations.py::test_v107_deployment_contract_tracks_runtime_and_real_mcp_wire_names": {
+      "path": "tests/test_v163255107_persistent_remote_runtime_operations.py",
+      "name": "test_v107_deployment_contract_tracks_runtime_and_real_mcp_wire_names",
+      "purpose": "V107 deployment contract tracks runtime and real mcp wire names",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_v163255107_persistent_remote_runtime_operations.py::test_v107_deployment_contract_requires_strict_readiness_and_supervision": {
+      "path": "tests/test_v163255107_persistent_remote_runtime_operations.py",
+      "name": "test_v107_deployment_contract_requires_strict_readiness_and_supervision",
+      "purpose": "V107 deployment contract requires strict readiness and supervision",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_v163255107_persistent_remote_runtime_operations.py::test_v107_deployment_examples_keep_secrets_and_daemon_private": {
+      "path": "tests/test_v163255107_persistent_remote_runtime_operations.py",
+      "name": "test_v107_deployment_examples_keep_secrets_and_daemon_private",
+      "purpose": "V107 deployment examples keep secrets and daemon private",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
