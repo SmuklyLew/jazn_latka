@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import errno
 import hashlib
+import inspect
 import json
 import uuid
 import zipfile
@@ -12,10 +13,14 @@ import zipfile
 import pytest
 
 from latka_jazn.packaging.generator_v2_compat import normalize_generator_v2_compat
+from latka_jazn.bootstrap import chatgpt_recovery
 from latka_jazn.packaging.memory_package_manifest import verify_memory_package_manifest
 from latka_jazn.packaging.memory_package_types import MEMORY_RUNTIME_COMPATIBILITY_CONTRACT
 from latka_jazn.packaging import memory_package_attach as attach_module
 from latka_jazn.packaging import memory_streaming_transport as streaming
+from tools.jazn_pack_generator_app.constants import SYSTEM_BOOTSTRAP_REQUIRED_FILES
+from tools.jazn_pack_generator_app.manifest import build_memory_attachment_contract
+from tools.jazn_pack_generator_app.models import ContentMode, PackPlan, PackRequest, SourceEntry
 
 
 def _entry(path: str, payload: bytes, *, classification: str = "memory_file") -> dict[str, object]:
@@ -352,3 +357,56 @@ def test_atomic_install_refuses_cross_filesystem_copy_fallback(
 
     assert source_memory.is_dir()
     assert not target.exists()
+
+
+def _system_pack_plan(tmp_path: Path) -> PackPlan:
+    source_root = tmp_path / "system-source"
+    source_root.mkdir(exist_ok=True)
+    entries = tuple(
+        SourceEntry(
+            source=source_root / name,
+            archive_path=name,
+            size_bytes=1,
+            is_dir=False,
+        )
+        for name in SYSTEM_BOOTSTRAP_REQUIRED_FILES
+    )
+    return PackPlan(
+        request=PackRequest(
+            source_root=source_root,
+            output_root=tmp_path / "out",
+            content=ContentMode.SYSTEM,
+        ),
+        package_version="16.3.25.5.105-test",
+        package_basename="test.zip",
+        entries=entries,
+        excluded=(),
+        source_total_size_bytes=len(entries),
+    )
+
+
+def test_generator_contract_declares_low_amplification_runtime_attach(
+    tmp_path: Path,
+) -> None:
+    contract = build_memory_attachment_contract(_system_pack_plan(tmp_path))
+
+    assert contract["runtime_attach_transport_strategy"] == (
+        "verified_streaming_single_candidate"
+    )
+    assert contract["runtime_attach_transport_copy_required"] is False
+    assert contract["runtime_attach_joined_zip_required"] is False
+    assert contract["runtime_attach_repack_required"] is False
+    assert contract["runtime_attach_staging_same_filesystem_required"] is True
+    assert contract["runtime_attach_cross_filesystem_copy_fallback"] is False
+    assert contract["runtime_attach_disk_preflight_required"] is True
+    assert contract["runtime_attach_v3_raw_segments_stream_to_logical_source"] is True
+    assert contract["legacy_transport_repack_supported"] is True
+
+
+def test_runtime_converge_source_does_not_reintroduce_transport_repack_or_compat_copy() -> None:
+    source = inspect.getsource(chatgpt_recovery._auto_attach_memory_before_daemon)
+
+    assert "repack_legacy_memory_package(" not in source
+    assert "materialize_generator_v2_compat(" not in source
+    assert "normalize_generator_v2_compat(" in source
+    assert "runtime_repack_performed" in source
