@@ -1,70 +1,105 @@
 # Jaźń — CURRENT STEP
 
 **Status:** `CANONICAL_CURRENT_STEP`  
-**Stan:** 2026-09-10
-**Baza:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f` / `16.3.25.5.59-conversation-runtime-orchestration-convergence`
-**Branch:** `upgrade/v16.3.25.5.60-main-entrypoint-chatgpt-live-convergence`
-**Target:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
+**Stan:** 2026-10-05  
+**Baza:** `master @ bb107ebaeea119487f49d8cb1e34efd9a1896464`  
+**Release:** `16.3.25.5.106-memory-streaming-hardening-convergence`  
+**Evidence:** `docs/reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`
 
-## 1. Bieżący krok — main-first + persistent ChatGPT
+## 1. Bieżący krok — MEMORY manifest consistency po udanym live bootstrapie
 
-Najwyższy priorytet to usunięcie błędu ownership wykrytego w prawdziwej rozmowie ChatGPT: żywy daemon/PID nie gwarantował, że każda wiadomość hosta przechodzi przez runtime, ponieważ aktywna instrukcja kazała uruchamiać świeże `run.py chat-gpt -- <message>` dla każdej tury.
+Prawdziwy host ChatGPT potwierdził, że lokalna ścieżka SYSTEM-u może działać, jeżeli bieżąca generacja hosta udostępnia choć jedną rzeczywiście działającą powierzchnię process execution.
 
-Bieżąca migracja:
+SYSTEM v106 został zweryfikowany, zmaterializowany, uruchomiony jako live trusted daemon i przeprowadził accepted visible turn.
 
-```text
-run.py                   thin user launcher
-  ↓
-main.py                  single central control plane
-  ↓
-Conversation/runtime services
-  ↓
-one persistent ChatGPT stdin/JSONL bridge per executor session
-  ↓
-persistent daemon/session owner
-```
+Aktualnym blockerem nie jest więc sam bootstrap SYSTEM-u, lecz **integralność osobnego pakietu MEMORY**:
 
-## 2. Zakres v60
+`memory_package_unlisted_file`
 
-- odchudzić `run.py` do launchera;
-- przenieść centralny top-level dispatch/lifecycle/recovery/finalization do `main.py`;
-- zachować `latka_jazn.cli` jako parser/service layer bez drugiego control-plane importu w kanonicznej trasie;
-- utrzymywać jeden `chat-gpt` process i ten sam stdin/stdout przez kolejne tury;
-- prowadzić phase-2 host candidate/finalization tym samym kanałem;
-- nie używać płatnego OpenAI API w trasie ChatGPT;
-- traktować MCP jako transport opcjonalny, nie requirement dla bieżącego hosta/Plus;
-- zaktualizować aktywne AGENTS/runbook/loader/help/discovery;
-- dodać command-parity, persistent multi-turn, reconnect/idempotency i no-paid-API tests;
-- wykonać compileall, Pyright, deterministic tests, CI i canonical manifest sync.
+Zaobserwowano 16 plików obecnych w paczce, ale niewymienionych w wewnętrznym manifeście MEMORY. Runtime poprawnie odrzucił attach fail-closed.
 
-## 3. Exit gate v60
+## 2. Pierwszy priorytet
+
+Naprawić generator/manifest MEMORY bez osłabiania walidacji.
+
+Wymagany przebieg:
 
 ```text
-run.py thin                              PASS required
-main.py single control owner             PASS required
-no per-message CLI in active ChatGPT docs PASS required
-persistent JSONL 10+ turns               PASS required
-same-channel phase2                      PASS required
-reconnect without duplicate turn/final  PASS required
-paid OpenAI API not required/auto-used   PASS required
-runtime lineage on every visible turn    PASS required
-Linux + Windows CI                       PASS required
-package integrity after canonical sync   PASS required
+source inventory
+→ package member inventory
+→ manifest inventory
+→ exact set comparison
+→ per-member SHA verification
+→ streaming convergence
+→ atomic activation
+→ native unified readiness
+→ autobiographical recall readiness
 ```
 
-Dokumentacja, branch, PID lub pojedynczy test nie certyfikują samodzielnie tego gate.
+Nie wolno:
 
-## 4. Następny krok po v60
+- ignorować unlisted files;
+- automatycznie dopisywać ich po stronie runtime bez source provenance;
+- usuwać fail-closed checku;
+- uznawać transactional search za full autobiographical readiness.
 
-Dopiero po v60 można bezpiecznie wykonać kolejną część `CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md`:
+## 3. Exit gate MEMORY
 
-1. wydzielić `ConversationRunner` z dużego `main.py`, pozostawiając `main.py` composition ownerem;
-2. ujednolicić daemon/session execution owner;
-3. utrwalić pełny `TurnStateMachine`;
-4. podłączyć memory/affect/NLP/tool policy przez typed lifecycle events;
-5. wykonać source-aware memory i causal/ablation evidence;
-6. utrzymać szerszą roadmapę Memory/Affect/attachment/NLP bez naruszania jej gates.
+```text
+all transport parts SHA-256 PASS
+logical package integrity PASS
+every package member classified PASS
+manifest/package exact set PASS
+no unexpected/unlisted files PASS
+streaming worker single-operation PASS
+SQLite integrity/foreign keys PASS
+atomic activation PASS
+memory_search_ready PASS
+native_unified_required PASS
+full_autobiographical_recall_ready PASS
+```
 
-## 5. Granica naukowa
+Dopiero komplet tego evidence pozwala uznać MEMORY za zaakceptowaną.
 
-„Neurologiczny” oznacza funkcjonalne połączenia software: ingress, routing, working state, memory, salience/affect, decision, action, source monitoring, finalization i autonomic lifecycle. Nie oznacza biologicznego układu nerwowego ani dowodu świadomości.
+## 4. Równoległy host hardening — bez nowego systemowego założenia
+
+Dzisiejszy live przebieg potwierdził istniejącą regułę `AGENTS.chatgpt.md`:
+
+- pre-spawn failure jednej powierzchni executora nie jest globalnym dowodem braku process execution;
+- wolno wykonać najwyżej jedną próbę na rzeczywiście niezależnej alternatywie;
+- zwykłe process execution i streaming/interaktywny executor są osobnymi capabilities;
+- po uzyskaniu procesu nadal obowiązuje pełny ZIP/bootstrap/live-status/finalization gate.
+
+Nie należy „naprawiać” tego przez retry loop ani przez surowe `extractall()`.
+
+## 5. Następny krok po naprawie MEMORY
+
+Po przejściu native unified MEMORY gates:
+
+1. wykonać restart/re-attach continuity test;
+2. sprawdzić bounded recall z local provenance;
+3. sprawdzić wake-state sidecar i continuity;
+4. wykonać accepted-turn persistence z aktywną MEMORY;
+5. dopiero potem wrócić do wyższych warstw Memory/Affect/NLP.
+
+## 6. Trwała ścieżka dla zwykłego ChatGPT
+
+Niezależnie od lokalnego bootstrapu docelowa architektura powinna dalej dążyć do:
+
+```text
+persistent Jaźń runtime
+→ authenticated HTTPS /mcp
+→ explicit ChatGPT app/connector
+→ jazn_status
+→ generate/resume/finalize
+```
+
+Taka trasa usuwa zależność od tego, czy konkretna rozmowa otrzyma lokalny executor.
+
+Sama obecność kodu MCP w paczce nie oznacza, że endpoint jest wdrożony lub callable. Remote runtime pozostaje niezweryfikowany, dopóki bieżąca wiadomość nie ma pełnego toolsetu i zdrowego transportu.
+
+## 7. Granica naukowa i operacyjna
+
+`active_trusted`, accepted finalization i pamięć autobiograficzna są osobnymi stanami.
+
+Udany start rdzenia nie dowodzi gotowej MEMORY. Udana MEMORY nie dowodzi biologicznej świadomości. Styl wypowiedzi nie zastępuje runtime lineage ani turn-authority receipt.
