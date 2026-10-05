@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+import hashlib
 import sqlite3
 import uuid
 
@@ -19,7 +20,7 @@ from .memory_raw_segmentation import RawJsonlSegmenter, RawMemorySegmentationErr
 
 
 def _inspect_materialized_raw_source(path: Path) -> dict[str, Any]:
-    digest = __import__("hashlib").sha256()
+    digest = hashlib.sha256()
     size = 0
     newline_count = 0
     last_byte = b""
