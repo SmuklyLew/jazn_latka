@@ -63,6 +63,14 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "auto_attach_entrypoint": "run.py runtime-bootstrap",
         "post_attach_restart_required": True,
         "legacy_transport_repack_supported": True,
+        "runtime_attach_transport_strategy": "verified_streaming_single_candidate",
+        "runtime_attach_transport_copy_required": False,
+        "runtime_attach_joined_zip_required": False,
+        "runtime_attach_repack_required": False,
+        "runtime_attach_staging_same_filesystem_required": True,
+        "runtime_attach_cross_filesystem_copy_fallback": False,
+        "runtime_attach_disk_preflight_required": True,
+        "runtime_attach_v3_raw_segments_stream_to_logical_source": True,
         "bootstrap_contract_member": (
             MEMORY_ATTACHMENT_CONTRACT_MEMBER if carries_system else None
         ),
