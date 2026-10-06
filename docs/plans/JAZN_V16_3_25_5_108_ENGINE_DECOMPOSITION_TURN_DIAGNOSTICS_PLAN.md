@@ -1,6 +1,6 @@
 # Jaźń v16.3.25.5.108 → v16.3.25.5.111 — pełny plan dekompozycji JaznEngine, diagnostyki tras i kanonicznego ConversationRunner
 
-**Status:** `PROPOSED_IMPLEMENTATION_PROGRAM`  
+**Status:** `IMPLEMENTATION_IN_PROGRESS`  
 **Data:** 2026-10-06  
 **Baseline repo:** `SmuklyLew/jazn_latka`  
 **Baseline:** `master @ 712a25db94c634ea47fbf265c0d907608a668f00`  
@@ -577,6 +577,27 @@ Transport retry/poll nie zwiększa attempt, jeśli backend nie rozpoczął noweg
 wykonania.
 
 ---
+
+# 7.4 Current v108 implementation evidence
+
+Implementation branch:
+`upgrade/v16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`.
+
+Current candidate includes:
+
+- canonical turn-root `TurnDiagnosticTrace` owned by `TurnExecutionContext`;
+- typed fallback/failure taxonomy and fallback history;
+- explicit unresolved-handler and handler-exception fallback evidence;
+- `BlindRouteDetector`;
+- static `RouteGraphAudit` plus operator/CI command;
+- `EngineServices` extraction seams without ownership transfer;
+- route/handler/validation/repair/finalization/persistence diagnostic events;
+- privacy-bounded diagnostics;
+- v108 characterization and failure-injection regressions;
+- explicit release-hardening and cross-platform persistent-runtime CI gates.
+
+This is implementation evidence, not a PASS declaration. Merge readiness requires
+the same final PR HEAD to pass the gates listed below.
 
 # 8. v108 — Diagnostic Spine + No-Silent-Fallback + Extraction Seams
 
