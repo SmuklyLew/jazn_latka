@@ -119,4 +119,5 @@ def test_cancel_records_typed_failure_without_raw_reason_leak(tmp_path: Path) ->
         item for item in diagnostic["events"] if item["event_type"] == "failure"
     ]
     assert failure_events
-    assert failure_events[-1]["attributes"]["cancellation_reason"] == "private cancellation details"
+    assert failure_events[-1]["attributes"]["cancellation_reason_present"] is True
+    assert "private cancellation details" not in str(diagnostic)
