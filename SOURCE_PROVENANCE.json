@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e0a0663eec433cc9df685011bba14e69f4b959b1",
-    "base_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+    "base_commit": "64bf2282ff10736f07fa8873d27c27097bb4dd37",
+    "base_version": "16.3.25.5.113-remote-only-chatgpt-ingress-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "64bf2282ff10736f07fa8873d27c27097bb4dd37",
