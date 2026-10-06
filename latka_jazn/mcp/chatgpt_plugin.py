@@ -75,8 +75,9 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
             "capabilities": ["Read", "Write"],
             "websiteURL": REPOSITORY_URL,
             "defaultPrompt": [
-                "Verify Jaźń runtime readiness and required turn tools for this message.",
+                "Verify Jaźń runtime readiness and required turn tools for this message; require the complete current-message toolset.",
                 "Route this message through Jaźń using the validated turn/finalization contract.",
+                "If the required Jaźń tools are missing or stale, fail closed and refresh/recreate the app; never fall back to a local ChatGPT executor.",
             ],
             "brandColor": "#5B4B8A",
         }

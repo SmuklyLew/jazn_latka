@@ -13,7 +13,7 @@
   "chatgpt_transport_selection": "capability_negotiated",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
   "per_message_cli_required": false,
-  "purpose": "Aktywny kontrakt startowy Jaźni. Instrukcja Projektu ChatGPT wykonuje wyłącznie bootstrap do AGENTS.md, a AGENTS.md kieruje host ChatGPT do kanonicznego AGENTS.chatgpt.md.",
+  "purpose": "Aktywny kontrakt startowy Jaźni. Zwykła wiadomość ChatGPT używa wyłącznie zweryfikowanej bieżącej aplikacji/MCP do persistent runtime; lokalny executor i ZIP bootstrap są dostępne tylko w jawnym operator_recovery.",
   "schema_version": "startup_contract/v1",
   "startup_commands": [
     "python -X utf8 run.py status --json",
@@ -21,8 +21,8 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API. Dla zdalnej trasy sama instalacja/wybór aplikacji nie wystarcza: bieżąca wiadomość musi faktycznie wystawiać pełny zestaw narzędzi Jaźni, a nazwa planu ChatGPT nie jest predykatem runtime.",
-  "version": "16.3.25.5.112",
+  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem remote-only. Dla zwykłej wiadomości brak kompletnej bieżącej ekspozycji jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply kończy się fail-closed i nie uruchamia lokalnego executora, ZIP bootstrapu ani automatycznego handoffu. Remote route wymaga świeżego statusu, właściwego persistent runtime i bieżącego tool exposure. Zmiana/frozen snapshot aplikacji wymaga Refresh/Recreate/republish po stronie ChatGPT. Lokalny run.py/main.py pozostaje kanonicznym control plane wyłącznie w jawnym operator_recovery. Widoczna odpowiedź Jaźni nadal wymaga zaakceptowanego display_exact po finalizacji.",
+  "version": "16.3.25.5.113",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only",
   "chatgpt_fresh_conversation_reverification_required": true,
@@ -34,5 +34,19 @@
     "jazn_resume_visible_reply",
     "jazn_finalize_reply"
   ],
-  "chatgpt_plan_name_is_runtime_predicate": false
+  "chatgpt_plan_name_is_runtime_predicate": false,
+  "chatgpt_ingress_mode": "remote_only",
+  "chatgpt_local_executor_fallback_allowed": false,
+  "chatgpt_operator_recovery_mode": "operator_recovery",
+  "chatgpt_operator_recovery_requires_explicit_opt_in": true,
+  "chatgpt_remote_transports": [
+    "public_streamable_http",
+    "openai_secure_mcp_tunnel"
+  ],
+  "chatgpt_required_turn_tools_revision": "jazn_chatgpt_turn_toolset/v2",
+  "chatgpt_frozen_snapshot_refresh_required_on_tool_change": true,
+  "chatgpt_app_selection_is_message_scoped": true,
+  "chatgpt_ordinary_ingress_transport": "remote_mcp_app",
+  "chatgpt_ordinary_ingress_transport_selection": "current_message_capability_verified",
+  "chatgpt_ordinary_ingress_fallback_transport": "none_fail_closed"
 }

@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from latka_jazn.bootstrap.chatgpt_ingress_policy import (
+    ChatGptIngressMode,
+    normalize_chatgpt_ingress_mode,
+)
 from latka_jazn.bootstrap.chatgpt_host_preflight_types import HostPackageMaterializationState
 from latka_jazn.core.chatgpt_host_capability_snapshot import HostCapabilitySnapshot
 from latka_jazn.core.chatgpt_host_executor_enums import (
@@ -28,7 +32,9 @@ def resolve_preflight_route(
     *,
     package_state: HostPackageMaterializationState,
     package_required: bool,
+    ingress_mode: ChatGptIngressMode | str = ChatGptIngressMode.OPERATOR_RECOVERY,
 ) -> PreflightRouteDecision:
+    mode = normalize_chatgpt_ingress_mode(ingress_mode)
     execution_usable = capability.environment_state in {
         HostEnvironmentState.AVAILABLE,
         HostEnvironmentState.DEGRADED,
@@ -41,12 +47,30 @@ def resolve_preflight_route(
         HostPackageMaterializationState.INVALID,
     }
 
+    if capability.execution_route is HostExecutionRoute.REMOTE_RUNTIME:
+        return PreflightRouteDecision(
+            False,
+            True,
+            False,
+            HostRecoveryAction.USE_REMOTE_RUNTIME_TRANSPORT,
+            HostExecutionRoute.REMOTE_RUNTIME,
+            capability.reason_code,
+            None,
+        )
+    if mode is ChatGptIngressMode.REMOTE_ONLY:
+        return PreflightRouteDecision(
+            False,
+            False,
+            False,
+            HostRecoveryAction.STOP_LOCAL_BOOTSTRAP,
+            HostExecutionRoute.NONE,
+            "chatgpt_remote_only_requires_verified_runtime",
+            None,
+        )
     if capability.next_action is HostRecoveryAction.PROBE_ALTERNATIVE_ONCE:
         return PreflightRouteDecision(False, False, False, capability.next_action, capability.execution_route, capability.reason_code, None)
     if capability.next_action is HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND:
         return PreflightRouteDecision(False, False, False, capability.next_action, HostExecutionRoute.LOCAL_EXECUTOR, "executor_command_requires_diagnosis", None)
-    if capability.execution_route is HostExecutionRoute.REMOTE_RUNTIME:
-        return PreflightRouteDecision(False, True, False, capability.next_action, capability.execution_route, capability.reason_code, None)
     if capability.execution_route is HostExecutionRoute.HOST_HANDOFF:
         return PreflightRouteDecision(
             False,

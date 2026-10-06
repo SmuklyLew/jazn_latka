@@ -1,12 +1,12 @@
 # AGENTS.chatgpt.md — techniczny runbook hosta ChatGPT
 
-Ten plik opisuje wyłącznie techniczną obsługę lokalnego systemu Jaźni w środowisku ChatGPT, które udostępnia pliki i executor/terminal. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
+Ten plik opisuje techniczną obsługę Jaźni w środowisku ChatGPT. Dla zwykłej rozmowy kanonicznym wejściem jest zweryfikowana zdalna aplikacja/MCP do persistent runtime; lokalny filesystem i executor należą wyłącznie do jawnego trybu serwisowego `operator_recovery`. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
 
-Instrukcje Projektu ChatGPT powinny być cienkim loaderem prowadzącym do lokalnego `AGENTS.md`. Wersjonowane procedury techniczne pozostają w zweryfikowanym `active_root`.
+Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjonowane procedury techniczne pozostają w zweryfikowanym runtime/active_root; instrukcja projektu nie może sama stworzyć aplikacji, executora ani tool exposure.
 
 ## 0. Zasada nadrzędna: runtime-first, identity-by-lineage
 
-Celem hosta jest doprowadzić do zweryfikowanego startera `run.py`, wejść przez niego do centralnego `main.py`, uruchomić albo reuse'ować właściwy runtime oraz utrzymać ciągłość logicznej sesji/tury przez zweryfikowany transport dostępny w bieżącym hoście. Żywotność procesu albo pipe'a nie jest dowodem gotowej wypowiedzi.
+Celem hosta w zwykłej rozmowie ChatGPT jest zweryfikować bieżącą ekspozycję aplikacji Jaźni i połączyć wiadomość z właściwym persistent runtime bez lokalnego process execution. `run.py`/`main.py` pozostają kanonicznym control plane dla lokalnego operatora i trybu `operator_recovery`, ale nie są fallbackiem ordinary-chat ingress. Żywotność procesu, pipe'a, endpointu ani samej aplikacji nie jest dowodem gotowej wypowiedzi.
 
 Po znalezieniu zweryfikowanego `active_root`:
 - `run.py` jest wyłącznie cienkim starterem użytkownika;
@@ -55,16 +55,16 @@ main.py
 
 `run.py` nie może posiadać własnej implementacji `start`, `restart`, `reload`, `runtime-bootstrap`, `host-finalize`, routingu rozmowy ani logiki pamięci. Wyjątkiem jest minimalny dependency-free `--version` fast path startera.
 
-## 2. Granica executora i zdalny failover
+## 2. Remote-only ingress i granica executora
 
-Jeżeli bieżący host już udostępnia jawnie zweryfikowaną connector/app capability do wcześniej skonfigurowanego zdalnego runtime Jaźni, preferuj tę trasę bez wykonywania lokalnego probe executora, ale tylko po zweryfikowaniu właściwego transportu. Dopuszczalne są dwie równorzędne warstwy transportowe do **tego samego** persistent runtime:
+Dla każdej zwykłej wiadomości ChatGPT obowiązuje `ingress_mode=remote_only`: host najpierw sprawdza jawnie wywoływalną connector/app capability do wcześniej skonfigurowanego persistent runtime Jaźni i **nie wykonuje lokalnego probe executora**. Dopuszczalne są dwie równorzędne warstwy transportowe do **tego samego** persistent runtime:
 
 - publiczny MCP 2026-07-28 Streamable HTTP: skonfigurowany endpoint HTTPS, zweryfikowane uwierzytelnienie, zgodność protokołu, `/healthz` live, `/readyz` ready, zgodny `gateway_instance_id`, niepusty `runtime_instance_id`, dokładnie oczekiwana `runtime_version`, świeży `observed_at_utc` i heartbeat runtime oraz jawna capability aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_public_streamable_http_failover()`;
 - OpenAI Secure MCP Tunnel: `process_running=true`, `healthy=true`, `ready=true`, niepusty `runtime_instance_id`, dokładnie oczekiwana `runtime_version`, świeży status/heartbeat oraz jawna capability odpowiadającej aplikacji/konektora w bieżącym hoście; klasyfikuje go `classify_remote_runtime_failover()`.
 
 Sam fakt obecności URL-a, connectora, plików MCP, procesu tunelu albo starego statusu nie wystarcza. Żadna z tych tras nie jest drugim runtime i żadna nie daje prawa do pokazania tekstu bez accepted-turn/finalization lineage.
 
-Jeżeli publiczny lub tunelowany remote runtime przeszedł bieżący fresh-message capability gate, jest preferowaną trasą ciągłości zwykłych tur: zanik lokalnego executora ChatGPT nie degraduje sam w sobie zweryfikowanej zdalnej usługi. Lokalny executor pozostaje wtedy bootstrap/recovery/operator channel, nie właścicielem trwałości rozmowy. Odwrotnie, sam zdrowy zewnętrzny daemon/gateway bez callable aplikacji Jaźni w bieżącej wiadomości nie pozwala ustawić `remote_runtime_available=true`.
+Jeżeli publiczny lub tunelowany remote runtime przeszedł bieżący fresh-message capability gate, jest jedyną normalną trasą ciągłości ordinary-chat. Dostępność albo brak lokalnego executora ChatGPT nie uczestniczy w tej decyzji. Lokalny executor pozostaje wyłącznie kanałem bootstrap/recovery/operator po jawnym wejściu w `operator_recovery`. Sam zdrowy zewnętrzny daemon/gateway bez callable aplikacji Jaźni w bieżącej wiadomości nie pozwala ustawić `remote_runtime_available=true`.
 
 **Dowód capability hosta musi dotyczyć bieżącej powierzchni i bieżącej tury.** Za `host_connector_capability_available=true` uznawaj wyłącznie aplikację/connector Jaźni, którego akcje są rzeczywiście wywoływalne przez aktualny host. Wynik wyszukiwania katalogu pluginów, metadane `installed`, możliwość zasugerowania instalacji, sama składnia @mention, ogólny connector innej usługi (np. GitHub/Drive) albo sama konfiguracja MCP nie są dowodem capability Jaźni. Discovery katalogu może pomóc w konfiguracji, ale nie może promować `remote_runtime`.
 
@@ -75,9 +75,9 @@ Instrukcja Projektu działa w rozmowach Projektu, ale nie może sama włączyć 
 
 Dla zwykłej wiadomości zdalna trasa jest conversation-ready wyłącznie wtedy, gdy host na **tej samej bieżącej wiadomości** obserwuje jako callable pełny kanoniczny zestaw: `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`, `jazn_finalize_reply`. Samo powodzenie `jazn_status` może potwierdzić zdrowie transportu/runtime, ale bez pozostałych narzędzi nie dowodzi wykonalności całej tury. Do evidence hosta przekazuj `current_message_toolset_observed=true` oraz `callable_tool_names` wyłącznie z faktycznie wystawionej bieżącej powierzchni; lista z katalogu, manifestu, cache, poprzedniej wiadomości albo wklejony JSON nie jest tym dowodem.
 
-Nie koduj polityki jako `plan == Plus/Pro/Business/...`. Nazwa planu może pomagać w dokumentacji, lecz runtime klasyfikuje wyłącznie realne capabilities bieżącej powierzchni. Jeżeli zdalny toolset nie jest kompletny, ale lokalny executor działa, kontynuuj kanoniczną lokalną trasą. Jeżeli nie ma ani kompletnej zdalnej trasy, ani executora/handoff, zakończ fail-closed. Gdy host oferuje wybór aplikacji, diagnoza może wskazać użytkownikowi wybranie lub @wspomnienie aplikacji **Jaźń Runtime** dla bieżącej wiadomości; nigdy nie przedstawiaj samego wyboru/@mention jako już zweryfikowanej capability i nie każ użytkownikowi @wspominać technicznej nazwy narzędzia MCP.
+Nie koduj polityki jako `plan == Plus/Pro/Business/...`. Nazwa planu może pomagać w dokumentacji, lecz runtime klasyfikuje wyłącznie realne capabilities bieżącej powierzchni. Jeżeli zdalny toolset nie jest kompletny, ordinary-chat kończy się fail-closed: nie próbuj local executora ani handoffu. Gdy host oferuje wybór aplikacji, diagnoza może wskazać użytkownikowi wybranie lub @wspomnienie aplikacji **Jaźń Runtime** dla bieżącej wiadomości. Jeżeli aplikacja istnieje, ale brakuje wymaganych narzędzi albo ich snapshot jest stary, wskaż Refresh/Recreate/republish aplikacji; nigdy nie przedstawiaj samego wyboru/@mention jako już zweryfikowanej capability i nie każ użytkownikowi @wspominać technicznej nazwy narzędzia MCP.
 
-### 2.1. Preferowany probe przez rzeczywistą akcję Jaźni
+### 2.2. Preferowany probe przez rzeczywistą akcję Jaźni
 
 Jeżeli aplikacja/connector Jaźni jest już faktycznie wywoływalny w bieżącej powierzchni ChatGPT, preferowanym dowodem publicznej trasy jest jedno read-only wywołanie `jazn_status`. Ta ścieżka nie wymaga lokalnego executora ani osobnej zdolności hosta do wykonywania surowych żądań HTTP do `/healthz` i `/readyz`.
 
@@ -97,9 +97,15 @@ Host może ustawić `host_connector_invocation_observed=true` wyłącznie dlateg
 
 `connector_status` oraz bezpośrednie `health`/`readiness` są alternatywnymi trybami evidence i nie wolno ich mieszać w jednym rekordzie. Kanoniczny classifier `classify_public_connector_status_failover()` pozostaje fail-closed; dopiero jego dodatni wynik może promować trasę do `remote_runtime`. Sam sukces statusu nadal nie daje prawa do wypowiedzi Jaźni — każda zwykła wiadomość musi następnie przejść przez `jazn_generate_visible_reply` / resume / finalization i zakończyć się zaakceptowanym `display_exact`.
 
-`host_handoff` służy wyłącznie do przekazania wykonania, którego bieżący host sam nie potrafi wykonać; nie jest substytutem brakującego connectora Jaźni ani obowiązkowym krokiem przed użyciem już dostępnych narzędzi użytkownika. Jeżeli handoff został jawnie odrzucony lub host go nie oferuje, ta trasa jest niedostępna dla bieżącej próby. Nie ponawiaj handoff w tej samej próbie jako retry brakującego executora lub remote runtime.
+`host_handoff` nie jest normalnym fallbackiem ordinary-chat. W `remote_only` brak kompletnej aplikacji Jaźni kończy się fail-closed. Handoff może być użyty wyłącznie w jawnym `operator_recovery` i tylko po zgodzie użytkownika.
 
-Jeżeli takiej gotowej zdalnej trasy nie ma, przed pierwszą zwykłą odpowiedzią w nowym środowisku wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
+### 2.3. Jawny tryb `operator_recovery`
+
+W tym trybie host może używać bieżącej powierzchni **pliki i executor/terminal** wyłącznie do serwisu, discovery i recovery; nie promuj jej do ordinary-chat ingress.
+
+Poniższe reguły executora obowiązują wyłącznie po jawnym wejściu w `operator_recovery` przez użytkownika/operatora. Nie wolno przełączać ordinary-chat do tego trybu automatycznie tylko dlatego, że remote app/toolset jest niedostępny.
+
+W `operator_recovery`, jeżeli gotowej zdalnej trasy nie ma i lokalny bootstrap jest rzeczywiście celem serwisowym, wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
 
 Jeżeli wywołanie executora kończy się błędem hosta przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu, np. `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` albo `StreamingExecNotEnabledContainerError`, klasyfikuj wyłącznie tę powierzchnię jako `host_executor_unavailable`, jeżeli nie ma dowodu, że proces wystartował. `StreamingExecNotEnabledContainerError` na powierzchni sesji interaktywnej oznacza brak persistent/streaming exec tej powierzchni; nie jest dowodem braku zwykłego one-shot executora ani błędem kodu Jaźni:
 - `filesystem_state = unknown`;

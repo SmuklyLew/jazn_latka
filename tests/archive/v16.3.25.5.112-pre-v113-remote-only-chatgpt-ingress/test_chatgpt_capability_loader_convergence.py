@@ -49,5 +49,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.113"
-    assert PACKAGE_RELEASE_NAME == "remote-only-chatgpt-ingress-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.112"
+    assert PACKAGE_RELEASE_NAME == "v111-closeout-real-host-evidence-convergence"

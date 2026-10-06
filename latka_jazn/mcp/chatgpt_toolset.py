@@ -2,6 +2,7 @@ from __future__ import annotations
 
 """Current-message ChatGPT app/tool exposure evidence for Jaźń."""
 
+import hashlib
 from typing import Any
 
 
@@ -11,6 +12,10 @@ REQUIRED_CHATGPT_TURN_TOOLS: tuple[str, ...] = (
     "jazn_resume_visible_reply",
     "jazn_finalize_reply",
 )
+CHATGPT_TOOLSET_REVISION = "jazn_chatgpt_turn_toolset/v2"
+REQUIRED_CHATGPT_TURN_TOOLS_SHA256 = hashlib.sha256(
+    ("\n".join(REQUIRED_CHATGPT_TURN_TOOLS) + "\n").encode("utf-8")
+).hexdigest()
 
 
 def _normalize_tool_names(value: object) -> tuple[str, ...]:
@@ -54,6 +59,8 @@ def classify_current_message_toolset(
     return {
         "current_message_toolset_observed": observed,
         "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+        "required_chatgpt_turn_tools_revision": CHATGPT_TOOLSET_REVISION,
+        "required_chatgpt_turn_tools_sha256": REQUIRED_CHATGPT_TURN_TOOLS_SHA256,
         "callable_chatgpt_tool_names": list(callable_names),
         "missing_required_chatgpt_turn_tools": list(missing),
         "full_turn_toolset_callable": ready,
@@ -67,6 +74,8 @@ def classify_current_message_toolset(
 
 
 __all__ = [
+    "CHATGPT_TOOLSET_REVISION",
     "REQUIRED_CHATGPT_TURN_TOOLS",
+    "REQUIRED_CHATGPT_TURN_TOOLS_SHA256",
     "classify_current_message_toolset",
 ]

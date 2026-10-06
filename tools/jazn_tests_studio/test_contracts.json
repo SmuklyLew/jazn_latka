@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.112",
-  "active_definition_count": 1985,
+  "system_version": "16.3.25.5.113",
+  "active_definition_count": 1993,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -7113,6 +7113,176 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 34
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_ordinary_chat_remote_only_never_promotes_local_executor": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_ordinary_chat_remote_only_never_promotes_local_executor",
+      "purpose": "Ordinary chat remote only never promotes local executor",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_operator_recovery_must_be_explicit_to_use_local_executor": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_operator_recovery_must_be_explicit_to_use_local_executor",
+      "purpose": "Operator recovery must be explicit to use local executor",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_verified_remote_runtime_wins_in_remote_only_mode": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_verified_remote_runtime_wins_in_remote_only_mode",
+      "purpose": "Verified remote runtime wins in remote only mode",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_toolset_fingerprint_is_stable_and_reported": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_toolset_fingerprint_is_stable_and_reported",
+      "purpose": "Toolset fingerprint is stable and reported",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_startup_contract_declares_remote_only_ingress": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_startup_contract_declares_remote_only_ingress",
+      "purpose": "Startup contract declares remote only ingress",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_project_loader_forbids_executor_fallback_for_ordinary_chat": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_project_loader_forbids_executor_fallback_for_ordinary_chat",
+      "purpose": "Project loader forbids executor fallback for ordinary chat",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_portable_plugin_fails_closed_on_stale_tool_surface": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_portable_plugin_fails_closed_on_stale_tool_surface",
+      "purpose": "Portable plugin fails closed on stale tool surface",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 127
+    },
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_release_identity_tracks_remote_only_ingress_contract": {
+      "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
+      "name": "test_release_identity_tracks_remote_only_ingress_contract",
+      "purpose": "Release identity tracks remote only ingress contract",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_host_preflight",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 135
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_rejects_bare_positive_remote_runtime_boolean": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",

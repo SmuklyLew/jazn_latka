@@ -17,7 +17,7 @@ ChatGPT / host capability
         |
         +-- OpenAI Secure MCP Tunnel -> stdio MCP target
         |
-        +-- local executor / run.py (bootstrap i recovery)
+        +-- operator_recovery: local executor / run.py (service only)
         v
 persistent Jaźń daemon on loopback
         |
@@ -107,7 +107,9 @@ Asynchroniczny submit działa następująco:
 Task ID i task state są trwałe między procesami gatewaya. Stare rekordy JSON są
 migrowane leniwie do SQLite bez ich usuwania.
 
-## 5. Zdalny failover hosta
+## 5. Zdalny ingress hosta
+
+Od 16.3.25.5.113 zwykła wiadomość ChatGPT działa w `remote_only`: zweryfikowana aplikacja/MCP jest jedyną normalną trasą do persistent runtime. Brak bieżącej aplikacji albo kompletnego toolsetu kończy się fail-closed i nie uruchamia local executora, ZIP bootstrapu ani automatycznego handoffu. Local process execution pozostaje wyłącznie jawnym `operator_recovery`.
 
 Publiczny Streamable HTTP ma dwa równoważne, fail-closed tryby evidence.
 
@@ -301,12 +303,39 @@ service, not merely as code that can be started:
   staged tree before archive/transport creation, so an unlisted/missing member
   fails at the producer boundary as well as during runtime attach.
 
-The preferred continuity route for ordinary ChatGPT turns is a **currently
-callable and verified** remote Jaźń app. Local process execution remains a
-bootstrap/recovery capability. Losing a ChatGPT-local executor is therefore not
-evidence that an independently running remote runtime died. Conversely, a
-healthy public endpoint without a callable Jaźń app in the current message is
-not enough to set `remote_runtime_available=true`.
+The only normal continuity route for ordinary ChatGPT turns is a **currently
+callable and verified** remote Jaźń app. Local process execution is no longer a
+fallback for ordinary chat; it is available only in explicit
+`operator_recovery`. Losing or gaining a ChatGPT-local executor therefore does
+not participate in ordinary ingress routing. Conversely, a healthy public
+endpoint without a callable Jaźń app in the current message is not enough to set
+`remote_runtime_available=true`.
 
 Operational procedures, failure injection and rollback are specified in
 `docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
+
+## 14. Remote-only ChatGPT ingress in 16.3.25.5.113
+
+Normalna wiadomość ChatGPT wymaga bieżącej ekspozycji dokładnie czterech
+kanonicznych akcji: `jazn_status`, `jazn_generate_visible_reply`,
+`jazn_resume_visible_reply`, `jazn_finalize_reply`. Gate jest sprawdzany dla
+bieżącej wiadomości; sam stan installed, URL, manifest, poprzednia tura ani
+wcześniejszy @mention nie wystarczają.
+
+`jazn_status` publikuje wersjonowany fingerprint wymaganej powierzchni
+(`required_chatgpt_turn_tools_revision` i SHA-256). Gdy ChatGPT widzi stary
+lub niekompletny snapshot narzędzi, operator ma odświeżyć/reutworzyć/publikować
+aplikację po stronie ChatGPT. Nie wolno zastępować brakującej akcji local
+executorem.
+
+Oficjalna dokumentacja OpenAI rozdziela:
+- publiczny remote MCP dla publicznie osiągalnego HTTPS endpointu;
+- Secure MCP Tunnel dla prywatnego/lokalnego MCP, z outbound-only połączeniem;
+- ekspozycję aplikacji w ChatGPT, która jest capability bieżącej wiadomości;
+- Refresh narzędzi po zmianach serwera, ponieważ aktualizacje action/tool
+  surface nie są automatycznie włączane.
+
+Źródła operacyjne:
+- https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt
+- https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+- https://developers.openai.com/api/docs/guides/custom-mcp-server
