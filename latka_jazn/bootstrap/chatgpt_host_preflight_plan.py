@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Iterable
 
 from latka_jazn.bootstrap.chatgpt_host_discovery_evidence import HostDiscoveryEvidence
+from latka_jazn.bootstrap.chatgpt_ingress_policy import (
+    ChatGptIngressMode,
+    local_executor_fallback_allowed,
+    normalize_chatgpt_ingress_mode,
+)
 from latka_jazn.bootstrap.chatgpt_host_preflight_attachment import aggregate_attachment_state
 from latka_jazn.bootstrap.chatgpt_host_preflight_route import resolve_preflight_route
 from latka_jazn.bootstrap.chatgpt_host_preflight_types import ChatGptHostPreflightDecision
@@ -48,7 +53,9 @@ def plan_chatgpt_host_preflight(
     attachment_reports: Iterable[AttachmentMaterializationReport] = (),
     package_required: bool = False,
     discovery_evidence: HostDiscoveryEvidence | None = None,
+    ingress_mode: ChatGptIngressMode | str = ChatGptIngressMode.OPERATOR_RECOVERY,
 ) -> ChatGptHostPreflightDecision:
+    mode = normalize_chatgpt_ingress_mode(ingress_mode)
     capability = aggregate_host_executor_observations(executor_observations)
     discovery = discovery_evidence or HostDiscoveryEvidence()
     reports = tuple(attachment_reports)
@@ -57,6 +64,7 @@ def plan_chatgpt_host_preflight(
         capability,
         package_state=package_state,
         package_required=package_required,
+        ingress_mode=mode,
     )
     return ChatGptHostPreflightDecision(
         schema_version=SCHEMA_VERSION,
@@ -70,6 +78,8 @@ def plan_chatgpt_host_preflight(
         system_search_attempted=discovery.system_search_attempted,
         system_candidate_found=discovery.system_candidate_found,
         remote_runtime_available=_remote_runtime_availability_evidence(capability),
+        ingress_mode=mode,
+        local_executor_fallback_allowed=local_executor_fallback_allowed(mode),
         bootstrap_allowed=route.bootstrap_allowed,
         remote_runtime_allowed=route.remote_runtime_allowed,
         handoff_required=route.handoff_required,
@@ -80,4 +90,22 @@ def plan_chatgpt_host_preflight(
         capability_snapshot=capability,
         attachments=tuple(report.to_dict() for report in reports),
         handoff_state=capability.execution_handoff_state,
+    )
+
+
+def plan_chatgpt_remote_ingress_preflight(
+    executor_observations: Iterable[HostExecutorObservation],
+    *,
+    attachment_reports: Iterable[AttachmentMaterializationReport] = (),
+    package_required: bool = False,
+    discovery_evidence: HostDiscoveryEvidence | None = None,
+) -> ChatGptHostPreflightDecision:
+    """Plan one ordinary ChatGPT message without any local-executor fallback."""
+
+    return plan_chatgpt_host_preflight(
+        executor_observations,
+        attachment_reports=attachment_reports,
+        package_required=package_required,
+        discovery_evidence=discovery_evidence,
+        ingress_mode=ChatGptIngressMode.REMOTE_ONLY,
     )
