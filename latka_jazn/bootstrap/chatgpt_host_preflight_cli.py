@@ -46,9 +46,7 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
         ingress_mode = normalize_chatgpt_ingress_mode(
             payload.get(
                 "ingress_mode",
-                ChatGptIngressMode.REMOTE_ONLY.value
-                if args.input
-                else ChatGptIngressMode.OPERATOR_RECOVERY.value,
+                ChatGptIngressMode.OPERATOR_RECOVERY.value,
             )
         )
         decision = plan_chatgpt_host_preflight(
