@@ -16,6 +16,11 @@ from latka_jazn.core.session_provenance import (
     validate_final_visible_integrity,
 )
 from latka_jazn.core.turn_execution import TurnExecutionContext
+from latka_jazn.core.turn_diagnostics import (
+    DiagnosticSeverity,
+    FailureKind,
+    TurnStage,
+)
 from latka_jazn.core.turn_timeout import runtime_turn_timeout_seconds
 from latka_jazn.core.visible_integrity import enforce_integrity_consensus
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
@@ -366,9 +371,42 @@ class JaznRuntimeSession:
 
             with turn_context.stage("runtime_truth_gate"):
                 result, gate_payload = apply_runtime_truth_gate(result)
+            gate_errors = list((gate_payload or {}).get("errors") or [])
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.FINALIZATION,
+                component="RuntimeTruthGate",
+                event_type="runtime_truth_gate",
+                outcome="accepted" if (gate_payload or {}).get("ok") is True else "blocked",
+                reason_code=str(gate_errors[0]) if gate_errors else None,
+                severity=(
+                    DiagnosticSeverity.INFO
+                    if (gate_payload or {}).get("ok") is True
+                    else DiagnosticSeverity.ERROR
+                ),
+                attributes={
+                    "normal_response_allowed": (gate_payload or {}).get("normal_response_allowed"),
+                    "error_count": len(gate_errors),
+                },
+            )
             with turn_context.stage("consensus"):
                 result, consensus = enforce_integrity_consensus(result)
                 result["final_visible_integrity_consensus"] = consensus
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.VALIDATION,
+                component="IntegrityConsensus",
+                event_type="integrity_consensus",
+                outcome="mismatch" if consensus.get("mismatch") is True else "accepted",
+                reason_code=(
+                    "INTEGRITY_CONSENSUS_MISMATCH"
+                    if consensus.get("mismatch") is True
+                    else None
+                ),
+                severity=(
+                    DiagnosticSeverity.ERROR
+                    if consensus.get("mismatch") is True
+                    else DiagnosticSeverity.INFO
+                ),
+            )
 
             gate_payload = dict(result.get("runtime_truth_gate") or gate_payload)
             if gate_payload.get("normal_response_allowed") is False:
@@ -437,6 +475,20 @@ class JaznRuntimeSession:
             result["canonical_persistence"] = commit_status
             result["canonical_persistence_ok"] = canonical_persistence_ok
             result["persistence_degraded"] = persistence_degraded
+            if persistence_degraded:
+                turn_context.record_diagnostic_event(
+                    stage=TurnStage.PERSISTENCE,
+                    component="TurnExecutionContext.commit_if_allowed",
+                    event_type="canonical_persistence",
+                    outcome="degraded",
+                    reason_code=str(commit_status.get("reason") or "PERSISTENCE_DEGRADED"),
+                    severity=DiagnosticSeverity.WARNING,
+                    attributes={
+                        "partial_commit_detected": bool(commit_status.get("partial_commit_detected")),
+                        "committed_count": int(commit_status.get("committed_count") or 0),
+                        "rejected_count": int(commit_status.get("rejected_count") or 0),
+                    },
+                )
             result["persistence_state"] = (
                 "committed"
                 if canonical_persistence_ok
@@ -583,6 +635,23 @@ class JaznRuntimeSession:
                 if result.get("ok")
                 else "rejected"
             )
+            if final_status == "rejected":
+                turn_context.finalize_diagnostics(
+                    outcome=final_status,
+                    failure_kind=FailureKind.FINALIZATION_REJECTED,
+                    reason_code=(
+                        str((gate_payload.get("errors") or ["TURN_NOT_ACCEPTED"])[0])
+                        if isinstance(gate_payload, dict)
+                        else "TURN_NOT_ACCEPTED"
+                    ),
+                    component="JaznRuntimeSession.process_user_text",
+                )
+            else:
+                turn_context.finalize_diagnostics(
+                    outcome=final_status,
+                    component="JaznRuntimeSession.process_user_text",
+                )
+            result["turn_diagnostic_trace"] = turn_context.diagnostic_snapshot()
             turn_context.finalize_total(status=final_status)
             audit_status = turn_context.persist_audit(
                 event_type=(
@@ -603,6 +672,17 @@ class JaznRuntimeSession:
             turn_context.record_technical_event(
                 "runtime_turn_failed",
                 {"error_code": type(exc).__name__, "error": str(exc)},
+            )
+            turn_context.record_diagnostic_failure(
+                kind=FailureKind.INTERNAL_INVARIANT_BROKEN,
+                stage=TurnStage.SETTLEMENT,
+                component="JaznRuntimeSession.process_user_text",
+                reason_code=type(exc).__name__,
+                attributes={"exception_type": type(exc).__name__},
+            )
+            turn_context.finalize_diagnostics(
+                outcome="failed",
+                component="JaznRuntimeSession.process_user_text",
             )
             turn_context.finalize_total(status="failed", error_code=type(exc).__name__)
             turn_context.persist_audit(event_type="runtime_turn_failed")
