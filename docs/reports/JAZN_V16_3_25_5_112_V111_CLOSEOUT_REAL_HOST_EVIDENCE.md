@@ -171,3 +171,25 @@ the v112 package identity. No assertion, gate, route, readiness requirement, MCP
 method name, or security rule is weakened. The failed run remains evidence and the
 corrected branch must pass a fresh persistent-runtime E2E before v112 is considered
 complete.
+
+
+### Full-suite release identity drift found by release-hardening
+
+The same first v112 generation also produced release-hardening run
+`37416896389`. Its Ubuntu full deterministic suite completed
+**2104 PASS, 2 SKIPPED, 5 FAIL** before the fix sequence. All five failures were
+release-identity assertions caused by the v112 bump while active contracts/tests
+still pinned v111:
+
+- `tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity`;
+- `tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_startup_contract_publishes_fresh_message_capability_gate`;
+- `tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_current_distribution`;
+- `tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution`;
+- `tests/test_persistent_remote_runtime_operations.py::test_deployment_contract_tracks_runtime_and_real_mcp_wire_names`.
+
+The deployment-contract mismatch is fixed in the preceding correction. This follow-up
+updates `latka_jazn/resources/startup_contract.json` to v112 and updates the three
+active tests that intentionally pin the current release identity. Before modifying
+those active tests, their exact committed v111 bytes are preserved append-only under
+`tests/archive/v16.3.25.5.111-v112-release-identity-bump/`, per repository policy.
+No behavioral assertion is removed or weakened.
