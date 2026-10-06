@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "6efacbbbc053753ed37eec82620b62091187a5d4",
-  "base_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
-  "commit_date": "2026-10-06T03:02:05+02:00",
+  "base_merge_commit": "9a45016cba7525afbed0e513663b2f11a3718f28",
+  "base_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
+  "commit_date": "2026-10-06T03:56:00+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-06T01:02:05+00:00",
+  "generated_at_utc": "2026-10-06T01:56:00+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "986328a47e46bca2bed654fb91e587ef0d76bb10",
+  "git_tree_sha": "3578ac398cd11d15794c4b45da96da21e3348615",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "6efacbbbc053753ed37eec82620b62091187a5d4",
-    "source_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence"
+    "source_commit": "9a45016cba7525afbed0e513663b2f11a3718f28",
+    "source_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "release_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "runtime_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "6efacbbbc053753ed37eec82620b62091187a5d4",
+  "source_commit": "9a45016cba7525afbed0e513663b2f11a3718f28",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "source_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "update_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "version_source": "latka_jazn/version.py"
 }
