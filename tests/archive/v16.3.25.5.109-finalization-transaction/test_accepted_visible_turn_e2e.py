@@ -88,7 +88,7 @@ def test_phase_ready_to_accepted_visible_final_e2e(tmp_path: Path, monkeypatch: 
             }
 
     import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
 
     body = "Tak — ta odpowiedź staje się widoczna dopiero po zaakceptowanej finalizacji tej tury."
     reply, missing = build_chatgpt_host_visible_reply_payload(presented, final_text=body)

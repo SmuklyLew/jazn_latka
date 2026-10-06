@@ -140,7 +140,7 @@ def test_host_request_is_bound_to_phase_one_and_replay_is_rejected(tmp_path, mon
             return {"final_visible_text": kwargs["final_text"], "turn_id": kwargs["turn_id"], "trace_id": kwargs["trace_id"]}
 
     import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
     cfg = JaznConfig(root=tmp_path)
     result, errors = persist_chatgpt_host_visible_reply(config=cfg, payload=reply, chat_bridge_meta={}, contract={})
     assert errors == []
@@ -201,14 +201,13 @@ def test_self_consistent_context_substitution_is_rejected_by_phase_one_binding(
         "generation_context": {"host_generation_context": replacement_context},
     }
     released: dict[str, str] = {}
-    from latka_jazn.core import host_finalization_transaction
     monkeypatch.setattr(
-        host_finalization_transaction,
+        chat_command_contract,
         "claim_pending_host_request",
         lambda *_args, **_kwargs: pending,
     )
     monkeypatch.setattr(
-        host_finalization_transaction,
+        chat_command_contract,
         "release_claimed_host_request",
         lambda _root, *, turn_id: released.update(turn_id=turn_id),
     )
@@ -339,7 +338,7 @@ def test_persistence_failure_becomes_indeterminate_and_cannot_replay(tmp_path, m
             raise RuntimeError("append outcome unknown")
 
     import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FailingEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FailingEngine)
     result, errors = persist_chatgpt_host_visible_reply(
         config=JaznConfig(root=tmp_path), payload=reply, chat_bridge_meta={}, contract={}
     )

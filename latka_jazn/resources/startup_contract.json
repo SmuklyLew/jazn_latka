@@ -22,7 +22,7 @@
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
   "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem do AGENTS.md. run.py jest starterem do centralnego main.py. Persistent stdin/JSONL jest preferowany, gdy host może utrzymać proces; gdy nie może, host używa krótkich procesów CLI wyłącznie jako transportu do tej samej daemonowej lineage, z request_id przydzielonym przed wysłaniem i poll/resume tego samego requestu bez replayu. Po wybraniu zweryfikowanego daemona błąd transportu nie może spaść do niezależnej lokalnej tury. Żywy daemon lub PID nie dowodzi gotowej mowy: zwykła widoczna odpowiedź jest dozwolona wyłącznie jako zaakceptowany final_visible_text po finalizacji runtime. Tryb chat-gpt nie używa płatnego OpenAI API. Dla zdalnej trasy sama instalacja/wybór aplikacji nie wystarcza: bieżąca wiadomość musi faktycznie wystawiać pełny zestaw narzędzi Jaźni, a nazwa planu ChatGPT nie jest predykatem runtime.",
-  "version": "16.3.25.5.108",
+  "version": "16.3.25.5.109",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only",
   "chatgpt_fresh_conversation_reverification_required": true,

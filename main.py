@@ -146,7 +146,7 @@ from latka_jazn.core.renderer import ResponseRenderer
 from latka_jazn.core.runtime_status import build_runtime_status
 from latka_jazn.core.startup_contract import build_startup_status, build_startup_summary, build_self_check, build_truth_boundary_check, classify_fallback_text
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet
-from latka_jazn.core.engine import JaznEngine
+from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_chat import run_persistent_chat
 from latka_jazn.core.runtime_session import JaznRuntimeSession
@@ -2060,7 +2060,8 @@ def legacy_main(argv: list[str] | None = None) -> int:
         return 0
 
     if ns.runtime_preview or ns.dev_preview:
-        engine = JaznEngine(config)
+        composition = RuntimeCompositionRoot(config)
+        engine = composition.create_engine()
         try:
             text = _message_from_remainder(ns.message)
             envelope = engine.process_turn(
@@ -2166,7 +2167,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
             else:
                 print(json.dumps(compact, ensure_ascii=False, indent=2, sort_keys=True))
         finally:
-            engine.shutdown()
+            composition.close()
         return 0
 
 
@@ -2322,7 +2323,8 @@ def legacy_main(argv: list[str] | None = None) -> int:
             session.close()
         return 0
 
-    engine = JaznEngine(config)
+    composition = RuntimeCompositionRoot(config)
+    engine = composition.create_engine()
     try:
         text = _message_from_remainder(ns.message)
         if text and not ns.cognitive_frame:
@@ -2342,7 +2344,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
         else:
             print(engine.bootstrap())
     finally:
-        engine.shutdown()
+        composition.close()
     return 0
 
 

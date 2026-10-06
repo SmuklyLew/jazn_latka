@@ -585,7 +585,10 @@ def mark_claimed_host_request_indeterminate(root: Path, *, turn_id: str, error: 
     return record
 
 
-def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_hash: str) -> dict[str, Any]:
+def consume_claimed_host_request(
+    root: Path, *, turn_id: str, request_contract_hash: str,
+    final_visible_capture: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     claimed_path = _path(root, "claimed", turn_id)
     record = _read(claimed_path)
     if str(record.get("request_contract_hash") or "") != str(request_contract_hash or "").strip().lower():
@@ -594,6 +597,11 @@ def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_h
     binding = binding_value if isinstance(binding_value, Mapping) else {}
     daemon_request_id = str(binding.get("daemon_request_id") or "").strip()
     record["state"] = "consumed"
+    if final_visible_capture is not None:
+        # Candidate and acceptance share the same atomic rename. Before this
+        # commit there is no accepted assistant event or conversation projection.
+        record["final_visible_capture"] = final_visible_capture
+        record["finalization_state"] = "commit_accepted"
     record["consumed_at_utc"] = _utc_now().isoformat()
     # The durable consumed record is the settlement authority for a host-finalized
     # turn.  Daemon notification is an idempotent projection/outbox delivery, not

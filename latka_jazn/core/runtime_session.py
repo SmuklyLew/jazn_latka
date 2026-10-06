@@ -5,7 +5,7 @@ from dataclasses import asdict
 from typing import Any
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.core.engine import JaznEngine
+from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
@@ -151,7 +151,8 @@ class JaznRuntimeSession:
         source_client: str = "runtime_session",
     ) -> None:
         self.config = config or JaznConfig()
-        self.engine = JaznEngine(self.config)
+        self.composition = RuntimeCompositionRoot(self.config)
+        self.engine = self.composition.create_engine()
         self.transactional_memory_install_status = install_runtime_memory(self.engine)
         self.state_store = RuntimeSessionStateStore(self.config.root)
         self.conversation_state_store = ConversationStateStore(self.config.root)
@@ -712,4 +713,8 @@ class JaznRuntimeSession:
             except Exception:
                 pass
         finally:
-            self.engine.shutdown()
+            composition = getattr(self, "composition", None)
+            if composition is not None:
+                composition.close()
+            else:
+                self.engine.shutdown()

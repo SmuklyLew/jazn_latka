@@ -1,13 +1,27 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Any
+from enum import Enum
+from typing import Any, TYPE_CHECKING
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
 from latka_jazn.core.final_visible_reply_capture import FinalVisibleReplyCapture
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.memory.event_ledger import RuntimeEventLedger
+
+if TYPE_CHECKING:
+    from latka_jazn.core.host_finalization_transaction import HostFinalizationPorts
+
+
+class FinalizationState(str, Enum):
+    CANDIDATE_RECEIVED = "candidate_received"
+    BINDING_VERIFIED = "binding_verified"
+    CANDIDATE_VALIDATED = "candidate_validated"
+    FINAL_CONTRACT_BUILT = "final_contract_built"
+    PERSISTENCE_PREPARED = "persistence_prepared"
+    COMMIT_ACCEPTED = "commit_accepted"
+    VISIBLE_ACCEPTED = "visible_accepted"
 
 
 class FinalizationService:
@@ -21,6 +35,55 @@ class FinalizationService:
     def __init__(self, config: JaznConfig, *, event_ledger: RuntimeEventLedger | None = None) -> None:
         self.config = config
         self._event_ledger = event_ledger
+        self.history: list[FinalizationState] = []
+
+    @property
+    def state(self) -> FinalizationState:
+        return self.history[-1]
+
+    def transition(self, state: FinalizationState) -> None:
+        stages = list(FinalizationState)
+        if len(self.history) >= len(stages) or stages[len(self.history)] is not state:
+            raise RuntimeError("invalid_finalization_transition")
+        self.history.append(state)
+
+    def finalize(
+        self, *, payload: dict[str, Any], chat_bridge_meta: dict[str, Any],
+        contract: dict[str, Any], ports: HostFinalizationPorts,
+    ) -> tuple[dict[str, Any] | None, list[str]]:
+        from latka_jazn.core.host_finalization_transaction import finalize_host_candidate
+
+        return finalize_host_candidate(
+            service=self, ports=ports, payload=payload,
+            chat_bridge_meta=chat_bridge_meta, contract=contract,
+        )
+
+    def publish_committed_capture(self, capture: dict[str, Any]) -> dict[str, Any]:
+        """Project an already committed candidate; a projection is not acceptance."""
+        if self.state is not FinalizationState.COMMIT_ACCEPTED:
+            raise RuntimeError("finalization_commit_required")
+        prepared = capture.get("prepared_projection")
+        if not isinstance(prepared, dict):
+            return capture
+        try:
+            result = self.event_ledger.append_final_visible_reply(
+                prepared["envelope"], final_text=capture["final_visible_text"],
+                source=prepared["source"], client_context=prepared["client_context"],
+                local_time_label=prepared["timestamp_header"],
+            )
+            if result is None:
+                raise RuntimeError("final_visible_reply_ledger_write_failed")
+            assessments = capture.get("epistemic_claims") or []
+            epistemic = []
+            if assessments:
+                with EpistemicDecisionLedger(epistemic_ledger_path(workspace_runtime_path(self.config.root))) as ledger:
+                    epistemic = [item.to_dict() for item in ledger.append_assessments(
+                        turn_id=capture["turn_id"], trace_id=capture["trace_id"], assessments=assessments,
+                    )]
+            return {**capture, "ledger_append": asdict(result), "epistemic_ledger_append": epistemic,
+                    "projection_status": "published"}
+        except Exception as exc:
+            return {**capture, "projection_status": "pending_recovery", "projection_error": type(exc).__name__}
 
     @property
     def event_ledger(self) -> RuntimeEventLedger:
@@ -54,6 +117,7 @@ class FinalizationService:
         memory_evidence: dict[str, Any] | None = None,
         external_evidence: dict[str, Any] | None = None,
         generated_evidence: dict[str, Any] | None = None,
+        prepared_only: bool = False,
     ) -> dict:
         """Persist an externally rendered final only with the verified turn envelope."""
         capture = FinalVisibleReplyCapture.build(
@@ -107,6 +171,17 @@ class FinalizationService:
             "dialogue_state": {},
             "affect_mix": {"state_emoticon": state_emoticon},
         }
+        if prepared_only:
+            return {
+                **capture.to_dict(),
+                "final_visible_reply_capture": capture.to_dict(),
+                "prepared_projection": {
+                    "envelope": envelope_stub, "source": source,
+                    "client_context": client_context or {},
+                    "timestamp_header": timestamp_header,
+                },
+                "epistemic_ledger_append": [],
+            }
         ledger_result = self.event_ledger.append_final_visible_reply(
             envelope_stub,
             final_text=capture.final_visible_text,

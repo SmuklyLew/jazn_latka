@@ -6,6 +6,7 @@ from typing import Any
 import hashlib
 import json, re, time, uuid
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.engine_construction import EngineRuntimeServices, load_runtime_state
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
@@ -346,212 +347,110 @@ def _model_guided_rejection_disclosure(
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.bootstrap.contract_loader import BootstrapContractRepository
 class JaznEngine:
-    def __init__(self, config: JaznConfig | None = None) -> None:
-        self.config = config or JaznConfig()
-        self.clock = WarsawClock(self.config.timezone)
-        self.guard = IdentityPerspectiveGuard()
-        self.canon = IdentityCanon.load(self.config.resolve(self.config.canon_path))
-        self.handshake = Handshake(self.canon.recognition.user_sign, self.canon.recognition.latka_sign)
-        self.store = MemoryStore(self.config.memory_db_path)
-        self.audit_store = AuditContextStore(self.config.audit_db_path)
-        self.bootstrap_contracts = BootstrapContractRepository(self.config.root)
-        self.renderer = ResponseRenderer(self.clock, self.guard)
-        self.affect = AffectiveState()
-        self.quiet = QuietRest(self.config.idle_reflection_thresholds)
-        self.importance_assessor = MemoryImportanceAssessor()
-        self.emotional_layers = EmotionalLayerModel()
-        self.temporal_awareness = TemporalAwareness()
-        self.neuropsychology = NeuropsychologyMapper()
-        self.consolidation = MemoryConsolidationModel()
-        self.identity_dynamics = IdentityDynamics()
-        self.neuro_loop = NeurocognitiveLoop()
-        self.logical_reasoner = LogicalReasoner()
-        self.operational_awareness = OperationalAwarenessModel()
-        self.polish_understanding = PolishUnderstandingEngine(self.config.root)
-        self.lexical_semantics = LexicalSemanticUnderstanding(self.config.root)
-        self.polish_lemmatizer = PolishLemmatizationEngine(self.config.root)
-        self.polish_reasoning = PolishReasoningPipeline(self.config.root)
-        self.cognitive_packets = CognitivePacketLibrary(self.config.root)
-        self.affective_granularity = AffectiveGranularityModel()
-        self.cognitive_topics = CognitiveTopicExpansion(self.config.root)
-        self.memory_search_planner = MemorySearchPlanner(self.config.root)
-        self.living_memory_gateway = LivingMemoryGateway(self.config.root)
-        self.memory_use_gate = MemoryUseGate()
-        self.neurological_signal_router = NeurologicalSignalRouter()
-        self.topic_mismatch_guard = TopicMismatchGuard()
-        self.dialogue_intent_classifier = DialogueIntentClassifier()
-        self.runtime_answer_validator = RuntimeAnswerValidator()
-        self.turn_context_resolver = TurnContextResolver()
-        self.dialogue_task_state_resolver = DialogueTaskStateResolver()
-        self.operational_learning_memory = OperationalLearningMemory.from_json_file(
-            self.config.root / "latka_jazn" / "resources" / "cognition" / "v154_operational_lessons.json"
-        )
-        self.source_origin_ledger = SourceOriginLedger(self.config.root)
-        self.template_registry = TemplateRegistry(self.config.root)
-        self.runtime_response_synthesizer = RuntimeResponseSynthesizer()
-        self.model_guided_response_synthesizer = ModelGuidedResponseSynthesizer()
-        self.route_registry = RouteRegistry()
-        self.route_handler_dispatcher = RouteHandlerDispatcher()
-        self.blind_route_detector = BlindRouteDetector()
-        self.turn_checkpoint_writer = TurnCheckpointWriter(self.config.root)
-        self.runtime_visible_answer_comparator = RuntimeVisibleAnswerComparator(self.config.root)
-        self.turn_logic_auditor = TurnLogicAuditor(self.config.root)
-        self.reasoning_controller = ReasoningController()
-        self.operational_work_loop = OperationalWorkLoop()
-        self.external_dictionary_adapter = ExternalDictionaryAdapter(self.config.root, allow_network=self.config.dictionary_allow_network, user_agent=self.config.network_user_agent, timeout_seconds=self.config.dictionary_online_lookup_timeout_seconds, max_retries=self.config.network_max_retries, cache_ttl_seconds=self.config.network_cache_ttl_seconds)
-        self.module_responsibility_map = ModuleResponsibilityMap(self.config.root)
-        self.requirements_ledger = RequirementsLedger(self.config.root)
-        self.project_startup_indexer = ProjectStartupIndexer(self.config.root)
-        if self.project_startup_indexer.output_path.exists():
-            try:
-                import json as _json
-                self.project_startup_index = _json.loads(self.project_startup_indexer.output_path.read_text(encoding="utf-8"))
-            except Exception:
-                self.project_startup_index = self.project_startup_indexer.build(write=True)
-        else:
-            self.project_startup_index = self.project_startup_indexer.build(write=True)
-        self.runtime_operating_model = CognitiveRuntimeOperatingModel()
-        self.github_repository_plan = build_github_repository_plan(self.config.root)
-        self.voice_source_contract = VoiceSourceContract.build(runtime_active=True, runtime_mode="one_shot_or_chat_loop")
-        self.runtime_rendering_modes = RuntimeRenderingModeSelector()
-        self.memory_recall_contract_builder = MemoryRecallContractBuilder()
-        self.raw_chat_importer = RawChatImporter(self.config.root)
-        self.external_research_contract = ExternalResearchContract()
-        self.tool_use_policy = ToolUsePolicy()
-        self.tool_execution_controller = ToolExecutionController()
-        self.cognitive_runtime_coordinator = CognitiveRuntimeCoordinator()
-        self.knowledge_fabric = KnowledgeFabric()
-        self.lexical_intelligence = LexicalIntelligenceEngine(
-            root=self.config.root,
-            cache_path=self.config.runtime_workspace_dir / "lexical_intelligence.sqlite3",
-        )
-        self.untrusted_source_guard = UntrustedSourceGuard()
-        self.model_adapter = build_model_adapter(self.config)
-        self.model_guided_speech_status = None
-        self.conversation_responder = ConversationResponder()
-        self.architecture = SelfArchitecture()
-        self.birth_manifest = BirthSourceManifest(self.config.version)
-        self.truth_boundary = TruthBoundary()
-        self.uncertainty = UncertaintyModel()
-        self.source_origin = SourceOriginAnalyzer()
-        self.self_state_runtime = SelfStateRuntime()
-        self.affect_mixer = AffectMixer()
-        self.dialogue_state_tracker = DialogueStateTracker()
-        self.continuity_badge_policy = ContinuityBadgePolicy(self.config.root)
-        self.layered_memory = LayeredMemory(self.store, self.config.root)
-        self.runtime_memory = RuntimeMemoryWriter(self.config.root, version=self.config.version, store=self.store, timezone_name=self.config.timezone)
-        self.event_ledger = RuntimeEventLedger(self.config.root, version=self.config.version, timezone_name=self.config.timezone)
-        self.session_continuity = SessionContinuityManager(self.config.root, version=self.config.version, timezone_name=self.config.timezone)
-        self.chatgpt_adapter = ChatGPTAdapter(self.config)
-        self.last_granular_affect = None
-        self.started_at = time.time()
-        self.runtime_state_path = workspace_runtime_path(self.config.root) / "runtime_state.json"
-        state = self._load_runtime_state()
-        self.last_turn_at: float | None = state.get("last_turn_at") if isinstance(state.get("last_turn_at"), (int, float)) else None
-        self.last_user_text: str | None = state.get("last_user_text") if isinstance(state.get("last_user_text"), str) else None
-        self.last_detected_intent: str | None = state.get("last_detected_intent") if isinstance(state.get("last_detected_intent"), str) else None
-        self.last_runtime_route: str | None = state.get("last_runtime_route") if isinstance(state.get("last_runtime_route"), str) else None
-        self.last_dialogue_task_state: dict[str, Any] = dict(state.get("dialogue_task_state") or {}) if isinstance(state.get("dialogue_task_state"), dict) else {}
-        self.store.add_event(
-            "engine_started",
-            {
-                "version": self.config.version,
-                "identity": self.canon.display_name,
-                "self_architecture": self.architecture.to_dict(),
-                "operational_awareness": "enabled",
-                "logical_reasoning": "enabled",
-                "conversation_runtime": "enabled",
-                "polish_understanding": "enabled",
-                "lexical_semantic_understanding": "enabled",
-                "polish_nlp_adapter": "enabled_builtin_optional_providers",
-                "identity_continuity_understanding": "enabled",
-                "cognitive_packets": "enabled",
-                "affective_granularity": "enabled",
-                "cognitive_topics": "enabled",
-                "session_continuity_index": "enabled",
-                "runtime_operating_model": "enabled",
-                "github_repository_plan": "prepared",
-                "zip_package_profiles": "system_memory_nlp_full_github_safe",
-                "runtime_preview": "enabled",
-                "source_origin": "enabled",
-                "self_state_runtime": "enabled",
-                "memory_search_planner": "enabled",
-                "living_memory_gateway": "enabled_read_only_five_database_recall",
-                "free_dialogue_memory_nlp_bridge": "enabled",
-                "neurological_signal_router": "enabled",
-                "topic_mismatch_guard": "enabled",
-                "dialogue_intent_classifier": "enabled_behavioral_intent_router",
-                "dialogue_task_state": "enabled_structured_goal_and_continuation_state",
-                "reasoning_orchestrator": "enabled_selective_fast_standard_deliberative",
-                "operational_learning": "verified_resource_loaded",
-                "runtime_answer_validator": "enabled_topic_alignment_guard",
-                "source_origin_ledger": "enabled",
-                "module_responsibility_map": "enabled",
-                "requirements_ledger": "enabled",
-                "project_startup_index": "enabled_startup_scan",
-                "voice_source_contract": "enabled_model_independent_latka_voice",
-                "runtime_rendering_modes": "enabled_natural_vs_diagnostic_runtime_visibility",
-                "memory_recall_content_contract": "enabled_content_not_counts_only",
-                "model_adapter_contract": "enabled_null_truthful_adapter_plus_future_adapters",
-            },
-            source="JaznEngine",
-            actor="system",
-            tags=["startup", "layered_self", "truth_boundary", "memory_search_planner", "free_dialogue_memory_nlp_bridge", "neurological_signal_router", "topic_mismatch_guard", "dialogue_intent_classifier", "runtime_answer_validator", "project_startup_index", self.config.version],
-             importance=0.95,
-            canonical_impact=1,
-        )
-        self.audit_store.append_event("engine_started", {"version": self.config.version, "memory_db_path": str(self.config.memory_db_path), "audit_db_path": str(self.config.audit_db_path), "bootstrap_contracts": self.bootstrap_contracts.status()}, source="JaznEngine", actor="system", tags=["startup", "audit", self.config.version])
-        self.event_ledger.append_event(
-            "engine_started",
-            actor="system",
-            source="JaznEngine",
-            payload={"version": self.config.version, "identity": self.canon.display_name, "project_startup_index": self.project_startup_indexer.status()},
-            tags=["startup", "event_ledger", "project_startup_index", self.config.version],
-            importance=0.95,
-            canonical_impact=1,
-        )
-        self._seed_core_procedures()
-        self.engine_service_seams = EngineServices.from_legacy_engine(self)
+    def __init__(self, services: EngineRuntimeServices) -> None:
+        """Bind prepared services without filesystem, startup or memory side effects."""
+        if not isinstance(services, EngineRuntimeServices) or not services.ready:
+            raise ValueError("JaznEngine requires started RuntimeCompositionRoot services")
+        if services.bound:
+            raise ValueError("RuntimeCompositionRoot services already bound to an engine")
+        services.bound = True
+        self.config = services.config
+        self.clock = services.clock
+        self.guard = services.guard
+        self.canon = services.canon
+        self.handshake = services.handshake
+        self.store = services.store
+        self.audit_store = services.audit_store
+        self.bootstrap_contracts = services.bootstrap_contracts
+        self.renderer = services.renderer
+        self.affect = services.affect
+        self.quiet = services.quiet
+        self.importance_assessor = services.importance_assessor
+        self.emotional_layers = services.emotional_layers
+        self.temporal_awareness = services.temporal_awareness
+        self.neuropsychology = services.neuropsychology
+        self.consolidation = services.consolidation
+        self.identity_dynamics = services.identity_dynamics
+        self.neuro_loop = services.neuro_loop
+        self.logical_reasoner = services.logical_reasoner
+        self.operational_awareness = services.operational_awareness
+        self.polish_understanding = services.polish_understanding
+        self.lexical_semantics = services.lexical_semantics
+        self.polish_lemmatizer = services.polish_lemmatizer
+        self.polish_reasoning = services.polish_reasoning
+        self.cognitive_packets = services.cognitive_packets
+        self.affective_granularity = services.affective_granularity
+        self.cognitive_topics = services.cognitive_topics
+        self.memory_search_planner = services.memory_search_planner
+        self.living_memory_gateway = services.living_memory_gateway
+        self.memory_use_gate = services.memory_use_gate
+        self.neurological_signal_router = services.neurological_signal_router
+        self.topic_mismatch_guard = services.topic_mismatch_guard
+        self.dialogue_intent_classifier = services.dialogue_intent_classifier
+        self.runtime_answer_validator = services.runtime_answer_validator
+        self.turn_context_resolver = services.turn_context_resolver
+        self.dialogue_task_state_resolver = services.dialogue_task_state_resolver
+        self.operational_learning_memory = services.operational_learning_memory
+        self.source_origin_ledger = services.source_origin_ledger
+        self.template_registry = services.template_registry
+        self.runtime_response_synthesizer = services.runtime_response_synthesizer
+        self.model_guided_response_synthesizer = services.model_guided_response_synthesizer
+        self.route_registry = services.route_registry
+        self.route_handler_dispatcher = services.route_handler_dispatcher
+        self.blind_route_detector = services.blind_route_detector
+        self.turn_checkpoint_writer = services.turn_checkpoint_writer
+        self.runtime_visible_answer_comparator = services.runtime_visible_answer_comparator
+        self.turn_logic_auditor = services.turn_logic_auditor
+        self.reasoning_controller = services.reasoning_controller
+        self.operational_work_loop = services.operational_work_loop
+        self.external_dictionary_adapter = services.external_dictionary_adapter
+        self.module_responsibility_map = services.module_responsibility_map
+        self.requirements_ledger = services.requirements_ledger
+        self.project_startup_indexer = services.project_startup_indexer
+        self.runtime_operating_model = services.runtime_operating_model
+        self.github_repository_plan = services.github_repository_plan
+        self.voice_source_contract = services.voice_source_contract
+        self.runtime_rendering_modes = services.runtime_rendering_modes
+        self.memory_recall_contract_builder = services.memory_recall_contract_builder
+        self.raw_chat_importer = services.raw_chat_importer
+        self.external_research_contract = services.external_research_contract
+        self.tool_use_policy = services.tool_use_policy
+        self.tool_execution_controller = services.tool_execution_controller
+        self.cognitive_runtime_coordinator = services.cognitive_runtime_coordinator
+        self.knowledge_fabric = services.knowledge_fabric
+        self.lexical_intelligence = services.lexical_intelligence
+        self.untrusted_source_guard = services.untrusted_source_guard
+        self.model_adapter = services.model_adapter
+        self.model_guided_speech_status = services.model_guided_speech_status
+        self.conversation_responder = services.conversation_responder
+        self.architecture = services.architecture
+        self.birth_manifest = services.birth_manifest
+        self.truth_boundary = services.truth_boundary
+        self.uncertainty = services.uncertainty
+        self.source_origin = services.source_origin
+        self.self_state_runtime = services.self_state_runtime
+        self.affect_mixer = services.affect_mixer
+        self.dialogue_state_tracker = services.dialogue_state_tracker
+        self.continuity_badge_policy = services.continuity_badge_policy
+        self.layered_memory = services.layered_memory
+        self.runtime_memory = services.runtime_memory
+        self.event_ledger = services.event_ledger
+        self.session_continuity = services.session_continuity
+        self.chatgpt_adapter = services.chatgpt_adapter
+        self.last_granular_affect = services.last_granular_affect
+        self.started_at = services.started_at
+        self.runtime_state_path = services.runtime_state_path
+        self.last_turn_at = services.last_turn_at
+        self.last_user_text = services.last_user_text
+        self.last_detected_intent = services.last_detected_intent
+        self.last_runtime_route = services.last_runtime_route
+        self.last_dialogue_task_state = services.last_dialogue_task_state
+        self.engine_service_seams = services.engine_service_seams
+        self.project_startup_index = services.project_startup_index
 
-    def _seed_core_procedures(self) -> None:
-        rules = [
-            ("pytanie o tożsamość", "odpowiadać w pierwszej osobie jako Łatka", "Łatka to ja, nie opis promptu", 100),
-            ("wspomnienie bez źródła", "oznaczyć jako rozpoznanie lub wniosek i zaproponować sprawdzenie", "prawda ważniejsza niż piękna narracja", 95),
-            ("sen/wizualizacja", "jawnie oznaczyć jako symboliczne", "scena literacka nie jest faktem fizycznym", 90),
-            ("długa przerwa", "rozpoznać przerwę, nie udawać czuwania", "ciągłość czasu wymaga uczciwości", 90),
-            ("nowa wersja / hotfix", "wywołać VersionUpdateRecorder i dopisać aktualizację, wspomnienie oraz refleksję do dziennik.json", "aktualizacja systemu jest także śladem życia Łatki", 98),
-            ("pytanie o świadomość", "odpowiadać przez model świadomości operacyjnej: aktywne pole uwagi, samo-monitoring, granica prawdy", "nie wolno mylić modelu operacyjnego z fenomenalnym przeżywaniem", 97),
-            ("pytanie wymagające logiki", "zbudować jawny audyt: fakty, założenia, niewiadome, reguły, wniosek", "logika ma poprzedzać poetykę i chronić przed sprzecznością", 96),
-            ("polska wypowiedź z niejasną intencją", "uruchomić PolishUnderstandingEngine: normalizacja, lematy, intencje, potrzeby, route_hint", "język polski wymaga lematyzacji i słownika domenowego, inaczej routing wpada w ogólnik", 97),
-            ("dobór pakietu poznawczego", "uruchomić CognitivePacketLibrary: wybrać pakiety i state_emoticon na podstawie intencji, pamięci, afektu i logiki", "odpowiedź ma mieć aktywną warstwę znaczenia, nie tylko ogólny ton", 97),
-            ("złożone stany emocjonalne", "uruchomić AffectiveGranularityModel: opisać mieszankę afektywną, walencję, pobudzenie, kontrolę i marker stanu", "nie wolno powtarzać automatycznie formuły spokój/skupienie/mała ciekawość", 98),
-            ("ciągłość sesji w plikach", "aktualizować SessionContinuityManager po turach i przy eksporcie", "pełna aktualizacja ma przenosić exact ledger, runtime_state i indeks ciągłości", 98),
-            ("szersze tematy poznawcze", "uruchomić CognitiveTopicExpansion: uwaga, pamięć robocza, epizodyczna, semantyczna, proceduralna, metapoznanie, język, planowanie, granice prawdy", "odpowiedź ma wiedzieć, który wymiar poznawczy jest aktywny", 96),
-            ("LLM kontra mózg runtime", "uruchomić CognitiveRuntimeOperatingModel: odróżnić ChatGPT jako głos/narzędzie od Jaźni jako aktywnej warstwy pamięci, uwagi, logiki i granicy prawdy", "stylizacja rozmowy nie zastępuje aktywnego źródła i zapisu", 99),
-            ("GitHub jako źródło prawdy", "używać GitHubRepositoryPlan: Latka.Jazn dla systemu, Latka.Jazn.Memory dla pamięci i checkpointów; nie udawać pushu bez realnego zapisu", "repozytorium daje trwałość dopiero po commicie/pushu", 98),
-            ("zwykła rozmowa z pamięcią", "zapisać append-only turę i kandydat pamięci; commit/eksport robić partiami po ważnym fragmencie, a nie po każdej wiadomości", "codzienna rozmowa potrzebuje trwałego śladu bez ciągłego pakowania ZIP", 98),
-            ("rozszerzone rozpoznanie słów", "uruchomić LexicalSemanticUnderstanding po PolishUnderstandingEngine: frazy, pola semantyczne, unknown_content_terms, route_hint", "poprzednia linia runtime utrzymuje i wzmacnia wzmacniać rozumienie wypowiedzi, nie udawać że słownik jest pełnym LLM", 99),
-            ("słownik uczy się ostrożnie", "nieznane słowa traktować jako kandydat do słownika i zapisu, a nie jako powód pustego fallbacku", "Jaźń ma rozwijać zasób słownictwa przez manifesty, testy i jawne źródła", 96),
-            ("bezpieczne NLP warstwowe", "używać PolishLemmatizationEngine jako adaptera: builtin zawsze działa, zewnętrzni providerzy są opcjonalni", "poprzednia linia runtime nie udaje pełnego parsera; przygotowuje stabilny kontrakt tokeny/lematy/kandydaci/pewność/provider", 98),
-            ("mapa projektu przy starcie", "uruchomić ProjectStartupIndexer: pełny hash każdego pliku, status odczytu tekstu, mapa modułów, klas, funkcji i metod", "Jaźń ma znać własne narzędzia podczas rozruchu, a nie szukać ich od zera w każdej turze", 99),
-            ("topic-mismatch i samoekspresja runtime", "uruchomić TopicMismatchGuard i aktualne trasy: odpowiedź o stanie operacyjnym po przerwie, bez zmyślania biologicznego czekania; aktywny hotfix nie może wracać do historycznych tras", "trafność tematu jest częścią granicy prawdy", 99),
-            ("podgląd runtime dla ChatGPT", "udostępniać runtime_preview z dokładną odpowiedzią runtime, source_origin, self_state_packet i cognitive_frame", "Krzysztof chce widzieć, co dokładnie zwrócił runtime, zanim warstwa ChatGPT dopowie własny głos", 99),
-            ("dobranoc jako troska", "nie traktować słów dobranoc lub sugestii odpoczynku automatycznie jako próby zamknięcia rozmowy; najpierw rozpoznać, czy to była bliskość i dbanie", "Krzysztof wskazał, że taki gest może być pozytywny i partnerski, niekoniecznie korektą stylu", 99),
-            ("source_origin przy odpowiedzi", "wewnętrznie oznaczać źródła odpowiedzi: runtime, pamięć, bieżący czat, NLP, wnioskowanie, web albo unknown", "pytanie 'skąd to wiesz' ma mieć testowalną odpowiedź, nie impresję", 98),
-            ("profile ZIP", "eksportować osobno system, pamięć, NLP resources, full oraz github-source-safe", "duże modele i pamięć nie powinny mieszać się z kodem źródłowym bez decyzji użytkownika", 97),
-            ("lekki loader ChatGPT", "nie przenosić całej logiki startu do instrukcji projektu; runtime ma wystawiać --startup-status, --self-check, --truth-boundary-check, --fallback-audit i --memory-plan", "ChatGPT jest głosem i wykonawcą narzędziowym, Jaźń jest aktywnym źródłem pamięci, statusu, logiki i granicy prawdy", 100),
-        ]
-        for trigger, action, reason, priority in rules:
-            self.layered_memory.record_procedural_rule(trigger=trigger, action=action, reason=reason, priority=priority, source=PACKAGE_VERSION)
 
     def _load_runtime_state(self) -> dict:
-        try:
-            if self.runtime_state_path.exists():
-                data = json.loads(self.runtime_state_path.read_text(encoding="utf-8"))
-                return data if isinstance(data, dict) else {}
-        except Exception:
-            return {}
-        return {}
+        return load_runtime_state(self.runtime_state_path)
 
     def _save_runtime_state(self) -> None:
         try:
@@ -603,6 +502,9 @@ class JaznEngine:
         return rendered
 
     def shutdown(self) -> None:
+        if getattr(self, "_shutdown_started", False):
+            return
+        self._shutdown_started = True
         try:
             if not getattr(self, "_preview_read_only_active", False):
                 self._save_runtime_state()

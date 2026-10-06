@@ -74,6 +74,12 @@ ChatGPT, Codex i Ollama pełnią różne role wokół tego samego systemu:
 - Codex/agent kodujący zmienia repozytorium, ale sam edit/commit nie jest aktywacją runtime;
 - Ollama jest backendem językowym generującym kandydata, a nie właścicielem identity/memory lineage.
 
+v109 rozdziela przygotowanie usług (`RuntimeCompositionRoot`) od czystego
+wiązania silnika (`JaznEngine`). Phase-2 hosta obsługuje `FinalizationService`:
+trwała akceptacja dokładnego kandydata poprzedza projekcje do dziennika i historii.
+Stan wdrożenia i rzeczywiste wyniki bramek opisuje
+[raport v109](docs/reports/JAZN_V16_3_25_5_109_LIFECYCLE_FINALIZATION_PROGRESS.md).
+
 ## Pamięć
 
 Docelowa pamięć jest źródłowa i rozdziela co najmniej:

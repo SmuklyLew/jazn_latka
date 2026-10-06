@@ -129,7 +129,7 @@ def _patch_engine(
                 "envelope_present_in_final": True,
             }
     import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
 
 
 def test_daemon_presentation_and_private_mcp_complete_two_phase_reply(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -253,7 +253,7 @@ def test_phase2_passes_bound_host_action_to_persistence(tmp_path, monkeypatch: p
 
     import latka_jazn.core.finalization_service as engine_module
 
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
     with host_action_evidence_scope(
         host_action,
         expected_turn_id=str(bridge["turn_id"]),
@@ -314,7 +314,7 @@ def test_indeterminate_persistence_defers_daemon_ack_to_durable_reconciliation(
 
     import latka_jazn.core.finalization_service as engine_module
 
-    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FailingEngine.persist_final_visible_reply)
+    monkeypatch.setattr(engine_module, "FinalizationService", FailingEngine)
 
     def forbidden_notification(**_kwargs):
         pytest.fail("indeterminate persistence must defer direct daemon notification")
