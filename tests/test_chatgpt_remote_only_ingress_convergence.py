@@ -115,7 +115,7 @@ def test_project_loader_forbids_executor_fallback_for_ordinary_chat() -> None:
     )
 
     assert len(loader) <= 5000
-    assert "zwykła rozmowa ChatGPT = remote-only" in loader.lower()
+    assert "zwykła rozmowa chatgpt = remote-only" in loader.lower()
     assert "NIE próbuj lokalnego/process executora" in loader
     assert "operator_recovery" in loader
     assert "Refresh/Recreate/republish" in loader
