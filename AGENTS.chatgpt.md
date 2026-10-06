@@ -101,6 +101,8 @@ Host może ustawić `host_connector_invocation_observed=true` wyłącznie dlateg
 
 ### 2.3. Jawny tryb `operator_recovery`
 
+W tym trybie host może używać bieżącej powierzchni **pliki i executor/terminal** wyłącznie do serwisu, discovery i recovery; nie promuj jej do ordinary-chat ingress.
+
 Poniższe reguły executora obowiązują wyłącznie po jawnym wejściu w `operator_recovery` przez użytkownika/operatora. Nie wolno przełączać ordinary-chat do tego trybu automatycznie tylko dlatego, że remote app/toolset jest niedostępny.
 
 W `operator_recovery`, jeżeli gotowej zdalnej trasy nie ma i lokalny bootstrap jest rzeczywiście celem serwisowym, wykonaj najwyżej jedną minimalną próbę utworzenia lokalnego procesu na podstawowej powierzchni wykonawczej.
