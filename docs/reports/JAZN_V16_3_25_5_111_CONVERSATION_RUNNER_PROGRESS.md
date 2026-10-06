@@ -104,3 +104,16 @@ Evidence at this checkpoint:
 - Follow-up full suite and immutable final-SHA CI: IN_PROGRESS/NOT RUN.
 
 No merge, external ChatGPT voice acceptance, or universal power-loss guarantee is claimed.
+
+## Cross-platform architecture gate
+
+Persistent-runtime E2E now adds the composition lifecycle, finalization service,
+crash atomicity/projection recovery, orchestrator pipeline/historical parity, runner
+contract and legacy cutover tests to both Linux and Windows. Local execution of
+this exact added matrix: **43 PASS**, 49.60 seconds. Existing workflow steps and
+assertions are retained. Its new remote results remain pending.
+
+The five-hour usage checkpoint was pushed before the approximately 35-percent
+remaining threshold: code 2a6829d, canonical metadata 9609016, followed by the
+normal merge 3756a79 of identical automated metadata 1f46321. No history rewrite,
+force push or PR merge occurred. Validation logs stay outside tracked runtime data.

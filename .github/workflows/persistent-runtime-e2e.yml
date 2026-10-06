@@ -337,6 +337,19 @@ jobs:
           tests/test_host_finalization_provenance_polish_nlp.py
           tests/test_host_finalization_gate.py
 
+      - name: v109-v111 composition, runner, cutover, and crash recovery
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_runtime_composition_lifecycle.py
+          tests/test_finalization_service.py
+          tests/test_finalization_crash_atomicity.py
+          tests/test_finalization_projection_recovery.py
+          tests/test_turn_orchestrator_pipeline.py
+          tests/test_turn_orchestrator_parity.py
+          tests/test_conversation_runner_contract.py
+          tests/test_legacy_dialogue_cutover.py
+
       - name: Clean checkout guard
         if: always()
         shell: bash
