@@ -6,6 +6,10 @@ import sys
 from typing import Sequence
 
 from latka_jazn.bootstrap.chatgpt_host_discovery_evidence import discovery_evidence_from_payload
+from latka_jazn.bootstrap.chatgpt_ingress_policy import (
+    ChatGptIngressMode,
+    normalize_chatgpt_ingress_mode,
+)
 from latka_jazn.bootstrap.chatgpt_host_preflight_attachments_parse import attachment_reports_from_payload
 from latka_jazn.bootstrap.chatgpt_host_preflight_parse import (
     executor_observations_from_payload,
@@ -27,6 +31,7 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
 
     try:
         payload = json_object_from_file(args.input) if args.input else {
+            "ingress_mode": ChatGptIngressMode.OPERATOR_RECOVERY.value,
             "package_required": False,
             "executor_observations": [{
                 "surface": "current_local_python_process",
@@ -38,11 +43,20 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
             "attachments": [],
         }
         package_required = optional_bool(payload, "package_required", False)
+        ingress_mode = normalize_chatgpt_ingress_mode(
+            payload.get(
+                "ingress_mode",
+                ChatGptIngressMode.REMOTE_ONLY.value
+                if args.input
+                else ChatGptIngressMode.OPERATOR_RECOVERY.value,
+            )
+        )
         decision = plan_chatgpt_host_preflight(
             executor_observations_from_payload(payload),
             attachment_reports=attachment_reports_from_payload(payload),
             package_required=bool(package_required),
             discovery_evidence=discovery_evidence_from_payload(payload),
+            ingress_mode=ingress_mode,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         print(json.dumps({
@@ -55,6 +69,7 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
 
     result = decision.to_dict()
     result["ok"] = True
-    result["gate_passed"] = decision.bootstrap_allowed
+    gate_passed = bool(decision.bootstrap_allowed or decision.remote_runtime_allowed)
+    result["gate_passed"] = gate_passed
     print(json.dumps(result, ensure_ascii=False, indent=2 if args.json else None, sort_keys=True))
-    return 0 if decision.bootstrap_allowed else 3
+    return 0 if gate_passed else 3
