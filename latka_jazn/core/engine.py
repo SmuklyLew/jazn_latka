@@ -2950,7 +2950,7 @@ class JaznEngine:
         decision_dict: dict[str, Any],
         handler_result: Any,
         route_entry: Any,
-    ) -> tuple[list[str], set[str], list[str]]:
+    ) -> tuple[list[str], set[str], list[str], bool]:
         decision_dict["handler_result"] = handler_result.to_dict()
         decision_dict["handler_name"] = handler_result.handler_name
         decision_dict["route"] = handler_result.route or decision_dict.get("route")
@@ -2979,7 +2979,12 @@ class JaznEngine:
             decision_dict["direct_answer_required"] = True
         if handler_result.body and handler_result.generation_mode not in {"pass_through_empty"}:
             decision.body = handler_result.body
-        return handler_required, handler_satisfied, handler_missing
+        return (
+            handler_required,
+            handler_satisfied,
+            handler_missing,
+            preserve_handler_body,
+        )
 
     def _apply_model_synthesis_result(
         self,
@@ -3306,7 +3311,12 @@ class JaznEngine:
             route_entry,
             handler_result,
         )
-        handler_required, handler_satisfied, handler_missing = self._project_handler_result(
+        (
+            handler_required,
+            handler_satisfied,
+            handler_missing,
+            preserve_handler_body,
+        ) = self._project_handler_result(
             decision=decision,
             decision_dict=decision_dict,
             handler_result=handler_result,
