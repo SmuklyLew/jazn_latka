@@ -3,11 +3,11 @@
   "version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "runtime_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
   "package_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
-  "generated_at_utc": "2026-10-06T01:56:00+00:00",
-  "updated_at_utc": "2026-10-06T01:56:00+00:00",
+  "generated_at_utc": "2026-10-06T02:13:34+00:00",
+  "updated_at_utc": "2026-10-06T02:13:34+00:00",
   "start_file": "run.py",
-  "file_count": 1982,
-  "static_file_count": 1982,
+  "file_count": 1983,
+  "static_file_count": 1983,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -300,7 +300,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3072,
-      "sha256": "ab515780d1794a80ec91c313dab3fb8779fef18690a15b94123cdf3580213caf",
+      "sha256": "59cdbb2e269cd7b70ff51d0eee1d57110b4a4c3445ae02b25e8c9e379f6467f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1955,8 +1955,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_109_LIFECYCLE_FINALIZATION_PROGRESS.md",
-      "size_bytes": 4436,
-      "sha256": "784f8bed8d120be275957cdf7f0d22b83eba16c161466864681aa55810d1215c",
+      "size_bytes": 5017,
+      "sha256": "b48134fd106df5c2754c1cf92dedd3d3b37ef9ac7a4939c04a68ae5fc50bf035",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8048,8 +8048,8 @@
     },
     {
       "path": "latka_jazn/tools/cognitive_architecture_audit.py",
-      "size_bytes": 21778,
-      "sha256": "fc2a939421499f94828bb1576b6bf3b18cd1043be7cc8685f94ccfcb390367d8",
+      "size_bytes": 22055,
+      "sha256": "4b300d0fd0b3dd78356c40e9d388020385d38234c4cb3bb237249f3bc8b967c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14779,6 +14779,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_composed_cognition_reachability.py",
+      "size_bytes": 1525,
+      "sha256": "562c5a4405b34901eca45283d38ab18bcf97921414cc1272e811a8d7c578cd15",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_config_memory_root.py",
       "size_bytes": 2027,
       "sha256": "659006bfed6c4701cf635a88eca48ed050dedb76075ea0150208f512cdf6ddc4",
@@ -17705,8 +17714,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1829286,
-      "sha256": "de45980f315787707ec4d3ecf96a5ee40b86436c6b9a080c3b53ba9b8743aad7",
+      "size_bytes": 1830077,
+      "sha256": "0c9056c5383335de7bf69e7bcb2ed865556cae824cc49232a140a8ddcf55bc70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
