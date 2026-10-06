@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v112 closes the v111 repository/evidence loop after a real ChatGPT-host
-# local-executor turn reached accepted display_exact without replay.
-DISTRIBUTION_VERSION = "16.3.25.5.112"
-PACKAGE_VERSION = "16.3.25.5.112"
-PACKAGE_RELEASE_NAME = "v111-closeout-real-host-evidence-convergence"
+# v113 removes local/process execution from the normal ChatGPT conversation
+# path and converges ordinary ingress on a verified remote MCP/app runtime.
+DISTRIBUTION_VERSION = "16.3.25.5.113"
+PACKAGE_VERSION = "16.3.25.5.113"
+PACKAGE_RELEASE_NAME = "remote-only-chatgpt-ingress-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
