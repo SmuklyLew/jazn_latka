@@ -199,7 +199,7 @@ bieżącej tury i zaakceptowanej finalizacji.
 - `tunnel-client` nieobecny -> lokalny runtime może działać, remote route pozostaje unverified;
 - process running, ale `healthy=false` albo `ready=false` -> remote route pozostaje niedostępna;
 - tunnel ready, ale connector/app hosta niezweryfikowany -> remote route pozostaje niedostępna;
-- lokalny executor ChatGPT pada przed utworzeniem procesu, ale host ma już zweryfikowany remote failover -> host powinien użyć remote route zamiast ponawiać lokalny bootstrap;
+- ordinary-chat nie wykonuje probe lokalnego executora; gdy host ma zweryfikowaną aplikację/tunel, używa remote route, a gdy jej nie ma, kończy fail-closed;
 - transport przerwany po submit -> wznowienie istniejącego requestu, nigdy replay wiadomości jako nowej tury;
 - finalizacja odrzucona -> host pokazuje diagnostykę, nie własną imitację odpowiedzi Jaźni.
 
@@ -211,11 +211,12 @@ hosta i jego aktualnej konfiguracji. Dlatego pozytywna klasyfikacja zdalnej
 trasy zawsze wymaga jawnego evidence capability bieżącego hosta, a nie samego
 stanu serwera po stronie Jaźni.
 
-Jeżeli host nie udostępnia żadnej zweryfikowanej zdalnej capability i lokalny
-executor nie utworzył procesu, właściwym wynikiem pozostaje fail-closed
-`host_executor_unavailable` dla tej powierzchni albo jawny host handoff, jeśli
-host rzeczywiście go oferuje. Kod runtime nie może imitować brakującej funkcji
-produktu.
+Od 16.3.25.5.113 brak zweryfikowanej zdalnej capability w ordinary-chat kończy
+się fail-closed bez uruchamiania lokalnego executora i bez automatycznego
+handoffu. Lokalny executor, filesystem i ZIP bootstrap są dostępne wyłącznie po
+jawnym wejściu w `operator_recovery`. Kod runtime nie może imitować brakującej
+funkcji produktu ani używać serwisowego executora jako substytutu nieobecnej
+aplikacji ChatGPT.
 
 ## Źródła zewnętrzne
 
@@ -227,3 +228,22 @@ produktu.
 - Model Context Protocol — SEP-2663 Tasks extension: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2663-tasks-extension.md
 - Model Context Protocol — SEP-2243 HTTP standardization: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2243-http-standardization.md
 - MCP Python SDK v2.2.0 release notes: https://github.com/modelcontextprotocol/python-sdk/releases/tag/v2.2.0
+
+## Remote-only ordinary-chat od 16.3.25.5.113
+
+Secure MCP Tunnel jest transportem do persistent runtime, nie awaryjnym
+mechanizmem tworzenia procesu przez ChatGPT. Dla zwykłej wiadomości host:
+1. obserwuje bieżący callable toolset aplikacji Jaźni;
+2. wymaga czterech kanonicznych akcji;
+3. wykonuje `jazn_status`;
+4. dopiero po świeżym readiness/runtime binding przechodzi do
+   generate/resume/finalize;
+5. przy braku lub starym snapshotcie kończy fail-closed i wskazuje
+   Refresh/Recreate/republish aplikacji.
+
+`operator_recovery` jest osobną, jawną procedurą serwisową i nie może zostać
+wybrany automatycznie przez ordinary-chat.
+
+OpenAI opisuje Secure MCP Tunnel jako outbound-only połączenie prywatnego MCP z
+obsługiwanymi produktami oraz osobno wymaga uprawnień ChatGPT do custom MCP:
+https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
