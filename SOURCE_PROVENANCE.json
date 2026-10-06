@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "712a25db94c634ea47fbf265c0d907608a668f00",
-    "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
+    "base_commit": "689e7d94b55ba20ebee7537bd209e3ce95d43e19",
+    "base_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "689e7d94b55ba20ebee7537bd209e3ce95d43e19",
