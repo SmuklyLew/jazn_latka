@@ -32,8 +32,16 @@ Validation at this checkpoint:
   PASS in targeted runs;
 - Pyright: 0 errors, 1 existing __all__ warning before latest port changes;
 - compileall and route graph audit: PASS;
-- full local suite: IN_PROGRESS with fresh failures to diagnose, not PASS;
-- deterministic v109 snapshot parity: IN_PROGRESS;
+- Initial full local suite: FAIL, 2070 PASS, 2 FAIL, 4 platform skips. A source
+  assertion still inspected the old engine repair owner; moved it to RecoveryPolicy
+  while retaining exactly two repair calls and memory_context assertions. The other
+  failure was HTTP result polling after a completed daemon job; a fresh unchanged
+  focused test passed. Both fresh failure surfaces: 8 PASS.
+- Deterministic v109 snapshot parity: 3 PASS, comparing intent/route, required
+  components, memory gate, provenance, truth, host requirements and retry counts.
+  The fixture uses a null model and explicitly disables local provider discovery;
+  this avoids external I/O and does not bypass pipeline validation or persistence.
+- Final full local suite after these changes: pending;
 - CI Linux/Windows E2E, release-hardening and cleanroom: NOT RUN for v110.
 
 No merge-ready or v111 completion claim is made here. The v111 cutover still needs

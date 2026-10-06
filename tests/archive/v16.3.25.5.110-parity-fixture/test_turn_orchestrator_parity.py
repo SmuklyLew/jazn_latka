@@ -33,7 +33,6 @@ def test_deterministic_pipeline_contract_parity_without_external_effects(tmp_pat
     for name in ("JAZN_NETWORK_TIME_FIRST", "JAZN_NETWORK_TIME_IN_TURN", "JAZN_ALLOW_NETWORK", "JAZN_DICTIONARY_ALLOW_NETWORK"):
         monkeypatch.setenv(name, "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
-    monkeypatch.setenv("JAZN_LLM_ROUTE_SKIP_LOCAL_PROBE", "1")
     fixture = Path(__file__).parent / "fixtures/v109_process_turn.txt"
     namespace = dict(vars(engine_module))
     exec(compile(dedent(fixture.read_text(encoding="utf-8")), str(fixture), "exec"), namespace)

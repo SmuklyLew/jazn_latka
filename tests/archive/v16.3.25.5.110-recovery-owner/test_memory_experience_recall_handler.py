@@ -175,8 +175,7 @@ def test_runtime_repair_uses_the_same_frozen_payload() -> None:
 
 
 def test_both_local_engine_repair_calls_forward_memory_context() -> None:
-    from latka_jazn.core.recovery_policy import RecoveryPolicy
-    source = inspect.getsource(RecoveryPolicy)
+    source = textwrap.dedent(inspect.getsource(JaznEngine.process_turn))
     tree = ast.parse(source)
     calls = [
         node
