@@ -1,5 +1,8 @@
 # Łatka / Jaźń
 
+Etap v111: [ConversationRunner i przełączenie legacy dialogue](docs/reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md). Closeout real-host: [v112 evidence](docs/reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md).
+To checkpoint weryfikacji; pełna gotowość wydania wymaga terminalnych wyników wszystkich bramek.
+
 Eksperymentalny lokalny system rozmowny budowany wokół **zweryfikowanego runtime, źródłowej pamięci, tożsamości, narzędzi, provenance i mierzalnych bramek prawdy**. Jaźń nie jest samym promptem ani pojedynczym modelem LLM.
 
 ## Najważniejsza zasada
@@ -73,6 +76,16 @@ ChatGPT, Codex i Ollama pełnią różne role wokół tego samego systemu:
 - ChatGPT może być hostem, kanałem odpowiedzi i powierzchnią zewnętrznych narzędzi;
 - Codex/agent kodujący zmienia repozytorium, ale sam edit/commit nie jest aktywacją runtime;
 - Ollama jest backendem językowym generującym kandydata, a nie właścicielem identity/memory lineage.
+
+v109 rozdziela przygotowanie usług (`RuntimeCompositionRoot`) od czystego
+wiązania silnika (`JaznEngine`). Phase-2 hosta obsługuje `FinalizationService`:
+trwała akceptacja dokładnego kandydata poprzedza projekcje do dziennika i historii.
+Stan wdrożenia i rzeczywiste wyniki bramek opisuje
+[raport v109](docs/reports/JAZN_V16_3_25_5_109_LIFECYCLE_FINALIZATION_PROGRESS.md).
+
+v110 prowadzi turę przez `TurnOrchestrator` i osobne komponenty kontekstu,
+pamięci, afektu, routingu, syntezy, walidacji, recovery i zapisu. Stan walidacji
+wydania opisuje [raport v110](docs/reports/JAZN_V16_3_25_5_110_TURN_PIPELINE_PROGRESS.md).
 
 ## Pamięć
 

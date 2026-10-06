@@ -17,6 +17,12 @@ class FunctionBudget:
 
 FUNCTION_BUDGETS = (
     FunctionBudget("main.py", "main", 1151),
+    FunctionBudget("latka_jazn/core/turn_orchestrator.py", "TurnOrchestrator.process", 60),
+    FunctionBudget("latka_jazn/core/cognitive_frame_builder.py", "CognitiveFrameBuilder.build", 40),
+    FunctionBudget("latka_jazn/core/recovery_policy.py", "RecoveryPolicy.resolve", 150),
+    FunctionBudget("latka_jazn/core/response_pipeline.py", "ResponsePipeline.build_contract", 90),
+    FunctionBudget("latka_jazn/core/validation_pipeline.py", "ValidationPipeline.assess_reasoning", 100),
+    FunctionBudget("latka_jazn/core/persistence_coordinator.py", "PersistenceCoordinator.prepare_result", 100),
     FunctionBudget("latka_jazn/core/engine.py", "JaznEngine.build_cognitive_frame", 489),
     FunctionBudget("latka_jazn/core/engine.py", "JaznEngine.process_turn", 713),
     FunctionBudget("latka_jazn/core/conversation.py", "ConversationResponder.compose", 722),

@@ -126,11 +126,12 @@ def run(
     def invoke_runtime(exact_text: str) -> dict[str, Any]:
         if request_id is None:
             return gateway.chat(exact_text, session_id=session_id)
-        return gateway.chat(
-            exact_text,
-            session_id=session_id,
-            request_id=request_id,
-        )
+        from latka_jazn.core.conversation_runner import ConversationRunner
+        from latka_jazn.core.conversation_turn_api import TurnRequest
+
+        runner = ConversationRunner.for_transport(gateway)
+        handle = runner.submit_turn(TurnRequest(exact_text, request_id, session_id))
+        return runner.submitted_snapshot(handle).result
 
     gate_result = run_host_pre_response_gate(
         message,

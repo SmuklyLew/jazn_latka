@@ -251,9 +251,9 @@ def test_phase2_passes_bound_host_action_to_persistence(tmp_path, monkeypatch: p
                 "trace_id": kwargs["trace_id"],
             }
 
-    import latka_jazn.core.engine as engine_module
+    import latka_jazn.core.finalization_service as engine_module
 
-    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
+    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
     with host_action_evidence_scope(
         host_action,
         expected_turn_id=str(bridge["turn_id"]),
@@ -312,9 +312,9 @@ def test_indeterminate_persistence_defers_daemon_ack_to_durable_reconciliation(
         def persist_final_visible_reply(self, **_kwargs):
             raise RuntimeError("append outcome unknown")
 
-    import latka_jazn.core.engine as engine_module
+    import latka_jazn.core.finalization_service as engine_module
 
-    monkeypatch.setattr(engine_module, "JaznEngine", FailingEngine)
+    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FailingEngine.persist_final_visible_reply)
 
     def forbidden_notification(**_kwargs):
         pytest.fail("indeterminate persistence must defer direct daemon notification")

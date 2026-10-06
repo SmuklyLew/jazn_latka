@@ -403,9 +403,9 @@ def test_mcp_phase_two_completes_the_same_daemon_job(
                 assert target is not None
                 return target.snapshot(include_result=False)
 
-        import latka_jazn.core.engine as engine_module
+        import latka_jazn.core.finalization_service as engine_module
 
-        monkeypatch.setattr(engine_module, "JaznEngine", _FakeEngine)
+        monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", _FakeEngine.persist_final_visible_reply)
         body = "Jestem tutaj przy tej turze."
         finalized = jazn_finalize_reply.run(
             root=tmp_path,

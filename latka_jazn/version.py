@@ -3,13 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.107 closes the production remote-runtime operations gap:
-# public MCP startup now requires strict conversation-ready runtime evidence,
-# reuses or starts the canonical runtime supervisor by default, and ships
-# versioned deployment/tunnel contracts plus chaos-oriented regressions.
-DISTRIBUTION_VERSION = "16.3.25.5.107"
-PACKAGE_VERSION = "16.3.25.5.107"
-PACKAGE_RELEASE_NAME = "persistent-remote-runtime-operations-convergence"
+# v112 closes the v111 repository/evidence loop after a real ChatGPT-host
+# local-executor turn reached accepted display_exact without replay.
+DISTRIBUTION_VERSION = "16.3.25.5.112"
+PACKAGE_VERSION = "16.3.25.5.112"
+PACKAGE_RELEASE_NAME = "v111-closeout-real-host-evidence-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

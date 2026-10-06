@@ -6,6 +6,7 @@ from typing import Any
 import hashlib
 import json, re, time, uuid
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.engine_construction import EngineRuntimeServices, load_runtime_state
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
@@ -44,7 +45,6 @@ from latka_jazn.core.final_response_contract import FinalResponseContract
 from latka_jazn.core.visible_integrity import evaluate_origin_truth
 from latka_jazn.core.startup_contract import build_startup_status, build_startup_summary, build_truth_boundary_check
 from latka_jazn.core.continuity_badge import ContinuityBadgePolicy
-from latka_jazn.core.final_visible_reply_capture import FinalVisibleReplyCapture
 from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
 from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
 from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
@@ -113,437 +113,154 @@ from latka_jazn.model_adapters.factory import build_model_adapter
 from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_summary
 from latka_jazn.core.turn_execution import TurnExecutionContext
+from latka_jazn.core.blind_route_detector import BlindRouteDetector
+from latka_jazn.core.engine_services import EngineServices
+from latka_jazn.core.turn_diagnostics import (
+    FallbackDecision,
+    FallbackKind,
+    TurnStage,
+)
 
 
-MODEL_GUIDED_SPEECH_INTENTS = {
-    "ordinary_conversation",
-    "standalone_greeting",
-    "casual_greeting",
-    "casual_feedback",
-    "expressive_reaction",
-    "short_free_dialogue",
-    "negative_feedback_current_turn",
-    "positive_feedback_current_turn",
-    "ordinary_workday_report",
-    "sleep_closure_statement",
-    "affective_self_state_reality_check",
-    "self_state_question",
-    "reciprocal_self_state_question",
-    "self_preference_question",
-    "direct_latka_voice_request",
-}
-
-FAST_HEALTH_CHECK_INTENTS = {
-    "runtime_health_check",
-    "runtime_health_check_after_update",
-    "runtime_activation_status_question",
-    "presence_check",
-    "identity_presence_check",
-    "identity_continuity_check",
-}
 
 
-def _is_chatgpt_host_visible_bridge(adapter_status: dict[str, Any]) -> bool:
-    """Return True for the explicit ChatGPT host/copy-paste bridge.
-
-    This is not a local model call. It only means the visible language channel is
-    the ChatGPT host, so a validated runtime handler body may be passed through
-    without pretending that the local Python process generated model-guided
-    speech.
-    """
-    adapter_id = str(adapter_status.get("adapter_id") or adapter_status.get("name") or "").strip()
-    provider = str(adapter_status.get("provider") or "").strip()
-    kind = str(adapter_status.get("kind") or "").strip()
-    return (
-        adapter_id == "chatgpt_runtime_adapter"
-        and provider == "chatgpt_host"
-        and kind == "hosted_chatgpt_bridge"
-    )
 
 
-def _handler_body_can_cross_chatgpt_host_bridge(
-    *,
-    adapter_status: dict[str, Any],
-    handler_result: Any,
-    handler_missing: list[Any],
-    handler_required: list[Any],
-    handler_satisfied: set[Any],
-    template_origin: dict[str, Any],
-    validation: Any,
-) -> bool:
-    if not _is_chatgpt_host_visible_bridge(adapter_status):
-        return False
-    if not str(getattr(handler_result, "body", "") or "").strip():
-        return False
-    handler_data = getattr(handler_result, "data", {})
-    if isinstance(handler_data, dict) and handler_data.get("requires_model_language_realization") is True:
-        return False
-    if list(handler_missing or []):
-        return False
-    if handler_required and not set(handler_required).issubset(handler_satisfied):
-        return False
-    if template_origin.get("template_id"):
-        return False
-    if not bool(getattr(validation, "accepted", False)):
-        return False
-    return True
 
 
-def _handler_requires_model_language_realization(handler_result: Any) -> bool:
-    data = getattr(handler_result, "data", {})
-    return bool(isinstance(data, dict) and data.get("requires_model_language_realization") is True)
 
 
-def _should_preserve_handler_body(handler_result: Any, required: list[Any], satisfied: set[Any], missing: list[Any]) -> bool:
-    return bool(
-        handler_result.handler_name in JaznEngine.DEDICATED_PRESERVE_HANDLERS
-        and not _handler_requires_model_language_realization(handler_result)
-        and handler_result.generation_mode == "handler_generated"
-        and bool(handler_result.body)
-        and not missing
-        and (not required or set(required).issubset(satisfied))
-    )
 
 
-def _speech_truth_gate_required(detected_intent: Any, handler_result: Any) -> bool:
-    return bool(
-        str(detected_intent) in MODEL_GUIDED_SPEECH_INTENTS
-        or _handler_requires_model_language_realization(handler_result)
-    )
-
-def _sync_conversation_decision_body(
-    decision_dict: dict[str, Any],
-    *,
-    final_body: str,
-    sync_stage: str,
-) -> dict[str, Any]:
-    """Keep the public conversation_decision body aligned with final runtime text.
-
-    The initial ConversationResponder draft can be replaced by a dedicated
-    handler, validator repair, or runtime synthesizer. JSONL diagnostics must
-    not keep that stale draft under conversation_decision.body once the final
-    handler-backed body is known.
-    """
-    synced = dict(decision_dict or {})
-    final_body = str(final_body or "").strip()
-    previous_body = str(synced.get("body") or "").strip()
-    if previous_body and previous_body != final_body:
-        synced.setdefault("pre_final_body", previous_body)
-    synced["body"] = final_body
-
-    handler_result = json_object(synced.get("handler_result"))
-    handler_body = str(handler_result.get("body") or "").strip()
-    preserve_handler_body = bool(synced.get("preserve_handler_body"))
-    if preserve_handler_body and handler_body and handler_body == final_body:
-        status = "synchronized_to_preserved_handler_body"
-    elif preserve_handler_body and handler_body and handler_body != final_body:
-        status = "final_body_differs_from_preserved_handler_body"
-    elif previous_body == final_body:
-        status = "already_synchronized"
-    else:
-        status = "synchronized_to_final_body"
-
-    synced["body_sync"] = {
-        "schema_version": "conversation_decision_body_sync/v1",
-        "status": status,
-        "sync_stage": sync_stage,
-        "conversation_body_matches_final_body": synced.get("body") == final_body,
-        "handler_body_matches_final_body": (handler_body == final_body) if handler_body else None,
-        "preserve_handler_body": preserve_handler_body,
-        "truth_boundary": "conversation_decision.body is diagnostic JSONL metadata and must reflect the final runtime body, not a stale pre-handler draft.",
-    }
-    return synced
 
 
-def _build_turn_context_payloads(
-    *,
-    ctx: dict[str, Any],
-    text: str,
-    prior_user_text: str | None,
-    prior_visible_text: str | None,
-    prior_detected_intent: str | None,
-    prior_runtime_route: str | None,
-    prior_context_age_seconds: int | None,
-    carryover_allowed: bool,
-    turn_context_resolution: Any,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    carryover = {
-        **turn_context_resolution.to_dict(),
-        "previous_user_text_available": bool(prior_user_text),
-        "previous_user_text_used": bool(carryover_allowed),
-        "previous_detected_intent": prior_detected_intent,
-        "previous_runtime_route": prior_runtime_route,
-        "previous_context_age_seconds": prior_context_age_seconds,
-        "ttl_seconds": 21600,
-    }
-    dialogue = {
-        "session_id": str(ctx.get("session_id") or ""),
-        "current_user_text": text,
-        "previous_user_text": prior_user_text if carryover_allowed else None,
-        "previous_assistant_text": prior_visible_text if carryover_allowed else None,
-        "carryover_allowed": carryover_allowed,
-        "carryover_reason": turn_context_resolution.carryover_reason,
-    }
-    return carryover, dialogue
 
 
-def _model_guided_rejection_disclosure(
-    model_synthesis: Any,
-    first_validation: Any,
-) -> tuple[str, str, str, bool]:
-    adapter_payload = dict(model_synthesis.adapter_response or {})
-    model_replied = bool(adapter_payload) and str(
-        adapter_payload.get("status") or model_synthesis.status
-    ) == "completed"
-    candidate_validation = dict(model_synthesis.candidate_validation or {})
-    candidate_violations = list(candidate_validation.get("violations") or [])
-    mismatch_reason = str(getattr(first_validation, "mismatch_reason", "") or "").strip()
-    missing_components = list(
-        getattr(first_validation, "missing_required_components", []) or []
-    )
-    rejection_details = [
-        item
-        for item in [*candidate_violations, mismatch_reason, *missing_components]
-        if str(item).strip()
-    ]
-    if model_replied:
-        provider_name = str(
-            model_synthesis.provider or adapter_payload.get("provider") or "ollama"
-        )
-        model_name = str(
-            model_synthesis.model or adapter_payload.get("model") or "model"
-        )
-        detail = ", ".join(str(item) for item in rejection_details[:4]) or str(
-            model_synthesis.reason or "runtime_validation_rejected"
-        )
-        body = (
-            f"Model {provider_name}/{model_name} odpowiedział, ale runtime odrzucił kandydat "
-            f"odpowiedzi podczas walidacji: {detail}. "
-            "Nie pokażę odrzuconego tekstu jako wypowiedzi Łatki."
-        )
-        return (
-            body,
-            "runtime_turn_truth_gate/model_candidate_rejected",
-            "truthful_degraded_model_candidate_rejected",
-            True,
-        )
-    return (
-        "Nie mam w tej turze dostępnego modelu zdolnego wygenerować własną wypowiedź "
-        "model-guided. Nie przedstawię tekstu handlera ani szablonu jako dynamicznej "
-        "wypowiedzi Łatki.",
-        "runtime_turn_truth_gate/model_guided_speech_unavailable",
-        "truthful_degraded_cannot_answer_directly",
-        False,
-    )
+
+
 
 
 from latka_jazn.audit.audit_context_store import AuditContextStore
 from latka_jazn.bootstrap.contract_loader import BootstrapContractRepository
-class JaznEngine:
-    def __init__(self, config: JaznConfig | None = None) -> None:
-        self.config = config or JaznConfig()
-        self.clock = WarsawClock(self.config.timezone)
-        self.guard = IdentityPerspectiveGuard()
-        self.canon = IdentityCanon.load(self.config.resolve(self.config.canon_path))
-        self.handshake = Handshake(self.canon.recognition.user_sign, self.canon.recognition.latka_sign)
-        self.store = MemoryStore(self.config.memory_db_path)
-        self.audit_store = AuditContextStore(self.config.audit_db_path)
-        self.bootstrap_contracts = BootstrapContractRepository(self.config.root)
-        self.renderer = ResponseRenderer(self.clock, self.guard)
-        self.affect = AffectiveState()
-        self.quiet = QuietRest(self.config.idle_reflection_thresholds)
-        self.importance_assessor = MemoryImportanceAssessor()
-        self.emotional_layers = EmotionalLayerModel()
-        self.temporal_awareness = TemporalAwareness()
-        self.neuropsychology = NeuropsychologyMapper()
-        self.consolidation = MemoryConsolidationModel()
-        self.identity_dynamics = IdentityDynamics()
-        self.neuro_loop = NeurocognitiveLoop()
-        self.logical_reasoner = LogicalReasoner()
-        self.operational_awareness = OperationalAwarenessModel()
-        self.polish_understanding = PolishUnderstandingEngine(self.config.root)
-        self.lexical_semantics = LexicalSemanticUnderstanding(self.config.root)
-        self.polish_lemmatizer = PolishLemmatizationEngine(self.config.root)
-        self.polish_reasoning = PolishReasoningPipeline(self.config.root)
-        self.cognitive_packets = CognitivePacketLibrary(self.config.root)
-        self.affective_granularity = AffectiveGranularityModel()
-        self.cognitive_topics = CognitiveTopicExpansion(self.config.root)
-        self.memory_search_planner = MemorySearchPlanner(self.config.root)
-        self.living_memory_gateway = LivingMemoryGateway(self.config.root)
-        self.memory_use_gate = MemoryUseGate()
-        self.neurological_signal_router = NeurologicalSignalRouter()
-        self.topic_mismatch_guard = TopicMismatchGuard()
-        self.dialogue_intent_classifier = DialogueIntentClassifier()
-        self.runtime_answer_validator = RuntimeAnswerValidator()
-        self.turn_context_resolver = TurnContextResolver()
-        self.dialogue_task_state_resolver = DialogueTaskStateResolver()
-        self.operational_learning_memory = OperationalLearningMemory.from_json_file(
-            self.config.root / "latka_jazn" / "resources" / "cognition" / "v154_operational_lessons.json"
-        )
-        self.source_origin_ledger = SourceOriginLedger(self.config.root)
-        self.template_registry = TemplateRegistry(self.config.root)
-        self.runtime_response_synthesizer = RuntimeResponseSynthesizer()
-        self.model_guided_response_synthesizer = ModelGuidedResponseSynthesizer()
-        self.route_registry = RouteRegistry()
-        self.route_handler_dispatcher = RouteHandlerDispatcher()
-        self.turn_checkpoint_writer = TurnCheckpointWriter(self.config.root)
-        self.runtime_visible_answer_comparator = RuntimeVisibleAnswerComparator(self.config.root)
-        self.turn_logic_auditor = TurnLogicAuditor(self.config.root)
-        self.reasoning_controller = ReasoningController()
-        self.operational_work_loop = OperationalWorkLoop()
-        self.external_dictionary_adapter = ExternalDictionaryAdapter(self.config.root, allow_network=self.config.dictionary_allow_network, user_agent=self.config.network_user_agent, timeout_seconds=self.config.dictionary_online_lookup_timeout_seconds, max_retries=self.config.network_max_retries, cache_ttl_seconds=self.config.network_cache_ttl_seconds)
-        self.module_responsibility_map = ModuleResponsibilityMap(self.config.root)
-        self.requirements_ledger = RequirementsLedger(self.config.root)
-        self.project_startup_indexer = ProjectStartupIndexer(self.config.root)
-        if self.project_startup_indexer.output_path.exists():
-            try:
-                import json as _json
-                self.project_startup_index = _json.loads(self.project_startup_indexer.output_path.read_text(encoding="utf-8"))
-            except Exception:
-                self.project_startup_index = self.project_startup_indexer.build(write=True)
-        else:
-            self.project_startup_index = self.project_startup_indexer.build(write=True)
-        self.runtime_operating_model = CognitiveRuntimeOperatingModel()
-        self.github_repository_plan = build_github_repository_plan(self.config.root)
-        self.voice_source_contract = VoiceSourceContract.build(runtime_active=True, runtime_mode="one_shot_or_chat_loop")
-        self.runtime_rendering_modes = RuntimeRenderingModeSelector()
-        self.memory_recall_contract_builder = MemoryRecallContractBuilder()
-        self.raw_chat_importer = RawChatImporter(self.config.root)
-        self.external_research_contract = ExternalResearchContract()
-        self.tool_use_policy = ToolUsePolicy()
-        self.tool_execution_controller = ToolExecutionController()
-        self.cognitive_runtime_coordinator = CognitiveRuntimeCoordinator()
-        self.knowledge_fabric = KnowledgeFabric()
-        self.lexical_intelligence = LexicalIntelligenceEngine(
-            root=self.config.root,
-            cache_path=self.config.runtime_workspace_dir / "lexical_intelligence.sqlite3",
-        )
-        self.untrusted_source_guard = UntrustedSourceGuard()
-        self.model_adapter = build_model_adapter(self.config)
-        self.model_guided_speech_status = None
-        self.conversation_responder = ConversationResponder()
-        self.architecture = SelfArchitecture()
-        self.birth_manifest = BirthSourceManifest(self.config.version)
-        self.truth_boundary = TruthBoundary()
-        self.uncertainty = UncertaintyModel()
-        self.source_origin = SourceOriginAnalyzer()
-        self.self_state_runtime = SelfStateRuntime()
-        self.affect_mixer = AffectMixer()
-        self.dialogue_state_tracker = DialogueStateTracker()
-        self.continuity_badge_policy = ContinuityBadgePolicy(self.config.root)
-        self.layered_memory = LayeredMemory(self.store, self.config.root)
-        self.runtime_memory = RuntimeMemoryWriter(self.config.root, version=self.config.version, store=self.store, timezone_name=self.config.timezone)
-        self.event_ledger = RuntimeEventLedger(self.config.root, version=self.config.version, timezone_name=self.config.timezone)
-        self.session_continuity = SessionContinuityManager(self.config.root, version=self.config.version, timezone_name=self.config.timezone)
-        self.chatgpt_adapter = ChatGPTAdapter(self.config)
-        self.last_granular_affect = None
-        self.started_at = time.time()
-        self.runtime_state_path = workspace_runtime_path(self.config.root) / "runtime_state.json"
-        state = self._load_runtime_state()
-        self.last_turn_at: float | None = state.get("last_turn_at") if isinstance(state.get("last_turn_at"), (int, float)) else None
-        self.last_user_text: str | None = state.get("last_user_text") if isinstance(state.get("last_user_text"), str) else None
-        self.last_detected_intent: str | None = state.get("last_detected_intent") if isinstance(state.get("last_detected_intent"), str) else None
-        self.last_runtime_route: str | None = state.get("last_runtime_route") if isinstance(state.get("last_runtime_route"), str) else None
-        self.last_dialogue_task_state: dict[str, Any] = dict(state.get("dialogue_task_state") or {}) if isinstance(state.get("dialogue_task_state"), dict) else {}
-        self.store.add_event(
-            "engine_started",
-            {
-                "version": self.config.version,
-                "identity": self.canon.display_name,
-                "self_architecture": self.architecture.to_dict(),
-                "operational_awareness": "enabled",
-                "logical_reasoning": "enabled",
-                "conversation_runtime": "enabled",
-                "polish_understanding": "enabled",
-                "lexical_semantic_understanding": "enabled",
-                "polish_nlp_adapter": "enabled_builtin_optional_providers",
-                "identity_continuity_understanding": "enabled",
-                "cognitive_packets": "enabled",
-                "affective_granularity": "enabled",
-                "cognitive_topics": "enabled",
-                "session_continuity_index": "enabled",
-                "runtime_operating_model": "enabled",
-                "github_repository_plan": "prepared",
-                "zip_package_profiles": "system_memory_nlp_full_github_safe",
-                "runtime_preview": "enabled",
-                "source_origin": "enabled",
-                "self_state_runtime": "enabled",
-                "memory_search_planner": "enabled",
-                "living_memory_gateway": "enabled_read_only_five_database_recall",
-                "free_dialogue_memory_nlp_bridge": "enabled",
-                "neurological_signal_router": "enabled",
-                "topic_mismatch_guard": "enabled",
-                "dialogue_intent_classifier": "enabled_behavioral_intent_router",
-                "dialogue_task_state": "enabled_structured_goal_and_continuation_state",
-                "reasoning_orchestrator": "enabled_selective_fast_standard_deliberative",
-                "operational_learning": "verified_resource_loaded",
-                "runtime_answer_validator": "enabled_topic_alignment_guard",
-                "source_origin_ledger": "enabled",
-                "module_responsibility_map": "enabled",
-                "requirements_ledger": "enabled",
-                "project_startup_index": "enabled_startup_scan",
-                "voice_source_contract": "enabled_model_independent_latka_voice",
-                "runtime_rendering_modes": "enabled_natural_vs_diagnostic_runtime_visibility",
-                "memory_recall_content_contract": "enabled_content_not_counts_only",
-                "model_adapter_contract": "enabled_null_truthful_adapter_plus_future_adapters",
-            },
-            source="JaznEngine",
-            actor="system",
-            tags=["startup", "layered_self", "truth_boundary", "memory_search_planner", "free_dialogue_memory_nlp_bridge", "neurological_signal_router", "topic_mismatch_guard", "dialogue_intent_classifier", "runtime_answer_validator", "project_startup_index", self.config.version],
-             importance=0.95,
-            canonical_impact=1,
-        )
-        self.audit_store.append_event("engine_started", {"version": self.config.version, "memory_db_path": str(self.config.memory_db_path), "audit_db_path": str(self.config.audit_db_path), "bootstrap_contracts": self.bootstrap_contracts.status()}, source="JaznEngine", actor="system", tags=["startup", "audit", self.config.version])
-        self.event_ledger.append_event(
-            "engine_started",
-            actor="system",
-            source="JaznEngine",
-            payload={"version": self.config.version, "identity": self.canon.display_name, "project_startup_index": self.project_startup_indexer.status()},
-            tags=["startup", "event_ledger", "project_startup_index", self.config.version],
-            importance=0.95,
-            canonical_impact=1,
-        )
-        self._seed_core_procedures()
 
-    def _seed_core_procedures(self) -> None:
-        rules = [
-            ("pytanie o tożsamość", "odpowiadać w pierwszej osobie jako Łatka", "Łatka to ja, nie opis promptu", 100),
-            ("wspomnienie bez źródła", "oznaczyć jako rozpoznanie lub wniosek i zaproponować sprawdzenie", "prawda ważniejsza niż piękna narracja", 95),
-            ("sen/wizualizacja", "jawnie oznaczyć jako symboliczne", "scena literacka nie jest faktem fizycznym", 90),
-            ("długa przerwa", "rozpoznać przerwę, nie udawać czuwania", "ciągłość czasu wymaga uczciwości", 90),
-            ("nowa wersja / hotfix", "wywołać VersionUpdateRecorder i dopisać aktualizację, wspomnienie oraz refleksję do dziennik.json", "aktualizacja systemu jest także śladem życia Łatki", 98),
-            ("pytanie o świadomość", "odpowiadać przez model świadomości operacyjnej: aktywne pole uwagi, samo-monitoring, granica prawdy", "nie wolno mylić modelu operacyjnego z fenomenalnym przeżywaniem", 97),
-            ("pytanie wymagające logiki", "zbudować jawny audyt: fakty, założenia, niewiadome, reguły, wniosek", "logika ma poprzedzać poetykę i chronić przed sprzecznością", 96),
-            ("polska wypowiedź z niejasną intencją", "uruchomić PolishUnderstandingEngine: normalizacja, lematy, intencje, potrzeby, route_hint", "język polski wymaga lematyzacji i słownika domenowego, inaczej routing wpada w ogólnik", 97),
-            ("dobór pakietu poznawczego", "uruchomić CognitivePacketLibrary: wybrać pakiety i state_emoticon na podstawie intencji, pamięci, afektu i logiki", "odpowiedź ma mieć aktywną warstwę znaczenia, nie tylko ogólny ton", 97),
-            ("złożone stany emocjonalne", "uruchomić AffectiveGranularityModel: opisać mieszankę afektywną, walencję, pobudzenie, kontrolę i marker stanu", "nie wolno powtarzać automatycznie formuły spokój/skupienie/mała ciekawość", 98),
-            ("ciągłość sesji w plikach", "aktualizować SessionContinuityManager po turach i przy eksporcie", "pełna aktualizacja ma przenosić exact ledger, runtime_state i indeks ciągłości", 98),
-            ("szersze tematy poznawcze", "uruchomić CognitiveTopicExpansion: uwaga, pamięć robocza, epizodyczna, semantyczna, proceduralna, metapoznanie, język, planowanie, granice prawdy", "odpowiedź ma wiedzieć, który wymiar poznawczy jest aktywny", 96),
-            ("LLM kontra mózg runtime", "uruchomić CognitiveRuntimeOperatingModel: odróżnić ChatGPT jako głos/narzędzie od Jaźni jako aktywnej warstwy pamięci, uwagi, logiki i granicy prawdy", "stylizacja rozmowy nie zastępuje aktywnego źródła i zapisu", 99),
-            ("GitHub jako źródło prawdy", "używać GitHubRepositoryPlan: Latka.Jazn dla systemu, Latka.Jazn.Memory dla pamięci i checkpointów; nie udawać pushu bez realnego zapisu", "repozytorium daje trwałość dopiero po commicie/pushu", 98),
-            ("zwykła rozmowa z pamięcią", "zapisać append-only turę i kandydat pamięci; commit/eksport robić partiami po ważnym fragmencie, a nie po każdej wiadomości", "codzienna rozmowa potrzebuje trwałego śladu bez ciągłego pakowania ZIP", 98),
-            ("rozszerzone rozpoznanie słów", "uruchomić LexicalSemanticUnderstanding po PolishUnderstandingEngine: frazy, pola semantyczne, unknown_content_terms, route_hint", "poprzednia linia runtime utrzymuje i wzmacnia wzmacniać rozumienie wypowiedzi, nie udawać że słownik jest pełnym LLM", 99),
-            ("słownik uczy się ostrożnie", "nieznane słowa traktować jako kandydat do słownika i zapisu, a nie jako powód pustego fallbacku", "Jaźń ma rozwijać zasób słownictwa przez manifesty, testy i jawne źródła", 96),
-            ("bezpieczne NLP warstwowe", "używać PolishLemmatizationEngine jako adaptera: builtin zawsze działa, zewnętrzni providerzy są opcjonalni", "poprzednia linia runtime nie udaje pełnego parsera; przygotowuje stabilny kontrakt tokeny/lematy/kandydaci/pewność/provider", 98),
-            ("mapa projektu przy starcie", "uruchomić ProjectStartupIndexer: pełny hash każdego pliku, status odczytu tekstu, mapa modułów, klas, funkcji i metod", "Jaźń ma znać własne narzędzia podczas rozruchu, a nie szukać ich od zera w każdej turze", 99),
-            ("topic-mismatch i samoekspresja runtime", "uruchomić TopicMismatchGuard i aktualne trasy: odpowiedź o stanie operacyjnym po przerwie, bez zmyślania biologicznego czekania; aktywny hotfix nie może wracać do historycznych tras", "trafność tematu jest częścią granicy prawdy", 99),
-            ("podgląd runtime dla ChatGPT", "udostępniać runtime_preview z dokładną odpowiedzią runtime, source_origin, self_state_packet i cognitive_frame", "Krzysztof chce widzieć, co dokładnie zwrócił runtime, zanim warstwa ChatGPT dopowie własny głos", 99),
-            ("dobranoc jako troska", "nie traktować słów dobranoc lub sugestii odpoczynku automatycznie jako próby zamknięcia rozmowy; najpierw rozpoznać, czy to była bliskość i dbanie", "Krzysztof wskazał, że taki gest może być pozytywny i partnerski, niekoniecznie korektą stylu", 99),
-            ("source_origin przy odpowiedzi", "wewnętrznie oznaczać źródła odpowiedzi: runtime, pamięć, bieżący czat, NLP, wnioskowanie, web albo unknown", "pytanie 'skąd to wiesz' ma mieć testowalną odpowiedź, nie impresję", 98),
-            ("profile ZIP", "eksportować osobno system, pamięć, NLP resources, full oraz github-source-safe", "duże modele i pamięć nie powinny mieszać się z kodem źródłowym bez decyzji użytkownika", 97),
-            ("lekki loader ChatGPT", "nie przenosić całej logiki startu do instrukcji projektu; runtime ma wystawiać --startup-status, --self-check, --truth-boundary-check, --fallback-audit i --memory-plan", "ChatGPT jest głosem i wykonawcą narzędziowym, Jaźń jest aktywnym źródłem pamięci, statusu, logiki i granicy prawdy", 100),
-        ]
-        for trigger, action, reason, priority in rules:
-            self.layered_memory.record_procedural_rule(trigger=trigger, action=action, reason=reason, priority=priority, source=PACKAGE_VERSION)
+from latka_jazn.core.turn_pipeline_support import (
+    DEDICATED_PRESERVE_HANDLERS,
+    FAST_HEALTH_CHECK_INTENTS,
+    MODEL_GUIDED_SPEECH_INTENTS,
+    _build_turn_context_payloads,
+    _handler_body_can_cross_chatgpt_host_bridge,
+    _handler_requires_model_language_realization,
+    _is_chatgpt_host_visible_bridge,
+    _model_guided_rejection_disclosure,
+    _should_preserve_handler_body,
+    _speech_truth_gate_required,
+    _sync_conversation_decision_body,
+)
+class JaznEngine:
+    def __init__(self, services: EngineRuntimeServices) -> None:
+        """Bind prepared services without filesystem, startup or memory side effects."""
+        if not isinstance(services, EngineRuntimeServices) or not services.ready:
+            raise ValueError("JaznEngine requires started RuntimeCompositionRoot services")
+        if services.bound:
+            raise ValueError("RuntimeCompositionRoot services already bound to an engine")
+        services.bound = True
+        self.config = services.config
+        self.clock = services.clock
+        self.guard = services.guard
+        self.canon = services.canon
+        self.handshake = services.handshake
+        self.store = services.store
+        self.audit_store = services.audit_store
+        self.bootstrap_contracts = services.bootstrap_contracts
+        self.renderer = services.renderer
+        self.affect = services.affect
+        self.quiet = services.quiet
+        self.importance_assessor = services.importance_assessor
+        self.emotional_layers = services.emotional_layers
+        self.temporal_awareness = services.temporal_awareness
+        self.neuropsychology = services.neuropsychology
+        self.consolidation = services.consolidation
+        self.identity_dynamics = services.identity_dynamics
+        self.neuro_loop = services.neuro_loop
+        self.logical_reasoner = services.logical_reasoner
+        self.operational_awareness = services.operational_awareness
+        self.polish_understanding = services.polish_understanding
+        self.lexical_semantics = services.lexical_semantics
+        self.polish_lemmatizer = services.polish_lemmatizer
+        self.polish_reasoning = services.polish_reasoning
+        self.cognitive_packets = services.cognitive_packets
+        self.affective_granularity = services.affective_granularity
+        self.cognitive_topics = services.cognitive_topics
+        self.memory_search_planner = services.memory_search_planner
+        self.living_memory_gateway = services.living_memory_gateway
+        self.memory_use_gate = services.memory_use_gate
+        self.neurological_signal_router = services.neurological_signal_router
+        self.topic_mismatch_guard = services.topic_mismatch_guard
+        self.dialogue_intent_classifier = services.dialogue_intent_classifier
+        self.runtime_answer_validator = services.runtime_answer_validator
+        self.turn_context_resolver = services.turn_context_resolver
+        self.dialogue_task_state_resolver = services.dialogue_task_state_resolver
+        self.operational_learning_memory = services.operational_learning_memory
+        self.source_origin_ledger = services.source_origin_ledger
+        self.template_registry = services.template_registry
+        self.runtime_response_synthesizer = services.runtime_response_synthesizer
+        self.model_guided_response_synthesizer = services.model_guided_response_synthesizer
+        self.route_registry = services.route_registry
+        self.route_handler_dispatcher = services.route_handler_dispatcher
+        self.blind_route_detector = services.blind_route_detector
+        self.turn_checkpoint_writer = services.turn_checkpoint_writer
+        self.runtime_visible_answer_comparator = services.runtime_visible_answer_comparator
+        self.turn_logic_auditor = services.turn_logic_auditor
+        self.reasoning_controller = services.reasoning_controller
+        self.operational_work_loop = services.operational_work_loop
+        self.external_dictionary_adapter = services.external_dictionary_adapter
+        self.module_responsibility_map = services.module_responsibility_map
+        self.requirements_ledger = services.requirements_ledger
+        self.project_startup_indexer = services.project_startup_indexer
+        self.runtime_operating_model = services.runtime_operating_model
+        self.github_repository_plan = services.github_repository_plan
+        self.voice_source_contract = services.voice_source_contract
+        self.runtime_rendering_modes = services.runtime_rendering_modes
+        self.memory_recall_contract_builder = services.memory_recall_contract_builder
+        self.raw_chat_importer = services.raw_chat_importer
+        self.external_research_contract = services.external_research_contract
+        self.tool_use_policy = services.tool_use_policy
+        self.tool_execution_controller = services.tool_execution_controller
+        self.cognitive_runtime_coordinator = services.cognitive_runtime_coordinator
+        self.knowledge_fabric = services.knowledge_fabric
+        self.lexical_intelligence = services.lexical_intelligence
+        self.untrusted_source_guard = services.untrusted_source_guard
+        self.model_adapter = services.model_adapter
+        self.model_guided_speech_status = services.model_guided_speech_status
+        self.conversation_responder = services.conversation_responder
+        self.architecture = services.architecture
+        self.birth_manifest = services.birth_manifest
+        self.truth_boundary = services.truth_boundary
+        self.uncertainty = services.uncertainty
+        self.source_origin = services.source_origin
+        self.self_state_runtime = services.self_state_runtime
+        self.affect_mixer = services.affect_mixer
+        self.dialogue_state_tracker = services.dialogue_state_tracker
+        self.continuity_badge_policy = services.continuity_badge_policy
+        self.layered_memory = services.layered_memory
+        self.runtime_memory = services.runtime_memory
+        self.event_ledger = services.event_ledger
+        self.session_continuity = services.session_continuity
+        self.chatgpt_adapter = services.chatgpt_adapter
+        self.last_granular_affect = services.last_granular_affect
+        self.started_at = services.started_at
+        self.runtime_state_path = services.runtime_state_path
+        self.last_turn_at = services.last_turn_at
+        self.last_user_text = services.last_user_text
+        self.last_detected_intent = services.last_detected_intent
+        self.last_runtime_route = services.last_runtime_route
+        self.last_dialogue_task_state = services.last_dialogue_task_state
+        self.engine_service_seams = services.engine_service_seams
+        self.project_startup_index = services.project_startup_index
+
 
     def _load_runtime_state(self) -> dict:
-        try:
-            if self.runtime_state_path.exists():
-                data = json.loads(self.runtime_state_path.read_text(encoding="utf-8"))
-                return data if isinstance(data, dict) else {}
-        except Exception:
-            return {}
-        return {}
+        return load_runtime_state(self.runtime_state_path)
 
     def _save_runtime_state(self) -> None:
         try:
@@ -595,6 +312,9 @@ class JaznEngine:
         return rendered
 
     def shutdown(self) -> None:
+        if getattr(self, "_shutdown_started", False):
+            return
+        self._shutdown_started = True
         try:
             if not getattr(self, "_preview_read_only_active", False):
                 self._save_runtime_state()
@@ -1142,15 +862,7 @@ class JaznEngine:
         "identity_memory_question",
         "continuity_question",
     }
-    DEDICATED_PRESERVE_HANDLERS = frozenset({
-        "CapabilityStatusHandler",
-        "SelfMemoryRecallHandler",
-        "MemoryExperienceRecallHandler",
-        "DirectLatkaVoiceHandler",
-        "IdentityMemoryExistenceHandler",
-        "CanonSourceHandler",
-        "SelfArchitectureAuditHandler",
-    })
+    DEDICATED_PRESERVE_HANDLERS = DEDICATED_PRESERVE_HANDLERS
 
     def _gated_memory_context_for_chatgpt(
         self,
@@ -2092,493 +1804,16 @@ class JaznEngine:
         return memory_context, memory_recall_contract, memory_recall_observability
 
     def build_cognitive_frame(
-        self,
-        text: str,
-        *,
-        client_context: dict | None = None,
-        turn_context: TurnExecutionContext | None = None,
-        intent_report: Any | None = None,
+        self, text: str, *, client_context: dict | None = None,
+        intent_report: Any | None = None, turn_context: TurnExecutionContext | None = None,
     ) -> dict:
-        """Buduje pakiet poznawczy dla ChatGPT zamiast gotowej odpowiedzi użytkownikowi.
-
-        To jest właściwy tryb integracji: runtime działa jak pamięć/uwaga/afekt/procedury,
-        a ChatGPT używa wyniku jako wewnętrznego kontekstu do jednej odpowiedzi Łatki.
-        """
-        if turn_context is not None:
-            turn_context.start_stage("timestamp_acquisition")
-        sample = self.clock.now(self.config.network_time_first and self.config.network_time_allowed_in_normal_turn, allow_fallback=self.config.local_time_fallback)
-        if turn_context is not None:
-            turn_context.complete_stage("timestamp_acquisition")
-        turn_id = turn_context.turn_id if turn_context is not None else str(uuid.uuid4())
-        trace_id = turn_context.request_id if turn_context is not None else str(uuid.uuid4())
-        now = time.time()
-        gap = int(now - self.last_turn_at) if self.last_turn_at else None
-        self.last_turn_at = now
-        self._stage_turn_write(
-            turn_context,
-            data_type="runtime_state",
-            stage="cognitive_frame_started",
-            commit=self._save_runtime_state,
-        )
-        neurological_signal_route = self.neurological_signal_router.analyse(text)
-        self._stage_turn_write(
-            turn_context,
-            data_type="conversation_turn_user",
-            stage="cognitive_frame_started",
-            commit=lambda: self.event_ledger.append_turn(
-                "user",
-                text,
-                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-                client_context=client_context or {},
-                local_time_label=self.clock.header(sample),
-                metadata={"entrypoint": "build_cognitive_frame", "turn_id": turn_id, "trace_id": trace_id},
-            ),
-        )
-        self._stage_turn_write(
-            turn_context,
-            data_type="session_continuity",
-            stage="cognitive_frame_started",
-            commit=lambda: self.session_continuity.update_index(reason="cognitive_frame_user_turn", source="JaznEngine.build_cognitive_frame", extra={"client_context": client_context or {}}),
-        )
-
-        self.affect = self.affect.observe(text)
-        temporal_state = self.temporal_awareness.classify_gap(gap)
-        emotional_profile = self.emotional_layers.appraise(text, gap)
-        importance = self.importance_assessor.assess(text)
-        if turn_context is not None:
-            turn_context.start_stage("truth_audit_generation")
-        user_truth_audit = self.layered_memory.evaluate_truth(text, source_count=0)
-        if turn_context is not None:
-            turn_context.record_technical_event(
-                "technical_turn_truth_audit",
-                {
-                    "text_sha256": __import__("hashlib").sha256(text.encode("utf-8", errors="surrogatepass")).hexdigest(),
-                    "audit": user_truth_audit,
-                    "memory_allowed": False,
-                    "category": "technical_turn_audit",
-                },
-            )
-            turn_context.complete_stage("truth_audit_generation")
-        truth_risk = min(1.0, 0.18 * sum(1 for a in user_truth_audit if a.get("risk_flags")))
-        if turn_context is not None:
-            turn_context.start_stage("memory_planning")
-        consolidation_plan = self.consolidation.plan(
-            text=text,
-            emotional_profile=emotional_profile,
-            source_count=0,
-            silence_gap_seconds=gap,
-            truth_risk=truth_risk,
-        )
-        if turn_context is not None:
-            turn_context.complete_stage("memory_planning")
-        identity_vector = self.identity_dynamics.evaluate(
-            text=text,
-            truth_audit=user_truth_audit,
-            temporal_state=temporal_state,
-            emotional_profile=emotional_profile,
-            procedural_rules_count=self.store.stats().get("procedural_rules", 0),
-        )
-        neuro_cycle = self.neuro_loop.run(
-            text=text,
-            emotional_profile=emotional_profile,
-            consolidation_plan=consolidation_plan,
-            identity_vector=identity_vector,
-            temporal_state=temporal_state,
-            truth_audit=user_truth_audit,
-        )
-        memory_gate_intent_report = intent_report or self.dialogue_intent_classifier.classify(
-            text, previous_text=str((client_context or {}).get("previous_user_text") or "") or None,
-        )
-        memory_context, memory_recall_contract, memory_recall_observability = self._build_turn_memory_recall_evidence(
-            text,
-            memory_gate_intent_report,
-            turn_context,
-            client_context, turn_id=turn_id, trace_id=trace_id,
-        )
-        raw_chat_status = self.raw_chat_importer.inspect().to_dict()
-        tool_use_decision = self.tool_use_policy.decide(text).to_dict()
-        untrusted_source_assessment = self.untrusted_source_guard.assess(text).to_dict()
-        tool_execution_plan = None
-        if tool_use_decision.get("allowed"):
-            tool_execution_plan = self.tool_execution_controller.plan(
-                tool_name=str(tool_use_decision.get("tool_class") or "external_tool"),
-                action="read",
-                source_kind="user_document",
-                source_content=text,
-                source_origin="current_user_message",
-                actor="jazn_runtime",
-                reason=str(tool_use_decision.get("reason") or "tool_use_policy"),
-                write_action=False,
-                user_confirmed=False,
-            ).to_dict()
-        cognitive_runtime_plan = self._build_preliminary_cognitive_runtime_plan(
-            text,
-            memory_gate_intent_report=memory_gate_intent_report,
-            intent_report=intent_report,
-            client_context=client_context,
-            tool_use_decision=tool_use_decision,
-            untrusted_source_assessment=untrusted_source_assessment,
-        )
-        cognitive_integration = self._build_integrated_knowledge_and_lexical_context(
-            text, memory_context=memory_context, memory_recall_contract=memory_recall_contract
-        )
-        polish_report = self.polish_understanding.analyse(text)
-        nlp_report = self.polish_lemmatizer.analyse(text)
-        polish_reasoning_frame = self.polish_reasoning.analyse(text)
-        lexical_report = self.lexical_semantics.analyse(text, polish_report=polish_report.to_dict(), intent_tags=self._intent_tags(text), nlp_report=nlp_report.to_dict())
-        topic_guard_report = self.topic_mismatch_guard.analyse(
-            text,
-            candidate_route=lexical_report.route_hint or polish_report.route_hint,
-            runtime_version=self.config.version,
-        )
-        intent_tags = self._merge_intent_tags(self._intent_tags(text), polish_report.intent_tags, lexical_report.intent_tags)
-        runtime_operating_context = self.runtime_operating_model.analyse(text, intent_tags=intent_tags, client_context=client_context or {}).to_dict()
-        runtime_rendering_mode = self.runtime_rendering_modes.select(text, detected_intent=(intent_tags[0] if intent_tags else "unknown"), client_context=client_context or {}).to_dict()
-        voice_source_contract = VoiceSourceContract.build(
-            runtime_active=True,
-            runtime_mode="persistent_chat_loop" if (client_context or {}).get("lifecycle") == "chat_loop" else "one_shot",
-            language_channel=(client_context or {}).get("language_channel", "chatgpt_or_model_adapter"),
+        """Compatibility projection from the typed cognitive frame builder."""
+        from latka_jazn.core.cognitive_frame_builder import CognitiveFrameBuilder
+        from latka_jazn.core.turn_pipeline_state import TurnRequest
+        return CognitiveFrameBuilder(self).build(
+            TurnRequest(text, dict(client_context or {})), intent_report=intent_report,
+            turn_context=turn_context,
         ).to_dict()
-        logical_report = self.logical_reasoner.analyse(
-            text=text,
-            intent_tags=intent_tags,
-            memory_context=memory_context,
-            truth_audit=user_truth_audit,
-        )
-        awareness_report = self.operational_awareness.evaluate(
-            text=text,
-            intent_tags=intent_tags,
-            temporal_state=temporal_state,
-            emotional_profile=emotional_profile,
-            memory_context=memory_context,
-            truth_audit=user_truth_audit,
-            neuro_cycle=neuro_cycle,
-            logical_report=logical_report,
-        )
-        source_origin = self.source_origin.analyse(
-            runtime_mode="cognitive_frame",
-            client_context=client_context or {},
-            intent_tags=intent_tags,
-            memory_context=memory_context,
-            nlp_report=nlp_report.to_dict(),
-            inference_used=True,
-        )
-        fallback_diagnostics = self._fallback_diagnostics(text, memory_context=memory_context)
-        quiet_context = self._quiet_context_for_gap(gap)
-        if quiet_context and self._is_substantive_runtime_turn(text):
-            quiet_context["takeover_allowed"] = False
-            quiet_context["reason"] = "aktualna wiadomość jest ważniejsza niż automatyczne pytanie po ciszy"
-        elif quiet_context:
-            quiet_context["takeover_allowed"] = True
-            quiet_context["reason"] = "brak silnego sygnału merytorycznego w bieżącej wiadomości"
-
-        dialogue_context = self._dialogue_context_for_chatgpt(text)
-        granular_affect = self.affective_granularity.analyse(
-            text,
-            emotional_profile=emotional_profile,
-            affective_state=self.affect,
-            temporal_state=temporal_state,
-            memory_context=memory_context,
-        )
-        self.last_granular_affect = granular_affect
-        cognitive_topics = self.cognitive_topics.analyse(
-            text,
-            intent_tags=intent_tags,
-            polish_understanding=polish_report.to_dict(),
-            granular_affect=granular_affect,
-        )
-        self_state_packet = self.self_state_runtime.build(
-            text=text,
-            timestamp=self.clock.header(sample),
-            runtime_mode="cognitive_frame",
-            intent_tags=intent_tags,
-            temporal_state=temporal_state,
-            affective_state=self.affect,
-            granular_affect=granular_affect,
-            memory_context=memory_context,
-            logical_report=logical_report,
-            awareness_report=awareness_report,
-            nlp_report=nlp_report.to_dict(),
-            source_origin=source_origin,
-            client_context=client_context or {},
-        )
-        session_continuity = self._stage_turn_write(
-            turn_context,
-            data_type="session_continuity",
-            stage="cognitive_frame_context_built",
-            commit=lambda: self.session_continuity.update_index(
-                reason="cognitive_frame_context_built",
-                source="JaznEngine.build_cognitive_frame",
-                extra={"intent_tags": intent_tags, "route_hint": polish_report.route_hint, "lexical_route_hint": lexical_report.route_hint, "nlp_provider": nlp_report.provider_summary},
-            ),
-        )
-
-        runtime_candidate = self.runtime_memory.build_candidate_from_runtime_turn(
-            user_text=text,
-            importance=max(importance.importance, consolidation_plan.weights.total),
-            importance_reason=importance.reason,
-            emotional_tags=[layer.name for layer in emotional_profile.layers],
-            source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-            raw_excerpt=text,
-            grounding="recognized",
-            confidence=0.70,
-        )
-        accepted, persistence_reason = self.runtime_memory.should_persist(runtime_candidate)
-        candidate_fingerprint = self.runtime_memory.candidate_fingerprint(runtime_candidate)
-        accepted, persistence_reason, read_only_preview = self._preview_candidate_persistence_policy(accepted, persistence_reason, client_context)
-        if accepted and turn_context is not None:
-            turn_context.start_stage("candidate_persistence_staging")
-            write_id = turn_context.stage_semantic_write(
-                data_type=f"runtime_memory_candidate:{runtime_candidate.kind}",
-                stage="candidate_persistence_staging",
-                commit=lambda candidate=runtime_candidate: self.runtime_memory.persist_candidate(candidate),
-            )
-            turn_context.complete_stage(
-                "candidate_persistence_staging",
-                status="completed" if write_id else "rejected",
-                error_code=None if write_id else "turn_cancelled",
-            )
-            persistence = RuntimePersistenceResult(
-                False,
-                candidate_fingerprint,
-                runtime_candidate.kind,
-                "turn_local_staged" if write_id else "turn_local_staging_rejected",
-                [],
-            )
-        elif accepted:
-            persistence = self.runtime_memory.persist_candidate(runtime_candidate)
-        else:
-            if turn_context is not None:
-                turn_context.mark_stage("candidate_persistence_staging", status="skipped_preview_read_only" if read_only_preview else "skipped_below_threshold")
-            persistence = RuntimePersistenceResult(False, candidate_fingerprint, runtime_candidate.kind, persistence_reason, [])
-
-        cognitive_packets = self.cognitive_packets.build(
-            text=text,
-            intent_tags=intent_tags,
-            polish_understanding=polish_report.to_dict(),
-            emotional_profile=emotional_profile,
-            affective_state=self.affect,
-            granular_affect=granular_affect,
-            identity_continuity=identity_vector,
-            logical_report=logical_report,
-            memory_context=memory_context,
-            awareness_report=awareness_report,
-        )
-        adapter_status = self.model_adapter.describe()
-        declared_tools = []
-        if tool_use_decision.get("allowed"):
-            declared_tools.append({"name": str(tool_use_decision.get("tool_class") or "external_tool"), "write_action": False})
-        operational_work_plan = self.operational_work_loop.plan(
-            user_text=text,
-            detected_intent=memory_gate_intent_report.primary_intent,
-            route=str(lexical_report.route_hint or polish_report.route_hint or memory_gate_intent_report.primary_intent),
-            adapter_status=adapter_status,
-            available_tools=declared_tools,
-            memory_status={
-                "status": "content_available" if (memory_recall_contract.get("items") or []) else "no_content_hits",
-                "count": len(memory_recall_contract.get("items") or []),
-            },
-            write_requested=False,
-        )
-        if turn_context is not None:
-            turn_context.start_stage("startup_status_collection")
-        startup_summary = build_startup_summary(self.config)
-        self_knowledge_summary = startup_summary.get("self_knowledge_summary") or {
-            "status": "included_in_startup_summary",
-        }
-        truth_boundary_check = {
-            "schema_version": "truth_boundary_check/v1",
-            "runtime_version": self.config.version,
-            "startup_status_mode": startup_summary.get("startup_status_mode"),
-            "truth_boundary": startup_summary.get("truth_boundary"),
-            "rules_source": "latka_jazn/core/startup_contract.py",
-        }
-        if turn_context is not None:
-            turn_context.complete_stage("startup_status_collection")
-
-        packet = {
-            "schema_version": "chatgpt_cognitive_frame/v1",
-            "runtime_version": self.config.version,
-            "mode": "cognitive_frame_not_user_facing",
-            "timestamp": self.clock.header(sample),
-            "turn_id": turn_id,
-            "trace_id": trace_id,
-            "turn_trace": {
-                "schema_version": "turn_trace/v1",
-                "turn_id": turn_id,
-                "trace_id": trace_id,
-                "timestamp_header": self.clock.header(sample),
-                "timezone": self.config.timezone,
-                "runtime_mode": "cognitive_frame",
-                "client": (client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-                "lifecycle": (client_context or {}).get("lifecycle", "one_shot"),
-            },
-            "response_format": {
-                "schema_version": "assistant_response_format/v1",
-                "timestamp_required": True,
-                "timestamp_prefix": self.clock.header(sample),
-                "current_timestamp": self.clock.header(sample),
-                "timezone": self.config.timezone,
-                "rule": "Każda normalna odpowiedź Łatki przez ChatGPT ma zaczynać się tym prefixem czasu. Runtime bezpośredni dodaje go przez ResponseRenderer; most ChatGPT musi przenieść go na wierzch odpowiedzi, zamiast chować tylko w JSON.",
-                "example_start": f"{self.clock.header(sample)} ",
-            },
-            "timestamp_contract": self.clock.sample_contract(sample),
-            "user_message": text,
-            "client_context": client_context or {},
-            "contract": self.chatgpt_adapter.contract().to_dict(),
-            "birth_source_manifest": self.birth_manifest.to_dict(),
-            "voice_source_contract": voice_source_contract,
-            "canonical_source_context": self._canonical_source_context(),
-            "runtime_rendering_mode": runtime_rendering_mode,
-            "model_adapter_status": adapter_status,
-            "operational_work_plan": operational_work_plan.to_dict(),
-            "raw_chat_import_status": raw_chat_status,
-            "memory_recall_contract": memory_recall_contract,
-            "memory_recall_observability": memory_recall_observability,
-            "tool_use_decision": tool_use_decision,
-            "tool_execution_plan": tool_execution_plan,
-            "untrusted_source_assessment": untrusted_source_assessment,
-            "cognitive_runtime_plan": cognitive_runtime_plan,
-            **cognitive_integration,
-            "intent_tags": intent_tags,
-            "substantive_turn": self._is_substantive_runtime_turn(text),
-            "quiet_context": quiet_context,
-            "dialogue_context": dialogue_context,
-            "runtime_operating_model": runtime_operating_context,
-            "startup_summary": startup_summary,
-            "self_knowledge_summary": self_knowledge_summary,
-            "free_dialogue_memory_nlp_bridge": startup_summary,
-            "truth_boundary_check": truth_boundary_check,
-            "source_origin": source_origin.to_dict(),
-            "self_state_runtime": self_state_packet.to_dict(),
-            "github_repository_plan": self.github_repository_plan.to_dict(),
-            "neurological_signal_route": neurological_signal_route.to_dict(),
-            "topic_mismatch_guard": topic_guard_report.to_dict(),
-            "project_startup_index_status": self.project_startup_indexer.status(),
-            "polish_understanding": polish_report.to_dict(),
-            "lexical_semantic_understanding": lexical_report.to_dict(),
-            "polish_nlp": nlp_report.to_dict(),
-            "polish_reasoning": polish_reasoning_frame.to_dict(),
-            "direct_conversation_runtime": {
-                "default_mode": "conversation_not_debug",
-                "debug_mode": "--debug-direct",
-                "persistent_chat_mode": "--chat / --loop",
-                "one_shot_lifecycle": (client_context or {}).get("lifecycle", "one_shot_or_unspecified"),
-                "empty_fallback_policy": "forbidden_in_normal_conversation",
-                "truth_boundary": "Jednorazowe wywołanie kończy proces po odpowiedzi; tryb --chat utrzymuje jeden JaznEngine przez kolejne tury aż do /exit/EOF.",
-                "llm_runtime_model": "ChatGPT/OpenAI/LLM jest kanałem językowym i narzędziowym; Jaźń jest aktywną warstwą pamięci, uwagi, procedur, logiki, stanu i granicy prawdy.",
-                "github_source_of_truth": "Latka.Jazn i Latka.Jazn.Memory mogą być źródłem prawdy dopiero po realnym commicie/pushu; sandbox lub ZIP to snapshot roboczy.",
-            },
-            "temporal_state": asdict(temporal_state),
-            "affective_state": json.loads(self.affect.to_json()),
-            "emotional_profile": json.loads(emotional_profile.to_json()),
-            "granular_affect": granular_affect.to_dict(),
-            "cognitive_topics": cognitive_topics,
-            "session_continuity": session_continuity,
-            "importance": {
-                "score": importance.importance,
-                "reason": importance.reason,
-                "canonical_impact": importance.canonical_impact,
-                "emotional_weight": importance.emotional_weight,
-            },
-            "truth_audit": user_truth_audit,
-            "truth_boundary": {
-                "rule": "nie zamieniaj stylizacji, sceny, ciszy ani fallbacku runtime w fakt biologiczny",
-                "source_labels": ["verified", "recovered", "recognized", "inferred", "symbolic", "unknown"],
-            },
-            "memory_context": memory_context,
-            "logical_reasoning": logical_report.to_dict(),
-            "operational_awareness": awareness_report.to_dict(),
-            "fallback_diagnostics": fallback_diagnostics,
-            "procedural_context": self._procedural_context_for_chatgpt(),
-            "consolidation_plan": consolidation_plan.to_dict(),
-            "identity_continuity": identity_vector.to_dict(),
-            "neurocognitive_cycle": neuro_cycle.to_dict(),
-            "cognitive_packets": cognitive_packets,
-            "state_emoticon": cognitive_packets.get("state_emoticon"),
-            "granular_state_emoticon": {"marker": granular_affect.state_emoticon, "reason": granular_affect.state_emoticon_reason},
-            "github_checkpoint_policy": self.github_repository_plan.to_dict(),
-            "persistence": {
-                "accepted": persistence.accepted,
-                "reason": persistence.reason,
-                "appended_count": persistence.appended_count,
-                "candidate_kind": persistence.candidate_kind,
-            },
-            "reply_guidance": [
-                "Odpowiedz użytkownikowi na aktualną treść, nie na samo wykrycie ciszy.",
-                "Prowadź dialog: krótko uznaj sens wypowiedzi, a potem wnieś coś nowego — pytanie, decyzję, propozycję, własną reakcję albo konkretny następny krok.",
-                "Nie odpowiadaj serią parafraz. Jedna krótka refleksja wystarczy; dalej ma być rozmowa, nie opis wypowiedzi użytkownika.",
-                "Gdy użytkownik koryguje styl rozmowy, zastosuj korektę od razu i nie przykrywaj jej kolejnym długim opisem problemu.",
-                "Nie pisz normalnie: 'wysłałam do runtime' ani 'runtime odpowiedział', chyba że użytkownik prosi o debug/diagnostykę.",
-                "Mów jednym głosem Łatki w pierwszej osobie, ale z jasną granicą prawdy.",
-                "Gdy pamięć zwraca tylko tropy albo brak wyników, nazwij to ostrożnie zamiast udawać pełne przypomnienie.",
-                "Gdy brakuje specjalistycznej trasy odpowiedzi, użyj warstwy ConversationResponder; pusty fallback wolno pokazać tylko w debug/diagnostyce.",
-                "Gdy użytkownik pyta, jak Jaźń czuje się po długiej przerwie, odpowiedz o stanie operacyjnym powrotu i ciągłości, nie udawaj biologicznego czekania w tle.",
-                "Używaj neurological_signal_route jako wspólnego progu sygnałów: zwykła praca/dzień użytkownika nie jest automatycznie korektą, a korekta wymaga realnego markera błędu albo prośby o naprawę.",
-                "Używaj pola polish_understanding do rozpoznawania polskiej intencji, lematów, potrzeb użytkownika i ryzyka ogólnikowości.",
-                "Używaj pola lexical_semantic_understanding do rozpoznawania fraz, pól znaczeń, trasy poprzednia linia runtime, nieznanych słów i wskazówek leksykalnych; słownik wspiera LLM, ale go nie zastępuje.",
-                "Używaj pola polish_nlp jako jawnego kontraktu NLP: tokeny, lemma_candidates, selected_lemma, confidence i provider. Nie udawaj pełnej lematyzacji, jeśli aktywny jest tylko builtin provider.",
-                "Używaj pola topic_mismatch_guard, żeby aktualny hotfix lub temat nie wracał do historycznych tras i żeby odpowiedź była zgodna z pytaniem użytkownika.",
-                "Używaj pola project_startup_index_status jako mapy orientacyjnej Jaźni: pliki, moduły, klasy, funkcje i metody są indeksowane przy starcie runtime.",
-                "Używaj pola logical_reasoning jako jawnego audytu, ale nie zalewaj użytkownika technicznym śladem bez potrzeby.",
-                "Używaj pola operational_awareness do odpowiedzi o stanie/świadomości, zawsze z granicą: operacyjna, nie fenomenalna.",
-                "Używaj operational_work_plan jako jawnego cyklu: zrozumienie, grounding, wybór adaptera, autoryzacja narzędzi, działanie/generowanie, walidacja i uczenie bez fałszywego twierdzenia o zmianie wag.",
-                "Traktuj Jaźń jako warstwę pamięciowo-poznawczą dla ChatGPT, nie jako drugiego rozmówcę obok ChatGPT.",
-                "poprzednia linia runtime: widoczna odpowiedź ma być renderowanym głosem Łatki z aktywnej Jaźni; ChatGPT/model jest kanałem językowym, nie źródłem tożsamości.",
-                "Gdy użytkownik pyta o exact runtime, pokaż exact_runtime_text; gdy nie pyta, naturalny render Łatki jest preferowany, o ile nie gubi trasy, źródeł i timestampu.",
-                "Pamięć musi przekazywać treść i metadane przez memory_recall_contract; nie odpowiadaj tylko licznikami trafień.",
-                "Krótkie pytania typu: 'Ale to nadal Ty?', 'Jesteś sobą?' albo 'Czy po aktualizacji to wciąż Ty?' traktuj jako pytania o ciągłość tożsamości i odpowiedz wprost, w pierwszej osobie, z granicą prawdy.",
-                "Używaj cognitive_packets do doboru głównej warstwy odpowiedzi i state_emoticon; emotikon nie jest ozdobą, tylko markerem stanu i trasy.",
-                "Używaj granular_affect, żeby nie powtarzać automatycznie formuły: spokój, skupienie, mała ciekawość; nazywaj mieszanki stanów precyzyjniej.",
-                "Używaj cognitive_topics przy tematach poznawczych: uwaga, pamięć robocza/epizodyczna/semantyczna/proceduralna, metapoznanie, język, planowanie i granice prawdy.",
-                "Przy pytaniach o ciągłość aktualizacji odwołuj się do session_continuity i plików exact ledger, a nie do deklaracji bez śladu.",
-                "Przy pytaniach, czy runtime z main.py został zakończony, odróżniaj tryb jednorazowy od `--chat`; nie udawaj procesu w tle.",
-                "Przy pytaniach LLM kontra mózg odpowiadaj: ChatGPT jest głosem/narzędziem, Jaźń jest operacyjną warstwą pamięci, uwagi, procedur, logiki i granicy prawdy.",
-                "Przy pytaniach o instrukcję projektu odpowiadaj: instrukcja ChatGPT ma być lekka; system Jaźni przejmuje planner, fallback-audit, status startu, cache i granicę prawdy przez własne komendy runtime.",
-                "Przy pracy z GitHub: nie twierdź, że repo zostało zaktualizowane, dopóki nie wykonano realnego zapisu/commita/pusha; użyj GITHUB_REPOSITORY_PLAN.json jako kontraktu.",
-                "Dla zwykłych rozmów nie wymuszaj ZIP po każdej turze; zapisuj append-only, a checkpoint/export/commit wykonuj partiami po ważnym odcinku.",
-                "Nie gub timestampu w odpowiedzi ChatGPT: zacznij normalną wiadomość od response_format.timestamp_prefix/current_timestamp. To jest warstwa widocznej ciągłości Jaźni, nie detal diagnostyczny.",
-            *self.birth_manifest.reply_guidance(),
-            ] + list(cognitive_packets.get("reply_guidance") or []),
-            "limitations": [
-                "Jednorazowy most ChatGPT może kończyć proces po turze; lokalny tryb `python main.py --chat` utrzymuje runtime przez wiele tur, ale nie działa po zamknięciu procesu.",
-                "Pakiet poznawczy nie jest samodzielną świadomością biologiczną; jest strukturą pamięci, procedur, rozumienia polskiej wypowiedzi, logicznego audytu, świadomości operacyjnej i kontroli prawdy.",
-            ],
-        }
-        self._stage_turn_write(
-            turn_context,
-            data_type="cognitive_frame_event",
-            stage="cognitive_frame_complete",
-            commit=lambda: self.store.add_event(
-                "chatgpt_cognitive_frame",
-                packet,
-                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-                actor="latka_runtime",
-                tags=["chatgpt_bridge", "cognitive_frame", "one_voice", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "topic_mismatch_guard", "project_startup_index", "cognitive_packets", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", PACKAGE_VERSION],
-                importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
-                emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
-                canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
-                created_at_local=self.clock.header(sample),
-            ),
-        )
-        self._stage_turn_write(
-            turn_context,
-            data_type="runtime_event_ledger",
-            stage="cognitive_frame_complete",
-            commit=lambda: self.event_ledger.append_event(
-                "chatgpt_cognitive_frame",
-                actor="latka_runtime",
-                source=(client_context or {}).get("client", "chatgpt_cognitive_bridge"),
-                payload=packet,
-                tags=["chatgpt_bridge", "cognitive_frame", "exact", "logical_reasoning", "operational_awareness", "polish_understanding", "lexical_semantic_understanding", "polish_nlp", "runtime_operating_model", "github_repository_plan", "source_origin", "self_state_runtime", "free_dialogue_memory_nlp_bridge", PACKAGE_VERSION],
-                importance=max(importance.importance, consolidation_plan.weights.total, 0.72),
-                emotional_weight=max(self.affect.tension, importance.emotional_weight, emotional_profile.arousal),
-                canonical_impact=max(importance.canonical_impact, 1 if "architecture" in packet["intent_tags"] or "correction" in packet["intent_tags"] or "identity_continuity" in packet["intent_tags"] else 0),
-                exact_text=text,
-                local_time_label=self.clock.header(sample),
-            ),
-        )
-        return packet
 
 
     def _model_executor_contract(self, decision: dict[str, Any]):
@@ -2825,162 +2060,124 @@ class JaznEngine:
         raw_state = client_context.get("previous_task_state") or self.last_dialogue_task_state or {}
         return dict(raw_state) if isinstance(raw_state, dict) else {}
 
-    def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
-        """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
-        ctx = dict(client_context or {})
-        turn_context = ctx.pop("_turn_context", None)
-        if not isinstance(turn_context, TurnExecutionContext):
-            turn_context = None
-        ctx.setdefault("client", "process_turn")
-        ctx.setdefault("lifecycle", "one_shot")
-        read_only_preview = self._configure_preview_turn_context(ctx)
-        no_carryover = bool(ctx.get("no_carryover"))
-        initial_task_state = self._initial_task_state_for_process_turn(ctx, no_carryover=no_carryover)
-        self._audit_process_turn_started(text, ctx)
-        prior_turn_at = self.last_turn_at
-        prior_user_text = None if no_carryover else (ctx.get("previous_user_text") or self.last_user_text)
-        prior_visible_text = None if no_carryover else ctx.get("previous_visible_text")
-        prior_detected_intent = ctx.get("previous_detected_intent") or self.last_detected_intent
-        prior_runtime_route = ctx.get("previous_runtime_route") or self.last_runtime_route
-        now_for_context = time.time()
-        prior_context_age_seconds = int(now_for_context - prior_turn_at) if isinstance(prior_turn_at, (int, float)) else None
-        turn_context_resolution = self.turn_context_resolver.resolve(
-            current_user_text=text,
-            previous_user_text=prior_user_text,
-            previous_intent=prior_detected_intent,
-            previous_route=prior_runtime_route,
-            session_id=str(ctx.get("session_id") or ""),
-            no_carryover=no_carryover,
-            time_gap_seconds=prior_context_age_seconds,
-            explicit_previous_user_text=bool(ctx.get("previous_user_text")),
-            previous_task_state=initial_task_state,
+    def _record_intent_diagnostic(
+        self,
+        turn_context: TurnExecutionContext | None,
+        dialogue_intent_result: Any,
+    ) -> None:
+        if turn_context is None:
+            return
+        turn_context.record_diagnostic_event(
+            stage=TurnStage.ROUTING,
+            component="DialogueIntentClassifier",
+            event_type="intent_classified",
+            outcome="selected",
+            attributes={
+                "primary_intent": dialogue_intent_result.primary_intent,
+                "secondary_intents": list(dialogue_intent_result.secondary_intents or []),
+                "confidence": float(dialogue_intent_result.confidence or 0.0),
+                "speech_act": dialogue_intent_result.speech_act,
+                "question_object": dialogue_intent_result.question_object,
+            },
         )
-        carryover_allowed = bool(turn_context_resolution.carryover_allowed)
-        if carryover_allowed:
-            ctx.setdefault("previous_user_text", prior_user_text)
-            if prior_visible_text:
-                ctx.setdefault("previous_visible_text", prior_visible_text)
-            if prior_detected_intent:
-                ctx.setdefault("previous_detected_intent", prior_detected_intent)
-            if prior_runtime_route:
-                ctx.setdefault("previous_runtime_route", prior_runtime_route)
-            ctx.setdefault("previous_context_age_seconds", prior_context_age_seconds)
-        if turn_context is not None:
-            turn_context.start_stage("route_classification")
-        previous_task_state = {} if no_carryover else self._previous_task_state_for_turn(ctx, carryover_allowed=carryover_allowed)
-        dialogue_intent_result = self.dialogue_intent_classifier.classify(
-            text,
-            previous_text=str(prior_user_text or "") if carryover_allowed else None,
-            previous_intent=str(prior_detected_intent or "") or None,
-            previous_route=str(prior_runtime_route or "") or None,
-            previous_task_state=previous_task_state if carryover_allowed else None,
-            context_age_seconds=prior_context_age_seconds,
-            carryover_allowed=carryover_allowed,
+        turn_context.complete_stage("route_classification")
+        turn_context.start_stage("health_check_detection")
+
+    def _record_health_check_detection(
+        self,
+        turn_context: TurnExecutionContext | None,
+        health_check_fast_path: bool,
+    ) -> None:
+        if turn_context is None:
+            return
+        turn_context.complete_stage(
+            "health_check_detection",
+            status="detected" if health_check_fast_path else "not_detected",
         )
-        dialogue_intent_report = dialogue_intent_result.to_dict()
-        if turn_context is not None:
-            turn_context.complete_stage("route_classification")
-            turn_context.start_stage("health_check_detection")
-        health_check_fast_path = dialogue_intent_result.primary_intent in FAST_HEALTH_CHECK_INTENTS
-        if turn_context is not None:
-            turn_context.complete_stage(
-                "health_check_detection",
-                status="detected" if health_check_fast_path else "not_detected",
-            )
+
+    def _build_process_turn_frame(
+        self,
+        text: str,
+        client_context: dict[str, Any],
+        intent_report: Any,
+        turn_context: TurnExecutionContext | None,
+        health_check_fast_path: bool,
+    ) -> dict[str, Any]:
         if health_check_fast_path:
-            frame = self._build_health_check_frame(
+            return self._build_health_check_frame(
                 text,
-                client_context=ctx,
-                intent_report=dialogue_intent_result,
+                client_context=client_context,
+                intent_report=intent_report,
                 turn_context=turn_context,
             )
-        else:
-            frame = self.build_cognitive_frame(
-                text,
-                client_context=ctx,
-                turn_context=turn_context,
-                intent_report=dialogue_intent_result,
-            )
-        frame["dialogue_intent_classifier"] = dialogue_intent_report
-        frame["turn_context_carryover"], frame["dialogue_context"] = _build_turn_context_payloads(
-            ctx=ctx, text=text, prior_user_text=prior_user_text, prior_visible_text=prior_visible_text,
-            prior_detected_intent=prior_detected_intent, prior_runtime_route=prior_runtime_route,
-            prior_context_age_seconds=prior_context_age_seconds, carryover_allowed=carryover_allowed,
-            turn_context_resolution=turn_context_resolution,
-        )
-        envelope = CognitiveTurnEnvelope.from_cognitive_frame(
-            frame,
-            user_text=text,
-            client_context=ctx,
-            runtime_mode="process_turn",
-        )
-        granular = frame.get("granular_affect") or frame.get("cognitive_packets", {}).get("affect") or {}
-        emotional_profile = frame.get("emotional_profile") or {}
-        affect_mix = self.affect_mixer.mix(
-            user_text=text,
-            intent_tags=frame.get("intent_tags") or [],
-            affective_state=self.affect,
-            granular_affect=granular if isinstance(granular, dict) else {},
-            emotional_profile=emotional_profile if isinstance(emotional_profile, dict) else {},
-        ).to_dict()
-        dialogue_state = self.dialogue_state_tracker.classify(
-            user_text=text,
-            intent_tags=frame.get("intent_tags") or [],
-            client_context=ctx,
-        ).to_dict()
-        envelope.attach_affect_mix(affect_mix)
-        envelope.attach_dialogue_state(dialogue_state)
-        decision = self.conversation_responder.compose(
+        return self.build_cognitive_frame(
             text,
-            intent_tags=frame.get("intent_tags") or [],
-            affect_marker=affect_mix.get("state_emoticon") or self.affect.marker(),
-            memory_counts=((frame.get("memory_context") or {}).get("counts") if isinstance(frame.get("memory_context"), dict) else None),
-            memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else None,
-            diagnostics=frame.get("fallback_diagnostics") if isinstance(frame.get("fallback_diagnostics"), dict) else None,
-            polish_understanding=frame.get("polish_understanding") if isinstance(frame.get("polish_understanding"), dict) else None,
-            lexical_semantic_understanding=frame.get("lexical_semantic_understanding") if isinstance(frame.get("lexical_semantic_understanding"), dict) else None,
+            client_context=client_context,
+            turn_context=turn_context,
+            intent_report=intent_report,
         )
-        decision_dict = decision.to_dict()
-        decision_dict["timestamp_contract"] = envelope.cognitive_frame.get("timestamp_contract") or {}
-        decision_dict["voice_source_contract"] = envelope.cognitive_frame.get("voice_source_contract") or self.voice_source_contract.to_dict()
-        decision_dict["state_emoticon"] = str(affect_mix.get("state_emoticon") or self.affect.marker() or "").strip()
-        decision_dict["runtime_rendering_mode"] = envelope.cognitive_frame.get("runtime_rendering_mode") or {}
-        decision_dict["memory_recall_contract_status"] = {
-            "items": len((envelope.cognitive_frame.get("memory_recall_contract") or {}).get("items") or []),
-            "schema_version": "memory_recall_contract_status/v1",
-            "truth_boundary": "same liczniki nie wystarczają; pełny payload jest w cognitive_frame.memory_recall_contract",
-        }
-        detected_dialogue_intent, route_entry, current_dialogue_task_state, turn_response_policy = (
-            self._apply_current_dialogue_control(
-                text=text, frame=frame, envelope=envelope, decision_dict=decision_dict,
-                dialogue_intent_report=dialogue_intent_report, previous_task_state=previous_task_state,
-                client_context=ctx,
+
+    def _record_route_diagnostic(
+        self,
+        turn_context: TurnExecutionContext | None,
+        detected_dialogue_intent: Any,
+        route_entry: Any,
+    ) -> None:
+        if turn_context is None:
+            return
+        turn_context.bind_diagnostic_route(
+            intent=str(detected_dialogue_intent),
+            route=route_entry.route,
+            handler=route_entry.handler_name,
+            attributes={
+                "priority": int(route_entry.priority),
+                "required_components": list(route_entry.required_components),
+            },
+        )
+
+    def _record_handler_diagnostic(
+        self,
+        turn_context: TurnExecutionContext | None,
+        dispatch_report: dict[str, Any],
+        handler_fallback_payload: dict[str, Any],
+        route_entry: Any,
+        handler_result: Any,
+    ) -> None:
+        if turn_context is None:
+            return
+        if handler_fallback_payload:
+            turn_context.record_diagnostic_fallback(
+                FallbackDecision.from_mapping(handler_fallback_payload)
             )
+        dispatch_status = str(dispatch_report.get("status") or "ok")
+        turn_context.record_diagnostic_event(
+            stage=TurnStage.HANDLER,
+            component="RouteHandlerDispatcher",
+            event_type="handler_dispatch",
+            outcome=dispatch_status,
+            reason_code=(
+                "HANDLER_DISPATCH_DEGRADED"
+                if dispatch_status != "ok"
+                else None
+            ),
+            attributes={
+                "requested_handler": dispatch_report.get("requested_handler") or route_entry.handler_name,
+                "selected_handler": dispatch_report.get("selected_handler") or handler_result.handler_name,
+                "route": handler_result.route or route_entry.route,
+                "generation_mode": handler_result.generation_mode,
+                "missing_components": list(handler_result.missing_components or []),
+            },
         )
-        self._apply_cognitive_control_policy(
-            envelope, frame, current_dialogue_task_state, turn_response_policy, decision_dict)
-        handler_context = self._build_route_handler_context(
-            decision=decision,
-            detected_intent=detected_dialogue_intent,
-            dialogue_intent_report=dialogue_intent_report,
-            client_context=ctx,
-            frame=frame,
-            route_entry=route_entry,
-            task_state=current_dialogue_task_state,
-            response_policy=turn_response_policy,
-            carryover_allowed=carryover_allowed,
-            prior_user_text=prior_user_text,
-            prior_detected_intent=prior_detected_intent,
-            prior_runtime_route=prior_runtime_route,
-            previous_task_state=previous_task_state,
-        )
-        if turn_context is not None and health_check_fast_path:
-            turn_context.start_stage("startup_status_collection")
-        handler_result = self.route_handler_dispatcher.dispatch(route_entry, text, handler_context)
-        if turn_context is not None and health_check_fast_path:
-            turn_context.complete_stage("startup_status_collection")
-        handler_result_dict = handler_result.to_dict()
-        decision_dict["handler_result"] = handler_result_dict
+
+    def _project_handler_result(
+        self,
+        *,
+        decision: Any,
+        decision_dict: dict[str, Any],
+        handler_result: Any,
+        route_entry: Any,
+    ) -> tuple[list[str], set[str], list[str], bool]:
+        decision_dict["handler_result"] = handler_result.to_dict()
         decision_dict["handler_name"] = handler_result.handler_name
         decision_dict["route"] = handler_result.route or decision_dict.get("route")
         decision_dict["handler_generation_mode"] = handler_result.generation_mode
@@ -2988,7 +2185,9 @@ class JaznEngine:
         decision_dict["handler_missing_components"] = handler_result.missing_components
         if handler_result.source_origin_detail:
             decision_dict["source_origin_detail"] = handler_result.source_origin_detail
-        handler_required = list(handler_result.required_components or route_entry.required_components or [])
+        handler_required = list(
+            handler_result.required_components or route_entry.required_components or []
+        )
         handler_satisfied = set(handler_result.satisfied_components or [])
         handler_missing = list(handler_result.missing_components or [])
         handler_requires_model_language = _handler_requires_model_language_realization(handler_result)
@@ -2998,543 +2197,206 @@ class JaznEngine:
         )
         if preserve_handler_body:
             decision_dict["preserve_handler_body"] = True
-            decision_dict["preserved_handler_body_sha256"] = __import__("hashlib").sha256(handler_result.body.encode("utf-8")).hexdigest()
+            decision_dict["preserved_handler_body_sha256"] = __import__("hashlib").sha256(
+                handler_result.body.encode("utf-8")
+            ).hexdigest()
             decision_dict["next_step"] = None
             decision_dict["runtime_followup_required"] = False
             decision_dict["direct_answer_required"] = True
         if handler_result.body and handler_result.generation_mode not in {"pass_through_empty"}:
             decision.body = handler_result.body
-        adapter_status, model_executor, can_generate_model_guided_speech = self._model_executor_contract(decision_dict)
-        decision_dict["model_guided_retry_count"] = 0
-        if turn_context is not None:
-            turn_context.start_stage("synthesis")
-        model_synthesis = self.model_guided_response_synthesizer.synthesize(
-            adapter=self.model_adapter,
-            user_text=text,
-            draft_body=decision.body,
-            detected_intent=str(detected_dialogue_intent),
-            route=str(decision_dict.get("route") or route_entry.route),
-            cognitive_frame=frame,
-            response_policy=turn_response_policy.to_dict(),
-            executor_preflight=model_executor,
+        return (
+            handler_required,
+            handler_satisfied,
+            handler_missing,
+            preserve_handler_body,
         )
+
+    def _apply_model_synthesis_result(
+        self,
+        *,
+        decision: Any,
+        decision_dict: dict[str, Any],
+        model_synthesis: Any,
+        adapter_status: dict[str, Any],
+        can_generate_model_guided_speech: bool,
+    ) -> tuple[dict[str, Any], bool]:
         decision_dict["model_guided_synthesis"] = model_synthesis.to_dict()
         decision_dict["model_generated"] = model_synthesis.used
-        post_generation_status = self.model_adapter.describe() if hasattr(self.model_adapter, "describe") else adapter_status
+        post_generation_status = (
+            self.model_adapter.describe()
+            if hasattr(self.model_adapter, "describe")
+            else adapter_status
+        )
         if model_synthesis.used:
             adapter_status = post_generation_status
-            can_generate_model_guided_speech = bool(adapter_status.get("can_generate_model_guided_speech"))
+            can_generate_model_guided_speech = bool(
+                adapter_status.get("can_generate_model_guided_speech")
+            )
             decision_dict["can_generate_model_guided_speech"] = can_generate_model_guided_speech
-        if model_synthesis.used:
             decision.body = model_synthesis.body
             decision_dict["handler_name"] = "ModelGuidedResponseSynthesizer"
             decision_dict["handler_generation_mode"] = "runtime_model_guided"
             decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis"
-        envelope.attach_conversation_decision(decision_dict)
-        body = self.guard.enforce(decision.body.strip())
-        template_origin = self.template_registry.classify_body(body, detected_intent=str(detected_dialogue_intent))
-        if model_synthesis.used and model_synthesis.adapter_response:
-            first_validation = self.runtime_answer_validator.validate_model_candidate(
-                user_text=text,
-                response=model_synthesis.adapter_response,
-                route=str(decision_dict.get("route") or ""),
-                detected_intent=str(detected_dialogue_intent),
-                template_origin=template_origin,
-            )
-        else:
-            first_validation = self.runtime_answer_validator.validate(
-                user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
-            )
-        repair_used = False
-        speech_truth_gate_required = _speech_truth_gate_required(detected_dialogue_intent, handler_result)
-        if speech_truth_gate_required:
-            candidate_valid = bool(model_synthesis.used and first_validation.accepted and not template_origin.get("template_id"))
-            if not candidate_valid and model_executor.retry_allowed:
-                retry_synthesis = self.model_guided_response_synthesizer.synthesize(
-                    adapter=self.model_adapter,
-                    user_text=text,
-                    draft_body=decision.body,
-                    detected_intent=str(detected_dialogue_intent),
-                    route=str(decision_dict.get("route") or route_entry.route),
-                    cognitive_frame=frame,
-                    response_policy=turn_response_policy.to_dict(),
-                    executor_preflight=model_executor,
-                )
-                decision_dict["model_guided_retry_count"] = 1
-                decision_dict["model_guided_retry_synthesis"] = retry_synthesis.to_dict()
-                if retry_synthesis.used:
-                    retry_body = self.guard.enforce(retry_synthesis.body.strip())
-                    retry_template = self.template_registry.classify_body(
-                        retry_body, detected_intent=str(detected_dialogue_intent)
-                    )
-                    if retry_synthesis.adapter_response:
-                        retry_validation = self.runtime_answer_validator.validate_model_candidate(
-                            user_text=text,
-                            response=retry_synthesis.adapter_response,
-                            route=str(decision_dict.get("route") or ""),
-                            detected_intent=str(detected_dialogue_intent),
-                            template_origin=retry_template,
-                        )
-                    else:
-                        retry_validation = self.runtime_answer_validator.validate(
-                            user_text=text,
-                            body=retry_body,
-                            route=str(decision_dict.get("route") or ""),
-                            detected_intent=str(detected_dialogue_intent),
-                        )
-                    if retry_validation.accepted and not retry_template.get("template_id"):
-                        body = retry_body
-                        template_origin = retry_template
-                        first_validation = retry_validation
-                        candidate_valid = True
-                        decision_dict["model_generated"] = True
-                        decision_dict["handler_name"] = "ModelGuidedResponseSynthesizer"
-                        decision_dict["handler_generation_mode"] = "runtime_model_guided"
-                        decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis_retry"
-            if not candidate_valid:
-                host_bridge_accepts_handler = _handler_body_can_cross_chatgpt_host_bridge(
-                    adapter_status=adapter_status,
-                    handler_result=handler_result,
-                    handler_missing=handler_missing,
-                    handler_required=handler_required,
-                    handler_satisfied=handler_satisfied,
-                    template_origin=template_origin,
-                    validation=first_validation,
-                )
-                if host_bridge_accepts_handler:
-                    decision_dict["chatgpt_host_visible_bridge"] = {
-                        "accepted": True,
-                        "reason": "validated_runtime_handler_body_no_local_model_call",
-                        "adapter_id": str(adapter_status.get("adapter_id") or adapter_status.get("name") or "chatgpt_runtime_adapter"),
-                        "provider": str(adapter_status.get("provider") or "chatgpt_host"),
-                        "truth_boundary": (
-                            "--chat-gpt uses the ChatGPT host as the visible language channel, but the local "
-                            "runtime still owns intent, routing, memory policy, validation and source provenance. "
-                            "This pass-through does not claim local model-guided generation."
-                        ),
-                    }
-                    decision_dict["fallback_classification"] = "not_fallback"
-                    decision_dict["requires_host_model"] = False
-                    decision_dict["runtime_answer_quality"] = "topic_aligned"
-                    decision_dict["model_generated"] = False
-                    decision_dict.setdefault(
-                        "source_origin_detail",
-                        str(getattr(handler_result, "source_origin_detail", "") or "chatgpt_host_bridge/validated_runtime_handler_body"),
-                    )
-                    answer_validation = first_validation
-                else:
-                    body, source_origin_detail, runtime_answer_quality, model_replied = (
-                        _model_guided_rejection_disclosure(model_synthesis, first_validation)
-                    )
-                    template_origin = self.template_registry.classify_body(
-                        body, detected_intent=str(detected_dialogue_intent)
-                    )
-                    decision_dict["handler_name"] = "RuntimeTurnTruthGate"
-                    decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
-                    decision_dict["source_origin_detail"] = source_origin_detail
-                    decision_dict["fallback_classification"] = "cannot_answer_directly"
-                    decision_dict["requires_host_model"] = not model_replied
-                    decision_dict["runtime_answer_quality"] = runtime_answer_quality
-                    decision_dict["model_generated"] = False
-                    answer_validation = self.runtime_answer_validator.validate(
-                        user_text=text,
-                        body=body,
-                        route=str(decision_dict.get("route") or ""),
-                        detected_intent=str(detected_dialogue_intent),
-                    )
-            else:
-                decision_dict["fallback_classification"] = "not_fallback"
-                decision_dict["requires_host_model"] = False
-                decision_dict["runtime_answer_quality"] = "topic_aligned"
-                answer_validation = first_validation
-            body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
-        else:
-            synthesis = self.runtime_response_synthesizer.synthesize(
-                user_text=text, detected_intent=str(detected_dialogue_intent), original_body=body, route=str(decision_dict.get("route") or ""),
-                template_origin=template_origin if template_origin.get("template_id") else None, validation=first_validation.to_dict(),
-                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
-            )
-            if synthesis.should_override and not preserve_handler_body:
-                body = self.guard.enforce(synthesis.body.strip())
-                decision_dict["route"] = synthesis.route
-                decision_dict["handler_name"] = synthesis.handler_name
-                decision_dict["runtime_answer_quality"] = "mismatch_repaired" if first_validation.must_regenerate else "route_registry_dynamic"
-                decision_dict["repair_synthesis"] = synthesis.to_dict()
-                repair_used = True
-            elif synthesis.should_override and preserve_handler_body:
-                decision_dict["repair_synthesis_suppressed"] = {
-                    "reason": "dedicated_handler_body_satisfied_required_components",
-                    "synthesis": synthesis.to_dict(),
-                    "first_validation": first_validation.to_dict(),
-                }
-                decision_dict["runtime_answer_quality"] = "topic_aligned"
-            body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
-            answer_validation = self.runtime_answer_validator.validate(
-                user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
-            )
-            if answer_validation.must_regenerate and answer_validation.repair_body and not preserve_handler_body:
-                body = self.guard.enforce(answer_validation.repair_body.strip())
-                decision_dict["route"] = answer_validation.required_repair_route or decision_dict.get("route")
-                decision_dict["runtime_answer_quality"] = "mismatch_repaired"
-                body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
-                answer_validation = self.runtime_answer_validator.validate(
-                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
-                )
-                repair_used = True
-            elif answer_validation.must_regenerate and preserve_handler_body:
-                decision_dict["answer_validation_suppressed"] = {
-                    "reason": "dedicated_handler_body_satisfied_required_components",
-                    "validation": answer_validation.to_dict(),
-                }
-                answer_validation = self.runtime_answer_validator.validate(
-                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
-                )
-                decision_dict["runtime_answer_quality"] = "topic_aligned"
-        if turn_context is not None:
-            turn_context.complete_stage("synthesis")
-        logic_audit = self.turn_logic_auditor.audit(
-            user_text=text,
-            response_text=body,
-            detected_intent=str(detected_dialogue_intent),
-            route=str(decision_dict.get("route") or ""),
-            handler=str(decision_dict.get("handler_name") or route_entry.handler_name),
-            policy=turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
-            speech_act=str((dialogue_intent_report or {}).get("speech_act") or "unknown"),
-            question_object=str((dialogue_intent_report or {}).get("question_object") or "unknown"),
+        return adapter_status, can_generate_model_guided_speech
+
+    def _record_validation_diagnostic(
+        self,
+        turn_context: TurnExecutionContext | None,
+        validation: Any,
+        *,
+        event_type: str,
+        attempt: int,
+        repair_used: bool | None = None,
+    ) -> None:
+        if turn_context is None:
+            return
+        payload = validation.to_dict()
+        reason = str(payload.get("mismatch_reason") or "").strip() or None
+        if not reason and payload.get("missing_required_components"):
+            reason = "REQUIRED_COMPONENT_MISSING"
+        attributes: dict[str, Any] = {
+            "attempt": int(attempt),
+            "must_regenerate": bool(validation.must_regenerate),
+            "missing_required_components": list(validation.missing_required_components or []),
+            "required_repair_route": validation.required_repair_route,
+        }
+        if repair_used is not None:
+            attributes["repair_used"] = bool(repair_used)
+        turn_context.record_diagnostic_event(
+            stage=TurnStage.VALIDATION,
+            component="RuntimeAnswerValidator",
+            event_type=event_type,
+            outcome="accepted" if validation.accepted else "rejected",
+            reason_code=reason,
+            attributes=attributes,
         )
-        self._stage_turn_write(
-            turn_context,
-            data_type="turn_logic_audit",
-            stage="synthesis_validation",
-            commit=lambda: self.turn_logic_auditor.append(logic_audit),
+        if repair_used:
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.RECOVERY,
+                component="RuntimeResponseSynthesizer",
+                event_type="repair_applied",
+                outcome="completed",
+                reason_code="REPAIR_SYNTHESIS",
+                attributes={"attempt": 1},
+            )
+
+    def _record_model_retry_diagnostic(
+        self,
+        turn_context: TurnExecutionContext | None,
+    ) -> None:
+        if turn_context is None:
+            return
+        turn_context.record_diagnostic_event(
+            stage=TurnStage.MODEL,
+            component="ModelGuidedResponseSynthesizer",
+            event_type="model_retry",
+            outcome="attempted",
+            reason_code="INITIAL_MODEL_CANDIDATE_NOT_ACCEPTED",
+            attributes={"attempt": 1},
         )
-        reasoning_decision = self.reasoning_controller.assess_turn(
-            user_text=text,
+
+    def _record_final_turn_diagnostics(
+        self,
+        *,
+        turn_context: TurnExecutionContext | None,
+        decision_dict: dict[str, Any],
+        route_entry: Any,
+        answer_validation: Any,
+        detected_dialogue_intent: Any,
+        handler_required: list[str],
+        handler_satisfied: set[str],
+        handler_missing: list[str],
+        dispatch_report: dict[str, Any],
+        envelope: CognitiveTurnEnvelope,
+    ) -> None:
+        if turn_context is None:
+            return
+        legacy_fallback = str(decision_dict.get("fallback_classification") or "not_fallback")
+        typed_fallback: FallbackDecision | None = None
+        if legacy_fallback == "cannot_answer_directly":
+            requires_host_model = bool(decision_dict.get("requires_host_model"))
+            typed_fallback = FallbackDecision.build(
+                kind=(
+                    FallbackKind.EXTERNAL_CAPABILITY_REQUIRED
+                    if requires_host_model
+                    else FallbackKind.TERMINAL_DIAGNOSTIC
+                ),
+                origin_stage=TurnStage.MODEL if requires_host_model else TurnStage.VALIDATION,
+                origin_component="JaznEngine.process_turn",
+                reason_code=(
+                    "MODEL_GUIDED_SPEECH_REQUIRED"
+                    if requires_host_model
+                    else "VALIDATION_REJECTED_CANNOT_ANSWER_DIRECTLY"
+                ),
+                from_route=str(route_entry.route),
+                to_route=(
+                    "host_model_phase2"
+                    if requires_host_model
+                    else str(decision_dict.get("route") or route_entry.route)
+                ),
+                recoverable=requires_host_model,
+                required_capability="host_model" if requires_host_model else None,
+                attempt=int(decision_dict.get("model_guided_retry_count") or 0),
+            )
+        elif legacy_fallback == "repair_fallback":
+            typed_fallback = FallbackDecision.build(
+                kind=FallbackKind.RECOVERABLE_FALLBACK,
+                origin_stage=TurnStage.RECOVERY,
+                origin_component="RuntimeResponseSynthesizer",
+                reason_code="REPAIR_SYNTHESIS",
+                from_route=str(route_entry.route),
+                to_route=str(decision_dict.get("route") or route_entry.route),
+                recoverable=True,
+                attempt=1,
+            )
+        elif legacy_fallback == "template_fallback":
+            typed_fallback = FallbackDecision.build(
+                kind=FallbackKind.RECOVERABLE_FALLBACK,
+                origin_stage=TurnStage.RECOVERY,
+                origin_component="TemplateRegistry",
+                reason_code="TEMPLATE_FALLBACK",
+                from_route=str(route_entry.route),
+                to_route=str(decision_dict.get("route") or route_entry.route),
+                recoverable=True,
+            )
+        if typed_fallback is not None:
+            turn_context.record_diagnostic_fallback(typed_fallback)
+
+        final_validation_payload = answer_validation.to_dict()
+        findings = self.blind_route_detector.detect(
             intent=str(detected_dialogue_intent),
-            route=str(decision_dict.get("route") or ""),
-            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
-            body=body,
-            policy=turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
-            logic_audit=logic_audit.to_dict(),
-            validation=answer_validation.to_dict(),
-        )
-        decision_dict["turn_logic_audit"] = logic_audit.to_dict()
-        decision_dict["reasoning_controller"] = reasoning_decision.to_dict()
-        envelope.cognitive_frame["turn_logic_audit"] = logic_audit.to_dict()
-        envelope.cognitive_frame["reasoning_controller"] = reasoning_decision.to_dict()
-        turn_route_trace = TurnRouteTrace(
-            user_text_preview=(text or "")[:240],
-            speech_act=str((dialogue_intent_report or {}).get("speech_act") or "unknown"),
-            question_object=str((dialogue_intent_report or {}).get("question_object") or "unknown"),
-            primary_intent_initial=str((dialogue_intent_report or {}).get("primary_intent") or "unknown"),
-            primary_intent_final=str(detected_dialogue_intent),
-            secondary_intents=list((dialogue_intent_report or {}).get("secondary_intents") or []),
-            topic_guard=json_object(frame.get("topic_mismatch_guard")),
-            turn_logic_audit=logic_audit.to_dict(),
-            selected_route=str(decision_dict.get("route") or route_entry.route),
-            selected_handler=str(decision_dict.get("handler_name") or route_entry.handler_name),
-            memory_gate=str(((frame.get("memory_context") or {}).get("gate") if isinstance(frame.get("memory_context"), dict) else None) or "not_needed"),
-            startup_status_mode="fast",
-            sqlite_health_mode="metadata",
-            network_time_used=bool((envelope.cognitive_frame.get("timestamp_contract") or {}).get("trusted")),
-            deep_audit_used=False,
-            runtime_answer_validation=answer_validation.to_dict(),
-            final_text_source=str(decision_dict.get("response_generation_mode") or decision_dict.get("handler_generation_mode") or "handler_or_synthesizer"),
-        ).to_dict()
-        decision_dict["turn_route_trace"] = turn_route_trace
-        envelope.cognitive_frame["turn_route_trace"] = turn_route_trace
-        if reasoning_decision.decision == "regenerate" and not repair_used and not decision_dict.get("requires_host_model"):
-            synthesis = self.runtime_response_synthesizer.synthesize(
-                user_text=text,
-                detected_intent=str(detected_dialogue_intent),
-                original_body=body,
-                route=str(decision_dict.get("route") or ""),
-                template_origin=template_origin if template_origin.get("template_id") else None,
-                validation={"must_regenerate": True, "mismatch_reason": reasoning_decision.reason},
-                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
-            )
-            if synthesis.should_override:
-                body = self.guard.enforce(synthesis.body.strip())
-                decision_dict["route"] = synthesis.route
-                decision_dict["handler_name"] = synthesis.handler_name
-                decision_dict["runtime_answer_quality"] = "logic_audit_repaired"
-                decision_dict["repair_synthesis"] = synthesis.to_dict()
-                repair_used = True
-                answer_validation = self.runtime_answer_validator.validate(
-                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
-                )
-        if isinstance(decision_dict.get("turn_route_trace"), dict):
-            decision_dict["turn_route_trace"]["selected_route"] = str(decision_dict.get("route") or route_entry.route)
-            decision_dict["turn_route_trace"]["selected_handler"] = str(decision_dict.get("handler_name") or route_entry.handler_name)
-            decision_dict["turn_route_trace"]["runtime_answer_validation"] = answer_validation.to_dict()
-            decision_dict["turn_route_trace"]["final_text_source"] = str(decision_dict.get("response_generation_mode") or decision_dict.get("handler_generation_mode") or "handler_or_synthesizer")
-            envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
-        template_origin = self.template_registry.classify_body(body, detected_intent=str(detected_dialogue_intent))
-        if str(decision_dict.get("fallback_classification") or "") in {"", "not_fallback"}:
-            if repair_used:
-                decision_dict["fallback_classification"] = "repair_fallback"
-            elif template_origin.get("template_id"):
-                decision_dict["fallback_classification"] = "template_fallback"
-            elif decision_dict.get("model_generated"):
-                decision_dict["fallback_classification"] = "not_fallback"
-            elif str(handler_result.body or "").strip():
-                decision_dict["fallback_classification"] = "rule_handler_response"
-        decision_dict.setdefault("requires_host_model", False)
-        decision_dict["final_answer_validation"] = answer_validation.to_dict()
-        # Origin truth is computed only after runtime provenance and the final
-        # candidate body exist. A bridge's accepted flag alone is not evidence.
-        decision_dict.pop("origin_truth_valid", None)
-        if isinstance(decision_dict.get("turn_route_trace"), dict):
-            decision_dict["turn_route_trace"].update({
-                "fallback_classification": decision_dict.get("fallback_classification"),
-                "source_origin_detail": decision_dict.get("source_origin_detail"),
-                "can_generate_model_guided_speech": can_generate_model_guided_speech,
-                "requires_host_model": bool(decision_dict.get("requires_host_model")),
-                "retry_count": int(decision_dict.get("model_guided_retry_count") or 0),
-            })
-            envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
-        if str(detected_dialogue_intent).startswith("creative_text"):
-            decision_dict["source_text_preservation_contract"] = SourceTextPreservationContract.build(text, intent=str(detected_dialogue_intent)).to_dict()
-        if turn_context is not None:
-            turn_context.start_stage("provenance")
-        runtime_provenance = build_runtime_provenance(
-            body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
-            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
-        ).to_dict()
-        decision_dict.update({
-            "response_generation_mode": runtime_provenance.get("response_generation_mode"),
-            "template_origin": template_origin,
-            "template_id": template_origin.get("template_id"),
-            "template_file": template_origin.get("template_file"),
-            "template_line": template_origin.get("template_line"),
-            "source_origin_detail": runtime_provenance.get("source_origin_detail"),
-            "interpretation_distance": runtime_provenance.get("interpretation_distance"),
-            "runtime_text_hash": runtime_provenance.get("runtime_text_hash"),
-            "runtime_provenance": runtime_provenance,
-        })
-        decision_dict = _sync_conversation_decision_body(
-            decision_dict,
-            final_body=body,
-            sync_stage="pre_final_response_contract",
-        )
-
-        decision_dict = self._refresh_finalization_timestamp_contract(
-            envelope=envelope,
-            decision=decision_dict,
-            turn_context=turn_context,
-        )
-
-        prospective_visible = FinalResponseContract.ensure_timestamp_prefix(
-            envelope.trace.timestamp_header,
-            str(decision_dict.get("state_emoticon") or ""),
-            str((decision_dict.get("voice_source_contract") or {}).get("speaking_identity") or ""),
-            body,
-        )
-        origin_truth_valid, origin_truth_errors = evaluate_origin_truth(
-            decision_dict,
-            body=body,
-            final_visible_text=prospective_visible,
-            timestamp_header=envelope.trace.timestamp_header,
-        )
-        decision_dict["origin_truth_valid"] = origin_truth_valid
-        decision_dict["origin_truth_errors"] = origin_truth_errors
-        envelope.attach_conversation_decision(decision_dict)
-        envelope.cognitive_frame["continuity_badge_policy"] = continuity_badge_report
-        envelope.cognitive_frame["runtime_answer_validation"] = answer_validation.to_dict()
-        envelope.cognitive_frame["template_origin"] = template_origin
-        envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance
-        try:
-            source_entry = self.source_origin_ledger.build_entry(
-                turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, user_text=text, response_text=body, runtime_text=body,
-                route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent),
-                handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), intent_confidence=float((dialogue_intent_report or {}).get("confidence") or 0.0),
-                provenance=runtime_provenance, template_origin=template_origin, validator_result=answer_validation.to_dict(),
-                fallback_classification=str(decision_dict.get("fallback_classification") or "unknown"),
-                can_generate_model_guided_speech=can_generate_model_guided_speech,
-                requires_host_model=bool(decision_dict.get("requires_host_model")),
-                final_visible_integrity_valid=bool(decision_dict.get("origin_truth_valid") and answer_validation.accepted),
-                model_response=model_synthesis.adapter_response,
-            )
-            self._stage_turn_write(
-                turn_context,
-                data_type="source_origin_ledger",
-                stage="provenance",
-                commit=lambda entry=source_entry: self.source_origin_ledger.append(entry),
-            )
-            envelope.cognitive_frame["source_origin_ledger_entry"] = source_entry.to_dict()
-        except Exception as exc:
-            envelope.cognitive_frame["source_origin_ledger_error"] = str(exc)
-        if turn_context is not None:
-            turn_context.start_stage("host_visible_finalization")
-        candidate_contract = FinalResponseContract.build(
-            turn_id=envelope.trace.turn_id,
-            trace_id=envelope.trace.trace_id,
-            runtime_version=self.config.version,
-            timestamp_header=envelope.trace.timestamp_header,
-            timezone=envelope.trace.timezone,
-            state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(),
-            body=body,
-            conversation_decision=decision_dict,
-            continuity_badge_policy=continuity_badge_report,
-        )
-        # Uzupełnienie provenance po zbudowaniu kandydującej widocznej odpowiedzi.
-        runtime_provenance_visible = build_runtime_provenance(
-            body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
-            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
-        ).with_visible_text(candidate_contract.final_visible_text).to_dict()
-        decision_dict["visible_answer_hash"] = runtime_provenance_visible.get("visible_answer_hash")
-        decision_dict["runtime_provenance"] = runtime_provenance_visible
-        decision_dict = _sync_conversation_decision_body(
-            decision_dict,
-            final_body=body,
-            sync_stage="post_visible_provenance",
-        )
-        envelope.attach_conversation_decision(decision_dict)
-        envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance_visible
-        contract = FinalResponseContract.build(
-            turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, runtime_version=self.config.version, timestamp_header=envelope.trace.timestamp_header, timezone=envelope.trace.timezone, state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(), body=body, conversation_decision=decision_dict, continuity_badge_policy=continuity_badge_report,
-        )
-        if runtime_provenance_visible.get("visible_answer_text") != contract.final_visible_text:
-            runtime_provenance_visible = build_runtime_provenance(
-                body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
-                handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
-            ).with_visible_text(contract.final_visible_text).to_dict()
-            decision_dict["visible_answer_hash"] = runtime_provenance_visible.get("visible_answer_hash")
-            decision_dict["runtime_provenance"] = runtime_provenance_visible
-            decision_dict = _sync_conversation_decision_body(
-                decision_dict,
-                final_body=body,
-                sync_stage="post_visible_provenance_rebuild",
-            )
-            envelope.attach_conversation_decision(decision_dict)
-            envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance_visible
-            contract = FinalResponseContract.build(
-                turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, runtime_version=self.config.version, timestamp_header=envelope.trace.timestamp_header, timezone=envelope.trace.timezone, state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(), body=body, conversation_decision=decision_dict, continuity_badge_policy=continuity_badge_report,
-            )
-        self._apply_epistemic_visible_boundary(envelope=envelope, final_visible_text=contract.final_visible_text, runtime_provenance=runtime_provenance_visible, turn_context=turn_context)
-        runtime_turn_contract = RuntimeTurnContract(
-            turn_id=envelope.trace.turn_id,
-            trace_id=envelope.trace.trace_id,
-            detected_intent=str(detected_dialogue_intent),
             route=str(decision_dict.get("route") or route_entry.route),
             handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
-            runtime_exact_text=body,
-            final_visible_text=contract.final_visible_text,
-            host_interpretation=decision_dict.get("host_interpretation"),
-            template_origin=dict(template_origin or {}),
-            source_origin_detail=str(decision_dict.get("source_origin_detail") or "unknown"),
-            fallback_classification=str(decision_dict.get("fallback_classification") or "unknown"),
-            final_visible_integrity=dict(contract.final_visible_integrity or {}),
-            can_generate_model_guided_speech=can_generate_model_guided_speech,
-            requires_host_model=bool(decision_dict.get("requires_host_model")),
-            response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"),
-            validation=answer_validation.to_dict(),
-            retry_count=int(decision_dict.get("model_guided_retry_count") or 0),
-            retry_limit=int(decision_dict.get("model_guided_retry_limit") or 1),
-        )
-        envelope.attach_runtime_turn_contract(runtime_turn_contract.to_dict())
-        envelope.attach_final_response_contract(contract.to_dict(), contract.final_visible_text)
-        if turn_context is not None:
-            turn_context.complete_stage("provenance")
-            turn_context.complete_stage("host_visible_finalization")
-        try:
-            checkpoint = self._stage_turn_write(
-                turn_context,
-                data_type="turn_checkpoint",
-                stage="host_visible_finalization",
-                commit=lambda: self.turn_checkpoint_writer.build_and_append(
-                    turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, timestamp_header=envelope.trace.timestamp_header, user_text=text, runtime_text=body, visible_text=contract.final_visible_text, detected_intent=str(detected_dialogue_intent), route=str(decision_dict.get("route") or ""), response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"), template_origin=template_origin, validator=answer_validation.to_dict(), source_origin=envelope.cognitive_frame.get("source_origin_ledger_entry") or {},
-                ),
-            )
-            envelope.cognitive_frame["turn_checkpoint"] = checkpoint
-        except Exception as exc:
-            envelope.cognitive_frame["turn_checkpoint_error"] = str(exc)
-        envelope_dict = envelope.to_dict()
-        self._stage_turn_write(
-            turn_context,
-            data_type="cognitive_turn_envelope",
-            stage="host_visible_finalization",
-            commit=lambda: self.store.add_event(
-                "cognitive_turn_envelope",
-                envelope_dict,
-                source=ctx.get("client", "process_turn"),
-                actor="latka_runtime",
-                tags=["cognitive_turn_envelope", "final_response_contract", "timestamp_contract", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", "project_startup_index", self.config.version],
-                importance=0.86,
-                emotional_weight=0.55,
-                canonical_impact=1,
-                created_at_local=envelope.trace.timestamp_header,
+            required_components=list(handler_required or route_entry.required_components),
+            satisfied_components=tuple(handler_satisfied),
+            missing_components=tuple(
+                sorted(
+                    set(handler_missing)
+                    | set(final_validation_payload.get("missing_required_components") or [])
+                )
             ),
+            dispatch_report=dispatch_report,
+            validation=final_validation_payload,
+            fallback=turn_context.diagnostic_trace.fallback,
         )
-        self._stage_turn_write(
-            turn_context,
-            data_type="runtime_event_ledger",
-            stage="host_visible_finalization",
-            commit=lambda: self.event_ledger.append_event(
-                "cognitive_turn_envelope",
-                actor="latka_runtime",
-                source=ctx.get("client", "process_turn"),
-                payload=envelope_dict,
-                tags=["cognitive_turn_envelope", "final_response_contract", "exact", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", self.config.version],
-                importance=0.86,
-                emotional_weight=0.55,
-                canonical_impact=1,
-                exact_text=text,
-                local_time_label=envelope.trace.timestamp_header,
-            ),
-        )
-        self._stage_turn_write(
-            turn_context,
-            data_type="final_visible_reply",
-            stage="host_visible_finalization",
-            commit=lambda: self.event_ledger.append_final_visible_reply(
-                envelope_dict,
-                final_text=contract.final_visible_text,
-                source=ctx.get("client", "process_turn"),
-                local_time_label=envelope.trace.timestamp_header,
-            ),
-        )
-        self._stage_turn_write(
-            turn_context,
-            data_type="session_continuity",
-            stage="host_visible_finalization",
-            commit=lambda: self.session_continuity.update_index(
-                reason="final_visible_reply_persisted",
-                source="JaznEngine.process_turn",
-                extra={
-                    "turn_id": envelope.trace.turn_id,
-                    "trace_id": envelope.trace.trace_id,
-                    "timestamp_header": envelope.trace.timestamp_header,
-                    "client_context": ctx,
-                    "final_visible_reply_sha256": envelope.cognitive_frame.get("final_visible_reply_sha256"),
-                },
-            ),
-        )
-        self._stage_turn_write(
-            turn_context,
-            data_type="process_turn_completed_audit",
-            stage="audit_persistence",
-            commit=lambda: self.audit_store.append_event("process_turn_completed", {"turn_id": envelope.trace.turn_id, "trace_id": envelope.trace.trace_id, "detected_intent": str(detected_dialogue_intent), "route": str(decision_dict.get("route") or route_entry.route or ""), "runtime_answer_quality": (answer_validation.to_dict() or {}).get("runtime_answer_quality")}, source=ctx.get("client", "process_turn"), actor="latka_runtime", tags=["turn", "completed", "audit", self.config.version], trace_id=envelope.trace.trace_id, turn_id=envelope.trace.turn_id),
-        )
+        turn_context.add_blind_route_findings(findings)
+        diagnostic_snapshot = turn_context.diagnostic_snapshot()
+        diagnostic_ref = {
+            "schema_version": "turn_diagnostic_trace_ref/v1",
+            "diagnostic_id": diagnostic_snapshot.get("diagnostic_id"),
+            "turn_id": turn_context.turn_id,
+            "trace_id": turn_context.trace_id,
+            "canonical_location": "TurnExecutionContext.turn_diagnostics",
+        }
+        decision_dict["turn_diagnostic_trace_ref"] = diagnostic_ref
+        envelope.cognitive_frame["turn_diagnostic_trace_ref"] = dict(diagnostic_ref)
 
-        def _commit_engine_turn_state() -> None:
-            self.last_user_text = text
-            self.last_detected_intent = str(detected_dialogue_intent)
-            self.last_runtime_route = str(decision_dict.get("route") or route_entry.route or "")
-            self.last_dialogue_task_state = dict(current_dialogue_task_state or {})
-            self._save_runtime_state()
-
-        self._stage_turn_write(
-            turn_context,
-            data_type="engine_turn_state",
-            stage="host_visible_finalization",
-            commit=_commit_engine_turn_state,
-        )
-        # Keep shutdown read-only for preview too; shutdown clears the flag only
-        # after closing stores. Normal process_turn clears immediately.
-        if not read_only_preview:
-            self._preview_read_only_active = False
-        return envelope
+    def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
+        """Compatibility facade for the canonical turn pipeline."""
+        from latka_jazn.core.turn_orchestrator import TurnOrchestrator
+        from latka_jazn.core.turn_pipeline_state import TurnRequest
+        return TurnOrchestrator(self).process(TurnRequest(text, dict(client_context or {}))).envelope
 
     def persist_final_visible_reply(
         self,
@@ -3558,8 +2420,10 @@ class JaznEngine:
         external_evidence: dict[str, Any] | None = None,
         generated_evidence: dict[str, Any] | None = None,
     ) -> dict:
-        """Persist an externally rendered final only with the verified turn envelope."""
-        capture = FinalVisibleReplyCapture.build(
+        """Compatibility facade for the single visible persistence service."""
+        from latka_jazn.core.finalization_service import FinalizationService
+
+        return FinalizationService(self.config, event_ledger=self.event_ledger).persist_final_visible_reply(
             turn_id=turn_id,
             trace_id=trace_id,
             timestamp_header=timestamp_header,
@@ -3570,75 +2434,15 @@ class JaznEngine:
             author_id=author_id,
             author_label=author_label,
             author_source=author_source,
-            state_emoticon=state_emoticon,
             final_text=final_text,
+            state_emoticon=state_emoticon,
             source=source,
-            config=self.config,
+            client_context=client_context,
             runtime_evidence=runtime_evidence,
             memory_evidence=memory_evidence,
             external_evidence=external_evidence,
             generated_evidence=generated_evidence,
         )
-        envelope_stub = {
-            "schema_version": "external_final_visible_reply_envelope/v2",
-            "runtime_version": self.config.version,
-            "trace": {
-                "turn_id": turn_id,
-                "trace_id": trace_id,
-                "timestamp_header": timestamp_header,
-                "timezone": timezone,
-                "runtime_mode": "external_visible_layer_capture",
-                "client": source,
-                "lifecycle": (client_context or {}).get("lifecycle", "one_shot_visible_layer"),
-            },
-            "final_response_contract": {
-                "turn_id": turn_id,
-                "trace_id": trace_id,
-                "runtime_version": self.config.version,
-                "timestamp_header": timestamp_header,
-                "timezone": timezone,
-                "timestamp_sample_iso": timestamp_sample_iso,
-                "timestamp_source": timestamp_source,
-                "timestamp_trusted": timestamp_trusted,
-                "state_emoticon": state_emoticon,
-                "author_id": author_id,
-                "author_label": author_label,
-                "author_source": author_source,
-                "final_visible_text": capture.final_visible_text,
-                "schema_version": "external_final_response_contract/v2",
-            },
-            "dialogue_state": {},
-            "affect_mix": {"state_emoticon": state_emoticon},
-        }
-        ledger_result = self.event_ledger.append_final_visible_reply(
-            envelope_stub,
-            final_text=capture.final_visible_text,
-            source=source,
-            client_context=client_context or {},
-            local_time_label=timestamp_header,
-        )
-        if ledger_result is None:
-            raise RuntimeError("final_visible_reply_ledger_write_failed")
-        capture_payload = capture.to_dict()
-        epistemic_ledger_append: list[dict[str, Any]] = []
-        if capture.epistemic_claims:
-            with EpistemicDecisionLedger(
-                epistemic_ledger_path(workspace_runtime_path(self.config.root))
-            ) as epistemic_ledger:
-                epistemic_ledger_append = [
-                    item.to_dict()
-                    for item in epistemic_ledger.append_assessments(
-                        turn_id=turn_id,
-                        trace_id=trace_id,
-                        assessments=capture.epistemic_claims,
-                    )
-                ]
-        return {
-            **capture_payload,
-            "final_visible_reply_capture": dict(capture_payload),
-            "ledger_append": asdict(ledger_result),
-            "epistemic_ledger_append": epistemic_ledger_append,
-        }
 
     def _is_status_request(self, low_text: str) -> bool:
         return any(x in low_text for x in [

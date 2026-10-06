@@ -585,7 +585,10 @@ def mark_claimed_host_request_indeterminate(root: Path, *, turn_id: str, error: 
     return record
 
 
-def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_hash: str) -> dict[str, Any]:
+def consume_claimed_host_request(
+    root: Path, *, turn_id: str, request_contract_hash: str,
+    final_visible_capture: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     claimed_path = _path(root, "claimed", turn_id)
     record = _read(claimed_path)
     if str(record.get("request_contract_hash") or "") != str(request_contract_hash or "").strip().lower():
@@ -594,6 +597,11 @@ def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_h
     binding = binding_value if isinstance(binding_value, Mapping) else {}
     daemon_request_id = str(binding.get("daemon_request_id") or "").strip()
     record["state"] = "consumed"
+    if final_visible_capture is not None:
+        # Candidate and acceptance share the same atomic rename. Before this
+        # commit there is no accepted assistant event or conversation projection.
+        record["final_visible_capture"] = final_visible_capture
+        record["finalization_state"] = "commit_accepted"
     record["consumed_at_utc"] = _utc_now().isoformat()
     # The durable consumed record is the settlement authority for a host-finalized
     # turn.  Daemon notification is an idempotent projection/outbox delivery, not
@@ -612,6 +620,49 @@ def consume_claimed_host_request(root: Path, *, turn_id: str, request_contract_h
     _atomic_write(claimed_path, record)
     consumed_path.parent.mkdir(parents=True, exist_ok=True)
     _replace_path(claimed_path, consumed_path)
+    return record
+
+
+def read_committed_host_request(root: Path, *, turn_id: str) -> dict[str, Any]:
+    """Read the accepted candidate for projection repair; never create a claim."""
+    path = _path(root, "consumed", turn_id)
+    if not path.is_file():
+        raise HostRequestStoreError("committed_host_request_missing")
+    record = _read(path)
+    if record.get("state") != "consumed" or record.get("finalization_state") != "commit_accepted":
+        raise HostRequestStoreError("committed_host_request_capture_unavailable")
+    capture = record.get("final_visible_capture")
+    binding = record.get("binding")
+    if not isinstance(capture, dict) or not isinstance(binding, dict):
+        raise HostRequestStoreError("committed_host_request_capture_invalid")
+    text = str(capture.get("final_visible_text") or "")
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    expected_prefix = f"{binding.get('timestamp_header') or ''}\n{binding.get('state_emoticon') or ''} {binding.get('author_label') or ''}\n\n"
+    if (
+        not text or capture.get("final_text_sha256") != digest
+        or capture.get("turn_id") != turn_id or capture.get("turn_id") != binding.get("turn_id")
+        or capture.get("trace_id") != binding.get("trace_id")
+        or capture.get("envelope_present_in_final") is not True
+        or not text.startswith(expected_prefix)
+    ):
+        raise HostRequestStoreError("committed_host_request_capture_binding_mismatch")
+    prepared = capture.get("prepared_projection")
+    if not isinstance(prepared, dict) or not isinstance(prepared.get("envelope"), dict):
+        raise HostRequestStoreError("committed_host_request_projection_invalid")
+    envelope = prepared["envelope"]
+    trace = envelope.get("trace") or {}
+    contract = envelope.get("final_response_contract") or {}
+    if (
+        not isinstance(trace, dict) or not isinstance(contract, dict)
+        or trace.get("turn_id") != turn_id or trace.get("trace_id") != binding.get("trace_id")
+        or trace.get("timestamp_header") != binding.get("timestamp_header")
+        or contract.get("turn_id") != turn_id or contract.get("trace_id") != binding.get("trace_id")
+        or contract.get("final_visible_text") != text
+        or prepared.get("timestamp_header") != binding.get("timestamp_header")
+        or not str(prepared.get("source") or "").strip()
+        or not isinstance(prepared.get("client_context"), dict)
+    ):
+        raise HostRequestStoreError("committed_host_request_projection_binding_mismatch")
     return record
 
 

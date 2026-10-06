@@ -86,25 +86,21 @@ def _display_exact(
     runtime_result: dict[str, Any],
     presentation: dict[str, Any],
 ) -> dict[str, Any]:
+    from latka_jazn.core.chat_command_contract import (
+        chatgpt_result_has_displayable_runtime_final,
+        chatgpt_result_has_displayable_host_final,
+    )
+
     final_text = str(
         presentation.get("final_visible_text")
         or runtime_result.get("final_visible_text")
         or ""
     )
-    checks = _object_or_none(presentation.get("runtime_checks")) or {}
-    integrity = _object_or_none(runtime_result.get("final_visible_integrity"))
-    if integrity is None:
-        final_contract = _object_or_none(runtime_result.get("final_response_contract")) or {}
-        integrity = _object_or_none(final_contract.get("final_visible_integrity")) or {}
-    integrity_valid = (
-        integrity.get("valid") is True
-        or checks.get("final_visible_integrity_valid") is True
+    accepted_final = (
+        chatgpt_result_has_displayable_runtime_final(runtime_result)
+        or chatgpt_result_has_displayable_host_final(runtime_result)
     )
-    truth_ok = checks.get("runtime_truth_gate_ok")
-    if truth_ok is None:
-        truth_gate = runtime_result.get("runtime_truth_gate")
-        truth_ok = truth_gate.get("ok") if isinstance(truth_gate, dict) else None
-    if not final_text or integrity_valid is not True or truth_ok is not True:
+    if not final_text or not accepted_final or final_text != str(runtime_result.get("final_visible_text") or ""):
         return _tool_error(
             "validated_final_visible_text_missing_after_recovery",
             response=runtime_result,
@@ -189,7 +185,11 @@ def run(
         return _tool_error("daemon_request_id_missing")
 
     try:
-        envelope = gateway.result(request_id)
+        from latka_jazn.core.conversation_runner import ConversationRunner
+        from latka_jazn.core.conversation_turn_api import ResumeRequest, TurnHandle
+
+        runner = ConversationRunner.for_transport(gateway)
+        envelope = runner.resume_turn(ResumeRequest(TurnHandle(request_id))).result
     except GatewayError as exc:
         reason = str(exc)
         if reason.startswith("daemon_unavailable:"):
@@ -201,7 +201,30 @@ def run(
     action = str(presentation.get("action") or "").strip()
 
     if action == "display_exact":
-        return _display_exact(runtime_result, presentation)
+        display = _display_exact(runtime_result, presentation)
+        capture = _object_or_none(runtime_result.get("host_visible_reply_capture")) or {}
+        if display.get("isError") is not True and capture.get("projection_status") == "pending_recovery":
+            from latka_jazn.config import JaznConfig
+            from latka_jazn.core.chat_command_contract import (
+                extract_chatgpt_host_visible_reply_payload, build_chatgpt_host_presentation_packet,
+                _commit_host_finalized_conversation_state, _commit_host_finalized_session_continuity,
+            )
+            from latka_jazn.core.host_finalization_transaction import HostFinalizationPorts
+
+            try:
+                recovery = runner.recover_projection(
+                    config=JaznConfig(root=root), turn_id=str(capture.get("turn_id") or ""),
+                    request_id=request_id, ports=HostFinalizationPorts(
+                        extract_payload=extract_chatgpt_host_visible_reply_payload,
+                        presentation=build_chatgpt_host_presentation_packet,
+                        commit_conversation=_commit_host_finalized_conversation_state,
+                        commit_session=_commit_host_finalized_session_continuity,
+                    ),
+                )
+            except (HostRequestStoreError, OSError, ValueError, RuntimeError) as exc:
+                recovery = {"recovery_only": True, "projection_status": "pending_recovery", "error_type": type(exc).__name__}
+            display.setdefault("_meta", {})["projection_recovery"] = recovery
+        return display
 
     status = str(envelope.get("status") or envelope.get("job_status") or "").strip()
     if action == "poll_runtime" or (

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import os
+import stat
 
 from latka_jazn.archive.resource_policy import ArchiveResourcePolicyError, normalize_member_path
 
@@ -20,13 +21,15 @@ def _within(path: Path, root: Path) -> bool:
 
 def _is_reparse_point(path: Path) -> bool:
     try:
-        if path.is_symlink():
-            return True
-        is_junction = getattr(path, "is_junction", None)
-        if callable(is_junction) and is_junction():
-            return True
-        attributes = int(getattr(path.lstat(), "st_file_attributes", 0) or 0)
-        return bool(attributes & int(getattr(os, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)))
+        # One non-following metadata read observes both POSIX links and Windows
+        # junction/reparse attributes. Repeated path probes multiply startup and
+        # heartbeat integrity costs across every protected manifest entry.
+        metadata = path.lstat()
+        return bool(
+            stat.S_ISLNK(metadata.st_mode)
+            or int(getattr(metadata, "st_file_attributes", 0) or 0)
+            & int(getattr(os, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+        )
     except OSError:
         return False
 
@@ -64,7 +67,7 @@ def resolve_safe_path(
     current = root_resolved
     for part in canonical.split("/"):
         current = current / part
-        if (current.exists() or current.is_symlink()) and _is_reparse_point(current):
+        if _is_reparse_point(current):
             target = current.resolve(strict=False)
             if not _within(target, root_resolved):
                 raise UnsafeRelativePathError("symlink or reparse point escapes root")
