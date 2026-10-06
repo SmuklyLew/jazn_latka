@@ -41833,11 +41833,11 @@
       "path": "tests/test_v163255108_blind_route_audit.py",
       "name": "test_route_graph_audit_is_green_for_current_registered_graph",
       "purpose": "Route graph audit is green for current registered graph",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.blind_route_detector",
@@ -41865,7 +41865,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 23
+      "line": 29
     },
     "tests/test_v163255108_blind_route_audit.py::test_blind_route_detector_rejects_anonymous_dispatch_fallback": {
       "path": "tests/test_v163255108_blind_route_audit.py",
@@ -41884,7 +41884,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 51
     },
     "tests/test_v163255108_blind_route_audit.py::test_typed_fallback_prevents_anonymous_fallback_finding": {
       "path": "tests/test_v163255108_blind_route_audit.py",
@@ -41903,7 +41903,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 66
     },
     "tests/test_v163255108_characterization_turn_contract.py::test_v108_characterization_major_route_families": {
       "path": "tests/test_v163255108_characterization_turn_contract.py",
