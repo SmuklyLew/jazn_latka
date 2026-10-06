@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.111",
-  "active_definition_count": 1982,
+  "active_definition_count": 1985,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31893,6 +31893,21 @@
       "description_source": "source_identity",
       "line": 153
     },
+    "tests/test_public_direct_message_runner.py::test_direct_message_uses_shared_runner_before_any_debug_engine_construction": {
+      "path": "tests/test_public_direct_message_runner.py",
+      "name": "test_direct_message_uses_shared_runner_before_any_debug_engine_construction",
+      "purpose": "Direct message uses shared runner before any debug engine construction",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 3
+    },
     "tests/test_python_runtime_bundle.py::test_runtime_target_ids_keep_linux_libc_explicit": {
       "path": "tests/test_python_runtime_bundle.py",
       "name": "test_runtime_target_ids_keep_linux_libc_explicit",
@@ -39819,6 +39834,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 137
+    },
+    "tests/test_safe_path_reparse_observation.py::test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection": {
+      "path": "tests/test_safe_path_reparse_observation.py",
+      "name": "test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection",
+      "purpose": "Nonfollowing metadata preserves posix and windows reparse detection",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_safe_path_reparse_observation.py::test_missing_path_cannot_be_reported_as_reparse_point": {
+      "path": "tests/test_safe_path_reparse_observation.py",
+      "name": "test_missing_path_cannot_be_reported_as_reparse_point",
+      "purpose": "Missing path cannot be reported as reparse point",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
     },
     "tests/test_secure_mcp_remote_runtime_failover.py::test_managed_runtime_is_preferred_long_lived_supervision": {
       "path": "tests/test_secure_mcp_remote_runtime_failover.py",

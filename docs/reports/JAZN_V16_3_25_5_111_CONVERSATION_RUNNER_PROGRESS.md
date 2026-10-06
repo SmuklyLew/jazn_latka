@@ -117,3 +117,26 @@ The five-hour usage checkpoint was pushed before the approximately 35-percent
 remaining threshold: code 2a6829d, canonical metadata 9609016, followed by the
 normal merge 3756a79 of identical automated metadata 1f46321. No history rewrite,
 force push or PR merge occurred. Validation logs stay outside tracked runtime data.
+
+## Lifecycle and last public caller follow-up
+
+The second full local suite was **1 FAIL, 2097 PASS, 4 platform SKIPPED**.
+Unlike the initial stop timeout, this failure was startup readiness timeout.
+An isolated restart attempt also timed out at startup. A diagnostic process
+wrapper retained exact package bytes and showed repeated safe-path checks during
+manifest verification/marker writes. A single non-following lstat now preserves
+POSIX symlink and Windows reparse/junction detection, reducing redundant metadata
+queries. All protected file sizes and hashes still run on every verification.
+Measured verification of the same 2021 files: 3.83 seconds before, 2.33 after.
+Safety/path/integrity tests: **24 PASS, 2 platform SKIPPED**. No timeout or assertion
+was relaxed. Three restarts and a new full suite remain required evidence.
+
+Caller inventory also found default CLI direct text bypassing the session facade.
+It now delegates to the same one-shot runner helper as named chat modes before
+constructing any debug engine. The superseded direct process_turn branch is removed.
+Cognitive-frame, explicit debug and bootstrap diagnostics retain compatibility access.
+The public direct-message routing regression: **1 PASS**.
+
+External host acceptance remains **NOT RUN**: repository/loopback test execution does
+not prove an actual ChatGPT application accepted display_exact/finalization. This
+external evidence is separate from repository completion and CI merge readiness.

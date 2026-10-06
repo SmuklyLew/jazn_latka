@@ -977,7 +977,7 @@ def _run_chat_command_one_shot(
 ) -> int:
     """Run the same runtime speech engine for terminal and bridge one-shots.
 
-    All chat entry points must converge on JaznRuntimeSession.process_user_text();
+    All chat entry points converge on ConversationRunner through its JaznRuntimeSession alias;
     adapters change only the visible/model channel, not the reasoning pipeline.
     """
     session = RuntimeSessionWorker(
@@ -2323,6 +2323,18 @@ def legacy_main(argv: list[str] | None = None) -> int:
             session.close()
         return 0
 
+    text = _message_from_remainder(ns.message)
+    if text and not ns.cognitive_frame and not ns.debug_direct:
+        cfg = config or apply_chat_cli_settings(JaznConfig(), infer_host_environment=True, probe_local=True)
+        _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "direct_message")
+        if daemon_exit is not None:
+            return daemon_exit
+        return _run_chat_command_one_shot(
+            cfg=cfg, text=text, session_id=ns.session_id, no_carryover=ns.no_carryover,
+            source_client="cli_direct_conversation", lifecycle="one_shot",
+            command="direct_message", output_mode="final_visible_text",
+        )
+
     composition = RuntimeCompositionRoot(config)
     engine = composition.create_engine()
     try:
@@ -2335,12 +2347,8 @@ def legacy_main(argv: list[str] | None = None) -> int:
             packet = engine.build_cognitive_frame(text, client_context={"client": "chatgpt_cli_bridge", "lifecycle": "one_shot"})
             print(json.dumps(packet, ensure_ascii=False, indent=2, sort_keys=True))
         elif text:
-            if ns.debug_direct:
-                print(engine.handle_user_message(text, client_context={"client": "cli_direct_debug", "debug_direct": True, "lifecycle": "one_shot"}))
-            else:
-                envelope = engine.process_turn(text, client_context={"client": "cli_direct_conversation", "debug_direct": False, "lifecycle": "one_shot", "session_id": ns.session_id, "no_carryover": ns.no_carryover})
-                envelope_dict, _runtime_truth_gate = apply_runtime_truth_gate(envelope.to_dict())
-                print(envelope_dict.get("final_visible_text", ""))
+            # Normal direct messages returned through the shared runner above.
+            print(engine.handle_user_message(text, client_context={"client": "cli_direct_debug", "debug_direct": True, "lifecycle": "one_shot"}))
         else:
             print(engine.bootstrap())
     finally:
