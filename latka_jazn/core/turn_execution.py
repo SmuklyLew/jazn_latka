@@ -181,7 +181,9 @@ class TurnExecutionContext:
                 stage=TurnStage.SETTLEMENT,
                 component="TurnExecutionContext.cancel",
                 reason_code=error_code,
-                attributes={"cancellation_reason": reason},
+                attributes={
+                    "cancellation_reason_present": bool(str(reason or "").strip()),
+                },
             )
             self.mark_stage("total_execution_time", status="cancelled", error_code=error_code)
 
