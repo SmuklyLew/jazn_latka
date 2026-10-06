@@ -164,6 +164,7 @@ def _source_integration_checks(root: Path) -> dict[str, bool]:
     """Verify runtime reachability markers, not merely file presence."""
     try:
         engine = (root / "latka_jazn/core/engine.py").read_text(encoding="utf-8")
+        construction = (root / "latka_jazn/core/engine_construction.py").read_text(encoding="utf-8")
         replay = (root / "latka_jazn/memory/rest_replay.py").read_text(encoding="utf-8")
         config = (root / "latka_jazn/config.py").read_text(encoding="utf-8")
         turn_contract = (root / "latka_jazn/core/runtime_turn_contract.py").read_text(encoding="utf-8")
@@ -177,12 +178,14 @@ def _source_integration_checks(root: Path) -> dict[str, bool]:
         }
     return {
         "knowledge_fabric_reachable_from_turn": (
-            "self.knowledge_fabric = KnowledgeFabric()" in engine
+            "self.knowledge_fabric = KnowledgeFabric()" in construction
+            and "self.knowledge_fabric = services.knowledge_fabric" in engine
             and '"knowledge_fabric": {' in engine
             and "evidence_from_memory_context" in engine
         ),
         "lexical_intelligence_reachable_from_turn": (
-            "self.lexical_intelligence = LexicalIntelligenceEngine(" in engine
+            "self.lexical_intelligence = LexicalIntelligenceEngine(" in construction
+            and "self.lexical_intelligence = services.lexical_intelligence" in engine
             and '"lexical_intelligence": {' in engine
             and "self.lexical_intelligence.analyse" in engine
         ),

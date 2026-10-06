@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.109",
-  "active_definition_count": 1958,
+  "active_definition_count": 1959,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -9968,6 +9968,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 165
+    },
+    "tests/test_composed_cognition_reachability.py::test_composed_cognition_requires_constructor_binding_and_execution": {
+      "path": "tests/test_composed_cognition_reachability.py",
+      "name": "test_composed_cognition_requires_constructor_binding_and_execution",
+      "purpose": "Composed cognition requires constructor binding and execution",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.cognitive_architecture_audit"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
     },
     "tests/test_config_memory_root.py::test_config_routes_memory_paths_outside_versioned_runtime": {
       "path": "tests/test_config_memory_root.py",

@@ -53,8 +53,16 @@ under tests/archive before moving only their mock injection points; assertions r
 - Initial full local run: FAIL, 2058 passed, 3 failed, 6 skipped. Failures were a
   persistent-recall transport timeout, deployment version pin, and generated test
   catalog drift. Pin/catalog are repaired; fresh recall diagnosis is still running.
-- Final v109 full suite, CI release-hardening, Linux/Windows E2E, package cleanroom:
-  pending. This checkpoint is not merge-ready.
+- Post-fix full local suite on bafaf63: 2068 PASS, 4 platform skips, 1 expected
+  ZIP duplicate-name fixture warning. Fresh isolated persistent recall: PASS.
+- Dedicated CI Linux/Windows persistent E2E on code SHA 9a45016: SUCCESS.
+- Final metadata SHA bafaf63: Pyright and package cleanroom SUCCESS; Windows
+  PowerShell still IN_PROGRESS at this checkpoint.
+- Release-hardening: FAIL in source reachability audit after constructor extraction.
+  Fixed the audit to require construction in EngineRuntimeServices, binding in
+  JaznEngine and execution in the turn. New negative reachability test PASS;
+  full cognitive architecture audit PASS. Fresh CI validation is pending.
+  This checkpoint is not merge-ready.
 
 The v108 final SHA has successful manually dispatched Pyright, release-hardening,
 package cleanroom and full Windows PowerShell workflows (runs 37399152030,
