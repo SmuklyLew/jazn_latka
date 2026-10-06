@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v109 separates explicit engine lifecycle from construction and removes
-# cognitive engine construction from accepted-visible phase-2 persistence.
-DISTRIBUTION_VERSION = "16.3.25.5.111"
-PACKAGE_VERSION = "16.3.25.5.111"
-PACKAGE_RELEASE_NAME = "conversation-runner-legacy-dialogue-cutover-convergence"
+# v112 closes the v111 repository/evidence loop after a real ChatGPT-host
+# local-executor turn reached accepted display_exact without replay.
+DISTRIBUTION_VERSION = "16.3.25.5.112"
+PACKAGE_VERSION = "16.3.25.5.112"
+PACKAGE_RELEASE_NAME = "v111-closeout-real-host-evidence-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

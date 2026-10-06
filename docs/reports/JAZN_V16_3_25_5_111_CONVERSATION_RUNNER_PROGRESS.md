@@ -1,5 +1,8 @@
 # v111 ConversationRunner and legacy dialogue cutover
 
+**Final status 2026-10-06:** `REPOSITORY_COMPLETE / REAL_CHATGPT_HOST_LOCAL_E2E_PASS / PR_UNMERGED`.
+Earlier `IN_PROGRESS` and `NOT RUN` statements below are chronological checkpoint evidence, not the final status.
+
 Baseline: v110 `ee6bb3f4430ab19240d55823314112da205d70f5`, metadata-only descendant
 of code checkpoint `c04aebada879b8b560a24a9fbfdac4ca6df18d8a`. This series is stacked
 over unmerged PRs #318, #319 and #320. No PR merge is authorized.
@@ -156,3 +159,72 @@ Final follow-up Pyright: **0 errors, 1 existing warning, 1116 analyzed files**.
 Compileall, RouteGraphAudit and CognitiveArchitectureAudit: **PASS**. The new
 complete deterministic suite remains **IN_PROGRESS**. Final-SHA GitHub gates and
 external real-host evidence retain their independent statuses.
+
+
+## Final repository and real-host closeout — 2026-10-06
+
+Final immutable v111 SHA:
+`ee00529cdbd9a4d0a469007db787ed4895667ddf`.
+
+Repository validation after the historical checkpoints above:
+
+- local full deterministic suite: **2107 PASS, 4 platform SKIPPED, 0 FAIL**,
+  527.09 seconds, one expected duplicate-ZIP warning;
+- Pyright final SHA: **SUCCESS**;
+- release-hardening: **SUCCESS**;
+- persistent-runtime E2E: **SUCCESS** on Linux and Windows;
+- package-distribution-cleanroom: **SUCCESS**;
+- PowerShell full suite/package smoke/clean checkout: **SUCCESS**;
+- PR #321 rollup: **51 SUCCESS, 2 SKIPPED**; skipped metadata/redundant
+  finalization jobs remain SKIPPED rather than being relabeled PASS.
+
+### Actual ChatGPT-host E2E
+
+The previously missing external-host evidence was executed in a real ChatGPT
+conversation on 2026-10-06 using the final v111 GitHub Actions Linux system artifact.
+
+Package evidence:
+
+- workflow run: `37410740819`;
+- artifact: `jazn-package-linux-x64-py3.12`, artifact id `11389445665`;
+- outer artifact SHA-256:
+  `541def22dbd2f6f0ea88ffa4cc3cc259f175b176806164d5290b87283986d613`;
+- inner SYSTEM ZIP SHA-256:
+  `aa9ba3cb8182b4fb63617f7e850d73039eb20731d7ab8849ca07de8d45d5356c`;
+- ZIP CRC/path audit: PASS, 2025 entries;
+- stdlib-only `CHATGPT_BOOTSTRAP.py` verified/materialized the operator and
+  `host-preflight` selected `local_executor`;
+- live status then reported `system_fully_ready=true`, daemon identity/root/PID
+  verified, fresh heartbeat and finalization ready.
+
+Turn evidence was bounded and replay-safe:
+
+- request id:
+  `chatgpt-v111-3e423b5c5af14f9b9d71a9b4ace83388`;
+- turn id: `6545d98a-35ea-4a0d-8c7a-f8af41a9880b`;
+- user-text SHA-256:
+  `88b39175f6ff3919870eaf7c1f797d77255b6dc1e5787a1faa41baabec56f6d3`;
+- durable host-request contract:
+  `d019552d5a08acf3eb00251147caa3f383beb01a458170ad0caee2aaf60b8bcc`;
+- first phase-2 attempt used the wrong contract hash and was rejected
+  `host_request_contract_hash_mismatch`; the user message was **not replayed**;
+- the same durable request was polled/resumed and finalized with the correct binding;
+- finalization returned `accepted=true`;
+- `turn_authority_validation.ok=true`;
+- `accepted_visible_turn_ready=true`;
+- `action=display_exact`;
+- `visible_output_source=runtime_finalized`;
+- turn-authority receipt SHA-256:
+  `dcd8f7300a5c9f9f6870862ac4d14ffc6f474775d86387c56bb6f0997c6f9d14`.
+
+This proves the **local-executor real ChatGPT host route** for v111. It does not
+prove a deployed/callable public MCP or Secure MCP Tunnel route; that remains a
+separate deployment capability.
+
+Primary current protocol/product references checked for this closeout:
+
+- https://tasks.extensions.modelcontextprotocol.io/specification/2026-07-28/tasks
+- https://ts.sdk.modelcontextprotocol.io/v2/protocol-versions
+- https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt
+
+No PR merge is authorized by this evidence.

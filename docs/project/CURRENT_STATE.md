@@ -4,7 +4,7 @@
 **Repository:** `SmuklyLew/jazn_latka`  
 **Current master at documentation baseline:** `712a25db94c634ea47fbf265c0d907608a668f00`
 **Current master version:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
-**Current implementation candidate:** `16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`
+**Current implementation candidate:** `16.3.25.5.112-v111-closeout-real-host-evidence-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
@@ -38,27 +38,38 @@ current-message callable ChatGPT app. External deployment and fresh host
 capability evidence remain required.
 
 
-## v108 — engine decomposition turn diagnostics
+## v108–v111 — conversation runtime decomposition and cutover
+
+**Status:** `REPOSITORY_COMPLETE / STACKED_PRS_UNMERGED`.
+
+PR #318–#321 wdrożyły kolejno diagnostic spine, jawny lifecycle i
+`FinalizationService`, `TurnOrchestrator`, a następnie canonical
+`ConversationRunner` + `TurnStateMachine` + structured ordinary-dialogue cutover.
+Finalny v111 SHA `ee00529cdbd9a4d0a469007db787ed4895667ddf` ma świeży pełny
+suite **2107 PASS / 4 platform SKIPPED / 0 FAIL** oraz terminalne SUCCESS dla
+Pyright, release-hardening, persistent-runtime E2E Linux/Windows, package cleanroom
+i PowerShell. PR #321 pozostaje draftem/niezmergowany.
+
+## v112 — v111 closeout and real-host evidence
 
 **Status:** `IMPLEMENTATION CANDIDATE` on
-`upgrade/v16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`.
+`upgrade/v16.3.25.5.112-v111-closeout-real-host-evidence-convergence`.
 
-Implemented candidate scope:
+v112 nie zmienia semantyki runtime. Synchronizuje dokumentację po zakończonym v111,
+zapisuje rzeczywisty ChatGPT-host E2E oraz podnosi release identity zgodnie z polityką
+repozytorium.
 
-- one canonical turn diagnostic root in `TurnExecutionContext`;
-- ordered, privacy-bounded events across intent, route, handler, validation,
-  truth/finalization, persistence and settlement;
-- typed fallback/error taxonomy while legacy `fallback_classification` remains
-  compatibility data;
-- fallback lineage/history and immutable final diagnostic outcome;
-- `BlindRouteDetector` based on produced runtime evidence;
-- static `RouteGraphAudit` for classifier → registry → dispatcher coverage;
-- `EngineServices` extraction seams without transferring runtime ownership;
-- v108 characterization/failure-injection regressions and explicit CI gates.
+Real-host local-executor E2E 2026-10-06: **PASS**. Finalny pakiet v111 z GitHub
+Actions został zweryfikowany i zmaterializowany przez `CHATGPT_BOOTSTRAP.py`;
+live status osiągnął `system_fully_ready=true`. Jedna wiadomość została wysłana
+dokładnie raz. Błędny phase-2 binding został odrzucony fail-closed, następnie ten
+sam request został wznowiony bez replayu i zaakceptowany jako
+`accepted_visible_turn_ready=true`, `action=display_exact`, z poprawnym
+`turn_authority_receipt`.
 
-v108 intentionally does **not** make `JaznEngine` side-effect-free yet and does
-not extract phase-2 finalization. Those are v109 milestones after v108 parity
-evidence.
+Pełny zdalny toolset Jaźni nie był callable w tej wiadomości, więc publiczny
+Streamable HTTP / Secure MCP Tunnel pozostaje osobnym, nieweryfikowanym external
+deployment route. Nie jest potrzebny do zaliczenia wykonanej lokalnej trasy host E2E.
 
 ## 2. ChatGPT live bootstrap — zaobserwowany sukces 2026-10-05
 
@@ -151,19 +162,14 @@ Do momentu wdrożenia i zweryfikowania tej trasy lokalny bootstrap może działa
 
 ## 7. Najbliższe techniczne priorytety
 
-1. zachować v107 remote-runtime/MEMORY producer fixes jako baseline;
-2. nie mylić naprawionego generatora z już naprawioną historyczną paczką MEMORY:
-   stara paczka, która fail-closed zakończyła się `memory_package_unlisted_file`,
-   wymaga nowej poprawnie wygenerowanej paczki i ponownego attach/acceptance;
-3. zbudować jeden `TurnDiagnosticTrace` dla całej tury;
-4. wprowadzić typed no-silent-fallback contract oraz blind-route detection;
-5. dodać statyczny RouteGraphAudit do CI;
-6. rozpocząć etapową dekompozycję `JaznEngine` dopiero po characterization/parity
-   gate;
-7. wydzielić host finalization tak, aby phase-2 nie konstruowała pełnego
-   cognitive engine;
-8. redukować legacy `conversation.py` dopiero po route/parity evidence;
-9. Affect i MEMORY zmieniać semantycznie wyłącznie przez ich własne owner plans.
+1. zakończyć v112 przez canonical metadata sync i terminalne CI na finalnym SHA;
+2. nie scalać PR #318–#321 ani v112 bez osobnej zgody użytkownika;
+3. utrzymać remote MCP jako oddzielny deployment/capability gate — obecność kodu
+   nie jest dowodem callable aplikacji ChatGPT;
+4. dla prywatnej MEMORY wygenerować poprawny exact-set package i wykonać osobny
+   attach/acceptance zamiast osłabiać istniejące gate;
+5. dalsze Memory/Affect/NLP prowadzić wyłącznie przez ich aktualne owner plans po
+   zamknięciu tego closeoutu.
 
 ## 8. Dokumentacja prawdy
 

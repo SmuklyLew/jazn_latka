@@ -1,6 +1,6 @@
 # Łatka / Jaźń
 
-Etap v111: [ConversationRunner i przełączenie legacy dialogue](docs/reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md).
+Etap v111: [ConversationRunner i przełączenie legacy dialogue](docs/reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md). Closeout real-host: [v112 evidence](docs/reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md).
 To checkpoint weryfikacji; pełna gotowość wydania wymaga terminalnych wyników wszystkich bramek.
 
 Eksperymentalny lokalny system rozmowny budowany wokół **zweryfikowanego runtime, źródłowej pamięci, tożsamości, narzędzi, provenance i mierzalnych bramek prawdy**. Jaźń nie jest samym promptem ani pojedynczym modelem LLM.

@@ -2,37 +2,59 @@
 
 **Status:** `CANONICAL_CURRENT_STEP`  
 **Stan:** 2026-10-06  
-**Baza:** `master @ 712a25db94c634ea47fbf265c0d907608a668f00` / `16.3.25.5.107-persistent-remote-runtime-operations-convergence`  
-**Branch:** `upgrade/v16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence`  
-**Target:** `16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence`
+**Baza master:** `712a25db94c634ea47fbf265c0d907608a668f00` / `16.3.25.5.107-persistent-remote-runtime-operations-convergence`  
+**Zweryfikowany v111:** `ee00529cdbd9a4d0a469007db787ed4895667ddf`  
+**Branch:** `upgrade/v16.3.25.5.112-v111-closeout-real-host-evidence-convergence`  
+**Target:** `16.3.25.5.112-v111-closeout-real-host-evidence-convergence`
 
-## Bieżący krok v111
+## Bieżący krok v112 — closeout v111
 
-Seria jest przygotowana bez merge PR: v108 #318, v109 #319, v110 #320, v111 #321.
-Każdy następny branch kontynuuje zweryfikowany baseline poprzedniego etapu.
-Master pozostaje wskazanym wyżej v107; żaden PR nie został scalony.
+Seria v108–v111 pozostaje ułożona nad niescalonym masterem: PR #318, #319, #320 i
+#321. Żaden PR nie został scalony ani autoryzowany do merge.
 
-v109 wydziela jawny lifecycle composition root i niezależną finalizację phase-2.
-v110 wydziela TurnOrchestrator i etapy pipeline. v111 przenosi session ownership do
-ConversationRunner (JaznRuntimeSession pozostaje aliasem tej samej klasy), używa
-TurnStateMachine oraz strukturalnych kandydatów zwykłego dialogu. Default CLI text,
-nazwane tryby chat i MCP dochodzą do runnera; debug/cognitive diagnostics mają jawne
-compatibility wejścia. Replay po niejednoznacznym transporcie pozostaje zabroniony.
+Repozytoryjny zakres v111 jest zakończony na `ee00529`:
 
-Końcowe CI v108–v110: Pyright, release-hardening, package cleanroom i PowerShell
-SUCCESS; persistent-runtime E2E Linux/Windows SUCCESS na zweryfikowanych code SHA.
-Metadane-only final SHA mają dodatkowo zakończone dispatch gates, bez udawania
-osobnego dedicated E2E tam, gdzie workflow nie obsługuje workflow_dispatch.
+- `ConversationRunner` jest kanonicznym ownerem sesji/tury, a
+  `JaznRuntimeSession` pozostaje aliasem tej samej klasy;
+- `TurnStateMachine`, submit/poll/resume bez replayu, `FinalizationService`,
+  recovery projekcji i strukturalny ordinary-dialogue cutover są aktywne;
+- pełny świeży lokalny suite: **2107 PASS, 4 platform SKIPPED, 0 FAIL**,
+  z jednym oczekiwanym ostrzeżeniem duplicate-ZIP;
+- final-SHA GitHub gates: Pyright, stable contracts, dependency/Node/host-spawn,
+  release-hardening, persistent-runtime E2E Linux/Windows, package cleanroom i
+  PowerShell **SUCCESS**; końcowy rollup PR #321: **51 SUCCESS, 2 SKIPPED**.
 
-v111 final checkpoint jest w pełnej weryfikacji. Trzy restarty izolowanego runtime
-po poprawce kosztu ścieżek PASS, zachowując ten sam snapshot pamięci. Aktualne
-compileall, audyty architektury/routingu PASS, Pyright 0 errors / 1 existing warning.
-Pierwsze dwa pełne lokalne przebiegi FAIL przy lifecycle daemonu pozostają evidence;
-nowy pełny przebieg i final-SHA CI IN_PROGRESS. Real-host E2E ChatGPT jest osobną
-bramką NOT RUN i wymaga rzeczywiście callable aplikacji oraz accepted finalization.
+### Real ChatGPT host E2E — PASS 2026-10-06
 
-Szczegóły i chronologia evidence:
-[JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md](../reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md).
+Bieżący host nie wystawił pełnego zdalnego toolsetu Jaźni, więc
+`remote_runtime_available` nie został promowany. Niezależna lokalna powierzchnia
+process execution była jednak dostępna i została użyta zgodnie z
+`AGENTS.chatgpt.md`.
+
+Finalny artefakt SYSTEM v111 z GitHub Actions został zweryfikowany i uruchomiony
+na rzeczywistym hoście ChatGPT. Jedna dokładna wiadomość użytkownika została
+związana z jednym `request_id`/ `turn_id`/ `trace_id`. Pierwsza próba
+phase-2 z błędnym hashem kontraktu została odrzucona fail-closed; wiadomość nie
+została wysłana ponownie. Ten sam trwały request został odczytany i sfinalizowany
+z właściwym durable host-request bindingiem. Wynik końcowy:
+
+```text
+accepted=true
+turn_authority_validation.ok=true
+accepted_visible_turn_ready=true
+action=display_exact
+visible_output_source=runtime_finalized
+replay_protected=true
+```
+
+To domyka wcześniej brakującą **lokalną trasę real-host E2E v111**. Nie jest to
+dowód wdrożonego publicznego MCP ani Secure MCP Tunnel; remote connector route
+pozostaje osobnym external deployment gate.
+
+v112 nie wykonuje nowego refaktoru ConversationRunner. Jego zakres to:
+synchronizacja źródeł prawdy, zapis real-host evidence, bump wersji oraz ponowna
+walidacja canonical metadata/CI. Szczegóły:
+[JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md](../reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md).
 
 ## 1. Historyczny checkpoint v108
 
