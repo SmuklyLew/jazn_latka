@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.109",
-  "active_definition_count": 1959,
+  "system_version": "16.3.25.5.110",
+  "active_definition_count": 1966,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8456,7 +8456,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 82
     },
     "tests/test_code_health_regressions.py::test_broad_exception_handlers_do_not_increase": {
       "path": "tests/test_code_health_regressions.py",
@@ -8471,7 +8471,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 91
+      "line": 97
     },
     "tests/test_cognitive_control.py::test_global_salience_is_deterministic_bounded_and_content_free": {
       "path": "tests/test_cognitive_control.py",
@@ -30689,6 +30689,73 @@
       "description_source": "source_identity",
       "line": 521
     },
+    "tests/test_pipeline_port_truth_boundaries.py::test_memory_port_preserves_abstention_and_bound_lineage_without_promotion": {
+      "path": "tests/test_pipeline_port_truth_boundaries.py",
+      "name": "test_memory_port_preserves_abstention_and_bound_lineage_without_promotion",
+      "purpose": "Memory port preserves abstention and bound lineage without promotion",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.affect_coordinator",
+        "latka_jazn.core.memory_coordinator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_pipeline_port_truth_boundaries.py::test_affect_port_is_projection_without_second_durable_authority": {
+      "path": "tests/test_pipeline_port_truth_boundaries.py",
+      "name": "test_affect_port_is_projection_without_second_durable_authority",
+      "purpose": "Affect port is projection without second durable authority",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "FrozenInstanceError"
+      ],
+      "targets": [
+        "latka_jazn.core.affect_coordinator",
+        "latka_jazn.core.memory_coordinator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_pipeline_port_truth_boundaries.py::test_response_plan_keeps_required_and_forbidden_source_constraints": {
+      "path": "tests/test_pipeline_port_truth_boundaries.py",
+      "name": "test_response_plan_keeps_required_and_forbidden_source_constraints",
+      "purpose": "Response plan keeps required and forbidden source constraints",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.affect_coordinator",
+        "latka_jazn.core.memory_coordinator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
     "tests/test_plugin_operator_convergence.py::test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile": {
       "path": "tests/test_plugin_operator_convergence.py",
       "name": "test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profile",
@@ -42179,6 +42246,84 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 128
+    },
+    "tests/test_turn_orchestrator_parity.py::test_deterministic_pipeline_contract_parity_without_external_effects": {
+      "path": "tests/test_turn_orchestrator_parity.py",
+      "name": "test_deterministic_pipeline_contract_parity_without_external_effects",
+      "purpose": "Deterministic pipeline contract parity without external effects",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.runtime_composition",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_turn_orchestrator_pipeline.py::test_orchestration_uses_one_request_and_one_turn_local_state": {
+      "path": "tests/test_turn_orchestrator_pipeline.py",
+      "name": "test_orchestration_uses_one_request_and_one_turn_local_state",
+      "purpose": "Orchestration uses one request and one turn local state",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_orchestrator",
+        "latka_jazn.core.turn_pipeline_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_turn_orchestrator_pipeline.py::test_validation_failure_cannot_reach_persistence_or_fallback": {
+      "path": "tests/test_turn_orchestrator_pipeline.py",
+      "name": "test_validation_failure_cannot_reach_persistence_or_fallback",
+      "purpose": "Validation failure cannot reach persistence or fallback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.core.turn_orchestrator",
+        "latka_jazn.core.turn_pipeline_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_turn_orchestrator_pipeline.py::test_next_turn_does_not_reuse_previous_pipeline_state": {
+      "path": "tests/test_turn_orchestrator_pipeline.py",
+      "name": "test_next_turn_does_not_reuse_previous_pipeline_state",
+      "purpose": "Next turn does not reuse previous pipeline state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_orchestrator",
+        "latka_jazn.core.turn_pipeline_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_turn_pipeline_authority_integration.py::test_exact_runtime_final_carries_verified_turn_authority_and_pipeline": {
       "path": "tests/test_turn_pipeline_authority_integration.py",

@@ -80,6 +80,10 @@ trwała akceptacja dokładnego kandydata poprzedza projekcje do dziennika i hist
 Stan wdrożenia i rzeczywiste wyniki bramek opisuje
 [raport v109](docs/reports/JAZN_V16_3_25_5_109_LIFECYCLE_FINALIZATION_PROGRESS.md).
 
+v110 prowadzi turę przez `TurnOrchestrator` i osobne komponenty kontekstu,
+pamięci, afektu, routingu, syntezy, walidacji, recovery i zapisu. Stan walidacji
+wydania opisuje [raport v110](docs/reports/JAZN_V16_3_25_5_110_TURN_PIPELINE_PROGRESS.md).
+
 ## Pamięć
 
 Docelowa pamięć jest źródłowa i rozdziela co najmniej:

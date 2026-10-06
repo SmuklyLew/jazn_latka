@@ -157,5 +157,5 @@ def test_pack_manifest_advertises_activation_without_claiming_host_capability(tm
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.110"
-    assert PACKAGE_RELEASE_NAME == "turn-orchestrator-pipeline-decomposition-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.109"
+    assert PACKAGE_RELEASE_NAME == "engine-lifecycle-finalization-decomposition-convergence"

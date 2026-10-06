@@ -1,0 +1,708 @@
+    def process_turn(self, text: str, *, client_context: dict | None = None) -> CognitiveTurnEnvelope:
+        """Jedna zintegrowana tura: cognitive-frame i final z tej samej zweryfikowanej koperty."""
+        ctx = dict(client_context or {})
+        turn_context = ctx.pop("_turn_context", None)
+        if not isinstance(turn_context, TurnExecutionContext):
+            turn_context = None
+        ctx.setdefault("client", "process_turn")
+        ctx.setdefault("lifecycle", "one_shot")
+        read_only_preview = self._configure_preview_turn_context(ctx)
+        no_carryover = bool(ctx.get("no_carryover"))
+        initial_task_state = self._initial_task_state_for_process_turn(ctx, no_carryover=no_carryover)
+        self._audit_process_turn_started(text, ctx)
+        prior_turn_at = self.last_turn_at
+        prior_user_text = None if no_carryover else (ctx.get("previous_user_text") or self.last_user_text)
+        prior_visible_text = None if no_carryover else ctx.get("previous_visible_text")
+        prior_detected_intent = ctx.get("previous_detected_intent") or self.last_detected_intent
+        prior_runtime_route = ctx.get("previous_runtime_route") or self.last_runtime_route
+        now_for_context = time.time()
+        prior_context_age_seconds = int(now_for_context - prior_turn_at) if isinstance(prior_turn_at, (int, float)) else None
+        turn_context_resolution = self.turn_context_resolver.resolve(
+            current_user_text=text,
+            previous_user_text=prior_user_text,
+            previous_intent=prior_detected_intent,
+            previous_route=prior_runtime_route,
+            session_id=str(ctx.get("session_id") or ""),
+            no_carryover=no_carryover,
+            time_gap_seconds=prior_context_age_seconds,
+            explicit_previous_user_text=bool(ctx.get("previous_user_text")),
+            previous_task_state=initial_task_state,
+        )
+        carryover_allowed = bool(turn_context_resolution.carryover_allowed)
+        if carryover_allowed:
+            ctx.setdefault("previous_user_text", prior_user_text)
+            if prior_visible_text:
+                ctx.setdefault("previous_visible_text", prior_visible_text)
+            if prior_detected_intent:
+                ctx.setdefault("previous_detected_intent", prior_detected_intent)
+            if prior_runtime_route:
+                ctx.setdefault("previous_runtime_route", prior_runtime_route)
+            ctx.setdefault("previous_context_age_seconds", prior_context_age_seconds)
+        if turn_context is not None:
+            turn_context.start_stage("route_classification")
+        previous_task_state = {} if no_carryover else self._previous_task_state_for_turn(ctx, carryover_allowed=carryover_allowed)
+        dialogue_intent_result = self.dialogue_intent_classifier.classify(
+            text,
+            previous_text=str(prior_user_text or "") if carryover_allowed else None,
+            previous_intent=str(prior_detected_intent or "") or None,
+            previous_route=str(prior_runtime_route or "") or None,
+            previous_task_state=previous_task_state if carryover_allowed else None,
+            context_age_seconds=prior_context_age_seconds,
+            carryover_allowed=carryover_allowed,
+        )
+        dialogue_intent_report = dialogue_intent_result.to_dict()
+        self._record_intent_diagnostic(turn_context, dialogue_intent_result)
+        health_check_fast_path = dialogue_intent_result.primary_intent in FAST_HEALTH_CHECK_INTENTS
+        self._record_health_check_detection(turn_context, health_check_fast_path)
+        frame = self._build_process_turn_frame(text, ctx, dialogue_intent_result, turn_context, health_check_fast_path)
+        frame["dialogue_intent_classifier"] = dialogue_intent_report
+        frame["turn_context_carryover"], frame["dialogue_context"] = _build_turn_context_payloads(
+            ctx=ctx, text=text, prior_user_text=prior_user_text, prior_visible_text=prior_visible_text,
+            prior_detected_intent=prior_detected_intent, prior_runtime_route=prior_runtime_route,
+            prior_context_age_seconds=prior_context_age_seconds, carryover_allowed=carryover_allowed,
+            turn_context_resolution=turn_context_resolution,
+        )
+        envelope = CognitiveTurnEnvelope.from_cognitive_frame(
+            frame,
+            user_text=text,
+            client_context=ctx,
+            runtime_mode="process_turn",
+        )
+        granular = frame.get("granular_affect") or frame.get("cognitive_packets", {}).get("affect") or {}
+        emotional_profile = frame.get("emotional_profile") or {}
+        affect_mix = self.affect_mixer.mix(
+            user_text=text,
+            intent_tags=frame.get("intent_tags") or [],
+            affective_state=self.affect,
+            granular_affect=granular if isinstance(granular, dict) else {},
+            emotional_profile=emotional_profile if isinstance(emotional_profile, dict) else {},
+        ).to_dict()
+        dialogue_state = self.dialogue_state_tracker.classify(
+            user_text=text,
+            intent_tags=frame.get("intent_tags") or [],
+            client_context=ctx,
+        ).to_dict()
+        envelope.attach_affect_mix(affect_mix)
+        envelope.attach_dialogue_state(dialogue_state)
+        decision = self.conversation_responder.compose(
+            text,
+            intent_tags=frame.get("intent_tags") or [],
+            affect_marker=affect_mix.get("state_emoticon") or self.affect.marker(),
+            memory_counts=((frame.get("memory_context") or {}).get("counts") if isinstance(frame.get("memory_context"), dict) else None),
+            memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else None,
+            diagnostics=frame.get("fallback_diagnostics") if isinstance(frame.get("fallback_diagnostics"), dict) else None,
+            polish_understanding=frame.get("polish_understanding") if isinstance(frame.get("polish_understanding"), dict) else None,
+            lexical_semantic_understanding=frame.get("lexical_semantic_understanding") if isinstance(frame.get("lexical_semantic_understanding"), dict) else None,
+        )
+        decision_dict = decision.to_dict()
+        decision_dict["timestamp_contract"] = envelope.cognitive_frame.get("timestamp_contract") or {}
+        decision_dict["voice_source_contract"] = envelope.cognitive_frame.get("voice_source_contract") or self.voice_source_contract.to_dict()
+        decision_dict["state_emoticon"] = str(affect_mix.get("state_emoticon") or self.affect.marker() or "").strip()
+        decision_dict["runtime_rendering_mode"] = envelope.cognitive_frame.get("runtime_rendering_mode") or {}
+        decision_dict["memory_recall_contract_status"] = {
+            "items": len((envelope.cognitive_frame.get("memory_recall_contract") or {}).get("items") or []),
+            "schema_version": "memory_recall_contract_status/v1",
+            "truth_boundary": "same liczniki nie wystarczają; pełny payload jest w cognitive_frame.memory_recall_contract",
+        }
+        detected_dialogue_intent, route_entry, current_dialogue_task_state, turn_response_policy = (
+            self._apply_current_dialogue_control(
+                text=text, frame=frame, envelope=envelope, decision_dict=decision_dict,
+                dialogue_intent_report=dialogue_intent_report, previous_task_state=previous_task_state,
+                client_context=ctx,
+            )
+        )
+        self._record_route_diagnostic(turn_context, detected_dialogue_intent, route_entry)
+        self._apply_cognitive_control_policy(
+            envelope, frame, current_dialogue_task_state, turn_response_policy, decision_dict)
+        handler_context = self._build_route_handler_context(
+            decision=decision,
+            detected_intent=detected_dialogue_intent,
+            dialogue_intent_report=dialogue_intent_report,
+            client_context=ctx,
+            frame=frame,
+            route_entry=route_entry,
+            task_state=current_dialogue_task_state,
+            response_policy=turn_response_policy,
+            carryover_allowed=carryover_allowed,
+            prior_user_text=prior_user_text,
+            prior_detected_intent=prior_detected_intent,
+            prior_runtime_route=prior_runtime_route,
+            previous_task_state=previous_task_state,
+        )
+        if turn_context is not None and health_check_fast_path:
+            turn_context.start_stage("startup_status_collection")
+        handler_result = self.route_handler_dispatcher.dispatch(route_entry, text, handler_context)
+        if turn_context is not None and health_check_fast_path:
+            turn_context.complete_stage("startup_status_collection")
+        dispatch_report = json_object((handler_result.data or {}).get("dispatch_report"))
+        handler_fallback_payload = json_object((handler_result.data or {}).get("fallback_decision"))
+        self._record_handler_diagnostic(
+            turn_context,
+            dispatch_report,
+            handler_fallback_payload,
+            route_entry,
+            handler_result,
+        )
+        (
+            handler_required,
+            handler_satisfied,
+            handler_missing,
+            preserve_handler_body,
+        ) = self._project_handler_result(
+            decision=decision,
+            decision_dict=decision_dict,
+            handler_result=handler_result,
+            route_entry=route_entry,
+        )
+        adapter_status, model_executor, can_generate_model_guided_speech = self._model_executor_contract(decision_dict)
+        decision_dict["model_guided_retry_count"] = 0
+        if turn_context is not None:
+            turn_context.start_stage("synthesis")
+        model_synthesis = self.model_guided_response_synthesizer.synthesize(
+            adapter=self.model_adapter,
+            user_text=text,
+            draft_body=decision.body,
+            detected_intent=str(detected_dialogue_intent),
+            route=str(decision_dict.get("route") or route_entry.route),
+            cognitive_frame=frame,
+            response_policy=turn_response_policy.to_dict(),
+            executor_preflight=model_executor,
+        )
+        adapter_status, can_generate_model_guided_speech = self._apply_model_synthesis_result(
+            decision=decision,
+            decision_dict=decision_dict,
+            model_synthesis=model_synthesis,
+            adapter_status=adapter_status,
+            can_generate_model_guided_speech=can_generate_model_guided_speech,
+        )
+        envelope.attach_conversation_decision(decision_dict)
+        body = self.guard.enforce(decision.body.strip())
+        template_origin = self.template_registry.classify_body(body, detected_intent=str(detected_dialogue_intent))
+        if model_synthesis.used and model_synthesis.adapter_response:
+            first_validation = self.runtime_answer_validator.validate_model_candidate(
+                user_text=text,
+                response=model_synthesis.adapter_response,
+                route=str(decision_dict.get("route") or ""),
+                detected_intent=str(detected_dialogue_intent),
+                template_origin=template_origin,
+            )
+        else:
+            first_validation = self.runtime_answer_validator.validate(
+                user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
+            )
+        self._record_validation_diagnostic(
+            turn_context,
+            first_validation,
+            event_type="candidate_validation",
+            attempt=0,
+        )
+        repair_used = False
+        speech_truth_gate_required = _speech_truth_gate_required(detected_dialogue_intent, handler_result)
+        if speech_truth_gate_required:
+            candidate_valid = bool(model_synthesis.used and first_validation.accepted and not template_origin.get("template_id"))
+            if not candidate_valid and model_executor.retry_allowed:
+                retry_synthesis = self.model_guided_response_synthesizer.synthesize(
+                    adapter=self.model_adapter,
+                    user_text=text,
+                    draft_body=decision.body,
+                    detected_intent=str(detected_dialogue_intent),
+                    route=str(decision_dict.get("route") or route_entry.route),
+                    cognitive_frame=frame,
+                    response_policy=turn_response_policy.to_dict(),
+                    executor_preflight=model_executor,
+                )
+                decision_dict["model_guided_retry_count"] = 1
+                decision_dict["model_guided_retry_synthesis"] = retry_synthesis.to_dict()
+                self._record_model_retry_diagnostic(turn_context)
+                if retry_synthesis.used:
+                    retry_body = self.guard.enforce(retry_synthesis.body.strip())
+                    retry_template = self.template_registry.classify_body(
+                        retry_body, detected_intent=str(detected_dialogue_intent)
+                    )
+                    if retry_synthesis.adapter_response:
+                        retry_validation = self.runtime_answer_validator.validate_model_candidate(
+                            user_text=text,
+                            response=retry_synthesis.adapter_response,
+                            route=str(decision_dict.get("route") or ""),
+                            detected_intent=str(detected_dialogue_intent),
+                            template_origin=retry_template,
+                        )
+                    else:
+                        retry_validation = self.runtime_answer_validator.validate(
+                            user_text=text,
+                            body=retry_body,
+                            route=str(decision_dict.get("route") or ""),
+                            detected_intent=str(detected_dialogue_intent),
+                        )
+                    if retry_validation.accepted and not retry_template.get("template_id"):
+                        body = retry_body
+                        template_origin = retry_template
+                        first_validation = retry_validation
+                        candidate_valid = True
+                        decision_dict["model_generated"] = True
+                        decision_dict["handler_name"] = "ModelGuidedResponseSynthesizer"
+                        decision_dict["handler_generation_mode"] = "runtime_model_guided"
+                        decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis_retry"
+            if not candidate_valid:
+                host_bridge_accepts_handler = _handler_body_can_cross_chatgpt_host_bridge(
+                    adapter_status=adapter_status,
+                    handler_result=handler_result,
+                    handler_missing=handler_missing,
+                    handler_required=handler_required,
+                    handler_satisfied=handler_satisfied,
+                    template_origin=template_origin,
+                    validation=first_validation,
+                )
+                if host_bridge_accepts_handler:
+                    decision_dict["chatgpt_host_visible_bridge"] = {
+                        "accepted": True,
+                        "reason": "validated_runtime_handler_body_no_local_model_call",
+                        "adapter_id": str(adapter_status.get("adapter_id") or adapter_status.get("name") or "chatgpt_runtime_adapter"),
+                        "provider": str(adapter_status.get("provider") or "chatgpt_host"),
+                        "truth_boundary": (
+                            "--chat-gpt uses the ChatGPT host as the visible language channel, but the local "
+                            "runtime still owns intent, routing, memory policy, validation and source provenance. "
+                            "This pass-through does not claim local model-guided generation."
+                        ),
+                    }
+                    decision_dict["fallback_classification"] = "not_fallback"
+                    decision_dict["requires_host_model"] = False
+                    decision_dict["runtime_answer_quality"] = "topic_aligned"
+                    decision_dict["model_generated"] = False
+                    decision_dict.setdefault(
+                        "source_origin_detail",
+                        str(getattr(handler_result, "source_origin_detail", "") or "chatgpt_host_bridge/validated_runtime_handler_body"),
+                    )
+                    answer_validation = first_validation
+                else:
+                    body, source_origin_detail, runtime_answer_quality, model_replied = (
+                        _model_guided_rejection_disclosure(model_synthesis, first_validation)
+                    )
+                    template_origin = self.template_registry.classify_body(
+                        body, detected_intent=str(detected_dialogue_intent)
+                    )
+                    decision_dict["handler_name"] = "RuntimeTurnTruthGate"
+                    decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
+                    decision_dict["source_origin_detail"] = source_origin_detail
+                    decision_dict["fallback_classification"] = "cannot_answer_directly"
+                    decision_dict["requires_host_model"] = not model_replied
+                    decision_dict["runtime_answer_quality"] = runtime_answer_quality
+                    decision_dict["model_generated"] = False
+                    answer_validation = self.runtime_answer_validator.validate(
+                        user_text=text,
+                        body=body,
+                        route=str(decision_dict.get("route") or ""),
+                        detected_intent=str(detected_dialogue_intent),
+                    )
+            else:
+                decision_dict["fallback_classification"] = "not_fallback"
+                decision_dict["requires_host_model"] = False
+                decision_dict["runtime_answer_quality"] = "topic_aligned"
+                answer_validation = first_validation
+            body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
+        else:
+            synthesis = self.runtime_response_synthesizer.synthesize(
+                user_text=text, detected_intent=str(detected_dialogue_intent), original_body=body, route=str(decision_dict.get("route") or ""),
+                template_origin=template_origin if template_origin.get("template_id") else None, validation=first_validation.to_dict(),
+                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
+            )
+            if synthesis.should_override and not preserve_handler_body:
+                body = self.guard.enforce(synthesis.body.strip())
+                decision_dict["route"] = synthesis.route
+                decision_dict["handler_name"] = synthesis.handler_name
+                decision_dict["runtime_answer_quality"] = "mismatch_repaired" if first_validation.must_regenerate else "route_registry_dynamic"
+                decision_dict["repair_synthesis"] = synthesis.to_dict()
+                repair_used = True
+            elif synthesis.should_override and preserve_handler_body:
+                decision_dict["repair_synthesis_suppressed"] = {
+                    "reason": "dedicated_handler_body_satisfied_required_components",
+                    "synthesis": synthesis.to_dict(),
+                    "first_validation": first_validation.to_dict(),
+                }
+                decision_dict["runtime_answer_quality"] = "topic_aligned"
+            body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
+            answer_validation = self.runtime_answer_validator.validate(
+                user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
+            )
+            if answer_validation.must_regenerate and answer_validation.repair_body and not preserve_handler_body:
+                body = self.guard.enforce(answer_validation.repair_body.strip())
+                decision_dict["route"] = answer_validation.required_repair_route or decision_dict.get("route")
+                decision_dict["runtime_answer_quality"] = "mismatch_repaired"
+                body, continuity_badge_report = self.continuity_badge_policy.apply(body, decision_dict)
+                answer_validation = self.runtime_answer_validator.validate(
+                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
+                )
+                repair_used = True
+            elif answer_validation.must_regenerate and preserve_handler_body:
+                decision_dict["answer_validation_suppressed"] = {
+                    "reason": "dedicated_handler_body_satisfied_required_components",
+                    "validation": answer_validation.to_dict(),
+                }
+                answer_validation = self.runtime_answer_validator.validate(
+                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
+                )
+                decision_dict["runtime_answer_quality"] = "topic_aligned"
+        if turn_context is not None:
+            turn_context.complete_stage("synthesis")
+        logic_audit = self.turn_logic_auditor.audit(
+            user_text=text,
+            response_text=body,
+            detected_intent=str(detected_dialogue_intent),
+            route=str(decision_dict.get("route") or ""),
+            handler=str(decision_dict.get("handler_name") or route_entry.handler_name),
+            policy=turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
+            speech_act=str((dialogue_intent_report or {}).get("speech_act") or "unknown"),
+            question_object=str((dialogue_intent_report or {}).get("question_object") or "unknown"),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="turn_logic_audit",
+            stage="synthesis_validation",
+            commit=lambda: self.turn_logic_auditor.append(logic_audit),
+        )
+        reasoning_decision = self.reasoning_controller.assess_turn(
+            user_text=text,
+            intent=str(detected_dialogue_intent),
+            route=str(decision_dict.get("route") or ""),
+            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
+            body=body,
+            policy=turn_response_policy.to_dict() if 'turn_response_policy' in locals() else {},
+            logic_audit=logic_audit.to_dict(),
+            validation=answer_validation.to_dict(),
+        )
+        decision_dict["turn_logic_audit"] = logic_audit.to_dict()
+        decision_dict["reasoning_controller"] = reasoning_decision.to_dict()
+        envelope.cognitive_frame["turn_logic_audit"] = logic_audit.to_dict()
+        envelope.cognitive_frame["reasoning_controller"] = reasoning_decision.to_dict()
+        turn_route_trace = TurnRouteTrace(
+            user_text_preview=(text or "")[:240],
+            speech_act=str((dialogue_intent_report or {}).get("speech_act") or "unknown"),
+            question_object=str((dialogue_intent_report or {}).get("question_object") or "unknown"),
+            primary_intent_initial=str((dialogue_intent_report or {}).get("primary_intent") or "unknown"),
+            primary_intent_final=str(detected_dialogue_intent),
+            secondary_intents=list((dialogue_intent_report or {}).get("secondary_intents") or []),
+            topic_guard=json_object(frame.get("topic_mismatch_guard")),
+            turn_logic_audit=logic_audit.to_dict(),
+            selected_route=str(decision_dict.get("route") or route_entry.route),
+            selected_handler=str(decision_dict.get("handler_name") or route_entry.handler_name),
+            memory_gate=str(((frame.get("memory_context") or {}).get("gate") if isinstance(frame.get("memory_context"), dict) else None) or "not_needed"),
+            startup_status_mode="fast",
+            sqlite_health_mode="metadata",
+            network_time_used=bool((envelope.cognitive_frame.get("timestamp_contract") or {}).get("trusted")),
+            deep_audit_used=False,
+            runtime_answer_validation=answer_validation.to_dict(),
+            final_text_source=str(decision_dict.get("response_generation_mode") or decision_dict.get("handler_generation_mode") or "handler_or_synthesizer"),
+        ).to_dict()
+        decision_dict["turn_route_trace"] = turn_route_trace
+        envelope.cognitive_frame["turn_route_trace"] = turn_route_trace
+        if reasoning_decision.decision == "regenerate" and not repair_used and not decision_dict.get("requires_host_model"):
+            synthesis = self.runtime_response_synthesizer.synthesize(
+                user_text=text,
+                detected_intent=str(detected_dialogue_intent),
+                original_body=body,
+                route=str(decision_dict.get("route") or ""),
+                template_origin=template_origin if template_origin.get("template_id") else None,
+                validation={"must_regenerate": True, "mismatch_reason": reasoning_decision.reason},
+                memory_context=frame.get("memory_context") if isinstance(frame.get("memory_context"), dict) else {},
+            )
+            if synthesis.should_override:
+                body = self.guard.enforce(synthesis.body.strip())
+                decision_dict["route"] = synthesis.route
+                decision_dict["handler_name"] = synthesis.handler_name
+                decision_dict["runtime_answer_quality"] = "logic_audit_repaired"
+                decision_dict["repair_synthesis"] = synthesis.to_dict()
+                repair_used = True
+                answer_validation = self.runtime_answer_validator.validate(
+                    user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
+                )
+        if isinstance(decision_dict.get("turn_route_trace"), dict):
+            decision_dict["turn_route_trace"]["selected_route"] = str(decision_dict.get("route") or route_entry.route)
+            decision_dict["turn_route_trace"]["selected_handler"] = str(decision_dict.get("handler_name") or route_entry.handler_name)
+            decision_dict["turn_route_trace"]["runtime_answer_validation"] = answer_validation.to_dict()
+            decision_dict["turn_route_trace"]["final_text_source"] = str(decision_dict.get("response_generation_mode") or decision_dict.get("handler_generation_mode") or "handler_or_synthesizer")
+            envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
+        self._record_validation_diagnostic(
+            turn_context,
+            answer_validation,
+            event_type="final_validation",
+            attempt=1 if repair_used else 0,
+            repair_used=repair_used,
+        )
+        template_origin = self.template_registry.classify_body(body, detected_intent=str(detected_dialogue_intent))
+        if str(decision_dict.get("fallback_classification") or "") in {"", "not_fallback"}:
+            if repair_used:
+                decision_dict["fallback_classification"] = "repair_fallback"
+            elif template_origin.get("template_id"):
+                decision_dict["fallback_classification"] = "template_fallback"
+            elif decision_dict.get("model_generated"):
+                decision_dict["fallback_classification"] = "not_fallback"
+            elif str(handler_result.body or "").strip():
+                decision_dict["fallback_classification"] = "rule_handler_response"
+        decision_dict.setdefault("requires_host_model", False)
+        decision_dict["final_answer_validation"] = answer_validation.to_dict()
+        # Origin truth is computed only after runtime provenance and the final
+        # candidate body exist. A bridge's accepted flag alone is not evidence.
+        decision_dict.pop("origin_truth_valid", None)
+        if isinstance(decision_dict.get("turn_route_trace"), dict):
+            decision_dict["turn_route_trace"].update({
+                "fallback_classification": decision_dict.get("fallback_classification"),
+                "source_origin_detail": decision_dict.get("source_origin_detail"),
+                "can_generate_model_guided_speech": can_generate_model_guided_speech,
+                "requires_host_model": bool(decision_dict.get("requires_host_model")),
+                "retry_count": int(decision_dict.get("model_guided_retry_count") or 0),
+            })
+            envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
+        self._record_final_turn_diagnostics(
+            turn_context=turn_context,
+            decision_dict=decision_dict,
+            route_entry=route_entry,
+            answer_validation=answer_validation,
+            detected_dialogue_intent=detected_dialogue_intent,
+            handler_required=handler_required,
+            handler_satisfied=handler_satisfied,
+            handler_missing=handler_missing,
+            dispatch_report=dispatch_report,
+            envelope=envelope,
+        )
+        if str(detected_dialogue_intent).startswith("creative_text"):
+            decision_dict["source_text_preservation_contract"] = SourceTextPreservationContract.build(text, intent=str(detected_dialogue_intent)).to_dict()
+        if turn_context is not None:
+            turn_context.start_stage("provenance")
+        runtime_provenance = build_runtime_provenance(
+            body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
+            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
+        ).to_dict()
+        decision_dict.update({
+            "response_generation_mode": runtime_provenance.get("response_generation_mode"),
+            "template_origin": template_origin,
+            "template_id": template_origin.get("template_id"),
+            "template_file": template_origin.get("template_file"),
+            "template_line": template_origin.get("template_line"),
+            "source_origin_detail": runtime_provenance.get("source_origin_detail"),
+            "interpretation_distance": runtime_provenance.get("interpretation_distance"),
+            "runtime_text_hash": runtime_provenance.get("runtime_text_hash"),
+            "runtime_provenance": runtime_provenance,
+        })
+        decision_dict = _sync_conversation_decision_body(
+            decision_dict,
+            final_body=body,
+            sync_stage="pre_final_response_contract",
+        )
+
+        decision_dict = self._refresh_finalization_timestamp_contract(
+            envelope=envelope,
+            decision=decision_dict,
+            turn_context=turn_context,
+        )
+
+        prospective_visible = FinalResponseContract.ensure_timestamp_prefix(
+            envelope.trace.timestamp_header,
+            str(decision_dict.get("state_emoticon") or ""),
+            str((decision_dict.get("voice_source_contract") or {}).get("speaking_identity") or ""),
+            body,
+        )
+        origin_truth_valid, origin_truth_errors = evaluate_origin_truth(
+            decision_dict,
+            body=body,
+            final_visible_text=prospective_visible,
+            timestamp_header=envelope.trace.timestamp_header,
+        )
+        decision_dict["origin_truth_valid"] = origin_truth_valid
+        decision_dict["origin_truth_errors"] = origin_truth_errors
+        envelope.attach_conversation_decision(decision_dict)
+        envelope.cognitive_frame["continuity_badge_policy"] = continuity_badge_report
+        envelope.cognitive_frame["runtime_answer_validation"] = answer_validation.to_dict()
+        envelope.cognitive_frame["template_origin"] = template_origin
+        envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance
+        try:
+            source_entry = self.source_origin_ledger.build_entry(
+                turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, user_text=text, response_text=body, runtime_text=body,
+                route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent),
+                handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), intent_confidence=float((dialogue_intent_report or {}).get("confidence") or 0.0),
+                provenance=runtime_provenance, template_origin=template_origin, validator_result=answer_validation.to_dict(),
+                fallback_classification=str(decision_dict.get("fallback_classification") or "unknown"),
+                can_generate_model_guided_speech=can_generate_model_guided_speech,
+                requires_host_model=bool(decision_dict.get("requires_host_model")),
+                final_visible_integrity_valid=bool(decision_dict.get("origin_truth_valid") and answer_validation.accepted),
+                model_response=model_synthesis.adapter_response,
+            )
+            self._stage_turn_write(
+                turn_context,
+                data_type="source_origin_ledger",
+                stage="provenance",
+                commit=lambda entry=source_entry: self.source_origin_ledger.append(entry),
+            )
+            envelope.cognitive_frame["source_origin_ledger_entry"] = source_entry.to_dict()
+        except Exception as exc:
+            envelope.cognitive_frame["source_origin_ledger_error"] = str(exc)
+        if turn_context is not None:
+            turn_context.start_stage("host_visible_finalization")
+        candidate_contract = FinalResponseContract.build(
+            turn_id=envelope.trace.turn_id,
+            trace_id=envelope.trace.trace_id,
+            runtime_version=self.config.version,
+            timestamp_header=envelope.trace.timestamp_header,
+            timezone=envelope.trace.timezone,
+            state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(),
+            body=body,
+            conversation_decision=decision_dict,
+            continuity_badge_policy=continuity_badge_report,
+        )
+        # Uzupełnienie provenance po zbudowaniu kandydującej widocznej odpowiedzi.
+        runtime_provenance_visible = build_runtime_provenance(
+            body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
+            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
+        ).with_visible_text(candidate_contract.final_visible_text).to_dict()
+        decision_dict["visible_answer_hash"] = runtime_provenance_visible.get("visible_answer_hash")
+        decision_dict["runtime_provenance"] = runtime_provenance_visible
+        decision_dict = _sync_conversation_decision_body(
+            decision_dict,
+            final_body=body,
+            sync_stage="post_visible_provenance",
+        )
+        envelope.attach_conversation_decision(decision_dict)
+        envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance_visible
+        contract = FinalResponseContract.build(
+            turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, runtime_version=self.config.version, timestamp_header=envelope.trace.timestamp_header, timezone=envelope.trace.timezone, state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(), body=body, conversation_decision=decision_dict, continuity_badge_policy=continuity_badge_report,
+        )
+        if runtime_provenance_visible.get("visible_answer_text") != contract.final_visible_text:
+            runtime_provenance_visible = build_runtime_provenance(
+                body=body, route=str(decision_dict.get("route") or route_entry.route), detected_intent=str(detected_dialogue_intent),
+                handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name), template_origin=template_origin if template_origin.get("template_id") else None, repair=repair_used, model_guided=bool(decision_dict.get("model_generated")) and not repair_used, fallback_classification=str(decision_dict.get("fallback_classification") or "not_fallback"), source_origin_detail=str(decision_dict.get("source_origin_detail") or "runtime_process_turn"),
+            ).with_visible_text(contract.final_visible_text).to_dict()
+            decision_dict["visible_answer_hash"] = runtime_provenance_visible.get("visible_answer_hash")
+            decision_dict["runtime_provenance"] = runtime_provenance_visible
+            decision_dict = _sync_conversation_decision_body(
+                decision_dict,
+                final_body=body,
+                sync_stage="post_visible_provenance_rebuild",
+            )
+            envelope.attach_conversation_decision(decision_dict)
+            envelope.cognitive_frame["runtime_response_provenance"] = runtime_provenance_visible
+            contract = FinalResponseContract.build(
+                turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, runtime_version=self.config.version, timestamp_header=envelope.trace.timestamp_header, timezone=envelope.trace.timezone, state_emoticon=affect_mix.get("state_emoticon") or self.affect.marker(), body=body, conversation_decision=decision_dict, continuity_badge_policy=continuity_badge_report,
+            )
+        self._apply_epistemic_visible_boundary(envelope=envelope, final_visible_text=contract.final_visible_text, runtime_provenance=runtime_provenance_visible, turn_context=turn_context)
+        runtime_turn_contract = RuntimeTurnContract(
+            turn_id=envelope.trace.turn_id,
+            trace_id=envelope.trace.trace_id,
+            detected_intent=str(detected_dialogue_intent),
+            route=str(decision_dict.get("route") or route_entry.route),
+            handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
+            runtime_exact_text=body,
+            final_visible_text=contract.final_visible_text,
+            host_interpretation=decision_dict.get("host_interpretation"),
+            template_origin=dict(template_origin or {}),
+            source_origin_detail=str(decision_dict.get("source_origin_detail") or "unknown"),
+            fallback_classification=str(decision_dict.get("fallback_classification") or "unknown"),
+            final_visible_integrity=dict(contract.final_visible_integrity or {}),
+            can_generate_model_guided_speech=can_generate_model_guided_speech,
+            requires_host_model=bool(decision_dict.get("requires_host_model")),
+            response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"),
+            validation=answer_validation.to_dict(),
+            retry_count=int(decision_dict.get("model_guided_retry_count") or 0),
+            retry_limit=int(decision_dict.get("model_guided_retry_limit") or 1),
+        )
+        envelope.attach_runtime_turn_contract(runtime_turn_contract.to_dict())
+        envelope.attach_final_response_contract(contract.to_dict(), contract.final_visible_text)
+        if turn_context is not None:
+            turn_context.complete_stage("provenance")
+            turn_context.complete_stage("host_visible_finalization")
+        try:
+            checkpoint = self._stage_turn_write(
+                turn_context,
+                data_type="turn_checkpoint",
+                stage="host_visible_finalization",
+                commit=lambda: self.turn_checkpoint_writer.build_and_append(
+                    turn_id=envelope.trace.turn_id, trace_id=envelope.trace.trace_id, timestamp_header=envelope.trace.timestamp_header, user_text=text, runtime_text=body, visible_text=contract.final_visible_text, detected_intent=str(detected_dialogue_intent), route=str(decision_dict.get("route") or ""), response_generation_mode=str(decision_dict.get("response_generation_mode") or "unknown"), template_origin=template_origin, validator=answer_validation.to_dict(), source_origin=envelope.cognitive_frame.get("source_origin_ledger_entry") or {},
+                ),
+            )
+            envelope.cognitive_frame["turn_checkpoint"] = checkpoint
+        except Exception as exc:
+            envelope.cognitive_frame["turn_checkpoint_error"] = str(exc)
+        envelope_dict = envelope.to_dict()
+        self._stage_turn_write(
+            turn_context,
+            data_type="cognitive_turn_envelope",
+            stage="host_visible_finalization",
+            commit=lambda: self.store.add_event(
+                "cognitive_turn_envelope",
+                envelope_dict,
+                source=ctx.get("client", "process_turn"),
+                actor="latka_runtime",
+                tags=["cognitive_turn_envelope", "final_response_contract", "timestamp_contract", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", "project_startup_index", self.config.version],
+                importance=0.86,
+                emotional_weight=0.55,
+                canonical_impact=1,
+                created_at_local=envelope.trace.timestamp_header,
+            ),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="runtime_event_ledger",
+            stage="host_visible_finalization",
+            commit=lambda: self.event_ledger.append_event(
+                "cognitive_turn_envelope",
+                actor="latka_runtime",
+                source=ctx.get("client", "process_turn"),
+                payload=envelope_dict,
+                tags=["cognitive_turn_envelope", "final_response_contract", "exact", "dialogue_intent_classifier", "runtime_answer_validator", "source_origin_ledger", self.config.version],
+                importance=0.86,
+                emotional_weight=0.55,
+                canonical_impact=1,
+                exact_text=text,
+                local_time_label=envelope.trace.timestamp_header,
+            ),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="final_visible_reply",
+            stage="host_visible_finalization",
+            commit=lambda: self.event_ledger.append_final_visible_reply(
+                envelope_dict,
+                final_text=contract.final_visible_text,
+                source=ctx.get("client", "process_turn"),
+                local_time_label=envelope.trace.timestamp_header,
+            ),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="session_continuity",
+            stage="host_visible_finalization",
+            commit=lambda: self.session_continuity.update_index(
+                reason="final_visible_reply_persisted",
+                source="JaznEngine.process_turn",
+                extra={
+                    "turn_id": envelope.trace.turn_id,
+                    "trace_id": envelope.trace.trace_id,
+                    "timestamp_header": envelope.trace.timestamp_header,
+                    "client_context": ctx,
+                    "final_visible_reply_sha256": envelope.cognitive_frame.get("final_visible_reply_sha256"),
+                },
+            ),
+        )
+        self._stage_turn_write(
+            turn_context,
+            data_type="process_turn_completed_audit",
+            stage="audit_persistence",
+            commit=lambda: self.audit_store.append_event("process_turn_completed", {"turn_id": envelope.trace.turn_id, "trace_id": envelope.trace.trace_id, "detected_intent": str(detected_dialogue_intent), "route": str(decision_dict.get("route") or route_entry.route or ""), "runtime_answer_quality": (answer_validation.to_dict() or {}).get("runtime_answer_quality")}, source=ctx.get("client", "process_turn"), actor="latka_runtime", tags=["turn", "completed", "audit", self.config.version], trace_id=envelope.trace.trace_id, turn_id=envelope.trace.turn_id),
+        )
+
+        def _commit_engine_turn_state() -> None:
+            self.last_user_text = text
+            self.last_detected_intent = str(detected_dialogue_intent)
+            self.last_runtime_route = str(decision_dict.get("route") or route_entry.route or "")
+            self.last_dialogue_task_state = dict(current_dialogue_task_state or {})
+            self._save_runtime_state()
+
+        self._stage_turn_write(
+            turn_context,
+            data_type="engine_turn_state",
+            stage="host_visible_finalization",
+            commit=_commit_engine_turn_state,
+        )
+        # Keep shutdown read-only for preview too; shutdown clears the flag only
+        # after closing stores. Normal process_turn clears immediately.
+        if not read_only_preview:
+            self._preview_read_only_active = False
+        return envelope

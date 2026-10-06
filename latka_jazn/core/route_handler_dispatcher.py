@@ -5,7 +5,7 @@ from latka_jazn.version import schema_version
 
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.route_registry import RouteRegistryEntry
-from latka_jazn.core.turn_diagnostics import FallbackDecision, FallbackKind, TurnStage
+from latka_jazn.core.recovery_policy import RecoveryPolicy
 from latka_jazn.core.handlers.compound_dialogue_handler import CompoundDialogueHandler
 from latka_jazn.core.handlers.dictionary_lookup_handler import DictionaryLookupHandler
 from latka_jazn.core.handlers.external_research_handler import ExternalResearchHandler
@@ -86,15 +86,8 @@ class RouteHandlerDispatcher:
                 ).to_dict(),
             )
             if implicit_fallback:
-                fallback_decision = FallbackDecision.build(
-                    kind=FallbackKind.RECOVERABLE_FALLBACK,
-                    origin_stage=TurnStage.ROUTING,
-                    origin_component='RouteHandlerDispatcher.dispatch',
-                    reason_code='ROUTE_HANDLER_UNRESOLVED',
-                    from_route=entry.route,
-                    to_route='fallback',
-                    recoverable=True,
-                    evidence_refs=(entry.intent, entry.handler_name),
+                fallback_decision = RecoveryPolicy.route_failure(
+                    intent=entry.intent, route=entry.route, handler=entry.handler_name,
                 )
                 result.data.setdefault('fallback_decision', fallback_decision.to_dict())
             return result
@@ -108,15 +101,9 @@ class RouteHandlerDispatcher:
                 'error': repr(exc),
             }
             result.errors.append(error_payload)
-            fallback_decision = FallbackDecision.build(
-                kind=FallbackKind.RECOVERABLE_FALLBACK,
-                origin_stage=TurnStage.HANDLER,
-                origin_component='RouteHandlerDispatcher.dispatch',
-                reason_code='HANDLER_EXCEPTION',
-                from_route=entry.route,
-                to_route='fallback',
-                recoverable=True,
-                evidence_refs=(entry.intent, getattr(handler,'name','unknown')),
+            fallback_decision = RecoveryPolicy.route_failure(
+                intent=entry.intent, route=entry.route,
+                handler=getattr(handler, 'name', 'unknown'), exception=True,
             )
             result.data.setdefault('fallback_decision', fallback_decision.to_dict())
             result.data.setdefault(

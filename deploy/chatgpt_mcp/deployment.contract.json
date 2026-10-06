@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.109-engine-lifecycle-finalization-decomposition-convergence",
+  "runtime_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
