@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterable, Iterator, Mapping
 import threading
 import time
 import uuid
@@ -13,6 +13,14 @@ import os
 import hashlib
 
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.turn_diagnostics import (
+    BlindRouteFinding,
+    DiagnosticSeverity,
+    FailureKind,
+    FallbackDecision,
+    TurnDiagnosticTrace,
+    TurnStage,
+)
 
 
 TURN_STAGE_NAMES = (
@@ -107,6 +115,18 @@ class TurnExecutionContext:
         self._committed_write_ids: set[str] = set()
         self._rejected_write_ids: set[str] = set()
         self._audit_sequence = 0
+        self._diagnostics = TurnDiagnosticTrace.create(
+            session_id=self.session_id,
+            request_id=self.request_id,
+            turn_id=self.turn_id,
+            trace_id=self.trace_id,
+        )
+        self._diagnostics.record_event(
+            stage=TurnStage.INGRESS,
+            component="TurnExecutionContext",
+            event_type="request_accepted",
+            outcome="accepted",
+        )
         self.mark_stage("request_accepted", status="completed")
 
     @classmethod
@@ -156,6 +176,13 @@ class TurnExecutionContext:
                 if stage.get("status") == "running":
                     self._complete_stage_locked(stage, status="cancelled", error_code=error_code)
             self._reject_staging_locked(reason=error_code)
+            self._diagnostics.record_failure(
+                kind=FailureKind.CANCELLED,
+                stage=TurnStage.SETTLEMENT,
+                component="TurnExecutionContext.cancel",
+                reason_code=error_code,
+                attributes={"cancellation_reason": reason},
+            )
             self.mark_stage("total_execution_time", status="cancelled", error_code=error_code)
 
     def start_stage(self, name: str) -> None:
@@ -276,6 +303,99 @@ class TurnExecutionContext:
     def record_technical_event(self, event_type: str, payload: dict[str, Any]) -> None:
         with self._lock:
             self._technical_events.append((str(event_type), dict(payload or {})))
+
+    @property
+    def diagnostic_trace(self) -> TurnDiagnosticTrace:
+        return self._diagnostics
+
+    def record_diagnostic_event(
+        self,
+        *,
+        stage: TurnStage | str,
+        component: str,
+        event_type: str,
+        outcome: str,
+        reason_code: str | None = None,
+        severity: DiagnosticSeverity | str = DiagnosticSeverity.INFO,
+        attributes: Mapping[str, Any] | None = None,
+    ) -> None:
+        with self._lock:
+            self._diagnostics.record_event(
+                stage=stage,
+                component=component,
+                event_type=event_type,
+                outcome=outcome,
+                reason_code=reason_code,
+                severity=severity,
+                attributes=attributes,
+            )
+
+    def bind_diagnostic_route(
+        self,
+        *,
+        intent: str | None,
+        route: str | None,
+        handler: str | None,
+        attributes: Mapping[str, Any] | None = None,
+    ) -> None:
+        with self._lock:
+            self._diagnostics.bind_route(
+                intent=intent,
+                route=route,
+                handler=handler,
+                attributes=attributes,
+            )
+
+    def record_diagnostic_fallback(self, decision: FallbackDecision) -> None:
+        with self._lock:
+            self._diagnostics.record_fallback(decision)
+
+    def record_diagnostic_failure(
+        self,
+        *,
+        kind: FailureKind | str,
+        stage: TurnStage | str,
+        component: str,
+        reason_code: str,
+        validator_code: str | None = None,
+        attributes: Mapping[str, Any] | None = None,
+    ) -> None:
+        with self._lock:
+            self._diagnostics.record_failure(
+                kind=kind,
+                stage=stage,
+                component=component,
+                reason_code=reason_code,
+                validator_code=validator_code,
+                attributes=attributes,
+            )
+
+    def add_blind_route_findings(
+        self,
+        findings: Iterable[BlindRouteFinding],
+    ) -> None:
+        with self._lock:
+            self._diagnostics.add_findings(findings)
+
+    def finalize_diagnostics(
+        self,
+        *,
+        outcome: str,
+        failure_kind: FailureKind | str | None = None,
+        reason_code: str | None = None,
+        component: str = "TurnExecutionContext",
+    ) -> None:
+        with self._lock:
+            self._diagnostics.finalize(
+                outcome=outcome,
+                failure_kind=failure_kind,
+                reason_code=reason_code,
+                component=component,
+            )
+
+    def diagnostic_snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            return self._diagnostics.to_dict()
 
     @staticmethod
     def _gate_failure_reason(result: dict[str, Any], *, job_status: str) -> str | None:
@@ -522,6 +642,7 @@ class TurnExecutionContext:
                     "rejected_total": len(self._rejected_write_ids),
                     "commit_complete": self._canonical_committed,
                 },
+                "turn_diagnostics": self._diagnostics.to_dict(),
                 "stages": stages,
             }
 
