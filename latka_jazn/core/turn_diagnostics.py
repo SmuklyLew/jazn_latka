@@ -288,6 +288,7 @@ class TurnDiagnosticTrace:
     selected_route: str | None = None
     selected_handler: str | None = None
     fallback: FallbackDecision | None = None
+    fallback_history: list[FallbackDecision] = field(default_factory=list)
     final_outcome: str | None = None
     failure_kind: str | None = None
     failure_reason_code: str | None = None
@@ -422,6 +423,7 @@ class TurnDiagnosticTrace:
 
     def record_fallback(self, decision: FallbackDecision) -> None:
         self.fallback = decision
+        self.fallback_history.append(decision)
         self.record_event(
             stage=decision.origin_stage,
             component=decision.origin_component,
@@ -457,7 +459,15 @@ class TurnDiagnosticTrace:
         reason_code: str | None = None,
         component: str = "TurnDiagnosticTrace",
     ) -> None:
-        self.final_outcome = str(outcome)
+        resolved_outcome = str(outcome)
+        if self.final_outcome is not None:
+            if self.final_outcome == resolved_outcome:
+                return
+            raise RuntimeError(
+                "turn_diagnostic_final_outcome_already_set:"
+                f"{self.final_outcome}->{resolved_outcome}"
+            )
+        self.final_outcome = resolved_outcome
         if failure_kind is not None and reason_code:
             self.record_failure(
                 kind=failure_kind,
@@ -491,6 +501,9 @@ class TurnDiagnosticTrace:
             "selected_route": self.selected_route,
             "selected_handler": self.selected_handler,
             "fallback": self.fallback.to_dict() if self.fallback else None,
+            "fallback_history": [
+                item.to_dict() for item in self.fallback_history
+            ],
             "blind_route_findings": [
                 finding.to_dict() for finding in self.blind_route_findings
             ],
