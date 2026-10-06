@@ -191,6 +191,38 @@ class FallbackDecision:
             evidence_refs=tuple(str(item) for item in evidence_refs if str(item).strip()),
         )
 
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> "FallbackDecision":
+        data = dict(payload or {})
+        return cls.build(
+            kind=str(data.get("kind") or FallbackKind.RECOVERABLE_FALLBACK.value),
+            origin_stage=str(data.get("origin_stage") or TurnStage.RECOVERY.value),
+            origin_component=str(data.get("origin_component") or "unknown"),
+            reason_code=str(data.get("reason_code") or "UNSPECIFIED_FALLBACK"),
+            from_route=(
+                str(data.get("from_route"))
+                if data.get("from_route") is not None
+                else None
+            ),
+            to_route=(
+                str(data.get("to_route"))
+                if data.get("to_route") is not None
+                else None
+            ),
+            recoverable=bool(data.get("recoverable")),
+            required_capability=(
+                str(data.get("required_capability"))
+                if data.get("required_capability") is not None
+                else None
+            ),
+            attempt=int(data.get("attempt") or 0),
+            evidence_refs=tuple(
+                str(item)
+                for item in data.get("evidence_refs") or ()
+                if str(item).strip()
+            ),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "kind": self.kind,
