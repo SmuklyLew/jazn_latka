@@ -145,3 +145,29 @@ This report records one real host generation and one accepted finalization linea
 It does not imply universal host availability, permanent background execution,
 persistent private MEMORY, or remote MCP deployment. Every future conversation
 must re-evaluate its current capabilities.
+
+
+## v112 CI correction evidence
+
+The first v112 push exposed a real release-contract drift rather than a runtime
+behavior regression. Persistent-runtime E2E run `37416896354` failed on both
+Windows and Linux in:
+
+`tests/test_persistent_remote_runtime_operations.py::test_deployment_contract_tracks_runtime_and_real_mcp_wire_names`.
+
+Observed matrix before the assertion: **72 PASS, 1 FAIL** on each platform. The
+failure was exact and symmetric:
+
+```text
+deploy/chatgpt_mcp/deployment.contract.json runtime_version
+= 16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence
+
+PACKAGE_VERSION_FULL
+= 16.3.25.5.112-v111-closeout-real-host-evidence-convergence
+```
+
+The correction updates only the deployment contract's declared runtime version to
+the v112 package identity. No assertion, gate, route, readiness requirement, MCP
+method name, or security rule is weakened. The failed run remains evidence and the
+corrected branch must pass a fresh persistent-runtime E2E before v112 is considered
+complete.

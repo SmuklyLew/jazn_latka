@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
+  "runtime_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
