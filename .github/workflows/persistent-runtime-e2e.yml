@@ -27,7 +27,7 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/engine.py"
-      - "latka_jazn/core/typed_memory_source_policy.py"
+      - "latka_jazn/core/turn_execution.py"\n      - "latka_jazn/core/turn_diagnostics.py"\n      - "latka_jazn/core/blind_route_detector.py"\n      - "latka_jazn/core/route_graph_contract.py"\n      - "latka_jazn/core/engine_services.py"\n      - "latka_jazn/core/route_handler_dispatcher.py"\n      - "latka_jazn/tools/route_graph_audit.py"\n      - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
       - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
@@ -90,7 +90,7 @@ on:
       - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_v163255107_persistent_remote_runtime_operations.py"
       - "tests/test_v163255107_memory_manifest_producer_gate.py"
-      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
+      - "tests/test_v163255108_turn_diagnostics.py"\n      - "tests/test_v163255108_blind_route_audit.py"\n      - "tests/test_v163255108_dispatcher_fallback.py"\n      - "tests/test_v163255108_engine_service_seams.py"\n      - "tests/test_v163255108_characterization_turn_contract.py"\n      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
       - "tests/test_chatgpt_host_executor_failure_mapping.py"
@@ -130,7 +130,7 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/engine.py"
-      - "latka_jazn/core/typed_memory_source_policy.py"
+      - "latka_jazn/core/turn_execution.py"\n      - "latka_jazn/core/turn_diagnostics.py"\n      - "latka_jazn/core/blind_route_detector.py"\n      - "latka_jazn/core/route_graph_contract.py"\n      - "latka_jazn/core/engine_services.py"\n      - "latka_jazn/core/route_handler_dispatcher.py"\n      - "latka_jazn/tools/route_graph_audit.py"\n      - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
       - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
@@ -193,7 +193,7 @@ on:
       - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_v163255107_persistent_remote_runtime_operations.py"
       - "tests/test_v163255107_memory_manifest_producer_gate.py"
-      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
+      - "tests/test_v163255108_turn_diagnostics.py"\n      - "tests/test_v163255108_blind_route_audit.py"\n      - "tests/test_v163255108_dispatcher_fallback.py"\n      - "tests/test_v163255108_engine_service_seams.py"\n      - "tests/test_v163255108_characterization_turn_contract.py"\n      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
       - "tests/test_chatgpt_host_executor_failure_mapping.py"
@@ -248,6 +248,19 @@ jobs:
 
       - name: Compile runtime, gate, and regression paths
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
+
+      - name: v108 turn diagnostics and route graph matrix
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_v163255108_turn_diagnostics.py
+          tests/test_v163255108_blind_route_audit.py
+          tests/test_v163255108_dispatcher_fallback.py
+          tests/test_v163255108_engine_service_seams.py
+          tests/test_v163255108_characterization_turn_contract.py
+
+      - name: Turn route graph audit
+        run: python -X utf8 -m latka_jazn.tools.route_graph_audit --root . --json
 
       - name: MCP 2026 remote ingress, Tasks, resources, and package contract
         run: >-
