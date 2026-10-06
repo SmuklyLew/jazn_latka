@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
-  "runtime_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
-  "package_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
-  "generated_at_utc": "2026-10-06T00:12:47+00:00",
-  "updated_at_utc": "2026-10-06T00:12:47+00:00",
+  "version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "runtime_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "package_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+  "generated_at_utc": "2026-10-06T00:17:45+00:00",
+  "updated_at_utc": "2026-10-06T00:17:45+00:00",
   "start_file": "run.py",
-  "file_count": 1947,
-  "static_file_count": 1947,
+  "file_count": 1952,
+  "static_file_count": 1952,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -155,8 +155,8 @@
     },
     {
       "path": ".github/workflows/persistent-runtime-e2e.yml",
-      "size_bytes": 13567,
-      "sha256": "9f32701098b833861f2083b1d48be058d9010eb46dcfb2898721e0197eb4132b",
+      "size_bytes": 15385,
+      "sha256": "5a28b9175fc40b84bbd0eff626966cea5bffad181872d4642b1dfe1116a77ecb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 19778,
-      "sha256": "1c14937997f80159ca233e3e0a0317186e51b4a2af711190eab038e82e09269d",
+      "size_bytes": 19921,
+      "sha256": "cd9116405693581cfe2e5f79207164065a9fc97b3f8952ef175ba97f7146e14a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3030,
-      "sha256": "5b1798eeccaf47bc5a580e2c8628f453f4b4a7dbf7e6ecb741d00f0da940a59c",
+      "size_bytes": 3031,
+      "sha256": "0a93c15c645033365e2d5022c5a29b309094d7ea4e77441f685cbba3f82daf7c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5177,8 +5177,8 @@
     },
     {
       "path": "latka_jazn/core/turn_execution.py",
-      "size_bytes": 28663,
-      "sha256": "6c1748458d1d659b5ee82dbb73862676e3bcf715e272ae6b6a4fa906e86a6740",
+      "size_bytes": 28735,
+      "sha256": "cdecd3b06a328751d7df58f4a3eb9ed43bc111f5d1bcc629550b1b2565cad204",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9011,8 +9011,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5363,
-      "sha256": "6cab79d43a4d54ac54e7eef18a7b54b506952a298d6756e45c88ad0441d6c06f",
+      "size_bytes": 5358,
+      "sha256": "1654b21d424860aa5832acb5ef9059fe4e2428b520a4d6404e3a99b7b2d9bf08",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16921,6 +16921,51 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v163255108_blind_route_audit.py",
+      "size_bytes": 2830,
+      "sha256": "257b10263437cf930fabc8515ecddfdafdcc2b7a767c5f726dddd39dad966220",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v163255108_characterization_turn_contract.py",
+      "size_bytes": 1117,
+      "sha256": "456f545efb5d3ce23627df1b2816b58752b45cd5cb3ca059a5c029c0d5d071a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v163255108_dispatcher_fallback.py",
+      "size_bytes": 2027,
+      "sha256": "97ff2b4f6de4e46aa077bca6b5e4b02f3062aa0637925a6431dbc90334f3981a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v163255108_engine_service_seams.py",
+      "size_bytes": 1134,
+      "sha256": "053f63b2a2e45d001f383b58942c64800ba2c757a92078eb8ba0727e9f57b284",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_v163255108_turn_diagnostics.py",
+      "size_bytes": 4247,
+      "sha256": "9061838e5c764f5d4b52b246726f6cc9fcb33eed5eb6c5d17ab68788b1d359f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -17390,8 +17435,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1803943,
-      "sha256": "66caf6e6a00fba6c8bbccbea9089f25f7a11ab5db08535eab0ec42d2a61a0436",
+      "size_bytes": 1814574,
+      "sha256": "eabc25858a281046200b8ed4430e7f761a97312c1c8578f322005e56d989ba67",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17975,11 +18020,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
+  "release_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
-    "package_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
-    "release_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence"
+    "runtime_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+    "package_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
+    "release_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
