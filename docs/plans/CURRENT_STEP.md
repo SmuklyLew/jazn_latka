@@ -3,10 +3,38 @@
 **Status:** `CANONICAL_CURRENT_STEP`  
 **Stan:** 2026-10-06  
 **Baza:** `master @ 712a25db94c634ea47fbf265c0d907608a668f00` / `16.3.25.5.107-persistent-remote-runtime-operations-convergence`  
-**Branch:** `upgrade/v16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`  
-**Target:** `16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence`
+**Branch:** `upgrade/v16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence`  
+**Target:** `16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence`
 
-## 1. Bieżący krok
+## Bieżący krok v111
+
+Seria jest przygotowana bez merge PR: v108 #318, v109 #319, v110 #320, v111 #321.
+Każdy następny branch kontynuuje zweryfikowany baseline poprzedniego etapu.
+Master pozostaje wskazanym wyżej v107; żaden PR nie został scalony.
+
+v109 wydziela jawny lifecycle composition root i niezależną finalizację phase-2.
+v110 wydziela TurnOrchestrator i etapy pipeline. v111 przenosi session ownership do
+ConversationRunner (JaznRuntimeSession pozostaje aliasem tej samej klasy), używa
+TurnStateMachine oraz strukturalnych kandydatów zwykłego dialogu. Default CLI text,
+nazwane tryby chat i MCP dochodzą do runnera; debug/cognitive diagnostics mają jawne
+compatibility wejścia. Replay po niejednoznacznym transporcie pozostaje zabroniony.
+
+Końcowe CI v108–v110: Pyright, release-hardening, package cleanroom i PowerShell
+SUCCESS; persistent-runtime E2E Linux/Windows SUCCESS na zweryfikowanych code SHA.
+Metadane-only final SHA mają dodatkowo zakończone dispatch gates, bez udawania
+osobnego dedicated E2E tam, gdzie workflow nie obsługuje workflow_dispatch.
+
+v111 final checkpoint jest w pełnej weryfikacji. Trzy restarty izolowanego runtime
+po poprawce kosztu ścieżek PASS, zachowując ten sam snapshot pamięci. Aktualne
+compileall, audyty architektury/routingu PASS, Pyright 0 errors / 1 existing warning.
+Pierwsze dwa pełne lokalne przebiegi FAIL przy lifecycle daemonu pozostają evidence;
+nowy pełny przebieg i final-SHA CI IN_PROGRESS. Real-host E2E ChatGPT jest osobną
+bramką NOT RUN i wymaga rzeczywiście callable aplikacji oraz accepted finalization.
+
+Szczegóły i chronologia evidence:
+[JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md](../reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md).
+
+## 1. Historyczny checkpoint v108
 
 v108 wdraża **diagnostic spine przed dekompozycją JaznEngine**. Nie przenosi jeszcze
 canonical turn ownership do nowego orchestratora. Celem jest zbudowanie pasa

@@ -140,3 +140,19 @@ The public direct-message routing regression: **1 PASS**.
 External host acceptance remains **NOT RUN**: repository/loopback test execution does
 not prove an actual ChatGPT application accepted display_exact/finalization. This
 external evidence is separate from repository completion and CI merge readiness.
+
+## Isolated restart soak result
+
+The corrected soak harness uses a dedicated parent directory so its canonical
+host-level workspace cannot collide with a prior synthetic MEMORY fixture.
+Three consecutive start/status/doctor/stop cycles of the same runtime: **3 PASS**.
+Each cycle proved trusted daemon identity, fully-ready transactional memory, a
+single valid wake snapshot with unchanged snapshot_id/logical fingerprint, and
+complete process/endpoint stop under the original timeouts. The earlier harness
+attempt that reused a sibling workspace failed with an existing synthetic table;
+it is not counted as a runtime PASS or used to conceal the initial startup failure.
+
+Final follow-up Pyright: **0 errors, 1 existing warning, 1116 analyzed files**.
+Compileall, RouteGraphAudit and CognitiveArchitectureAudit: **PASS**. The new
+complete deterministic suite remains **IN_PROGRESS**. Final-SHA GitHub gates and
+external real-host evidence retain their independent statuses.
