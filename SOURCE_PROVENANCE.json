@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
-  "base_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
-  "commit_date": "2026-10-06T04:28:28+02:00",
+  "base_merge_commit": "a7973dc520b9efcd5f191247ec17c1ec64b70790",
+  "base_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
+  "commit_date": "2026-10-06T04:50:31+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-06T02:28:28+00:00",
+  "generated_at_utc": "2026-10-06T02:50:31+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "16c05198e0899986b6b91c056b041c603714f3ee",
+  "git_tree_sha": "ea0bcb8a199777c25745bbdb9f647139f1783478",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
-    "source_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence"
+    "source_commit": "a7973dc520b9efcd5f191247ec17c1ec64b70790",
+    "source_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
+  "release_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
+  "runtime_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
+  "source_commit": "a7973dc520b9efcd5f191247ec17c1ec64b70790",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
+  "source_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
+  "update_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
   "version_source": "latka_jazn/version.py"
 }
