@@ -3,11 +3,11 @@
   "version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
   "runtime_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
   "package_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
-  "generated_at_utc": "2026-10-06T05:10:47+00:00",
-  "updated_at_utc": "2026-10-06T05:10:47+00:00",
+  "generated_at_utc": "2026-10-06T05:12:42+00:00",
+  "updated_at_utc": "2026-10-06T05:12:42+00:00",
   "start_file": "run.py",
-  "file_count": 2024,
-  "static_file_count": 2024,
+  "file_count": 2027,
+  "static_file_count": 2027,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -300,7 +300,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3006,
-      "sha256": "b19ac28126204e26eaa3b4107be7ba6cfba1169aa5680a8b55b01c1bb4c60167",
+      "sha256": "f70b9fb1da8a38a6dd635920295153de619747dc3f01b34dd55568abe3019992",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1991,8 +1991,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md",
-      "size_bytes": 6687,
-      "sha256": "dca9aeea0c886023f50761da979fd0798f3dbb021988350b81c06134888a4228",
+      "size_bytes": 8119,
+      "sha256": "9ddb9e84d7f5b3ba8a150347775475c63ed129e7de726185a3c2554f70caeae8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7914,7 +7914,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 2900,
-      "sha256": "35a29fe1462abd67107f62d8dc40456828a196b142421bb31b5228b5abbed56d",
+      "sha256": "69583a899e47c7084caac62c3f37158632c6d9c277b352b06c75fe8321825ab1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12979,6 +12979,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.111-v112-release-identity-bump/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2090,
+      "sha256": "ef58dbfb2d19963c0d2a8f0f95eb6ca1178549d9c8e7d8dcba43151d7a092688",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.111-v112-release-identity-bump/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6973,
+      "sha256": "8078b1ee9b0a05f7559546b30b7d95c6ecf55c5e263c1efbe130ad02150f2f8d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.111-v112-release-identity-bump/test_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8698,
+      "sha256": "056261fb7888584aac0f7df52c6984f136121e9e91f136fdbce4e72bf6c7ac53",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.12-pack-generator-v89-docstring-escape-fix/test_independent_memory_package_contract_v2.py",
       "size_bytes": 12282,
       "sha256": "69cce01ff0f00a180c3bee8d2f0beb77f65e87192a6ef3a3b72187a39a4aa93c",
@@ -14591,8 +14618,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2090,
-      "sha256": "ef58dbfb2d19963c0d2a8f0f95eb6ca1178549d9c8e7d8dcba43151d7a092688",
+      "size_bytes": 2079,
+      "sha256": "17fc80fdf41671ea6fe15c2ebf682efc2da5a8e8b6c7eb501d7574b95a8e1e58",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14969,8 +14996,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6973,
-      "sha256": "8078b1ee9b0a05f7559546b30b7d95c6ecf55c5e263c1efbe130ad02150f2f8d",
+      "size_bytes": 6962,
+      "sha256": "330ff3c1aef2d046f6bd87a9e765e0fc6ba5f9961d8093c34ef2622a3dd5b5d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15356,8 +15383,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8698,
-      "sha256": "056261fb7888584aac0f7df52c6984f136121e9e91f136fdbce4e72bf6c7ac53",
+      "size_bytes": 8687,
+      "sha256": "04630bac05aac6bc0f580ff9831e67a8db130840dcbc0d81693ce05acd4ef43a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
