@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.107",
-  "active_definition_count": 1929,
+  "system_version": "16.3.25.5.108",
+  "active_definition_count": 1942,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -41828,6 +41828,243 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 60
+    },
+    "tests/test_v163255108_blind_route_audit.py::test_route_graph_audit_is_green_for_current_registered_graph": {
+      "path": "tests/test_v163255108_blind_route_audit.py",
+      "name": "test_route_graph_audit_is_green_for_current_registered_graph",
+      "purpose": "Route graph audit is green for current registered graph",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.blind_route_detector",
+        "latka_jazn.core.route_graph_contract",
+        "latka_jazn.core.turn_diagnostics"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_v163255108_blind_route_audit.py::test_blind_route_detector_reports_missing_required_component": {
+      "path": "tests/test_v163255108_blind_route_audit.py",
+      "name": "test_blind_route_detector_reports_missing_required_component",
+      "purpose": "Blind route detector reports missing required component",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.blind_route_detector",
+        "latka_jazn.core.route_graph_contract",
+        "latka_jazn.core.turn_diagnostics"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_v163255108_blind_route_audit.py::test_blind_route_detector_rejects_anonymous_dispatch_fallback": {
+      "path": "tests/test_v163255108_blind_route_audit.py",
+      "name": "test_blind_route_detector_rejects_anonymous_dispatch_fallback",
+      "purpose": "Blind route detector rejects anonymous dispatch fallback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.blind_route_detector",
+        "latka_jazn.core.route_graph_contract",
+        "latka_jazn.core.turn_diagnostics"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_v163255108_blind_route_audit.py::test_typed_fallback_prevents_anonymous_fallback_finding": {
+      "path": "tests/test_v163255108_blind_route_audit.py",
+      "name": "test_typed_fallback_prevents_anonymous_fallback_finding",
+      "purpose": "Typed fallback prevents anonymous fallback finding",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.blind_route_detector",
+        "latka_jazn.core.route_graph_contract",
+        "latka_jazn.core.turn_diagnostics"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_v163255108_characterization_turn_contract.py::test_v108_characterization_major_route_families": {
+      "path": "tests/test_v163255108_characterization_turn_contract.py",
+      "name": "test_v108_characterization_major_route_families",
+      "purpose": "V108 characterization major route families",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.route_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_v163255108_characterization_turn_contract.py::test_v108_characterization_unknown_intent_remains_explicit_fallback": {
+      "path": "tests/test_v163255108_characterization_turn_contract.py",
+      "name": "test_v108_characterization_unknown_intent_remains_explicit_fallback",
+      "purpose": "V108 characterization unknown intent remains explicit fallback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.route_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_v163255108_dispatcher_fallback.py::test_dispatcher_marks_unresolved_handler_as_typed_fallback": {
+      "path": "tests/test_v163255108_dispatcher_fallback.py",
+      "name": "test_dispatcher_marks_unresolved_handler_as_typed_fallback",
+      "purpose": "Dispatcher marks unresolved handler as typed fallback",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.route_handler_base",
+        "latka_jazn.core.route_handler_dispatcher",
+        "latka_jazn.core.route_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_v163255108_dispatcher_fallback.py::test_dispatcher_preserves_handler_exception_as_typed_fallback": {
+      "path": "tests/test_v163255108_dispatcher_fallback.py",
+      "name": "test_dispatcher_preserves_handler_exception_as_typed_fallback",
+      "purpose": "Dispatcher preserves handler exception as typed fallback",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.route_handler_base",
+        "latka_jazn.core.route_handler_dispatcher",
+        "latka_jazn.core.route_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_v163255108_engine_service_seams.py::test_engine_services_exposes_legacy_components_without_taking_ownership": {
+      "path": "tests/test_v163255108_engine_service_seams.py",
+      "name": "test_engine_services_exposes_legacy_components_without_taking_ownership",
+      "purpose": "Engine services exposes legacy components without taking ownership",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.engine_services"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_v163255108_turn_diagnostics.py::test_turn_diagnostic_trace_orders_events_and_redacts_private_attributes": {
+      "path": "tests/test_v163255108_turn_diagnostics.py",
+      "name": "test_turn_diagnostic_trace_orders_events_and_redacts_private_attributes",
+      "purpose": "Turn diagnostic trace orders events and redacts private attributes",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_diagnostics",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_v163255108_turn_diagnostics.py::test_turn_diagnostic_trace_preserves_typed_fallback_lineage": {
+      "path": "tests/test_v163255108_turn_diagnostics.py",
+      "name": "test_turn_diagnostic_trace_preserves_typed_fallback_lineage",
+      "purpose": "Turn diagnostic trace preserves typed fallback lineage",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_diagnostics",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_v163255108_turn_diagnostics.py::test_turn_execution_context_contains_one_diagnostic_root": {
+      "path": "tests/test_v163255108_turn_diagnostics.py",
+      "name": "test_turn_execution_context_contains_one_diagnostic_root",
+      "purpose": "Turn execution context contains one diagnostic root",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_diagnostics",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_v163255108_turn_diagnostics.py::test_cancel_records_typed_failure_without_raw_reason_leak": {
+      "path": "tests/test_v163255108_turn_diagnostics.py",
+      "name": "test_cancel_records_typed_failure_without_raw_reason_leak",
+      "purpose": "Cancel records typed failure without raw reason leak",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_diagnostics",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
