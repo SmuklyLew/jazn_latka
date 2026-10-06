@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2a6829d3aa7394d47a7d9291b2e09288816faddb",
+  "base_merge_commit": "2315f38d634148c4775f37cd508e204c509802ea",
   "base_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-  "commit_date": "2026-10-06T05:22:35+02:00",
+  "commit_date": "2026-10-06T05:30:10+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-06T03:22:35+00:00",
+  "generated_at_utc": "2026-10-06T03:30:10+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b338d45f91c3eae60904e7e43b6bcb8feefe70ed",
+  "git_tree_sha": "ed19ec8e68200f982ff939a0f2fef9a2f10df564",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2a6829d3aa7394d47a7d9291b2e09288816faddb",
+    "source_commit": "2315f38d634148c4775f37cd508e204c509802ea",
     "source_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2a6829d3aa7394d47a7d9291b2e09288816faddb",
+  "source_commit": "2315f38d634148c4775f37cd508e204c509802ea",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
   "tag": null,
