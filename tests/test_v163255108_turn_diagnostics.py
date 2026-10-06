@@ -75,6 +75,8 @@ def test_turn_diagnostic_trace_preserves_typed_fallback_lineage() -> None:
     assert payload["fallback"]["from_route"] == "ordinary_dialogue"
     assert payload["fallback"]["to_route"] == "host_model_phase2"
     assert payload["fallback"]["required_capability"] == "host_model"
+    assert len(payload["fallback_history"]) == 1
+    assert payload["fallback_history"][0]["reason_code"] == "MODEL_GUIDED_SPEECH_REQUIRED"
 
 
 def test_turn_execution_context_contains_one_diagnostic_root(tmp_path: Path) -> None:
@@ -121,3 +123,21 @@ def test_cancel_records_typed_failure_without_raw_reason_leak(tmp_path: Path) ->
     assert failure_events
     assert failure_events[-1]["attributes"]["cancellation_reason_present"] is True
     assert "private cancellation details" not in str(diagnostic)
+
+
+def test_turn_diagnostic_finalization_is_idempotent_but_not_mutable() -> None:
+    trace = TurnDiagnosticTrace.create(
+        session_id="session-1",
+        request_id="request-1",
+        turn_id="turn-1",
+        trace_id="trace-1",
+    )
+    trace.finalize(outcome="completed")
+    event_count = len(trace.events)
+    trace.finalize(outcome="completed")
+    assert len(trace.events) == event_count
+
+    import pytest
+
+    with pytest.raises(RuntimeError, match="turn_diagnostic_final_outcome_already_set"):
+        trace.finalize(outcome="failed")
