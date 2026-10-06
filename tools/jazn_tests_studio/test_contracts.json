@@ -7204,11 +7204,11 @@
       "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
       "name": "test_startup_contract_declares_remote_only_ingress",
       "purpose": "Startup contract declares remote only ingress",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -7240,7 +7240,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 114
     },
     "tests/test_chatgpt_remote_only_ingress_convergence.py::test_portable_plugin_fails_closed_on_stale_tool_surface": {
       "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
@@ -7261,14 +7261,14 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 127
     },
-    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_release_identity_v113": {
+    "tests/test_chatgpt_remote_only_ingress_convergence.py::test_release_identity_tracks_remote_only_ingress_contract": {
       "path": "tests/test_chatgpt_remote_only_ingress_convergence.py",
-      "name": "test_release_identity_v113",
-      "purpose": "Release identity v113",
+      "name": "test_release_identity_tracks_remote_only_ingress_contract",
+      "purpose": "Release identity tracks remote only ingress contract",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
+      "category": "contract",
       "tags": [],
       "markers": [],
       "assertion_count": 2,
@@ -7282,7 +7282,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 133
+      "line": 135
     },
     "tests/test_chatgpt_remote_runtime_evidence.py::test_preflight_rejects_bare_positive_remote_runtime_boolean": {
       "path": "tests/test_chatgpt_remote_runtime_evidence.py",
