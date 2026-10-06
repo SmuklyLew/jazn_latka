@@ -46,7 +46,11 @@ from latka_jazn.mcp.developer_mode_surface import (
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
-from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
+from latka_jazn.mcp.chatgpt_toolset import (
+    CHATGPT_TOOLSET_REVISION,
+    REQUIRED_CHATGPT_TURN_TOOLS,
+    REQUIRED_CHATGPT_TURN_TOOLS_SHA256,
+)
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
@@ -537,6 +541,8 @@ class PublicMcpGateway:
                 "gateway_instance_id": self._gateway_instance_id,
                 "observed_at_utc": _utc_now_iso(),
                 "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+                "required_chatgpt_turn_tools_revision": CHATGPT_TOOLSET_REVISION,
+                "required_chatgpt_turn_tools_sha256": REQUIRED_CHATGPT_TURN_TOOLS_SHA256,
                 "fresh_conversation_reverification_required": True,
                 "current_message_toolset_observation_required": True,
                 "catalog_or_installed_state_sufficient": False,
@@ -596,6 +602,8 @@ class PublicMcpGateway:
             "gateway_instance_id": self._gateway_instance_id,
             "observed_at_utc": _utc_now_iso(),
             "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),
+            "required_chatgpt_turn_tools_revision": CHATGPT_TOOLSET_REVISION,
+            "required_chatgpt_turn_tools_sha256": REQUIRED_CHATGPT_TURN_TOOLS_SHA256,
             "fresh_conversation_reverification_required": True,
             "current_message_toolset_observation_required": True,
             "catalog_or_installed_state_sufficient": False,
