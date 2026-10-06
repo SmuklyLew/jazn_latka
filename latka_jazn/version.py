@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.107 closes the production remote-runtime operations gap:
-# public MCP startup now requires strict conversation-ready runtime evidence,
-# reuses or starts the canonical runtime supervisor by default, and ships
-# versioned deployment/tunnel contracts plus chaos-oriented regressions.
-DISTRIBUTION_VERSION = "16.3.25.5.107"
-PACKAGE_VERSION = "16.3.25.5.107"
-PACKAGE_RELEASE_NAME = "persistent-remote-runtime-operations-convergence"
+# v16.3.25.5.108 establishes the diagnostics-first safety harness for
+# JaznEngine decomposition: one turn-root diagnostic trace, typed fallback
+# lineage, blind-route detection, static route-graph auditing and explicit
+# extraction seams without transferring canonical runtime ownership.
+DISTRIBUTION_VERSION = "16.3.25.5.108"
+PACKAGE_VERSION = "16.3.25.5.108"
+PACKAGE_RELEASE_NAME = "engine-decomposition-turn-diagnostics-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
