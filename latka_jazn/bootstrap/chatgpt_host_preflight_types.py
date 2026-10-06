@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from latka_jazn.bootstrap.chatgpt_ingress_policy import ChatGptIngressMode
 from latka_jazn.core.chatgpt_host_capability_snapshot import HostCapabilitySnapshot
 from latka_jazn.core.chatgpt_host_executor_enums import (
     HostEnvironmentState,
@@ -35,6 +36,8 @@ class ChatGptHostPreflightDecision:
     system_search_attempted: bool | None
     system_candidate_found: bool | None
     remote_runtime_available: bool | None
+    ingress_mode: ChatGptIngressMode
+    local_executor_fallback_allowed: bool
     bootstrap_allowed: bool
     remote_runtime_allowed: bool
     handoff_required: bool
@@ -59,6 +62,8 @@ class ChatGptHostPreflightDecision:
             "system_search_attempted": self.system_search_attempted,
             "system_candidate_found": self.system_candidate_found,
             "remote_runtime_available": self.remote_runtime_available,
+            "ingress_mode": self.ingress_mode.value,
+            "local_executor_fallback_allowed": self.local_executor_fallback_allowed,
             "bootstrap_allowed": self.bootstrap_allowed,
             "local_bootstrap_allowed": self.bootstrap_allowed,
             "remote_runtime_allowed": self.remote_runtime_allowed,
