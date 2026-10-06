@@ -357,6 +357,8 @@ def classify_remote_runtime_failover(
         "host_connector_capability_available": connector_ready,
         "current_message_toolset_observed": toolset["current_message_toolset_observed"],
         "required_chatgpt_turn_tools": toolset["required_chatgpt_turn_tools"],
+        "required_chatgpt_turn_tools_revision": toolset["required_chatgpt_turn_tools_revision"],
+        "required_chatgpt_turn_tools_sha256": toolset["required_chatgpt_turn_tools_sha256"],
         "callable_chatgpt_tool_names": toolset["callable_chatgpt_tool_names"],
         "missing_required_chatgpt_turn_tools": toolset["missing_required_chatgpt_turn_tools"],
         "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
