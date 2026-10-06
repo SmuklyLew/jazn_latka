@@ -66,10 +66,14 @@ class FinalizationService:
         if not isinstance(prepared, dict):
             return capture
         try:
-            result = self.event_ledger.append_final_visible_reply(
+            from latka_jazn.core.finalization_projection_recovery import (
+                append_visible_projection_once, append_epistemic_projection_once,
+            )
+
+            result = append_visible_projection_once(self.event_ledger,
                 prepared["envelope"], final_text=capture["final_visible_text"],
                 source=prepared["source"], client_context=prepared["client_context"],
-                local_time_label=prepared["timestamp_header"],
+                timestamp_header=prepared["timestamp_header"],
             )
             if result is None:
                 raise RuntimeError("final_visible_reply_ledger_write_failed")
@@ -77,13 +81,17 @@ class FinalizationService:
             epistemic = []
             if assessments:
                 with EpistemicDecisionLedger(epistemic_ledger_path(workspace_runtime_path(self.config.root))) as ledger:
-                    epistemic = [item.to_dict() for item in ledger.append_assessments(
-                        turn_id=capture["turn_id"], trace_id=capture["trace_id"], assessments=assessments,
-                    )]
+                    epistemic = append_epistemic_projection_once(ledger, capture)
             return {**capture, "ledger_append": asdict(result), "epistemic_ledger_append": epistemic,
                     "projection_status": "published"}
         except Exception as exc:
             return {**capture, "projection_status": "pending_recovery", "projection_error": type(exc).__name__}
+
+    def recover_committed_projection(self, *, turn_id: str, request_id: str | None = None,
+                                     ports: HostFinalizationPorts | None = None) -> dict[str, Any]:
+        from latka_jazn.core.finalization_projection_recovery import recover_committed_projection
+
+        return recover_committed_projection(self, turn_id=turn_id, request_id=request_id, ports=ports)
 
     @property
     def event_ledger(self) -> RuntimeEventLedger:

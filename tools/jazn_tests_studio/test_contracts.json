@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.111",
-  "active_definition_count": 1975,
+  "active_definition_count": 1982,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -13282,6 +13282,181 @@
       "description_source": "source_identity",
       "line": 70
     },
+    "tests/test_finalization_projection_recovery.py::test_restart_repairs_accepted_unpublished_capture_without_refinalizing_or_duplicates": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_restart_repairs_accepted_unpublished_capture_without_refinalizing_or_duplicates",
+      "purpose": "Restart repairs accepted unpublished capture without refinalizing or duplicates",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_finalization_projection_recovery.py::test_crash_between_assistant_and_event_repairs_only_missing_projection": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_crash_between_assistant_and_event_repairs_only_missing_projection",
+      "purpose": "Crash between assistant and event repairs only missing projection",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_finalization_projection_recovery.py::test_recovery_refuses_missing_commit_wrong_identity_and_tampered_capture": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_recovery_refuses_missing_commit_wrong_identity_and_tampered_capture",
+      "purpose": "Recovery refuses missing commit wrong identity and tampered capture",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "HostRequestStoreError",
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_finalization_projection_recovery.py::test_epistemic_projection_reuses_exact_entries_and_preserves_chain": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_epistemic_projection_reuses_exact_entries_and_preserves_chain",
+      "purpose": "Epistemic projection reuses exact entries and preserves chain",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_finalization_projection_recovery.py::test_mcp_resume_repairs_committed_pending_projection_and_keeps_exact_display": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_mcp_resume_repairs_committed_pending_projection_and_keeps_exact_display",
+      "purpose": "Mcp resume repairs committed pending projection and keeps exact display",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_finalization_projection_recovery.py::test_resume_rejects_shallow_acceptance_flags": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_resume_rejects_shallow_acceptance_flags",
+      "purpose": "Resume rejects shallow acceptance flags",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_finalization_projection_recovery.py::test_resume_rejects_substitution_of_accepted_final_text": {
+      "path": "tests/test_finalization_projection_recovery.py",
+      "name": "test_resume_rejects_substitution_of_accepted_final_text",
+      "purpose": "Resume rejects substitution of accepted final text",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.core.finalization_projection_recovery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.mcp.tools.jazn_resume_visible_reply",
+        "latka_jazn.memory.event_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
     "tests/test_finalization_service.py::test_finalizer_construction_does_not_create_runtime_files": {
       "path": "tests/test_finalization_service.py",
       "name": "test_finalizer_construction_does_not_create_runtime_files",
@@ -15237,7 +15412,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 225
+      "line": 243
     },
     "tests/test_host_finalized_conversation_state.py::test_host_phase_two_commits_full_turn_idempotently": {
       "path": "tests/test_host_finalized_conversation_state.py",

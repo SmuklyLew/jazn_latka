@@ -92,6 +92,10 @@ class TurnStateMachine:
         nested_id = str(payload.get("request_id") or "")
         if nested_id and nested_id != self.handle.request_id:
             raise TurnProtocolViolation("daemon_request_id_mismatch")
+        session = json_object(payload.get("session"))
+        observed_session = str(session.get("session_id") or payload.get("session_id") or "")
+        if self.handle.session_id and observed_session and self.handle.session_id != observed_session:
+            raise TurnProtocolViolation("turn_handle_session_mismatch")
         presentation = payload.get("chatgpt_host_presentation") or {}
         if payload.get("host_finalization_pending") is True or result.get("job_status") == "awaiting_host_finalization" or presentation.get("action") == "generate_then_finalize":
             target = TurnPhase.AWAITING_HOST_FINALIZATION
@@ -186,6 +190,15 @@ class RunnerOperations:
 
         return FinalizationService(config).finalize(
             payload=payload, chat_bridge_meta=chat_bridge_meta, contract=contract, ports=ports,
+        )
+
+    @staticmethod
+    def recover_projection(*, config: JaznConfig, turn_id: str, request_id: str | None = None,
+                           ports: HostFinalizationPorts | None = None) -> dict[str, Any]:
+        from latka_jazn.core.finalization_service import FinalizationService
+
+        return FinalizationService(config).recover_committed_projection(
+            turn_id=turn_id, request_id=request_id, ports=ports,
         )
 
     @staticmethod

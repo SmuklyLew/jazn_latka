@@ -190,25 +190,7 @@ def test_lost_finalization_response_recovers_display_exact_without_replay(tmp_pa
         "result": {
             "ok": True,
             "final_visible_text": final_text,
-            "runtime_turn_contract": {
-                "requires_host_model": False,
-                "handler_name": "RuntimeDiagnosticHandler",
-                "validation": {"accepted": True},
-            },
-            "final_response_contract": {
-                "requires_host_model": False,
-                "final_visible_text": final_text,
-                "timestamp_header": HEADER,
-                "state_emoticon": "🧷",
-                "author_label": "Łatka",
-            },
-            "final_visible_integrity": {
-                "valid": True,
-                "text_sha256": hashlib.sha256(final_text.encode("utf-8")).hexdigest(),
-                "timestamp_header": HEADER,
-                "author_line": "🧷 Łatka",
-            },
-            "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+            "final_visible_integrity": {"valid": True},
             "runtime_truth_gate": {"ok": True, "normal_response_allowed": True},
             "chatgpt_host_presentation": {
                 "type": "chatgpt_host_presentation",

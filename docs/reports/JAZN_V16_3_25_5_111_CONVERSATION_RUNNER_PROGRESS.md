@@ -72,3 +72,35 @@ finalization projection recovery. No external ChatGPT voice acceptance is claime
 
 Same-filesystem atomic replacement retains the existing durability contract; it
 does not establish a universal power-loss guarantee.
+
+## Accepted projection recovery checkpoint
+
+The durable consumed request remains the sole host acceptance authority. Recovery
+reads and verifies its committed capture and exact MessageEnvelope; it does not
+rerun finalization, claim a new request, or resubmit user text. Existing cross-process
+write guards serialize initial publication and recovery. Exact assistant/event
+projections and epistemic entries are reused; missing projections are appended once.
+Conflicting, duplicate, corrupt or substituted records fail closed. Conversation and
+session projections reuse their existing lineage guards. A torn JSONL record is an
+explicit recovery error, not permission to discard history.
+
+MCP resume repairs a committed pending projection after validating the exact accepted
+runtime/host final. Shallow integrity/truth flags alone no longer authorize display.
+The historical recovery fixture now supplies the complete accepted runtime contract;
+all original assertions and the historical version are preserved in its archive.
+
+Evidence at this checkpoint:
+- v109 final metadata SHA 452df9d: Pyright/release-hardening/cleanroom/PowerShell SUCCESS.
+- v110 final metadata SHA ee6bb3f: Pyright/release-hardening/cleanroom SUCCESS;
+  final dispatched PowerShell IN_PROGRESS. Earlier code-SHA PowerShell SUCCESS.
+- v111 initial c9a67bf CI: Pyright/release-hardening/cleanroom/PowerShell and persistent
+  runtime E2E Linux/Windows SUCCESS. Metadata persistence/redundant release finalization
+  jobs marked SKIPPED remain SKIPPED, not PASS.
+- Initial local full suite: 1 FAIL, 2092 PASS, 4 platform SKIPPED. The unchanged daemon
+  stop assertion timed out. Its fresh focused rerun with the full-suite network-time
+  settings PASS; the failed initial run remains validation evidence.
+- Recovery/service/atomicity/MCP/resume focused integration: 28 PASS before adding
+  the additional shallow-flag rejection regression.
+- Follow-up full suite and immutable final-SHA CI: IN_PROGRESS/NOT RUN.
+
+No merge, external ChatGPT voice acceptance, or universal power-loss guarantee is claimed.
