@@ -266,6 +266,9 @@ jobs:
       - name: Independent semantic route audit
         run: python -X utf8 -m latka_jazn.tools.semantic_route_audit --root . --json
 
+      - name: Turn route graph and no-silent-fallback audit
+        run: python -X utf8 -m latka_jazn.tools.route_graph_audit --root . --json
+
       - name: Cognitive architecture audit
         run: python -X utf8 -m latka_jazn.tools.cognitive_architecture_audit --root . --json
 

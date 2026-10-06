@@ -131,14 +131,13 @@ class LayeredMemory:
         return rec
 
     def record_procedural_rule(self, *, trigger: str, action: str, reason: str, priority: int=50,
-                               source: str="runtime") -> ProceduralMemoryRecord:
-        existing = self._find_jsonl_record(
-            "procedural.jsonl",
-            trigger=trigger,
-            action=action,
-            reason=reason,
-            source=source,
-        )
+                               source: str="runtime", canonical_rule_id: str | None = None) -> ProceduralMemoryRecord:
+        existing = self._find_jsonl_record("procedural.jsonl", rule_id=canonical_rule_id) if canonical_rule_id else None
+        if existing is None:
+            match = {"trigger": trigger, "action": action, "reason": reason}
+            if canonical_rule_id is None:
+                match["source"] = source
+            existing = self._find_jsonl_record("procedural.jsonl", **match)
         if existing is not None:
             rec = ProceduralMemoryRecord(
                 existing.get("rule_id") or str(uuid.uuid4()),
@@ -152,7 +151,7 @@ class LayeredMemory:
             # Synchronizuje SQLite bez dopisywania kolejnej linii JSONL.
             self.store.add_procedural_rule(asdict(rec))
             return rec
-        rec = ProceduralMemoryRecord(str(uuid.uuid4()), datetime.now(timezone.utc).isoformat(), trigger, action, reason, priority, source)
+        rec = ProceduralMemoryRecord(canonical_rule_id or str(uuid.uuid4()), datetime.now(timezone.utc).isoformat(), trigger, action, reason, priority, source)
         self._append_jsonl("procedural.jsonl", asdict(rec))
         self.store.add_procedural_rule(asdict(rec))
         return rec

@@ -27,6 +27,13 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/engine.py"
+      - "latka_jazn/core/turn_execution.py"
+      - "latka_jazn/core/turn_diagnostics.py"
+      - "latka_jazn/core/blind_route_detector.py"
+      - "latka_jazn/core/route_graph_contract.py"
+      - "latka_jazn/core/engine_services.py"
+      - "latka_jazn/core/route_handler_dispatcher.py"
+      - "latka_jazn/tools/route_graph_audit.py"
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
@@ -88,8 +95,13 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
-      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
-      - "tests/test_v163255107_memory_manifest_producer_gate.py"
+      - "tests/test_persistent_remote_runtime_operations.py"
+      - "tests/test_memory_manifest_producer_gate.py"
+      - "tests/test_turn_diagnostics_contract.py"
+      - "tests/test_blind_route_and_route_graph_audit.py"
+      - "tests/test_route_dispatcher_fallback_diagnostics.py"
+      - "tests/test_engine_service_decomposition_seams.py"
+      - "tests/test_turn_route_characterization.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -130,6 +142,13 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "latka_jazn/core/daemon_autostart.py"
       - "latka_jazn/core/engine.py"
+      - "latka_jazn/core/turn_execution.py"
+      - "latka_jazn/core/turn_diagnostics.py"
+      - "latka_jazn/core/blind_route_detector.py"
+      - "latka_jazn/core/route_graph_contract.py"
+      - "latka_jazn/core/engine_services.py"
+      - "latka_jazn/core/route_handler_dispatcher.py"
+      - "latka_jazn/tools/route_graph_audit.py"
       - "latka_jazn/core/typed_memory_source_policy.py"
       - "latka_jazn/core/epistemic_decision_ledger.py"
       - "latka_jazn/core/chatgpt_host_recovery.py"
@@ -191,8 +210,13 @@ on:
       - "tests/test_mcp_oauth_introspection.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
-      - "tests/test_v163255107_persistent_remote_runtime_operations.py"
-      - "tests/test_v163255107_memory_manifest_producer_gate.py"
+      - "tests/test_persistent_remote_runtime_operations.py"
+      - "tests/test_memory_manifest_producer_gate.py"
+      - "tests/test_turn_diagnostics_contract.py"
+      - "tests/test_blind_route_and_route_graph_audit.py"
+      - "tests/test_route_dispatcher_fallback_diagnostics.py"
+      - "tests/test_engine_service_decomposition_seams.py"
+      - "tests/test_turn_route_characterization.py"
       - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
       - "tests/test_host_finalization_lifecycle.py"
       - "tests/test_memory_recall_timeout_hardening.py"
@@ -249,6 +273,19 @@ jobs:
       - name: Compile runtime, gate, and regression paths
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
+      - name: v108 turn diagnostics and route graph matrix
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_turn_diagnostics_contract.py
+          tests/test_blind_route_and_route_graph_audit.py
+          tests/test_route_dispatcher_fallback_diagnostics.py
+          tests/test_engine_service_decomposition_seams.py
+          tests/test_turn_route_characterization.py
+
+      - name: Turn route graph audit
+        run: python -X utf8 -m latka_jazn.tools.route_graph_audit --root . --json
+
       - name: MCP 2026 remote ingress, Tasks, resources, and package contract
         run: >-
           python -X utf8 -m pytest
@@ -265,8 +302,8 @@ jobs:
           tests/test_mcp_oauth_introspection.py
           tests/test_chatgpt_plugin_package.py
           tests/test_chatgpt_public_mcp_deployment.py
-          tests/test_v163255107_persistent_remote_runtime_operations.py
-          tests/test_v163255107_memory_manifest_producer_gate.py
+          tests/test_persistent_remote_runtime_operations.py
+          tests/test_memory_manifest_producer_gate.py
           tests/test_pack_generator_secure_mcp_bridge_contract.py
 
       - name: Host gate and persistent lifecycle E2E

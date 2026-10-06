@@ -3,13 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.107 closes the production remote-runtime operations gap:
-# public MCP startup now requires strict conversation-ready runtime evidence,
-# reuses or starts the canonical runtime supervisor by default, and ships
-# versioned deployment/tunnel contracts plus chaos-oriented regressions.
-DISTRIBUTION_VERSION = "16.3.25.5.107"
-PACKAGE_VERSION = "16.3.25.5.107"
-PACKAGE_RELEASE_NAME = "persistent-remote-runtime-operations-convergence"
+# v109 separates explicit engine lifecycle from construction and removes
+# cognitive engine construction from accepted-visible phase-2 persistence.
+DISTRIBUTION_VERSION = "16.3.25.5.109"
+PACKAGE_VERSION = "16.3.25.5.109"
+PACKAGE_RELEASE_NAME = "engine-lifecycle-finalization-decomposition-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

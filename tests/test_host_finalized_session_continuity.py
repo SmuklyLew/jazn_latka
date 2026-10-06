@@ -64,8 +64,8 @@ def test_host_finalization_advances_durable_task_state(tmp_path: Path, monkeypat
         def persist_final_visible_reply(self, **kwargs):
             return {"final_visible_text": kwargs["final_text"], "turn_id": kwargs["turn_id"], "trace_id": kwargs["trace_id"]}
 
-    import latka_jazn.core.engine as engine_module
-    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
+    import latka_jazn.core.finalization_service as engine_module
+    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
     body = 'Z pamięci odpowiadam na tę samą turę; trop pozostaje ograniczony do tej finalizacji. Źródło i indeks mają tu wyłącznie status kontraktowy; granica prawdy: to nie pełne potwierdzenie. Nie będę zastępować tej odpowiedzi aktualizacją.'
     payload = {
         "type": "host_visible_reply",
@@ -107,8 +107,8 @@ def test_delayed_finalizer_does_not_overwrite_newer_session_state(tmp_path: Path
         def persist_final_visible_reply(self, **kwargs):
             return {"final_visible_text": kwargs["final_text"], "turn_id": kwargs["turn_id"], "trace_id": kwargs["trace_id"]}
 
-    import latka_jazn.core.engine as engine_module
-    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
+    import latka_jazn.core.finalization_service as engine_module
+    monkeypatch.setattr(engine_module.FinalizationService, "persist_final_visible_reply", FakeEngine.persist_final_visible_reply)
     body = 'Z pamięci odpowiadam na tę samą turę; trop pozostaje ograniczony do tej finalizacji. Źródło i indeks mają tu wyłącznie status kontraktowy; granica prawdy: to nie pełne potwierdzenie. Nie będę zastępować tej odpowiedzi aktualizacją.'
     payload = {
         "type": "host_visible_reply", "turn_id": bridge["turn_id"], "trace_id": bridge["trace_id"],

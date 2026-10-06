@@ -5,6 +5,7 @@ from latka_jazn.version import schema_version
 
 from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.route_registry import RouteRegistryEntry
+from latka_jazn.core.turn_diagnostics import FallbackDecision, FallbackKind, TurnStage
 from latka_jazn.core.handlers.compound_dialogue_handler import CompoundDialogueHandler
 from latka_jazn.core.handlers.dictionary_lookup_handler import DictionaryLookupHandler
 from latka_jazn.core.handlers.external_research_handler import ExternalResearchHandler
@@ -63,19 +64,73 @@ class RouteHandlerDispatcher:
         ctx.setdefault('intent', entry.intent)
         ctx.setdefault('route_entry', entry.to_dict())
         ctx.setdefault('required_components', entry.required_components)
-        handler=self.handlers_by_name.get(entry.handler_name) or self.handlers_by_route.get(entry.route) or self.handlers_by_route['fallback']
+        named_handler=self.handlers_by_name.get(entry.handler_name)
+        routed_handler=self.handlers_by_route.get(entry.route)
+        handler=named_handler or routed_handler or self.handlers_by_route['fallback']
+        implicit_fallback = named_handler is None and routed_handler is None
         try:
             result=handler.handle(text, ctx)
             result.intent = result.intent or entry.intent
             if not result.required_components:
                 result.required_components=list(entry.required_components)
-            result.data.setdefault('dispatch_report', RouteDispatchReport(SCHEMA_VERSION, entry.handler_name, handler.name, entry.route, entry.intent, 'ok').to_dict())
+            dispatch_status = 'fallback_selected' if implicit_fallback else 'ok'
+            result.data.setdefault(
+                'dispatch_report',
+                RouteDispatchReport(
+                    SCHEMA_VERSION,
+                    entry.handler_name,
+                    handler.name,
+                    entry.route,
+                    entry.intent,
+                    dispatch_status,
+                ).to_dict(),
+            )
+            if implicit_fallback:
+                fallback_decision = FallbackDecision.build(
+                    kind=FallbackKind.RECOVERABLE_FALLBACK,
+                    origin_stage=TurnStage.ROUTING,
+                    origin_component='RouteHandlerDispatcher.dispatch',
+                    reason_code='ROUTE_HANDLER_UNRESOLVED',
+                    from_route=entry.route,
+                    to_route='fallback',
+                    recoverable=True,
+                    evidence_refs=(entry.intent, entry.handler_name),
+                )
+                result.data.setdefault('fallback_decision', fallback_decision.to_dict())
             return result
         except Exception as exc:
             fb=self.handlers_by_route['fallback']
             result=fb.handle(text, {**ctx, 'body':'Handler runtime zgłosił błąd, więc zwracam jawny fallback zamiast udawać trafną trasę.'})
-            result.errors.append({'handler': getattr(handler,'name','unknown'), 'error': repr(exc)})
-            result.data.setdefault('dispatch_report', RouteDispatchReport(SCHEMA_VERSION, entry.handler_name, getattr(handler,'name','unknown'), entry.route, entry.intent, 'handler_error', [{'error':repr(exc)}]).to_dict())
+            error_payload={
+                'handler': getattr(handler,'name','unknown'),
+                'error_type': type(exc).__name__,
+                'reason_code': 'HANDLER_EXCEPTION',
+                'error': repr(exc),
+            }
+            result.errors.append(error_payload)
+            fallback_decision = FallbackDecision.build(
+                kind=FallbackKind.RECOVERABLE_FALLBACK,
+                origin_stage=TurnStage.HANDLER,
+                origin_component='RouteHandlerDispatcher.dispatch',
+                reason_code='HANDLER_EXCEPTION',
+                from_route=entry.route,
+                to_route='fallback',
+                recoverable=True,
+                evidence_refs=(entry.intent, getattr(handler,'name','unknown')),
+            )
+            result.data.setdefault('fallback_decision', fallback_decision.to_dict())
+            result.data.setdefault(
+                'dispatch_report',
+                RouteDispatchReport(
+                    SCHEMA_VERSION,
+                    entry.handler_name,
+                    getattr(handler,'name','unknown'),
+                    entry.route,
+                    entry.intent,
+                    'handler_error',
+                    [error_payload],
+                ).to_dict(),
+            )
             return result
     def to_dict(self)->dict[str, Any]:
         return {'schema_version':SCHEMA_VERSION,'handlers':sorted(self.handlers_by_name),'routes':sorted(self.handlers_by_route)}

@@ -1,10 +1,10 @@
 # Jaźń — kanoniczna mapa planów v16.3.25.4 → v17
 
 **Status:** `CANONICAL_PLANNING_INDEX`  
-**Aktualizacja:** 2026-09-10
+**Aktualizacja:** 2026-10-06
 **Baza pierwotnej przebudowy dokumentacji:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`
-**Bieżąca baza:** `master @ 2bb162a118e56b8a757ae20a925e0a7d1295487f`
-**Linia tej aktualizacji:** `16.3.25.5.60-main-entrypoint-persistent-chatgpt-convergence`
+**Bieżąca baza:** `master @ 712a25db94c634ea47fbf265c0d907608a668f00`
+**Linia tej aktualizacji:** `16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence` implementation candidate
 
 Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowadzącego od dostarczonego `v16.3.25.4 Memory Rebuild v4` do warunkowego `v17`.
 
@@ -21,6 +21,7 @@ Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowa
 | [`CONVERSATION_RUNTIME_RESEARCH_BASE.md`](CONVERSATION_RUNTIME_RESEARCH_BASE.md) | baza porównawcza OpenAI Agents SDK, Gemini CLI/ADK i Ollama dla przebudowy rozmowy |
 | [`CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md`](CONVERSATION_RUNTIME_CONVERGENCE_PLAN.md) | kanoniczny etapowy plan single-owner ConversationRunner / TurnStateMachine / provider adapters |
 | [`CONVERSATION_RUNTIME_TEST_AND_MIGRATION_MATRIX.md`](CONVERSATION_RUNTIME_TEST_AND_MIGRATION_MATRIX.md) | acceptance, crash/recovery, concurrency, provider i host-E2E gates przebudowy rozmowy |
+| [`JAZN_V16_3_25_5_108_ENGINE_DECOMPOSITION_TURN_DIAGNOSTICS_PLAN.md`](JAZN_V16_3_25_5_108_ENGINE_DECOMPOSITION_TURN_DIAGNOSTICS_PLAN.md) | release-program podporządkowany Conversation Runtime: dekompozycja `JaznEngine`, wspólny turn diagnostic root, no-silent-fallback i blind-route audit |
 | [`../architecture/MAIN_ENTRYPOINT_AND_PERSISTENT_CHATGPT_BRIDGE.md`](../architecture/MAIN_ENTRYPOINT_AND_PERSISTENT_CHATGPT_BRIDGE.md) | aktywny kontrakt main-first + trwały ChatGPT stdio/JSONL |
 | [`../reports/JAZN_V16_3_25_5_60_FULL_REPOSITORY_ROUTE_AUDIT.md`](../reports/JAZN_V16_3_25_5_60_FULL_REPOSITORY_ROUTE_AUDIT.md) | evidence pełnego audytu tras i priorytetów v60 |
 | [`V17_PLUS_SYSTEM_EVALUATION.md`](V17_PLUS_SYSTEM_EVALUATION.md) | gate wejścia i measured consolidation po zamknięciu v16 |
@@ -66,7 +67,7 @@ Dokument planistyczny nie certyfikuje własnego `PASS`, `MERGED`, `VERIFIED`, `A
 
 ```text
 v16.3.25.4 Memory Rebuild v4 tool/protocol     MERGED
-16.3.25.5.x package/runtime/CI hardening       MERGED do .38
+16.3.25.5.x package/runtime/CI hardening       MERGED przez .107
 final private memory #59                       OPEN
 canonical affect/Emotion Engine                OPEN
 Memory ↔ Affect linkage                         OPEN, wykonywać etapowo
