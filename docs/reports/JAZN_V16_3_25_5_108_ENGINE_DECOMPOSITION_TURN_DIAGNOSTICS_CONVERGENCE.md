@@ -185,12 +185,24 @@ Telemetry remains technical evidence, not autobiographical MEMORY.
 ## 5. Tests added
 
 ```text
-tests/test_v163255108_turn_diagnostics.py
-tests/test_v163255108_blind_route_audit.py
-tests/test_v163255108_dispatcher_fallback.py
-tests/test_v163255108_engine_service_seams.py
-tests/test_v163255108_characterization_turn_contract.py
+tests/test_turn_diagnostics_contract.py
+tests/test_blind_route_and_route_graph_audit.py
+tests/test_route_dispatcher_fallback_diagnostics.py
+tests/test_engine_service_decomposition_seams.py
+tests/test_turn_route_characterization.py
 ```
+
+The active suite also migrates the v107 release-coupled test filenames to
+stable-purpose names:
+
+```text
+tests/test_memory_manifest_producer_gate.py
+tests/test_persistent_remote_runtime_operations.py
+```
+
+Exact pre-rename v107 sources are preserved under
+`tests/archive/v16.3.25.5.107-stable-purpose-name-migration/`, in accordance
+with test-governance policy.
 
 Coverage includes:
 
