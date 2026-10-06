@@ -113,6 +113,13 @@ from latka_jazn.model_adapters.factory import build_model_adapter
 from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
 from latka_jazn.core.self_knowledge_contract import build_self_knowledge_summary
 from latka_jazn.core.turn_execution import TurnExecutionContext
+from latka_jazn.core.blind_route_detector import BlindRouteDetector
+from latka_jazn.core.engine_services import EngineServices
+from latka_jazn.core.turn_diagnostics import (
+    FallbackDecision,
+    FallbackKind,
+    TurnStage,
+)
 
 
 MODEL_GUIDED_SPEECH_INTENTS = {
@@ -386,6 +393,7 @@ class JaznEngine:
         self.model_guided_response_synthesizer = ModelGuidedResponseSynthesizer()
         self.route_registry = RouteRegistry()
         self.route_handler_dispatcher = RouteHandlerDispatcher()
+        self.blind_route_detector = BlindRouteDetector()
         self.turn_checkpoint_writer = TurnCheckpointWriter(self.config.root)
         self.runtime_visible_answer_comparator = RuntimeVisibleAnswerComparator(self.config.root)
         self.turn_logic_auditor = TurnLogicAuditor(self.config.root)
@@ -504,6 +512,7 @@ class JaznEngine:
             canonical_impact=1,
         )
         self._seed_core_procedures()
+        self.engine_service_seams = EngineServices.from_legacy_engine(self)
 
     def _seed_core_procedures(self) -> None:
         rules = [
@@ -2879,6 +2888,19 @@ class JaznEngine:
         )
         dialogue_intent_report = dialogue_intent_result.to_dict()
         if turn_context is not None:
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.ROUTING,
+                component="DialogueIntentClassifier",
+                event_type="intent_classified",
+                outcome="selected",
+                attributes={
+                    "primary_intent": dialogue_intent_result.primary_intent,
+                    "secondary_intents": list(dialogue_intent_result.secondary_intents or []),
+                    "confidence": float(dialogue_intent_result.confidence or 0.0),
+                    "speech_act": dialogue_intent_result.speech_act,
+                    "question_object": dialogue_intent_result.question_object,
+                },
+            )
             turn_context.complete_stage("route_classification")
             turn_context.start_stage("health_check_detection")
         health_check_fast_path = dialogue_intent_result.primary_intent in FAST_HEALTH_CHECK_INTENTS
@@ -2957,6 +2979,16 @@ class JaznEngine:
                 client_context=ctx,
             )
         )
+        if turn_context is not None:
+            turn_context.bind_diagnostic_route(
+                intent=str(detected_dialogue_intent),
+                route=route_entry.route,
+                handler=route_entry.handler_name,
+                attributes={
+                    "priority": int(route_entry.priority),
+                    "required_components": list(route_entry.required_components),
+                },
+            )
         self._apply_cognitive_control_policy(
             envelope, frame, current_dialogue_task_state, turn_response_policy, decision_dict)
         handler_context = self._build_route_handler_context(
@@ -2980,6 +3012,32 @@ class JaznEngine:
         if turn_context is not None and health_check_fast_path:
             turn_context.complete_stage("startup_status_collection")
         handler_result_dict = handler_result.to_dict()
+        dispatch_report = json_object((handler_result.data or {}).get("dispatch_report"))
+        handler_fallback_payload = json_object((handler_result.data or {}).get("fallback_decision"))
+        if turn_context is not None:
+            if handler_fallback_payload:
+                turn_context.record_diagnostic_fallback(
+                    FallbackDecision.from_mapping(handler_fallback_payload)
+                )
+            dispatch_status = str(dispatch_report.get("status") or "ok")
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.HANDLER,
+                component="RouteHandlerDispatcher",
+                event_type="handler_dispatch",
+                outcome=dispatch_status,
+                reason_code=(
+                    "HANDLER_DISPATCH_DEGRADED"
+                    if dispatch_status != "ok"
+                    else None
+                ),
+                attributes={
+                    "requested_handler": dispatch_report.get("requested_handler") or route_entry.handler_name,
+                    "selected_handler": dispatch_report.get("selected_handler") or handler_result.handler_name,
+                    "route": handler_result.route or route_entry.route,
+                    "generation_mode": handler_result.generation_mode,
+                    "missing_components": list(handler_result.missing_components or []),
+                },
+            )
         decision_dict["handler_result"] = handler_result_dict
         decision_dict["handler_name"] = handler_result.handler_name
         decision_dict["route"] = handler_result.route or decision_dict.get("route")
@@ -3045,6 +3103,24 @@ class JaznEngine:
             first_validation = self.runtime_answer_validator.validate(
                 user_text=text, body=body, route=str(decision_dict.get("route") or ""), detected_intent=str(detected_dialogue_intent)
             )
+        if turn_context is not None:
+            first_validation_payload = first_validation.to_dict()
+            first_reason = str(first_validation_payload.get("mismatch_reason") or "").strip() or None
+            if not first_reason and first_validation_payload.get("missing_required_components"):
+                first_reason = "REQUIRED_COMPONENT_MISSING"
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.VALIDATION,
+                component="RuntimeAnswerValidator",
+                event_type="candidate_validation",
+                outcome="accepted" if first_validation.accepted else "rejected",
+                reason_code=first_reason,
+                attributes={
+                    "attempt": 0,
+                    "must_regenerate": bool(first_validation.must_regenerate),
+                    "missing_required_components": list(first_validation.missing_required_components or []),
+                    "required_repair_route": first_validation.required_repair_route,
+                },
+            )
         repair_used = False
         speech_truth_gate_required = _speech_truth_gate_required(detected_dialogue_intent, handler_result)
         if speech_truth_gate_required:
@@ -3062,6 +3138,15 @@ class JaznEngine:
                 )
                 decision_dict["model_guided_retry_count"] = 1
                 decision_dict["model_guided_retry_synthesis"] = retry_synthesis.to_dict()
+                if turn_context is not None:
+                    turn_context.record_diagnostic_event(
+                        stage=TurnStage.MODEL,
+                        component="ModelGuidedResponseSynthesizer",
+                        event_type="model_retry",
+                        outcome="attempted",
+                        reason_code="INITIAL_MODEL_CANDIDATE_NOT_ACCEPTED",
+                        attributes={"attempt": 1},
+                    )
                 if retry_synthesis.used:
                     retry_body = self.guard.enforce(retry_synthesis.body.strip())
                     retry_template = self.template_registry.classify_body(
@@ -3269,6 +3354,34 @@ class JaznEngine:
             decision_dict["turn_route_trace"]["runtime_answer_validation"] = answer_validation.to_dict()
             decision_dict["turn_route_trace"]["final_text_source"] = str(decision_dict.get("response_generation_mode") or decision_dict.get("handler_generation_mode") or "handler_or_synthesizer")
             envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
+        if turn_context is not None:
+            final_validation_payload = answer_validation.to_dict()
+            final_reason = str(final_validation_payload.get("mismatch_reason") or "").strip() or None
+            if not final_reason and final_validation_payload.get("missing_required_components"):
+                final_reason = "REQUIRED_COMPONENT_MISSING"
+            turn_context.record_diagnostic_event(
+                stage=TurnStage.VALIDATION,
+                component="RuntimeAnswerValidator",
+                event_type="final_validation",
+                outcome="accepted" if answer_validation.accepted else "rejected",
+                reason_code=final_reason,
+                attributes={
+                    "attempt": 1 if repair_used else 0,
+                    "repair_used": bool(repair_used),
+                    "must_regenerate": bool(answer_validation.must_regenerate),
+                    "missing_required_components": list(answer_validation.missing_required_components or []),
+                    "required_repair_route": answer_validation.required_repair_route,
+                },
+            )
+            if repair_used:
+                turn_context.record_diagnostic_event(
+                    stage=TurnStage.RECOVERY,
+                    component="RuntimeResponseSynthesizer",
+                    event_type="repair_applied",
+                    outcome="completed",
+                    reason_code="REPAIR_SYNTHESIS",
+                    attributes={"attempt": 1},
+                )
         template_origin = self.template_registry.classify_body(body, detected_intent=str(detected_dialogue_intent))
         if str(decision_dict.get("fallback_classification") or "") in {"", "not_fallback"}:
             if repair_used:
@@ -3293,6 +3406,83 @@ class JaznEngine:
                 "retry_count": int(decision_dict.get("model_guided_retry_count") or 0),
             })
             envelope.cognitive_frame["turn_route_trace"] = decision_dict["turn_route_trace"]
+        if turn_context is not None:
+            legacy_fallback = str(decision_dict.get("fallback_classification") or "not_fallback")
+            typed_fallback: FallbackDecision | None = None
+            if legacy_fallback == "cannot_answer_directly":
+                requires_host_model = bool(decision_dict.get("requires_host_model"))
+                typed_fallback = FallbackDecision.build(
+                    kind=(
+                        FallbackKind.EXTERNAL_CAPABILITY_REQUIRED
+                        if requires_host_model
+                        else FallbackKind.TERMINAL_DIAGNOSTIC
+                    ),
+                    origin_stage=(
+                        TurnStage.MODEL
+                        if requires_host_model
+                        else TurnStage.VALIDATION
+                    ),
+                    origin_component="JaznEngine.process_turn",
+                    reason_code=(
+                        "MODEL_GUIDED_SPEECH_REQUIRED"
+                        if requires_host_model
+                        else "VALIDATION_REJECTED_CANNOT_ANSWER_DIRECTLY"
+                    ),
+                    from_route=str(route_entry.route),
+                    to_route=(
+                        "host_model_phase2"
+                        if requires_host_model
+                        else str(decision_dict.get("route") or route_entry.route)
+                    ),
+                    recoverable=requires_host_model,
+                    required_capability=(
+                        "host_model"
+                        if requires_host_model
+                        else None
+                    ),
+                    attempt=int(decision_dict.get("model_guided_retry_count") or 0),
+                )
+            elif legacy_fallback == "repair_fallback":
+                typed_fallback = FallbackDecision.build(
+                    kind=FallbackKind.RECOVERABLE_FALLBACK,
+                    origin_stage=TurnStage.RECOVERY,
+                    origin_component="RuntimeResponseSynthesizer",
+                    reason_code="REPAIR_SYNTHESIS",
+                    from_route=str(route_entry.route),
+                    to_route=str(decision_dict.get("route") or route_entry.route),
+                    recoverable=True,
+                    attempt=1,
+                )
+            elif legacy_fallback == "template_fallback":
+                typed_fallback = FallbackDecision.build(
+                    kind=FallbackKind.RECOVERABLE_FALLBACK,
+                    origin_stage=TurnStage.RECOVERY,
+                    origin_component="TemplateRegistry",
+                    reason_code="TEMPLATE_FALLBACK",
+                    from_route=str(route_entry.route),
+                    to_route=str(decision_dict.get("route") or route_entry.route),
+                    recoverable=True,
+                )
+            if typed_fallback is not None:
+                turn_context.record_diagnostic_fallback(typed_fallback)
+
+            final_validation_payload = answer_validation.to_dict()
+            findings = self.blind_route_detector.detect(
+                intent=str(detected_dialogue_intent),
+                route=str(decision_dict.get("route") or route_entry.route),
+                handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
+                required_components=list(route_entry.required_components),
+                satisfied_components=(),
+                missing_components=list(final_validation_payload.get("missing_required_components") or []),
+                dispatch_report=dispatch_report,
+                validation=final_validation_payload,
+                fallback=turn_context.diagnostic_trace.fallback,
+            )
+            turn_context.add_blind_route_findings(findings)
+            decision_dict["turn_diagnostic_trace"] = turn_context.diagnostic_snapshot()
+            envelope.cognitive_frame["turn_diagnostic_trace"] = dict(
+                decision_dict["turn_diagnostic_trace"]
+            )
         if str(detected_dialogue_intent).startswith("creative_text"):
             decision_dict["source_text_preservation_contract"] = SourceTextPreservationContract.build(text, intent=str(detected_dialogue_intent)).to_dict()
         if turn_context is not None:
