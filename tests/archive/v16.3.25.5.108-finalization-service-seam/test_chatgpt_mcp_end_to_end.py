@@ -128,8 +128,8 @@ def _patch_engine(
                 "author_source": kwargs["author_source"],
                 "envelope_present_in_final": True,
             }
-    import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
+    import latka_jazn.core.engine as engine_module
+    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
 
 
 def test_daemon_presentation_and_private_mcp_complete_two_phase_reply(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

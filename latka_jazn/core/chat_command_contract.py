@@ -1344,12 +1344,12 @@ def persist_chatgpt_host_visible_reply(
         return None, terminal_errors
     reply["final_text"] = finalization.final_visible_text
 
-    from latka_jazn.core.engine import JaznEngine
+    from latka_jazn.core.finalization_service import FinalizationService
 
     try:
-        engine = JaznEngine(config)
+        finalizer = FinalizationService(config)
         try:
-            capture = engine.persist_final_visible_reply(
+            capture = finalizer.persist_final_visible_reply(
                 turn_id=str(binding["turn_id"]),
                 trace_id=str(binding["trace_id"]),
                 timestamp_header=str(binding["timestamp_header"]),
@@ -1382,7 +1382,7 @@ def persist_chatgpt_host_visible_reply(
                 ),
             )
         finally:
-            engine.shutdown()
+            finalizer.shutdown()
         try:
             conversation_state = _commit_host_finalized_conversation_state(
                 config=config,

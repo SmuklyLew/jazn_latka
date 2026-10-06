@@ -139,8 +139,8 @@ def test_host_request_is_bound_to_phase_one_and_replay_is_rejected(tmp_path, mon
         def persist_final_visible_reply(self, **kwargs):
             return {"final_visible_text": kwargs["final_text"], "turn_id": kwargs["turn_id"], "trace_id": kwargs["trace_id"]}
 
-    import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
+    import latka_jazn.core.engine as engine_module
+    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
     cfg = JaznConfig(root=tmp_path)
     result, errors = persist_chatgpt_host_visible_reply(config=cfg, payload=reply, chat_bridge_meta={}, contract={})
     assert errors == []
@@ -337,8 +337,8 @@ def test_persistence_failure_becomes_indeterminate_and_cannot_replay(tmp_path, m
         def persist_final_visible_reply(self, **kwargs):
             raise RuntimeError("append outcome unknown")
 
-    import latka_jazn.core.finalization_service as engine_module
-    monkeypatch.setattr(engine_module, "FinalizationService", FailingEngine)
+    import latka_jazn.core.engine as engine_module
+    monkeypatch.setattr(engine_module, "JaznEngine", FailingEngine)
     result, errors = persist_chatgpt_host_visible_reply(
         config=JaznConfig(root=tmp_path), payload=reply, chat_bridge_meta={}, contract={}
     )

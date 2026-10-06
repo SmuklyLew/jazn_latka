@@ -151,9 +151,9 @@ def test_canonical_cli_host_finalize_consumes_pending_and_notifies_daemon(
             })
             return {"ok": True, "status": "completed"}
 
-    import latka_jazn.core.finalization_service as engine_module
+    import latka_jazn.core.engine as engine_module
 
-    monkeypatch.setattr(engine_module, "FinalizationService", FakeEngine)
+    monkeypatch.setattr(engine_module, "JaznEngine", FakeEngine)
     monkeypatch.setattr(host_commands, "SecureHostRuntimeGateway", FakeGateway)
 
     body = "Domykam tę turę przez kanoniczny lifecycle."

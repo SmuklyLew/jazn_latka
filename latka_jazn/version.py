@@ -3,13 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v16.3.25.5.108 establishes the diagnostics-first safety harness for
-# JaznEngine decomposition: one turn-root diagnostic trace, typed fallback
-# lineage, blind-route detection, static route-graph auditing and explicit
-# extraction seams without transferring canonical runtime ownership.
-DISTRIBUTION_VERSION = "16.3.25.5.108"
-PACKAGE_VERSION = "16.3.25.5.108"
-PACKAGE_RELEASE_NAME = "engine-decomposition-turn-diagnostics-convergence"
+# v109 separates explicit engine lifecycle from construction and removes
+# cognitive engine construction from accepted-visible phase-2 persistence.
+DISTRIBUTION_VERSION = "16.3.25.5.109"
+PACKAGE_VERSION = "16.3.25.5.109"
+PACKAGE_RELEASE_NAME = "engine-lifecycle-finalization-decomposition-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
