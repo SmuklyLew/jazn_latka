@@ -103,7 +103,9 @@ def test_startup_contract_declares_remote_only_ingress() -> None:
     assert contract["chatgpt_local_executor_fallback_allowed"] is False
     assert contract["chatgpt_operator_recovery_mode"] == "operator_recovery"
     assert contract["chatgpt_operator_recovery_requires_explicit_opt_in"] is True
-    assert contract["chatgpt_fallback_transport"] == "none_fail_closed"
+    assert contract["chatgpt_fallback_transport"] == "daemon_bound_transactional_turns"
+    assert contract["chatgpt_ordinary_ingress_fallback_transport"] == "none_fail_closed"
+    assert contract["chatgpt_ordinary_ingress_transport"] == "remote_mcp_app"
     assert contract["chatgpt_required_turn_tools_revision"] == CHATGPT_TOOLSET_REVISION
     assert contract["chatgpt_required_turn_tools"] == list(REQUIRED_CHATGPT_TURN_TOOLS)
     assert contract["chatgpt_frozen_snapshot_refresh_required_on_tool_change"] is True
@@ -130,6 +132,6 @@ def test_portable_plugin_fails_closed_on_stale_tool_surface() -> None:
     assert any("never fall back to a local chatgpt executor" in value.lower() for value in prompts)
 
 
-def test_release_identity_v113() -> None:
+def test_release_identity_tracks_remote_only_ingress_contract() -> None:
     assert PACKAGE_VERSION == "16.3.25.5.113"
     assert PACKAGE_RELEASE_NAME == "remote-only-chatgpt-ingress-convergence"
