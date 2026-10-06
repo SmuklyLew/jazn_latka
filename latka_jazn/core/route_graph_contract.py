@@ -70,11 +70,21 @@ def audit_route_graph(root: Path | None = None) -> dict[str, Any]:
                     }
                 )
 
-    compatibility_allowlist = {"FallbackHandler"}
+    compatibility_allowlist = {
+        "FallbackHandler": (
+            "canonical dispatcher recovery boundary; intentionally not registered "
+            "as a normal dialogue intent"
+        ),
+        "FileOperationHandler": (
+            "legacy compatibility-only surface: no current classifier/RouteRegistry "
+            "owner; retain through v108 characterization and resolve during v111 "
+            "legacy dialogue cutover"
+        ),
+    }
     unreachable_handlers = sorted(
         set(dispatcher.handlers_by_name)
         - referenced_handler_names
-        - compatibility_allowlist
+        - set(compatibility_allowlist)
     )
 
     duplicate_canonical_owners = [
@@ -111,6 +121,6 @@ def audit_route_graph(root: Path | None = None) -> dict[str, Any]:
         "registered_intent_count": len(registered_intents),
         "handler_count": len(dispatcher.handlers_by_name),
         "route_count": len(dispatcher.handlers_by_route),
-        "compatibility_allowlist": sorted(compatibility_allowlist),
+        "compatibility_allowlist": dict(sorted(compatibility_allowlist.items())),
         **failures,
     }
