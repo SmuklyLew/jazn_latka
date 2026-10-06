@@ -1,7 +1,7 @@
 {
   "accepted_visible_turn_required": true,
   "active_runtime_required": true,
-  "chatgpt_fallback_transport": "none_fail_closed",
+  "chatgpt_fallback_transport": "daemon_bound_transactional_turns",
   "chatgpt_local_turn_fallback_after_verified_daemon_submit": false,
   "chatgpt_nonstreaming_resume_command": "python -X utf8 run.py chat-gpt --session-id <stable-session-id> --daemon-result <same-request-id>",
   "chatgpt_nonstreaming_turn_command": "python -X utf8 run.py chat-gpt --session-id <stable-session-id> --daemon-request-id <unique-turn-request-id> -- \"<exact-user-message>\"",
@@ -9,8 +9,8 @@
   "chatgpt_pipe_lifetime_is_identity": false,
   "chatgpt_request_id_preallocated_before_process_spawn": true,
   "chatgpt_role": "project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md",
-  "chatgpt_transport": "remote_mcp_app",
-  "chatgpt_transport_selection": "current_message_capability_verified",
+  "chatgpt_transport": "persistent_stdio_jsonl",
+  "chatgpt_transport_selection": "capability_negotiated",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
   "per_message_cli_required": false,
   "purpose": "Aktywny kontrakt startowy Jaźni. Zwykła wiadomość ChatGPT używa wyłącznie zweryfikowanej bieżącej aplikacji/MCP do persistent runtime; lokalny executor i ZIP bootstrap są dostępne tylko w jawnym operator_recovery.",
@@ -45,5 +45,8 @@
   ],
   "chatgpt_required_turn_tools_revision": "jazn_chatgpt_turn_toolset/v2",
   "chatgpt_frozen_snapshot_refresh_required_on_tool_change": true,
-  "chatgpt_app_selection_is_message_scoped": true
+  "chatgpt_app_selection_is_message_scoped": true,
+  "chatgpt_ordinary_ingress_transport": "remote_mcp_app",
+  "chatgpt_ordinary_ingress_transport_selection": "current_message_capability_verified",
+  "chatgpt_ordinary_ingress_fallback_transport": "none_fail_closed"
 }
