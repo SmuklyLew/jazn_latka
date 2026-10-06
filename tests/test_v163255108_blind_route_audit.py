@@ -18,6 +18,12 @@ def test_route_graph_audit_is_green_for_current_registered_graph() -> None:
     assert audit["required_components_without_owner"] == []
     assert audit["duplicate_canonical_owners"] == []
     assert audit["anonymous_fallbacks"] == []
+    assert set(audit["compatibility_allowlist"]) == {
+        "FallbackHandler",
+        "FileOperationHandler",
+    }
+    assert "recovery boundary" in audit["compatibility_allowlist"]["FallbackHandler"]
+    assert "legacy compatibility-only" in audit["compatibility_allowlist"]["FileOperationHandler"]
 
 
 def test_blind_route_detector_reports_missing_required_component() -> None:
