@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "f51c1f4ce16fff595953c9eb520c01c7d1433269",
+  "base_merge_commit": "b1ee6ae4f073d2982e974762e3b79d038a367f3a",
   "base_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
-  "commit_date": "2026-10-06T02:22:39+02:00",
+  "commit_date": "2026-10-06T00:26:44Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-06T00:22:39+00:00",
+  "generated_at_utc": "2026-10-06T00:26:44+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "cda4bba9b058e2bcdd9b69aeeecd552156e1a783",
+  "git_tree_sha": "4e3ac879c996d01d784d9d64431f2d67f2499825",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "f51c1f4ce16fff595953c9eb520c01c7d1433269",
+    "source_commit": "b1ee6ae4f073d2982e974762e3b79d038a367f3a",
     "source_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "f51c1f4ce16fff595953c9eb520c01c7d1433269",
+  "source_commit": "b1ee6ae4f073d2982e974762e3b79d038a367f3a",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence",
   "tag": null,
