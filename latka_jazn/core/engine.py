@@ -3471,18 +3471,29 @@ class JaznEngine:
                 intent=str(detected_dialogue_intent),
                 route=str(decision_dict.get("route") or route_entry.route),
                 handler_name=str(decision_dict.get("handler_name") or route_entry.handler_name),
-                required_components=list(route_entry.required_components),
-                satisfied_components=(),
-                missing_components=list(final_validation_payload.get("missing_required_components") or []),
+                required_components=list(handler_required or route_entry.required_components),
+                satisfied_components=tuple(handler_satisfied),
+                missing_components=tuple(
+                    sorted(
+                        set(handler_missing)
+                        | set(final_validation_payload.get("missing_required_components") or [])
+                    )
+                ),
                 dispatch_report=dispatch_report,
                 validation=final_validation_payload,
                 fallback=turn_context.diagnostic_trace.fallback,
             )
             turn_context.add_blind_route_findings(findings)
-            decision_dict["turn_diagnostic_trace"] = turn_context.diagnostic_snapshot()
-            envelope.cognitive_frame["turn_diagnostic_trace"] = dict(
-                decision_dict["turn_diagnostic_trace"]
-            )
+            diagnostic_snapshot = turn_context.diagnostic_snapshot()
+            diagnostic_ref = {
+                "schema_version": "turn_diagnostic_trace_ref/v1",
+                "diagnostic_id": diagnostic_snapshot.get("diagnostic_id"),
+                "turn_id": turn_context.turn_id,
+                "trace_id": turn_context.trace_id,
+                "canonical_location": "TurnExecutionContext.turn_diagnostics",
+            }
+            decision_dict["turn_diagnostic_trace_ref"] = diagnostic_ref
+            envelope.cognitive_frame["turn_diagnostic_trace_ref"] = dict(diagnostic_ref)
         if str(detected_dialogue_intent).startswith("creative_text"):
             decision_dict["source_text_preservation_contract"] = SourceTextPreservationContract.build(text, intent=str(detected_dialogue_intent)).to_dict()
         if turn_context is not None:
