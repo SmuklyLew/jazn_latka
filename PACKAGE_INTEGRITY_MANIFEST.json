@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-  "runtime_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-  "package_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-  "generated_at_utc": "2026-10-06T03:46:26+00:00",
-  "updated_at_utc": "2026-10-06T03:46:26+00:00",
+  "version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+  "runtime_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+  "package_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+  "generated_at_utc": "2026-10-06T05:06:38+00:00",
+  "updated_at_utc": "2026-10-06T05:06:38+00:00",
   "start_file": "run.py",
-  "file_count": 2023,
-  "static_file_count": 2023,
+  "file_count": 2024,
+  "static_file_count": 2024,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -290,8 +290,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 9306,
-      "sha256": "a700d9881ab16f6c5414aedecc63ecbc5590f0c9d45ba99d3e72b9d81af403f0",
+      "size_bytes": 9413,
+      "sha256": "83eb123621fc7c4f6df42ec35cc9d809868166efb234ad1fd26f5a2049e21ef7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3072,
-      "sha256": "908afc936eb5b67074f82dd6e08a9db449883d0bcc49b5f87272e9bccf231317",
+      "size_bytes": 3001,
+      "sha256": "23262bb21ac6dd63dff6e30d8248209ae67163e6b06a2841514632c69479745b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1271,8 +1271,8 @@
     },
     {
       "path": "docs/plans/CURRENT_STEP.md",
-      "size_bytes": 5222,
-      "sha256": "e9ca06697abcdcab8813dab85536339d82b679725532041a40dd7e917601cf9e",
+      "size_bytes": 5878,
+      "sha256": "d781b280d6972c60e0a58e8d937d52c11b89a176b8e8a7c741410292f18281a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1289,8 +1289,8 @@
     },
     {
       "path": "docs/plans/JAZN_V16_3_25_5_108_ENGINE_DECOMPOSITION_TURN_DIAGNOSTICS_PLAN.md",
-      "size_bytes": 52175,
-      "sha256": "d9d29c80b97d5d8eaf59e5e243dc2a88a7807bf7dd5207957b0273dc6154a74a",
+      "size_bytes": 53241,
+      "sha256": "0274d97ea2d499083ee7258e6e12860a4a6b3d68b7dd5390cadf3aa36d6b72c3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1829,8 +1829,8 @@
     },
     {
       "path": "docs/project/CURRENT_STATE.md",
-      "size_bytes": 8562,
-      "sha256": "7ee46a98b9555b56c114ae3e972b33f5c88188da3faee04092378f94671db797",
+      "size_bytes": 8971,
+      "sha256": "17dfd7ef5d81f9946f32deff13016945e9396c253db22b202254be0fe4ba78ef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1973,8 +1973,8 @@
     },
     {
       "path": "docs/reports/JAZN_V16_3_25_5_111_CONVERSATION_RUNNER_PROGRESS.md",
-      "size_bytes": 9830,
-      "sha256": "376b2f6e11322d06d23a6fa3b37fcfadfd7ee81ce11a08cdf4dfefde2a7aea54",
+      "size_bytes": 12998,
+      "sha256": "ff1e426ff5460408a51ac66b9de8ce49257cba1117796adcbda33e0b3a1da897",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1984,6 +1984,15 @@
       "path": "docs/reports/JAZN_V16_3_25_5_111_LEGACY_DIALOGUE_INVENTORY.md",
       "size_bytes": 9706,
       "sha256": "fb70961a117d22193896e88dd11aff7269a81b244ce4cc805d3d97bb5eb8b068",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md",
+      "size_bytes": 5671,
+      "sha256": "53880b179ad79db7b1700aeefd482e52a6c7580564ac8538758b191f906aef0f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9254,8 +9263,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5223,
-      "sha256": "5efe959f1bc195e6cfd89041c0316d19fbf12c88f908bcfd239699801fbfbbef",
+      "size_bytes": 5207,
+      "sha256": "5196958ccf0b7ba222bc069c1e0f5f8ec771eea4f4df08d13ebae73e70c926f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18075,7 +18084,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1855593,
-      "sha256": "ba8101dabc0ba127e3fd920dd4ba7f147420e2d7ec0ba7c8d9ccbfe41ee9f79d",
+      "sha256": "beafaeaf97b3c738e0b6717c68fbd356cb6176f8be627fa0a8fd51024d527273",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18659,11 +18668,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
+  "release_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-    "package_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence",
-    "release_version": "16.3.25.5.111-conversation-runner-legacy-dialogue-cutover-convergence"
+    "runtime_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+    "package_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence",
+    "release_version": "16.3.25.5.112-v111-closeout-real-host-evidence-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
