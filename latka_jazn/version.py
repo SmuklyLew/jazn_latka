@@ -5,9 +5,9 @@ from typing import Any
 
 # v109 separates explicit engine lifecycle from construction and removes
 # cognitive engine construction from accepted-visible phase-2 persistence.
-DISTRIBUTION_VERSION = "16.3.25.5.110"
-PACKAGE_VERSION = "16.3.25.5.110"
-PACKAGE_RELEASE_NAME = "turn-orchestrator-pipeline-decomposition-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.111"
+PACKAGE_VERSION = "16.3.25.5.111"
+PACKAGE_RELEASE_NAME = "conversation-runner-legacy-dialogue-cutover-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

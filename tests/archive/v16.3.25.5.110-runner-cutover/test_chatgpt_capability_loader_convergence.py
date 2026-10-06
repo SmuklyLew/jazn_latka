@@ -49,5 +49,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.111"
-    assert PACKAGE_RELEASE_NAME == "conversation-runner-legacy-dialogue-cutover-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.110"
+    assert PACKAGE_RELEASE_NAME == "turn-orchestrator-pipeline-decomposition-convergence"

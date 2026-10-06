@@ -189,7 +189,11 @@ def run(
         return _tool_error("daemon_request_id_missing")
 
     try:
-        envelope = gateway.result(request_id)
+        from latka_jazn.core.conversation_runner import ConversationRunner
+        from latka_jazn.core.conversation_turn_api import ResumeRequest, TurnHandle
+
+        runner = ConversationRunner.for_transport(gateway)
+        envelope = runner.resume_turn(ResumeRequest(TurnHandle(request_id))).result
     except GatewayError as exc:
         reason = str(exc)
         if reason.startswith("daemon_unavailable:"):

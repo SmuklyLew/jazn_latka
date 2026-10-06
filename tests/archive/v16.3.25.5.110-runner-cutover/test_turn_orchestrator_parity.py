@@ -7,7 +7,6 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.turn_execution import TurnExecutionContext
 import latka_jazn.core.engine as engine_module
-import latka_jazn.core.dialogue_router as router_module
 
 
 def _contracts(envelope):
@@ -39,11 +38,6 @@ def test_deterministic_pipeline_contract_parity_without_external_effects(tmp_pat
     namespace = dict(vars(engine_module))
     exec(compile(dedent(fixture.read_text(encoding="utf-8")), str(fixture), "exec"), namespace)
     baseline = namespace["process_turn"]
-    router_fixture = Path(__file__).parent / "fixtures/v110_dialogue_resolve.txt"
-    router_namespace = dict(vars(router_module))
-    exec(compile(dedent(router_fixture.read_text(encoding="utf-8")), str(router_fixture), "exec"), router_namespace)
-    monkeypatch.setattr(router_module.DialogueRouter, "resolve", router_namespace["resolve"])
-
     outcomes = []
     for mode in ("baseline", "canonical"):
         root = RuntimeCompositionRoot(JaznConfig(root=tmp_path / mode / "runtime"))

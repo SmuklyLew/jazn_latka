@@ -118,6 +118,18 @@ class OrdinaryDialogueHandler:
     def handle(self, text: str, context: dict[str, Any] | None = None) -> RouteHandlerResult:
         ctx=context or {}
         intent=ctx.get('intent','ordinary_conversation')
+        if ctx.get('canonical_dialogue_cutover') is True and intent != 'current_time_question':
+            return RouteHandlerResult(
+                self.name, str(json_object(ctx.get('route_entry')).get('route') or self.route), '',
+                intent=intent, generation_mode='structured_candidate',
+                required_components=list(ctx.get('required_components') or []),
+                satisfied_components=[], missing_components=list(ctx.get('required_components') or []),
+                data={'language_realization_required': True, 'requires_model_language_realization': True,
+                      'response_candidate': {'user_text': text, 'intent': intent,
+                                             'constraints': ['current_turn_only', 'no_invented_recall', 'no_background_presence_claim']}},
+                source_origin_detail='ordinary_dialogue_structured_candidate',
+                truth_boundary='Candidate carries intent and constraints, not a displayable answer.',
+            )
         body=(ctx.get('body') or '').strip()
         if intent in {'current_time_question', 'positive_feedback_current_turn'}:
             body=self._natural_body(text, intent, ctx)

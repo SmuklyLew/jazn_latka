@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.110",
-  "active_definition_count": 1966,
+  "system_version": "16.3.25.5.111",
+  "active_definition_count": 1975,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10315,6 +10315,163 @@
       "description_source": "source_identity",
       "line": 56
     },
+    "tests/test_conversation_runner_contract.py::test_alias_and_transport_view_do_not_create_second_runtime_owner": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_alias_and_transport_view_do_not_create_second_runtime_owner",
+      "purpose": "Alias and transport view do not create second runtime owner",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_conversation_runner_contract.py::test_submit_snapshot_resume_and_restart_keep_exact_identity_without_post_replay": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_submit_snapshot_resume_and_restart_keep_exact_identity_without_post_replay",
+      "purpose": "Submit snapshot resume and restart keep exact identity without post replay",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_conversation_runner_contract.py::test_transport_loss_allows_resume_only_and_never_resubmits": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_transport_loss_allows_resume_only_and_never_resubmits",
+      "purpose": "Transport loss allows resume only and never resubmits",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "TimeoutError",
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_conversation_runner_contract.py::test_terminal_job_states_cannot_become_visible": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_terminal_job_states_cannot_become_visible",
+      "purpose": "Terminal job states cannot become visible",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_conversation_runner_contract.py::test_claimed_acceptance_without_exact_envelope_and_gates_is_not_success": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_claimed_acceptance_without_exact_envelope_and_gates_is_not_success",
+      "purpose": "Claimed acceptance without exact envelope and gates is not success",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_conversation_runner_contract.py::test_two_session_handles_cannot_alias_and_worker_rejects_foreign_session_before_execution": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_two_session_handles_cannot_alias_and_worker_rejects_foreign_session_before_execution",
+      "purpose": "Two session handles cannot alias and worker rejects foreign session before execution",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_conversation_runner_contract.py::test_state_machine_uses_the_existing_transition_policy": {
+      "path": "tests/test_conversation_runner_contract.py",
+      "name": "test_state_machine_uses_the_existing_transition_policy",
+      "purpose": "State machine uses the existing transition policy",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "TurnProtocolViolation"
+      ],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_turn_api",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.runtime.turn_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_canonical_auto_route_priority_is_shared_and_truthful": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
       "name": "test_canonical_auto_route_priority_is_shared_and_truthful",
@@ -17576,6 +17733,50 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 21
+    },
+    "tests/test_legacy_dialogue_cutover.py::test_ordinary_candidate_is_structured_and_does_not_claim_body_components": {
+      "path": "tests/test_legacy_dialogue_cutover.py",
+      "name": "test_ordinary_candidate_is_structured_and_does_not_claim_body_components",
+      "purpose": "Ordinary candidate is structured and does not claim body components",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation",
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.core.runtime_composition",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_legacy_dialogue_cutover.py::test_canonical_turn_never_calls_legacy_compose_or_ordinary_template": {
+      "path": "tests/test_legacy_dialogue_cutover.py",
+      "name": "test_canonical_turn_never_calls_legacy_compose_or_ordinary_template",
+      "purpose": "Canonical turn never calls legacy compose or ordinary template",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation",
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.core.runtime_composition",
+        "latka_jazn.core.turn_execution"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
     },
     "tests/test_legacy_fanout_migration.py::test_scan_stages_review_candidates_without_creating_memory": {
       "path": "tests/test_legacy_fanout_migration.py",
@@ -42268,13 +42469,14 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
+        "latka_jazn.core.dialogue_router",
         "latka_jazn.core.engine",
         "latka_jazn.core.runtime_composition",
         "latka_jazn.core.turn_execution"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_turn_orchestrator_pipeline.py::test_orchestration_uses_one_request_and_one_turn_local_state": {
       "path": "tests/test_turn_orchestrator_pipeline.py",

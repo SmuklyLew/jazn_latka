@@ -47,15 +47,8 @@ class DialogueRouter:
 
     def resolve(self, state: TurnPipelineState) -> DialogueRouteDecision:
         engine = self.engine
-        state.decision = engine.conversation_responder.compose(
-            state.request.text,
-            intent_tags=state.frame.get("intent_tags") or [],
-            affect_marker=state.affect_mix.get("state_emoticon") or engine.affect.marker(),
-            memory_counts=((state.frame.get("memory_context") or {}).get("counts") if isinstance(state.frame.get("memory_context"), dict) else None),
-            memory_context=state.frame.get("memory_context") if isinstance(state.frame.get("memory_context"), dict) else None,
-            diagnostics=state.frame.get("fallback_diagnostics") if isinstance(state.frame.get("fallback_diagnostics"), dict) else None,
-            polish_understanding=state.frame.get("polish_understanding") if isinstance(state.frame.get("polish_understanding"), dict) else None,
-            lexical_semantic_understanding=state.frame.get("lexical_semantic_understanding") if isinstance(state.frame.get("lexical_semantic_understanding"), dict) else None,
+        state.decision = engine.conversation_responder.build_candidate(
+            state.request.text, classified_intent=state.dialogue_intent_result.primary_intent,
         )
         state.decision_dict = state.decision.to_dict()
         state.decision_dict["timestamp_contract"] = state.envelope.cognitive_frame.get("timestamp_contract") or {}
@@ -92,6 +85,8 @@ class DialogueRouter:
             prior_runtime_route=state.prior_runtime_route,
             previous_task_state=state.previous_task_state,
         )
+        state.handler_context["canonical_dialogue_cutover"] = True
+        state.decision_dict["dialogue_candidate_source"] = "classified_structured_candidate"
         return DialogueRouteDecision(
             str(state.detected_dialogue_intent), state.route_entry.route,
             state.route_entry.handler_name, tuple(state.route_entry.required_components),

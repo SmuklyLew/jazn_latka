@@ -1188,10 +1188,10 @@ def persist_chatgpt_host_visible_reply(
     chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """Route phase-2 to the single finalization authority."""
-    from latka_jazn.core.finalization_service import FinalizationService
+    from latka_jazn.core.conversation_runner import ConversationRunner
     from latka_jazn.core.host_finalization_transaction import HostFinalizationPorts
 
-    return FinalizationService(config).finalize(
+    return ConversationRunner.finalize_candidate(config=config,
         payload=payload, chat_bridge_meta=chat_bridge_meta, contract=contract,
         ports=HostFinalizationPorts(
             extract_payload=extract_chatgpt_host_visible_reply_payload,
