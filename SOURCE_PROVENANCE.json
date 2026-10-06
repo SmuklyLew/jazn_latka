@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c24ce81cf28777528cc9012432c6d74dd18b01ea",
+  "base_merge_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
   "base_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
-  "commit_date": "2026-10-06T04:24:05+02:00",
+  "commit_date": "2026-10-06T04:28:28+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-06T02:24:05+00:00",
+  "generated_at_utc": "2026-10-06T02:28:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "7e8fa8d2f27d564f45af9dbeb1257bba5da152ed",
+  "git_tree_sha": "16c05198e0899986b6b91c056b041c603714f3ee",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.107-persistent-remote-runtime-operations-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c24ce81cf28777528cc9012432c6d74dd18b01ea",
+    "source_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
     "source_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c24ce81cf28777528cc9012432c6d74dd18b01ea",
+  "source_commit": "c04aebada879b8b560a24a9fbfdac4ca6df18d8a",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.110-turn-orchestrator-pipeline-decomposition-convergence",
   "tag": null,
