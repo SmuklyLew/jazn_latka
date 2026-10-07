@@ -25,12 +25,13 @@ def test_project_loader_is_pasteable_thin_loader_with_current_message_gate() -> 
     assert "Nie dziedzicz autoryzacji ani tool-exposure między wiadomościami" in text
 
 
-def test_project_loader_does_not_invent_handoff_or_execution_route() -> None:
+def test_project_loader_declares_bounded_local_fallback_without_automatic_handoff() -> None:
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
-    assert "`host_handoff` stosuj wyłącznie" in text
-    assert "użytkownik zaakceptuje przekazanie" in text
-    assert "bez wyniku SYSTEM-u nie wymyślaj jej" in text
-    assert "Instrukcja Projektu nie może sama stworzyć capability" in text
+    assert "hybrid/adaptive remote-first" in text
+    assert "bounded local fallback" in text
+    assert "najwyżej jedną minimalną próbę" in text
+    assert "Ordinary hybrid/adaptive ingress nie używa automatycznego handoffu" in text
+    assert "filesystem i paczka pozostają `unknown`" in text
 
 
 def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> None:
@@ -49,5 +50,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.113"
-    assert PACKAGE_RELEASE_NAME == "remote-only-chatgpt-ingress-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.114"
+    assert PACKAGE_RELEASE_NAME == "hybrid-adaptive-ingress-convergence"
