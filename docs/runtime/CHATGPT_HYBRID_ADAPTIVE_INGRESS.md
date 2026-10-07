@@ -1,4 +1,4 @@
-# ChatGPT Hybrid/Adaptive Ingress — 16.3.25.5.114
+# ChatGPT Hybrid/Adaptive Ingress — 16.3.25.5.115
 
 ## Cel
 
@@ -7,7 +7,7 @@ Jaźni przez bieżącą aplikację/MCP, ale brak ekspozycji aplikacji w konkretn
 wiadomości nie może sam w sobie blokować wcześniej działającego, bezpiecznego
 host-local bootstrapu, jeżeli host faktycznie udostępnia process execution.
 
-v114 rozdziela trzy tryby:
+v115 zachowuje trzy tryby v114:
 
 - `hybrid_adaptive` — domyślny ordinary-chat: verified remote -> bounded local -> fail-closed;
 - `remote_only` — jawny tryb ścisły bez local fallbacku;
@@ -51,6 +51,24 @@ message:
 Installed/catalog state, a URL, manifest, a previous message's tool list or a
 previous @mention are not current-message capability evidence. A stale/frozen
 tool snapshot requires Refresh/Recreate/republish on the ChatGPT side.
+
+### Desktop registered-app binding
+
+v115 adds a packaging and discovery layer without changing route authority:
+
+- public/remote MCP packages may include `mcp.json`;
+- a local/workspace plugin may bind to an already registered ChatGPT MCP app
+  through `.app.json` and omit `mcp.json`;
+- changing package shape with `--force` removes stale optional manifests;
+- the four canonical Jaźń turn tools are normalized to
+  `_meta.ui.visibility=["model","app"]` on initialize-era Desktop
+  `tools/list` responses as well as on modern discovery;
+- diagnostics/compatibility tools remain app-only where intended.
+
+A registered app id, `.app.json`, successful `tools/list`, or installed
+plugin state is still not current-message capability evidence. The route becomes
+conversation-ready only after the current message exposes the complete toolset
+and a fresh `jazn_status` verifies the expected persistent runtime.
 
 ## Bounded local fallback
 
@@ -130,17 +148,21 @@ Additional invariants:
 - route switching after submit is forbidden;
 - final visible output still requires accepted `display_exact`.
 
-## Źródła zewnętrzne zweryfikowane dla v114
+## Źródła zewnętrzne zweryfikowane dla v115
 
 - OpenAI Help — Developer mode and MCP apps in ChatGPT:
   https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt
 - OpenAI — Secure MCP Tunnels:
   https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
-- OpenAI — Build a custom MCP server:
-  https://developers.openai.com/api/docs/guides/custom-mcp-server
+- OpenAI — Package your plugin:
+  https://developers.openai.com/plugins/build/plugins
+- OpenAI — Plugin reference / tool visibility:
+  https://developers.openai.com/plugins/reference
+- OpenAI — Plugin changelog:
+  https://developers.openai.com/plugins/changelog
 
-Dokumentacja OpenAI potwierdza message-scoped wybór aplikacji, potrzebę
-odświeżenia narzędzi po zmianie MCP oraz to, że lokalny/prywatny MCP wymaga
-Secure MCP Tunnel albo innej obsługiwanej zdalnej trasy. Local fallback v114 nie
-udaje bezpośredniego lokalnego MCP: korzysta wyłącznie z osobnej hostowej
+Dokumentacja OpenAI potwierdza message-scoped wybór aplikacji, frozen snapshots
+narzędzi wymagające Refresh po zmianie MCP, `.app.json` dla registered MCP app
+bindings oraz `_meta.ui.visibility` jako bieżący kontrakt widoczności narzędzi.
+Local fallback v115 nie udaje MCP: korzysta wyłącznie z osobnej hostowej
 capability process execution, gdy ta faktycznie istnieje.
