@@ -339,3 +339,21 @@ Oficjalna dokumentacja OpenAI rozdziela:
 - https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt
 - https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
 - https://developers.openai.com/api/docs/guides/custom-mcp-server
+
+
+## 15. ChatGPT Desktop initialize-era tool visibility convergence — v119.2.0
+
+The canonical stdio MCP target now guarantees the same model-visible metadata
+for the required four ChatGPT turn tools whether the client uses modern
+2026-07-28 discovery or initialize-era 2025-11-25 discovery.
+
+Only the canonical turn tools are promoted to
+`ui.visibility=["model","app"]`; app diagnostics and legacy aliases keep their
+previous app-only visibility. This avoids exposing operator/audit surfaces merely
+because a Desktop client negotiated an older MCP revision.
+
+Acceptance requires both protocol and host evidence: the initialize-era
+`tools/list` must return the complete canonical toolset with model-visible
+metadata, modern discovery must preserve the same canonical visibility, the
+current ChatGPT message must actually expose the four tools, and fresh
+`jazn_status` must prove the expected runtime/version/readiness.

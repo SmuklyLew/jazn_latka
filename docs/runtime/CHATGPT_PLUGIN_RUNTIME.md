@@ -1,6 +1,6 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.101 ingress/bootstrap contract. Its acceptance
+This runbook describes the current v119.2.0 ingress/bootstrap contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.
@@ -317,3 +317,36 @@ own turn/finalization lineage.
   https://github.com/openai/tunnel-client
 - MCP 2026-07-28 release:
   https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/
+
+
+## ChatGPT Desktop local STDIO acceptance (v119.2.0)
+
+A local Desktop MCP server is a distinct path from the portable remote plugin
+package. Do not rewrite an already working local STDIO server into
+`http://127.0.0.1:8080/mcp` merely to make a plugin package.
+
+For the canonical local server, ChatGPT Desktop starts the verified Python
+interpreter and invokes `latka_jazn/mcp/tunnel_bootstrap.py` with these
+separate argv elements: `-X`, `utf8`, `--root <root>`, and
+`--daemon-url http://127.0.0.1:8787`.
+
+A successful local MCP probe must complete
+`initialize -> notifications/initialized -> tools/list`.
+
+ChatGPT Desktop may negotiate an initialize-era MCP revision before requesting
+`tools/list`. Starting with v119.2.0, the four canonical current-message turn
+tools have the same model-visible metadata on both legacy initialize-era and
+modern 2026-07-28 discovery paths:
+
+- `jazn_status`
+- `jazn_generate_visible_reply`
+- `jazn_resume_visible_reply`
+- `jazn_finalize_reply`
+
+Their `_meta.ui.visibility` is `["model","app"]` and the deprecated
+`openai/visibility=private` marker is removed. App-only diagnostics and
+compatibility aliases remain app-only.
+
+This fixes server-side discovery parity. It does not prove that a particular
+Desktop message exposed the tools; current-message tool exposure and a fresh
+`jazn_status` call remain the acceptance boundary.

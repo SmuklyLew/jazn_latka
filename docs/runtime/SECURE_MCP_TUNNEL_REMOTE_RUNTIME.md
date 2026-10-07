@@ -247,3 +247,13 @@ wybrany automatycznie przez ordinary-chat.
 OpenAI opisuje Secure MCP Tunnel jako outbound-only połączenie prywatnego MCP z
 obsługiwanymi produktami oraz osobno wymaga uprawnień ChatGPT do custom MCP:
 https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+
+
+## Desktop stdio compatibility note — v119.2.0
+
+The same `tunnel_bootstrap.py` stdio target is usable as a local ChatGPT
+Desktop MCP server. Desktop clients that negotiate MCP 2025-11-25 through the
+legacy `initialize` handshake now receive the canonical four current-message
+turn tools as model-visible. This is metadata normalization only; it does not
+trust the host, weaken authentication, expose app-only diagnostics, or bypass
+current-message capability verification.

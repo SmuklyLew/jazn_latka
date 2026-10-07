@@ -1,4 +1,4 @@
-# ChatGPT Remote-only Ingress — 16.3.25.5.113
+# ChatGPT Remote-only Ingress — 119.2.0
 
 ## Cel
 
@@ -83,3 +83,18 @@ Release jest zgodny z tym kontraktem, gdy:
 - https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
 - https://developers.openai.com/api/docs/guides/custom-mcp-server
 - https://developers.openai.com/api/docs/guides/tools-connectors-mcp
+
+
+## Desktop legacy/modern discovery parity — v119.2.0
+
+Real ChatGPT Desktop testing exposed an MCP discovery asymmetry not previously
+covered by repository tests. The stdio server correctly returned the canonical
+tool names on an initialize-era 2025-11-25 handshake, but several canonical
+tools still inherited historical app-only/private metadata from the v76
+definitions. The modern 2026-07-28 path already normalized them to model-visible
+metadata.
+
+v119.2.0 normalizes the four required canonical turn tools on initialize-era
+`tools/list` as well. Ordinary-chat remote-only policy, request identity,
+authorization, daemon ownership and accepted `display_exact` finalization are
+unchanged.
