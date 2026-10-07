@@ -43621,8 +43621,8 @@
       "description_source": "source_identity",
       "line": 29
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_all_chat_adapters_share_one_default_session_identity": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_all_chat_adapters_share_one_default_session_identity": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_all_chat_adapters_share_one_default_session_identity",
       "purpose": "All chat adapters share one default session identity",
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43644,8 +43644,8 @@
       "description_source": "source_identity",
       "line": 23
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_model_channel_contract_is_allowlisted_and_does_not_publish_values": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_model_channel_contract_is_allowlisted_and_does_not_publish_values": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_model_channel_contract_is_allowlisted_and_does_not_publish_values",
       "purpose": "Model channel contract is allowlisted and does not publish values",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43669,8 +43669,8 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_daemon_request_fingerprint_binds_command_and_model_channel": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_daemon_request_fingerprint_binds_command_and_model_channel": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_daemon_request_fingerprint_binds_command_and_model_channel",
       "purpose": "Daemon request fingerprint binds command and model channel",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43692,8 +43692,8 @@
       "description_source": "source_identity",
       "line": 60
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_daemon_job_snapshot_exposes_model_fields_not_private_values": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_daemon_job_snapshot_exposes_model_fields_not_private_values": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_daemon_job_snapshot_exposes_model_fields_not_private_values",
       "purpose": "Daemon job snapshot exposes model fields not private values",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43715,8 +43715,8 @@
       "description_source": "source_identity",
       "line": 91
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_daemon_conversation_session_is_transport_only_and_close_does_not_stop_runtime": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_daemon_conversation_session_is_transport_only_and_close_does_not_stop_runtime": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_daemon_conversation_session_is_transport_only_and_close_does_not_stop_runtime",
       "purpose": "Daemon conversation session is transport only and close does not stop runtime",
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43738,8 +43738,8 @@
       "description_source": "source_identity",
       "line": 115
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity",
       "purpose": "No carryover resets daemon authority once then preserves turn continuity",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43761,8 +43761,8 @@
       "description_source": "source_identity",
       "line": 145
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_daemon_reset_session_replaces_existing_worker_once": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_daemon_reset_session_replaces_existing_worker_once": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_daemon_reset_session_replaces_existing_worker_once",
       "purpose": "Daemon reset session replaces existing worker once",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43784,8 +43784,8 @@
       "description_source": "source_identity",
       "line": 174
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown",
       "purpose": "Terminal shell exit disconnects daemon client without claiming runtime shutdown",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43807,8 +43807,8 @@
       "description_source": "source_identity",
       "line": 211
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_chatgpt_host_contract_is_selected_by_command_not_transport_client_name": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_chatgpt_host_contract_is_selected_by_command_not_transport_client_name": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_chatgpt_host_contract_is_selected_by_command_not_transport_client_name",
       "purpose": "Chatgpt host contract is selected by command not transport client name",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
@@ -43831,8 +43831,8 @@
       "description_source": "source_identity",
       "line": 248
     },
-    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_model_timeout_extends_daemon_job_budget_without_changing_session_owner": {
-      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+    "tests/test_unified_conversation_runtime_authority.py::test_model_timeout_extends_daemon_job_budget_without_changing_session_owner": {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
       "name": "test_model_timeout_extends_daemon_job_budget_without_changing_session_owner",
       "purpose": "Model timeout extends daemon job budget without changing session owner",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
