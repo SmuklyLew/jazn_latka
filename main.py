@@ -545,6 +545,7 @@ def _try_chat_gpt_one_shot_via_daemon(
             client="chatgpt_daemon_bridge",
             command="--chat-gpt",
             model_channel_config=model_channel_config_from_config(cfg),
+            reset_session=bool(no_carryover),
             request_id=request_id,
             timeout=min(float(timeout), float(wait_budget)) if wait_budget is not None else float(timeout),
             poll_interval=poll_interval,
