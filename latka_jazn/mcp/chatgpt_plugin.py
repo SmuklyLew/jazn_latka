@@ -75,7 +75,7 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
             "capabilities": ["Read", "Write"],
             "websiteURL": REPOSITORY_URL,
             "defaultPrompt": [
-                "Prefer the complete current-message Jaźń remote toolset and verify runtime readiness before submitting the user turn.",
+                "Verify Jaźń runtime readiness and required turn tools for this message; prefer the complete current-message Jaźń remote toolset before submitting the user turn.",
                 "If the remote Jaźń route is unavailable or stale before turn submission, use at most the bounded verified host-local bootstrap fallback when the host actually exposes process execution.",
                 "Once a Jaźń request has been submitted on either route, keep that route and request_id through resume/finalization; never replay the user message or switch routes mid-turn.",
             ],
