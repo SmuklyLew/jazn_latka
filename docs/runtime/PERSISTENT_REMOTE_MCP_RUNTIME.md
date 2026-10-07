@@ -110,7 +110,17 @@ migrowane leniwie do SQLite bez ich usuwania.
 
 ## 5. Zdalny ingress hosta
 
-Od 16.3.25.5.114 zwykła wiadomość ChatGPT działa w `hybrid_adaptive`. Zweryfikowana aplikacja/MCP i świeży `jazn_status` są trasą preferowaną. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, host może wykonać bounded local executor/bootstrap fallback. Po przyjęciu requestu trasa jest zamrożona: resume/finalization używają tego samego requestu bez replayu. Ordinary-chat nie używa automatycznego `host_handoff`; ten pozostaje wyłącznie jawnym `operator_recovery`.
+Od 16.3.25.5.115 zwykła wiadomość ChatGPT działa w `hybrid_adaptive` z zachowaniem routingu v114 oraz Desktop/App Binding convergence. Zweryfikowana aplikacja/MCP i świeży `jazn_status` są trasą preferowaną. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, host może wykonać bounded local executor/bootstrap fallback. Po przyjęciu requestu trasa jest zamrożona: resume/finalization używają tego samego requestu bez replayu. Ordinary-chat nie używa automatycznego `host_handoff`; ten pozostaje wyłącznie jawnym `operator_recovery`.
+
+Dla ChatGPT Desktop/workspace plugin może wiązać istniejący registered MCP
+app przez `.app.json` bez własnego `mcp.json`. To nie tworzy nowego
+transportu ani drugiego runtime: jest wyłącznie bindingiem hosta do jednego z
+istniejących MCP transports. Registered app id nie jest current-message
+capability evidence i nie może sam promować `remote_runtime_available=true`.
+
+Canonical turn tools zachowują model visibility
+`_meta.ui.visibility=["model","app"]` zarówno na modern discovery, jak i na
+initialize-era Desktop `tools/list`; diagnostyka/aliasy mogą pozostać app-only.
 
 Publiczny Streamable HTTP ma dwa równoważne, fail-closed tryby evidence.
 
