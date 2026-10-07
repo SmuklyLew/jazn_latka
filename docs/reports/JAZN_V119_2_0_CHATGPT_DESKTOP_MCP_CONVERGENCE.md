@@ -54,3 +54,58 @@ repository workflow, not edited by hand.
 Final acceptance additionally requires a fresh ChatGPT Desktop conversation in
 which the current message actually exposes all four canonical tools and a fresh
 `jazn_status` confirms the expected persistent runtime/version/readiness.
+
+
+## Additional convergence found during the master audit
+
+The master audit found three independent gaps beyond the legacy tool-visibility
+defect.
+
+### Registered local MCP app binding
+
+The plugin packager previously always required a remote endpoint and therefore
+made it too easy to create a local plugin pointing at
+`http://127.0.0.1:8080/mcp`. That is not the canonical binding for an already
+registered local Desktop MCP server.
+
+v119.2.0 allows `chatgpt-plugin-package` to accept only
+`--registered-app-id plugin_asdk_app_<id>`. In that mode the package emits
+`plugin.json + .app.json` and deliberately omits `mcp.json`. Remote HTTPS
+packages still emit `mcp.json`, and endpoint+app-id remains supported for
+intentional remote hybrid packages.
+
+### Release line above two digits
+
+The shared version-token parser recognized v14-v99 but not the new
+`119.2.0` release identity. Its major-version contract now also accepts
+three-or-more-digit majors while retaining the established v14+ matching
+boundary. Release identity tests are synchronized to
+`chatgpt-desktop-mcp-convergence`.
+
+### Superseded Memory Studio audit
+
+Open draft PR #262 is 1639 commits behind current master and its standalone
+Studio implementation has been superseded by the later Memory Rebuild Studio
+line, including the v104 reconstruction convergence. It is not cherry-picked.
+
+Two narrow semantic fixes from that historical branch were still absent from
+master and were forward-ported instead:
+
+- `music_analysis` accepts the historical `{"entries": [...]}` collection
+  shape and treats `numer` as a stable-key candidate;
+- sanitized `RunManifest` source-role/hash projections preserve source
+  inventory order even when private mapping keys are serialized sorted.
+
+Both have current-purpose regression coverage.
+
+Open draft PR #319 was also audited. Against current master its remaining
+branch-only changes are generated release metadata, so it contains no missing
+v109 runtime implementation to cherry-pick.
+
+## CI defects found and repaired during the update
+
+Early release-hardening correctly exposed stale release-name assertions and the
+two-digit version parser. Stable Test Studio then rejected a release-coupled
+test filename, and full-tree Pyright rejected an imprecisely typed regression
+fixture. Each failure was fixed at its source; no test, governance rule or
+Pyright setting was weakened.

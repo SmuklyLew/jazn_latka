@@ -40,3 +40,17 @@ metadata, and a fresh Desktop host test that exposes all four canonical tools on
 the current message and receives fresh v119.2.0 readiness from `jazn_status`.
 
 No repository test may replace the final current-message host exposure check.
+
+
+## Master-audit additions
+
+The branch now also includes:
+- registered local MCP app-binding packages without localhost `mcp.json`;
+- three-digit major version-token compatibility for `119.2.0`;
+- the two still-relevant source/manifest invariants recovered from superseded
+  PR #262;
+- repaired stable-test naming and statically explicit regression fixtures found
+  by CI itself.
+
+The final gate remains unchanged: only the latest branch HEAD and synchronized
+release-metadata descendant count as release evidence.

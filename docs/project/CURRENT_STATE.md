@@ -67,3 +67,18 @@ Before v119.2.0 is merge-ready, focused and full deterministic tests, Pyright,
 release-hardening, package cleanroom, Linux/Windows persistent-runtime E2E and
 final release-metadata idempotence must pass. A fresh ChatGPT Desktop acceptance
 test must then verify current-message tool exposure after refresh/recreate.
+
+
+## 6. Additional master gaps recovered
+
+The v119.2.0 audit also corrected:
+- local registered-app plugin packaging so an existing Desktop MCP binding can
+  be referenced by technical app id without fabricating a localhost HTTP MCP;
+- version-token parsing for the three-digit `119` major;
+- historical music-analysis `entries`/ `numer` compatibility still useful to
+  the current Memory Rebuild pipeline;
+- sanitized RunManifest source inventory ordering.
+
+PR #262 was not merged or cherry-picked wholesale because its Studio
+implementation is far behind and superseded. PR #319 likewise requires no code
+forward-port relative to current master.
