@@ -13,6 +13,8 @@ def _analysis_rows(path: Path) -> Iterator[dict[str, Any]]:
     value = load_json_strict(path)
     if isinstance(value, dict) and isinstance(value.get("analizy"), list):
         source = value["analizy"]
+    elif isinstance(value, dict) and isinstance(value.get("entries"), list):
+        source = value["entries"]
     elif isinstance(value, list):
         source = value
     elif isinstance(value, dict) and value and all(isinstance(item, dict) for item in value.values()):
@@ -81,7 +83,7 @@ class MusicAnalysisAdapter:
                 logical_key = stable_key(
                     "music-analysis",
                     raw,
-                    ("id", "analysis_id", "uuid", "_source_key", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
+                    ("id", "analysis_id", "uuid", "_source_key", "numer", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
                 )
                 source_id = str(raw.get("id") or raw.get("analysis_id") or raw.get("uuid") or logical_key)
                 event = str(raw.get("timestamp") or raw.get("data") or raw.get("date") or "").strip() or None

@@ -303,11 +303,33 @@ class RunManifest:
             }
             for item in self.source_bundle_inventory
         ]
+        # Preserve source inventory order even though the private JSON payload
+        # is serialized with sorted mapping keys. Sanitized manifests use numeric
+        # keys to avoid leaking local source paths, so their values must be
+        # reconstructed from the inventory sequence rather than dict insertion.
+        ordered_keys = list(
+            dict.fromkeys(
+                str(item.get("relative_path") or item.get("path") or index)
+                for index, item in enumerate(self.source_bundle_inventory, start=1)
+            )
+        )
+        role_keys = [key for key in ordered_keys if key in self.source_roles]
+        role_keys += sorted(set(self.source_roles) - set(role_keys))
+        digest_keys = [key for key in ordered_keys if key in self.source_sha256]
+        digest_keys += sorted(set(self.source_sha256) - set(digest_keys))
         value["source_roles"] = {
-            str(index): role for index, role in enumerate(self.source_roles.values(), start=1)
+            str(index): role
+            for index, role in enumerate(
+                (self.source_roles[key] for key in role_keys),
+                start=1,
+            )
         }
         value["source_sha256"] = {
-            str(index): digest for index, digest in enumerate(self.source_sha256.values(), start=1)
+            str(index): digest
+            for index, digest in enumerate(
+                (self.source_sha256[key] for key in digest_keys),
+                start=1,
+            )
         }
         return value
 
