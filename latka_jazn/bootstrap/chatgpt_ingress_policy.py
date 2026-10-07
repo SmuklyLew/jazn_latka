@@ -6,13 +6,15 @@ from enum import Enum
 class ChatGptIngressMode(str, Enum):
     """Execution policy for ChatGPT host ingress.
 
-    REMOTE_ONLY is the normal ChatGPT conversation path. It never promotes a
-    local/process executor, attachment bootstrap, or host handoff into a
-    conversation route. OPERATOR_RECOVERY is an explicit service mode for
-    Codex/Work/local operators that intentionally need local bootstrap or
-    recovery capabilities.
+    HYBRID_ADAPTIVE is the normal ChatGPT conversation path. It prefers a
+    verified current-message remote Jaźń app/runtime, but permits a bounded
+    host-local executor/bootstrap fallback before the user turn is submitted.
+    REMOTE_ONLY remains an explicit strict mode with no local/process fallback.
+    OPERATOR_RECOVERY remains an explicit service mode for Codex/Work/local
+    operators that intentionally need local bootstrap, recovery, or handoff.
     """
 
+    HYBRID_ADAPTIVE = "hybrid_adaptive"
     REMOTE_ONLY = "remote_only"
     OPERATOR_RECOVERY = "operator_recovery"
 
@@ -28,6 +30,15 @@ def normalize_chatgpt_ingress_mode(value: object) -> ChatGptIngressMode:
 
 
 def local_executor_fallback_allowed(value: object) -> bool:
+    return normalize_chatgpt_ingress_mode(value) in {
+        ChatGptIngressMode.HYBRID_ADAPTIVE,
+        ChatGptIngressMode.OPERATOR_RECOVERY,
+    }
+
+
+def automatic_handoff_allowed(value: object) -> bool:
+    """Return whether host handoff may participate in the selected ingress mode."""
+
     return (
         normalize_chatgpt_ingress_mode(value)
         is ChatGptIngressMode.OPERATOR_RECOVERY
@@ -36,6 +47,7 @@ def local_executor_fallback_allowed(value: object) -> bool:
 
 __all__ = [
     "ChatGptIngressMode",
+    "automatic_handoff_allowed",
     "local_executor_fallback_allowed",
     "normalize_chatgpt_ingress_mode",
 ]
