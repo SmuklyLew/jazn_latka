@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "8b1b5e0628225abfec7056e316df154a8d4d0ef3",
+  "base_merge_commit": "0ea21b1e57220c09c4fe2170f083a1caceb8309f",
   "base_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "commit_date": "2026-10-07T18:37:41Z",
+  "commit_date": "2026-10-07T20:44:12+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-07T18:37:41+00:00",
+  "generated_at_utc": "2026-10-07T18:44:12+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f90c290dbaaf69b63354d5da002dfba757035005",
+  "git_tree_sha": "2e3a6b6a614c5be16173e190dd6c084019a9a198",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.113-remote-only-chatgpt-ingress-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "8b1b5e0628225abfec7056e316df154a8d4d0ef3",
+    "source_commit": "0ea21b1e57220c09c4fe2170f083a1caceb8309f",
     "source_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "8b1b5e0628225abfec7056e316df154a8d4d0ef3",
+  "source_commit": "0ea21b1e57220c09c4fe2170f083a1caceb8309f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
   "tag": null,
