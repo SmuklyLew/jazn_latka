@@ -101,7 +101,7 @@ Host może ustawić `host_connector_invocation_observed=true` wyłącznie dlateg
 
 ### 2.3. Jawny tryb `operator_recovery`
 
-`operator_recovery` rozszerza dozwolone działania o serwis, głębszą diagnostykę i jawny handoff; nie jest potrzebny do samego bounded local fallbacku ordinary-chat.
+Dla bounded local fallbacku oraz `operator_recovery` host może używać bieżącej powierzchni **pliki i executor/terminal** zgodnie z poniższymi granicami. `operator_recovery` rozszerza dozwolone działania o serwis, głębszą diagnostykę i jawny handoff; nie jest potrzebny do samego bounded local fallbacku ordinary-chat.
 
 Poniższe reguły executora obowiązują zarówno dla automatycznego local fallbacku `hybrid_adaptive`, jak i dla jawnego `operator_recovery`, z jedną różnicą: ordinary-chat nie może użyć `host_handoff`, a recovery może go użyć tylko po zgodzie użytkownika.
 
