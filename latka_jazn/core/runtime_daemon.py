@@ -820,6 +820,7 @@ class DaemonChatJob:
     client: str
     command: str = "--chat"
     model_channel_config: dict[str, Any] = field(default_factory=dict)
+    reset_session: bool = False
     request_fingerprint: str | None = None
     user_text_sha256: str | None = None
     created_at_utc: str = field(default_factory=utc_now_iso)
@@ -892,6 +893,7 @@ class DaemonChatJob:
             "client": self.client,
             "command": self.command,
             "model_channel": model_channel_public_metadata(self.model_channel_config),
+            "reset_session": bool(self.reset_session),
             "input_field": self.input_field,
             "user_text": self.user_text,
             "user_text_sha256": str(self.user_text_sha256 or hashlib.sha256(self.user_text.encode("utf-8")).hexdigest()),
@@ -954,6 +956,7 @@ def daemon_chat_request_fingerprint(
     client: str,
     command: str = "--chat",
     model_channel_config: dict[str, Any] | None = None,
+    reset_session: bool = False,
 ) -> str:
     canonical = json.dumps(
         {
@@ -965,6 +968,7 @@ def daemon_chat_request_fingerprint(
             "model_channel_config": normalize_model_channel_config(
                 model_channel_config
             ),
+            "reset_session": bool(reset_session),
         },
         ensure_ascii=False,
         sort_keys=True,
@@ -1234,6 +1238,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         no_carryover: bool = False,
         client: str = "daemon_http",
         command: str = "--chat",
+        reset_session: bool = False,
     ) -> tuple[RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker, str]:
         normalized = normalize_daemon_session_id(session_id)
         normalized_command = canonical_chat_command(command)
@@ -1241,6 +1246,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._cleanup_idle_sessions_locked()
             key = normalized or f"daemon-{uuid.uuid4()}"
             existing = self.sessions.get(key)
+            if existing is not None and reset_session:
+                self.sessions.pop(key, None)
+                self._session_last_used_monotonic.pop(key, None)
+                self._active_session_ids.discard(key)
+                self._close_session_worker_async(existing)
+                existing = None
             if existing is not None and not existing.usable:
                 self.sessions.pop(key, None)
                 self._session_last_used_monotonic.pop(key, None)
@@ -1292,6 +1303,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "client": job.client,
                 "command": job.command,
                 "model_channel_config": dict(job.model_channel_config),
+                "reset_session": bool(job.reset_session),
                 "created_at_utc": job.created_at_utc,
                 "started_at_utc": job.started_at_utc,
                 "completed_at_utc": job.completed_at_utc,
@@ -1401,6 +1413,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     if isinstance(raw.get("model_channel_config"), dict)
                     else {}
                 ),
+                reset_session=bool(raw.get("reset_session")),
                 request_fingerprint=request_fingerprint,
                 user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or utc_now_iso()),
@@ -2160,6 +2173,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         client: str,
         command: str = "--chat",
         model_channel_config: dict[str, Any] | None = None,
+        reset_session: bool = False,
         request_id: str | None = None,
     ) -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
         if self.shutdown_requested.is_set():
@@ -2191,6 +2205,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             client=client,
             command=normalized_command,
             model_channel_config=normalized_channel_config,
+            reset_session=reset_session,
         )
         model_timeout_seconds = float(
             normalized_channel_config.get("model_timeout_seconds") or 0.0
@@ -2218,6 +2233,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     and existing.client == client
                     and existing.command == normalized_command
                     and existing.model_channel_config == normalized_channel_config
+                    and existing.reset_session == bool(reset_session)
                 )
             if not same_request:
                 return None, {
@@ -2260,6 +2276,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     client=client,
                     command=normalized_command,
                     model_channel_config=normalized_channel_config,
+                    reset_session=bool(reset_session),
                     request_fingerprint=request_fingerprint,
                     execution_timeout_seconds=job_timeout_seconds,
                     timeout_profile=timeout_profile,
@@ -2642,6 +2659,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 no_carryover=job.no_carryover,
                 client=job.client,
                 command=job.command,
+                reset_session=job.reset_session,
             )
             with self._chat_jobs_lock:
                 terminalized_while_initializing = job.terminal()
@@ -3561,6 +3579,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             if isinstance(payload, dict) and isinstance(payload.get("model_channel_config"), dict)
             else {}
         )
+        reset_session = bool(payload.get("reset_session")) if isinstance(payload, dict) else False
         request_id = payload.get("request_id") if isinstance(payload, dict) else None
         return self._daemon_server().submit_chat_job(
             user_text=user_text,
@@ -3570,6 +3589,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             client=client,
             command=command,
             model_channel_config=model_channel_config,
+            reset_session=reset_session,
             request_id=str(request_id).strip() if request_id else None,
         )
 
@@ -4963,6 +4983,7 @@ def chat_daemon_submit(
     client: str = "chatgpt_daemon_bridge",
     command: str = "--chat",
     model_channel_config: dict[str, Any] | None = None,
+    reset_session: bool = False,
     request_id: str | None = None,
     timeout: float = DEFAULT_HTTP_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
@@ -4983,6 +5004,7 @@ def chat_daemon_submit(
         "client": client,
         "command": canonical_chat_command(command),
         "model_channel_config": normalize_model_channel_config(model_channel_config),
+        "reset_session": bool(reset_session),
         "no_carryover": bool(no_carryover),
         "request_id": normalized_request_id,
     }
@@ -5140,6 +5162,7 @@ def chat_daemon(
     client: str = "chatgpt_daemon_bridge",
     command: str = "--chat",
     model_channel_config: dict[str, Any] | None = None,
+    reset_session: bool = False,
     request_id: str | None = None,
     timeout: float = DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS,
     poll_interval: float = DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS,
@@ -5155,6 +5178,7 @@ def chat_daemon(
         client=client,
         command=command,
         model_channel_config=model_channel_config,
+        reset_session=reset_session,
         request_id=request_id,
         timeout=submit_timeout,
     )
