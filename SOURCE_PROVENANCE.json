@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "bec08476fdde083278ec27221692b6f25fbc3e6d",
-    "base_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+    "base_commit": "ec15f68e07f58085c1cd4ac4ffbf0493862fa3a0",
+    "base_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ec15f68e07f58085c1cd4ac4ffbf0493862fa3a0",
