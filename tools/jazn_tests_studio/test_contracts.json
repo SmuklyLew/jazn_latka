@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115",
-  "active_definition_count": 2001,
+  "active_definition_count": 2005,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3150,6 +3150,82 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 52
+    },
+    "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py::test_registered_app_id_accepts_supported_chatgpt_binding_prefixes": {
+      "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "name": "test_registered_app_id_accepts_supported_chatgpt_binding_prefixes",
+      "purpose": "Registered app id accepts supported chatgpt binding prefixes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py::test_registered_app_only_package_preserves_hybrid_turn_policy": {
+      "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "name": "test_registered_app_only_package_preserves_hybrid_turn_policy",
+      "purpose": "Registered app only package preserves hybrid turn policy",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py::test_startup_contract_separates_registered_app_binding_from_capability_evidence": {
+      "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "name": "test_startup_contract_separates_registered_app_binding_from_capability_evidence",
+      "purpose": "Startup contract separates registered app binding from capability evidence",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py::test_release_identity_tracks_desktop_app_binding_hybrid_convergence": {
+      "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "name": "test_release_identity_tracks_desktop_app_binding_hybrid_convergence",
+      "purpose": "Release identity tracks desktop app binding hybrid convergence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
     },
     "tests/test_chatgpt_desktop_legacy_mcp_visibility.py::test_initialize_era_tools_list_keeps_canonical_turn_tools_model_visible": {
       "path": "tests/test_chatgpt_desktop_legacy_mcp_visibility.py",
