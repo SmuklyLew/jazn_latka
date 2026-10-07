@@ -39,6 +39,7 @@ def test_bridge_discovery_publishes_managed_remote_failover_contract(
     payload = bridge_discovery.discover_runtime_bridges(JaznConfig(root=tmp_path))
     secure_mcp = payload["secure_mcp"]
     public_mcp = payload["public_streamable_mcp"]
+    registered_mcp = payload["registered_mcp_app"]
     chatgpt = payload["chatgpt_bridge"]
 
     assert public_mcp["status"] == "implemented_transport_requires_deployment_evidence"
@@ -58,9 +59,24 @@ def test_bridge_discovery_publishes_managed_remote_failover_contract(
     assert secure_mcp["remote_runtime_route_evidence"] == (
         "all_managed_readiness_fields_true_plus_host_connector_capability"
     )
+
+    assert registered_mcp["status"] == (
+        "implemented_registered_app_route_requires_current_message_evidence"
+    )
+    assert registered_mcp["remote_transport"] == "registered_mcp_app"
+    assert registered_mcp["status_schema"] == "jazn_registered_mcp_status/v1"
+    assert registered_mcp["remote_failover_classifier"] == (
+        "classify_registered_mcp_connector_status_failover"
+    )
+    assert registered_mcp["host_connector_invocation_required"] is True
+    assert registered_mcp["current_message_toolset_required"] is True
+    assert registered_mcp["model_visible_status_redacted"] is True
+    assert registered_mcp["binding_manifest"] == ".app.json"
+    assert registered_mcp["binding_manifest_is_route_evidence"] is False
+
     assert chatgpt["remote_failover_policy"] == (
-        "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
+        "verified_public_streamable_http_or_verified_secure_mcp_tunnel_or_verified_registered_mcp_app_plus_explicit_current_message_capability"
     )
     assert chatgpt["remote_transport"] == (
-        "verified_public_streamable_http_or_openai_secure_mcp_tunnel"
+        "verified_public_streamable_http_or_openai_secure_mcp_tunnel_or_registered_mcp_app"
     )
