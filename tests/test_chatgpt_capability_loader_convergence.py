@@ -50,5 +50,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-desktop-app-binding-hybrid-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.115.1"
+    assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"
