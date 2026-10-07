@@ -75,9 +75,9 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
             "capabilities": ["Read", "Write"],
             "websiteURL": REPOSITORY_URL,
             "defaultPrompt": [
-                "Verify Jaźń runtime readiness and required turn tools for this message; require the complete current-message toolset.",
-                "Route this message through Jaźń using the validated turn/finalization contract.",
-                "If the required Jaźń tools are missing or stale, fail closed and refresh/recreate the app; never fall back to a local ChatGPT executor.",
+                "Prefer the complete current-message Jaźń remote toolset and verify runtime readiness before submitting the user turn.",
+                "If the remote Jaźń route is unavailable or stale before turn submission, use at most the bounded verified host-local bootstrap fallback when the host actually exposes process execution.",
+                "Once a Jaźń request has been submitted on either route, keep that route and request_id through resume/finalization; never replay the user message or switch routes mid-turn.",
             ],
             "brandColor": "#5B4B8A",
         }
