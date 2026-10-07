@@ -2,7 +2,7 @@
 
 **Aktualizacja:** 2026-10-07  
 **Zweryfikowany master:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1` / `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`  
-**Bieżąca dokumentacyjna linia zmian:** `update/v16.3.25.5.114-hybrid-adaptive-ingress-convergence`
+**Bieżąca dokumentacyjna linia zmian:** `update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
 
@@ -37,7 +37,7 @@ Historyczne plany nie pozostają jako compatibility pointery w aktywnym root `pl
 - `project/` — current state, release timeline, assumptions, architecture/governance.
 - `plans/` — tylko bieżące owner plans + historyczne `only_to_check/`.
 - `memory/` — operacyjna dokumentacja pamięci i narzędzi.
-- `runtime/` — lifecycle/host/runtime/operator; bieżący ChatGPT ingress: `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md`; trwały MCP: `PERSISTENT_REMOTE_MCP_RUNTIME.md` + `PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
+- `runtime/` — lifecycle/host/runtime/operator; bieżący ChatGPT ingress v115: `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md` + `CHATGPT_PLUGIN_RUNTIME.md`; trwały MCP: `PERSISTENT_REMOTE_MCP_RUNTIME.md` + `PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
 - `packaging/` — pakowanie, release i dystrybucja.
 - `nlp/` — kontrakty NLP/resources.
 - `tools/` — dokumentacja narzędzi.
