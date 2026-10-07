@@ -23153,6 +23153,46 @@
       "description_source": "source_identity",
       "line": 168
     },
+    "tests/test_memory_rebuild_source_manifest_invariants.py::test_music_analysis_accepts_entries_collection": {
+      "path": "tests/test_memory_rebuild_source_manifest_invariants.py",
+      "name": "test_music_analysis_accepts_entries_collection",
+      "purpose": "Music analysis accepts entries collection",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.run_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_memory_rebuild_source_manifest_invariants.py::test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip": {
+      "path": "tests/test_memory_rebuild_source_manifest_invariants.py",
+      "name": "test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip",
+      "purpose": "Run manifest sanitized inventory order survives draft roundtrip",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.run_manifest"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
     "tests/test_memory_rebuild_source_union.py::test_source_union_is_order_independent_and_reconstructs_cross_snapshot_branch_point": {
       "path": "tests/test_memory_rebuild_source_union.py",
       "name": "test_source_union_is_order_independent_and_reconstructs_cross_snapshot_branch_point",
@@ -43271,42 +43311,6 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.turn_execution"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 29
-    },
-    "tests/test_v1192_master_gap_recovery.py::test_music_analysis_accepts_entries_collection": {
-      "path": "tests/test_v1192_master_gap_recovery.py",
-      "name": "test_music_analysis_accepts_entries_collection",
-      "purpose": "Music analysis accepts entries collection",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
-        "latka_jazn.tools.memory_rebuild_app.run_manifest"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 9
-    },
-    "tests/test_v1192_master_gap_recovery.py::test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip": {
-      "path": "tests/test_v1192_master_gap_recovery.py",
-      "name": "test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip",
-      "purpose": "Run manifest sanitized inventory order survives draft roundtrip",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
-        "latka_jazn.tools.memory_rebuild_app.run_manifest"
       ],
       "status": "current",
       "description_source": "source_identity",
