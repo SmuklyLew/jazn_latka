@@ -171,6 +171,12 @@ def test_startup_contract_declares_remote_first_local_fallback_without_midturn_s
     assert contract["chatgpt_canonical_turn_tool_visibility"] == ["model", "app"]
     assert contract["chatgpt_legacy_initialize_tool_visibility_normalized"] is True
     assert contract["chatgpt_registered_app_binding_is_current_message_capability_evidence"] is False
+    assert contract["chatgpt_registered_app_remote_transport"] == "registered_mcp_app"
+    assert contract["chatgpt_registered_app_status_schema"] == "jazn_registered_mcp_status/v1"
+    assert contract["chatgpt_registered_app_status_redacted"] is True
+    assert contract["chatgpt_registered_app_status_requires_current_message_invocation"] is True
+    assert contract["chatgpt_registered_app_status_requires_fresh_runtime_binding"] is True
+    assert contract["chatgpt_registered_app_status_requires_complete_current_message_toolset"] is True
     assert contract["chatgpt_required_turn_tools_revision"] == CHATGPT_TOOLSET_REVISION
     assert contract["chatgpt_required_turn_tools"] == list(REQUIRED_CHATGPT_TURN_TOOLS)
 
