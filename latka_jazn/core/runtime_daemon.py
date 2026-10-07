@@ -2654,12 +2654,19 @@ class JaznDaemonServer(ThreadingHTTPServer):
             job.turn_context.mark_interval("worker_pickup", started_monotonic=pickup_started)
         try:
             session_init_started = time.monotonic()
+            if job.reset_session and job.session_id:
+                normalized_reset_id = normalize_daemon_session_id(job.session_id)
+                if normalized_reset_id:
+                    with self._sessions_lock:
+                        previous = self.sessions.pop(normalized_reset_id, None)
+                        self._session_last_used_monotonic.pop(normalized_reset_id, None)
+                        self._active_session_ids.discard(normalized_reset_id)
+                    if previous is not None:
+                        self._close_session_worker_async(previous)
             session, session_id_source = self.get_session(
                 job.session_id,
                 no_carryover=job.no_carryover,
                 client=job.client,
-                command=job.command,
-                reset_session=job.reset_session,
             )
             with self._chat_jobs_lock:
                 terminalized_while_initializing = job.terminal()
