@@ -134,4 +134,4 @@ def test_portable_plugin_fails_closed_on_stale_tool_surface() -> None:
 
 def test_release_identity_tracks_remote_only_ingress_contract() -> None:
     assert PACKAGE_VERSION == "119.2.0"
-    assert PACKAGE_RELEASE_NAME == "remote-only-chatgpt-ingress-convergence"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-desktop-mcp-convergence"

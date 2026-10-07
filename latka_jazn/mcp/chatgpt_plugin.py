@@ -111,8 +111,15 @@ def build_portable_plugin_documents(
         "name": PLUGIN_NAME,
         "version": str(package_version),
         "description": (
-            "Authenticated ChatGPT and agent access to one persistent Jaźń runtime "
-            "through Streamable HTTP MCP."
+            (
+                "Authenticated ChatGPT and agent access to one persistent Jaźń runtime "
+                "through Streamable HTTP MCP."
+            )
+            if remote_endpoint is not None
+            else (
+                "ChatGPT binding to an already registered Jaźń MCP app backed by one "
+                "persistent runtime."
+            )
         ),
         "author": {"name": "SmuklyLew"},
         "repository": REPOSITORY_URL,
@@ -177,9 +184,9 @@ class PluginPackageResult:
             "files": [dict(item) for item in self.files],
             "truth_boundary": (
                 "Generating a plugin package proves only that package metadata is ready. "
-                "It does not deploy the HTTPS MCP endpoint, configure OAuth, create the "
-                "Developer Mode connection, install/publish the plugin, or prove that the "
-                "current ChatGPT host exposes callable Jaźń actions."
+                "It does not deploy or register an MCP endpoint/app, configure OAuth, "
+                "install/publish the plugin, or prove that the current ChatGPT host exposes "
+                "callable Jaźń actions."
             ),
         }
 

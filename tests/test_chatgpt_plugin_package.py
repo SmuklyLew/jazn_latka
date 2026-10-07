@@ -127,6 +127,26 @@ def test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite(tmp_path: 
         )
 
 
+
+def test_write_registered_app_binding_omits_mcp_json(tmp_path: Path) -> None:
+    app_id = "plugin_asdk_app_6a4c0062f3b88191855c0a80eac5d53d"
+    result = write_portable_plugin_package(
+        tmp_path,
+        registered_app_id=app_id,
+    )
+    payload = result.to_dict()
+    assert payload["endpoint"] is None
+    assert payload["registered_app_id"] == app_id
+    assert {Path(item["path"]).name for item in payload["files"]} == {
+        "plugin.json",
+        ".app.json",
+    }
+    assert not (tmp_path / "mcp.json").exists()
+    assert json.loads((tmp_path / ".app.json").read_text(encoding="utf-8"))[
+        "apps"
+    ]["jazn"]["id"] == app_id
+
+
 def test_cli_parser_accepts_production_oauth_and_plugin_package_modes() -> None:
     from latka_jazn.cli import build_parser
 
