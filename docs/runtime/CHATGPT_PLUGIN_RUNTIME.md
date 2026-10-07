@@ -7,7 +7,7 @@ while the Jaźń runtime remains alive outside the per-conversation sandbox.
 
 ## Verified platform contract
 
-As of 2026-10-02, OpenAI's plugin documentation uses a portable Agent Plugins
+As of 2026-10-07, OpenAI's plugin documentation uses a portable Agent Plugins
 package with root `plugin.json` and optional root `mcp.json`. Do not add the
 legacy `ai-plugin.json`/OpenAPI plugin shape to this path.
 
@@ -97,6 +97,10 @@ by the registered app id. A package may intentionally carry both a remote HTTPS
 The binding is configuration evidence only. It does not prove that the app is
 installed/enabled for the current account, selected for the current message,
 or that the four canonical Jaźń tools are actually callable.
+
+Registered app references are for local/workspace packaging and testing.
+Current OpenAI public plugin submission does not publish packages carrying app
+references; public distribution uses a stable remote HTTPS MCP endpoint instead.
 
 ## Local ChatGPT executor path
 
