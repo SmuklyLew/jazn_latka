@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115 keeps v114 hybrid/adaptive ingress while converging ChatGPT Desktop
-# tool visibility and registered MCP app binding with the same turn contract.
-DISTRIBUTION_VERSION = "16.3.25.5.115"
-PACKAGE_VERSION = "16.3.25.5.115"
-PACKAGE_RELEASE_NAME = "chatgpt-desktop-app-binding-hybrid-convergence"
+# v115.1 keeps the v115 host/MCP binding while restoring one canonical
+# persistent conversation authority across --chat and every --chat-* adapter.
+DISTRIBUTION_VERSION = "16.3.25.5.115.1"
+PACKAGE_VERSION = "16.3.25.5.115.1"
+PACKAGE_RELEASE_NAME = "unified-conversation-runtime-authority-hotfix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
