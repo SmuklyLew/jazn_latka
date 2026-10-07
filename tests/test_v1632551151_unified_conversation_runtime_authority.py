@@ -142,6 +142,72 @@ def test_daemon_conversation_session_is_transport_only_and_close_does_not_stop_r
     assert session.usable is False
 
 
+def test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fake_chat_daemon(_config: Any, user_text: str, **kwargs: Any) -> dict[str, Any]:
+        calls.append({"user_text": user_text, **kwargs})
+        return {
+            "ok": True,
+            "accepted": True,
+            "final_visible_text": user_text,
+        }
+
+    monkeypatch.setattr(daemon_session_module, "chat_daemon", fake_chat_daemon)
+    session = DaemonConversationSession(
+        JaznConfig(root=tmp_path),
+        session_id="clean-session",
+        no_carryover=True,
+        command="--chat",
+    )
+
+    session.process_user_text("pierwsza")
+    session.process_user_text("druga")
+
+    assert [call["reset_session"] for call in calls] == [True, False]
+    assert {call["session_id"] for call in calls} == {"clean-session"}
+
+
+def test_daemon_reset_session_replaces_existing_worker_once(tmp_path: Path) -> None:
+    cfg = JaznConfig(root=tmp_path)
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0),
+        runtime_daemon.JaznDaemonHandler,
+        config=cfg,
+        marker_path=tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json",
+        session_factory=_EchoSession,
+        execution_timeout_seconds=1.0,
+        hard_worker_process_isolation=False,
+    )
+    try:
+        first, _ = server.get_session(
+            "clean-session",
+            no_carryover=False,
+            command="--chat",
+        )
+        reset, _ = server.get_session(
+            "clean-session",
+            no_carryover=True,
+            command="--chat",
+            reset_session=True,
+        )
+        reused, _ = server.get_session(
+            "clean-session",
+            no_carryover=True,
+            command="--chat",
+            reset_session=False,
+        )
+
+        assert reset is not first
+        assert reused is reset
+    finally:
+        server.close_sessions()
+        server.server_close()
+
+
 def test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
