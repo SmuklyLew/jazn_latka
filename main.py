@@ -1146,6 +1146,7 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-ollama")
     if daemon_exit is not None:
         return daemon_exit
+    daemon_bound = _daemon_ensure.selected_transport == "persistent_daemon"
     if bridge_text:
         return _run_chat_command_one_shot(
             cfg=cfg,
@@ -1156,19 +1157,26 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
             lifecycle="ollama_terminal_one_shot",
             command="--chat-ollama",
             output_mode="final_visible_text",
+            host=ns.daemon_host,
+            port=ns.daemon_port,
         )
     if stdin_is_tty:
-        session = RuntimeSessionWorker(
-            session_factory=JaznRuntimeSession,
-            config=cfg,
+        session = DaemonConversationSession(
+            cfg,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
             source_client="ollama_terminal_chat",
             command="--chat-ollama",
-            timeout_seconds=runtime_turn_timeout_seconds(cfg),
+            host=ns.daemon_host,
+            port=ns.daemon_port,
+            model_channel_config=model_channel_config_from_config(cfg),
         )
         try:
-            run_persistent_chat(session, session_id=ns.session_id, no_carryover=ns.no_carryover)
+            run_persistent_chat(
+                session,
+                session_id=session.state.session_id,
+                no_carryover=ns.no_carryover,
+            )
         finally:
             session.close()
         return 0
@@ -1181,6 +1189,9 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
         stdin=None,
         require_openai_api_key=False,
         output_mode="final_visible_text" if ns.final_only else "jsonl",
+        daemon_bound=daemon_bound,
+        daemon_host=ns.daemon_host,
+        daemon_port=ns.daemon_port,
     )
 
 
