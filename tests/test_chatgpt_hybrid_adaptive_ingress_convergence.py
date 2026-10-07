@@ -211,5 +211,5 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-desktop-app-binding-hybrid-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.115.1"
+    assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"
