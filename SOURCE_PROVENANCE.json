@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
+  "base_merge_commit": "22d23869617304eeac02deb8b83fe131d2fece57",
   "base_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
-  "commit_date": "2026-10-07T21:51:56Z",
+  "commit_date": "2026-10-07T23:55:47+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-07T21:51:56+00:00",
+  "generated_at_utc": "2026-10-07T21:55:47+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f3451826d14a5b28892d401a92d21509f2a0e5e8",
+  "git_tree_sha": "e058138f126268ed17902120ed5921ee46c50b42",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
+    "source_commit": "22d23869617304eeac02deb8b83fe131d2fece57",
     "source_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
+  "source_commit": "22d23869617304eeac02deb8b83fe131d2fece57",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "tag": null,
