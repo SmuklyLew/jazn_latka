@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from latka_jazn.model_adapters.null_model_adapter import NullModelAdapter
 
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.conversation_channel import apply_model_channel_config
 from latka_jazn.core.llm_route_resolver import (
     ROUTE_CHATGPT_BRIDGE,
     ROUTE_LOCAL,
@@ -75,6 +76,10 @@ def _command_from_client_context(client_context: Mapping[str, Any] | None) -> st
     language_channel = str(client_context.get("language_channel") or "").strip().lower()
     if "chatgpt" in client or "chatgpt" in language_channel:
         return "--chat-gpt"
+    if "ollama" in client or language_channel in {"ollama", "local_llm", "local-llm"}:
+        return "--chat-ollama"
+    if "openai" in client or language_channel in {"openai", "openai_api", "openai-api"}:
+        return "--chat-open-ai"
     if "terminal" in client or language_channel in {"terminal", "chat"}:
         return "--chat"
     return None
@@ -136,9 +141,15 @@ def build_speech_adapter_for_turn(
 
     env_map: Mapping[str, str] = env if env is not None else os.environ
     effective_command = command or _command_from_client_context(client_context)
+    channel_payload = (
+        client_context.get("model_channel_config")
+        if isinstance(client_context, Mapping)
+        else None
+    )
+    turn_config = apply_model_channel_config(config, channel_payload)
     infer_host = bool(effective_command == "--chat-gpt" or _truthy(env_map.get("JAZN_ASSUME_CHATGPT_HOST")))
     routed_config, route_status = configured_speech_config(
-        config,
+        turn_config,
         command=effective_command,
         env=env_map,
         infer_host_environment=infer_host,
