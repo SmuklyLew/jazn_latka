@@ -2723,7 +2723,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "request_id": job.request_id,
                 "async_job": True,
             }
-            if job.client in {"chatgpt_daemon_bridge", "secure_mcp_gateway"}:
+            if job.command == "--chat-gpt" or job.client in {"chatgpt_daemon_bridge", "secure_mcp_gateway"}:
                 from latka_jazn.core.chat_command_contract import attach_chatgpt_host_contract
 
                 attach_chatgpt_host_contract(
