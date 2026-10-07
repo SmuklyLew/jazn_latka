@@ -70,6 +70,16 @@ plugin state is still not current-message capability evidence. The route becomes
 conversation-ready only after the current message exposes the complete toolset
 and a fresh `jazn_status` verifies the expected persistent runtime.
 
+Direct registered Desktop/workspace MCP is represented as the separate
+`registered_mcp_app` remote transport. Its current-message probe is
+`jazn_registered_mcp_status/v1`, not the public HTTP
+`jazn_public_mcp_status/v1`. The classifier requires an actual host invocation,
+supported negotiated MCP protocol, `gateway_live`, daemon reachability,
+`ready=true`, exact package/runtime version, non-empty runtime instance id,
+fresh observation/heartbeat and the complete current-message toolset. The
+model-visible status is redacted and cannot expose local runtime roots, memory
+database paths, PID/private daemon fields or secrets.
+
 ## Bounded local fallback
 
 Local fallback is permitted only before the user message has crossed a
