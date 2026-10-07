@@ -260,5 +260,5 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.113"
+    assert PACKAGE_VERSION == "119.2.0"
     assert PACKAGE_RELEASE_NAME == "remote-only-chatgpt-ingress-convergence"

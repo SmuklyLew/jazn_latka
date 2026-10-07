@@ -22,7 +22,7 @@
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
   "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem remote-only. Dla zwykłej wiadomości brak kompletnej bieżącej ekspozycji jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply kończy się fail-closed i nie uruchamia lokalnego executora, ZIP bootstrapu ani automatycznego handoffu. Remote route wymaga świeżego statusu, właściwego persistent runtime i bieżącego tool exposure. Zmiana/frozen snapshot aplikacji wymaga Refresh/Recreate/republish po stronie ChatGPT. Lokalny run.py/main.py pozostaje kanonicznym control plane wyłącznie w jawnym operator_recovery. Widoczna odpowiedź Jaźni nadal wymaga zaakceptowanego display_exact po finalizacji.",
-  "version": "16.3.25.5.113",
+  "version": "119.2.0",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only",
   "chatgpt_fresh_conversation_reverification_required": true,

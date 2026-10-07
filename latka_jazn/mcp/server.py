@@ -463,6 +463,50 @@ class JaznMcpServer(_V76JaznMcpServer):
         return prepared
 
     @classmethod
+    def _stamp_legacy_tool_list_visibility(
+        cls,
+        response: dict[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        """Keep canonical ChatGPT turn tools model-visible on initialize-era MCP.
+
+        ChatGPT Desktop may negotiate an initialize-capable MCP revision before
+        requesting tools/list. The historical v76 definitions intentionally mark
+        several tools app-only. Canonical turn tools must nevertheless have the
+        same model-visible contract as the modern 2026-07-28 surface, while
+        diagnostics and compatibility-only tools keep their existing visibility.
+        """
+
+        if response is None or "error" in response:
+            return response
+        raw_result = response.get("result")
+        if not isinstance(raw_result, Mapping):
+            return response
+        tools = raw_result.get("tools")
+        if not isinstance(tools, list):
+            return response
+
+        normalized_tools: list[dict[str, Any]] = []
+        for raw_item in tools:
+            if not isinstance(raw_item, Mapping):
+                continue
+            item = dict(raw_item)
+            tool_name = str(item.get("name") or "")
+            if tool_name in MODEL_VISIBLE_CANONICAL_TOOL_NAMES:
+                tool_meta = dict(item.get("_meta") or {})
+                tool_meta.pop("openai/visibility", None)
+                ui_meta = dict(tool_meta.get("ui") or {})
+                ui_meta["visibility"] = ["model", "app"]
+                tool_meta["ui"] = ui_meta
+                item["_meta"] = tool_meta
+            normalized_tools.append(item)
+
+        result = dict(raw_result)
+        result["tools"] = normalized_tools
+        stamped = dict(response)
+        stamped["result"] = result
+        return stamped
+
+    @classmethod
     def _stamp_modern_response(
         cls,
         request_value: Mapping[str, Any],
@@ -652,6 +696,8 @@ class JaznMcpServer(_V76JaznMcpServer):
             modern=modern,
         )
         response = super().handle(dispatched_request)
+        if not modern and method == "tools/list":
+            response = self._stamp_legacy_tool_list_visibility(response)
         turn_runtime_request = (
             dispatched_request if developer_alias is not None else request_value
         )
