@@ -17,6 +17,7 @@ _COMMAND_ALIASES: dict[str, str] = {
     "--local-llm": CANONICAL_OLLAMA_COMMAND,
     "--ollama": CANONICAL_OLLAMA_COMMAND,
     "--chat-openai": CANONICAL_OPENAI_COMMAND,
+    "direct_message": CANONICAL_CHAT_COMMAND,
 }
 
 _SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._:@-]{1,128}$")
