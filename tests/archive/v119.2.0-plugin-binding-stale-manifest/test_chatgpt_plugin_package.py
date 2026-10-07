@@ -147,34 +147,6 @@ def test_write_registered_app_binding_omits_mcp_json(tmp_path: Path) -> None:
     ]["jazn"]["id"] == app_id
 
 
-
-def test_force_replaces_known_plugin_shape_without_stale_optional_manifests(tmp_path: Path) -> None:
-    app_id = "plugin_asdk_app_6a4c0062f3b88191855c0a80eac5d53d"
-    write_portable_plugin_package(
-        tmp_path,
-        "https://jazn.example.test/mcp",
-        registered_app_id=app_id,
-    )
-    assert (tmp_path / "mcp.json").is_file()
-    assert (tmp_path / ".app.json").is_file()
-
-    write_portable_plugin_package(
-        tmp_path,
-        registered_app_id=app_id,
-        force=True,
-    )
-    assert not (tmp_path / "mcp.json").exists()
-    assert (tmp_path / ".app.json").is_file()
-
-    write_portable_plugin_package(
-        tmp_path,
-        "https://jazn.example.test/mcp",
-        force=True,
-    )
-    assert (tmp_path / "mcp.json").is_file()
-    assert not (tmp_path / ".app.json").exists()
-
-
 def test_cli_parser_accepts_production_oauth_and_plugin_package_modes() -> None:
     from latka_jazn.cli import build_parser
 

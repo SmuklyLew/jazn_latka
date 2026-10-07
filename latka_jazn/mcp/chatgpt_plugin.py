@@ -21,6 +21,7 @@ PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 PLUGIN_NAME = "jazn-runtime"
 MCP_SERVER_NAME = "jazn"
+PLUGIN_DOCUMENT_NAMES = ("plugin.json", "mcp.json", ".app.json")
 REPOSITORY_URL = "https://github.com/SmuklyLew/jazn_latka"
 _REGISTERED_APP_PREFIXES = (
     "plugin_asdk_app_",
@@ -206,7 +207,11 @@ def write_portable_plugin_package(
         package_version=package_version,
         registered_app_id=registered_app_id,
     )
-    existing = [target / name for name in documents if (target / name).exists()]
+    existing = [
+        target / name
+        for name in PLUGIN_DOCUMENT_NAMES
+        if (target / name).exists()
+    ]
     if existing and not force:
         raise FileExistsError("chatgpt_plugin_package_target_exists_use_force")
 
@@ -222,6 +227,14 @@ def write_portable_plugin_package(
                 "size_bytes": len(payload),
             }
         )
+
+    if force:
+        for stale_name in PLUGIN_DOCUMENT_NAMES:
+            if stale_name in documents:
+                continue
+            stale_path = target / stale_name
+            if stale_path.is_file():
+                stale_path.unlink()
 
     normalized_app_id = (
         validate_registered_app_id(registered_app_id)
