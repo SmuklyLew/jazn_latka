@@ -150,6 +150,11 @@ from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_chat import run_persistent_chat
 from latka_jazn.core.runtime_session import JaznRuntimeSession
+from latka_jazn.core.conversation_channel import (
+    model_channel_config_from_config,
+    resolve_canonical_chat_session_id,
+)
+from latka_jazn.core.daemon_conversation_session import DaemonConversationSession
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
 from latka_jazn.memory.raw_memory_status import RawMemoryInspector
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
@@ -238,7 +243,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--status", "--status-readonly", "--diagnostics-readonly", action="store_true", dest="status_readonly", help="Pokaż diagnostykę bez zapisu do pamięci. --status jest jawnym aliasem, nie skrótem argparse.")
     parser.add_argument("--cognitive-frame", "--chatgpt-frame", "--brain-frame", action="store_true", dest="cognitive_frame", help="Zwróć wewnętrzny pakiet poznawczy JSON dla ChatGPT, nie gotową odpowiedź użytkownikowi.")
     parser.add_argument("--debug-direct", action="store_true", dest="debug_direct", help="Pokaż techniczną ścieżkę bezpośrednią i fallback diagnostyczny zamiast rozmownej odpowiedzi.")
-    parser.add_argument("--chat", "--loop", action="store_true", dest="chat_loop", help="Uruchom stałą pętlę rozmowy: jeden JaznEngine działa przez wiele tur aż do /exit lub EOF.")
+    parser.add_argument("--chat", "--loop", action="store_true", dest="chat_loop", help="Uruchom klienta stałej rozmowy z jedną daemon-owned sesją Jaźni; /exit lub EOF odłącza klienta bez zatrzymywania persistent runtime.")
     parser.add_argument("--chat-gpt", "--chatgpt", action="store_true", dest="chat_gpt", help="Kanoniczny most ChatGPT. Z wiadomością po -- zwraca zwarty pakiet hosta z jednoznaczną akcją; stdin zachowuje pełny JSONL. Jawne --final-only pokazuje tekst tylko po przejściu bramy prezentacji.")
     parser.add_argument("--chat-gpt-final-only", action="store_true", dest="chat_gpt_final_only", help=argparse.SUPPRESS)
     parser.add_argument("--final-only", action="store_true", dest="final_only", help=argparse.SUPPRESS)
@@ -296,7 +301,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--recovery-skip-crc", action="store_true", help="Pomiń pełny test CRC ZIP-a; tylko do diagnostyki.")
     parser.add_argument("--recovery-force-reextract", action="store_true", help="Nie używaj istniejącego poprawnego folderu; rozpocznij czyste staging extraction.")
     parser.add_argument("--recovery-no-daemon", action="store_true", help="Po recovery nie uruchamiaj daemonu.")
-    parser.add_argument("--session-id", default=None, help="Opcjonalny identyfikator sesji. Gdy go nie podasz, runtime wygeneruje go automatycznie.")
+    parser.add_argument("--session-id", default=None, help="Opcjonalny identyfikator sesji. Dla tras rozmowy brak wartości oznacza wspólną kanoniczną sesję jazn-main, aby --chat i --chat-* zachowywały continuity.")
     parser.add_argument("--no-carryover", action="store_true", dest="no_carryover", help="Rozpocznij czystą sesję bez wczytywania checkpointu poprzedniego uruchomienia; bieżąca pętla nadal zachowuje kontekst między turami.")
     parser.add_argument("--github-plan", action="store_true", dest="github_plan", help="Zapisz i pokaż plan repozytoriów Latka.Jazn oraz Latka.Jazn.Memory bez wykonywania pushu.")
     parser.add_argument("--dedup-report", action="store_true", dest="dedup_report", help="Zbuduj raport duplikatów treści i SHA-256 bez usuwania plików.")
@@ -523,7 +528,7 @@ def _try_chat_gpt_one_shot_via_daemon(
         # the long-lived daemon rejects it, fall back to the local bridge so a
         # degraded daemon cannot overwrite a trusted per-turn timestamp.
         return None
-    daemon_session_id = session_id or os.environ.get("JAZN_CHATGPT_DAEMON_SESSION_ID", "chatgpt-bridge-default").strip() or "chatgpt-bridge-default"
+    daemon_session_id = resolve_canonical_chat_session_id(session_id)
     classification_text, input_warning = guard_cli_flags_in_user_text(text)
     if not classification_text:
         classification_text = text
@@ -536,6 +541,8 @@ def _try_chat_gpt_one_shot_via_daemon(
             session_id=daemon_session_id,
             no_carryover=no_carryover,
             client="chatgpt_daemon_bridge",
+            command="--chat-gpt",
+            model_channel_config=model_channel_config_from_config(cfg),
             request_id=request_id,
             timeout=min(float(timeout), float(wait_budget)) if wait_budget is not None else float(timeout),
             poll_interval=poll_interval,
@@ -974,42 +981,47 @@ def _run_chat_command_one_shot(
     lifecycle: str,
     command: str,
     output_mode: BridgeOutputMode = "final_visible_text",
+    host: str = DEFAULT_DAEMON_HOST,
+    port: int = DEFAULT_DAEMON_PORT,
 ) -> int:
-    """Run the same runtime speech engine for terminal and bridge one-shots.
+    """Send one CLI turn to the same persistent daemon-owned conversation.
 
-    All chat entry points converge on ConversationRunner through its JaznRuntimeSession alias;
-    adapters change only the visible/model channel, not the reasoning pipeline.
+    The CLI process is only a transport client. It never constructs a competing
+    JaznRuntimeSession/JaznEngine when the canonical daemon route was selected.
     """
-    session = RuntimeSessionWorker(
-        session_factory=JaznRuntimeSession,
-        config=cfg,
+    session = DaemonConversationSession(
+        cfg,
         session_id=session_id,
         no_carryover=no_carryover,
         source_client=source_client,
         command=command,
-        timeout_seconds=runtime_turn_timeout_seconds(cfg),
+        host=host,
+        port=port,
+        model_channel_config=model_channel_config_from_config(cfg),
     )
     try:
         result = session.process_user_text(
             text,
             client=source_client,
             lifecycle=lifecycle,
-            session_id_source="cli_arg" if session_id else "generated",
-            process_reused=False,
+            session_id_source="cli_arg" if session_id else "canonical_default",
+            process_reused=True,
+            command=command,
+            model_channel_config=model_channel_config_from_config(cfg),
         )
         result.setdefault("chat_bridge", {})
         if isinstance(result["chat_bridge"], dict):
             result["chat_bridge"].update({
                 "command": command,
                 "canonical_command": command,
+                "persistent_runtime_owner": "daemon",
                 "one_shot_shared_runtime_pipeline": True,
-                "truth_boundary": "Ta komenda czatowa używa tego samego JaznRuntimeSession.process_turn co pozostałe flagi; adapter zmienia kanał modelu/widoczności, nie neurologię runtime.",
+                "truth_boundary": "Ta komenda jest jednorazowym klientem transportowym tej samej daemon-owned sesji Jaźni; adapter zmienia kanał modelu/widoczności, nie pamięć, tożsamość ani lifecycle runtime.",
             })
         write_chat_bridge_payload(sys.stdout, result, output_mode=output_mode)
         return 0
     finally:
         session.close()
-
 
 
 def _select_ollama_model_for_tty(
