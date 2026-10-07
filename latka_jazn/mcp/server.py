@@ -27,6 +27,7 @@ from latka_jazn.mcp.developer_mode_surface import (
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
+from latka_jazn.mcp.remote_runtime import REGISTERED_MCP_STATUS_SCHEMA
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
     READ_ONLY_TOOLS,
@@ -507,6 +508,54 @@ class JaznMcpServer(_V76JaznMcpServer):
         return stamped
 
     @classmethod
+    def _stamp_registered_mcp_status_response(
+        cls,
+        request_value: Mapping[str, Any],
+        response: dict[str, Any] | None,
+        *,
+        protocol_version: str,
+    ) -> dict[str, Any] | None:
+        """Bind direct Desktop/registered-app jazn_status to its actual MCP era.
+
+        Public Streamable HTTP wraps the private backend separately and therefore
+        keeps its own jazn_public_mcp_status/v1 contract. This stamp is only for
+        direct JaznMcpServer tools/call responses used by registered MCP apps and
+        stdio/initialize-era Desktop surfaces.
+        """
+
+        if response is None or "error" in response:
+            return response
+        if str(request_value.get("method") or "") != "tools/call":
+            return response
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return response
+        if str(params.get("name") or "").strip() != "jazn_status":
+            return response
+        raw_result = response.get("result")
+        if not isinstance(raw_result, Mapping):
+            return response
+        structured_value = raw_result.get("structuredContent")
+        if not isinstance(structured_value, Mapping):
+            return response
+
+        structured = dict(structured_value)
+        structured.update(
+            {
+                "evidence_schema": REGISTERED_MCP_STATUS_SCHEMA,
+                "tool_name": "jazn_status",
+                "protocol_version": str(protocol_version),
+                "registered_transport": "registered_mcp_app",
+                "package_version": PACKAGE_VERSION_FULL,
+            }
+        )
+        result = dict(raw_result)
+        result["structuredContent"] = structured
+        stamped = dict(response)
+        stamped["result"] = result
+        return stamped
+
+    @classmethod
     def _stamp_modern_response(
         cls,
         request_value: Mapping[str, Any],
@@ -705,6 +754,19 @@ class JaznMcpServer(_V76JaznMcpServer):
             turn_runtime_request,
             response,
         )
+        if developer_alias is None and method == "tools/call":
+            response = self._stamp_registered_mcp_status_response(
+                request_value,
+                response,
+                protocol_version=(
+                    MCP_PROTOCOL_VERSION_MODERN
+                    if modern
+                    else (
+                        self.negotiated_protocol_version
+                        or MCP_PROTOCOL_VERSION_LATEST_LEGACY
+                    )
+                ),
+            )
         if (
             developer_alias is not None
             and response is not None
