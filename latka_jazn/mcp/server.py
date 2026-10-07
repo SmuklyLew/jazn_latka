@@ -27,6 +27,7 @@ from latka_jazn.mcp.developer_mode_surface import (
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
+from latka_jazn.mcp.remote_runtime import REGISTERED_MCP_STATUS_SCHEMA
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
     READ_ONLY_TOOLS,
@@ -463,6 +464,98 @@ class JaznMcpServer(_V76JaznMcpServer):
         return prepared
 
     @classmethod
+    def _stamp_legacy_tool_list_visibility(
+        cls,
+        response: dict[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        """Keep canonical ChatGPT turn tools model-visible on initialize-era MCP.
+
+        ChatGPT Desktop may negotiate an initialize-capable MCP revision before
+        requesting tools/list. Historical v76 definitions intentionally mark
+        several tools app-only. Canonical turn tools must nevertheless keep the
+        same model-visible contract as the modern MCP surface, while diagnostics
+        and compatibility-only tools retain their existing visibility.
+        """
+
+        if response is None or "error" in response:
+            return response
+        raw_result = response.get("result")
+        if not isinstance(raw_result, Mapping):
+            return response
+        tools = raw_result.get("tools")
+        if not isinstance(tools, list):
+            return response
+
+        normalized_tools: list[dict[str, Any]] = []
+        for raw_item in tools:
+            if not isinstance(raw_item, Mapping):
+                continue
+            item = dict(raw_item)
+            tool_name = str(item.get("name") or "")
+            if tool_name in MODEL_VISIBLE_CANONICAL_TOOL_NAMES:
+                tool_meta = dict(item.get("_meta") or {})
+                tool_meta.pop("openai/visibility", None)
+                ui_meta = dict(tool_meta.get("ui") or {})
+                ui_meta["visibility"] = ["model", "app"]
+                tool_meta["ui"] = ui_meta
+                item["_meta"] = tool_meta
+            normalized_tools.append(item)
+
+        result = dict(raw_result)
+        result["tools"] = normalized_tools
+        stamped = dict(response)
+        stamped["result"] = result
+        return stamped
+
+    @classmethod
+    def _stamp_registered_mcp_status_response(
+        cls,
+        request_value: Mapping[str, Any],
+        response: dict[str, Any] | None,
+        *,
+        protocol_version: str,
+    ) -> dict[str, Any] | None:
+        """Bind direct Desktop/registered-app jazn_status to its actual MCP era.
+
+        Public Streamable HTTP wraps the private backend separately and therefore
+        keeps its own jazn_public_mcp_status/v1 contract. This stamp is only for
+        direct JaznMcpServer tools/call responses used by registered MCP apps and
+        stdio/initialize-era Desktop surfaces.
+        """
+
+        if response is None or "error" in response:
+            return response
+        if str(request_value.get("method") or "") != "tools/call":
+            return response
+        params = request_value.get("params")
+        if not isinstance(params, Mapping):
+            return response
+        if str(params.get("name") or "").strip() != "jazn_status":
+            return response
+        raw_result = response.get("result")
+        if not isinstance(raw_result, Mapping):
+            return response
+        structured_value = raw_result.get("structuredContent")
+        if not isinstance(structured_value, Mapping):
+            return response
+
+        structured = dict(structured_value)
+        structured.update(
+            {
+                "evidence_schema": REGISTERED_MCP_STATUS_SCHEMA,
+                "tool_name": "jazn_status",
+                "protocol_version": str(protocol_version),
+                "registered_transport": "registered_mcp_app",
+                "package_version": PACKAGE_VERSION_FULL,
+            }
+        )
+        result = dict(raw_result)
+        result["structuredContent"] = structured
+        stamped = dict(response)
+        stamped["result"] = result
+        return stamped
+
+    @classmethod
     def _stamp_modern_response(
         cls,
         request_value: Mapping[str, Any],
@@ -652,6 +745,8 @@ class JaznMcpServer(_V76JaznMcpServer):
             modern=modern,
         )
         response = super().handle(dispatched_request)
+        if not modern and method == "tools/list":
+            response = self._stamp_legacy_tool_list_visibility(response)
         turn_runtime_request = (
             dispatched_request if developer_alias is not None else request_value
         )
@@ -659,6 +754,19 @@ class JaznMcpServer(_V76JaznMcpServer):
             turn_runtime_request,
             response,
         )
+        if developer_alias is None and method == "tools/call":
+            response = self._stamp_registered_mcp_status_response(
+                request_value,
+                response,
+                protocol_version=(
+                    MCP_PROTOCOL_VERSION_MODERN
+                    if modern
+                    else (
+                        self.negotiated_protocol_version
+                        or MCP_PROTOCOL_VERSION_LATEST_LEGACY
+                    )
+                ),
+            )
         if (
             developer_alias is not None
             and response is not None

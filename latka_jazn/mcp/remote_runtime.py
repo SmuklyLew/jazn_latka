@@ -12,7 +12,11 @@ from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 SCHEMA_VERSION = schema_version("mcp_remote_runtime")
 PUBLIC_CONNECTOR_STATUS_SCHEMA = "jazn_public_mcp_status/v1"
+REGISTERED_MCP_STATUS_SCHEMA = "jazn_registered_mcp_status/v1"
 EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION = "2026-07-28"
+SUPPORTED_REGISTERED_MCP_PROTOCOL_VERSIONS = frozenset(
+    {"2026-07-28", "2025-11-25", "2025-06-18"}
+)
 DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS = 120.0
 DEFAULT_REMOTE_EVIDENCE_MAX_FUTURE_SKEW_SECONDS = 5.0
 
@@ -428,17 +432,175 @@ def classify_public_connector_status_failover(
     }
 
 
+def classify_registered_mcp_connector_status_failover(
+    *,
+    status_payload: Mapping[str, Any] | None,
+    host_connector_invocation_observed: bool | None,
+    callable_tool_names: object = None,
+    current_message_toolset_observed: bool | None = None,
+    expected_runtime_version: str = PACKAGE_VERSION_FULL,
+    now_utc: datetime | None = None,
+    max_evidence_age_seconds: float = DEFAULT_REMOTE_EVIDENCE_MAX_AGE_SECONDS,
+) -> dict[str, Any]:
+    """Classify a direct registered ChatGPT MCP app from an actual jazn_status call.
+
+    This is intentionally distinct from public Streamable HTTP and Secure MCP
+    Tunnel control-plane evidence. The host must have invoked the model-visible
+    status action on the current message surface, observed the complete turn
+    toolset, and received a fresh redacted runtime binding from the same
+    registered MCP connection.
+    """
+
+    status = status_payload if isinstance(status_payload, Mapping) else {}
+    connector_invocation = host_connector_invocation_observed is True
+    toolset = classify_current_message_toolset(
+        callable_tool_names,
+        current_message_toolset_observed=current_message_toolset_observed,
+    )
+
+    contract_verified = bool(
+        status.get("evidence_schema") == REGISTERED_MCP_STATUS_SCHEMA
+        and str(status.get("tool_name") or "") == "jazn_status"
+        and str(status.get("registered_transport") or "") == "registered_mcp_app"
+    )
+    protocol_version = str(status.get("protocol_version") or "").strip()
+    protocol_compatible = protocol_version in SUPPORTED_REGISTERED_MCP_PROTOCOL_VERSIONS
+    gateway_live = status.get("gateway_live") is True
+    daemon_reachable = status.get("daemon_reachable") is True
+    runtime_ready = bool(
+        status.get("ok") is True
+        and status.get("ready") is True
+        and daemon_reachable
+    )
+    package_version = str(status.get("package_version") or "").strip()
+    package_version_verified = bool(
+        expected_runtime_version and package_version == str(expected_runtime_version)
+    )
+    runtime_instance_id = str(status.get("runtime_instance_id") or "").strip()
+    runtime_version = str(status.get("runtime_version") or "").strip()
+    runtime_binding_verified = bool(runtime_instance_id)
+    runtime_version_verified = bool(
+        expected_runtime_version and runtime_version == str(expected_runtime_version)
+    )
+    evidence_fresh = bool(
+        observation_is_fresh(
+            status.get("observed_at_utc"),
+            now_utc=now_utc,
+            max_age_seconds=max_evidence_age_seconds,
+        )
+        and observation_is_fresh(
+            status.get("runtime_heartbeat_at_utc")
+            or status.get("last_heartbeat_at_utc"),
+            now_utc=now_utc,
+            max_age_seconds=max_evidence_age_seconds,
+        )
+    )
+
+    checks = {
+        "host_connector_invocation_observed": connector_invocation,
+        "registered_status_contract_verified": contract_verified,
+        "protocol_compatible": protocol_compatible,
+        "gateway_live": gateway_live,
+        "daemon_reachable": daemon_reachable,
+        "runtime_ready": runtime_ready,
+        "package_version_verified": package_version_verified,
+        "runtime_binding_verified": runtime_binding_verified,
+        "runtime_version_verified": runtime_version_verified,
+        "evidence_fresh": evidence_fresh,
+    }
+    blocking_checks = [name for name, ready in checks.items() if ready is not True]
+    if toolset["current_message_toolset_observed"] is not True:
+        blocking_checks.append("current_message_toolset_observed")
+    elif toolset["full_turn_toolset_callable"] is not True:
+        blocking_checks.append("full_turn_toolset_callable")
+    route_ready = not blocking_checks
+
+    if not connector_invocation:
+        reason = "chatgpt_connector_invocation_not_verified"
+    elif not contract_verified:
+        reason = "registered_mcp_status_contract_not_verified"
+    elif not protocol_compatible:
+        reason = "registered_mcp_protocol_not_verified"
+    elif not gateway_live:
+        reason = "registered_mcp_gateway_not_live"
+    elif not daemon_reachable:
+        reason = "registered_mcp_daemon_not_reachable"
+    elif not runtime_ready:
+        reason = "registered_mcp_runtime_not_ready"
+    elif not package_version_verified:
+        reason = "registered_mcp_package_version_mismatch"
+    elif not runtime_binding_verified:
+        reason = "registered_mcp_runtime_binding_not_verified"
+    elif not runtime_version_verified:
+        reason = "registered_mcp_runtime_version_mismatch"
+    elif not evidence_fresh:
+        reason = "remote_runtime_evidence_stale"
+    elif toolset["current_message_toolset_observed"] is not True:
+        reason = "chatgpt_current_message_toolset_not_observed"
+    elif toolset["full_turn_toolset_callable"] is not True:
+        reason = "chatgpt_required_turn_toolset_incomplete"
+    else:
+        reason = "registered_mcp_app_connector_probe_ready"
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "package_version": PACKAGE_VERSION_FULL,
+        "remote_transport": RemoteTransport.REGISTERED_MCP_APP.value,
+        "remote_runtime_transport_available": route_ready,
+        "blocking_checks": blocking_checks,
+        "execution_route": "remote_runtime" if route_ready else "none",
+        "next_action": (
+            "use_remote_runtime_transport"
+            if route_ready
+            else "keep_remote_runtime_unverified"
+        ),
+        "reason_code": reason,
+        "host_connector_invocation_observed": connector_invocation,
+        "host_connector_capability_available": connector_invocation,
+        "current_message_toolset_observed": toolset["current_message_toolset_observed"],
+        "required_chatgpt_turn_tools": toolset["required_chatgpt_turn_tools"],
+        "required_chatgpt_turn_tools_revision": toolset["required_chatgpt_turn_tools_revision"],
+        "required_chatgpt_turn_tools_sha256": toolset["required_chatgpt_turn_tools_sha256"],
+        "callable_chatgpt_tool_names": toolset["callable_chatgpt_tool_names"],
+        "missing_required_chatgpt_turn_tools": toolset["missing_required_chatgpt_turn_tools"],
+        "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
+        "registered_status_contract_verified": contract_verified,
+        "protocol_compatible": protocol_compatible,
+        "gateway_live": gateway_live,
+        "daemon_reachable": daemon_reachable,
+        "runtime_ready": runtime_ready,
+        "package_version_verified": package_version_verified,
+        "runtime_binding_verified": runtime_binding_verified,
+        "runtime_version_verified": runtime_version_verified,
+        "evidence_fresh": evidence_fresh,
+        "runtime_instance_id": runtime_instance_id,
+        "runtime_version": runtime_version,
+        "truth_boundary": (
+            "A registered app id, .app.json, installed plugin, historical tools/list, or "
+            "copied status payload is not route evidence. A registered MCP app becomes "
+            "conversation-ready only after this exact message exposes the complete Jaźń "
+            "turn toolset, the host actually invokes jazn_status through that app, and the "
+            "fresh redacted result binds the expected package and persistent daemon instance/"
+            "version. Visible Jaźń speech still requires accepted turn finalization."
+        ),
+    }
+
+
 def preferred_verified_remote_transport(
     *,
     public_streamable_http: Mapping[str, Any] | None = None,
     secure_tunnel: Mapping[str, Any] | None = None,
+    registered_mcp_app: Mapping[str, Any] | None = None,
 ) -> str:
     public_value = public_streamable_http if isinstance(public_streamable_http, Mapping) else {}
     tunnel_value = secure_tunnel if isinstance(secure_tunnel, Mapping) else {}
+    registered_value = registered_mcp_app if isinstance(registered_mcp_app, Mapping) else {}
     if public_value.get("remote_runtime_transport_available") is True:
         return RemoteTransport.PUBLIC_STREAMABLE_HTTP.value
     if tunnel_value.get("remote_runtime_transport_available") is True:
         return RemoteTransport.OPENAI_SECURE_MCP_TUNNEL.value
+    if registered_value.get("remote_runtime_transport_available") is True:
+        return RemoteTransport.REGISTERED_MCP_APP.value
     return RemoteTransport.NONE.value
 
 
@@ -447,9 +609,12 @@ __all__ = [
     "DEFAULT_REMOTE_EVIDENCE_MAX_FUTURE_SKEW_SECONDS",
     "EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION",
     "PUBLIC_CONNECTOR_STATUS_SCHEMA",
+    "REGISTERED_MCP_STATUS_SCHEMA",
+    "SUPPORTED_REGISTERED_MCP_PROTOCOL_VERSIONS",
     "PublicStreamableHttpEvidence",
     "SCHEMA_VERSION",
     "classify_public_connector_status_failover",
+    "classify_registered_mcp_connector_status_failover",
     "classify_public_streamable_http_failover",
     "observation_age_seconds",
     "observation_is_fresh",

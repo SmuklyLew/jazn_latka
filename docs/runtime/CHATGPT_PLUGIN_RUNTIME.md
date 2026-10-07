@@ -1,13 +1,13 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
-This runbook describes the v16.3.25.5.101 ingress/bootstrap contract. Its acceptance
+This runbook describes the v16.3.25.5.115 ingress/bootstrap contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin
 while the Jaźń runtime remains alive outside the per-conversation sandbox.
 
 ## Verified platform contract
 
-As of 2026-10-02, OpenAI's plugin documentation uses a portable Agent Plugins
+As of 2026-10-07, OpenAI's plugin documentation uses a portable Agent Plugins
 package with root `plugin.json` and optional root `mcp.json`. Do not add the
 legacy `ai-plugin.json`/OpenAPI plugin shape to this path.
 
@@ -73,6 +73,50 @@ ChatGPT plugin
 
 The ChatGPT conversation sandbox is not the Jaźń runtime in either topology.
 
+### Registered ChatGPT Desktop/workspace MCP app binding
+
+When ChatGPT already owns an eligible registered MCP connection, the plugin
+package should bind to that app identity through root `.app.json` referenced by
+`extensions.com.openai.apps`. This path is distinct from bundling a remote MCP
+server in `mcp.json`:
+
+```text
+ChatGPT Desktop/workspace registered MCP app
+  -> technical app id (plugin_asdk_app_/asdk_app_/connector_/templated_apps_)
+  -> plugin.json extensions.com.openai.apps = "./.app.json"
+  -> .app.json apps.jazn.id = <registered app id>
+  -> existing MCP connection
+  -> persistent Jaźń runtime
+```
+
+For an app-binding-only package, do not invent `http://127.0.0.1:8080/mcp`
+just to populate `mcp.json`. The host already owns the connection represented
+by the registered app id. A package may intentionally carry both a remote HTTPS
+`mcp.json` and `.app.json`, but that is a separate hybrid packaging choice.
+
+The binding is configuration evidence only. It does not prove that the app is
+installed/enabled for the current account, selected for the current message,
+or that the four canonical Jaźń tools are actually callable.
+
+When a direct registered Desktop/workspace app is actually callable, canonical
+`jazn_status` returns a **redacted** self-describing
+`jazn_registered_mcp_status/v1` contract stamped with the MCP protocol actually
+used by that connection and `registered_transport=registered_mcp_app`.
+Conversation readiness additionally requires exact package/runtime version,
+non-empty persistent daemon instance id, fresh heartbeat, `ready=true`, an
+observed host invocation of that action, and all four canonical tools on the
+same current-message surface. The response deliberately excludes local
+`runtime_root`, database paths, PID/private daemon fields and operator secrets.
+
+This registered-app status is intentionally distinct from
+`jazn_public_mcp_status/v1` used by public Streamable HTTP. It also does not
+replace Secure MCP Tunnel control-plane readiness; the three evidence paths
+remain separately typed and fail-closed.
+
+Registered app references are for local/workspace packaging and testing.
+Current OpenAI public plugin submission does not publish packages carrying app
+references; public distribution uses a stable remote HTTPS MCP endpoint instead.
+
 ## Local ChatGPT executor path
 
 When the current ChatGPT host actually exposes Python/process execution, the
@@ -124,13 +168,16 @@ channel. It does **not** require `OPENAI_API_KEY` and it does not take a
 contract instead of inventing a model name from the currently selected ChatGPT
 model.
 
-The bootstrap package cannot manufacture process-execution capability. If the
-host cannot create a Python process, the local sequence is unavailable for that
-host generation even when the ZIP is present and valid. In that case only an
-actually callable Jaźń remote app/connector with fresh `jazn_status` evidence,
-or an explicitly accepted host handoff, may continue activation. A generic
-OpenAI Deep Research app, GitHub connector, catalog result, URL, or `installed`
-flag is not Jaźń capability evidence.
+The bootstrap package cannot manufacture process-execution capability. In
+v16.3.25.5.115 ordinary ChatGPT uses hybrid/adaptive routing: a callable Jaźń
+MCP/app surface with the complete current-message toolset and fresh
+`jazn_status` evidence is preferred; when that route is not conversation-ready
+**before turn submission**, a host that actually can create a Python process
+may use the bounded verified local bootstrap above.
+If process creation is unavailable as well, ordinary chat fails closed.
+`host_handoff` is reserved for explicit `operator_recovery` with user consent.
+A generic OpenAI Deep Research app, GitHub connector, catalog result, URL, or
+`installed` flag is not Jaźń capability evidence.
 
 ## Model-visible MCP actions
 
@@ -151,6 +198,13 @@ discovery. The public HTTP gateway advertises the canonical names directly.
 OpenAI deprecated `_meta["openai/visibility"]` in July 2026. Canonical Jaźń
 actions use `_meta.ui.visibility=["model","app"]`; compatibility aliases use
 `["app"]`.
+
+ChatGPT Desktop can negotiate an initialize-era MCP revision before
+`tools/list`. v115 normalizes that legacy response for exactly the four
+canonical turn tools so they keep the same `["model","app"]` visibility as the
+modern discovery surface, while diagnostics such as `jazn_audit_lookup` remain
+app-only/private. This fixes server-side discovery parity; it still does not
+prove current-message host exposure.
 
 ## Start the public HTTPS gateway
 
@@ -209,7 +263,23 @@ py -X utf8 run.py chatgpt-plugin-package `
 ```
 
 After the MCP server has been registered in ChatGPT Developer Mode, copy the
-technical app id from the ChatGPT plugin URL and generate the OpenAI app binding:
+technical app id from the ChatGPT plugin/app URL. For a local/workspace MCP that
+ChatGPT already owns, generate an app-binding-only package:
+
+```powershell
+py -X utf8 run.py chatgpt-plugin-package `
+  --root . `
+  --registered-app-id plugin_asdk_app_<id> `
+  --output .\exports\jazn-chatgpt-plugin `
+  --force `
+  --json
+```
+
+This form writes `plugin.json` and `.app.json` only. It deliberately omits
+`mcp.json`; the registered app id points to the existing MCP connection.
+
+If a remote HTTPS package intentionally needs both the endpoint and an existing
+registered app binding, both options may be supplied:
 
 ```powershell
 py -X utf8 run.py chatgpt-plugin-package `
@@ -221,8 +291,14 @@ py -X utf8 run.py chatgpt-plugin-package `
   --json
 ```
 
-The second form writes `plugin.json`, `mcp.json`, and `.app.json`.
-Packaging still does not create the ChatGPT connection or install the plugin.
+That explicit hybrid package writes `plugin.json`, `mcp.json`, and
+`.app.json`. When `--force` changes package shape, v115 removes stale
+optional manifests so an old `mcp.json` or `.app.json` cannot silently keep
+an obsolete binding alive.
+
+Packaging still does not create/register the ChatGPT MCP connection, install or
+enable the plugin, select it for a message, refresh a frozen tool snapshot, or
+prove callable Jaźń actions.
 
 ## Connect in ChatGPT
 
@@ -231,9 +307,14 @@ Packaging still does not create the ChatGPT connection or install the plugin.
 3. For public ingress, provide the deployed HTTPS URL ending in `/mcp`.
 4. For private ingress, select Secure MCP Tunnel and choose/enter the
    `tunnel_id`.
-5. Create the connection and review the discovered tool list.
-6. After changing names/schemas/annotations, deploy/restart the server, use
-   Refresh on the ChatGPT connection, then start a new conversation.
+5. Create the connection and review the discovered tool list. Confirm that
+   `jazn_status`, `jazn_generate_visible_reply`,
+   `jazn_resume_visible_reply`, and `jazn_finalize_reply` are model-visible.
+6. If packaging a local/workspace plugin around an already registered MCP app,
+   use its technical app id in `.app.json` rather than inventing localhost HTTP.
+7. After changing names/schemas/annotations/visibility, deploy or restart the
+   server, use Refresh on the ChatGPT app/connection, and then test from a new
+   conversation/message because approved tool snapshots are not auto-updated.
 
 Repository code cannot perform these host/account actions on the user's behalf.
 

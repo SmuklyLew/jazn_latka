@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v113 removes local/process execution from the normal ChatGPT conversation
-# path and converges ordinary ingress on a verified remote MCP/app runtime.
-DISTRIBUTION_VERSION = "16.3.25.5.113"
-PACKAGE_VERSION = "16.3.25.5.113"
-PACKAGE_RELEASE_NAME = "remote-only-chatgpt-ingress-convergence"
+# v115 keeps v114 hybrid/adaptive ingress while converging ChatGPT Desktop
+# tool visibility and registered MCP app binding with the same turn contract.
+DISTRIBUTION_VERSION = "16.3.25.5.115"
+PACKAGE_VERSION = "16.3.25.5.115"
+PACKAGE_RELEASE_NAME = "chatgpt-desktop-app-binding-hybrid-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

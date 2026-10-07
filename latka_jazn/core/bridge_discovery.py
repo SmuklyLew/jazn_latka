@@ -11,7 +11,10 @@ from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_sn
 from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_HOST, DEFAULT_DAEMON_PORT, status_daemon
 from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
-from latka_jazn.mcp.remote_runtime import classify_public_streamable_http_failover
+from latka_jazn.mcp.remote_runtime import (
+    REGISTERED_MCP_STATUS_SCHEMA,
+    classify_public_streamable_http_failover,
+)
 from latka_jazn.mcp.secure_tunnel import build_secure_mcp_tunnel_plan, tunnel_client_executable_status
 from latka_jazn.version import schema_version
 from latka_jazn.core.conversation_entrypoint_contract import (
@@ -93,9 +96,11 @@ def discover_runtime_bridges(
             "transport": "persistent_stdio_jsonl",
             "transport_selection": "capability_negotiated",
             "fallback_transport": "daemon_bound_transactional_turns",
-            "remote_transport": "verified_public_streamable_http_or_openai_secure_mcp_tunnel",
+            "remote_transport": (
+                "verified_public_streamable_http_or_openai_secure_mcp_tunnel_or_registered_mcp_app"
+            ),
             "remote_failover_policy": (
-                "verified_public_streamable_http_or_verified_secure_mcp_tunnel_plus_explicit_host_capability"
+                "verified_public_streamable_http_or_verified_secure_mcp_tunnel_or_verified_registered_mcp_app_plus_explicit_current_message_capability"
             ),
             "fresh_conversation_reverification_required": True,
             "current_message_toolset_observation_required": True,
@@ -142,9 +147,10 @@ def discover_runtime_bridges(
             "meaning": (
                 "kanoniczny most hosta ChatGPT: persistent stdin/JSONL jest preferowany, gdy host potrafi "
                 "utrzymać proces; w przeciwnym razie trwały daemon utrzymuje logical session/turn lineage. "
-                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany publiczny Streamable HTTP MCP albo OpenAI "
-                "Secure MCP Tunnel oraz odpowiadającą connector/app capability, ten sam runtime może być osiągany "
-                "zdalnie bez tworzenia procesu przez bieżącą powierzchnię czatu. Żywotność pipe'a, listenera ani "
+                "Jeżeli host ma jawnie skonfigurowany i zweryfikowany publiczny Streamable HTTP MCP, OpenAI "
+                "Secure MCP Tunnel albo bieżącą registered MCP app capability z faktycznie wywołanym zredagowanym "
+                "jazn_status, ten sam runtime może być osiągany zdalnie bez tworzenia procesu przez bieżącą "
+                "powierzchnię czatu. Żywotność pipe'a, listenera ani "
                 "tunelu nie jest źródłem tożsamości ani dowodem gotowej odpowiedzi; "
                 "widoczna może być tylko zaakceptowana final_visible_text. Tryb nie wykonuje żądania OpenAI model API."
             ),
@@ -238,6 +244,25 @@ def discover_runtime_bridges(
                 "must all be verified independently."
             ),
         },
+        "registered_mcp_app": {
+            "status": "implemented_registered_app_route_requires_current_message_evidence",
+            "remote_transport": "registered_mcp_app",
+            "status_tool": "jazn_status",
+            "status_schema": REGISTERED_MCP_STATUS_SCHEMA,
+            "remote_failover_classifier": "classify_registered_mcp_connector_status_failover",
+            "host_connector_invocation_required": True,
+            "current_message_toolset_required": True,
+            "runtime_binding_required": True,
+            "fresh_heartbeat_required": True,
+            "model_visible_status_redacted": True,
+            "binding_manifest": ".app.json",
+            "binding_manifest_is_route_evidence": False,
+            "truth_boundary": (
+                "A registered app id, .app.json, installed plugin or historical tools/list is not route evidence. "
+                "The registered MCP app is usable only after the current message exposes all required Jaźń turn "
+                "tools and actually invokes redacted jazn_status with a fresh matching runtime binding."
+            ),
+        },
         "secure_mcp": {
             "status": "implemented_secure_tunnel_managed_runtime_target",
             "server_command": secure_tunnel_plan["stdio_mcp_command"],
@@ -272,7 +297,8 @@ def discover_runtime_bridges(
         },
         "truth_boundary": (
             "GitHub i ZIP są źródłem kodu/snapshotu. Aktywna Jaźń wymaga żywego procesu, świeżego heartbeat i zgodnego active_root. "
-            "Durable host operations, local supervisor, host-tool discovery, public Streamable HTTP and Secure MCP Tunnel "
-            "are separate capability contracts; none alone proves runtime readiness or an accepted visible turn."
+            "Durable host operations, local supervisor, host-tool discovery, public Streamable HTTP, Secure MCP Tunnel "
+            "and registered MCP app binding are separate capability contracts; none alone proves runtime readiness "
+            "or an accepted visible turn."
         ),
     }

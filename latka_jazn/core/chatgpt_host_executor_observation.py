@@ -197,6 +197,7 @@ class HostExecutorObservation:
             "none",
             "public_streamable_http",
             "openai_secure_mcp_tunnel",
+            "registered_mcp_app",
             "verified_remote_unspecified",
         }
         if remote_transport not in allowed_remote_transports:

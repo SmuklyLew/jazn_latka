@@ -1,60 +1,76 @@
 # Jaźń — CURRENT STEP
 
 **Status:** `CANONICAL_CURRENT_STEP`  
-**Stan:** 2026-10-06  
-**Baza master:** `712a25db94c634ea47fbf265c0d907608a668f00` / `16.3.25.5.107-persistent-remote-runtime-operations-convergence`  
+**Stan:** 2026-10-07  
+**Baza master:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1` / `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`  
 **Zweryfikowany v111:** `ee00529cdbd9a4d0a469007db787ed4895667ddf`  
-**Branch:** `upgrade/v16.3.25.5.112-v111-closeout-real-host-evidence-convergence`  
-**Target:** `16.3.25.5.112-v111-closeout-real-host-evidence-convergence`
+**Branch:** `update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`  
+**Target:** `16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`
 
-## Bieżący krok v112 — closeout v111
+## Bieżący krok v115 — Desktop/App Binding Hybrid Convergence
 
-Seria v108–v111 pozostaje ułożona nad niescalonym masterem: PR #318, #319, #320 i
-#321. Żaden PR nie został scalony ani autoryzowany do merge.
+v115 konwerguje dwie niezależne gałęzie wychodzące z master v113:
 
-Repozytoryjny zakres v111 jest zakończony na `ee00529`:
+- `update/v16.3.25.5.114-hybrid-adaptive-ingress-convergence` — właściciel
+  nowej polityki ordinary-chat `HYBRID_ADAPTIVE`;
+- `upgrade/v119.2.0-chatgpt-desktop-mcp-convergence` — źródło wąskich
+  poprawek ChatGPT Desktop MCP discovery i registered app binding.
 
-- `ConversationRunner` jest kanonicznym ownerem sesji/tury, a
-  `JaznRuntimeSession` pozostaje aliasem tej samej klasy;
-- `TurnStateMachine`, submit/poll/resume bez replayu, `FinalizationService`,
-  recovery projekcji i strukturalny ordinary-dialogue cutover są aktywne;
-- pełny świeży lokalny suite: **2107 PASS, 4 platform SKIPPED, 0 FAIL**,
-  z jednym oczekiwanym ostrzeżeniem duplicate-ZIP;
-- final-SHA GitHub gates: Pyright, stable contracts, dependency/Node/host-spawn,
-  release-hardening, persistent-runtime E2E Linux/Windows, package cleanroom i
-  PowerShell **SUCCESS**; końcowy rollup PR #321: **51 SUCCESS, 2 SKIPPED**.
+Nie wykonujemy blind merge v119 do v114, ponieważ v119 zachowuje stary
+remote-only prompt/politykę i osobną release identity `119.2.0`.
+Forward-portowane są tylko zgodne elementy:
 
-### Real ChatGPT host E2E — PASS 2026-10-06
+1. legacy initialize-era `tools/list` utrzymuje cztery canonical
+   `jazn_*` actions jako model-visible przez
+   `_meta.ui.visibility=["model","app"]`;
+2. plugin package może wiązać już zarejestrowany MCP app przez `.app.json`
+   bez wymuszonego `mcp.json`/localhost HTTP;
+3. CLI akceptuje `--registered-app-id` bez `--endpoint`;
+4. `--force` usuwa stale opcjonalne manifesty po zmianie kształtu paczki;
+5. dokumentacja rozdziela transport MCP, app binding i current-message
+   capability evidence.
 
-Bieżący host nie wystawił pełnego zdalnego toolsetu Jaźni, więc
-`remote_runtime_available` nie został promowany. Niezależna lokalna powierzchnia
-process execution była jednak dostępna i została użyta zgodnie z
-`AGENTS.chatgpt.md`.
-
-Finalny artefakt SYSTEM v111 z GitHub Actions został zweryfikowany i uruchomiony
-na rzeczywistym hoście ChatGPT. Jedna dokładna wiadomość użytkownika została
-związana z jednym `request_id`/ `turn_id`/ `trace_id`. Pierwsza próba
-phase-2 z błędnym hashem kontraktu została odrzucona fail-closed; wiadomość nie
-została wysłana ponownie. Ten sam trwały request został odczytany i sfinalizowany
-z właściwym durable host-request bindingiem. Wynik końcowy:
+Niezmienniki v114 pozostają obowiązujące:
 
 ```text
-accepted=true
-turn_authority_validation.ok=true
-accepted_visible_turn_ready=true
-action=display_exact
-visible_output_source=runtime_finalized
-replay_protected=true
+current-message verified MCP/app runtime
+    -> submit exactly once
+else
+bounded verified local host bootstrap before submit
+    -> submit exactly once
+else
+fail closed
+
+after submit:
+same route + same request_id
+no replay
+accepted display_exact required
 ```
 
-To domyka wcześniej brakującą **lokalną trasę real-host E2E v111**. Nie jest to
-dowód wdrożonego publicznego MCP ani Secure MCP Tunnel; remote connector route
-pozostaje osobnym external deployment gate.
+Registered app id, `.app.json`, installed plugin, historyczne `tools/list`,
+zdrowy tunnel lub endpoint nie promują same `remote_runtime_available=true`.
+Current-message route wymaga pełnych czterech callable tools oraz świeżego
+`jazn_status`.
 
-v112 nie wykonuje nowego refaktoru ConversationRunner. Jego zakres to:
-synchronizacja źródeł prawdy, zapis real-host evidence, bump wersji oraz ponowna
-walidacja canonical metadata/CI. Szczegóły:
-[JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md](../reports/JAZN_V16_3_25_5_112_V111_CLOSEOUT_REAL_HOST_EVIDENCE.md).
+### Exit gate v115
+
+Release candidate wymaga:
+
+- compileall / Pyright bez regresji;
+- stable test contracts;
+- pełnego deterministic pytest suite;
+- Windows targeted runtime/path + turn atomicity;
+- persistent-runtime E2E Linux i Windows;
+- dependency matrix wspieranych Python/platform profiles;
+- synchronized Test Studio catalog;
+- canonical `manifest_sync` i zgodnego `SOURCE_PROVENANCE.json`;
+- clean release package finalization;
+- brak zmian osłabiających idempotency, finalization, current-message freshness,
+  MEMORY provenance lub fail-closed host boundaries.
+
+Real-host ChatGPT acceptance pozostaje osobnym zewnętrznym dowodem: po
+wdrożeniu/rejestracji/Refresh host musi na bieżącej wiadomości rzeczywiście
+wystawić cztery canonical tools i wykonać świeży `jazn_status`.
 
 ## 1. Historyczny checkpoint v108
 

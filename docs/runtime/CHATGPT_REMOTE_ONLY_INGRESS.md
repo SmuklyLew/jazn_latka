@@ -1,5 +1,7 @@
 # ChatGPT Remote-only Ingress — 16.3.25.5.113
 
+> **Status historyczny.** Ten kontrakt obowiązywał do v16.3.25.5.113. Od v16.3.25.5.114 ordinary-chat używa `hybrid_adaptive`: verified remote ma pierwszeństwo, a przed submittem tury dozwolony jest bounded verified local bootstrap. Bieżący kontrakt: `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md`.
+
 ## Cel
 
 Zwykła rozmowa ChatGPT nie może zależeć od tego, czy efemeryczny host dostał

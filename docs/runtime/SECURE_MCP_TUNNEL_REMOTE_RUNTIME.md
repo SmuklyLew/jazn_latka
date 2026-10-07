@@ -67,6 +67,19 @@ Secure MCP Tunnel jest capability hosta/OpenAI, a nie zależnością rdzenia Ja�
 
 Brak którejkolwiek z tych rzeczy nie oznacza awarii lokalnego runtime Jaźni.
 
+## Binding pluginu do zarejestrowanej aplikacji
+
+Secure MCP Tunnel i plugin package rozwiązują różne problemy. Tunnel udostępnia
+prywatny MCP transport do OpenAI; plugin może następnie wskazać już
+zarejestrowaną aplikację MCP przez `.app.json` i technical app id. W takim
+local/workspace bindingu nie dodawaj sztucznego `http://127.0.0.1:8080/mcp`
+do portable `mcp.json`.
+
+Samo `.app.json`, działający tunnel-client ani historyczne `tools/list` nie
+są dowodem bieżącej capability. Po zmianie definicji/visibility narzędzi
+wymagany jest Refresh/republish po stronie ChatGPT; conversation-ready nadal
+wymaga bieżącej ekspozycji czterech canonical tools i świeżego `jazn_status`.
+
 ## Plan tunelu generowany przez Jaźń
 
 Kod buduje platformowo poprawny argv/command przez:
@@ -199,7 +212,7 @@ bieżącej tury i zaakceptowanej finalizacji.
 - `tunnel-client` nieobecny -> lokalny runtime może działać, remote route pozostaje unverified;
 - process running, ale `healthy=false` albo `ready=false` -> remote route pozostaje niedostępna;
 - tunnel ready, ale connector/app hosta niezweryfikowany -> remote route pozostaje niedostępna;
-- ordinary-chat nie wykonuje probe lokalnego executora; gdy host ma zweryfikowaną aplikację/tunel, używa remote route, a gdy jej nie ma, kończy fail-closed;
+- ordinary-chat najpierw weryfikuje aplikację/tunel; gdy remote route jest gotowa, używa jej bez local probe, a gdy nie jest gotowa przed submittem tury, może wykonać bounded verified local executor/bootstrap fallback;
 - transport przerwany po submit -> wznowienie istniejącego requestu, nigdy replay wiadomości jako nowej tury;
 - finalizacja odrzucona -> host pokazuje diagnostykę, nie własną imitację odpowiedzi Jaźni.
 
@@ -211,11 +224,12 @@ hosta i jego aktualnej konfiguracji. Dlatego pozytywna klasyfikacja zdalnej
 trasy zawsze wymaga jawnego evidence capability bieżącego hosta, a nie samego
 stanu serwera po stronie Jaźni.
 
-Od 16.3.25.5.113 brak zweryfikowanej zdalnej capability w ordinary-chat kończy
-się fail-closed bez uruchamiania lokalnego executora i bez automatycznego
-handoffu. Lokalny executor, filesystem i ZIP bootstrap są dostępne wyłącznie po
-jawnym wejściu w `operator_recovery`. Kod runtime nie może imitować brakującej
-funkcji produktu ani używać serwisowego executora jako substytutu nieobecnej
+Od 16.3.25.5.114 brak zweryfikowanej zdalnej capability nie kończy ordinary-chat
+automatycznie. Host może przed submittem wiadomości wykonać ograniczony local
+executor/bootstrap fallback, ale tylko po rzeczywistym dowodzie utworzenia
+procesu; pre-spawn failure pozostawia filesystem i paczkę jako `unknown`.
+Automatyczny handoff nadal jest zabroniony. Kod runtime nie może imitować
+brakującej capability ani przedstawiać lokalnego bootstrapu jako dowodu zdalnej
 aplikacji ChatGPT.
 
 ## Źródła zewnętrzne
@@ -229,20 +243,21 @@ aplikacji ChatGPT.
 - Model Context Protocol — SEP-2243 HTTP standardization: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/seps/2243-http-standardization.md
 - MCP Python SDK v2.2.0 release notes: https://github.com/modelcontextprotocol/python-sdk/releases/tag/v2.2.0
 
-## Remote-only ordinary-chat od 16.3.25.5.113
+## Hybrid/adaptive ordinary-chat od 16.3.25.5.114
 
-Secure MCP Tunnel jest transportem do persistent runtime, nie awaryjnym
-mechanizmem tworzenia procesu przez ChatGPT. Dla zwykłej wiadomości host:
+Secure MCP Tunnel jest transportem do persistent runtime, nie mechanizmem
+tworzenia lokalnego procesu przez ChatGPT. Dla zwykłej wiadomości host:
 1. obserwuje bieżący callable toolset aplikacji Jaźni;
 2. wymaga czterech kanonicznych akcji;
 3. wykonuje `jazn_status`;
-4. dopiero po świeżym readiness/runtime binding przechodzi do
-   generate/resume/finalize;
-5. przy braku lub starym snapshotcie kończy fail-closed i wskazuje
-   Refresh/Recreate/republish aplikacji.
+4. po świeżym readiness/runtime binding przechodzi do generate/resume/finalize;
+5. jeżeli remote route nie jest gotowa **przed submittem**, może wykonać bounded
+   local executor/bootstrap fallback;
+6. gdy lokalny fallback także nie jest możliwy, kończy fail-closed i może
+   wskazać Refresh/Recreate/republish aplikacji.
 
-`operator_recovery` jest osobną, jawną procedurą serwisową i nie może zostać
-wybrany automatycznie przez ordinary-chat.
+`operator_recovery` pozostaje osobną, jawną procedurą serwisową; tylko ten tryb
+może dodatkowo użyć zaakceptowanego host handoffu.
 
 OpenAI opisuje Secure MCP Tunnel jako outbound-only połączenie prywatnego MCP z
 obsługiwanymi produktami oraz osobno wymaga uprawnień ChatGPT do custom MCP:
