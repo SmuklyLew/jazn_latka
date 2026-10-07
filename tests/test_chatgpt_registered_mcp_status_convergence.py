@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import json
-from typing import Any
+from typing import Any, cast
 
 from latka_jazn.bootstrap.chatgpt_host_preflight_parse import (
     executor_observation_from_mapping,
 )
+from latka_jazn.bridge.secure_host_runtime_gateway import SecureHostRuntimeGateway
 from latka_jazn.core.chatgpt_host_executor_contract import (
     HostExecutionRoute,
     aggregate_host_executor_observations,
@@ -89,7 +90,7 @@ def _registered_status(*, observed: datetime = NOW) -> dict[str, object]:
 
 
 def test_model_visible_status_redacts_private_local_operator_details() -> None:
-    result = jazn_status.run(_Gateway())
+    result = jazn_status.run(cast(SecureHostRuntimeGateway, cast(Any, _Gateway())))
     structured = result["structuredContent"]
 
     assert structured["ok"] is True
@@ -116,7 +117,7 @@ def test_model_visible_status_redacts_private_local_operator_details() -> None:
 
 
 def test_direct_registered_mcp_status_stamp_binds_actual_protocol_without_paths() -> None:
-    raw_result = jazn_status.run(_Gateway())
+    raw_result = jazn_status.run(cast(SecureHostRuntimeGateway, cast(Any, _Gateway())))
     response = {
         "jsonrpc": "2.0",
         "id": 7,
