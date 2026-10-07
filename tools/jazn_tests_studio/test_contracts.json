@@ -2153,11 +2153,11 @@
       "path": "tests/test_bridge_discovery_remote_failover_contract.py",
       "name": "test_bridge_discovery_publishes_managed_remote_failover_contract",
       "purpose": "Bridge discovery publishes managed remote failover contract",
-      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 25 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 16,
+      "assertion_count": 25,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -7340,6 +7340,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7349,7 +7350,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 91
+      "line": 92
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_direct_registered_mcp_status_stamp_binds_actual_protocol_without_paths": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7365,6 +7366,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7374,7 +7376,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 119
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_actual_registered_app_status_invocation_can_verify_remote_route": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7390,6 +7392,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7399,7 +7402,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 146
+      "line": 147
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_registered_app_status_requires_actual_current_message_invocation": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7415,6 +7418,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7424,7 +7428,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 163
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_registered_app_status_rejects_incomplete_current_message_toolset": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7440,6 +7444,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7449,7 +7454,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 177
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_registered_app_status_rejects_stale_runtime_evidence": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7466,6 +7471,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7475,7 +7481,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 190
+      "line": 191
     },
     "tests/test_chatgpt_registered_mcp_status_convergence.py::test_host_preflight_promotes_verified_registered_app_without_local_executor": {
       "path": "tests/test_chatgpt_registered_mcp_status_convergence.py",
@@ -7492,6 +7498,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight_parse",
+        "latka_jazn.bridge.secure_host_runtime_gateway",
         "latka_jazn.core.chatgpt_host_executor_contract",
         "latka_jazn.mcp.chatgpt_toolset",
         "latka_jazn.mcp.remote_runtime",
@@ -7501,7 +7508,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 204
+      "line": 205
     },
     "tests/test_chatgpt_remote_connector_probe_convergence.py::test_actual_connector_status_invocation_can_verify_remote_route": {
       "path": "tests/test_chatgpt_remote_connector_probe_convergence.py",
