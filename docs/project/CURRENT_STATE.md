@@ -4,13 +4,44 @@
 **Repository:** `SmuklyLew/jazn_latka`  
 **Current master at documentation baseline:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1`
 **Current master version:** `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`
-**Current implementation candidate:** `16.3.25.5.114-hybrid-adaptive-ingress-convergence` on `update/v16.3.25.5.114-hybrid-adaptive-ingress-convergence`
+**Current implementation candidate:** `16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence` on `update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
 ## 1. Release / control plane
 
-Aktualna linia master to v16.3.25.5.113. v114 jest implementacyjnym kandydatem na osobnym branchu i nie jest jeszcze masterem.
+Aktualna linia master to v16.3.25.5.113. v115 jest implementacyjnym kandydatem na osobnym branchu i konwerguje v114 hybrid/adaptive ingress z kompatybilnymi zmianami ChatGPT Desktop/App Binding z v119.2.0.
+
+## v115 — ChatGPT Desktop/App Binding Hybrid Convergence
+
+**Status:** `IMPLEMENTATION CANDIDATE` on
+`update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`.
+
+v115 bazuje na finalnym v114 i zachowuje `HYBRID_ADAPTIVE` jako domyślny
+ordinary-chat ingress: verified current-message MCP/app route -> bounded
+verified local bootstrap -> fail-closed. `REMOTE_ONLY` pozostaje jawnym trybem
+ścisłym, a `OPERATOR_RECOVERY` jedynym trybem z zaakceptowanym host handoffem.
+
+Z gałęzi `upgrade/v119.2.0-chatgpt-desktop-mcp-convergence` forward-portowane
+zostały wyłącznie zgodne elementy Desktop/App Binding:
+
+- initialize-era `tools/list` normalizuje cztery canonical `jazn_*` tools do
+  `_meta.ui.visibility=["model","app"]` bez deprecated
+  `openai/visibility=private`;
+- plugin package może użyć samego `--registered-app-id` i wygenerować
+  `plugin.json + .app.json` bez sztucznego localhost `mcp.json`;
+- remote HTTPS package nadal używa `mcp.json`, a świadomy wariant hybrydowy
+  może zawierać oba bindingi;
+- `--force` usuwa stale opcjonalne manifesty po zmianie kształtu paczki;
+- plugin defaultPrompt pozostaje zgodny z v114 hybrid ingress, idempotentnym
+  resume/finalization i `display_exact`.
+
+Nie przeniesiono starego v119 remote-only promptu/polityki, release line
+`119.2.0`, niezależnych Memory Studio fixów ani 3-cyfrowego parsera wersji.
+
+Bieżące kontrakty:
+`docs/runtime/CHATGPT_HYBRID_ADAPTIVE_INGRESS.md` oraz
+`docs/runtime/CHATGPT_PLUGIN_RUNTIME.md`.
 
 ## v114 — hybrid/adaptive ChatGPT ingress
 
