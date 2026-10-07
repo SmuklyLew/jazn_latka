@@ -13,7 +13,7 @@
   "chatgpt_transport_selection": "capability_negotiated",
   "jazn_role": "active_source_runtime_memory_identity_truth_boundary",
   "per_message_cli_required": false,
-  "purpose": "Aktywny kontrakt startowy Jaźni. Zwykła wiadomość ChatGPT preferuje zweryfikowaną bieżącą aplikację/MCP do persistent runtime, a przed submittem tury może użyć ograniczonego, zweryfikowanego lokalnego bootstrapu, jeżeli host rzeczywiście udostępnia process execution.",
+  "purpose": "Aktywny kontrakt startowy Jaźni. Zwykła wiadomość ChatGPT używa hybrid/adaptive ingress: zweryfikowany bieżący MCP/app runtime ma pierwszeństwo, a przed submittem tury może zadziałać ograniczony, zweryfikowany lokalny bootstrap. ChatGPT Desktop może wiązać plugin z już zarejestrowanym MCP przez .app.json bez sztucznego localhost HTTP.",
   "schema_version": "startup_contract/v1",
   "startup_commands": [
     "python -X utf8 run.py status --json",
@@ -21,8 +21,8 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT jest cienkim loaderem hybrid/adaptive remote-first. Pełny bieżący toolset jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply i świeży status mają pierwszeństwo. Jeżeli remote route nie jest conversation-ready przed submittem wiadomości, host może wykonać bounded local executor/bootstrap discovery; pre-spawn failure nie dowodzi stanu filesystemu ani paczki. Po przyjęciu requestu nie wolno zmieniać route ani replayować wiadomości. Remote i local nadal wymagają accepted display_exact po finalizacji. Zmiana/frozen snapshot aplikacji wymaga Refresh/Recreate/republish po stronie ChatGPT.",
-  "version": "16.3.25.5.114",
+  "truth_boundary": "Instrukcja Projektu ChatGPT pozostaje cienkim loaderem hybrid/adaptive remote/MCP-first. Pełny bieżący toolset jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply i świeży status mają pierwszeństwo. Canonical tools muszą być model-visible także na initialize-era Desktop MCP. Registered app binding przez .app.json jest wyłącznie konfiguracją hosta i nie dowodzi current-message exposure. Jeżeli MCP/app route nie jest conversation-ready przed submittem wiadomości, host może wykonać bounded local executor/bootstrap discovery; pre-spawn failure nie dowodzi stanu filesystemu ani paczki. Po przyjęciu requestu nie wolno zmieniać route ani replayować wiadomości. Widoczny tekst nadal wymaga accepted display_exact po finalizacji. Frozen snapshot narzędzi wymaga Refresh/republish po stronie ChatGPT.",
+  "version": "16.3.25.5.115",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only",
   "chatgpt_fresh_conversation_reverification_required": true,
@@ -55,5 +55,16 @@
   "chatgpt_local_fallback_requires_process_creation": true,
   "chatgpt_local_fallback_before_turn_submit_only": true,
   "chatgpt_route_switch_after_turn_submit_allowed": false,
-  "chatgpt_ordinary_ingress_handoff_allowed": false
+  "chatgpt_ordinary_ingress_handoff_allowed": false,
+  "chatgpt_registered_app_binding_supported": true,
+  "chatgpt_registered_app_manifest": ".app.json",
+  "chatgpt_registered_app_binding_requires_remote_endpoint": false,
+  "chatgpt_plugin_remote_manifest": "mcp.json",
+  "chatgpt_plugin_shape_cleanup_on_force": true,
+  "chatgpt_canonical_turn_tool_visibility": [
+    "model",
+    "app"
+  ],
+  "chatgpt_legacy_initialize_tool_visibility_normalized": true,
+  "chatgpt_registered_app_binding_is_current_message_capability_evidence": false
 }
