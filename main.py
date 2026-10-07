@@ -528,7 +528,9 @@ def _try_chat_gpt_one_shot_via_daemon(
         # the long-lived daemon rejects it, fall back to the local bridge so a
         # degraded daemon cannot overwrite a trusted per-turn timestamp.
         return None
-    daemon_session_id = resolve_canonical_chat_session_id(session_id)
+    daemon_session_id = resolve_canonical_chat_session_id(
+        session_id or os.environ.get("JAZN_CHATGPT_DAEMON_SESSION_ID")
+    )
     classification_text, input_warning = guard_cli_flags_in_user_text(text)
     if not classification_text:
         classification_text = text
