@@ -122,6 +122,54 @@ fail-closed `FileExistsError`.
 opcjonalny tylko dla komendy `chatgpt-plugin-package`; brak endpointu jest
 legalny wyłącznie wtedy, gdy builder otrzyma poprawny `--registered-app-id`.
 
+### 5. Direct registered MCP app readiness
+
+Analiza po forward-porcie v119 ujawniła dodatkową lukę: v119 zapewniał
+model-visible tool discovery i `.app.json` binding, ale direct Desktop/stdio
+canonical `jazn_status` nadal zwracał prywatny gateway status, a host-preflight
+rozpoznawał tylko public `streamable_http` i Secure MCP Tunnel.
+
+v115 dodaje osobny `registered_mcp_app` remote transport.
+
+Direct canonical `jazn_status` jest zredagowany przed ekspozycją modelowi.
+Dozwolone są wyłącznie readiness/binding fields potrzebne do decyzji o trasie:
+gateway/daemon reachability, `conversation_ready`, package/runtime version,
+runtime instance id, heartbeat, ograniczony memory readiness projection oraz
+canonical toolset contract. Lokalne `runtime_root`, database paths, PID-y,
+sekrety i prywatne daemon/operator fields nie są zwracane.
+
+Na JSON-RPC `tools/call` bezpośredni `JaznMcpServer` stempluje status jako:
+
+```text
+evidence_schema = jazn_registered_mcp_status/v1
+tool_name = jazn_status
+registered_transport = registered_mcp_app
+protocol_version = <faktycznie negocjowana wersja MCP>
+package_version = 16.3.25.5.115-...
+```
+
+Nowy fail-closed classifier wymaga jednocześnie:
+
+- faktycznego `host_connector_invocation_observed=true`;
+- pełnego bieżącego canonical toolsetu;
+- obsługiwanej negocjowanej wersji MCP;
+- `gateway_live=true`;
+- `daemon_reachable=true`;
+- `ready=true` / `conversation_ready`;
+- zgodnego package/runtime version;
+- niepustego persistent runtime instance id;
+- świeżego status timestamp i heartbeat.
+
+Dopiero wtedy host-preflight może ustawić
+`remote_runtime_transport_available=true`,
+`remote_runtime_transport=registered_mcp_app` i
+`execution_route=remote_runtime`.
+
+Public Streamable HTTP zachowuje niezależny
+`jazn_public_mcp_status/v1`. Secure MCP Tunnel zachowuje własny
+control-plane/runtime readiness classifier. v115 nie przedstawia żadnego z tych
+transportów jako innego transportu.
+
 ## Plugin prompt v115
 
 v119 remote-only defaultPrompt nie został przeniesiony.
@@ -222,6 +270,7 @@ current-message app exposure.
 Branch może zostać uznany za release candidate dopiero po świeżym final-SHA
 evidence:
 
+- direct registered MCP status privacy/readiness regression SUCCESS;
 - `manifest_sync` SUCCESS i canonical source provenance;
 - dependency contracts SUCCESS;
 - full active-tree Pyright SUCCESS;
