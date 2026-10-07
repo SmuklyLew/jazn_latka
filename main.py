@@ -1188,7 +1188,7 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
         try:
             run_persistent_chat(
                 session,
-                session_id=getattr(session.state, "session_id", ns.session_id),
+                session_id=getattr(getattr(session, "state", None), "session_id", ns.session_id),
                 no_carryover=ns.no_carryover,
             )
         finally:
