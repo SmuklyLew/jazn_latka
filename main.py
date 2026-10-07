@@ -2255,8 +2255,11 @@ def legacy_main(argv: list[str] | None = None) -> int:
             stdin=bridge_stdin,
             require_openai_api_key=False,
             output_mode=output_mode,
-            one_shot_degraded=True,
+            one_shot_degraded=transport_observability.get("selected_transport") != "persistent_daemon",
             transport_observability=transport_observability,
+            daemon_bound=transport_observability.get("selected_transport") == "persistent_daemon",
+            daemon_host=ns.daemon_host,
+            daemon_port=ns.daemon_port,
         )
 
     if ns.local_llm:
@@ -2285,6 +2288,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-open-ai")
         if daemon_exit is not None:
             return daemon_exit
+        daemon_bound = daemon_ensure.selected_transport == "persistent_daemon"
         output_mode = _bridge_text_output_mode(ns, bridge_text)
         bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
         return run_jsonl_chat_bridge(
@@ -2295,6 +2299,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
             stdin=bridge_stdin,
             require_openai_api_key=True,
             output_mode=output_mode,
+            daemon_bound=daemon_bound,
+            daemon_host=ns.daemon_host,
+            daemon_port=ns.daemon_port,
         )
 
     if ns.export_system or ns.export_memory or ns.export_full or ns.export_nlp or ns.export_github_source_safe:
@@ -2330,18 +2337,25 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 lifecycle="terminal_chat_one_shot",
                 command="--chat",
                 output_mode="final_visible_text",
+                host=ns.daemon_host,
+                port=ns.daemon_port,
             )
-        session = RuntimeSessionWorker(
-            session_factory=JaznRuntimeSession,
-            config=cfg,
+        session = DaemonConversationSession(
+            cfg,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
             source_client="chat",
             command="--chat",
-            timeout_seconds=runtime_turn_timeout_seconds(cfg),
+            host=ns.daemon_host,
+            port=ns.daemon_port,
+            model_channel_config=model_channel_config_from_config(cfg),
         )
         try:
-            run_persistent_chat(session, session_id=ns.session_id, no_carryover=ns.no_carryover)
+            run_persistent_chat(
+                session,
+                session_id=session.state.session_id,
+                no_carryover=ns.no_carryover,
+            )
         finally:
             session.close()
         return 0
@@ -2355,7 +2369,8 @@ def legacy_main(argv: list[str] | None = None) -> int:
         return _run_chat_command_one_shot(
             cfg=cfg, text=text, session_id=ns.session_id, no_carryover=ns.no_carryover,
             source_client="cli_direct_conversation", lifecycle="one_shot",
-            command="direct_message", output_mode="final_visible_text",
+            command="--chat", output_mode="final_visible_text",
+            host=ns.daemon_host, port=ns.daemon_port,
         )
 
     composition = RuntimeCompositionRoot(config)
