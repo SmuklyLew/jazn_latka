@@ -17,7 +17,8 @@ ChatGPT / host capability
         |
         +-- OpenAI Secure MCP Tunnel -> stdio MCP target
         |
-        +-- operator_recovery: local executor / run.py (service only)
+        +-- hybrid local fallback: verified host executor / run.py
+        +-- operator_recovery: explicit service/handoff mode
         v
 persistent Jaźń daemon on loopback
         |
@@ -109,7 +110,7 @@ migrowane leniwie do SQLite bez ich usuwania.
 
 ## 5. Zdalny ingress hosta
 
-Od 16.3.25.5.113 zwykła wiadomość ChatGPT działa w `remote_only`: zweryfikowana aplikacja/MCP jest jedyną normalną trasą do persistent runtime. Brak bieżącej aplikacji albo kompletnego toolsetu kończy się fail-closed i nie uruchamia local executora, ZIP bootstrapu ani automatycznego handoffu. Local process execution pozostaje wyłącznie jawnym `operator_recovery`.
+Od 16.3.25.5.114 zwykła wiadomość ChatGPT działa w `hybrid_adaptive`. Zweryfikowana aplikacja/MCP i świeży `jazn_status` są trasą preferowaną. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, host może wykonać bounded local executor/bootstrap fallback. Po przyjęciu requestu trasa jest zamrożona: resume/finalization używają tego samego requestu bez replayu. Ordinary-chat nie używa automatycznego `host_handoff`; ten pozostaje wyłącznie jawnym `operator_recovery`.
 
 Publiczny Streamable HTTP ma dwa równoważne, fail-closed tryby evidence.
 
@@ -303,18 +304,18 @@ service, not merely as code that can be started:
   staged tree before archive/transport creation, so an unlisted/missing member
   fails at the producer boundary as well as during runtime attach.
 
-The only normal continuity route for ordinary ChatGPT turns is a **currently
-callable and verified** remote Jaźń app. Local process execution is no longer a
-fallback for ordinary chat; it is available only in explicit
-`operator_recovery`. Losing or gaining a ChatGPT-local executor therefore does
-not participate in ordinary ingress routing. Conversely, a healthy public
-endpoint without a callable Jaźń app in the current message is not enough to set
-`remote_runtime_available=true`.
+For releases through 16.3.25.5.113 the only normal continuity route for
+ordinary ChatGPT turns was a **currently callable and verified** remote Jaźń
+app. Version 16.3.25.5.114 supersedes that routing rule with hybrid/adaptive
+remote-first ingress: a verified remote route still wins, but a host-local
+executor may be used as a bounded pre-submit bootstrap fallback. A healthy
+public endpoint without a callable Jaźń app in the current message is still not
+enough to set `remote_runtime_available=true`.
 
 Operational procedures, failure injection and rollback are specified in
 `docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
 
-## 14. Remote-only ChatGPT ingress in 16.3.25.5.113
+## 14. Remote-only ChatGPT ingress in 16.3.25.5.113 (historical; superseded by v114)
 
 Normalna wiadomość ChatGPT wymaga bieżącej ekspozycji dokładnie czterech
 kanonicznych akcji: `jazn_status`, `jazn_generate_visible_reply`,
