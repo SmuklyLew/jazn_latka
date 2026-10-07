@@ -85,13 +85,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     child = sub.add_parser("chatgpt-plugin-package", allow_abbrev=False)
     _add_common(child)
-    child.add_argument("--endpoint", required=True)
+    child.add_argument(
+        "--endpoint",
+        help=(
+            "Remote HTTPS MCP endpoint ending in /mcp. Omit when binding the plugin "
+            "only to an already registered ChatGPT MCP app via --registered-app-id."
+        ),
+    )
     child.add_argument("--output", type=Path, required=True)
     child.add_argument(
         "--registered-app-id",
         help=(
-            "Optional ChatGPT Developer Mode technical app id. When supplied, "
-            "the package also writes .app.json for local/workspace installation."
+            "ChatGPT technical MCP app id. May be used without --endpoint to bind a "
+            "local/workspace plugin to an already registered MCP server; when used "
+            "alone the package writes plugin.json + .app.json and no mcp.json."
         ),
     )
     child.add_argument("--force", action="store_true")
@@ -786,7 +793,7 @@ def main(
         try:
             result = write_portable_plugin_package(
                 ns.output,
-                str(ns.endpoint),
+                str(ns.endpoint) if ns.endpoint is not None else None,
                 registered_app_id=ns.registered_app_id,
                 force=bool(ns.force),
             )
