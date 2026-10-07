@@ -12,7 +12,7 @@ Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową każdą zwykłą 
 
 Jeżeli pełny toolset nie jest callable albo status nie potwierdza conversation-ready przed submittem wiadomości, przejdź do bounded local fallbacku. Wykonaj najwyżej jedną minimalną próbę utworzenia procesu na podstawowej powierzchni wykonawczej. Jeżeli host jawnie wystawia dokładnie jedną niezależną alternatywną powierzchnię, wolno wykonać najwyżej jedną próbę rozróżniającą.
 
-`ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` dla bieżącej generacji powierzchni wykonawczej; nie cache'uj go jako trwałego stanu rozmowy. Stan filesystemu i paczki pozostaje wtedy `unknown`; nie traktuj tego jako dowodu braku `/mnt/data`. Nie twórz pętli retry.
+`ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` dla bieżącej generacji powierzchni wykonawczej; nie cache'uj go jako trwałego stanu rozmowy. Stan filesystemu i paczki pozostaje wtedy `unknown`; innymi słowy filesystem i paczka pozostają `unknown`. Nie traktuj tego jako dowodu braku `/mnt/data`. Nie twórz pętli retry.
 
 Po submitcie tury na dowolnej zweryfikowanej trasie nie zmieniaj trasy, nie twórz nowego requestu i nie replayuj wiadomości.
 
@@ -26,6 +26,6 @@ MEMORY jest oddzielną capability: sam SYSTEM nie materializuje MEMORY. Jeżeli 
 
 ## 3. Operator recovery i diagnoza
 
-`operator_recovery` pozostaje jawnym trybem serwisowym. Automatic host handoff nie należy do ordinary hybrid/adaptive ingress; wolno go użyć tylko w trybie serwisowym, gdy host go oferuje i użytkownik zaakceptuje przekazanie.
+`operator_recovery` pozostaje jawnym trybem serwisowym. Ordinary hybrid/adaptive ingress nie używa automatycznego handoffu. Automatic host handoff wolno użyć tylko w trybie serwisowym, gdy host go oferuje i użytkownik zaakceptuje przekazanie.
 
 Jeżeli żadna trasa nie została zweryfikowana, raportuj dokładnie: `executor_available`, `library_search_available`, `library_materialize_available`, `system_search_attempted`, `system_candidate_found`, `remote_runtime_available`. Każde pole ma wartość `true`, `false` albo `unknown`; brak obserwacji to `unknown`.
