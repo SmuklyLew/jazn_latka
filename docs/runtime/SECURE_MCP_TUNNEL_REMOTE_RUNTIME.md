@@ -67,6 +67,19 @@ Secure MCP Tunnel jest capability hosta/OpenAI, a nie zależnością rdzenia Ja�
 
 Brak którejkolwiek z tych rzeczy nie oznacza awarii lokalnego runtime Jaźni.
 
+## Binding pluginu do zarejestrowanej aplikacji
+
+Secure MCP Tunnel i plugin package rozwiązują różne problemy. Tunnel udostępnia
+prywatny MCP transport do OpenAI; plugin może następnie wskazać już
+zarejestrowaną aplikację MCP przez `.app.json` i technical app id. W takim
+local/workspace bindingu nie dodawaj sztucznego `http://127.0.0.1:8080/mcp`
+do portable `mcp.json`.
+
+Samo `.app.json`, działający tunnel-client ani historyczne `tools/list` nie
+są dowodem bieżącej capability. Po zmianie definicji/visibility narzędzi
+wymagany jest Refresh/republish po stronie ChatGPT; conversation-ready nadal
+wymaga bieżącej ekspozycji czterech canonical tools i świeżego `jazn_status`.
+
 ## Plan tunelu generowany przez Jaźń
 
 Kod buduje platformowo poprawny argv/command przez:
