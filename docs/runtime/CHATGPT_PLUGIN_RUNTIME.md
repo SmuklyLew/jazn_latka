@@ -124,13 +124,15 @@ channel. It does **not** require `OPENAI_API_KEY` and it does not take a
 contract instead of inventing a model name from the currently selected ChatGPT
 model.
 
-The bootstrap package cannot manufacture process-execution capability. If the
-host cannot create a Python process, the local sequence is unavailable for that
-host generation even when the ZIP is present and valid. In that case only an
-actually callable Jaźń remote app/connector with fresh `jazn_status` evidence,
-or an explicitly accepted host handoff, may continue activation. A generic
-OpenAI Deep Research app, GitHub connector, catalog result, URL, or `installed`
-flag is not Jaźń capability evidence.
+The bootstrap package cannot manufacture process-execution capability. In
+v16.3.25.5.114 ordinary ChatGPT uses hybrid/adaptive routing: a callable Jaźń
+remote app/connector with fresh `jazn_status` evidence is preferred; when that
+route is not conversation-ready **before turn submission**, a host that actually
+can create a Python process may use the bounded verified local bootstrap above.
+If process creation is unavailable as well, ordinary chat fails closed.
+`host_handoff` is reserved for explicit `operator_recovery` with user consent.
+A generic OpenAI Deep Research app, GitHub connector, catalog result, URL, or
+`installed` flag is not Jaźń capability evidence.
 
 ## Model-visible MCP actions
 
