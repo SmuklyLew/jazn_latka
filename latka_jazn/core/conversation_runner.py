@@ -7,6 +7,7 @@ from typing import Any
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.conversation_state_store import ConversationStateStore
+from latka_jazn.core.conversation_channel import canonical_chat_command, normalize_model_channel_config
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
@@ -234,6 +235,8 @@ class ConversationRunner(RunnerOperations):
         request_id: str | None = None,
         previous_user_text: str | None = None,
         previous_visible_text: str | None = None,
+        command: str | None = None,
+        model_channel_config: dict[str, Any] | None = None,
         _turn_context: TurnExecutionContext | None = None,
     ) -> dict[str, Any]:
         config = getattr(self, "config", None)
@@ -298,6 +301,10 @@ class ConversationRunner(RunnerOperations):
             "_turn_context": turn_context,
             "wake_state_runtime": self._wake_state_runtime_payload(),
         }
+        if command is not None:
+            ctx["command"] = canonical_chat_command(command)
+        if model_channel_config is not None:
+            ctx["model_channel_config"] = normalize_model_channel_config(model_channel_config)
         previous_task_state = dict(getattr(self.state, "task_state", {}) or {})
         if current_previous_user:
             ctx["previous_user_text"] = current_previous_user

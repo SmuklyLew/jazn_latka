@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "runtime_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "package_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "generated_at_utc": "2026-10-07T20:07:48+00:00",
-  "updated_at_utc": "2026-10-07T20:07:48+00:00",
+  "version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "package_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "generated_at_utc": "2026-10-07T22:54:36+00:00",
+  "updated_at_utc": "2026-10-07T22:54:36+00:00",
   "start_file": "run.py",
-  "file_count": 2052,
-  "static_file_count": 2052,
+  "file_count": 2055,
+  "static_file_count": 2055,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3016,
-      "sha256": "a505fed831f1a4a0776e76546b76858b9abaaedded99a1f828c704db2376991f",
+      "size_bytes": 3022,
+      "sha256": "c45d54ef7f056547a271333507f81dba06bfa1162e4175a01f95441ea86ebe59",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -335,8 +335,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1729,
-      "sha256": "0508c23f2343f25837d838608b15dbbb0766d08bd3b3cef266480f3d8ffefbcb",
+      "size_bytes": 1730,
+      "sha256": "23ff0ab68892caa4a11a392b62c23d3242379afedddcd6501708566e9f45b536",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3449,8 +3449,8 @@
     },
     {
       "path": "latka_jazn/core/chat_command_contract.py",
-      "size_bytes": 72660,
-      "sha256": "953664c1ca12537baa4f842e39c2ba54fee24b90ad8780135edecfa5512b5464",
+      "size_bytes": 73756,
+      "sha256": "c2152dbaf808a1aeb9aab41afab083e175fe076c82ef37df9683008b3fcc12ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3754,6 +3754,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/conversation_channel.py",
+      "size_bytes": 5930,
+      "sha256": "f3ec953a1702053bca163ba43ebed5a622cebc50e58faf1b4eab5e418cf66499",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/conversation_entrypoint_contract.py",
       "size_bytes": 4704,
       "sha256": "8be6df357128b1081a87815535fc152ab2257b478eddff65e0b366bb32f69e61",
@@ -3764,8 +3773,8 @@
     },
     {
       "path": "latka_jazn/core/conversation_runner.py",
-      "size_bytes": 33392,
-      "sha256": "16c7e47d78f3e0e0dc6d30f81dd5fd0b25313600096e9a96f1f406693bfab76b",
+      "size_bytes": 33825,
+      "sha256": "fa8bdf508846def47ef47836c72feae97a8d4ceaa3ec0fc47bae14349c471d1e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3802,6 +3811,15 @@
       "path": "latka_jazn/core/daemon_autostart.py",
       "size_bytes": 19954,
       "sha256": "a7609646f6a591afc7e77471780b9a3508e85c2eaeff3a5fcddcf97e293b0965",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/daemon_conversation_session.py",
+      "size_bytes": 4925,
+      "sha256": "c68961ba2c39bfaf1830bd6f76435a28606f8f27c2ac86f7b02de66b96f3448e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4628,8 +4646,8 @@
     },
     {
       "path": "latka_jazn/core/model_guided_speech_runtime.py",
-      "size_bytes": 9737,
-      "sha256": "acce238eef5aa3c0c905401860f79863c30f84de515fdeeb6c700f4badccec45",
+      "size_bytes": 10273,
+      "sha256": "b755b3d3c02970007f6fe91d9ec928627ce20736b0c39c16eed306ae6bc915a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5006,8 +5024,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_chat.py",
-      "size_bytes": 13334,
-      "sha256": "913eccc4135f15b88c12f78a1bea2c2999cd84a0655c82c0717f227b82dadc67",
+      "size_bytes": 16231,
+      "sha256": "bc686d3f81641ba14544ebf09464d0769c8904ca082e22075a0a6437c5483cbe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5024,8 +5042,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 240775,
-      "sha256": "9a8094c6bb2bc4c0a0478328c9109bc47f45d353c025b18887aa1ed9d9aa0797",
+      "size_bytes": 245943,
+      "sha256": "a43c684ff000269630a647be9edf3f1d4f53706f0b55bc45edd1c7e2493419ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7985,8 +8003,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 5394,
-      "sha256": "c6c5809f278384082039d04f534c478297162e6af7d55a5cfc5bd3c2ed2b0c02",
+      "size_bytes": 5396,
+      "sha256": "82b770608b5784be0078f7005b3a16affc58bee8196328ba16dc128919a8a7d3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9335,8 +9353,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5219,
-      "sha256": "6519d3bdcabe32c603a29c5f46df20cf460d57d31e40f59a00342881f07815aa",
+      "size_bytes": 5218,
+      "sha256": "fb4caa331e9e864ff21374125b8578b337c69cedb5f924487af2df4a8c6fd6f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9443,8 +9461,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 132036,
-      "sha256": "b332cf7bcd936cc1d12275d2166b10701967059c26baa52c5b74f03f680bf541",
+      "size_bytes": 134673,
+      "sha256": "f7a839e5dd8842e8867be6590240a14895de85767ba9a8e28542edf622c980e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14807,8 +14825,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2150,
-      "sha256": "dae766577d7eae788ca1f3f97ec544878bd0cfc449e464a21073eb4fb80ce387",
+      "size_bytes": 2151,
+      "sha256": "f9abc9e78e0fca4e771c7f66b74a8881e23ae8091069332d42f693dd5ab227ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14816,8 +14834,8 @@
     },
     {
       "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
-      "size_bytes": 3051,
-      "sha256": "6106a02cf5987e34861c167aca9c12675e46fb9508491a6ef50446d35c005643",
+      "size_bytes": 3052,
+      "sha256": "8906eb88b0825be94ed16e3f17c9c7572968dcdf053630d885c13d8014b18a47",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15023,8 +15041,8 @@
     },
     {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
-      "size_bytes": 9523,
-      "sha256": "4b8f8beefebbcf99a712e9718eac701da7e82f28cbdef34f5cb65e0f0ffb9bb3",
+      "size_bytes": 9524,
+      "sha256": "2e9eff7d9ec76aee93d77cbd3931870c8150f3643371107f404b1a6451ae3ecd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15221,8 +15239,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6964,
-      "sha256": "87a0a3725f0cdde0a3cb6c129d308eebf29dbd8839748af45b4ee5b19239c159",
+      "size_bytes": 6965,
+      "sha256": "38955f5cdb65564dff5a319a97c09625171f8320916642722f2b2e3743a401dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15608,8 +15626,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8689,
-      "sha256": "d268ae8d7c3aa0c055ad51c43a37fd27ea124daefc4231548458ab4a521baa3b",
+      "size_bytes": 8690,
+      "sha256": "c7a98d55384e83a20c91f70618dfb9538e376ec236103511cafe0042976af994",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17866,6 +17884,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_unified_conversation_runtime_authority.py",
+      "size_bytes": 12113,
+      "sha256": "f25f29e48c2402e32b8e996662dbd9b5ed2d116d32299c974f9ff13a1f200767",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -18335,8 +18362,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1882173,
-      "sha256": "36cb8f2bbdebeaadcb95da688f481f4338afbb13e5b7e3ce52be14ebb1b1d3b5",
+      "size_bytes": 1892151,
+      "sha256": "fb1e83b039ab801df0089a27c876bda00c75fe1ecab485ea17ade511b3fd921f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18920,11 +18947,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "release_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-    "package_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-    "release_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence"
+    "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+    "package_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+    "release_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix"
   },
   "legacy_aliases": {
     "version": "release_version"

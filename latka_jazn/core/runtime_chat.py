@@ -34,6 +34,7 @@ class RuntimeChatLifecycle:
     session_id: str | None = None
     no_carryover: bool = False
     recommended_chatgpt_mode: str = "--chat-gpt albo --runtime-preview z tym samym --session-id"
+    session_owner: str = "local_process"
 
     def mark_closed(self, reason: str) -> None:
         self.exit_reason = reason
@@ -77,25 +78,37 @@ class LatkaRuntimeShell(cmd.Cmd):
             stdin_is_tty = False
         io_surface = "terminal_tty" if stdin_is_tty else "redirected_stdin_stream"
         terminal_ui_mode = "interactive_terminal" if stdin_is_tty else "redirected_stream"
+        daemon_owned = getattr(runtime, "persistent_runtime_owner", None) == "daemon"
         self.lifecycle = RuntimeChatLifecycle(
-            mode="persistent_chat_loop",
+            mode="persistent_daemon_client_loop" if daemon_owned else "persistent_chat_loop",
             engine_reused_between_turns=True,
-            shutdown_when_loop_exits=True,
+            shutdown_when_loop_exits=not daemon_owned,
             truth_boundary=(
-                "runtime trwa tylko tak długo, jak działa ten proces Pythona; "
-                "po /exit, EOF albo zamknięciu stdin silnik zostaje zamknięty. "
-                "TTY opisuje wyłącznie powierzchnię terminala i nie jest dowodem trwałości procesu. "
-                "Długowieczny pipe może utrzymywać ten sam proces, a TTY może zostać zamknięty natychmiast."
+                (
+                    "Ta pętla terminalowa jest klientem trwałego daemonu Jaźni. "
+                    "/exit, EOF i Ctrl+C odłączają klienta, ale nie zamykają daemon-owned session ani runtime. "
+                    "Trwałość procesu musi być potwierdzana przez status daemonu, nie przez sam fakt użycia TTY."
+                )
+                if daemon_owned
+                else (
+                    "runtime trwa tylko tak długo, jak działa ten proces Pythona; "
+                    "po /exit, EOF albo zamknięciu stdin silnik zostaje zamknięty. "
+                    "TTY opisuje wyłącznie powierzchnię terminala i nie jest dowodem trwałości procesu. "
+                    "Długowieczny pipe może utrzymywać ten sam proces, a TTY może zostać zamknięty natychmiast."
+                )
             ),
             stdin_is_tty=stdin_is_tty,
             io_surface=io_surface,
             terminal_ui_mode=terminal_ui_mode,
             tty_controls_enabled=stdin_is_tty,
-            process_persistence="process_lifetime_bound",
+            process_persistence=(
+                "daemon_owned_persistent_runtime" if daemon_owned else "process_lifetime_bound"
+            ),
             process_persistence_inferred_from_tty=False,
             background_process_claim_allowed=False,
             session_id=self.session_id,
             no_carryover=no_carryover,
+            session_owner="persistent_daemon" if daemon_owned else "local_process",
         )
         self._last_user_text: str | None = None
         self._last_visible_text: str | None = None
@@ -196,6 +209,13 @@ class LatkaRuntimeShell(cmd.Cmd):
                 )
                 return True
             visible = str(result.get("final_visible_text") or "")
+            if not visible and result.get("error_code") == "daemon_chat_pending":
+                request_id = str(result.get("request_id") or "").strip()
+                self._write(
+                    "[runtime_turn_pending] Tura pozostaje aktywna w daemonie"
+                    + (f" (request_id={request_id})." if request_id else ".")
+                )
+                return False
         else:
             try:
                 envelope = run_with_runtime_turn_timeout(
@@ -232,7 +252,12 @@ class LatkaRuntimeShell(cmd.Cmd):
     def do_exit(self, arg: str) -> bool:
         """Zakończ tryb stałej rozmowy."""
         self.lifecycle.mark_closed("user_exit_command")
-        self._write("Zamykam tryb stałej rozmowy Jaźni. Silnik zostanie zapisany i zamknięty.")
+        if self.lifecycle.session_owner == "persistent_daemon":
+            self._write(
+                "Odłączam terminal od trwałej sesji Jaźni. Daemon i kanoniczna sesja nie są przez /exit zatrzymywane."
+            )
+        else:
+            self._write("Zamykam tryb stałej rozmowy Jaźni. Silnik zostanie zapisany i zamknięty.")
         return True
 
     def do_quit(self, arg: str) -> bool:
@@ -242,11 +267,17 @@ class LatkaRuntimeShell(cmd.Cmd):
     def do_EOF(self, arg: str) -> bool:  # noqa: N802 - cmd oczekuje nazwy EOF
         self.lifecycle.mark_closed("stdin_eof")
         self._write("")
-        self._write(
-            "[runtime_lifecycle_note] stdin zakończył się przez EOF; "
-            "zamykam pętlę --chat bez tracebacka. To nie jest dowód stałego procesu w tle. "
-            "W środowisku jednorazowym użyj --chat-gpt albo --runtime-preview z tym samym --session-id."
-        )
+        if self.lifecycle.session_owner == "persistent_daemon":
+            self._write(
+                "[runtime_lifecycle_note] stdin zakończył się przez EOF; odłączam tylko klienta terminalowego. "
+                "Daemon-owned runtime nie jest przez EOF zatrzymywany."
+            )
+        else:
+            self._write(
+                "[runtime_lifecycle_note] stdin zakończył się przez EOF; "
+                "zamykam pętlę --chat bez tracebacka. To nie jest dowód stałego procesu w tle. "
+                "W środowisku jednorazowym użyj --chat-gpt albo --runtime-preview z tym samym --session-id."
+            )
         return True
 
     def postloop(self) -> None:
@@ -261,7 +292,31 @@ class LatkaRuntimeShell(cmd.Cmd):
 
     def do_frame(self, arg: str) -> bool:
         """Zwróć cognitive-frame JSON dla podanej treści bez kończenia sesji."""
-        packet = self.engine.build_cognitive_frame(arg or "", client_context={"client": "cli_persistent_chat_frame", "lifecycle": "persistent_chat_loop"})
+        build_frame = getattr(self.engine, "build_cognitive_frame", None)
+        if not callable(build_frame):
+            self._write(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "error_code": "cognitive_frame_transport_not_exposed",
+                        "session_owner": self.lifecycle.session_owner,
+                        "truth_boundary": (
+                            "Klient daemon-owned nie tworzy lokalnego JaznEngine tylko po to, by obsłużyć /frame. "
+                            "Diagnostyczny frame wymaga osobnego read-only endpointu runtime."
+                        ),
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+            )
+            return False
+        packet = build_frame(
+            arg or "",
+            client_context={
+                "client": "cli_persistent_chat_frame",
+                "lifecycle": "persistent_chat_loop",
+            },
+        )
         self._write(json.dumps(packet, ensure_ascii=False, indent=2, sort_keys=True))
         return False
 
@@ -292,6 +347,13 @@ def run_persistent_chat(
         # Ctrl+C during input() in cmd.Cmd raises KeyboardInterrupt outside the
         # normal do_* command flow. Treat it as a graceful stop, not a traceback.
         shell.lifecycle.mark_closed("keyboard_interrupt")
-        shell._write("\nPrzerwano tryb stałej rozmowy Ctrl+C. Zamykam pętlę `--chat` bez tracebacka; runtime nie działa po zamknięciu procesu.")
+        if shell.lifecycle.session_owner == "persistent_daemon":
+            shell._write(
+                "\nPrzerwano klienta Ctrl+C. Trwały daemon Jaźni nie jest przez to zatrzymywany."
+            )
+        else:
+            shell._write(
+                "\nPrzerwano tryb stałej rozmowy Ctrl+C. Zamykam pętlę `--chat` bez tracebacka; runtime nie działa po zamknięciu procesu."
+            )
         shell.postloop()
     return shell.lifecycle

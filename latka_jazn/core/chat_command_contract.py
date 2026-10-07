@@ -13,6 +13,11 @@ from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.conversation_state_store import ConversationStateStore
+from latka_jazn.core.conversation_channel import (
+    model_channel_config_from_config,
+    resolve_canonical_chat_session_id,
+)
+from latka_jazn.core.daemon_conversation_session import DaemonConversationSession
 from latka_jazn.core.host_visible_finalization import (
     HostVisibleFinalizationContract,
     finalize_host_visible_text,
@@ -1269,6 +1274,9 @@ def run_jsonl_chat_bridge(
     output_mode: BridgeOutputMode = "jsonl",
     one_shot_degraded: bool = False,
     transport_observability: dict[str, Any] | None = None,
+    daemon_bound: bool = False,
+    daemon_host: str = "127.0.0.1",
+    daemon_port: int = 8787,
 ) -> int:
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
@@ -1312,8 +1320,9 @@ def run_jsonl_chat_bridge(
         write_chat_bridge_payload(stdout, payload, output_mode=output_mode)
         return 3
 
-    sessions: dict[str, RuntimeSessionWorker] = {}
-    generated_session: RuntimeSessionWorker | None = None
+    sessions: dict[str, Any] = {}
+    generated_session: Any | None = None
+    turn_model_channel_config = model_channel_config_from_config(config)
 
     def bridge_meta(
         *,
@@ -1377,19 +1386,48 @@ def run_jsonl_chat_bridge(
             "error": error,
         }
 
-    def get_session(payload_session_id: str | None, *, client: str) -> tuple[RuntimeSessionWorker, str]:
+    def get_session(payload_session_id: str | None, *, client: str) -> tuple[Any, str]:
         nonlocal generated_session
+
+        def create_session(selected_session_id: str | None) -> Any:
+            if daemon_bound:
+                return DaemonConversationSession(
+                    config,
+                    session_id=selected_session_id,
+                    no_carryover=no_carryover,
+                    source_client=client,
+                    command=command,
+                    host=daemon_host,
+                    port=daemon_port,
+                    model_channel_config=turn_model_channel_config,
+                )
+            return RuntimeSessionWorker(
+                session_factory=JaznRuntimeSession,
+                config=config,
+                session_id=selected_session_id,
+                no_carryover=no_carryover,
+                source_client=client,
+                command=command,
+                timeout_seconds=runtime_turn_timeout_seconds(config),
+            )
+
         if payload_session_id:
             if payload_session_id not in sessions:
-                sessions[payload_session_id] = RuntimeSessionWorker(session_factory=JaznRuntimeSession, config=config, session_id=payload_session_id, no_carryover=no_carryover, source_client=client, command=command, timeout_seconds=runtime_turn_timeout_seconds(config))
+                sessions[payload_session_id] = create_session(payload_session_id)
             return sessions[payload_session_id], "payload"
         if session_id:
             if session_id not in sessions:
-                sessions[session_id] = RuntimeSessionWorker(session_factory=JaznRuntimeSession, config=config, session_id=session_id, no_carryover=no_carryover, source_client=client, command=command, timeout_seconds=runtime_turn_timeout_seconds(config))
+                sessions[session_id] = create_session(session_id)
             return sessions[session_id], "cli_arg"
+        if daemon_bound:
+            canonical_default = resolve_canonical_chat_session_id(None)
+            if canonical_default not in sessions:
+                sessions[canonical_default] = create_session(canonical_default)
+            return sessions[canonical_default], "canonical_default"
         if generated_session is None:
-            generated_session = RuntimeSessionWorker(session_factory=JaznRuntimeSession, config=config, session_id=None, no_carryover=no_carryover, source_client=client, command=command, timeout_seconds=runtime_turn_timeout_seconds(config))
-            sessions[generated_session.state.session_id] = generated_session
+            created_session = create_session(None)
+            generated_session = created_session
+            sessions[created_session.state.session_id] = created_session
         return generated_session, "generated"
 
     try:
@@ -1476,6 +1514,8 @@ def run_jsonl_chat_bridge(
                     lifecycle=default_lifecycle,
                     session_id_source=session_id_source,
                     process_reused=True,
+                    command=command,
+                    model_channel_config=turn_model_channel_config,
                 )
             except RuntimeTurnTimeoutError as exc:
                 write_chat_bridge_payload(stdout, error_payload(
