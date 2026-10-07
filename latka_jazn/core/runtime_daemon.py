@@ -2192,10 +2192,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
             command=normalized_command,
             model_channel_config=normalized_channel_config,
         )
+        model_timeout_seconds = float(
+            normalized_channel_config.get("model_timeout_seconds") or 0.0
+        )
+        channel_base_timeout = max(
+            self.execution_timeout_seconds,
+            model_timeout_seconds + 30.0 if model_timeout_seconds > 0.0 else 0.0,
+        )
         job_timeout_seconds, timeout_profile = runtime_turn_timeout_for_text(
             user_text,
             config=self.config,
-            base_timeout_seconds=self.execution_timeout_seconds,
+            base_timeout_seconds=channel_base_timeout,
         )
 
         def existing_job_locked() -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
@@ -2209,6 +2216,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     and existing.session_id == session_id
                     and existing.no_carryover == bool(no_carryover)
                     and existing.client == client
+                    and existing.command == normalized_command
+                    and existing.model_channel_config == normalized_channel_config
                 )
             if not same_request:
                 return None, {
