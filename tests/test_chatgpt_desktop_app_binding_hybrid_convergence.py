@@ -50,7 +50,7 @@ def test_registered_app_only_package_preserves_hybrid_turn_policy() -> None:
     assert "never fall back to a local chatgpt executor" not in joined
 
 
-def test_v115_startup_contract_separates_binding_from_capability_evidence() -> None:
+def test_startup_contract_separates_registered_app_binding_from_capability_evidence() -> None:
     contract = json.loads(
         (ROOT / "latka_jazn/resources/startup_contract.json").read_text(
             encoding="utf-8"
@@ -71,7 +71,7 @@ def test_v115_startup_contract_separates_binding_from_capability_evidence() -> N
     assert contract["chatgpt_route_switch_after_turn_submit_allowed"] is False
 
 
-def test_v115_release_identity() -> None:
+def test_release_identity_tracks_desktop_app_binding_hybrid_convergence() -> None:
     assert PACKAGE_VERSION == "16.3.25.5.115"
     assert (
         PACKAGE_RELEASE_NAME
