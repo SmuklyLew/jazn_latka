@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from latka_jazn.bootstrap.chatgpt_ingress_policy import (
     ChatGptIngressMode,
+    automatic_handoff_allowed,
     normalize_chatgpt_ingress_mode,
 )
 from latka_jazn.bootstrap.chatgpt_host_preflight_types import HostPackageMaterializationState
@@ -72,6 +73,16 @@ def resolve_preflight_route(
     if capability.next_action is HostRecoveryAction.DIAGNOSE_LOCAL_COMMAND:
         return PreflightRouteDecision(False, False, False, capability.next_action, HostExecutionRoute.LOCAL_EXECUTOR, "executor_command_requires_diagnosis", None)
     if capability.execution_route is HostExecutionRoute.HOST_HANDOFF:
+        if not automatic_handoff_allowed(mode):
+            return PreflightRouteDecision(
+                False,
+                False,
+                False,
+                HostRecoveryAction.STOP_LOCAL_BOOTSTRAP,
+                HostExecutionRoute.NONE,
+                "chatgpt_hybrid_adaptive_handoff_not_allowed",
+                None,
+            )
         return PreflightRouteDecision(
             False,
             False,
