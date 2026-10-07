@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "119.2.0",
-  "active_definition_count": 1999,
+  "active_definition_count": 2000,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6507,6 +6507,26 @@
       "description_source": "source_identity",
       "line": 131
     },
+    "tests/test_chatgpt_plugin_package.py::test_force_replaces_known_plugin_shape_without_stale_optional_manifests": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_force_replaces_known_plugin_shape_without_stale_optional_manifests",
+      "purpose": "Force replaces known plugin shape without stale optional manifests",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 151
+    },
     "tests/test_chatgpt_plugin_package.py::test_cli_parser_accepts_production_oauth_and_plugin_package_modes": {
       "path": "tests/test_chatgpt_plugin_package.py",
       "name": "test_cli_parser_accepts_production_oauth_and_plugin_package_modes",
@@ -6525,7 +6545,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 150
+      "line": 178
     },
     "tests/test_chatgpt_post_materialization_launch_contract.py::test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch": {
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
