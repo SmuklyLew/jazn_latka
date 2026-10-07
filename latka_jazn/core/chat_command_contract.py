@@ -1425,8 +1425,9 @@ def run_jsonl_chat_bridge(
                 sessions[canonical_default] = create_session(canonical_default)
             return sessions[canonical_default], "canonical_default"
         if generated_session is None:
-            generated_session = create_session(None)
-            sessions[generated_session.state.session_id] = generated_session
+            created_session = create_session(None)
+            generated_session = created_session
+            sessions[created_session.state.session_id] = created_session
         return generated_session, "generated"
 
     try:
