@@ -48,6 +48,7 @@ class RemoteTransport(str, Enum):
     NONE = "none"
     PUBLIC_STREAMABLE_HTTP = "public_streamable_http"
     OPENAI_SECURE_MCP_TUNNEL = "openai_secure_mcp_tunnel"
+    REGISTERED_MCP_APP = "registered_mcp_app"
 
 
 class Availability(str, Enum):
