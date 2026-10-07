@@ -21,7 +21,7 @@
     "python -X utf8 run.py start",
     "python -X utf8 run.py chat-gpt --session-id <stable-session-id>"
   ],
-  "truth_boundary": "Instrukcja Projektu ChatGPT pozostaje cienkim loaderem hybrid/adaptive remote/MCP-first. Pełny bieżący toolset jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply i świeży status mają pierwszeństwo. Canonical tools muszą być model-visible także na initialize-era Desktop MCP. Registered app binding przez .app.json jest wyłącznie konfiguracją hosta i nie dowodzi current-message exposure. Jeżeli MCP/app route nie jest conversation-ready przed submittem wiadomości, host może wykonać bounded local executor/bootstrap discovery; pre-spawn failure nie dowodzi stanu filesystemu ani paczki. Po przyjęciu requestu nie wolno zmieniać route ani replayować wiadomości. Widoczny tekst nadal wymaga accepted display_exact po finalizacji. Frozen snapshot narzędzi wymaga Refresh/republish po stronie ChatGPT.",
+  "truth_boundary": "Instrukcja Projektu ChatGPT pozostaje cienkim loaderem hybrid/adaptive MCP/app-first. Pełny bieżący toolset jazn_status/jazn_generate_visible_reply/jazn_resume_visible_reply/jazn_finalize_reply i świeży status mają pierwszeństwo. Canonical tools muszą być model-visible także na initialize-era Desktop MCP. Registered app binding przez .app.json jest wyłącznie konfiguracją hosta i nie dowodzi current-message exposure. Direct registered MCP app staje się zweryfikowaną remote trasą dopiero po faktycznym bieżącym wywołaniu zredagowanego jazn_status (jazn_registered_mcp_status/v1), zgodnej wersji, niepustym daemon instance, świeżym heartbeat, conversation_ready i kompletnym bieżącym toolsecie. Jeżeli MCP/app route nie jest conversation-ready przed submittem wiadomości, host może wykonać bounded local executor/bootstrap discovery; pre-spawn failure nie dowodzi stanu filesystemu ani paczki. Po przyjęciu requestu nie wolno zmieniać route ani replayować wiadomości. Widoczny tekst nadal wymaga accepted display_exact po finalizacji. Frozen snapshot narzędzi wymaga Refresh/republish po stronie ChatGPT.",
   "version": "16.3.25.5.115",
   "version_source": "latka_jazn.version.PACKAGE_VERSION",
   "visible_turn_readiness": "accepted_final_visible_text_only",
@@ -66,5 +66,11 @@
     "app"
   ],
   "chatgpt_legacy_initialize_tool_visibility_normalized": true,
-  "chatgpt_registered_app_binding_is_current_message_capability_evidence": false
+  "chatgpt_registered_app_binding_is_current_message_capability_evidence": false,
+  "chatgpt_registered_app_remote_transport": "registered_mcp_app",
+  "chatgpt_registered_app_status_schema": "jazn_registered_mcp_status/v1",
+  "chatgpt_registered_app_status_redacted": true,
+  "chatgpt_registered_app_status_requires_current_message_invocation": true,
+  "chatgpt_registered_app_status_requires_fresh_runtime_binding": true,
+  "chatgpt_registered_app_status_requires_complete_current_message_toolset": true
 }
