@@ -33,7 +33,12 @@ def test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip(tmp_pat
         "system_version": "119.2.0",
         "base_commit": "a" * 40,
     }
-    manifest = RunManifest.begin(**identity).with_sources(
+    manifest = RunManifest.begin(
+        run_id=identity["run_id"],
+        tool_version=identity["tool_version"],
+        system_version=identity["system_version"],
+        base_commit=identity["base_commit"],
+    ).with_sources(
         (
             {"path": "z.json", "role": "journal", "sha256": "b" * 64},
             {"path": "a.json", "role": "conversation", "sha256": "a" * 64},
@@ -42,7 +47,13 @@ def test_run_manifest_sanitized_inventory_order_survives_draft_roundtrip(tmp_pat
     before = manifest.sanitized_dict()
     manifest.write_draft(tmp_path)
 
-    restored = RunManifest.load_draft(tmp_path, **identity)
+    restored = RunManifest.load_draft(
+        tmp_path,
+        run_id=identity["run_id"],
+        tool_version=identity["tool_version"],
+        system_version=identity["system_version"],
+        base_commit=identity["base_commit"],
+    )
 
     assert restored.sanitized_dict() == before
     assert restored.source_sha256 == manifest.source_sha256
