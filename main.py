@@ -1149,7 +1149,7 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-ollama")
     if daemon_exit is not None:
         return daemon_exit
-    daemon_bound = _daemon_ensure.selected_transport == "persistent_daemon"
+    daemon_bound = getattr(_daemon_ensure, "selected_transport", None) == "persistent_daemon"
     if bridge_text:
         return _run_chat_command_one_shot(
             cfg=cfg,
@@ -1164,20 +1164,31 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
             port=ns.daemon_port,
         )
     if stdin_is_tty:
-        session = DaemonConversationSession(
-            cfg,
-            session_id=ns.session_id,
-            no_carryover=ns.no_carryover,
-            source_client="ollama_terminal_chat",
-            command="--chat-ollama",
-            host=ns.daemon_host,
-            port=ns.daemon_port,
-            model_channel_config=model_channel_config_from_config(cfg),
-        )
+        if daemon_bound:
+            session = DaemonConversationSession(
+                cfg,
+                session_id=ns.session_id,
+                no_carryover=ns.no_carryover,
+                source_client="ollama_terminal_chat",
+                command="--chat-ollama",
+                host=ns.daemon_host,
+                port=ns.daemon_port,
+                model_channel_config=model_channel_config_from_config(cfg),
+            )
+        else:
+            session = RuntimeSessionWorker(
+                session_factory=JaznRuntimeSession,
+                config=cfg,
+                session_id=ns.session_id,
+                no_carryover=ns.no_carryover,
+                source_client="ollama_terminal_chat",
+                command="--chat-ollama",
+                timeout_seconds=runtime_turn_timeout_seconds(cfg),
+            )
         try:
             run_persistent_chat(
                 session,
-                session_id=session.state.session_id,
+                session_id=getattr(session.state, "session_id", ns.session_id),
                 no_carryover=ns.no_carryover,
             )
         finally:
@@ -2372,7 +2383,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
         return _run_chat_command_one_shot(
             cfg=cfg, text=text, session_id=ns.session_id, no_carryover=ns.no_carryover,
             source_client="cli_direct_conversation", lifecycle="one_shot",
-            command="--chat", output_mode="final_visible_text",
+            command="direct_message", output_mode="final_visible_text",
             host=ns.daemon_host, port=ns.daemon_port,
         )
 
