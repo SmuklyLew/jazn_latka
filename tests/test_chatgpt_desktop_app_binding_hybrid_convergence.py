@@ -68,6 +68,10 @@ def test_startup_contract_separates_registered_app_binding_from_capability_evide
     )
     assert contract["chatgpt_canonical_turn_tool_visibility"] == ["model", "app"]
     assert contract["chatgpt_legacy_initialize_tool_visibility_normalized"] is True
+    assert contract["chatgpt_registered_app_remote_transport"] == "registered_mcp_app"
+    assert contract["chatgpt_registered_app_status_schema"] == "jazn_registered_mcp_status/v1"
+    assert contract["chatgpt_registered_app_status_redacted"] is True
+    assert contract["chatgpt_registered_app_status_requires_current_message_invocation"] is True
     assert contract["chatgpt_route_switch_after_turn_submit_allowed"] is False
 
 
