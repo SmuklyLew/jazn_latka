@@ -93,6 +93,24 @@ def plan_chatgpt_host_preflight(
     )
 
 
+def plan_chatgpt_adaptive_ingress_preflight(
+    executor_observations: Iterable[HostExecutorObservation],
+    *,
+    attachment_reports: Iterable[AttachmentMaterializationReport] = (),
+    package_required: bool = False,
+    discovery_evidence: HostDiscoveryEvidence | None = None,
+) -> ChatGptHostPreflightDecision:
+    """Plan one ordinary ChatGPT message with remote-first bounded local fallback."""
+
+    return plan_chatgpt_host_preflight(
+        executor_observations,
+        attachment_reports=attachment_reports,
+        package_required=package_required,
+        discovery_evidence=discovery_evidence,
+        ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE,
+    )
+
+
 def plan_chatgpt_remote_ingress_preflight(
     executor_observations: Iterable[HostExecutorObservation],
     *,
@@ -100,7 +118,7 @@ def plan_chatgpt_remote_ingress_preflight(
     package_required: bool = False,
     discovery_evidence: HostDiscoveryEvidence | None = None,
 ) -> ChatGptHostPreflightDecision:
-    """Plan one ordinary ChatGPT message without any local-executor fallback."""
+    """Plan an explicit strict remote-only ChatGPT message."""
 
     return plan_chatgpt_host_preflight(
         executor_observations,
