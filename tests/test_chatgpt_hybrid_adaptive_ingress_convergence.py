@@ -188,12 +188,14 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
     prompts = plugin["extensions"]["com.openai"]["interface"]["defaultPrompt"]
     joined = " ".join(prompts).lower()
 
-    assert "prefer the complete current-message jaźń remote toolset" in joined
+    assert "complete current-message jaźń mcp/app toolset" in joined
+    assert "call jazn_status as the read-only readiness probe" in joined
     assert "bounded verified host-local bootstrap fallback" in joined
     assert "never replay the user message" in joined
+    assert "action=display_exact" in joined
     assert "never fall back to a local chatgpt executor" not in joined
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.114"
-    assert PACKAGE_RELEASE_NAME == "hybrid-adaptive-ingress-convergence"
+    assert PACKAGE_VERSION == "16.3.25.5.115"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-desktop-app-binding-hybrid-convergence"
