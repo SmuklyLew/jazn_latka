@@ -1,16 +1,40 @@
 # Current project state
 
-**Snapshot date:** 2026-10-06
+**Snapshot date:** 2026-10-07
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `712a25db94c634ea47fbf265c0d907608a668f00`
-**Current master version:** `16.3.25.5.107-persistent-remote-runtime-operations-convergence`
-**Current implementation candidate:** `16.3.25.5.112-v111-closeout-real-host-evidence-convergence`
+**Current master at documentation baseline:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1`
+**Current master version:** `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`
+**Current implementation candidate:** `16.3.25.5.114-hybrid-adaptive-ingress-convergence` on `update/v16.3.25.5.114-hybrid-adaptive-ingress-convergence`
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
 ## 1. Release / control plane
 
-Aktualna linia master to v16.3.25.5.107.
+Aktualna linia master to v16.3.25.5.113. v114 jest implementacyjnym kandydatem na osobnym branchu i nie jest jeszcze masterem.
+
+## v114 — hybrid/adaptive ChatGPT ingress
+
+**Status:** `IMPLEMENTATION CANDIDATE` on
+`update/v16.3.25.5.114-hybrid-adaptive-ingress-convergence`.
+
+v114 zachowuje v113 persistent remote MCP jako trasę preferowaną, ale przywraca
+bounded host-local bootstrap ordinary-chat, gdy bieżąca wiadomość nie ma
+conversation-ready Jaźń app/toolset, a host faktycznie może utworzyć proces.
+Remote readiness wygrywa nad local; local fallback jest dozwolony wyłącznie
+przed submittem tury; po submitcie route/request są zamrożone i obowiązuje
+resume/finalization bez replayu. Automatic host handoff pozostaje zabroniony w
+ordinary chat i jest dostępny tylko w jawnym `operator_recovery`.
+
+Bieżący kontrakt: `docs/runtime/CHATGPT_HYBRID_ADAPTIVE_INGRESS.md`.
+
+## v113 — remote-only ChatGPT ingress
+
+**Status:** `MERGED` / master baseline `7b322284e49ed0a08d24d5cd5a56ba567532eba1`.
+
+v113 ustanowił current-message remote toolset gate i fail-closed remote-only
+ordinary ingress. Ten kontrakt pozostaje dostępny jako jawny strict
+`REMOTE_ONLY`, ale jego rola jako domyślnego ordinary-chat jest superseded
+przez v114.
 
 ## v107 — persistent remote runtime operations
 
