@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "runtime_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "package_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "generated_at_utc": "2026-10-07T20:07:48+00:00",
-  "updated_at_utc": "2026-10-07T20:07:48+00:00",
+  "version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "package_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "generated_at_utc": "2026-10-07T21:51:56+00:00",
+  "updated_at_utc": "2026-10-07T21:51:56+00:00",
   "start_file": "run.py",
   "file_count": 2052,
   "static_file_count": 2052,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3016,
-      "sha256": "a505fed831f1a4a0776e76546b76858b9abaaedded99a1f828c704db2376991f",
+      "size_bytes": 3017,
+      "sha256": "ddcc93c2ca1b25ff3de2ad5dd1ec9945519fd93e32a7990a8eb5fdf06b652286",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9335,8 +9335,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5219,
-      "sha256": "6519d3bdcabe32c603a29c5f46df20cf460d57d31e40f59a00342881f07815aa",
+      "size_bytes": 5218,
+      "sha256": "fb4caa331e9e864ff21374125b8578b337c69cedb5f924487af2df4a8c6fd6f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18335,8 +18335,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1882173,
-      "sha256": "36cb8f2bbdebeaadcb95da688f481f4338afbb13e5b7e3ce52be14ebb1b1d3b5",
+      "size_bytes": 1882175,
+      "sha256": "b1e4ce0ca259405c3072a5dc03d8dbfa2a0f338a652bfe72be1de90b32dd5de1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18920,11 +18920,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "release_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-    "package_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-    "release_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence"
+    "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+    "package_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+    "release_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix"
   },
   "legacy_aliases": {
     "version": "release_version"

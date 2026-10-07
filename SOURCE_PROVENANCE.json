@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "b3e998976f2a216a52601565b3a1f870cf31d01e",
-  "base_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
-  "commit_date": "2026-10-07T22:07:48+02:00",
+  "base_merge_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
+  "base_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "commit_date": "2026-10-07T21:51:56Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-07T20:07:48+00:00",
+  "generated_at_utc": "2026-10-07T21:51:56+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "72c80613e3494f16db314554267552494f6fbaee",
+  "git_tree_sha": "f3451826d14a5b28892d401a92d21509f2a0e5e8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b3e998976f2a216a52601565b3a1f870cf31d01e",
+    "base_commit": "bec08476fdde083278ec27221692b6f25fbc3e6d",
     "base_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "b3e998976f2a216a52601565b3a1f870cf31d01e",
-    "source_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence"
+    "source_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
+    "source_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "release_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "b3e998976f2a216a52601565b3a1f870cf31d01e",
+  "source_commit": "51fdc1f54f10f2569f3611d841ddb5198ffe555e",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "source_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence",
+  "update_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
   "version_source": "latka_jazn/version.py"
 }
