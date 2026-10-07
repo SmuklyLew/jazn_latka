@@ -2423,8 +2423,13 @@ def main(argv: list[str] | None = None) -> int:
         return int(run_host_preflight_cli(args[1:]))
 
     if command in {"status", "doctor"}:
+        from latka_jazn.cli_commands import diagnostics
+        from latka_jazn.cli_commands.diagnostics_convergence import install as install_diagnostics_convergence
         from latka_jazn.cli_commands.cognitive_status_overlay import install_cognitive_status_overlay
 
+        # Order matters: first converge SYSTEM-only/optional-MEMORY readiness,
+        # then rebuild the required cognitive capability on top of that profile.
+        install_diagnostics_convergence(diagnostics)
         install_cognitive_status_overlay()
 
     if command == "__daemon-run-hotfix":
