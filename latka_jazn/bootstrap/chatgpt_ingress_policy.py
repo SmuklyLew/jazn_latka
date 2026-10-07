@@ -22,7 +22,7 @@ class ChatGptIngressMode(str, Enum):
 def normalize_chatgpt_ingress_mode(value: object) -> ChatGptIngressMode:
     if isinstance(value, ChatGptIngressMode):
         return value
-    candidate = str(value or ChatGptIngressMode.REMOTE_ONLY.value).strip().lower()
+    candidate = str(value or ChatGptIngressMode.HYBRID_ADAPTIVE.value).strip().lower()
     try:
         return ChatGptIngressMode(candidate)
     except ValueError as exc:
