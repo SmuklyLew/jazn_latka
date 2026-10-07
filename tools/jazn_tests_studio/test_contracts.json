@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.1",
-  "active_definition_count": 2020,
+  "active_definition_count": 2022,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43738,6 +43738,52 @@
       "description_source": "source_identity",
       "line": 115
     },
+    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity": {
+      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+      "name": "test_no_carryover_resets_daemon_authority_once_then_preserves_turn_continuity",
+      "purpose": "No carryover resets daemon authority once then preserves turn continuity",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.core.daemon_conversation_session",
+        "latka_jazn.core.runtime_chat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
+    },
+    "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_daemon_reset_session_replaces_existing_worker_once": {
+      "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
+      "name": "test_daemon_reset_session_replaces_existing_worker_once",
+      "purpose": "Daemon reset session replaces existing worker once",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.core.daemon_conversation_session",
+        "latka_jazn.core.runtime_chat"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 174
+    },
     "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown": {
       "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
       "name": "test_terminal_shell_exit_disconnects_daemon_client_without_claiming_runtime_shutdown",
@@ -43759,7 +43805,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 145
+      "line": 211
     },
     "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_chatgpt_host_contract_is_selected_by_command_not_transport_client_name": {
       "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
@@ -43783,7 +43829,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 182
+      "line": 248
     },
     "tests/test_v1632551151_unified_conversation_runtime_authority.py::test_model_timeout_extends_daemon_job_budget_without_changing_session_owner": {
       "path": "tests/test_v1632551151_unified_conversation_runtime_authority.py",
@@ -43806,7 +43852,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 239
+      "line": 305
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
