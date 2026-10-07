@@ -68,6 +68,7 @@ class DaemonConversationSession:
             else model_channel_config_from_config(config)
         )
         self.state = SimpleNamespace(session_id=self.session_id)
+        self._reset_session_pending = bool(no_carryover)
         self._closed = False
 
     @property
@@ -116,9 +117,12 @@ class DaemonConversationSession:
             client=effective_client,
             command=effective_command,
             model_channel_config=effective_channel,
+            reset_session=self._reset_session_pending,
             request_id=request_id,
             timeout=wait_timeout,
         )
+        if result.get("accepted") is True or result.get("ok") is True:
+            self._reset_session_pending = False
         result.setdefault("session", {"session_id": self.session_id})
         result["conversation_session_authority"] = {
             "owner": "persistent_daemon",
