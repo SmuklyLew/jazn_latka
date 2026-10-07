@@ -741,7 +741,7 @@ class JaznMcpServer(_V76JaznMcpServer):
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v16.")
+    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń.")
     parser.add_argument("--root", default=str(Path(__file__).resolve().parents[2]))
     parser.add_argument("--daemon-url", default="http://127.0.0.1:8787")
     parser.add_argument("--allow-unauthenticated-local-test", action="store_true")
