@@ -122,6 +122,15 @@ Canonical turn tools zachowują model visibility
 `_meta.ui.visibility=["model","app"]` zarówno na modern discovery, jak i na
 initialize-era Desktop `tools/list`; diagnostyka/aliasy mogą pozostać app-only.
 
+Direct registered Desktop/workspace MCP app ma trzeci jawny host evidence
+transport: `registered_mcp_app`. Po rzeczywistym current-message wywołaniu
+canonical `jazn_status` serwer zwraca zredagowany
+`jazn_registered_mcp_status/v1`, związany z faktycznie negocjowanym protokołem,
+wersją pakietu/runtime, daemon instance id i heartbeat. Host-preflight promuje
+tę trasę dopiero przy pełnym current-message toolsecie i świeżym statusie.
+Public HTTP nadal używa `jazn_public_mcp_status/v1`, a Secure MCP Tunnel
+własnego readiness contractu.
+
 Publiczny Streamable HTTP ma dwa równoważne, fail-closed tryby evidence.
 
 **Deployment/HTTP probe** wymaga jednocześnie:
