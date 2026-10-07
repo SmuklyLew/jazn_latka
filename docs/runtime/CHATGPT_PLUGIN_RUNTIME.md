@@ -98,6 +98,21 @@ The binding is configuration evidence only. It does not prove that the app is
 installed/enabled for the current account, selected for the current message,
 or that the four canonical Jaźń tools are actually callable.
 
+When a direct registered Desktop/workspace app is actually callable, canonical
+`jazn_status` returns a **redacted** self-describing
+`jazn_registered_mcp_status/v1` contract stamped with the MCP protocol actually
+used by that connection and `registered_transport=registered_mcp_app`.
+Conversation readiness additionally requires exact package/runtime version,
+non-empty persistent daemon instance id, fresh heartbeat, `ready=true`, an
+observed host invocation of that action, and all four canonical tools on the
+same current-message surface. The response deliberately excludes local
+`runtime_root`, database paths, PID/private daemon fields and operator secrets.
+
+This registered-app status is intentionally distinct from
+`jazn_public_mcp_status/v1` used by public Streamable HTTP. It also does not
+replace Secure MCP Tunnel control-plane readiness; the three evidence paths
+remain separately typed and fail-closed.
+
 Registered app references are for local/workspace packaging and testing.
 Current OpenAI public plugin submission does not publish packages carrying app
 references; public distribution uses a stable remote HTTPS MCP endpoint instead.
