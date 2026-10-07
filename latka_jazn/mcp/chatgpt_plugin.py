@@ -88,17 +88,24 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
 
 
 def build_portable_plugin_documents(
-    endpoint: str,
+    endpoint: str | None = None,
     *,
     package_version: str = PACKAGE_VERSION_FULL,
     registered_app_id: str | None = None,
 ) -> dict[str, dict[str, Any]]:
-    remote_endpoint = validate_remote_mcp_endpoint(endpoint)
+    endpoint_value = str(endpoint or "").strip()
+    remote_endpoint = (
+        validate_remote_mcp_endpoint(endpoint_value)
+        if endpoint_value
+        else None
+    )
     app_id = (
         validate_registered_app_id(registered_app_id)
         if registered_app_id is not None
         else None
     )
+    if remote_endpoint is None and app_id is None:
+        raise ValueError("chatgpt_plugin_requires_endpoint_or_registered_app_id")
     plugin: dict[str, Any] = {
         "$schema": PLUGIN_SCHEMA,
         "name": PLUGIN_NAME,
@@ -114,19 +121,19 @@ def build_portable_plugin_documents(
             "com.openai": _openai_extension(registered_app_id=app_id),
         },
     }
-    mcp = {
-        "$schema": MCP_SCHEMA,
-        "mcpServers": {
-            MCP_SERVER_NAME: {
-                "type": "streamable-http",
-                "url": remote_endpoint,
-            }
-        },
-    }
     documents: dict[str, dict[str, Any]] = {
         "plugin.json": plugin,
-        "mcp.json": mcp,
     }
+    if remote_endpoint is not None:
+        documents["mcp.json"] = {
+            "$schema": MCP_SCHEMA,
+            "mcpServers": {
+                MCP_SERVER_NAME: {
+                    "type": "streamable-http",
+                    "url": remote_endpoint,
+                }
+            },
+        }
     if app_id is not None:
         documents[".app.json"] = {
             "apps": {
@@ -155,7 +162,7 @@ def _atomic_write(path: Path, payload: bytes) -> None:
 @dataclass(frozen=True, slots=True)
 class PluginPackageResult:
     output_dir: str
-    endpoint: str
+    endpoint: str | None
     package_version: str
     registered_app_id: str | None
     files: tuple[dict[str, Any], ...]
@@ -179,7 +186,7 @@ class PluginPackageResult:
 
 def write_portable_plugin_package(
     output_dir: Path,
-    endpoint: str,
+    endpoint: str | None = None,
     *,
     package_version: str = PACKAGE_VERSION_FULL,
     registered_app_id: str | None = None,
@@ -214,9 +221,15 @@ def write_portable_plugin_package(
         if registered_app_id is not None
         else None
     )
+    endpoint_value = str(endpoint or "").strip()
+    normalized_endpoint = (
+        validate_remote_mcp_endpoint(endpoint_value)
+        if endpoint_value
+        else None
+    )
     return PluginPackageResult(
         output_dir=str(target),
-        endpoint=validate_remote_mcp_endpoint(endpoint),
+        endpoint=normalized_endpoint,
         package_version=str(package_version),
         registered_app_id=normalized_app_id,
         files=tuple(file_records),

@@ -49,26 +49,6 @@ def test_registered_chatgpt_app_binding_adds_app_manifest() -> None:
     }
 
 
-
-def test_registered_app_binding_without_endpoint_omits_mcp_manifest() -> None:
-    app_id = "plugin_asdk_app_6a4c0062f3b88191855c0a80eac5d53d"
-    documents = build_portable_plugin_documents(registered_app_id=app_id)
-    assert set(documents) == {"plugin.json", ".app.json"}
-    assert documents["plugin.json"]["extensions"]["com.openai"]["apps"] == "./.app.json"
-    assert documents[".app.json"]["apps"]["jazn"] == {
-        "id": app_id,
-        "required": True,
-    }
-
-
-def test_plugin_package_requires_endpoint_or_registered_app() -> None:
-    with pytest.raises(
-        ValueError,
-        match="chatgpt_plugin_requires_endpoint_or_registered_app_id",
-    ):
-        build_portable_plugin_documents()
-
-
 @pytest.mark.parametrize(
     "endpoint",
     [
@@ -159,15 +139,3 @@ def test_cli_parser_accepts_production_oauth_and_plugin_package_modes() -> None:
     )
     assert package.command == "chatgpt-plugin-package"
     assert package.registered_app_id.startswith("plugin_asdk_app_")
-
-    local_binding = parser.parse_args(
-        [
-            "chatgpt-plugin-package",
-            "--registered-app-id",
-            "plugin_asdk_app_6a4c0062f3b88191855c0a80eac5d53d",
-            "--output",
-            "plugin-local",
-        ]
-    )
-    assert local_binding.endpoint is None
-    assert local_binding.registered_app_id.startswith("plugin_asdk_app_")

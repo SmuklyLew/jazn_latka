@@ -209,19 +209,28 @@ py -X utf8 run.py chatgpt-plugin-package `
 ```
 
 After the MCP server has been registered in ChatGPT Developer Mode, copy the
-technical app id from the ChatGPT plugin URL and generate the OpenAI app binding:
+technical app id from the ChatGPT plugin URL. For a local/workspace MCP that is
+already registered in ChatGPT Desktop, generate an app-binding-only package
+without inventing a localhost HTTP endpoint:
 
 ```powershell
 py -X utf8 run.py chatgpt-plugin-package `
   --root . `
-  --endpoint https://jazn.example.com/mcp `
   --registered-app-id plugin_asdk_app_<id> `
   --output .\exports\jazn-chatgpt-plugin `
   --force `
   --json
 ```
 
-The second form writes `plugin.json`, `mcp.json`, and `.app.json`.
+This local/workspace binding form writes `plugin.json` and `.app.json` only.
+It deliberately omits `mcp.json`, because ChatGPT already owns the registered
+MCP connection identified by the technical app id. Do not replace a local STDIO
+registration with `http://127.0.0.1:8080/mcp` merely to satisfy packaging.
+
+Supplying both `--endpoint` and `--registered-app-id` remains supported for
+a remote MCP package that intentionally carries both the remote endpoint and an
+OpenAI app binding; that form writes all three files.
+
 Packaging still does not create the ChatGPT connection or install the plugin.
 
 ## Connect in ChatGPT
