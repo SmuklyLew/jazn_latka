@@ -10,6 +10,7 @@ from latka_jazn.core.chatgpt_host_handoff_state import normalize_handoff_state
 from latka_jazn.mcp.remote_runtime import (
     classify_public_connector_status_failover,
     classify_public_streamable_http_failover,
+    classify_registered_mcp_connector_status_failover,
 )
 from latka_jazn.mcp.secure_tunnel import classify_remote_runtime_failover
 
@@ -183,9 +184,30 @@ def _remote_runtime_evidence(
                 evidence, "current_message_toolset_observed", None
             ),
         )
+    elif transport == "registered_mcp_app":
+        connector_status = evidence.get("connector_status")
+        if connector_status is None:
+            raise ValueError(
+                "remote_runtime_registered_mcp_connector_status_is_required"
+            )
+        result = classify_registered_mcp_connector_status_failover(
+            status_payload=_mapping(
+                connector_status,
+                error_code="remote_runtime_connector_status_must_be_object",
+            ),
+            host_connector_invocation_observed=optional_bool(
+                evidence,
+                "host_connector_invocation_observed",
+                None,
+            ),
+            callable_tool_names=evidence.get("callable_tool_names"),
+            current_message_toolset_observed=optional_bool(
+                evidence, "current_message_toolset_observed", None
+            ),
+        )
     else:
         raise ValueError(
-            "remote_runtime_evidence_transport_must_be_public_streamable_http_or_openai_secure_mcp_tunnel"
+            "remote_runtime_evidence_transport_must_be_public_streamable_http_openai_secure_mcp_tunnel_or_registered_mcp_app"
         )
 
     available = result.get("remote_runtime_transport_available") is True
