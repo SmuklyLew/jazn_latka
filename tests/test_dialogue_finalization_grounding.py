@@ -117,4 +117,5 @@ def test_random_memory_excerpt_remains_rejected() -> None:
         detected_intent="self_state_question",
     )
     assert not result.accepted
-    assert result.mismatch_reason == "random_memory_excerpt_used_where_current_turn_state_required"
+    # Earlier fail-closed guard catches injected, unrequested memory first.
+    assert result.mismatch_reason == "unrequested_memory_injection"
