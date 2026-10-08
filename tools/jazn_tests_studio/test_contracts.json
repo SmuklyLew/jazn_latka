@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.9",
-  "active_definition_count": 2052,
+  "system_version": "16.3.25.5.115.10",
+  "active_definition_count": 2054,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8952,6 +8952,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 86
+    },
+    "tests/test_cli_nonblocking_stdout.py::test_emit_to_in_memory_stream_preserves_json_and_text": {
+      "path": "tests/test_cli_nonblocking_stdout.py",
+      "name": "test_emit_to_in_memory_stream_preserves_json_and_text",
+      "purpose": "Emit to in memory stream preserves json and text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_cli_nonblocking_stdout.py::test_large_json_survives_nonblocking_host_stdout_pipe": {
+      "path": "tests/test_cli_nonblocking_stdout.py",
+      "name": "test_large_json_survives_nonblocking_host_stdout_pipe",
+      "purpose": "Large json survives nonblocking host stdout pipe",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
     },
     "tests/test_cli_progress_system.py::test_progress_renderer_uses_semantic_symbols_and_elapsed_time": {
       "path": "tests/test_cli_progress_system.py",
