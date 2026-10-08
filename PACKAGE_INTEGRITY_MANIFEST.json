@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
-  "runtime_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
-  "package_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
-  "generated_at_utc": "2026-10-08T21:37:12+00:00",
-  "updated_at_utc": "2026-10-08T21:37:12+00:00",
+  "version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+  "runtime_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+  "package_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+  "generated_at_utc": "2026-10-08T22:50:00+00:00",
+  "updated_at_utc": "2026-10-08T22:50:00+00:00",
   "start_file": "run.py",
-  "file_count": 2108,
-  "static_file_count": 2108,
+  "file_count": 2110,
+  "static_file_count": 2110,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "320fd2a82ed6c0b80392d64735d63451f9d328d1d0bc4f589f21c56b113aa47f",
+      "size_bytes": 2963,
+      "sha256": "2c1c2051635cf335cbe5fb4e412d7f56bb44931d0e0739cc74c85b474140d2f9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2035,6 +2035,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_115_10_NONBLOCKING_HOST_STDOUT_DRAFT.md",
+      "size_bytes": 3861,
+      "sha256": "c1c7162d6c090d520d88e7c27804fb9161390f4f965fd1126e9a26ff5351833e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_115_2_CHATGPT_LOCAL_BOOTSTRAP_LOADER_HOTFIX.md",
       "size_bytes": 1602,
       "sha256": "7085ccce390549b4779afb7f165aabf0d237f4684ec9dad238d602eaf9361ec3",
@@ -3188,8 +3197,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 46488,
-      "sha256": "b2145fb8042e1a9949ac59d50766802d4b59b7242fbe83b7a4b8e91688775d66",
+      "size_bytes": 47539,
+      "sha256": "cf4621da92a30475b7315e7350a1080be21889729c5065cf71810467b8e30755",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9425,8 +9434,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5198,
-      "sha256": "36a21ef502bd39d32bff3c850e3045f73936393c2dad480be08a61cb3611831b",
+      "size_bytes": 5188,
+      "sha256": "84f08804af99decfd8b7fa4fcbbbd7ebda5bceda27cd6565b782a244a56b3f61",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15697,6 +15706,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_cli_nonblocking_stdout.py",
+      "size_bytes": 1367,
+      "sha256": "94fa92bd6e33cdd148cf265bd98341c863868edf81f4b2023553d4a8aa370af9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_cli_progress_system.py",
       "size_bytes": 10057,
       "sha256": "539a518f68c65077aebbee52315d4f02699d4df4a55c821bb51c0400084fa37c",
@@ -18839,8 +18857,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1918908,
-      "sha256": "905ea36855e8177c271a4c63219ab1f3487bcf1c143e9bceee9b487de4af390d",
+      "size_bytes": 1920407,
+      "sha256": "2579c92d1f053f8d27e11758cb94d8c3be6204792963fc370a8c41aed5b52f24",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19424,11 +19442,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
+  "release_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
-    "package_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery",
-    "release_version": "16.3.25.5.115.9-host-finalization-idempotency-recovery"
+    "runtime_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+    "package_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+    "release_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
