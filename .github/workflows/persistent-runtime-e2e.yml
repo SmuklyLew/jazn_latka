@@ -80,6 +80,7 @@ on:
       - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
+      - "tests/test_host_finalization_notification_idempotency.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
@@ -195,6 +196,7 @@ on:
       - "tests/test_chatgpt_remote_runtime_evidence.py"
       - "tests/test_persistent_runtime_e2e_hardening.py"
       - "tests/test_host_finalization_recovery.py"
+      - "tests/test_host_finalization_notification_idempotency.py"
       - "tests/test_runtime_daemon_security_contract.py"
       - "tests/test_runtime_stability_daemon_status.py"
       - "tests/test_chatgpt_mcp_two_phase_protocol.py"
@@ -318,6 +320,7 @@ jobs:
           tests/test_chatgpt_remote_runtime_evidence.py
           tests/test_persistent_runtime_e2e_hardening.py
           tests/test_host_finalization_recovery.py
+          tests/test_host_finalization_notification_idempotency.py
 
       - name: Daemon identity, security, atomicity, and timeout matrix
         run: >-
