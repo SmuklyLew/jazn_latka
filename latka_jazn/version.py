@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.5 recognizes exact fully-qualified host exception evidence without
-# changing the no-replay, least-privilege or consent boundaries.
-DISTRIBUTION_VERSION = "16.3.25.5.115.8"
-PACKAGE_VERSION = "16.3.25.5.115.8"
-PACKAGE_RELEASE_NAME = "dialogue-finalization-grounding-hotfix"
+# v115.9 scopes host-finalization idempotency to immutable notification
+# payloads, preserving per-turn lineage and conflict detection.
+DISTRIBUTION_VERSION = "16.3.25.5.115.9"
+PACKAGE_VERSION = "16.3.25.5.115.9"
+PACKAGE_RELEASE_NAME = "host-finalization-idempotency-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

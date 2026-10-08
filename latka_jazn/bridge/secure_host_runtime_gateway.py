@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
 import ipaddress
 import json
 from pathlib import Path
@@ -542,7 +543,17 @@ class SecureHostRuntimeGateway:
             "reason": str(reason),
             "terminal": bool(terminal),
         }
-        operation_id = "host-finalization:" + request_id
+        # A daemon job can issue several *different* finalization decisions:
+        # e.g. regeneration_requested, then accepted after regeneration.  Each
+        # immutable notification must have its own operation identity, while
+        # repeating the exact same notification must reuse that identity.
+        # Keep the original request_id in the relation and HTTP payload; it is
+        # the stable turn identity, not the finalization event identity.
+        payload_bytes = json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        event_digest = hashlib.sha256(payload_bytes).hexdigest()
+        operation_id = f"host-finalization:{request_id}:{event_digest}"
         try:
             record = self.operations.claim(
                 operation_id=operation_id,
