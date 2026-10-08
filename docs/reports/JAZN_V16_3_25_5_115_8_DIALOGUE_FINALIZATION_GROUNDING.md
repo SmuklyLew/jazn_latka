@@ -56,10 +56,14 @@ zaakceptowanego `display_exact` i pełnego `MessageEnvelope`.
   wewnętrzny handler bounded regeneration dla odmowy semantycznej i odmowy
   koperty. Ten sam claimed pending request, `turn_id`, `trace_id` i
   zapisany kontekst; bez replay wiadomości, bez obejścia finalizacji.
+- `latka_jazn/mcp/tools/jazn_finalize_reply.py`: faza regeneracji
+  ujawnia maszynowo czytelne `regeneration_violations` i ograniczone,
+  niepochodzące z treści użytkownika `repair_guidance`. Nie są one
+  zaakceptowaną odpowiedzią, tylko instrukcjami dla następnego kandydata.
 - `latka_jazn/version.py`: wydanie 16.3.25.5.115.8.
 - Nowe testy aktywne pokrywają zaprzeczenia, prawdziwe deklaracje wspomnień,
   naturalną granicę self-state, negatywne ścieżki, temporalny podcel i
-  bounded retry. Starszych testów nie osłabiono.
+  bounded retry. Starszych testów nie osłabiono; aktywne testy mają trwałe nazwy celu, bez tokenów wersji.
 
 ## 4. Osobny operator checklist dla runtime-write
 
