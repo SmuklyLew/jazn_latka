@@ -3,6 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
+
+from latka_jazn.core.finalization_service import FinalizationService
 
 import pytest
 
@@ -25,10 +28,10 @@ def test_semantic_gate_rejection_reaches_bounded_retry_without_persisting(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transitions: list[object] = []
-    service = SimpleNamespace(
+    service = cast(FinalizationService, SimpleNamespace(
         config=SimpleNamespace(root=Path("/unused")),
         transition=lambda state: transitions.append(state),
-    )
+    ))
     binding = {"turn_id": "turn-semantic", "trace_id": "trace-semantic"}
     reply: dict[str, object] = {
         "turn_id": "turn-semantic",
@@ -108,10 +111,10 @@ def test_semantic_integrity_failure_is_not_regenerated(
     monkeypatch.setattr(tx, "release_claimed_host_request", lambda root, *, turn_id: releases.append(turn_id))
     monkeypatch.setattr(tx, "request_host_regeneration", lambda *args, **kwargs: pytest.fail("cannot retry integrity failure"))
     result, errors = tx.finalize_host_candidate(
-        service=SimpleNamespace(
+        service=cast(FinalizationService, SimpleNamespace(
             config=SimpleNamespace(root=Path("/unused")),
             transition=lambda state: None,
-        ),
+        )),
         ports=_host_ports(reply),
         payload={},
         chat_bridge_meta={},
