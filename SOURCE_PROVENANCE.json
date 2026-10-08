@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "dba893362aaede0aa508285f282f3541caaaf7a0",
+  "base_merge_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
   "base_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
-  "commit_date": "2026-10-08T00:53:07Z",
+  "commit_date": "2026-10-08T02:56:59+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-08T00:53:07+00:00",
+  "generated_at_utc": "2026-10-08T00:56:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c743e46e05912c20e04298eac37fc37063bdb340",
+  "git_tree_sha": "328611c42359339ee384189e39d9e6eed219b8a3",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "a5b7d05afbfb6f865506d8d873311b0d76260b79",
+    "base_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
     "base_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "dba893362aaede0aa508285f282f3541caaaf7a0",
+    "source_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
     "source_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "dba893362aaede0aa508285f282f3541caaaf7a0",
+  "source_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
   "tag": null,
