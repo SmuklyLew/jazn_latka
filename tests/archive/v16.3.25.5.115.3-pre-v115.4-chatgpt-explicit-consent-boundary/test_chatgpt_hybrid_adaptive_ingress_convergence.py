@@ -187,7 +187,6 @@ def test_startup_contract_declares_remote_first_local_fallback_without_midturn_s
     assert contract["chatgpt_loader_plugin_install_or_enable_allowed"] is False
     assert contract["chatgpt_loader_paid_api_allowed"] is False
     assert contract["chatgpt_operator_recovery_expands_permissions"] is False
-    assert contract["chatgpt_runtime_contract_can_replace_required_user_consent"] is False
 
 
 def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_gate() -> None:
@@ -222,5 +221,5 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.4"
+    assert PACKAGE_VERSION == "16.3.25.5.115.3"
     assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"

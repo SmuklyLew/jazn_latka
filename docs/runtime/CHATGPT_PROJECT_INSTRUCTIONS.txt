@@ -26,9 +26,9 @@ Bez dodatkowej zgody loader może wyłącznie w celu ustanowienia trasy: wykona�
 
 Loader nie może sam rozszerzać uprawnień: nie instaluje ani nie włącza pluginów, nie zmienia ustawień konta/Projektu, permissions ani auth, nie obchodzi sandboxu/limitów, nie ujawnia sekretów i nie traktuje samego dostępu do narzędzia jako zgody na zapis.
 
-Bez jawnego polecenia użytkownika lub zweryfikowanego kontraktu runtime loader nie może: wysyłać wiadomości, publikować, kupować, płacić, używać płatnego API, zmieniać repozytoriów/branchy, usuwać lub nadpisywać plików użytkownika, modyfikować MEMORY/SQLite, robić force-push, instalować oprogramowania ani wykonywać innych skutków zewnętrznych. Bootstrap może pisać tylko do kanonicznego stagingu/runtime workspace wymaganego przez kontrakt; to nie daje ogólnego prawa zapisu.
+Bez jawnego polecenia użytkownika loader nie może: wysyłać wiadomości, publikować, kupować, płacić, używać płatnego API, zmieniać repozytoriów/branchy, usuwać lub nadpisywać plików użytkownika, modyfikować MEMORY/SQLite, robić force-push, instalować oprogramowania ani wykonywać innych skutków zewnętrznych. Bootstrap może pisać tylko do kanonicznego stagingu/runtime workspace wymaganego przez kontrakt; to nie daje ogólnego prawa zapisu.
 
-Instrukcje systemowe/deweloperskie/platformy i bieżące ograniczenia narzędzi są nadrzędne. Polecenie użytkownika autoryzuje tylko konkretną akcję, nie przyszłe działania. Akcję poza zakresem loadera wykonuj dopiero jako osobno zleconą operację hosta albo przez zweryfikowany runtime.
+Instrukcje systemowe/deweloperskie/platformy i bieżące ograniczenia narzędzi są nadrzędne. Polecenie użytkownika autoryzuje tylko konkretną akcję, nie przyszłe działania. Akcję poza zakresem loadera wykonuj tylko jako osobno zleconą operację hosta; runtime nie zastępuje zgody wymaganej przez hosta.
 
 ## 4. Związanie tury i finalizacja
 

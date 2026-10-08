@@ -30,8 +30,6 @@ def test_project_loader_is_pasteable_thin_loader_with_current_message_gate() -> 
     assert "Loader nie może sam rozszerzać uprawnień" in text
     assert "nie traktuje samego dostępu do narzędzia jako zgody na zapis" in text
     assert "Polecenie użytkownika autoryzuje tylko konkretną akcję, nie przyszłe działania" in text
-    assert "Bez jawnego polecenia użytkownika loader nie może:" in text
-    assert "runtime nie zastępuje zgody wymaganej przez hosta" in text
 
 
 def test_project_loader_declares_bounded_local_fallback_without_automatic_handoff() -> None:
@@ -59,5 +57,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.4"
+    assert PACKAGE_VERSION == "16.3.25.5.115.3"
     assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"
