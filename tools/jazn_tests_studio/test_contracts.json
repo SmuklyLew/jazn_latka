@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.8",
-  "active_definition_count": 2047,
+  "system_version": "16.3.25.5.115.9",
+  "active_definition_count": 2052,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16057,6 +16057,108 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 356
+    },
+    "tests/test_host_finalization_notification_idempotency.py::test_regeneration_then_acceptance_are_distinct_operations": {
+      "path": "tests/test_host_finalization_notification_idempotency.py",
+      "name": "test_regeneration_then_acceptance_are_distinct_operations",
+      "purpose": "Regeneration then acceptance are distinct operations",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.runtime.operation_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_host_finalization_notification_idempotency.py::test_identical_notification_replay_does_not_post_twice": {
+      "path": "tests/test_host_finalization_notification_idempotency.py",
+      "name": "test_identical_notification_replay_does_not_post_twice",
+      "purpose": "Identical notification replay does not post twice",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.runtime.operation_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_host_finalization_notification_idempotency.py::test_lost_ack_retries_same_event_after_gateway_restart": {
+      "path": "tests/test_host_finalization_notification_idempotency.py",
+      "name": "test_lost_ack_retries_same_event_after_gateway_restart",
+      "purpose": "Lost ack retries same event after gateway restart",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "GatewayError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.runtime.operation_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_host_finalization_notification_idempotency.py::test_distinct_turns_do_not_share_notification_operation": {
+      "path": "tests/test_host_finalization_notification_idempotency.py",
+      "name": "test_distinct_turns_do_not_share_notification_operation",
+      "purpose": "Distinct turns do not share notification operation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.runtime.operation_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
+    "tests/test_host_finalization_notification_idempotency.py::test_repeated_reason_change_is_new_event_not_registry_conflict": {
+      "path": "tests/test_host_finalization_notification_idempotency.py",
+      "name": "test_repeated_reason_change_is_new_event_not_registry_conflict",
+      "purpose": "Repeated reason change is new event not registry conflict",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.runtime.operation_registry"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
     },
     "tests/test_host_finalization_provenance_polish_nlp.py::test_cli_fast_path_submits_as_host_capable_daemon_bridge_client": {
       "path": "tests/test_host_finalization_provenance_polish_nlp.py",
