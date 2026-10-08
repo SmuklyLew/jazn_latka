@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.2",
+  "system_version": "16.3.25.5.115.3",
   "active_definition_count": 2022,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -3087,11 +3087,11 @@
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "name": "test_project_loader_is_pasteable_thin_loader_with_current_message_gate",
       "purpose": "Project loader is pasteable thin loader with current message gate",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -3115,7 +3115,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 35
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_complete_current_message_turn_toolset": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3132,7 +3132,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 44
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3149,7 +3149,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 59
     },
     "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py::test_registered_app_id_accepts_supported_chatgpt_binding_prefixes": {
       "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
@@ -5821,11 +5821,11 @@
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
       "name": "test_startup_contract_declares_remote_first_local_fallback_without_midturn_switch",
       "purpose": "Startup contract declares remote first local fallback without midturn switch",
-      "expected": "Pytest completes this contract cleanly and all 26 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 33 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 26,
+      "assertion_count": 33,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -5857,7 +5857,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 185
+      "line": 192
     },
     "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py::test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootstrap": {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
@@ -5878,7 +5878,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 203
+      "line": 210
     },
     "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py::test_release_identity_tracks_hybrid_adaptive_ingress_contract": {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
@@ -5899,7 +5899,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 216
+      "line": 223
     },
     "tests/test_chatgpt_library_discovery.py::test_project_loader_searches_library_before_declaring_system_zip_absent": {
       "path": "tests/test_chatgpt_library_discovery.py",
