@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.6",
-  "active_definition_count": 2029,
+  "system_version": "16.3.25.5.115.7",
+  "active_definition_count": 2031,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6114,6 +6114,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 43
+    },
+    "tests/test_chatgpt_loader_ci_v1157_regression.py::test_loader_host_failure_and_library_discovery_remain_fail_closed": {
+      "path": "tests/test_chatgpt_loader_ci_v1157_regression.py",
+      "name": "test_loader_host_failure_and_library_discovery_remain_fail_closed",
+      "purpose": "Loader host failure and library discovery remain fail closed",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_chatgpt_loader_ci_v1157_regression.py::test_distribution_startup_and_public_mcp_contract_share_version": {
+      "path": "tests/test_chatgpt_loader_ci_v1157_regression.py",
+      "name": "test_distribution_startup_and_public_mcp_contract_share_version",
+      "purpose": "Distribution startup and public mcp contract share version",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_chatgpt_loader_pylance_static_gate.py::test_jazn_config_generated_constructor_and_replace_contract": {
       "path": "tests/test_chatgpt_loader_pylance_static_gate.py",
