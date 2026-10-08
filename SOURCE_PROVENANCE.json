@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "6a615c3454a684bc069bc77155346fbe7b3870fd",
-    "base_version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
+    "base_commit": "13de4468619d4f032428b1631483b31ff449dec1",
+    "base_version": "16.3.25.5.115.8-dialogue-finalization-grounding-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "13de4468619d4f032428b1631483b31ff449dec1",
