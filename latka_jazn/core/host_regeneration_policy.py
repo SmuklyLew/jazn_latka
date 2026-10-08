@@ -7,7 +7,17 @@ from latka_jazn.version import schema_version
 
 
 SCHEMA_VERSION = schema_version("host_regeneration_policy")
-REGENERABLE_VIOLATIONS = frozenset({"forbidden_host_voice_prefix", "malformed_message_envelope"})
+REGENERABLE_VIOLATIONS = frozenset({
+    "forbidden_host_voice_prefix",
+    "malformed_message_envelope",
+    # One bounded rewrite is safe; the candidate still passes the full,
+    # unchanged truth, memory and finalization gates on resubmission.
+    "memory_claim_without_allowed_memory_payload",
+    "memory_claim_without_grounded_items",
+    "self_state_question_missing_operational_state",
+    "missing_required_components_for_intent",
+    "compound_component_coverage_incomplete",
+})
 
 
 @dataclass(slots=True)
@@ -37,8 +47,10 @@ def decide_host_regeneration(
             reason = "forbidden_host_voice_prefix_retry"
         elif codes == ["malformed_message_envelope"]:
             reason = "malformed_message_envelope_retry"
-        else:
+        elif set(codes).issubset({"forbidden_host_voice_prefix", "malformed_message_envelope"}):
             reason = "host_visible_format_retry"
+        else:
+            reason = "host_candidate_semantic_retry"
     elif safe:
         reason = "regeneration_budget_exhausted"
     else:
