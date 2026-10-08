@@ -20,9 +20,9 @@ def _candidate(text: str) -> ResponseCandidate:
     return ResponseCandidate(
         candidate_id="v1158-regression",
         text=text,
-        source="model_adapter",
-        provider="chatgpt_host",
-        model="host_managed",
+        source="runtime_fallback",
+        provider="fixture",
+        model="fixture",
         status="completed",
         used_memory_item_ids=[],
         generation_reason="regression_fixture",
