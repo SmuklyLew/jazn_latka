@@ -23,7 +23,7 @@ from latka_jazn.core.chatgpt_host_executor_failure_codes import classify_prespan
         "<class 'caas.internal.errors.ClientError'>",
         ' <class "caas.internal.errors.ClientError">. ',
         "Encountered exception: <class 'caas.internal.errors.ClientError'>.",
-        "ClientError\\nEncountered exception: <class 'caas.internal.errors.ClientError'>.",
+        "ClientError\nEncountered exception: <class 'caas.internal.errors.ClientError'>.",
     ],
 )
 def test_caas_client_error_formats_map_to_same_failure_policy(raw: str) -> None:
@@ -40,7 +40,7 @@ def test_caas_client_error_formats_map_to_same_failure_policy(raw: str) -> None:
         "ClientErrorX",
         "Request failed because of ClientError",
         "ValueError: ClientError",
-        "ClientError\\nEncountered exception: <class 'caas.internal.errors.InvalidArgumentError'>.",
+        "ClientError\nEncountered exception: <class 'caas.internal.errors.InvalidArgumentError'>.",
         "<class 'caas.internal.errors.ClientError'> user text",
         "Encountered exception: <class 'caas.internal.errors.ClientError'>. extra",
     ],
