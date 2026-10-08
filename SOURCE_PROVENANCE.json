@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8b4e43e055a82d0e0af4bcb0aad1866dde6a6d37",
-    "base_version": "16.3.25.5.115.5-unified-conversation-runtime-authority-hotfix",
+    "base_commit": "ffcd8e6048a08229492ea9dcad95957337313e8d",
+    "base_version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ffcd8e6048a08229492ea9dcad95957337313e8d",
