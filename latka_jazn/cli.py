@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
+import os
 import sqlite3
 from pathlib import Path
 import subprocess
@@ -348,10 +350,40 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _emit(payload: Any, *, as_json: bool) -> None:
-    if as_json or not isinstance(payload, str):
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str))
-    else:
-        print(payload)
+    """Emit complete CLI output when an embedding host supplies non-blocking stdout.
+
+    ChatGPT hosts may mark the child stdout pipe O_NONBLOCK. A single large
+    print() can then fail with BlockingIOError after emitting only a JSON
+    prefix. Restore normal pipe backpressure for this one synchronous output,
+    without changing stdout behavior for the rest of the process.
+    """
+    rendered = (
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str)
+        if as_json or not isinstance(payload, str)
+        else payload
+    )
+    try:
+        fd = sys.stdout.fileno()
+        was_blocking = os.get_blocking(fd)
+    except (AttributeError, OSError, io.UnsupportedOperation, ValueError):
+        # In-memory/redirected test streams have no OS-level descriptor.
+        print(rendered)
+        return
+
+    if was_blocking:
+        print(rendered)
+        return
+
+    try:
+        os.set_blocking(fd, True)
+    except (AttributeError, OSError, ValueError):
+        print(rendered)
+        return
+    try:
+        print(rendered, flush=True)
+    finally:
+        # Preserve the host's original descriptor mode for later operations.
+        os.set_blocking(fd, False)
 
 
 def _progress(namespace: argparse.Namespace, task: str, *, style: str) -> TerminalProgress:

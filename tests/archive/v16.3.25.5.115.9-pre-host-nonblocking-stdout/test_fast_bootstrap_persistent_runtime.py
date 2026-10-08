@@ -260,5 +260,5 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.10"
-    assert PACKAGE_RELEASE_NAME == "host-nonblocking-cli-output-recovery"
+    assert PACKAGE_VERSION == "16.3.25.5.115.9"
+    assert PACKAGE_RELEASE_NAME == "host-finalization-idempotency-recovery"
