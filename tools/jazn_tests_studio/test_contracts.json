@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.4",
-  "active_definition_count": 2022,
+  "system_version": "16.3.25.5.115.5",
+  "active_definition_count": 2029,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -4079,6 +4079,157 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 165
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_caas_client_error_formats_map_to_same_failure_policy": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_caas_client_error_formats_map_to_same_failure_policy",
+      "purpose": "Caas client error formats map to same failure policy",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_unknown_and_conflicting_strings_fail_closed": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_unknown_and_conflicting_strings_fail_closed",
+      "purpose": "Unknown and conflicting strings fail closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_message_only_exact_signature_is_recognized_before_spawn": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_message_only_exact_signature_is_recognized_before_spawn",
+      "purpose": "Message only exact signature is recognized before spawn",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_arbitrary_message_without_error_class_does_not_claim_failure": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_arbitrary_message_without_error_class_does_not_claim_failure",
+      "purpose": "Arbitrary message without error class does not claim failure",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_retry_budget_and_no_replay_after_both_surfaces_fail": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_retry_budget_and_no_replay_after_both_surfaces_fail",
+      "purpose": "Retry budget and no replay after both surfaces fail",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_independent_success_overrules_previous_host_clienterror": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_independent_success_overrules_previous_host_clienterror",
+      "purpose": "Independent success overrules previous host clienterror",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_chatgpt_host_clienterror_signature_v1155.py::test_started_process_is_not_mislabeled_a_prespan_error": {
+      "path": "tests/test_chatgpt_host_clienterror_signature_v1155.py",
+      "name": "test_started_process_is_not_mislabeled_a_prespan_error",
+      "purpose": "Started process is not mislabeled a prespan error",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chatgpt_host_executor_aggregate_helpers",
+        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.core.chatgpt_host_executor_failure_codes"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
     },
     "tests/test_chatgpt_host_contract_hardening.py::test_one_shot_chatgpt_defaults_to_action_first_host_packet": {
       "path": "tests/test_chatgpt_host_contract_hardening.py",
