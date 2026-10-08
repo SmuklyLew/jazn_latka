@@ -3,8 +3,8 @@
   "version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
   "runtime_version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
   "package_version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
-  "generated_at_utc": "2026-10-08T13:24:45+00:00",
-  "updated_at_utc": "2026-10-08T13:24:45+00:00",
+  "generated_at_utc": "2026-10-08T13:29:20+00:00",
+  "updated_at_utc": "2026-10-08T13:29:20+00:00",
   "start_file": "run.py",
   "file_count": 2084,
   "static_file_count": 2084,
@@ -300,7 +300,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3018,
-      "sha256": "b36f732f8054973981289c66e65edc63c362ffdaa818ee3058e83f3383c500c8",
+      "sha256": "179b3ff901ce4e45b196acd81c737670c4d634b0f0b22b8513cf7e7b476f28fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2630,8 +2630,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5159,
-      "sha256": "ce8db8c76a5154cc289264c628c70bfaad408e783e699c2ff4eb76e9d5c9dc9c",
+      "size_bytes": 5152,
+      "sha256": "aa0a444a018905de17615031db4b784c3a17d93a501628a1bba905990d073fa9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15310,7 +15310,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_chatgpt_loader_ci_v1157_regression.py",
+      "path": "tests/test_chatgpt_loader_ci_regression.py",
       "size_bytes": 1733,
       "sha256": "8d7cb39d65b6fab8469b41ac145a936cc560b137d4c6cd228bfd87db51eb1137",
       "mutable_runtime": false,
@@ -18623,8 +18623,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1900269,
-      "sha256": "aa4ffba6ba682e610b13f4f570e5e7d2d91a4284745b17770e69330d504c9bff",
+      "size_bytes": 1900245,
+      "sha256": "1f9ce366277d09c9d2add5f678b63f4f4f457a8b1dacd80f37bc0c731c980d3e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
