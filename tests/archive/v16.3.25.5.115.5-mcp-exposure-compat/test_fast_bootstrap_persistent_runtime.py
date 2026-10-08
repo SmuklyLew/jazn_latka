@@ -239,8 +239,7 @@ Druga linia materiału.
 ```
 """
     report = DialogueIntentClassifier().classify(message)
-    assert report.primary_intent == "creative_text_formatting"
-    assert report.source_text_preservation_required is True
+    assert report.primary_intent == "creative_text_formatting"+    assert report.source_text_preservation_required is True
 
 
 def test_structured_lyrics_still_promote_creative_material() -> None:
@@ -260,5 +259,5 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.7"
+    assert PACKAGE_VERSION == "16.3.25.5.115.4"
     assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"

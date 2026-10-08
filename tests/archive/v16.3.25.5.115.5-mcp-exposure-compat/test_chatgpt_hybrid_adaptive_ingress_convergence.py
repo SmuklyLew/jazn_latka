@@ -199,7 +199,7 @@ def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_
     assert "hybrid/adaptive remote-first" in loader
     assert "bounded local fallback" in loader
     assert "najwyżej jedną minimalną próbę" in loader
-    assert "filesystem/paczka pozostają `unknown`" in loader
+    assert "filesystem i paczka pozostają `unknown`" in loader
     assert "nie zmieniaj trasy" in loader
     assert "nie replayuj wiadomości użytkownika" in loader
     assert "action=display_exact" in loader
@@ -222,5 +222,5 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.7"
+    assert PACKAGE_VERSION == "16.3.25.5.115.4"
     assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"
