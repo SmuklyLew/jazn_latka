@@ -54,10 +54,10 @@ _PRESPAWN_FAILURE_POLICIES: dict[str, PreSpawnFailurePolicy] = {
 }
 
 
-_CLASS_PATH = r"[A-Za-z_][A-Za-z_0-9]*(?:\\.[A-Za-z_][A-Za-z_0-9]*)*"
+_CLASS_PATH = r"[A-Za-z_][A-Za-z_0-9]*(?:\.[A-Za-z_][A-Za-z_0-9]*)*"
 _QUALIFIED_EXCEPTION_RE = re.compile(_CLASS_PATH)
 _PYTHON_CLASS_REPR = re.compile(
-    r"<class\\s+(?P<quote>['\\\"])(?P<name>" + _CLASS_PATH + r")(?P=quote)>\\.?"
+    r"""<class\s+(?P<quote>['"])(?P<name>""" + _CLASS_PATH + r""")(?P=quote)>\.?"""
 )
 
 
