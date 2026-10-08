@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.115.1-unified-conversation-runtime-authority-hotfix",
+  "runtime_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",

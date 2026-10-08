@@ -195,9 +195,6 @@ def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_
     assert "nie zmieniaj trasy" in loader
     assert "nie replayuj wiadomości użytkownika" in loader
     assert "action=display_exact" in loader
-    assert "Nie wolno zakończyć diagnozy" in loader
-    assert "realną, najwyżej jedną minimalną próbę utworzenia procesu" in loader
-    assert "obowiązkowo przejdź do SYSTEM discovery/bootstrapu" in loader
 
 
 def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootstrap() -> None:
@@ -214,5 +211,5 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.2"
+    assert PACKAGE_VERSION == "16.3.25.5.115.1"
     assert PACKAGE_RELEASE_NAME == "unified-conversation-runtime-authority-hotfix"
