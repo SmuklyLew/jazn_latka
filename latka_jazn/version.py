@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.2 keeps the v115.1 unified conversation authority and hardens the
-# ChatGPT loader so no-route diagnostics require a real bounded local probe.
-DISTRIBUTION_VERSION = "16.3.25.5.115.2"
-PACKAGE_VERSION = "16.3.25.5.115.2"
+# v115.3 keeps the v115.2 local-probe gate and makes the thin ChatGPT
+# loader authority explicitly least-privilege and non-self-escalating.
+DISTRIBUTION_VERSION = "16.3.25.5.115.3"
+PACKAGE_VERSION = "16.3.25.5.115.3"
 PACKAGE_RELEASE_NAME = "unified-conversation-runtime-authority-hotfix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

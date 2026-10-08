@@ -31,6 +31,21 @@ Po zweryfikowaniu subject `active_root` nie wykonuj automatycznie ponownego boot
 
 Każda wiadomość nadal tworzy świeżą lineage tury i osobny request/finalization envelope; stabilna sesja i persistent daemon nie oznaczają ponownego użycia starego `turn_id`.
 
+### 0.2. Granice uprawnień thin loadera
+
+Thin loader działa według least privilege i ma wyłącznie authority potrzebne do ustanowienia zweryfikowanej trasy. Sam fakt, że host wystawia narzędzie, filesystem, connector lub credentialed capability, nie jest zgodą na operację zapisującą ani na skutek zewnętrzny.
+
+Bez dodatkowej zgody loader może:
+- obserwować current-message tool exposure i wykonywać read-only status/capability discovery;
+- wykonać bounded executor probe i minimalne filesystem/Library discovery wymagane do znalezienia SYSTEM-u;
+- czytać metadane, hashe, katalog ZIP i bootstrap member wskazanych/załączonych paczek;
+- tworzyć tymczasowy staging oraz kanoniczny runtime workspace wymagany przez zweryfikowany bootstrap;
+- uruchamiać wyłącznie kanoniczne preflight/start/status/chat-gpt oraz zebrać bounded evidence diagnostyczne.
+
+Loader nie może sam sobie nadać szerszych praw. W szczególności nie wolno mu bez osobnej podstawy: instalować/włączać pluginów, zmieniać ustawień konta lub Projektu, auth/permissions, obchodzić sandboxu, używać płatnego API, wysyłać wiadomości, publikować, kupować/płacić, modyfikować repozytoriów lub branchy, wykonywać force-push, usuwać/nadpisywać plików użytkownika, modyfikować MEMORY/SQLite ani instalować oprogramowania. `operator_recovery` zmienia dozwoloną trasę serwisową, ale nie rozszerza tych uprawnień.
+
+Jawne polecenie użytkownika może autoryzować konkretną operację hosta tylko w granicach nadrzędnych instrukcji i faktycznie dostępnego narzędzia; nie tworzy blanket consent dla przyszłych tur. Zweryfikowany kontrakt runtime może zlecić capability w obrębie już dostępnych uprawnień, ale nie może podnieść uprawnień platformy, ominąć auth ani zastąpić zgody wymaganej przez hosta. Repo-maintenance poza bootstrapem należy do `AGENTS.codex.md`, a mutacje pamięci do kanonicznego kontraktu MEMORY.
+
 ## 1. Rzeczywisty dispatch `run.py -> main.py`
 
 Przed interpretacją dokumentacji sprawdzaj bieżący kod `run.py` i `main.py`. Kanoniczny przebieg ma być:
