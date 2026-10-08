@@ -17599,11 +17599,12 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.finalization_service",
         "latka_jazn.core.host_finalization_transaction"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 27
     },
     "tests/test_host_semantic_regeneration_transaction.py::test_semantic_integrity_failure_is_not_regenerated": {
       "path": "tests/test_host_semantic_regeneration_transaction.py",
@@ -17618,11 +17619,12 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.finalization_service",
         "latka_jazn.core.host_finalization_transaction"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 86
     },
     "tests/test_host_spawn_diagnostics.py::test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected": {
       "path": "tests/test_host_spawn_diagnostics.py",
