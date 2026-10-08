@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,12 +54,54 @@ _PRESPAWN_FAILURE_POLICIES: dict[str, PreSpawnFailurePolicy] = {
 }
 
 
-def classify_prespan_error(error_class: str | None) -> PreSpawnFailurePolicy:
-    """Map host error classes to stable pre-spawn semantics.
+_CLASS_PATH = r"[A-Za-z_][A-Za-z_0-9]*(?:\\.[A-Za-z_][A-Za-z_0-9]*)*"
+_QUALIFIED_EXCEPTION_RE = re.compile(_CLASS_PATH)
+_PYTHON_CLASS_REPR = re.compile(
+    r"<class\\s+(?P<quote>['\\\"])(?P<name>" + _CLASS_PATH + r")(?P=quote)>\\.?"
+)
 
-    Unknown classes remain fail-closed. In particular, this function never
-    claims anything about filesystem, package, MEMORY, SQLite, or runtime state.
+
+def _parse_exception_identifier(value: str) -> str | None:
+    """Accept only an entire identifier or Python exception class repr, never substrings."""
+
+    raw = value.strip()
+    if raw.startswith("Encountered exception:"):
+        raw = raw[len("Encountered exception:"):].strip()
+    match = _PYTHON_CLASS_REPR.fullmatch(raw)
+    if match:
+        raw = match.group("name")
+    elif not _QUALIFIED_EXCEPTION_RE.fullmatch(raw):
+        return None
+    return raw.rsplit(".", 1)[-1].casefold()
+
+
+def _normalize_exception_identifier(value: str | None) -> str | None:
+    raw = str(value or "").strip()
+    if not raw or len(raw) > 1024:
+        return None
+    # A host may supply the two-line diagnostic itself in error_class. Require
+    # the class name on both sides to agree, rather than substring-matching.
+    if "Encountered exception:" in raw and not raw.startswith("Encountered exception:"):
+        first, second = raw.split("Encountered exception:", 1)
+        left = _parse_exception_identifier(first)
+        right = _parse_exception_identifier("Encountered exception:" + second)
+        return left if left and left == right else None
+    return _parse_exception_identifier(raw)
+
+
+def classify_prespan_error(
+    error_class: str | None, *, error_message: str | None = None
+) -> PreSpawnFailurePolicy:
+    """Classify bounded host exception evidence; never grant execution capability.
+
+    Prefer the explicit class field. A missing class may be recovered only from
+    an exact, known Python exception signature, not arbitrary message content.
+    This describes a failure BEFORE process creation only; callers must check
+    process_created separately. The host owns the alternative-probe budget and
+    request idempotency, not this classifier.
     """
 
-    key = str(error_class or "").strip().casefold()
-    return _PRESPAWN_FAILURE_POLICIES.get(key, _DEFAULT_POLICY)
+    key = _normalize_exception_identifier(error_class)
+    if key is None and not error_class:
+        key = _normalize_exception_identifier(error_message)
+    return _PRESPAWN_FAILURE_POLICIES.get(key or "", _DEFAULT_POLICY)
