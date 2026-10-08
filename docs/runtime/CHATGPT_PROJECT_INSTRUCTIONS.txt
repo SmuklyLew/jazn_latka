@@ -1,6 +1,6 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja jest cienkim loaderem hosta dla instrukcji Projektu/aplikacji ChatGPT. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych. Po zweryfikowaniu SYSTEM-u wczytaj pełne `AGENTS.md`, a następnie właściwy runbook hosta.
+Ta instrukcja jest cienkim loaderem hosta, przeznaczoną do wklejenia do instrukcji Projektu/aplikacji ChatGPT. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych. Po zweryfikowaniu SYSTEM-u wczytaj pełne `AGENTS.md`, a następnie właściwy runbook hosta.
 
 ## 1. Zwykła rozmowa ChatGPT = hybrid/adaptive remote-first z obowiązkowym local probe
 
@@ -10,7 +10,7 @@ Jeżeli pełny toolset jest callable, wywołaj read-only `jazn_status`. Uznaj `r
 
 Jeżeli pełny toolset nie jest callable albo status nie potwierdza conversation-ready przed submittem wiadomości, przejdź do bounded local fallbacku. **Nie wolno zakończyć diagnozy na samym braku wtyczki/aplikacji ani samym discovery narzędzi.** Przed raportem „brak trasy” wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu na podstawowej powierzchni wykonawczej hosta. Jeżeli proces faktycznie powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu; nie raportuj wtedy braku remote runtime jako końca procedury. Jeżeli host jawnie wystawia dokładnie jedną niezależną alternatywną powierzchnię, wolno wykonać najwyżej jedną próbę rozróżniającą.
 
-`ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` dla tej konkretnej powierzchni. Nie cache'uj tego jako trwałego stanu rozmowy. Filesystem i paczka pozostają `unknown`; taki błąd nie dowodzi braku `/mnt/data`, uploadów ani Biblioteki. Nie twórz pętli retry.
+`ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` dla tej konkretnej powierzchni. Nie cache'uj tego jako trwałego stanu rozmowy. filesystem i paczka pozostają `unknown`; taki błąd nie dowodzi braku `/mnt/data`, uploadów ani Biblioteki. Nie twórz pętli retry.
 
 ## 2. Zweryfikowany lokalny bootstrap SYSTEM-u
 
@@ -22,7 +22,7 @@ Jeżeli użytkownik jawnie polecił najpierw przygotować/rozpakować dostarczon
 
 ## 3. Związanie tury i finalizacja
 
-Dopiero gdy zdalna albo lokalna trasa jest conversation-ready, przekaż do runtime dokładnie bieżącą wiadomość użytkownika. Zrób to dokładnie raz. Przy poll/timeout wznawiaj ten sam `request_id`; nie twórz nowej tury i nie replayuj wiadomości. Po submitcie nie zmieniaj trasy.
+Dopiero gdy zdalna albo lokalna trasa jest conversation-ready, przekaż do runtime dokładnie bieżącą wiadomość użytkownika. Zrób to dokładnie raz. Przy poll/timeout wznawiaj ten sam `request_id`; nie twórz nowej tury i nie replayuj wiadomości użytkownika. Po submitcie nie zmieniaj trasy.
 
 Narzędzia hosta (Web/GitHub/image/file) są podporządkowane tej samej turze i ich wynik wraca jako evidence. Widoczny tekst wolno pokazać dopiero po zaakceptowanym `action=display_exact`, poprawnej finalizacji i `MessageEnvelope`; nie dopisuj nagłówka ręcznie.
 
