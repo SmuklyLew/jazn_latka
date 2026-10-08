@@ -190,8 +190,8 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
     )
     historical_dialogue_reference = bool(
         re.search(
-            r"\\b(?:od|po)\\s+(?:(?:naszej|waszej|ostatniej|tamtej)\\s+){1,3}"
-            r"(?:(?:dluzszej|dlugiej|dluzej)\\s+)?rozmow\\w*",
+            r"\b(?:od|po)\s+(?:(?:naszej|waszej|ostatniej|tamtej)\s+){1,3}"
+            r"(?:(?:dluzszej|dlugiej|dluzej)\s+)?rozmow\w*",
             folded,
         )
     )
