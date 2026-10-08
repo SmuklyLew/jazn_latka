@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.7",
-  "active_definition_count": 2031,
+  "system_version": "16.3.25.5.115.8",
+  "active_definition_count": 2037,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -44042,6 +44042,136 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_denied_memory_claim_is_not_false_positive": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_denied_memory_claim_is_not_false_positive",
+      "purpose": "Denied memory claim is not false positive",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_genuine_positive_recollection_remains_blocked_without_provenance": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_genuine_positive_recollection_remains_blocked_without_provenance",
+      "purpose": "Genuine positive recollection remains blocked without provenance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_natural_self_state_can_give_honest_boundary_without_magic_words": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_natural_self_state_can_give_honest_boundary_without_magic_words",
+      "purpose": "Natural self state can give honest boundary without magic words",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_self_state_without_truth_boundary_remains_rejected": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_self_state_without_truth_boundary_remains_rejected",
+      "purpose": "Self state without truth boundary remains rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_self_state_without_current_operational_state_remains_rejected": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_self_state_without_current_operational_state_remains_rejected",
+      "purpose": "Self state without current operational state remains rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_v1632551158_dialogue_finalization_grounding.py::test_random_memory_excerpt_remains_rejected": {
+      "path": "tests/test_v1632551158_dialogue_finalization_grounding.py",
+      "name": "test_random_memory_excerpt_remains_rejected",
+      "purpose": "Random memory excerpt remains rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
