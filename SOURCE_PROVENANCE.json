@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "4e0ab6171dba4bd5c67cf8a9a990ef847d1dec23",
+  "base_merge_commit": "156352158cebe70e228ce38b16c2cc11a6d4d00a",
   "base_version": "16.3.25.5.115.8-dialogue-finalization-grounding-hotfix",
-  "commit_date": "2026-10-08T19:33:54Z",
+  "commit_date": "2026-10-08T19:39:58Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-08T19:33:54+00:00",
+  "generated_at_utc": "2026-10-08T19:39:58+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "3ca308a62021f82dc36b421ccfd31dc96b7ddc05",
+  "git_tree_sha": "b7e87f7de0c1b6c3d5ce7b8083324de73ad28068",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.7-unified-conversation-runtime-authority-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "4e0ab6171dba4bd5c67cf8a9a990ef847d1dec23",
+    "source_commit": "156352158cebe70e228ce38b16c2cc11a6d4d00a",
     "source_version": "16.3.25.5.115.8-dialogue-finalization-grounding-hotfix"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "4e0ab6171dba4bd5c67cf8a9a990ef847d1dec23",
+  "source_commit": "156352158cebe70e228ce38b16c2cc11a6d4d00a",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.8-dialogue-finalization-grounding-hotfix",
   "tag": null,
