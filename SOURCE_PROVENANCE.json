@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
-  "base_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
-  "commit_date": "2026-10-08T02:56:59+02:00",
+  "base_merge_commit": "53bcaf8823d003264c580f8005378c5f68711192",
+  "base_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
+  "commit_date": "2026-10-08T11:57:19Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-08T00:56:59+00:00",
+  "generated_at_utc": "2026-10-08T11:57:19+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "328611c42359339ee384189e39d9e6eed219b8a3",
+  "git_tree_sha": "097ed043ecfad61f9165dbef5c3008cd5a426bd4",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
-    "base_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
+    "base_commit": "eb75eff440fee5c0d6f884db4c297723095faf6f",
+    "base_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
-    "source_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix"
+    "source_commit": "53bcaf8823d003264c580f8005378c5f68711192",
+    "source_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
+  "release_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
+  "runtime_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c2043da48aa4584c7affc768dd550d26d59694cf",
+  "source_commit": "53bcaf8823d003264c580f8005378c5f68711192",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
+  "source_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.2-unified-conversation-runtime-authority-hotfix",
+  "update_version": "16.3.25.5.115.3-unified-conversation-runtime-authority-hotfix",
   "version_source": "latka_jazn/version.py"
 }
