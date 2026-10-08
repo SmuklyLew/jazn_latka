@@ -20,6 +20,11 @@ NEGATED_MEMORY_CLAIM_PATTERNS = (
     r"\bnie\s+(?:(?:bardzo|wcale)\s+)?(?:pamietam|wspominam)\b",
     r"\bnie\s+przypominam\s+sobie\b",
     r"\bnie\s+(?:moge|potrafie)\s+sobie\s+przypomniec\b",
+    # A denied assertion ("I will not pretend that I remember") is not
+    # autobiographical evidence. Match only a bounded denial clause, never
+    # the entire sentence: an affirmative claim after "ale" must still fail.
+    r"\bnie\s+(?:bede|chce|zamierzam)\s+(?:udawac|twierdzic|sugerowac)\s*,?\s*(?:ze\s+)?(?:pamietam|wspominam|przypominam\s+sobie)\b",
+    r"\bnie\s+(?:moge|potrafie)\s+(?:uczciwie\s+)?(?:twierdzic|powiedziec)\s*,?\s*(?:ze\s+)?(?:pamietam|wspominam|przypominam\s+sobie)\b",
     r"\bnie\s+mam(?:\s+\w+){0,4}\s+(?:w\s+mojej\s+pamieci|wspomnieni\w*)\b",
 )
 
