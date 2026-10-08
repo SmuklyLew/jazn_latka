@@ -188,10 +188,18 @@ def _component_semantics(text: str, index: int) -> QuestionComponent:
         or re.search(r"\b(?:co|jakie|ktore)\b.*\b(?:pamietasz|wspominasz)\b", folded)
         or _contains_any(folded, ("co konkretnie pamietasz", "dwie konkretne sytuacje", "dwa konkretne przyklady", "dwa przyklady"))
     )
+    historical_dialogue_reference = bool(
+        re.search(
+            r"\b(?:od|po)\s+(?:(?:naszej|waszej|ostatniej|tamtej)\s+){1,3}"
+            r"(?:(?:dluzszej|dlugiej|dluzej)\s+)?rozmow\w*",
+            folded,
+        )
+    )
     recall_context = _contains_any(folded, ("dawne rozmowy", "naszych rozmow", "z naszych rozmow", "pobyt", "wyjazd", "ksiazce", "muzyce"))
     memory_semantics = analyze_memory_intent(text)
     recall = (
         recall_directive
+        or historical_dialogue_reference
         or (recall_context and _contains_any(folded, ("pamiet", "wspomin", "odzyskuj")))
         or memory_semantics.content_requested
     )

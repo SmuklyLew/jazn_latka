@@ -5,9 +5,9 @@ from typing import Any
 
 # v115.5 recognizes exact fully-qualified host exception evidence without
 # changing the no-replay, least-privilege or consent boundaries.
-DISTRIBUTION_VERSION = "16.3.25.5.115.7"
-PACKAGE_VERSION = "16.3.25.5.115.7"
-PACKAGE_RELEASE_NAME = "unified-conversation-runtime-authority-hotfix"
+DISTRIBUTION_VERSION = "16.3.25.5.115.8"
+PACKAGE_VERSION = "16.3.25.5.115.8"
+PACKAGE_RELEASE_NAME = "dialogue-finalization-grounding-hotfix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
