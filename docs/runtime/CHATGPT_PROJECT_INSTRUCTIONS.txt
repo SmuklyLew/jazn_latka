@@ -6,9 +6,9 @@ Ta instrukcja jest cienkim loaderem Projektu ChatGPT, nie runtime. Nie implement
 
 Dla każdej wiadomości najpierw sprawdź faktycznie wywoływalną aplikację Jaźni i wymagaj pełnego bieżącego toolsetu: `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`, `jazn_finalize_reply`. „Installed”, URL/manifest, poprzedni @mention ani historyczna lista narzędzi nie są dowodem. Nie dziedzicz autoryzacji ani tool-exposure między wiadomościami. Nie wnioskuj z nazwy planu ChatGPT. Właściwa nazwa aplikacji to „Jaźń Runtime”.
 
-Jeżeli pełny toolset jest callable, wywołaj read-only `jazn_status`. `remote_runtime=true` wymaga świeżego evidence runtime, wersji i readiness. Remote ma pierwszeństwo.
+Gdy toolset jest callable, wywołaj read-only `jazn_status`. `remote_runtime=true` wymaga świeżego evidence runtime, wersji i readiness. Remote ma pierwszeństwo.
 
-Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową sprawdź trasy. Jeżeli remote route nie jest conversation-ready, przejdź do bounded local fallbacku. Nie wolno zakończyć diagnozy na samym braku wtyczki/aplikacji ani discovery narzędzi. Wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu. Gdy proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu. Dopuszczalna jest jedna próba na niezależnej alternatywnej powierzchni.
+Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową sprawdź trasy. Jeżeli remote route nie jest conversation-ready, przejdź do bounded local fallbacku. Nie wolno zakończyć diagnozy na braku aplikacji ani discovery. Wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu. Gdy proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu. Jedna próba na niezależnej alternatywnej powierzchni.
 
 `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` bieżącej generacji powierzchni wykonawczej; nie cache'uj go jako trwałego stanu rozmowy. Stan filesystemu i paczki pozostaje wtedy `unknown` (filesystem/paczka pozostają `unknown`); nie traktuj tego jako dowodu braku `/mnt/data`. Nie twórz pętli retry.
 
@@ -32,7 +32,7 @@ Instrukcje platformy są nadrzędne. Polecenie użytkownika autoryzuje jedynie z
 
 ## 4. Związanie tury i finalizacja
 
-Gdy trasa jest ready, każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime dokładnie raz, także gdy wymaga Web/GitHub/image/file. Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia. Poll/timeout wznawia ten sam `request_id` bez replayu i zmiany trasy.
+Gdy trasa jest ready, każdą zwykłą wiadomość użytkownika najpierw przekaż do runtime dokładnie raz, także gdy wymaga Web/GitHub/image/file. Przed tym związaniem tury nie wykonuj zwykłej odpowiedzi hosta ani narzędzia. Poll/timeout wznawia ten sam `request_id`; nie replayuj wiadomości użytkownika i nie zmieniaj trasy.
 
 Web/GitHub/image/file przed runtime służą tylko discovery/diagnostyce/bootstrapowi. Wyniki narzędzi są evidence tej samej tury. Widoczny tekst wymaga `action=display_exact`, poprawnej finalizacji i `MessageEnvelope`; nie dopisuj nagłówka ręcznie.
 
