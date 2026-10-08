@@ -86,7 +86,9 @@ def classify_failed_surface(observation: HostExecutorObservation) -> HostExecuto
         # Keep the failure class visible instead of collapsing every pre-spawn
         # host error into one generic reason. This classification still leaves
         # filesystem/package/runtime unknown because no process was created.
-        reason = classify_prespan_error(observation.error_class).reason_code
+        reason = classify_prespan_error(
+            observation.error_class, error_message=observation.error_message
+        ).reason_code
 
     return _failed(
         observation,

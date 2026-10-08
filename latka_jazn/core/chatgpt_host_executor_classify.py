@@ -8,6 +8,7 @@ from latka_jazn.core.chatgpt_host_executor_enums import (
     HostFilesystemState,
     HostRecoveryAction,
 )
+from latka_jazn.core.chatgpt_host_executor_failure_codes import classify_prespan_error
 from latka_jazn.core.chatgpt_host_executor_failure_policy import classify_failed_surface
 from latka_jazn.core.chatgpt_host_executor_observation import HostExecutorObservation
 from latka_jazn.version import schema_version
@@ -20,7 +21,12 @@ def classify_host_executor_observation(
     observation: HostExecutorObservation,
 ) -> HostExecutorRecoveryDecision:
     if not observation.process_created:
-        if observation.error_class:
+        # Only a strict recognized host signature may stand in for an absent
+        # error_class. Arbitrary error_message text is insufficient evidence.
+        signature = classify_prespan_error(
+            observation.error_class, error_message=observation.error_message
+        )
+        if observation.error_class or signature.reason_code != "host_unknown_error_pre_spawn":
             return classify_failed_surface(observation)
         return HostExecutorRecoveryDecision(
             SCHEMA_VERSION,

@@ -89,9 +89,16 @@ def surface_payload(
     payload = decision.to_dict()
     payload.pop("schema_version", None)
 
+    candidate = classify_prespan_error(
+        observation.error_class, error_message=observation.error_message
+    )
     prespawn = (
-        classify_prespan_error(observation.error_class)
-        if not observation.process_created and observation.error_class
+        candidate
+        if not observation.process_created
+        and (
+            observation.error_class
+            or candidate.reason_code != "host_unknown_error_pre_spawn"
+        )
         else None
     )
     failure_stage, failure_stage_source = host_failure_stage(observation)
