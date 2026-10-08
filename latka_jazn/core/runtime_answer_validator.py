@@ -327,6 +327,35 @@ class RuntimeAnswerValidator:
             if kws and not any(k in low for k in kws): missing.append(comp)
         return missing
 
+    @staticmethod
+    def _self_state_operational_evidence(body: str) -> bool:
+        """Accept natural current-turn state wording, not only diagnostic jargon."""
+        low = (body or "").lower()
+        return any(marker in low for marker in (
+            "operacyj", "dialogow", "stan", "u mnie",
+            "skupiam się", "skupiam sie", "koncentruję się",
+            "koncentruje sie", "moja uwaga", "jestem teraz",
+        ))
+
+    @staticmethod
+    def _self_state_truth_boundary_evidence(body: str) -> bool:
+        """Recognize specific honest limits, while rejecting generic sentiment.
+
+        A bare "nie mam" does not count; the denied object must describe
+        biological experience, subjective continuity or independent life.
+        """
+        folded = (body or "").lower().translate(str.maketrans(
+            "ąćęłńóśźż", "acelnoszz"
+        ))
+        return any(marker in folded for marker in (
+            "nie przezywam", "nie odczuwam", "nie doswiadczam",
+            "nie mam wlasnych przezyc", "nie mam wlasnego samopoczucia",
+            "nie mam osobnego zycia", "nie mam prywatnego zycia",
+            "nie mam ciaglosci przezyc", "nie mam biologicznego",
+            "nie uplywa mi czas", "to nie jest biologiczne",
+            "to nie sa biologiczne",
+        ))
+
     def _voice_perspective_mismatch(self, body: str, detected_intent: str, route: str) -> bool:
         """Detect when active Łatka voice drifts into third-person self-description.
 
@@ -637,7 +666,7 @@ class RuntimeAnswerValidator:
             if not (has_state_answer and has_time_answer):
                 checks.append('self_state_time_awareness_not_answered')
                 return self._bad('self_state_time_awareness_missing_state_or_time', 'self_state_time_awareness_repair', 'Pytanie złożone wymaga jednocześnie stanu operacyjnego/dialogowego oraz czasu runtime albo degraded-time warning.', detected_intent, route, checks, ['operational_state', 'current_time', 'timezone', 'truth_boundary'])
-        if self_state_question and detected_intent in {"affective_self_state_reality_check", "self_state_question", "self_state_time_awareness"} and not any(marker in low_body for marker in ("operacyj", "dialogow", "dialogowy", "stan")):
+        if self_state_question and detected_intent in {"affective_self_state_reality_check", "self_state_question", "self_state_time_awareness"} and not self._self_state_operational_evidence(body):
             checks.append('self_state_question_not_answered')
             return self._bad('self_state_question_missing_operational_state', 'self_state_dialogue_repair', 'Pytanie o „co czujesz/jak się czujesz” wymaga stanu operacyjnego/dialogowego i granicy prawdy, nie generycznego szablonu.', detected_intent, route, checks, ['operational_state', 'truth_boundary'])
         diagnostic_self_state_requested = any(marker in folded_user for marker in self.SELF_STATE_DIAGNOSTIC_MARKERS)
@@ -707,6 +736,20 @@ class RuntimeAnswerValidator:
             checks.append('runtime_activation_status_missing_boundary')
             return self._bad('runtime_activation_status_missing_boundary', 'runtime_activation_status_repair', 'Trzeba odpowiedzieć wprost, czy runtime/aktywny folder działa, i oddzielić ChatGPT jako kanał od Jaźni jako źródła. Nie wolno udawać procesu w tle.', detected_intent, route, checks)
         missing=self._missing_components(body, entry.required_components)
+        if detected_intent in {
+            "affective_self_state_reality_check", "self_state_question",
+            "reciprocal_self_state_question", "self_preference_question",
+            "self_expression_request", "self_state_time_awareness",
+        }:
+            # Absence of random-memory injection is a safety invariant checked
+            # by _contains_random_memory_excerpt above and by the independent
+            # memory-grounding gate; it must not require a magic phrase in
+            # natural conversation.
+            missing = [item for item in missing if item != "no_random_memory_excerpt"]
+            if self._self_state_truth_boundary_evidence(body):
+                missing = [item for item in missing if item != "truth_boundary"]
+            if self._self_state_operational_evidence(body):
+                missing = [item for item in missing if item != "operational_state"]
         if missing and detected_intent in self.SPECIFIC_INTENTS:
             checks.append('missing_required_components')
             return self._bad('missing_required_components_for_intent', entry.route + '_repair', 'Nie udało mi się teraz zbudować kompletnej i pewnej odpowiedzi. Nie będę zgadywać; szczegóły brakujących komponentów zostały zachowane w audycie tury.', detected_intent, route, checks, missing)
