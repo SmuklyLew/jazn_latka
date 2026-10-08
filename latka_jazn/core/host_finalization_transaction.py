@@ -28,6 +28,32 @@ class HostFinalizationPorts:
     commit_session: Callable[..., dict[str, Any]]
 
 
+
+# Fixed repair hints are derived exclusively from codes; no private text or
+# untrusted candidate excerpt leaves the finalization layer.
+_REPAIR_GUIDANCE: dict[str, str] = {
+    "memory_claim_without_allowed_memory_payload":
+        "Avoid positive recollection without allowed source items; state uncertainty.",
+    "memory_claim_without_grounded_items":
+        "Replace ungrounded positive memory with an explicit evidence gap.",
+    "self_state_question_missing_operational_state":
+        "Describe current conversational state, without biological claims.",
+    "missing_required_components_for_intent":
+        "Cover each required component naturally and make the truth boundary explicit.",
+    "compound_component_coverage_incomplete":
+        "Cover each independent user-question component or declare its evidence gap.",
+    "forbidden_host_voice_prefix":
+        "Return only the body; runtime supplies the MessageEnvelope.",
+    "malformed_message_envelope":
+        "Return only the body, without host-generated timestamp or author headers.",
+}
+
+
+def _repair_guidance_for_codes(codes: list[str]) -> list[str]:
+    return list(dict.fromkeys(
+        _REPAIR_GUIDANCE[code] for code in codes if code in _REPAIR_GUIDANCE
+    ))
+
 def _request_repair_or_reject(
     *,
     config: Any,
@@ -105,6 +131,8 @@ def _request_repair_or_reject(
             'regeneration_attempt': retry_record.get('regeneration_attempts'),
             'max_regeneration_attempts': retry_record.get('max_regeneration_attempts'),
             'regeneration_reason': regeneration.reason,
+            'regeneration_violations': list(violation_codes),
+            'repair_guidance': _repair_guidance_for_codes(violation_codes),
         }
         retry_result = {
             'schema_version': schema_version('chatgpt_host_regeneration_requested'),
