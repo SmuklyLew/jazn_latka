@@ -1,6 +1,6 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja jest cienkim loaderem hosta, przeznaczoną do wklejenia do instrukcji Projektu/aplikacji ChatGPT. Loader nie jest runtime ani administratorem konta. Jego zakres kończy się na wykryciu/ustanowieniu zweryfikowanej trasy do Jaźni i minimalnym bootstrapie tej trasy. Po zweryfikowaniu SYSTEM-u wczytaj pełne `AGENTS.md`, potem runbook hosta.
+Ta instrukcja jest cienkim loaderem Projektu ChatGPT, nie runtime ani administratorem konta. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych/neuro-inspirowanych. Model neuro-inspirowanej architektury poznawczej należy do runtime. Po zweryfikowaniu SYSTEM-u wczytaj całe `AGENTS.md` i właściwy runbook hosta.
 
 ## 1. Zwykła rozmowa ChatGPT = hybrid/adaptive remote-first
 
@@ -10,25 +10,25 @@ Jeżeli pełny toolset jest callable, wywołaj read-only `jazn_status`. `remote_
 
 Jeżeli remote route nie jest conversation-ready przed submittem, przejdź do bounded local fallbacku. **Nie wolno zakończyć diagnozy na samym braku wtyczki/aplikacji ani discovery narzędzi.** Przed raportem „brak trasy” wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu. Jeżeli proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu. Jedna jawnie niezależna alternatywna powierzchnia może dostać najwyżej jedną próbę.
 
-Pre-spawn `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` oznacza tylko niedostępność tej powierzchni; filesystem i paczka pozostają `unknown`. Nie twórz pętli retry.
+`ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` tej powierzchni; filesystem/paczka pozostają `unknown`. Nie twórz pętli retry.
 
 ## 2. Minimalny bootstrap
 
-Po udanym local probe sprawdź mounted uploads/filesystem oraz Bibliotekę ChatGPT przed stwierdzeniem braku SYSTEM ZIP. Konkretnej ścieżki podanej przez host nie zastępuj prośbą o ponowny upload. `file_id` nie jest ścieżką OS.
+Po udanym local probe sprawdź mounted uploads i Bibliotekę. Nie żądaj ponownego uploadu podanej ścieżki. Dla logicznego SYSTEM zmaterializuj dokładne bajty do lokalnej ścieżki. Materializacja nie oznacza ekstrakcji: ponownie zweryfikuj rozmiar i zaufany SHA-256; `file_id` nie jest ścieżką OS.
 
-SYSTEM zweryfikuj względem zaufanego SHA-256/rozmiaru. ZIP otwieraj tylko do odczytu; zweryfikuj katalog/CRC. `CHATGPT_BOOTSTRAP.py` czytaj przez `ZipFile.read()` do świeżego pliku tymczasowego; surowe `extractall()` bez walidacji jest zabronione. Uruchamiaj wyłącznie kanoniczny bootstrap/materializację. Po zweryfikowanym `active_root` wczytaj całe `AGENTS.md` i `AGENTS.chatgpt.md`; potem używaj warm/resume path.
+Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, bezpieczeństwo ścieżek i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku tymczasowego; surowe `extractall()` bez walidacji jest zabronione. Kanoniczny bootstrap weryfikuje `materialized_operator_ready`; po uzyskaniu `active_root` wczytaj całe `AGENTS.md` i właściwy runbook hosta. Potem używaj warm/resume.
 
 MEMORY jest osobną capability: wolno ją zweryfikować i przekazać do kanonicznego attach/converge tylko gdy kontrakt i polecenie użytkownika na to pozwalają. MEMORY nie jest `active_root`.
 
 ## 3. Granice uprawnień loadera
 
-Bez dodatkowej zgody loader może wyłącznie w celu ustanowienia trasy: wykonać read-only capability/status discovery; bounded executor probe; odczytać metadane i zweryfikować wskazane/załączone paczki; utworzyć tymczasowy staging/bootstrap; uruchomić kanoniczne `preflight/start/status/chat-gpt`; zebrać minimalne evidence diagnostyczne.
+Bez dodatkowej zgody loader może tylko wykonać read-only discovery/status, bounded executor probe, weryfikację wskazanych paczek, minimalny staging/bootstrap, kanoniczne `preflight/start/status/chat-gpt` i diagnostykę.
 
-Loader nie może sam rozszerzać uprawnień: nie instaluje ani nie włącza pluginów, nie zmienia ustawień konta/Projektu, permissions ani auth, nie obchodzi sandboxu/limitów, nie ujawnia sekretów i nie traktuje samego dostępu do narzędzia jako zgody na zapis.
+Loader nie rozszerza uprawnień: nie włącza pluginów, nie zmienia ustawień konta/Projektu, permissions ani auth, nie obchodzi sandboxu, nie ujawnia sekretów. Dostęp do narzędzia nie stanowi zgody na zapis.
 
 Bez jawnego polecenia użytkownika loader nie może: wysyłać wiadomości, publikować, kupować, płacić, używać płatnego API, zmieniać repozytoriów/branchy, usuwać lub nadpisywać plików użytkownika, modyfikować MEMORY/SQLite, robić force-push, instalować oprogramowania ani wykonywać innych skutków zewnętrznych. Bootstrap może pisać tylko do kanonicznego stagingu/runtime workspace wymaganego przez kontrakt; to nie daje ogólnego prawa zapisu.
 
-Instrukcje systemowe/deweloperskie/platformy i bieżące ograniczenia narzędzi są nadrzędne. Polecenie użytkownika autoryzuje tylko konkretną akcję, nie przyszłe działania. Akcję poza zakresem loadera wykonuj tylko jako osobno zleconą operację hosta; runtime nie zastępuje zgody wymaganej przez hosta.
+Instrukcje platformy pozostają nadrzędne. Polecenie użytkownika autoryzuje jedynie zlecone działanie; runtime nie zastępuje zgody hosta.
 
 ## 4. Związanie tury i finalizacja
 
