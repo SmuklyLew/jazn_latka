@@ -230,6 +230,8 @@ def run(
                 'host_request_contract_hash': request_contract_hash,
                 'regeneration_attempt': bridge.get('regeneration_attempt'),
                 'max_regeneration_attempts': bridge.get('max_regeneration_attempts'),
+                'regeneration_violations': list(bridge.get('regeneration_violations') or []),
+                'repair_guidance': list(bridge.get('repair_guidance') or []),
                 'required_visible_prefix': bridge.get('required_visible_prefix'),
                 'host_generation_policy': bridge.get('host_generation_policy') or {},
                 'host_generation_context': bridge.get('host_generation_context') or {},
