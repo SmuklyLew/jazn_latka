@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.16",
-  "active_definition_count": 2090,
+  "system_version": "16.3.25.5.115.17",
+  "active_definition_count": 2096,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21867,6 +21867,152 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 65
+    },
+    "tests/test_memory_desktop_actions.py::test_project_is_bound_to_database_during_gui_initialization": {
+      "path": "tests/test_memory_desktop_actions.py",
+      "name": "test_project_is_bound_to_database_during_gui_initialization",
+      "purpose": "Project is bound to database during gui initialization",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_workflows",
+        "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_memory_desktop_actions.py::test_import_action_does_not_reenter_busy_executor": {
+      "path": "tests/test_memory_desktop_actions.py",
+      "name": "test_import_action_does_not_reenter_busy_executor",
+      "purpose": "Import action does not reenter busy executor",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_workflows",
+        "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_memory_desktop_actions.py::test_staging_guard_rejects_active_and_legacy_memory": {
+      "path": "tests/test_memory_desktop_actions.py",
+      "name": "test_staging_guard_rejects_active_and_legacy_memory",
+      "purpose": "Staging guard rejects active and legacy memory",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_workflows",
+        "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_memory_desktop_actions.py::test_export_uses_project_final_output_setting": {
+      "path": "tests/test_memory_desktop_actions.py",
+      "name": "test_export_uses_project_final_output_setting",
+      "purpose": "Export uses project final output setting",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_workflows",
+        "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_memory_desktop_actions.py::test_launcher_import_path_without_repository_cwd": {
+      "path": "tests/test_memory_desktop_actions.py",
+      "name": "test_launcher_import_path_without_repository_cwd",
+      "purpose": "Launcher import path without repository cwd",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_workflows",
+        "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_memory_desktop_actions_windows.py::test_home_quick_actions_navigate_real_widgets": {
+      "path": "tests/test_memory_desktop_actions_windows.py",
+      "name": "test_home_quick_actions_navigate_real_widgets",
+      "purpose": "Home quick actions navigate real widgets",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
     },
     "tests/test_memory_desktop_gui_smoke.py::test_native_memory_studio_renders_each_page": {
       "path": "tests/test_memory_desktop_gui_smoke.py",
