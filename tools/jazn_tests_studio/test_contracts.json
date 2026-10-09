@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.18.1",
-  "active_definition_count": 2115,
+  "active_definition_count": 2116,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11323,6 +11323,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 103
+    },
+    "tests/test_configuration_studio_hardening.py::test_inherited_legacy_memory_does_not_block_unrelated_profile_setting": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_inherited_legacy_memory_does_not_block_unrelated_profile_setting",
+      "purpose": "Inherited legacy memory does not block unrelated profile setting",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
