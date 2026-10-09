@@ -12,7 +12,7 @@ import sys
 TOOL_VERSION = "memory-rebuild/v16.1"
 APP_VERSION = "3.1.0"
 TOOL_REVISION = "15.3.23.01"
-TOOL_RELEASE_NAME = "Studio pamięci — zintegrowana aplikacja desktopowa"
+TOOL_RELEASE_NAME = "Poprawione narzędzie odbudowy pamięci"
 TOOL_RELEASE_LABEL = f"{TOOL_REVISION} - {TOOL_RELEASE_NAME}"
 
 STAGE4_COMMAND = "stage4"
