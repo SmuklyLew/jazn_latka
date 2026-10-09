@@ -1,6 +1,6 @@
 # Jaźń Memory Rebuild Studio 3.1 — zintegrowany pulpit operatora
 
-Wydanie kodowe: SYSTEM v16.3.25.5.115.16. Tryb window zachowuje jeden
+Wydanie bazowe: SYSTEM v16.3.25.5.115.16; poprawki funkcjonalne i bezpieczeństwa: SYSTEM v16.3.25.5.115.17. Tryb window zachowuje jeden
 kanoniczny silnik pamięci, nie wdraża drugiej bazy ani nowego runtime.
 
 ## Audyt zrzutów ekranu
@@ -73,11 +73,13 @@ jest gotowa albo aktywowana.
 - Odbudowa wymaga preflight i jawnego tokenu.
 - L2, L3 i automatyczna aktywacja pozostają zablokowane.
 - Modelowane stany nie dowodzą biologicznego odczuwania.
-- Duże protokoły i część operacji czytających działają w jednym workerze;
-  dialogi Tk wracają do głównego wątku.
-- Wybieranie źródeł i niektóre stare workflow korzystają jeszcze z
-  modalnych pickerów na głównym wątku. Skan bardzo dużych źródeł może
-  więc wymagać dalszej optymalizacji responsywności.
+- Import, skan źródeł, wybór projektu, obsługa baz i długie protokoły
+  wykonują się w workerze; wszystkie dialogi Tk/pickery obsługuje pętla GUI.
+- Nie wolno uruchamiać drugiego `_execute()` z wnętrza aktywnego zadania.
+  Szybka nawigacja pulpitu wywołuje `open_page()` bezpośrednio.
+- Zapis do katalogu `workspace_runtime`, bieżącego `JAZN_MEMORY_ROOT`
+  i historycznego katalogu `memory` w repo jest blokowany niezależnie od
+  diagnostyki PID; staging musi być fizycznie oddzielny od aktywnej pamięci.
 - Nie pokazujemy fałszywego przycisku STOP: potrzebny jest osobny
   kontrakt cooperative cancellation w ProtocolEngine.
 - Brak samoczynnego dołączania starej MEMORY ZIP albo zastępowania bazy.
@@ -94,3 +96,22 @@ Własny pełny eksport konta powinien być weryfikowany wyłącznie lokalnie.
 Python Tk/Ttk i threading model: https://docs.python.org/3/library/tkinter.html
 PyInstaller Windows: https://pyinstaller.org/en/stable/
 SQLite backup/WAL: https://www.sqlite.org/backup.html
+
+## Weryfikacja napraw v115.17
+
+- `--project` wywołuje `StudioState.select_project` jeszcze przed otwarciem pulpitu;
+  widoczna i używana SQLite pochodzi z ustawień wybranego projektu.
+- Szybkie przyciski nawigacji oraz import projektu są objęte testami akcji,
+  a nie jedynie testem renderowania stron.
+- `final_output` jest domyślną propozycją katalogu publikacji; operator nadal
+  zatwierdza eksport w istniejących gate'ach.
+- Launcher dodaje zweryfikowany `JAZN_ROOT` do `sys.path`; tryb `--smoke`
+  weryfikuje zaimportowanie kodu w zbudowanym EXE bez uruchomienia okna.
+- Workflow `memory-rebuild-v24-windows` buduje faktyczny `--onedir` EXE
+  na Windows z Pythonem 3.12, uruchamia go poza katalogiem źródeł i publikuje
+  artefakt tylko po sukcesie smoke-testu.
+- Pełny test prywatnego importu, Test00–Final oraz scenariusze crash recovery
+  wymagają izolowanych danych operatora i osobnej akceptacji. Zielony GUI smoke
+  nie jest dowodem ich wykonania.
+- Wrażliwa operacja zapisu nie może korzystać z domyślnej, niepowiązanej z
+  projektem SQLite. Przy odmowie ochrony stagingu nie zmieniamy bazy.
