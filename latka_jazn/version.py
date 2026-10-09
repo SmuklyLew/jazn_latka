@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.17 hardens Memory Studio actions, isolated staging and Windows EXE.
-# No private runtime/memory contents are included in this release.
-DISTRIBUTION_VERSION = "16.3.25.5.115.17"
-PACKAGE_VERSION = "16.3.25.5.115.17"
-PACKAGE_RELEASE_NAME = "memory-studio-functional-safety-hardening"
+# v115.18 adds Configuration Studio with validated profiles and Windows EXE.
+# Running daemon and private MEMORY remain outside the editor's write scope.
+DISTRIBUTION_VERSION = "16.3.25.5.115.18"
+PACKAGE_VERSION = "16.3.25.5.115.18"
+PACKAGE_RELEASE_NAME = "configuration-studio-safe-profile-management"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
