@@ -28900,6 +28900,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
@@ -28927,6 +28928,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
@@ -28952,6 +28954,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
@@ -28977,6 +28980,7 @@
       "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
@@ -29004,6 +29008,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
@@ -29029,6 +29034,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.intermediate",
         "latka_jazn.tools.memory_rebuild_app.l0_store",
         "latka_jazn.tools.memory_rebuild_app.schema_l0",
