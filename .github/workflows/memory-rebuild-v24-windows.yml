@@ -134,14 +134,13 @@ jobs:
         run: |
           $exe = (Resolve-Path "./dist/JaznMemoryStudio/JaznMemoryStudio.exe").Path
           $env:JAZN_ROOT = (Resolve-Path ".").Path
-          Push-Location $env:RUNNER_TEMP
-          try {
-            & $exe --smoke
-            if ($LASTEXITCODE -ne 0) {
-              throw "Compiled EXE smoke failed with exit code $LASTEXITCODE"
-            }
+          # A --windowed EXE is a GUI process: pwsh's $LASTEXITCODE may be
+          # unset even after the EXE succeeded. Wait explicitly and inspect
+          # the actual process exit code to avoid false CI failures/successes.
+          $process = Start-Process -FilePath $exe -ArgumentList @("--smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+          if ($process.ExitCode -ne 0) {
+            throw "Compiled EXE smoke failed with exit code $($process.ExitCode)"
           }
-          finally { Pop-Location }
 
       - name: Publish tested Windows EXE folder
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
