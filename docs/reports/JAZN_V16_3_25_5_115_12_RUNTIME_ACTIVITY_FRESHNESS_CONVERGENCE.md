@@ -65,7 +65,7 @@ host obtains a redacted current observation through MCP when callable.
 ## Regression/CI acceptance
 
 New active regression module:
-`tests/test_chatgpt_runtime_activity_freshness_v11512.py`.
+`tests/test_chatgpt_runtime_activity_freshness.py`.
 
 Test cases: live fresh heartbeat; missing/empty/invalid/naive timestamp;
 expired timestamp; excessive future timestamp; unreachable daemon;
