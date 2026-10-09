@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-  "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-  "package_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-  "generated_at_utc": "2026-10-09T18:20:45+00:00",
-  "updated_at_utc": "2026-10-09T18:20:45+00:00",
+  "version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "runtime_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "package_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "generated_at_utc": "2026-10-09T18:33:05+00:00",
+  "updated_at_utc": "2026-10-09T18:33:05+00:00",
   "start_file": "run.py",
   "file_count": 2172,
   "static_file_count": 2172,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3001,
-      "sha256": "2a2bac66c1e4798a1c33f7f65db3c511b77fd2e9b2dca729f7ba045f9981684c",
+      "size_bytes": 3020,
+      "sha256": "859644a694bf860bc09e20a7414479751974cbc472400dfd1056c333e640af18",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -335,8 +335,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1727,
-      "sha256": "dc3a149ac2845e38ad5434a7311b539d2bedcc055455d7c05ad840a375e7e075",
+      "size_bytes": 1731,
+      "sha256": "e257c829c252aa3d03aa18f7daa3590fcafa7fdbfb1a1e6d97db002aeb0a5152",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8138,8 +8138,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7007,
-      "sha256": "bbe756fcb66283f19923aadb1e3c6959e7cc72c06b6785f1c3f8bbc2233ea356",
+      "size_bytes": 7009,
+      "sha256": "4b32f31087db16d98d5da5ed4ff724d3ad543d32bc4a7fe0c85f4a8aa27e25ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9506,8 +9506,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5209,
-      "sha256": "f294b6de7fd25133b94e76ec287b4644894fe580904e91ac0047aa64816de19e",
+      "size_bytes": 5203,
+      "sha256": "692e366946dc6709d917d370f5cf1acd6766ceb386c19593e7d26e52d7ceb7e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19406,8 +19406,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1964173,
-      "sha256": "cc377c6f49365f4789c48b0c728889abc22459a38482e64c95771bea7f11f4b2",
+      "size_bytes": 1964175,
+      "sha256": "029443c8898b1e19e786daff73d1ce98a54dbe1ecbdfcab9401d85bf27bc8ade",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20000,11 +20000,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+  "release_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-    "package_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-    "release_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening"
+    "runtime_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+    "package_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+    "release_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix"
   },
   "legacy_aliases": {
     "version": "release_version"
