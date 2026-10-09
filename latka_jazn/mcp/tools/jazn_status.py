@@ -5,6 +5,7 @@ from typing import Any, Mapping
 
 from latka_jazn.bridge.secure_host_runtime_gateway import SecureHostRuntimeGateway
 from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
+from latka_jazn.mcp.remote_runtime import observation_is_fresh
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
@@ -67,14 +68,29 @@ def run(gateway: SecureHostRuntimeGateway) -> dict[str, Any]:
     daemon_reachable = private_status.get("daemon_reachable") is True
     runtime_instance_id = str(daemon.get("daemon_instance_id") or "").strip()
     runtime_version = str(daemon.get("runtime_version") or "").strip()
+    observed_at = datetime.now(timezone.utc)
+    runtime_heartbeat_fresh = observation_is_fresh(
+        daemon.get("last_heartbeat_at_utc"),
+        now_utc=observed_at,
+    )
     ready = bool(
         gateway_live
         and daemon_reachable
         and capability.get("conversation_ready") is True
         and runtime_instance_id
         and runtime_version == PACKAGE_VERSION_FULL
+        and runtime_heartbeat_fresh
     )
-    observed_at_utc = datetime.now(timezone.utc).isoformat()
+    # This describes evidence, not a completed user turn or an accepted reply.
+    if not gateway_live or not daemon_reachable or not runtime_instance_id:
+        activity_state = "unknown"
+    elif not runtime_heartbeat_fresh:
+        activity_state = "stale"
+    elif not ready:
+        activity_state = "unready"
+    else:
+        activity_state = "ready"
+    observed_at_utc = observed_at.isoformat()
 
     status = {
         "tool_name": "jazn_status",
@@ -87,6 +103,12 @@ def run(gateway: SecureHostRuntimeGateway) -> dict[str, Any]:
         "runtime_instance_id": runtime_instance_id or None,
         "runtime_version": runtime_version or None,
         "runtime_heartbeat_at_utc": daemon.get("last_heartbeat_at_utc"),
+        "runtime_heartbeat_fresh": runtime_heartbeat_fresh,
+        "runtime_activity": {
+            "state": activity_state,
+            "heartbeat_fresh": runtime_heartbeat_fresh,
+            "readiness_verified": ready,
+        },
         "daemon": daemon,
         "capability_matrix": capability,
         "required_chatgpt_turn_tools": list(REQUIRED_CHATGPT_TURN_TOOLS),

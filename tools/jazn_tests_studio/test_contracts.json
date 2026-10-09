@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.11",
-  "active_definition_count": 2062,
+  "system_version": "16.3.25.5.115.12",
+  "active_definition_count": 2067,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8059,6 +8059,113 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 114
+    },
+    "tests/test_chatgpt_runtime_activity_freshness.py::test_fresh_heartbeat_promotes_reachable_matching_runtime": {
+      "path": "tests/test_chatgpt_runtime_activity_freshness.py",
+      "name": "test_fresh_heartbeat_promotes_reachable_matching_runtime",
+      "purpose": "Fresh heartbeat promotes reachable matching runtime",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_chatgpt_runtime_activity_freshness.py::test_stale_missing_or_untrusted_heartbeat_blocks_ready": {
+      "path": "tests/test_chatgpt_runtime_activity_freshness.py",
+      "name": "test_stale_missing_or_untrusted_heartbeat_blocks_ready",
+      "purpose": "Stale missing or untrusted heartbeat blocks ready",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_runtime_activity_freshness.py::test_unreachable_daemon_is_unknown_not_proven_stale": {
+      "path": "tests/test_chatgpt_runtime_activity_freshness.py",
+      "name": "test_unreachable_daemon_is_unknown_not_proven_stale",
+      "purpose": "Unreachable daemon is unknown not proven stale",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_chatgpt_runtime_activity_freshness.py::test_reachable_matching_heartbeat_with_unready_capability_is_unready": {
+      "path": "tests/test_chatgpt_runtime_activity_freshness.py",
+      "name": "test_reachable_matching_heartbeat_with_unready_capability_is_unready",
+      "purpose": "Reachable matching heartbeat with unready capability is unready",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_chatgpt_runtime_activity_freshness.py::test_runtime_version_mismatch_never_promotes_activity": {
+      "path": "tests/test_chatgpt_runtime_activity_freshness.py",
+      "name": "test_runtime_version_mismatch_never_promotes_activity",
+      "purpose": "Runtime version mismatch never promotes activity",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
     },
     "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_default_policy_allows_verified_one_shot_fallback": {
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
