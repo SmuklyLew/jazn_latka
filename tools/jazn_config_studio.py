@@ -26,6 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", help="Katalog SYSTEM; alternatywnie JAZN_ROOT")
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--smoke", action="store_true", help="Test importu i dostępu do repo bez tworzenia okna")
+    modes.add_argument("--gui-smoke", action="store_true", help="Utwórz rzeczywiste okno i ekrany GUI bez mainloop")
     modes.add_argument("--paths-json", action="store_true", help="Stan lokalizacji w JSON (tylko odczyt)")
     modes.add_argument("--check-profile", type=Path, help="Zweryfikuj profil przed startem PowerShell")
     parser.add_argument("--emit-validated-env", action="store_true",
@@ -42,6 +43,20 @@ def main(argv: list[str] | None = None) -> int:
         assert ConfigurationStudio is not None
         inspect_system(root)
         print("JaznConfigurationStudio smoke OK")
+        return 0
+    if args.gui_smoke:
+        import tkinter as tk
+        from latka_jazn.tools.configuration_studio_ui import ConfigurationStudio
+        window = tk.Tk()
+        window.withdraw()
+        try:
+            studio = ConfigurationStudio(window, system=root)
+            for page in ("overview", "paths", "settings", "diagnostics"):
+                studio.open_page(page)
+            window.update_idletasks()
+        finally:
+            window.destroy()
+        print("JaznConfigurationStudio GUI smoke OK")
         return 0
     if args.paths_json:
         print(json.dumps(inspect_system(root), ensure_ascii=False, indent=2))
