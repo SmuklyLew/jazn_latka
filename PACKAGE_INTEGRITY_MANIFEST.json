@@ -3,11 +3,11 @@
   "version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
   "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
   "package_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
-  "generated_at_utc": "2026-10-09T17:52:21+00:00",
-  "updated_at_utc": "2026-10-09T17:52:21+00:00",
+  "generated_at_utc": "2026-10-09T17:57:06+00:00",
+  "updated_at_utc": "2026-10-09T17:57:06+00:00",
   "start_file": "run.py",
-  "file_count": 2168,
-  "static_file_count": 2168,
+  "file_count": 2174,
+  "static_file_count": 2174,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3001,
-      "sha256": "486229d9f179b37c13501db143756305723397fd2d3a410ce79c9777152bc650",
+      "size_bytes": 2996,
+      "sha256": "cd0a05e17ea8112cf3eac3a6b51dc1d93be689fe9ca388c01786f1ee886943d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8462,8 +8462,17 @@
     },
     {
       "path": "latka_jazn/tools/configuration_studio.py",
-      "size_bytes": 10861,
-      "sha256": "b4acb074fbdcf90ced757404677ded59a4b8de494dc5ef80ef6bcde50e1242a4",
+      "size_bytes": 10920,
+      "sha256": "fda43d54b95eada8e7890bafae387f7aa730152788fd5165c567a806dd39eb86",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/configuration_studio_ui.py",
+      "size_bytes": 13206,
+      "sha256": "f638de68eb8f172143aa8aaa26bfb8e20f0fa4529af3bca68aa2c36107106cea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16246,6 +16255,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_configuration_studio.py",
+      "size_bytes": 5107,
+      "sha256": "e5730fc31bfca0acf0d68f96c2ef8a6da42d2237a7bf272194fc828af0c7515c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_configuration_studio_gui_windows.py",
+      "size_bytes": 1263,
+      "sha256": "d4039368d1576125af59a8035064adac0e79d4d7a49b70fd5060d9fd8765829e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_conversation_archive_routing_guard.py",
       "size_bytes": 5718,
       "sha256": "a25f6bb9e033ba4ef92d431b25159e3bd552bb3656bf03763dd7001dc140e4ff",
@@ -19108,6 +19135,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_config_studio.py",
+      "size_bytes": 2536,
+      "sha256": "3775214abc60fff2662517b46e8395e2a1c64b2322a2e1e819746d1c8c0e9924",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_memory_studio.py",
       "size_bytes": 1610,
       "sha256": "dbf727520279e31bcb79a1b66c229315e718e3546dbcc3546355e11bfecf3a6b",
@@ -19370,8 +19406,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1964173,
-      "sha256": "cc377c6f49365f4789c48b0c728889abc22459a38482e64c95771bea7f11f4b2",
+      "size_bytes": 1970846,
+      "sha256": "9266ef00428adaf49c5df5dcd0b74278b5b868384dfa22ad5e742663407deb00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19543,6 +19579,24 @@
       "path": "tools/rebuild_memory_app.py",
       "size_bytes": 333,
       "sha256": "4e51097a51e4c53a17edad0295f92cd3e90d57b5b23ee897c88119f9e0ecc5e0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/windows/Start-JaznWithConfig.ps1",
+      "size_bytes": 2437,
+      "sha256": "0e259db51542d3b663566658c6e81bdcad789ac851a260f4e75164090096d857",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/windows/build_configuration_studio.ps1",
+      "size_bytes": 1441,
+      "sha256": "84e52b7342b0a93609582aea082c9f6c57d6a70f04d6c5f7d26b90265f4efee0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
