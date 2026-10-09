@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "6f1c01d0868e4ae567561d0b3699c711c808acbc",
-    "base_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
+    "base_commit": "53004f5c69313910f3503226f90c8f9ff673510a",
+    "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "53004f5c69313910f3503226f90c8f9ff673510a",
