@@ -84,7 +84,7 @@ def test_launch_rejects_marker_when_changing_critical_paths(root: Path, tmp_path
     save_profile(root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(tmp_path / "new_state")})
     assert validated_launch_values(root)["JAZN_RUNTIME_WORKSPACE_DIR"] == str(tmp_path / "new_state")
     marker = tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
-    marker.parent.mkdir(parents=True)
+    marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text("{}", encoding="utf-8")
     with pytest.raises(ConfigValidationError, match="znacznik runtime"):
         validated_launch_values(root)
