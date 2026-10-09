@@ -615,6 +615,10 @@ class StudioWorkflows:
                     "SELECT COUNT(DISTINCT normalized_label) "
                     "FROM memory_l0_affect_claims_current"
                 ).fetchone()[0])
+                linked_turns = int(con.execute(
+                    "SELECT COUNT(*) FROM memory_l0_affect_message_links "
+                    "WHERE link_status='explicit_source'"
+                ).fetchone()[0]) if "memory_l0_affect_message_links" in tables else 0
                 source_rows = con.execute(
                     "SELECT source_kind,COUNT(*) AS n "
                     "FROM memory_l0_affect_claims_current "
@@ -631,6 +635,7 @@ class StudioWorkflows:
                 f"Baza: {self.state.database}\n"
                 f"Jawne ślady afektywne: {total}\n"
                 f"Różne etykiety: {distinct_labels}\n"
+                f"Jawne konteksty tur (nie dowód odczuwania): {linked_turns}\n"
                 "Granica: source-claimed affect / zapis źródłowy; "
                 "nie biologiczny stan emocjonalny.\n"
                 "Widok jest tylko do odczytu i niczego nie promuje do L1/L2/L3."
@@ -654,6 +659,7 @@ class StudioWorkflows:
                     "database": str(self.state.database),
                     "claim_count": total,
                     "distinct_label_count": distinct_labels,
+                    "explicit_turn_context_count": linked_turns,
                     "claims_by_source_kind": {
                         str(row["source_kind"]): int(row["n"])
                         for row in source_rows

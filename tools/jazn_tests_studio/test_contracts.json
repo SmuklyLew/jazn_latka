@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.14",
-  "active_definition_count": 2078,
+  "system_version": "16.3.25.5.115.15",
+  "active_definition_count": 2084,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28886,6 +28886,166 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 156
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_numbered_zip_matches_studio_and_importer": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_numbered_zip_matches_studio_and_importer",
+      "purpose": "Numbered zip matches studio and importer",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_nested_assets_are_source_attachments": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_nested_assets_are_source_attachments",
+      "purpose": "Nested assets are source attachments",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_single_file_preview_does_not_touch_target": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_single_file_preview_does_not_touch_target",
+      "purpose": "Single file preview does not touch target",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_modelled_affect_has_single_versioned_lineage": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_modelled_affect_has_single_versioned_lineage",
+      "purpose": "Modelled affect has single versioned lineage",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_affect_requires_accepted_evidence_and_labels": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_affect_requires_accepted_evidence_and_labels",
+      "purpose": "Affect requires accepted evidence and labels",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_memory_studio_affect_turn_lineage.py::test_historical_labels_without_source_ids_stay_unlinked": {
+      "path": "tests/test_memory_studio_affect_turn_lineage.py",
+      "name": "test_historical_labels_without_source_ids_stay_unlinked",
+      "purpose": "Historical labels without source ids stay unlinked",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.intermediate",
+        "latka_jazn.tools.memory_rebuild_app.l0_store",
+        "latka_jazn.tools.memory_rebuild_app.schema_l0",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_detection",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",

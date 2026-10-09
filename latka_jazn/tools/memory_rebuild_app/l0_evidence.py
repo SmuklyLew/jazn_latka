@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Mapping
+import re
 import sqlite3
 import uuid
 
@@ -21,6 +22,8 @@ def persist_record_metadata(
         "UPDATE memory_l0_records SET visibility=?,memory_eligible=? WHERE record_id=?",
         (visibility, int(memory_eligible), record_id),
     )
+    con.execute("DELETE FROM memory_l0_affect_turn_context WHERE claim_id IN "
+                "(SELECT claim_id FROM memory_l0_affect_claims WHERE record_id=?)", (record_id,))
     con.execute("DELETE FROM memory_l0_affect_claims WHERE record_id=?", (record_id,))
     claims = raw.get("__jazn_affect_claims__")
     for claim in claims if isinstance(claims, list) else ():
@@ -49,6 +52,28 @@ def persist_record_metadata(
                 claim_id, record_id, source_id, label, normalized, source_field,
                 claim_kind, subject, boundary, observed_at_utc,
             ),
+        )
+        def explicit_id(key: str) -> str:
+            value = raw.get(key)
+            return value.strip()[:256] if isinstance(value, str) else ""
+
+        conversation_id = explicit_id("conversation_id")
+        turn_id = explicit_id("turn_id")
+        trace_id = explicit_id("trace_id")
+        message_id = explicit_id("message_id")
+        source_time = explicit_id("event_time") or explicit_id("timestamp")
+        context_hash = explicit_id("context_sha256")
+        if not re.fullmatch(r"[0-9a-fA-F]{64}", context_hash):
+            context_hash = ""
+        explicit = bool((conversation_id and message_id) or (turn_id and trace_id))
+        con.execute(
+            """INSERT INTO memory_l0_affect_turn_context(
+             claim_id,conversation_id,turn_id,trace_id,message_source_record_id,
+             source_event_time,context_sha256,link_status,truth_boundary
+             ) VALUES(?,?,?,?,?,?,?,?,?)""",
+            (claim_id, conversation_id, turn_id, trace_id, message_id, source_time,
+             context_hash, "explicit_source" if explicit else "source_only",
+             "modelled_or_source_claimed_not_biological"),
         )
 
     assets = raw.get("assets")

@@ -7,6 +7,7 @@ import json
 import zipfile
 
 from latka_jazn.tools.chat_export_reader import probe_json_source_kind
+from .source_bundle import classify_source_role, SourceRole
 
 SOURCE_KINDS = (
     "chat", "journal", "music", "episodic", "semantic", "affective", "procedural",
@@ -241,8 +242,8 @@ def _probe_zip(path: Path) -> SourceProbe:
         return SourceProbe(str(path), "reference", 0.0, (f"invalid_zip:{type(exc).__name__}",))
     if any("memory_package_manifest" in name or "raw_memory_manifest" in name for name in names):
         return SourceProbe(str(path), "reference", 0.95, ("zip_memory_package_requires_explicit_attach",))
-    if any(name.endswith("conversations.json") for name in names):
-        return SourceProbe(str(path), "chat", 0.98, ("zip_member:conversations.json",))
+    if any(classify_source_role(name) is SourceRole.CANONICAL_CHAT_GRAPH for name in names):
+        return SourceProbe(str(path), "chat", 0.98, ("zip_member:canonical_conversations_json",))
     chat_html_names = {"chat.html", "chatgpt.html", "chat_export.html", "chatgpt_export.html"}
     if any(Path(name).name in chat_html_names for name in names):
         return SourceProbe(str(path), "chat", 0.9, ("zip_member:explicit_chat_html",))

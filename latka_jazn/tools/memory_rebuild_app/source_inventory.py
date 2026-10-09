@@ -11,6 +11,8 @@ import stat
 import zipfile
 
 from .models import SourceSpec
+from latka_jazn.tools.chat_export_reader import probe_json_source_kind
+
 from .source_detection import (
     DuplicateJsonKeyError,
     load_json_strict,
@@ -198,6 +200,16 @@ def inspect_zip(path: Path, *, verify_crc: bool = False) -> dict[str, Any]:
 
 
 def _sniff_json(path: Path) -> dict[str, Any]:
+    # Avoid eager reads of conversation archives during inventory.
+    # Full validation remains the responsibility of the streaming importer.
+    probe = probe_json_source_kind(path)
+    if probe == "conversation":
+        return {"json_type": "list", "first_item_keys": ["mapping"],
+                "streaming_probe": True, "full_validation_deferred_to_import": True}
+    if path.stat().st_size > 64 * 1024 * 1024:
+        return {"json_type": "unknown", "streaming_probe": True,
+                "full_validation_deferred_to_import": True,
+                "parse_error": "large_unknown_json_requires_explicit_type"}
     recovery: dict[str, Any] | None = None
     try:
         payload = load_json_strict(path)

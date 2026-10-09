@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 
-L0_SCHEMA_VERSION = "memory_rebuild_l0/v5"
+L0_SCHEMA_VERSION = "memory_rebuild_l0/v6"
 
 L0_SCHEMA_SQL = """
 PRAGMA foreign_keys=ON;
@@ -102,6 +102,31 @@ CREATE TABLE IF NOT EXISTS memory_l0_affect_claims(
   FOREIGN KEY(record_id) REFERENCES memory_l0_records(record_id) ON DELETE CASCADE,
   FOREIGN KEY(source_id) REFERENCES memory_l0_sources(source_id)
 );
+CREATE TABLE IF NOT EXISTS memory_l0_affect_turn_context(
+  claim_id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL DEFAULT '',
+  turn_id TEXT NOT NULL DEFAULT '',
+  trace_id TEXT NOT NULL DEFAULT '',
+  message_source_record_id TEXT NOT NULL DEFAULT '',
+  source_event_time TEXT NOT NULL DEFAULT '',
+  context_sha256 TEXT NOT NULL DEFAULT '',
+  link_status TEXT NOT NULL CHECK(link_status IN ('explicit_source','source_only')),
+  truth_boundary TEXT NOT NULL DEFAULT 'modelled_or_source_claimed_not_biological',
+  FOREIGN KEY(claim_id) REFERENCES memory_l0_affect_claims(claim_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_memory_l0_affect_turn_linkage
+  ON memory_l0_affect_turn_context(conversation_id,turn_id,message_source_record_id);
+CREATE VIEW IF NOT EXISTS memory_l0_affect_message_links AS
+ SELECT ctx.claim_id, ctx.conversation_id,ctx.turn_id,ctx.trace_id,
+        ctx.message_source_record_id,ctx.source_event_time,ctx.context_sha256,
+        ctx.link_status,ctx.truth_boundary,
+        msg.record_id AS linked_message_record_id, msg.role AS linked_message_role
+ FROM memory_l0_affect_turn_context AS ctx
+ LEFT JOIN memory_l0_records AS msg
+   ON msg.is_current_revision=1 AND msg.record_kind='conversation_message'
+   AND msg.conversation_id=ctx.conversation_id
+   AND msg.source_record_id=ctx.message_source_record_id
+   AND ctx.message_source_record_id<>'' AND ctx.conversation_id<>'';
 CREATE INDEX IF NOT EXISTS idx_memory_l0_affect_claim_label
   ON memory_l0_affect_claims(normalized_label,source_field,claim_kind);
 DROP VIEW IF EXISTS memory_l0_affect_claims_current;
