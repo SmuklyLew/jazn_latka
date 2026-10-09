@@ -28,10 +28,14 @@ def main(argv: list[str] | None = None) -> int:
     modes.add_argument("--smoke", action="store_true", help="Test importu i dostępu do repo bez tworzenia okna")
     modes.add_argument("--paths-json", action="store_true", help="Stan lokalizacji w JSON (tylko odczyt)")
     modes.add_argument("--check-profile", type=Path, help="Zweryfikuj profil przed startem PowerShell")
+    parser.add_argument("--emit-validated-env", action="store_true",
+                        help="Zwróć jeden zweryfikowany snapshot JSON dla launchera")
     args = parser.parse_args(argv)
+    if args.emit_validated_env and not args.check_profile:
+        parser.error("--emit-validated-env wymaga --check-profile")
     root = resolve_root(args.root)
     from latka_jazn.tools.configuration_studio import (
-        describe_profile, inspect_system, profile_file, read_profile,
+        describe_profile, inspect_system, profile_file, validated_launch_values,
     )
     if args.smoke:
         from latka_jazn.tools.configuration_studio_ui import ConfigurationStudio
@@ -47,8 +51,12 @@ def main(argv: list[str] | None = None) -> int:
         expected = profile_file(root, name=path.stem)
         if expected != path or not path.is_file():
             raise ValueError("Profil musi istnieć w kanonicznym katalogu profili Jaźni.")
-        read_profile(root, name=path.stem)
-        print("Validated configuration profile")
+        values = validated_launch_values(root, name=path.stem)
+        if args.emit_validated_env:
+            print(json.dumps({"schema": "jazn_configuration_profile/v1", "values": values},
+                             ensure_ascii=False, sort_keys=True))
+        else:
+            print("Validated configuration profile")
         return 0
     describe_profile(root)
     from latka_jazn.tools.configuration_studio_ui import run_window
