@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2b966d91f7239172bd54b16a9b4c2570ee1c5fb9",
-    "base_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+    "base_commit": "679acd252411485e405bedc99b5870fac0f8611b",
+    "base_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "53004f5c69313910f3503226f90c8f9ff673510a",
