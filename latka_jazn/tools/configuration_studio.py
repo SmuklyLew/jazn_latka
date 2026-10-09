@@ -141,8 +141,13 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
     memory = Path(result.get("JAZN_MEMORY_ROOT", str(resolve_memory_root(source)))).resolve()
     current_memory = resolve_memory_root(source)
     legacy_workspace = legacy_workspace_runtime_path(source)
-    for label, path in (("workspace", workspace), ("MEMORY", memory)):
-        if _inside(path, source) or _inside(path, legacy_workspace):
+    # Existing legacy paths may be inherited read-only; a new profile must not
+    # explicitly route data back into the versioned SYSTEM.
+    for label, key, path in (
+        ("workspace", "JAZN_RUNTIME_WORKSPACE_DIR", workspace),
+        ("MEMORY", "JAZN_MEMORY_ROOT", memory),
+    ):
+        if key in result and (_inside(path, source) or _inside(path, legacy_workspace)):
             raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
     if _inside(workspace, memory) or _inside(workspace, current_memory) or workspace == memory:
         raise ConfigValidationError("Workspace nie może znajdować się w MEMORY.")
