@@ -115,6 +115,14 @@ jobs:
           $process = Start-Process -FilePath $exe -ArgumentList @("--smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
           if ($process.ExitCode -ne 0) { throw "EXE smoke exit code $($process.ExitCode)" }
 
+      - name: Smoke-test actual packaged Tk screens
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "./dist/JaznConfigurationStudio/JaznConfigurationStudio.exe").Path
+          $env:JAZN_ROOT = (Resolve-Path ".").Path
+          $process = Start-Process -FilePath $exe -ArgumentList @("--gui-smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+          if ($process.ExitCode -ne 0) { throw "Packaged Tk GUI smoke exit code $($process.ExitCode)" }
+
       - name: Exercise profile launcher without starting Jaźń
         shell: pwsh
         run: |
