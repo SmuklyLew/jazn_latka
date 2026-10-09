@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from latka_jazn.core.model_context_compiler import compile_model_context
-from latka_jazn.core.host_response_candidate_guard import build_host_generation_context
+from latka_jazn.core import host_response_candidate_guard
 from latka_jazn.core.message_envelope import clean_model_generated_body
 from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight, resolve_model_executor
 from latka_jazn.core.nlg_planner import build_nlg_plan
@@ -82,7 +82,7 @@ class ModelGuidedResponseSynthesizer:
             return ModelGuidedSynthesis(
                 False, draft_body, "host_visible_generation_requested", provider, model,
                 preflight.reason, [], source_origin="chatgpt_host_bridge",
-                host_generation_context=build_host_generation_context(
+                host_generation_context=host_response_candidate_guard.build_host_generation_context(
                     context,
                     detected_intent=detected_intent,
                     route=route,

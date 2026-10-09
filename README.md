@@ -20,6 +20,8 @@ Styl, pierwsza osoba, nazwa folderu, ZIP, sam marker, SQLite ani obecność kodu
 
 Instrukcje projektu ChatGPT są wyłącznie cienkim loaderem prowadzącym do lokalnego `AGENTS.md`. Kanoniczny tekst loadera operatorskiego: [`docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt`](docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt).
 
+**Kontrakty generowania, narzędzi i finalizacji:** [`docs/runtime/TURN_FINALIZATION_CONTRACTS.md`](docs/runtime/TURN_FINALIZATION_CONTRACTS.md) — jeden indeks źródeł, warunków bezpieczeństwa i testów.
+
 `AGENTS.codex.md` jest projektowym runbookiem wskazywanym przez root `AGENTS.md`; nie należy zakładać, że każda niestandardowa nazwa instrukcji zostanie automatycznie odkryta przez host bez routera lub konfiguracji.
 
 ## Bieżący stan projektu

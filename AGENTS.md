@@ -79,6 +79,7 @@ Dla Projektu ChatGPT instrukcja projektu ma być cienkim loaderem prowadzącym d
 - pochodzenie wydania: `SOURCE_PROVENANCE.json`
 - starter użytkownika: `run.py`
 - centralny control plane i główny dispatcher: `main.py`
+- indeks kontraktów tury, narzędzi i finalizacji: [`docs/runtime/TURN_FINALIZATION_CONTRACTS.md`](docs/runtime/TURN_FINALIZATION_CONTRACTS.md)
 - parser/usługi komend: `latka_jazn/cli.py`
 - układ repozytorium i polityka zależności: `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`
 - założenia tożsamości i ciągłości: `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`
