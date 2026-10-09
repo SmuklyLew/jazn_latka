@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.16 replaces the generic Memory Rebuild window with one canonical
-# desktop workspace. No private runtime/memory changes are implied.
-DISTRIBUTION_VERSION = "16.3.25.5.115.16"
-PACKAGE_VERSION = "16.3.25.5.115.16"
-PACKAGE_RELEASE_NAME = "memory-studio-desktop-workspace"
+# v115.17 hardens Memory Studio actions, isolated staging and Windows EXE.
+# No private runtime/memory contents are included in this release.
+DISTRIBUTION_VERSION = "16.3.25.5.115.17"
+PACKAGE_VERSION = "16.3.25.5.115.17"
+PACKAGE_RELEASE_NAME = "memory-studio-functional-safety-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
