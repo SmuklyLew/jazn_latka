@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from collections.abc import Sequence
+from typing import Any, cast
+import tkinter as tk
 from types import SimpleNamespace
 import sys
 
@@ -12,6 +15,7 @@ pytest.importorskip("tkinter")
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.tools.memory_rebuild_app import ui_desktop
 from latka_jazn.tools.memory_rebuild_app.models import RebuildProject
+from latka_jazn.tools.memory_rebuild_app.studio import StudioState
 from latka_jazn.tools.memory_rebuild_app.project_store import ProjectStore
 from latka_jazn.tools.memory_rebuild_app.studio_workflows import StudioWorkflows
 from latka_jazn.tools.memory_rebuild_app.studio_write_safety import (
@@ -39,7 +43,7 @@ def test_project_is_bound_to_database_during_gui_initialization(monkeypatch, tmp
     monkeypatch.setattr(ui_desktop.DesktopWorkspace, "_layout", lambda self: None)
     monkeypatch.setattr(ui_desktop.DesktopWorkspace, "open_page", lambda self, page: None)
     app = ui_desktop.DesktopWorkspace(
-        FakeRoot(), tool_root=tmp_path / "repo", project_root=project_root,
+        cast(tk.Tk, FakeRoot()), tool_root=tmp_path / "repo", project_root=project_root,
         project=project.project_id, settings_path=tmp_path / "settings.json",
         diagnostics=SimpleNamespace(),
     )
@@ -59,7 +63,7 @@ def test_import_action_does_not_reenter_busy_executor(monkeypatch, tmp_path: Pat
             return {"ok": True}
 
     monkeypatch.setattr(ui_desktop, "UnifiedMemoryDatabase", FakeMemoryDB)
-    app = object.__new__(ui_desktop.DesktopWorkspace)
+    app = cast(Any, object.__new__(ui_desktop.DesktopWorkspace))
     app.tool_root = tmp_path / "repo"
     app.state = SimpleNamespace(database=Path(project.settings["unified_database_path"]))
     app.dialogs = SimpleNamespace(confirm=lambda *a: True, message=lambda *a: None)
@@ -95,22 +99,30 @@ def test_export_uses_project_final_output_setting(monkeypatch, tmp_path: Path) -
     prompts = []
     exports = []
     class Dialogs:
-        def input(self, title, question, default=""):
+        def choice(self, title: str, text: str, values: Sequence[tuple[Any, str]], *,
+                   default: Any = None) -> Any:
+            return None
+        def checklist(self, title: str, text: str, values: Sequence[tuple[str, str]], *,
+                      default_values: Sequence[str] = ()) -> list[str] | None:
+            return None
+        def input(self, title: str, text: str, default: str = "") -> str:
             prompts.append(default)
             return default
-        def message(self, title, value):
+        def message(self, title: str, text: str) -> None:
             return None
-        def confirm(self, title, question):
+        def confirm(self, title: str, text: str) -> bool:
             return False
 
     monkeypatch.setattr(
         "latka_jazn.tools.memory_rebuild_app.studio_workflows.export_final_memory",
         lambda db, destination, **kwargs: exports.append(destination) or {"ok": True},
     )
-    state = SimpleNamespace(
-        project=project.project_id, project_root=project_root,
-        database=Path(project.settings["unified_database_path"]), tool_root=tmp_path / "repo",
+    state = StudioState(
+        database=Path(project.settings["unified_database_path"]),
+        project_root=project_root, project=project.project_id,
+        tool_root=tmp_path / "repo", settings_path=tmp_path / "settings.json",
     )
+    state.select_project(project.project_id)
     StudioWorkflows(state, Dialogs()).export()
     assert prompts == [str(output)]
     assert exports == [output]
