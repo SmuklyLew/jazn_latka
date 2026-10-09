@@ -9,6 +9,7 @@ on:
       - "tools/memory_rebuild_legacy_v24.py"
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
+      - "tests/test_memory_desktop_*.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
   pull_request:
     branches:
@@ -18,6 +19,7 @@ on:
       - "tools/memory_rebuild_legacy_v24.py"
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
+      - "tests/test_memory_desktop_*.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
   workflow_dispatch:
 
@@ -70,6 +72,10 @@ jobs:
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
+          tests/test_memory_desktop_workspace.py
+          tests/test_memory_desktop_gui_smoke.py
+          tests/test_memory_desktop_actions.py
+          tests/test_memory_desktop_actions_windows.py
 
       - name: Run Memory Rebuild v2.4 tests
         shell: pwsh
@@ -80,6 +86,10 @@ jobs:
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
+          tests/test_memory_desktop_workspace.py
+          tests/test_memory_desktop_gui_smoke.py
+          tests/test_memory_desktop_actions.py
+          tests/test_memory_desktop_actions_windows.py
 
       - name: Clean checkout guard
         if: always()
@@ -94,3 +104,47 @@ jobs:
             $dirty | ForEach-Object { Write-Host $_ }
             throw "Tests left tracked or untracked files in the checkout."
           }
+
+  package-windows:
+    name: Build and smoke-test real Windows EXE
+    needs: verify
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: python -m pip install -e . pyinstaller
+
+      - name: Build one-folder EXE
+        shell: pwsh
+        run: ./tools/windows/build_memory_studio.ps1
+
+      - name: Run compiled EXE away from repository cwd
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "./dist/JaznMemoryStudio/JaznMemoryStudio.exe").Path
+          $env:JAZN_ROOT = (Resolve-Path ".").Path
+          # A --windowed EXE is a GUI process: pwsh's $LASTEXITCODE may be
+          # unset even after the EXE succeeded. Wait explicitly and inspect
+          # the actual process exit code to avoid false CI failures/successes.
+          $process = Start-Process -FilePath $exe -ArgumentList @("--smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+          if ($process.ExitCode -ne 0) {
+            throw "Compiled EXE smoke failed with exit code $($process.ExitCode)"
+          }
+
+      - name: Publish tested Windows EXE folder
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: JaznMemoryStudio-Windows-Python312
+          path: dist/JaznMemoryStudio/
+          if-no-files-found: error

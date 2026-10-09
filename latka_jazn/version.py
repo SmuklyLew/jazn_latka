@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.15 fixes ChatGPT export intake and source-grounded modelled affect.
-# Accepted-turn lineage remains distinct from subjective experience.
-DISTRIBUTION_VERSION = "16.3.25.5.115.15"
-PACKAGE_VERSION = "16.3.25.5.115.15"
-PACKAGE_RELEASE_NAME = "memory-studio-affect-lineage-convergence"
+# v115.17.1 fixes release identity and retains Memory Studio protections.
+# Active runtime and private MEMORY data are unchanged.
+DISTRIBUTION_VERSION = "16.3.25.5.115.17.1"
+PACKAGE_VERSION = "16.3.25.5.115.17.1"
+PACKAGE_RELEASE_NAME = "memory-studio-functional-safety-release-fix"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

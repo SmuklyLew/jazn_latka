@@ -10,7 +10,7 @@ import sys
 # is versioned separately so compatible releases do not break launchers, tests
 # or project-format consumers.
 TOOL_VERSION = "memory-rebuild/v16.1"
-APP_VERSION = "3.0.0"
+APP_VERSION = "3.1.0"
 TOOL_REVISION = "15.3.23.01"
 TOOL_RELEASE_NAME = "Poprawione narzędzie odbudowy pamięci"
 TOOL_RELEASE_LABEL = f"{TOOL_REVISION} - {TOOL_RELEASE_NAME}"
