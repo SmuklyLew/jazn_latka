@@ -99,7 +99,7 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         value = value.strip()
         if not value:
             continue
-        if len(value) > 4096 or any(ch in value for ch in "\\r\\n\\x00"):
+        if len(value) > 4096 or any(ch in value for ch in "\r\n\x00"):
             raise ConfigValidationError(f"{key}: niedozwolone znaki lub długość.")
         if setting.kind in {"directory", "file"}:
             candidate = Path(value).expanduser()
@@ -152,7 +152,7 @@ def save_profile(root: str | Path, entries: Mapping[str, str], *, name: str = "o
         raise ConfigValidationError("Profil został zmieniony na dysku; odczytaj go ponownie.")
     if previous is not None:
         read_profile(root, name=name, workspace=workspace)  # fail closed on corrupt existing profile
-    payload = json.dumps({"schema": SCHEMA, "values": values}, ensure_ascii=False, sort_keys=True, indent=2) + "\\n"
+    payload = json.dumps({"schema": SCHEMA, "values": values}, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     temp = folder / f".{name}.{os.getpid()}.tmp"
     backup = folder / f"{name}.previous.json"
     try:
