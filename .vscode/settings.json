@@ -1,4 +1,11 @@
 {
   "python.analysis.diagnosticsSource": "Pylance + Pyright",
-  "python.analysis.pyrightVersion": "1.1.411"
+  "python.analysis.pyrightVersion": "1.1.411",
+  "python-envs.pythonProjects": [
+    {
+      "path": "jazn_project",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }
