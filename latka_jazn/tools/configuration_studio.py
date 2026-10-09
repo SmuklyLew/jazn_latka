@@ -230,7 +230,7 @@ def save_profile(root: str | Path, entries: Mapping[str, str], *, name: str = "o
         with runtime_sqlite_write_guard(path, timeout_ms=30000):
             old_values, current_hash = profile_snapshot(root, name=name, workspace=workspace)
             if current_hash != expected_sha256:
-                raise ConfigValidationError("Profil zmieniono na dysku. Wczytaj go ponownie.")
+                raise ConfigValidationError("Profil został zmieniony na dysku. Wczytaj go ponownie.")
             previous = path.read_bytes() if current_hash is not None else None
             if previous is not None and old_values == values:
                 return path
