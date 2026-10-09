@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c0023df286e4e7760407e6c74854e10b0ccf8e4b",
-    "base_version": "16.3.25.5.115.11-turn-candidate-finalization-recovery",
+    "base_commit": "b9120fd904a34a6737dd98fc49e1d351beeef668",
+    "base_version": "16.3.25.5.115.12-runtime-activity-freshness-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "b9120fd904a34a6737dd98fc49e1d351beeef668",
