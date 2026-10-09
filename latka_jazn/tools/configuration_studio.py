@@ -42,16 +42,16 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("JAZN_MEMORY_REBUILD_SETTINGS", "Ustawienia odbudowy", "Ścieżki", "file", "Ścieżka do pliku JSON"),
     Setting("JAZN_LEXICAL_RESOURCE_CACHE", "Cache słownikowy", "Ścieżki", "file", "Ścieżka SQLite cache"),
     Setting("JAZN_MEMORY_MODE", "Tryb MEMORY", "Runtime", "memory_mode", "optional / required / off"),
-    Setting("JAZN_LLM_ROUTE", "Routing LLM", "Runtime", "llm_route", "auto lub jawna trasa zgodna z runtime"),
-    Setting("JAZN_MODEL_ADAPTER", "Adapter modelu", "Runtime", "adapter", "null / local / chatgpt / terminal"),
+    Setting("JAZN_LLM_ROUTE", "Routing LLM", "Runtime", "llm_route", "auto / local / chatgpt_bridge / openai_api / none"),
+    Setting("JAZN_MODEL_ADAPTER", "Adapter modelu", "Runtime", "adapter", "null / local / chatgpt / terminal / openai_compatible"),
     Setting("JAZN_STARTUP_STATUS_MODE", "Diagnostyka startu", "Runtime", "status_mode", "fast / full"),
     Setting("JAZN_SQLITE_HEALTH_MODE", "Kontrola SQLite", "Runtime", "sqlite_mode", "metadata / full"),
 )
 SETTING_BY_KEY = {setting.key: setting for setting in SETTINGS}
 ENUMS = {
     "memory_mode": frozenset({"optional", "required", "off"}),
-    "llm_route": frozenset({"auto", "chatgpt", "ollama", "openai", "null"}),
-    "adapter": frozenset({"null", "local", "chatgpt", "terminal"}),
+    "llm_route": frozenset({"auto", "local", "chatgpt_bridge", "openai_api", "none"}),
+    "adapter": frozenset({"null", "local", "chatgpt", "terminal", "openai_compatible"}),
     "status_mode": frozenset({"fast", "full"}),
     "sqlite_mode": frozenset({"metadata", "full"}),
 }
