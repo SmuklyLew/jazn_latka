@@ -34,8 +34,9 @@ def _sha256_file(path: Path) -> str:
 def classify_source_role(relative_path: str) -> SourceRole:
     normalized = relative_path.replace("\\", "/")
     name = Path(normalized).name.casefold()
-    first = normalized.split("/", 1)[0].casefold()
-    if first in {"assets", "attachments"}:
+    # Exports may have an additional parent directory around assets.
+    segments = tuple(part.casefold() for part in normalized.split("/") if part)
+    if len(segments) >= 2 and any(part in {"assets", "attachments"} for part in segments[:-1]):
         return SourceRole.SOURCE_ATTACHMENT
     if _CONVERSATIONS_RE.fullmatch(name):
         return SourceRole.CANONICAL_CHAT_GRAPH

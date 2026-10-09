@@ -153,6 +153,12 @@ class UnifiedCoreMixin(UnifiedMixinHost):
         raise ValueError(f"Nieznana projekcja adaptera: {projection}")
 
     def import_source(self, source: str | Path, *, dry_run: bool = False, full_validation: bool = True) -> UnifiedImportResult:
+        if dry_run:
+            preview = self._preview_import_sources([source], full_validation=full_validation)
+            result = (preview.get("results") or [])[0]
+            return UnifiedImportResult(str(Path(source).expanduser().resolve()),
+                                       str(result.get("source_kind") or "unknown"),
+                                       "planned", result)
         self.ensure_initialized()
         path = Path(source).expanduser().resolve()
         if not path.exists():
@@ -216,7 +222,11 @@ class UnifiedCoreMixin(UnifiedMixinHost):
                 adapter_registry=self.adapter_registry,
             )
             if self.path.exists():
-                self.backup(preview_path)
+                # Read-only SQLite snapshot, without checkpointing source WAL.
+                with self.connect(read_only=True) as origin, sqlite3.connect(
+                    preview_path, factory=ClosingSQLiteConnection,
+                ) as destination:
+                    origin.backup(destination)
             else:
                 preview.initialize()
             payload = preview.import_sources(sources, dry_run=False, full_validation=full_validation)
