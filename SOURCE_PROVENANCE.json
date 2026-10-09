@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "176d104561769ab58fe4410a593339fd8b4e9a9b",
-    "base_version": "16.3.25.5.115.10-host-nonblocking-cli-output-recovery",
+    "base_commit": "8df60fadfa587e29397f9d0f4be6985cf1e98ec2",
+    "base_version": "16.3.25.5.115.11-turn-candidate-finalization-recovery",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "8df60fadfa587e29397f9d0f4be6985cf1e98ec2",
