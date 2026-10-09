@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.18",
-  "active_definition_count": 2106,
+  "system_version": "16.3.25.5.115.18.1",
+  "active_definition_count": 2115,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11153,6 +11153,176 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 14
+    },
+    "tests/test_configuration_studio_gui_windows.py::test_gui_refuses_to_discard_unsaved_edits": {
+      "path": "tests/test_configuration_studio_gui_windows.py",
+      "name": "test_gui_refuses_to_discard_unsaved_edits",
+      "purpose": "Gui refuses to discard unsaved edits",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.configuration_studio_ui"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_configuration_studio_hardening.py::test_reject_memory_sqlite_cache_collision": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_reject_memory_sqlite_cache_collision",
+      "purpose": "Reject memory sqlite cache collision",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_configuration_studio_hardening.py::test_reject_current_memory_root_even_if_changing_memory": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_reject_current_memory_root_even_if_changing_memory",
+      "purpose": "Reject current memory root even if changing memory",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_configuration_studio_hardening.py::test_profile_single_snapshot_and_rollback": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_profile_single_snapshot_and_rollback",
+      "purpose": "Profile single snapshot and rollback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_configuration_studio_hardening.py::test_concurrent_compare_and_swap_allows_only_one_writer": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_concurrent_compare_and_swap_allows_only_one_writer",
+      "purpose": "Concurrent compare and swap allows only one writer",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_configuration_studio_hardening.py::test_duplicate_keys_are_rejected": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_duplicate_keys_are_rejected",
+      "purpose": "Duplicate keys are rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_configuration_studio_hardening.py::test_launch_rejects_marker_when_changing_critical_paths": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_launch_rejects_marker_when_changing_critical_paths",
+      "purpose": "Launch rejects marker when changing critical paths",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_configuration_studio_hardening.py::test_inspection_honors_effective_paths": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_inspection_honors_effective_paths",
+      "purpose": "Inspection honors effective paths",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_configuration_studio_hardening.py::test_validated_launch_is_exact_normalized_snapshot": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_validated_launch_is_exact_normalized_snapshot",
+      "purpose": "Validated launch is exact normalized snapshot",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 103
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
