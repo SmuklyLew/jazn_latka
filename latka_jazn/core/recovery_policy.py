@@ -9,6 +9,28 @@ if TYPE_CHECKING:
     from latka_jazn.core.engine import JaznEngine
 
 
+
+def _suppress_internal_handler_evidence(state: TurnPipelineState, engine: JaznEngine) -> None:
+    """Do not leak an internal handler evidence draft as user-facing speech."""
+    handler_data = getattr(state.handler_result, "data", {})
+    if not (
+        isinstance(handler_data, dict)
+        and handler_data.get("requires_model_language_realization") is True
+        and str(state.body or "").strip() == str(state.handler_result.body or "").strip()
+    ):
+        return
+    state.body = "Nie udało mi się przygotować zweryfikowanej odpowiedzi z materiału pamięci w tej turze."
+    state.decision_dict["fallback_classification"] = "cannot_answer_directly"
+    state.decision_dict["model_generated"] = False
+    state.decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
+    state.answer_validation = engine.runtime_answer_validator.validate(
+        user_text=state.request.text,
+        body=state.body,
+        route=str(state.decision_dict.get("route") or ""),
+        detected_intent=str(state.detected_dialogue_intent),
+    )
+
+
 class RecoveryPolicy:
     """Turn-local recovery policy over the existing runtime services."""
 
@@ -119,24 +141,7 @@ class RecoveryPolicy:
                 state.decision_dict["requires_host_model"] = False
                 state.decision_dict["runtime_answer_quality"] = "topic_aligned"
                 state.answer_validation = state.first_validation
-            # A handler evidence draft is internal context, never an accepted
-            # visible answer when language realization did not succeed.
-            handler_data = getattr(state.handler_result, "data", {})
-            if (
-                isinstance(handler_data, dict)
-                and handler_data.get("requires_model_language_realization") is True
-                and str(state.body or "").strip() == str(state.handler_result.body or "").strip()
-            ):
-                state.body = "Nie udało mi się przygotować zweryfikowanej odpowiedzi z materiału pamięci w tej turze."
-                state.decision_dict["fallback_classification"] = "cannot_answer_directly"
-                state.decision_dict["model_generated"] = False
-                state.decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
-                state.answer_validation = engine.runtime_answer_validator.validate(
-                    user_text=state.request.text,
-                    body=state.body,
-                    route=str(state.decision_dict.get("route") or ""),
-                    detected_intent=str(state.detected_dialogue_intent),
-                )
+            _suppress_internal_handler_evidence(state, engine)
             state.body, state.continuity_badge_report = engine.continuity_badge_policy.apply(state.body, state.decision_dict)
         else:
             state.synthesis = engine.runtime_response_synthesizer.synthesize(
