@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.13 keeps phase-1 and phase-2 host authority/tool policy consistent.
-# Host-generated candidates fail closed without verified policy binding.
-DISTRIBUTION_VERSION = "16.3.25.5.115.13"
-PACKAGE_VERSION = "16.3.25.5.115.13"
-PACKAGE_RELEASE_NAME = "host-turn-contract-finalization-convergence"
+# v115.14 separates declarative runtime failure reports and read-only code
+# audits from authorized system writes; host finalization remains fail-closed.
+DISTRIBUTION_VERSION = "16.3.25.5.115.14"
+PACKAGE_VERSION = "16.3.25.5.115.14"
+PACKAGE_RELEASE_NAME = "dialogue-intent-finalization-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

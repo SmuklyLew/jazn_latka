@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
 from latka_jazn.core.memory_intent_contract import MEMORY_EXPERIENCE_INTENTS
+from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("turn_response_policy")
@@ -101,7 +102,7 @@ class TurnResponsePolicy:
                 source_boundary_required=memory_required,
                 max_meta_technicality="medium" if architecture_requested else "low",
             )
-        if intent in {"ordinary_conversation", "standalone_greeting", "ordinary_workday_report", "sleep_closure_statement", "positive_feedback_current_turn"}:
+        if intent in {"ordinary_conversation", "standalone_greeting", "ordinary_workday_report", "sleep_closure_statement", "positive_feedback_current_turn", "runtime_failure_report"}:
             return cls(
                 intent=intent, route=route, answer_kind="natural_dialogue",
                 allow_memory_content=False, allow_architecture_explanation=False,
@@ -159,7 +160,8 @@ class TurnResponsePolicy:
             return cls(
                 intent=intent, route=route, answer_kind="system_repair_or_diagnostic",
                 allow_architecture_explanation=True,
-                required_components=["problem", "target_files", "code_steps", "tests", "acceptance_criteria"],
+                # Same component contract is used by RuntimeAnswerValidator.
+                required_components=RouteRegistry().required_components_for(intent),
                 max_meta_technicality="high",
             )
         if intent in {"runtime_source_question", "runtime_exact_quote_request"}:
