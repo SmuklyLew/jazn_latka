@@ -21,7 +21,7 @@ class ValidationPipeline:
         if state.model_synthesis.used and state.model_synthesis.adapter_response:
             state.first_validation = engine.runtime_answer_validator.validate_model_candidate(
                 user_text=state.request.text,
-                response=state.model_synthesis.adapter_response,
+                response={**state.model_synthesis.adapter_response, "text": state.body},
                 route=str(state.decision_dict.get("route") or ""),
                 detected_intent=str(state.detected_dialogue_intent),
                 template_origin=state.template_origin,

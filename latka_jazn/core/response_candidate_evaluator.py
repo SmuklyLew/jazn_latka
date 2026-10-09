@@ -61,6 +61,8 @@ def evaluate_response_candidate(
 
     if not text.strip():
         violations.append("empty_candidate_text")
+    if "materiał dowodowy do naturalnej odpowiedzi:" in low or "material dowodowy do naturalnej odpowiedzi:" in low:
+        violations.append("internal_memory_evidence_not_visible")
     if any(_fold(marker) in low for marker in BIOLOGICAL_CLAIM_MARKERS):
         violations.append("biological_or_phenomenal_claim")
     if any(_fold(marker) in low for marker in STALE_ROUTE_MARKERS) and candidate.source != "runtime_fallback":
@@ -157,7 +159,11 @@ def select_best_candidate(candidates: list[ResponseCandidate], evaluations: list
         if by_id.get(candidate.candidate_id) and by_id[candidate.candidate_id].accepted
     ]
     if accepted:
-        return max(accepted, key=lambda candidate: by_id[candidate.candidate_id].score)
+        # For language-realization calls the runtime draft is evidence/fallback,
+        # never a substitute for an independently accepted model candidate.
+        model_candidates = [item for item in accepted if item.source == "model_adapter"]
+        ranked = model_candidates if model_candidates else accepted
+        return max(ranked, key=lambda candidate: by_id[candidate.candidate_id].score)
     return ResponseCandidate(
         candidate_id="all_candidates_rejected_safe_fallback",
         text="Nie mam bezpiecznej, zrodlowo ugruntowanej odpowiedzi dla tej tury.",

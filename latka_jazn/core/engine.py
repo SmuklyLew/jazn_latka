@@ -2220,12 +2220,14 @@ class JaznEngine:
         model_synthesis: Any,
         adapter_status: dict[str, Any],
         can_generate_model_guided_speech: bool,
+        adapter: Any | None = None,
     ) -> tuple[dict[str, Any], bool]:
         decision_dict["model_guided_synthesis"] = model_synthesis.to_dict()
         decision_dict["model_generated"] = model_synthesis.used
+        turn_adapter = adapter if adapter is not None else self.model_adapter
         post_generation_status = (
-            self.model_adapter.describe()
-            if hasattr(self.model_adapter, "describe")
+            turn_adapter.describe()
+            if hasattr(turn_adapter, "describe")
             else adapter_status
         )
         if model_synthesis.used:

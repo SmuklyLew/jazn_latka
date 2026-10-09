@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
+from latka_jazn.core.message_envelope import clean_model_generated_body
 
 from dataclasses import asdict, is_dataclass
 import re
@@ -158,4 +158,4 @@ def _declared_memory_item_ids(response: Any, payload: dict[str, Any]) -> list[st
 
 
 def _clean_model_text(text: str) -> str:
-    return strip_recognized_visible_envelope(text)
+    return clean_model_generated_body(text)

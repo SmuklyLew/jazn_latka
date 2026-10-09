@@ -9,6 +9,8 @@ from dataclasses import dataclass, asdict
 from typing import TYPE_CHECKING, Any
 from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 from latka_jazn.core.turn_pipeline_support import _sync_conversation_decision_body
+from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
+from latka_jazn.core.model_executor_preflight import resolve_model_executor
 
 if TYPE_CHECKING:
     from latka_jazn.core.engine import JaznEngine
@@ -51,14 +53,28 @@ class ResponsePipeline:
 
     def produce(self, state: TurnPipelineState) -> None:
         engine = self.engine
-        state.adapter_status, state.model_executor, state.can_generate_model_guided_speech = engine._model_executor_contract(state.decision_dict)
+        state.speech_adapter, speech_status = build_speech_adapter_for_turn(
+            engine.config,
+            client_context=state.request.client_context,
+            fallback_adapter=engine.model_adapter,
+            probe_local=False,
+        )
+        state.adapter_status = state.speech_adapter.describe() if hasattr(state.speech_adapter, "describe") else {}
+        state.model_executor = resolve_model_executor(state.speech_adapter)
+        state.can_generate_model_guided_speech = state.model_executor.executor == "local_model"
+        state.decision_dict.update(
+            model_executor_preflight=state.model_executor.to_dict(),
+            model_guided_speech_status=speech_status.to_dict(),
+            can_generate_model_guided_speech=state.can_generate_model_guided_speech,
+            model_guided_retry_limit=1 if state.model_executor.retry_allowed else 0,
+        )
         state.decision_dict["model_guided_retry_count"] = 0
         state.response_plan = self.build_plan(state)
         state.decision_dict["response_plan"] = state.response_plan.to_dict()
         if state.turn_context is not None:
             state.turn_context.start_stage("synthesis")
         state.model_synthesis = engine.model_guided_response_synthesizer.synthesize(
-            adapter=engine.model_adapter,
+            adapter=state.speech_adapter,
             user_text=state.request.text,
             draft_body=state.decision.body,
             detected_intent=str(state.detected_dialogue_intent),
@@ -73,6 +89,7 @@ class ResponsePipeline:
             model_synthesis=state.model_synthesis,
             adapter_status=state.adapter_status,
             can_generate_model_guided_speech=state.can_generate_model_guided_speech,
+            adapter=state.speech_adapter,
         )
         state.envelope.attach_conversation_decision(state.decision_dict)
         state.body = engine.guard.enforce(state.decision.body.strip())

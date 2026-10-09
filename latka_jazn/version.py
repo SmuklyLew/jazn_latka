@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.10 adds non-blocking host stdout backpressure for large CLI JSON.
-# Finalization and request lineage remain unchanged.
-DISTRIBUTION_VERSION = "16.3.25.5.115.10"
-PACKAGE_VERSION = "16.3.25.5.115.10"
-PACKAGE_RELEASE_NAME = "host-nonblocking-cli-output-recovery"
+# v115.11 restores per-turn language adapter ownership, model-first safe selection,
+# provenance-safe candidate diagnostics and visible-envelope hygiene.
+DISTRIBUTION_VERSION = "16.3.25.5.115.11"
+PACKAGE_VERSION = "16.3.25.5.115.11"
+PACKAGE_RELEASE_NAME = "turn-candidate-finalization-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
