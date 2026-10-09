@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.12",
-  "active_definition_count": 2067,
+  "system_version": "16.3.25.5.115.13",
+  "active_definition_count": 2072,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6233,7 +6233,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 135
+      "line": 141
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_forbidden_host_voice_gets_one_retry_then_fails_closed": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -6260,7 +6260,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 178
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_malformed_runtime_envelope_gets_one_retry_then_body_only_succeeds": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -6287,7 +6287,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 204
+      "line": 210
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_retry_preserves_memory_context_and_web_run_provenance": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
@@ -6314,7 +6314,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 244
+      "line": 250
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -18320,6 +18320,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 56
+    },
+    "tests/test_host_turn_finalization_contract_regression.py::test_phase1_synthesizer_resolves_installed_overlay_after_import": {
+      "path": "tests/test_host_turn_finalization_contract_regression.py",
+      "name": "test_phase1_synthesizer_resolves_installed_overlay_after_import",
+      "purpose": "Phase1 synthesizer resolves installed overlay after import",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.turn_authority_runtime_overlay",
+        "latka_jazn.core.turn_pipeline_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_host_turn_finalization_contract_regression.py::test_missing_or_malformed_policy_fails_closed_in_both_phases": {
+      "path": "tests/test_host_turn_finalization_contract_regression.py",
+      "name": "test_missing_or_malformed_policy_fails_closed_in_both_phases",
+      "purpose": "Missing or malformed policy fails closed in both phases",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.turn_authority_runtime_overlay",
+        "latka_jazn.core.turn_pipeline_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_host_turn_finalization_contract_regression.py::test_exact_runtime_final_does_not_require_host_tool_policy": {
+      "path": "tests/test_host_turn_finalization_contract_regression.py",
+      "name": "test_exact_runtime_final_does_not_require_host_tool_policy",
+      "purpose": "Exact runtime final does not require host tool policy",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.turn_authority_runtime_overlay",
+        "latka_jazn.core.turn_pipeline_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_host_turn_finalization_contract_regression.py::test_phase2_evaluator_dispatch_is_late_bound": {
+      "path": "tests/test_host_turn_finalization_contract_regression.py",
+      "name": "test_phase2_evaluator_dispatch_is_late_bound",
+      "purpose": "Phase2 evaluator dispatch is late bound",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.turn_authority_runtime_overlay",
+        "latka_jazn.core.turn_pipeline_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_host_turn_finalization_contract_regression.py::test_contract_index_paths_are_real": {
+      "path": "tests/test_host_turn_finalization_contract_regression.py",
+      "name": "test_contract_index_paths_are_real",
+      "purpose": "Contract index paths are real",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.turn_authority_runtime_overlay",
+        "latka_jazn.core.turn_pipeline_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
     },
     "tests/test_html_memory_ingest.py::test_html_ingest_dry_run_does_not_create_database": {
       "path": "tests/test_html_memory_ingest.py",

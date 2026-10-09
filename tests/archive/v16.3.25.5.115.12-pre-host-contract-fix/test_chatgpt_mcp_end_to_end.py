@@ -33,12 +33,6 @@ from latka_jazn.core.host_response_candidate_guard import (
 from latka_jazn.mcp.tools import jazn_finalize_reply, jazn_generate_visible_reply
 
 
-@pytest.fixture(autouse=True)
-def _isolate_host_level_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Give each test a distinct host workspace even with the same turn id."""
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
-
-
 SAMPLE = datetime(2026, 8, 6, 14, 0, tzinfo=timezone.utc)
 HEADER = f"🕒 {SAMPLE.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
 

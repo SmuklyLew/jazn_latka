@@ -10,10 +10,11 @@ Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i pozi
 
 1. [`../AGENTS.md`](../AGENTS.md) — router instrukcji.
 2. [`project/CURRENT_STATE.md`](project/CURRENT_STATE.md) — krótki overlay rzeczywistego stanu projektu.
-3. [`plans/README.md`](plans/README.md) — kanoniczna mapa aktywnych planów.
-4. [`plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md) — nadrzędna roadmapa v16.3.25.4→v17.
-5. [`plans/CURRENT_STEP.md`](plans/CURRENT_STEP.md) — bieżący legalny krok.
-6. [`reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`](reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md) — rzeczywisty przebieg udanego bootstrapu SYSTEM-u na hoście ChatGPT 2026-10-05, wraz z fail-closed odrzuceniem MEMORY.
+3. [`runtime/TURN_FINALIZATION_CONTRACTS.md`](runtime/TURN_FINALIZATION_CONTRACTS.md) — jeden indeks aktywnych kontraktów generowania, narzędzi, lineage, finalizacji i testów.
+4. [`plans/README.md`](plans/README.md) — kanoniczna mapa aktywnych planów.
+5. [`plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md`](plans/V16_3_25_4_TO_V17_MEMORY_AFFECT_ROADMAP.md) — nadrzędna roadmapa v16.3.25.4→v17.
+6. [`plans/CURRENT_STEP.md`](plans/CURRENT_STEP.md) — bieżący legalny krok.
+7. [`reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md`](reports/CHATGPT_LIVE_BOOTSTRAP_RECOVERY_2026_10_05.md) — rzeczywisty przebieg udanego bootstrapu SYSTEM-u na hoście ChatGPT 2026-10-05, wraz z fail-closed odrzuceniem MEMORY.
 
 ## Aktywna warstwa planistyczna
 

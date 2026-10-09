@@ -22,6 +22,7 @@ class TurnPipelineContract:
     runtime_owns_turn: bool
     stages: dict[str, str]
     tool_policy: dict[str, Any]
+    host_generation_required: bool = False
     private_chain_of_thought_persisted: bool = False
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = (
@@ -47,12 +48,24 @@ def build_turn_pipeline_contract(
     model_context = _mapping(context.get("model_context"))
     thought = _mapping(model_context.get("operational_thought_frame"))
     tool_policy = _mapping(context.get("host_tool_turn_policy"))
+    policy_required_true = (
+        "runtime_owns_turn",
+        "tool_results_cannot_be_voice_source",
+        "finalization_required_after_tool_use",
+        "same_turn_resume_required",
+        "accepted_visible_turn_required",
+        "message_envelope_required",
+    )
+    policy_complete = (
+        all(tool_policy.get(key) is True for key in policy_required_true)
+        and tool_policy.get("tool_output_may_be_visible_without_runtime_finalization") is False
+    )
     stages = {
         "input_bound": "complete",
         "runtime_routing": "complete",
         "identity_context": "complete" if re.fullmatch(r"[0-9a-f]{64}", str(identity_canon_sha256 or "")) else "blocked",
         "operational_reasoning_plan": "complete" if thought else "degraded",
-        "tool_authorization": "complete" if tool_policy.get("runtime_owns_turn") is True else "degraded",
+        "tool_authorization": "complete" if policy_complete else "degraded",
         "candidate_generation": "host_pending" if requires_host_generation else "complete",
         "candidate_evaluation": "host_pending" if requires_host_generation else "complete",
         "runtime_finalization": "host_pending" if requires_host_generation else ("complete" if runtime_final_available else "blocked"),
@@ -66,6 +79,7 @@ def build_turn_pipeline_contract(
         runtime_owns_turn=True,
         stages=stages,
         tool_policy=tool_policy,
+        host_generation_required=requires_host_generation,
     ).to_dict()
 
 
@@ -96,7 +110,30 @@ def validate_turn_pipeline_contract(value: Any) -> dict[str, Any]:
     if stages.get("visible_reply_authority") == "complete" and stages.get("runtime_finalization") != "complete":
         violations.append("visible_reply_authorized_before_runtime_finalization")
     policy = _mapping(payload.get("tool_policy"))
-    if policy and policy.get("tool_results_cannot_be_voice_source") is not True:
+    # Runtime-exact replies need no host tool policy. Host-generated candidates
+    # do: omission must never pass the phase-1 gate or disappear at phase-2.
+    host_generation_required = payload.get("host_generation_required") is True or (
+        stages.get("candidate_generation") == "host_pending"
+    )
+    if host_generation_required:
+        if not policy:
+            violations.append("host_tool_turn_policy_missing")
+        else:
+            for key in (
+                "runtime_owns_turn",
+                "tool_results_cannot_be_voice_source",
+                "finalization_required_after_tool_use",
+                "same_turn_resume_required",
+                "accepted_visible_turn_required",
+                "message_envelope_required",
+            ):
+                if policy.get(key) is not True:
+                    violations.append(f"host_tool_policy_requirement_missing:{key}")
+            if policy.get("tool_output_may_be_visible_without_runtime_finalization") is not False:
+                violations.append("host_tool_policy_may_bypass_finalization")
+        if stages.get("tool_authorization") != "complete":
+            violations.append("host_tool_authorization_incomplete")
+    elif policy and policy.get("tool_results_cannot_be_voice_source") is not True:
         violations.append("tool_voice_boundary_missing")
     return {
         "ok": not violations,

@@ -318,6 +318,18 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         result, errors = original_persist(**kwargs)
         if result is None or errors:
             return result, errors
+        # A bounded regeneration is NOT an accepted visible answer. The
+        # transactional finalizer already kept it in phase-1; return it for
+        # the same-turn retry rather than attaching a final-authority receipt
+        # to an empty (not yet finalized) text.
+        regeneration = _mapping(result.get("host_regeneration"))
+        regenerated_bridge = _mapping(result.get("chatgpt_host_bridge"))
+        if (
+            regeneration.get("regenerate") is True
+            and regenerated_bridge.get("phase") == "host_visible_generation_requested"
+            and not result.get("final_visible_text")
+        ):
+            return result, errors
         payload = _mapping(kwargs.get("payload"))
         config = kwargs.get("config")
         turn_id = str(payload.get("turn_id") or "")
@@ -335,7 +347,7 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
             user_text_sha256=str(binding.get("user_text_sha256") or ""),
             identity_canon_sha256=identity_hash,
             host_generation_context={"host_tool_turn_policy": tool_policy},
-            requires_host_generation=False,
+            requires_host_generation=True,
             runtime_final_available=True,
         )
         pipeline = finalize_turn_pipeline_contract(pipeline)

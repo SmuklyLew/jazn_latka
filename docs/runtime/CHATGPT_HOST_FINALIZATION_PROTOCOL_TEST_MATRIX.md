@@ -1,5 +1,7 @@
 # ChatGPT host finalization verification matrix
 
+Pełna nawigacja po implementacji i jej kontraktach: [Indeks kontraktów tury i finalizacji](TURN_FINALIZATION_CONTRACTS.md).
+
 | Boundary | Expected behavior | Automated evidence |
 |---|---|---|
 | Daemon authentication | Every gateway request carries `X-JAZN-Daemon-Token`; missing capability fails closed | `test_gateway_sends_private_daemon_capability_token` |

@@ -12,7 +12,17 @@ from latka_jazn.core.chatgpt_host_pending_store import (
 )
 from latka_jazn.core.host_regeneration_policy import decide_host_regeneration
 from latka_jazn.core.epistemic_evidence import host_tool_attestations_to_external_evidence
-from latka_jazn.core.host_response_candidate_guard import evaluate_host_response_candidate
+from latka_jazn.core import host_response_candidate_guard
+
+
+def evaluate_host_response_candidate(**kwargs: Any) -> dict[str, Any]:
+    """Resolve the installed authority guard at call time.
+
+    Keep this narrow shim for callers/tests injecting a phase-2 validator, while
+    avoiding a stale function imported before turn-authority overlay setup.
+    """
+    return host_response_candidate_guard.evaluate_host_response_candidate(**kwargs)
+
 from latka_jazn.core.finalization_service import FinalizationState
 from latka_jazn.version import schema_version
 
