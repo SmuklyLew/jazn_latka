@@ -219,6 +219,7 @@ class DesktopWorkspace:
         self._page = "home"
         self._fields: dict[str, tk.StringVar] = {}
         self._settings_fields: dict[str, tk.Variable] = {}
+        self._runtime_vars: dict[str, tk.Variable] = {}
         self.state = StudioState(
             database=Path.home() / ".jazn" / CANONICAL_DATABASE_NAME,
             project_root=project_root, project=project, tool_root=self.tool_root,
@@ -465,8 +466,7 @@ class DesktopWorkspace:
         grid.columnconfigure(1, weight=1)
         self._action_row(
             ("Zapisz ścieżki projektu", self._save_paths, False),
-            ("Sprawdź preflight", lambda: self.workflows._controller().preflight() and
-             self.dialogs.message("PREFLIGHT", _pretty(self.workflows._controller().preflight())), True),
+            ("Sprawdź preflight", self._show_preflight, True),
         )
         self._label(self.content,
                     "Źródła i katalog odbudowy muszą być rozdzielone. Zapis ścieżek nie uruchamia importu ani aktywacji.",
@@ -523,10 +523,40 @@ class DesktopWorkspace:
         self._card("Źródła ChatGPT, dzienniki, muzyka, stare bazy",
                    "Import zachowuje dane źródłowe i proweniencję, nie aktywuje L2/L3.")
         self._action_row(
-            ("Import z projektu / plików", self.workflows.import_hub, False),
-            ("Sprawdź i edytuj źródła", self.workflows.sources_hub, False),
-            ("Plan odbudowy bez zapisu", lambda: self.workflows.plan(compare=False), True),
+            ("Import źródeł projektu", self._import_project, False),
+            ("Wybierz pliki", self._import_files, False),
+            ("Migracja starych baz — zaawansowane", self.workflows.import_hub, False),
         )
+        self._action_row(("Przejrzyj role źródeł", self.workflows.sources_hub, False),
+                         ("Plan bez zapisu", lambda: self.workflows.plan(compare=False), True))
+
+    def _import_project(self) -> None:
+        project = self._require_project()
+        paths = [Path(item.path) for item in project.enabled_sources()
+                 if item.pipeline == "memory_rebuild"]
+        self._import_selected(paths)
+
+    def _import_files(self) -> None:
+        paths = filedialog.askopenfilenames(
+            parent=self.root, title="Wybierz źródła do importu",
+            filetypes=[("Eksporty i źródła", "*.json *.jsonl *.ndjson *.zip *.sqlite *.sqlite3 *.html"),
+                       ("Wszystkie pliki", "*.*")])
+        self._import_selected([Path(item) for item in paths])
+
+    def _import_selected(self, paths: Sequence[Path]) -> None:
+        if not paths:
+            self.dialogs.message("Brak źródeł", "Wybierz co najmniej jeden plik.")
+            return
+        if not self.dialogs.confirm(
+            "Import do L0", f"Importować {len(paths)} źródeł do bazy:\n{self.state.database}\n"
+            "Zapis przyrostowy nie aktywuje wspomnień. Kontynuować?"
+        ):
+            return
+        def work() -> None:
+            result = UnifiedMemoryDatabase(self.state.database).import_sources(
+                paths, full_validation=True)
+            self.dialogs.message("WYNIK IMPORTU", _pretty(result))
+        self._execute("Import do kanonicznego L0", work, threaded=True)
 
     def _page_affect(self) -> None:
         self._card("Emocje — źródła i modelowane stany",
@@ -558,13 +588,16 @@ class DesktopWorkspace:
                        self._execute(f"Protokół {p}", lambda: _run_test(self.state, self.dialogs, p),
                                      threaded=True)).pack(side="right", padx=4)
 
+    def _show_preflight(self) -> None:
+        report = self.workflows._controller().preflight()
+        self.dialogs.message("PREFLIGHT", _pretty(report))
+
     def _page_rebuild(self) -> None:
         self._card("Kontrolowana odbudowa",
                    "Najpierw wymagany jest preflight, następnie plan. Każda operacja zapisująca "
                    "wymaga osobnego tokenu potwierdzenia. Zabezpieczeń nie można wyłączyć.")
         self._action_row(
-            ("Sprawdź preflight", lambda: self.dialogs.message("PREFLIGHT",
-                _pretty(self.workflows._controller().preflight())), True),
+            ("Sprawdź preflight", self._show_preflight, True),
             ("Pokaż plan bez zapisu", lambda: self.workflows.plan(compare=False), True),
             ("Porównaj z baseline", lambda: self.workflows.plan(compare=True), True),
         )
@@ -597,10 +630,38 @@ class DesktopWorkspace:
                              ("Zaawansowane ustawienia", lambda: self.state.edit_project_settings(), False))
         else:
             self._label(self.content, "Najpierw wybierz projekt.", note=True)
+        self._label(self.content, "Retrieval / indeksowanie / embeddingi")
+        current = self.state.runtime_settings
+        form = ttk.Frame(self.content)
+        form.pack(fill="x", pady=8)
+        fields: tuple[tuple[str, str, Any], ...] = (
+            ("retrieval_limit", "Limit wyników Recall (1–500)", tk.StringVar(value=str(current.retrieval_limit))),
+            ("min_lexical_score", "Minimalny wynik leksykalny (0–1)", tk.StringVar(value=str(current.min_lexical_score))),
+            ("embeddings_enabled", "Opcjonalne embeddingi", tk.BooleanVar(value=current.embeddings_enabled)),
+            ("embedding_model", "Nazwa modelu (wymagana przy embeddingach)", tk.StringVar(value=current.embedding_model or "")),
+        )
+        self._runtime_vars = {key: var for key, _caption, var in fields}
+        for idx, (key, caption, variable) in enumerate(fields):
+            ttk.Label(form, text=caption).grid(row=idx, column=0, sticky="w", padx=(0, 8), pady=5)
+            if key == "embeddings_enabled":
+                widget = ttk.Checkbutton(form, variable=variable)
+            else:
+                widget = ttk.Entry(form, textvariable=variable, width=54)
+            widget.grid(row=idx, column=1, sticky="w", pady=5)
+        self._action_row(("Zapisz ustawienia Recall", self._save_runtime_options, False),)
         self._card("Kontrakt bezpieczeństwa",
-                   "Wymagane są FTS5 i provenance. Automatyczne L2, L3 oraz aktywacja pozostają wyłączone.")
-        self._action_row(("Retrieval i embeddingi", lambda: self.dialogs.message("USTAWIENIA",
-              "Użyj pozycji Zaawansowane ustawienia lub Studio TUI dla pełnych opcji modelu."), False),)
+                   "FTS5 i provenance są obowiązkowe. Automatyczne L2, L3 i aktywacja są zablokowane.")
+
+    def _save_runtime_options(self) -> None:
+        values = self._runtime_vars
+        settings = self.state.runtime_settings.with_overrides(
+            retrieval_limit=int(str(values["retrieval_limit"].get()).strip()),
+            min_lexical_score=float(str(values["min_lexical_score"].get()).strip()),
+            embeddings_enabled=bool(values["embeddings_enabled"].get()),
+            embedding_model=str(values["embedding_model"].get()).strip() or None,
+        )
+        path = self.state.set_runtime(settings)
+        self.dialogs.message("Zapisano ustawienia Recall", str(path))
 
     def _save_options(self) -> None:
         project = self._require_project()
@@ -628,17 +689,23 @@ class DesktopWorkspace:
         self._card("Środowisko", f"Katalog kodu: {self.tool_root}\n"
                    f"Projekt: {self.state.project_root or default_project_root()}\n"
                    f"Ustawienia: {self.state.settings_file}\n"
+                   f"Log: {self.diagnostics.log_path}\n"
                    f"Baza: {self.state.database}\n"
                    f"Pakiet SYSTEM: {PACKAGE_VERSION_FULL}\n"
                    f"Studio: {STUDIO_VERSION}")
         self._card("Zasady", "Gotowość prywatnej pamięci i accepted turn wymagają dowodu runtime. "
                    "Stan GUI i istnienie pliku nie potwierdzają aktywacji pamięci.")
         self._action_row(
-            ("Preflight", lambda: self.dialogs.message("PREFLIGHT", _pretty(
-                self.workflows._controller().preflight())), True),
+            ("Preflight", self._show_preflight, True),
             ("Waliduj bazę", lambda: self.dialogs.message("WALIDACJA",
                 _pretty(UnifiedMemoryDatabase(self.state.database).validate(full=True))), True),
+            ("Odśwież log", lambda: self.open_page("diagnostics"), False),
         )
+        viewer = tk.Text(self.content, font=("Consolas", 9), wrap="word",
+                         background=WHITE, foreground=INK, relief="flat", padx=8, pady=8)
+        viewer.insert("1.0", self.diagnostics.text(limit=80))
+        viewer.configure(state="disabled")
+        viewer.pack(fill="both", expand=True, pady=8)
 
 
 def _pretty(data: Any) -> str:
