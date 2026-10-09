@@ -110,3 +110,10 @@ wymagana jest osobna akceptacja operatora i testy izolowane.
 - Microsoft PowerShell ConvertFrom-Json: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/convertfrom-json
 - SQLite concurrency: https://www.sqlite.org/lockingv3.html
 - PyInstaller operating systems: https://pyinstaller.org/en/stable/
+
+### Natywny smoke-test skompilowanego GUI
+
+Tryb `--gui-smoke` rzeczywiście tworzy `Tk`, `ConfigurationStudio`, otwiera
+wszystkie cztery strony, aktualizuje pętlę układu i zamyka okno. W CI
+uruchamiany jest **zbudowany plik EXE** z obcego katalogu roboczego.
+Nie zastępuje to interaktywnego testu kliknięć ani pełnej sesji Jaźni.
