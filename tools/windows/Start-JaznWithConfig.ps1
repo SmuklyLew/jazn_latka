@@ -1,7 +1,7 @@
 #Requires -Version 7
 <#
-Read a validated, allowlisted profile and run Jaźń with process-scoped
-environment variables. Does not change machine/user environment or active daemon.
+Launch Jaźń with a single Python-validated profile snapshot.
+Never modify global OS settings, MEMORY or the running daemon.
 #>
 [CmdletBinding()]
 param(
@@ -14,13 +14,15 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $profilePath = (Resolve-Path -LiteralPath $Profile).Path
 
-& $Python -X utf8 (Join-Path $root "tools/jazn_config_studio.py") --root $root --check-profile $profilePath
-if ($LASTEXITCODE -ne 0) {
-    throw "Configuration Studio rejected profile; no Jaźń launch."
+# A single read/validate/serialize in Python, no PowerShell file reread.
+$validated = @(& $Python -X utf8 (Join-Path $root "tools/jazn_config_studio.py") --root $root --check-profile $profilePath --emit-validated-env)
+if ($LASTEXITCODE -ne 0 -or $validated.Count -ne 1) {
+    throw "Configuration Studio rejected profile snapshot; no Jaźń launch."
 }
-$config = Get-Content -LiteralPath $profilePath -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($config.schema -ne "jazn_configuration_profile/v1") {
-    throw "Unsupported configuration schema."
+$config = $validated[0] | ConvertFrom-Json -AsHashtable
+if ($config["schema"] -cne "jazn_configuration_profile/v1" -or
+    $config["values"] -isnot [System.Collections.IDictionary]) {
+    throw "Invalid validated snapshot schema."
 }
 $allowed = @(
     "JAZN_RUNTIME_WORKSPACE_DIR", "JAZN_MEMORY_ROOT", "LATKA_NLP_DATA_DIR",
@@ -28,27 +30,27 @@ $allowed = @(
     "JAZN_LEXICAL_RESOURCE_CACHE", "JAZN_MEMORY_MODE", "JAZN_LLM_ROUTE",
     "JAZN_MODEL_ADAPTER", "JAZN_STARTUP_STATUS_MODE", "JAZN_SQLITE_HEALTH_MODE"
 )
-$entries = @($config.values.PSObject.Properties)
+$entries = @($config["values"].GetEnumerator())
 foreach ($entry in $entries) {
-    if ($entry.Name -cnotin $allowed -or $entry.Value -isnot [string]) {
-        throw "Unsupported configuration key or value: $($entry.Name)"
+    if ($entry.Key -cnotin $allowed -or $entry.Value -isnot [string]) {
+        throw "Unexpected entry in validated snapshot."
     }
 }
 if ($DryRun) {
-    Write-Host "Valid profile. No process was started and no variables were changed."
-    Write-Host ("Keys: " + (($entries | ForEach-Object { $_.Name }) -join ", "))
+    Write-Host "Validated one-read profile snapshot. No Jaźń process started."
+    Write-Host ("Keys: " + (($entries | ForEach-Object { $_.Key }) -join ", "))
     return
 }
 $saved = @{}
 foreach ($entry in $entries) {
-    $saved[$entry.Name] = [Environment]::GetEnvironmentVariable($entry.Name, "Process")
+    $saved[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key, "Process")
 }
 $saved["JAZN_ROOT"] = [Environment]::GetEnvironmentVariable("JAZN_ROOT", "Process")
 Push-Location $root
 try {
     [Environment]::SetEnvironmentVariable("JAZN_ROOT", $root, "Process")
     foreach ($entry in $entries) {
-        [Environment]::SetEnvironmentVariable($entry.Name, [string]$entry.Value, "Process")
+        [Environment]::SetEnvironmentVariable($entry.Key, [string]$entry.Value, "Process")
     }
     & $Python -X utf8 (Join-Path $root "run.py") @JaznArguments
     if ($LASTEXITCODE -ne 0) {

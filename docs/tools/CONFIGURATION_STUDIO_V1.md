@@ -1,4 +1,4 @@
-# Jaźń — Studio Konfiguracji 1.0 (SYSTEM v16.3.25.5.115.18)
+# Jaźń — Studio Konfiguracji 1.0 (SYSTEM v16.3.25.5.115.18.1)
 
 ## Przeznaczenie
 
@@ -70,3 +70,50 @@ py -X utf8 run.py doctor --json
 - Python pathlib Path.resolve: https://docs.python.org/3/library/pathlib.html
 - PyInstaller Windows / onedir: https://pyinstaller.org/en/stable/
 - Instrukcje repozytorium: AGENTS.md, AGENTS.codex.md, docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md
+
+## Bezpieczeństwo i akceptacja patcha v115.18.1
+
+- Każdy profil jest odczytywany jako jeden snapshot JSON, z odrzucaniem powtórzonych kluczy.
+  Launcher PowerShell odbiera już zwalidowany JSON z Python i nie otwiera po raz drugi
+  pliku profilu. Zmiana na dysku po walidacji nie podmieni wartości uruchomienia.
+- Edycja profilu używa międzywątkowego i międzyprocesowego
+  `runtime_sqlite_write_guard` Jaźni jako blokady na czas CAS / backup / podmiany.
+  To tylko reuse blokady plikowej; profil pozostaje JSON, nie bazą SQLite.
+- Profil z kolizją cache słownikowego / ustawień z aktualną lub wskazaną MEMORY
+  zostaje odrzucony; dodatkowo chronione są katalogi `core_state`,
+  `daemon`, `supervisor`, `conversation_state` i `runtime_sessions`.
+- Mapa ścieżek korzysta z `default_project_root()`, `resolve_settings_path()`
+  i `polish_nlp_data_root()`, zamiast na stałe wpisanych ścieżek.
+- Gdy profil zmienia `JAZN_MEMORY_ROOT` lub `JAZN_RUNTIME_WORKSPACE_DIR`,
+  a w bieżącym workspace znajduje się znacznik aktywnego runtime,
+  launcher odmawia uruchomienia. Znacznik nie dowodzi aktywności;
+  przed jego bezpiecznym usunięciem operator musi zweryfikować proces.
+- GUI ostrzega o niezapisanych zmianach, oferuje przywrócenie poprzedniego profilu
+  oraz kopiuje polecenie z bezwzględną ścieżką do launchera PowerShell.
+- `restore_previous_profile` modyfikuje wyłącznie profil po potwierdzeniu
+  zgodności SHA; nie jest operacją rollback bazy MEMORY ani runtime.
+- Test Windows obejmuje także komendę `run.py --version` z uruchomienia
+  przez profil. Nie jest to test rozmowy z LLM ani prywatnej MEMORY.
+
+### Ograniczenia
+
+To nadal kontroler profili **przyszłych procesów**, a nie konfigurator
+żywego daemona. Zmienione ścieżki pamięci nie migrują danych. Zmiana profilu
+nie gwarantuje poprawności żadnego zewnętrznego backendu Ollama/MCP ani
+akceptacji widocznej tury. Przed produkcyjnym importem prywatnych danych
+wymagana jest osobna akceptacja operatora i testy izolowane.
+
+### Dokumentacja normatywna
+
+- Python os.replace: https://docs.python.org/3/library/os.html#os.replace
+- Python Tkinter threading: https://docs.python.org/3/library/tkinter.html#threading-model
+- Microsoft PowerShell ConvertFrom-Json: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/convertfrom-json
+- SQLite concurrency: https://www.sqlite.org/lockingv3.html
+- PyInstaller operating systems: https://pyinstaller.org/en/stable/
+
+### Natywny smoke-test skompilowanego GUI
+
+Tryb `--gui-smoke` rzeczywiście tworzy `Tk`, `ConfigurationStudio`, otwiera
+wszystkie cztery strony, aktualizuje pętlę układu i zamyka okno. W CI
+uruchamiany jest **zbudowany plik EXE** z obcego katalogu roboczego.
+Nie zastępuje to interaktywnego testu kliknięć ani pełnej sesji Jaźni.

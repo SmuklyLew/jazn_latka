@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.18 adds Configuration Studio with validated profiles and Windows EXE.
-# Running daemon and private MEMORY remain outside the editor's write scope.
-DISTRIBUTION_VERSION = "16.3.25.5.115.18"
-PACKAGE_VERSION = "16.3.25.5.115.18"
-PACKAGE_RELEASE_NAME = "configuration-studio-safe-profile-management"
+# v115.18.1 hardens Configuration Studio profiles, path safety, launch and GUI.
+# No private MEMORY contents or active daemon data are included.
+DISTRIBUTION_VERSION = "16.3.25.5.115.18.1"
+PACKAGE_VERSION = "16.3.25.5.115.18.1"
+PACKAGE_RELEASE_NAME = "configuration-studio-profile-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

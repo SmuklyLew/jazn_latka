@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - upgrade/v16.3.25.5.115.16-memory-studio-desktop-workspace
+      - upgrade/v16.3.25.5.115.18-configuration-studio
     paths:
       - "latka_jazn/tools/configuration_studio*.py"
       - "tools/jazn_config_studio.py"
@@ -60,6 +61,7 @@ jobs:
           tools/jazn_config_studio.py
           tests/test_configuration_studio.py
           tests/test_configuration_studio_gui_windows.py
+          tests/test_configuration_studio_hardening.py
 
       - name: Test model and actual Windows Tk controls
         shell: pwsh
@@ -67,6 +69,7 @@ jobs:
           python -X utf8 -m pytest -q -ra --tb=short
           tests/test_configuration_studio.py
           tests/test_configuration_studio_gui_windows.py
+          tests/test_configuration_studio_hardening.py
 
       - name: Check CLI read-only path map
         shell: pwsh
@@ -112,6 +115,14 @@ jobs:
           $process = Start-Process -FilePath $exe -ArgumentList @("--smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
           if ($process.ExitCode -ne 0) { throw "EXE smoke exit code $($process.ExitCode)" }
 
+      - name: Smoke-test actual packaged Tk screens
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "./dist/JaznConfigurationStudio/JaznConfigurationStudio.exe").Path
+          $env:JAZN_ROOT = (Resolve-Path ".").Path
+          $process = Start-Process -FilePath $exe -ArgumentList @("--gui-smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+          if ($process.ExitCode -ne 0) { throw "Packaged Tk GUI smoke exit code $($process.ExitCode)" }
+
       - name: Exercise profile launcher without starting Jaźń
         shell: pwsh
         run: |
@@ -119,6 +130,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Cannot create isolated profile." }
           $profile = (Resolve-Path "../workspace_runtime/configuration_studio/profiles/operator.json").Path
           ./tools/windows/Start-JaznWithConfig.ps1 -Profile $profile -DryRun
+
+      - name: Launch real run.py version fast path with checked profile
+        shell: pwsh
+        run: |
+          $profile = (Resolve-Path "../workspace_runtime/configuration_studio/profiles/operator.json").Path
+          ./tools/windows/Start-JaznWithConfig.ps1 -Profile $profile -JaznArguments "--version"
+
 
       - name: Publish verified EXE
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

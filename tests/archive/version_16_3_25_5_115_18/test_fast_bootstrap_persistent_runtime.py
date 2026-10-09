@@ -260,5 +260,5 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.18.1"
-    assert PACKAGE_RELEASE_NAME == "configuration-studio-profile-hardening"
+    assert PACKAGE_VERSION == "16.3.25.5.115.18"
+    assert PACKAGE_RELEASE_NAME == "configuration-studio-safe-profile-management"
