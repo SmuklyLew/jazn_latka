@@ -49,9 +49,18 @@ def build_window_spec(*, tool_root: Path) -> CommandStudioSpec:
     return build_studio_spec(tool_root=tool_root)
 
 
-def run_window(*, tool_root: Path, diagnostics: DiagnosticsHub) -> int:
+def run_window(
+    *, tool_root: Path, diagnostics: DiagnosticsHub,
+    project_root: Path | None = None,
+    project: str | None = None,
+    settings_path: Path | None = None,
+) -> int:
     from .ui_desktop import run_desktop
-    return run_desktop(tool_root=Path(tool_root), diagnostics=diagnostics)
+
+    return run_desktop(
+        tool_root=Path(tool_root), diagnostics=diagnostics,
+        project_root=project_root, project=project, settings_path=settings_path,
+    )
 
 
 __all__ = ["build_studio_spec", "build_window_spec", "run_window"]

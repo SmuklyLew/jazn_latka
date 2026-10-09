@@ -82,7 +82,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             def launch() -> int:
                 if ui_mode == "window":
                     from .ui_window import run_window
-                    return run_window(tool_root=tool_root, diagnostics=diagnostics)
+                    return run_window(tool_root=tool_root, diagnostics=diagnostics, project_root=args.project_root, project=args.project, settings_path=args.settings)
                 return run_studio_v24(project_root=args.project_root, project=args.project, tool_root=tool_root, text_ui=(ui_mode == "text"), settings_path=args.settings)
             splash.done(); return run_guarded(launch, diagnostics=diagnostics, app_name="Jaźń - Memory Rebuild")
         if command in UNIFIED_COMMANDS:
