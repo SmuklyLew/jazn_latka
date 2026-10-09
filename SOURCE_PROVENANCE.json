@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3495217cb8b4a3e0a02d9a1b873cf9684ccadaa6",
-    "base_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+    "base_commit": "493bb510941e4d4aa60f3528d3f7666ee2e89cc3",
+    "base_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "493bb510941e4d4aa60f3528d3f7666ee2e89cc3",
