@@ -1,0 +1,128 @@
+name: configuration-studio-windows
+
+on:
+  pull_request:
+    branches:
+      - master
+      - upgrade/v16.3.25.5.115.16-memory-studio-desktop-workspace
+    paths:
+      - "latka_jazn/tools/configuration_studio*.py"
+      - "tools/jazn_config_studio.py"
+      - "tools/windows/*Config*.ps1"
+      - "tools/windows/build_configuration_studio.ps1"
+      - "tests/test_configuration_studio*.py"
+      - ".github/workflows/configuration-studio-windows.yml"
+  push:
+    branches: [master]
+    paths:
+      - "latka_jazn/tools/configuration_studio*.py"
+      - "tools/jazn_config_studio.py"
+      - "tools/windows/*Config*.ps1"
+      - "tools/windows/build_configuration_studio.ps1"
+      - "tests/test_configuration_studio*.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test Studio Python ${{ matrix.python-version }}
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Python ${{ matrix.python-version }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: pwsh
+        run: python -m pip install -e . pytest
+
+      - name: Compile Studio
+        shell: pwsh
+        run: >-
+          python -X utf8 -m compileall -q
+          latka_jazn/tools/configuration_studio.py
+          latka_jazn/tools/configuration_studio_ui.py
+          tools/jazn_config_studio.py
+          tests/test_configuration_studio.py
+          tests/test_configuration_studio_gui_windows.py
+
+      - name: Test model and actual Windows Tk controls
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest -q -ra --tb=short
+          tests/test_configuration_studio.py
+          tests/test_configuration_studio_gui_windows.py
+
+      - name: Check CLI read-only path map
+        shell: pwsh
+        run: |
+          python -X utf8 tools/jazn_config_studio.py --paths-json | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Path map CLI failed." }
+
+      - name: Checkout hygiene
+        shell: pwsh
+        run: |
+          git diff --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  package:
+    name: Build and smoke-test Configuration Studio EXE
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        shell: pwsh
+        run: python -m pip install -e . pyinstaller
+
+      - name: Create EXE
+        shell: pwsh
+        run: ./tools/windows/build_configuration_studio.ps1
+
+      - name: Smoke-test bundled program from unrelated cwd
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "./dist/JaznConfigurationStudio/JaznConfigurationStudio.exe").Path
+          $env:JAZN_ROOT = (Resolve-Path ".").Path
+          $process = Start-Process -FilePath $exe -ArgumentList @("--smoke") -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+          if ($process.ExitCode -ne 0) { throw "EXE smoke exit code $($process.ExitCode)" }
+
+      - name: Exercise profile launcher without starting Jaźń
+        shell: pwsh
+        run: |
+          python -X utf8 -c "from pathlib import Path; from latka_jazn.tools.configuration_studio import save_profile; save_profile(Path.cwd(), {'JAZN_MEMORY_MODE':'off'})"
+          if ($LASTEXITCODE -ne 0) { throw "Cannot create isolated profile." }
+          $profile = (Resolve-Path "../workspace_runtime/configuration_studio/profiles/operator.json").Path
+          ./tools/windows/Start-JaznWithConfig.ps1 -Profile $profile -DryRun
+
+      - name: Publish verified EXE
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: JaznConfigurationStudio-Windows-Python312
+          path: dist/JaznConfigurationStudio/
+          if-no-files-found: error

@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "6230193d39060edeb8b0ac0b812f817dbf9c7c01",
-  "base_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
-  "commit_date": "2026-10-09T18:33:05Z",
+  "base_merge_commit": "493bb510941e4d4aa60f3528d3f7666ee2e89cc3",
+  "base_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
+  "commit_date": "2026-10-09T20:24:19+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-09T18:33:05+00:00",
+  "generated_at_utc": "2026-10-09T18:24:19+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8c0d4f64b9cb710494320760317c62d687af8a25",
+  "git_tree_sha": "06ba37424f387fccfb4e5b7ac4c7d32eb10ecaad",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "6230193d39060edeb8b0ac0b812f817dbf9c7c01",
+    "base_commit": "3495217cb8b4a3e0a02d9a1b873cf9684ccadaa6",
     "base_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "6230193d39060edeb8b0ac0b812f817dbf9c7c01",
-    "source_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix"
+    "source_commit": "493bb510941e4d4aa60f3528d3f7666ee2e89cc3",
+    "source_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "release_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "runtime_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "6230193d39060edeb8b0ac0b812f817dbf9c7c01",
+  "source_commit": "493bb510941e4d4aa60f3528d3f7666ee2e89cc3",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "source_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.17.1-memory-studio-functional-safety-release-fix",
+  "update_version": "16.3.25.5.115.18-configuration-studio-safe-profile-management",
   "version_source": "latka_jazn/version.py"
 }

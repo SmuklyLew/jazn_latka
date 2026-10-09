@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.17.1",
-  "active_definition_count": 2096,
+  "system_version": "16.3.25.5.115.18",
+  "active_definition_count": 2106,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10960,6 +10960,199 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 42
+    },
+    "tests/test_configuration_studio.py::test_snapshot_is_read_only_and_reports_host_separation": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_snapshot_is_read_only_and_reports_host_separation",
+      "purpose": "Snapshot is read only and reports host separation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_configuration_studio.py::test_validated_profile_roundtrip_and_rollback_backup": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_validated_profile_roundtrip_and_rollback_backup",
+      "purpose": "Validated profile roundtrip and rollback backup",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_configuration_studio.py::test_compare_and_swap_rejects_stale_ui": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_compare_and_swap_rejects_stale_ui",
+      "purpose": "Compare and swap rejects stale ui",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_configuration_studio.py::test_invalid_values_fail_closed": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_invalid_values_fail_closed",
+      "purpose": "Invalid values fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_configuration_studio.py::test_no_path_inside_system_or_legacy_workspace": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_no_path_inside_system_or_legacy_workspace",
+      "purpose": "No path inside system or legacy workspace",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_configuration_studio.py::test_profile_rejects_corruption_and_symlink": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_profile_rejects_corruption_and_symlink",
+      "purpose": "Profile rejects corruption and symlink",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_configuration_studio.py::test_memory_and_workspace_cannot_overlap": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_memory_and_workspace_cannot_overlap",
+      "purpose": "Memory and workspace cannot overlap",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_configuration_studio.py::test_profile_inspection_does_not_apply_running_config": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_profile_inspection_does_not_apply_running_config",
+      "purpose": "Profile inspection does not apply running config",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_configuration_studio.py::test_symlink_parent_directory_is_rejected": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_symlink_parent_directory_is_rejected",
+      "purpose": "Symlink parent directory is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
+      "path": "tests/test_configuration_studio_gui_windows.py",
+      "name": "test_real_gui_navigation_and_profile_fields",
+      "purpose": "Real gui navigation and profile fields",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.configuration_studio_ui"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
