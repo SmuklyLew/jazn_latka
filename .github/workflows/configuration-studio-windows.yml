@@ -2,7 +2,9 @@ name: configuration-studio-windows
 
 on:
   pull_request:
-    branches: [master]
+    branches:
+      - master
+      - upgrade/v16.3.25.5.115.16-memory-studio-desktop-workspace
     paths:
       - "latka_jazn/tools/configuration_studio*.py"
       - "tools/jazn_config_studio.py"
