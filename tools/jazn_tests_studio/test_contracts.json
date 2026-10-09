@@ -21868,8 +21868,8 @@
       "description_source": "source_identity",
       "line": 65
     },
-    "tests/test_memory_desktop_workspace_v11516.py::test_window_routes_to_native_canonical_workspace": {
-      "path": "tests/test_memory_desktop_workspace_v11516.py",
+    "tests/test_memory_desktop_workspace.py::test_window_routes_to_native_canonical_workspace": {
+      "path": "tests/test_memory_desktop_workspace.py",
       "name": "test_window_routes_to_native_canonical_workspace",
       "purpose": "Window routes to native canonical workspace",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21881,6 +21881,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.application_shell",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.config",
         "latka_jazn.tools.memory_rebuild_app.models",
@@ -21888,10 +21889,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 16
+      "line": 17
     },
-    "tests/test_memory_desktop_workspace_v11516.py::test_all_major_memory_operator_functions_have_pages": {
-      "path": "tests/test_memory_desktop_workspace_v11516.py",
+    "tests/test_memory_desktop_workspace.py::test_all_major_memory_operator_functions_have_pages": {
+      "path": "tests/test_memory_desktop_workspace.py",
       "name": "test_all_major_memory_operator_functions_have_pages",
       "purpose": "All major memory operator functions have pages",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21903,6 +21904,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.application_shell",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.config",
         "latka_jazn.tools.memory_rebuild_app.models",
@@ -21910,10 +21912,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 30
     },
-    "tests/test_memory_desktop_workspace_v11516.py::test_path_contract_maps_project_without_writing_files": {
-      "path": "tests/test_memory_desktop_workspace_v11516.py",
+    "tests/test_memory_desktop_workspace.py::test_path_contract_maps_project_without_writing_files": {
+      "path": "tests/test_memory_desktop_workspace.py",
       "name": "test_path_contract_maps_project_without_writing_files",
       "purpose": "Path contract maps project without writing files",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21925,6 +21927,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.tools.application_shell",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.config",
         "latka_jazn.tools.memory_rebuild_app.models",
@@ -21932,10 +21935,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 42
     },
-    "tests/test_memory_desktop_workspace_v11516.py::test_source_and_staging_must_not_overlap": {
-      "path": "tests/test_memory_desktop_workspace_v11516.py",
+    "tests/test_memory_desktop_workspace.py::test_source_and_staging_must_not_overlap": {
+      "path": "tests/test_memory_desktop_workspace.py",
       "name": "test_source_and_staging_must_not_overlap",
       "purpose": "Source and staging must not overlap",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21951,6 +21954,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.tools.application_shell",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.config",
         "latka_jazn.tools.memory_rebuild_app.models",
@@ -21958,10 +21962,10 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 59
     },
-    "tests/test_memory_desktop_workspace_v11516.py::test_canonical_paths_cannot_be_blank": {
-      "path": "tests/test_memory_desktop_workspace_v11516.py",
+    "tests/test_memory_desktop_workspace.py::test_canonical_paths_cannot_be_blank": {
+      "path": "tests/test_memory_desktop_workspace.py",
       "name": "test_canonical_paths_cannot_be_blank",
       "purpose": "Canonical paths cannot be blank",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21975,6 +21979,7 @@
         "ValueError"
       ],
       "targets": [
+        "latka_jazn.tools.application_shell",
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.config",
         "latka_jazn.tools.memory_rebuild_app.models",
@@ -21982,7 +21987,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 65
     },
     "tests/test_memory_experience_recall_handler.py::test_memory_experience_intents_use_dedicated_handler": {
       "path": "tests/test_memory_experience_recall_handler.py",
