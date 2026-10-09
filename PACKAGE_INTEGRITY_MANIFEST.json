@@ -3,8 +3,8 @@
   "version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
   "runtime_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
   "package_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-  "generated_at_utc": "2026-10-09T04:05:29+00:00",
-  "updated_at_utc": "2026-10-09T04:05:29+00:00",
+  "generated_at_utc": "2026-10-09T04:07:51+00:00",
+  "updated_at_utc": "2026-10-09T04:07:51+00:00",
   "start_file": "run.py",
   "file_count": 2145,
   "static_file_count": 2145,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2993,
-      "sha256": "9e67ed91e0dcc67214bbcaeb6a380371b48f99dff2c4ee65c918462aad889ed2",
+      "size_bytes": 2998,
+      "sha256": "f9f54de6ed432e9651946e6a58b73bd159a4fa28ea893fd3012a1a6f6f067150",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7004,8 +7004,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 81898,
-      "sha256": "32ce5b8cab1af6467e2664e976d19adb624b2b2bbfac15236c7eb8cb2797c6a4",
+      "size_bytes": 81923,
+      "sha256": "67c2b8b9335ae9747eb198eef75aa50c17c3683ea6c140b0b72c5fa76623ecd9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16300,6 +16300,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_dialogue_intent_finalization_authority.py",
+      "size_bytes": 5672,
+      "sha256": "5046e2585df55d1cae782607653be2a9b0fd9965261f5004dcd1e69708c3b84c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_dialogue_memory_anchor.py",
       "size_bytes": 13287,
       "sha256": "2e53d6a2dd8f95516d1b9e9d37a05f253f09e0e20173e07868eaf8e1be2ce63c",
@@ -18694,15 +18703,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
-      "size_bytes": 5672,
-      "sha256": "5046e2585df55d1cae782607653be2a9b0fd9965261f5004dcd1e69708c3b84c",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -19172,8 +19172,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1945173,
-      "sha256": "82e120a5947a84816197ed5e36d6516865ff33e5af2718a1ecc9f0cf2b7628de",
+      "size_bytes": 1945137,
+      "sha256": "2a223e039a94a5cd6b3079702ef7626118d9e1804e3877863a7947c0c700fcb7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
