@@ -329,9 +329,9 @@ class DialogueIntentClassifier:
         # stem-like markers used elsewhere in the legacy lexicon retain prefix behaviour.
         complete_words = {"dziala", "dzialasz", "uruchomiona", "status", "modul", "runtime", "jazn"}
         if fm == "napraw":
-            # Po złożeniu diakrytyki „naprawdę” staje się „naprawde”.
-            # To słowo nie jest imperatywem ani rdzeniem czasownika „naprawić”.
-            return re.search(r"(?<!\w)napraw(?!de\b)\w*", folded) is not None
+            # The imperative is a complete token. "Naprawić" is an infinitive,
+            # not authorization to modify files or deploy a patch.
+            return re.search(r"(?<!\w)napraw(?!\w)", folded) is not None
         if fm in complete_words:
             return re.search(rf"(?<!\w){re.escape(fm)}(?!\w)", folded) is not None
         if len(fm) <= 4 and fm.isalpha():
@@ -420,6 +420,18 @@ class DialogueIntentClassifier:
         if control_report.quoted_material_masked:
             evidence.append(f"quoted_material_masked:{control_report.masked_span_count}")
         speech=self.speech.detect(control_text); qobj=self.qobj.detect(control_text)
+        # A short failure REPORT is neither a diagnostic question nor a request
+        # to modify a system. Classify it before broad "nie działa" diagnostics.
+        # Use existing report provenance; never claim that the runtime is ready.
+        if speech.speech_act == "statement" and re.fullmatch(
+            r"(?:system\s+)?(?:jazn|latka|runtime)\s+nie\s+dziala\s*[!. ]*",
+            folded,
+        ):
+            return report(
+                norm, folded, 'runtime_failure_report',
+                ['samodzielne zgłoszenie awarii bez pytania lub polecenia wykonania'],
+                0.94, speech_act=speech.speech_act, question_object='runtime_failure',
+            )
         control_creative_report=self.creative.detect(control_text)
         source_creative_report=self.creative.detect(text)
         creative_report=(
@@ -748,6 +760,7 @@ class DialogueIntentClassifier:
             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         completion_update_execution = (
             has_update
+            and (continuation_update_execution or (component_report.explicit_execution and not component_report.diagnostic_only))
             and not component_report.negated_actions
             and (
                 continuation_update_execution

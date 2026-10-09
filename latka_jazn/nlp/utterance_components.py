@@ -88,7 +88,7 @@ _MODAL_DESCRIPTION = (
     "trzeba bedzie", "nalezaloby", "mozna by", "warto bedzie", "w przyszlosci", "plan naprawy", "propozycja zmian"
 )
 _EXECUTION_VERBS = (
-    "zaktualizuj", "aktualizuj", "wdroz", "wprowadz zmiany", "napraw kod", "zrob patch", "przygotuj patch", "zrestartuj", "uruchom ponownie"
+    "zaktualizuj", "aktualizuj", "wdroz", "wprowadz zmiany", "napraw kod", "zrob patch", "przygotuj patch", "przygotuj aktualizacje", "wykonaj aktualizacje", "zrestartuj", "uruchom ponownie"
 )
 _DIAGNOSTIC_MARKERS = (
     "sprawdz", "przeanalizuj", "audyt", "znajdz bledy", "co jest zle", "co trzeba naprawic", "tylko opisz"
@@ -327,7 +327,7 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
             components.append(name)
     token_rules = (
         ("origin_creator", ("stworz", "powstal", "powstalas", "tworc", "urodzil")),
-        ("rights_obligations", ("praw", "obowiaz", "wolno")),
+        ("rights_obligations", ("obowiaz", "wolno")),
         ("history", ("histori", "wczesniejs", "rozwijal")),
         ("preference", ("ulubion", "preferenc", "wolisz")),
         ("introspection", ("refleksj", "zastanawialas", "przeszlosc")),
@@ -336,15 +336,24 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
     for name, tokens in token_rules:
         if name not in components and any(token in folded for token in tokens):
             components.append(name)
+    # "praw" inside "naprawić" must not imply a question about rights.
+    if "rights_obligations" not in components and re.search(r"\bpraw\w*\b", folded):
+        components.append("rights_obligations")
 
     negated: list[str] = []
     for pattern, action in _NEGATION_PATTERNS:
         if re.search(pattern, folded):
             negated.append(action)
 
+    # An infinitive ("naprawić") describes a possible action; it does NOT
+    # authorize a write. Keep direct imperatives ("napraw") as execution signals.
+    # Word boundaries prevent matches in "naprawić", "naprawdę" and filenames.
     explicit_execution = (
-        any(marker in folded for marker in _EXECUTION_VERBS)
-        or re.search(r"\bnapraw(?!de\b)\w*", folded) is not None
+        any(
+            re.search(rf"(?<!\w){re.escape(marker)}(?!\w)", folded)
+            for marker in _EXECUTION_VERBS
+        )
+        or re.search(r"(?<!\w)napraw(?!\w)", folded) is not None
     )
     modal_description = any(marker in folded for marker in _MODAL_DESCRIPTION)
     diagnostic = any(marker in folded for marker in _DIAGNOSTIC_MARKERS)

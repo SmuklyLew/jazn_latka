@@ -39,6 +39,7 @@ class RouteRegistry:
         "self_expression_request": 86, "negative_feedback_current_turn": 86, "negative_feedback_without_update_request": 86, "positive_feedback_current_turn": 65,
         "casual_feedback": 87, "casual_greeting": 62, "expressive_reaction": 61, "contextual_continuation_question": 60, "short_free_dialogue": 59,
         "standalone_greeting": 60,
+        "runtime_failure_report": 86,
         "ordinary_conversation": 10,
     }
     HANDLERS = {
@@ -114,6 +115,7 @@ class RouteRegistry:
         "automotive_warning_light_question": ("practical_advice", "PracticalAdviceHandler"),
         "visual_style_advice": ("practical_advice", "PracticalAdviceHandler"),
         "standalone_greeting": ("greeting", "OrdinaryDialogueHandler"),
+        "runtime_failure_report": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "ordinary_conversation": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
     }
 
@@ -171,8 +173,11 @@ class RouteRegistry:
             return ["exact_runtime_text", "template_origin", "runtime_vs_visible_boundary", "source_origin_detail"]
         if intent == "voice_perspective_diagnostic_request":
             return ["module_or_file", "problem", "change_plan", "regression_test", "source_origin", "first_person_voice_contract"]
-        if intent in {"runtime_behavior_diagnostic_request", "system_diagnostic_question"}:
+        if intent == "runtime_behavior_diagnostic_request":
             return ["module_or_file", "problem", "change_plan", "regression_test", "source_origin"]
+        if intent == "system_diagnostic_question":
+            # Focused diagnostic questions need grounded answers, not a plan.
+            return ["problem", "source_origin"]
         if intent == "module_inventory_request":
             return ["module_or_file", "runtime_status", "truth_boundary", "source_origin"]
         if intent == "system_capability_gap_question":

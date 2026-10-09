@@ -76,6 +76,7 @@ def _request_repair_or_reject(
     violation_codes: list[str],
     error_prefix: str,
     finalization_payload: dict[str, Any] | None,
+    missing_required_components: list[str] | None = None,
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """One fail-closed regeneration owner for semantic and envelope rejection.
 
@@ -99,6 +100,13 @@ def _request_repair_or_reject(
         retry_host_generation_context = json_object(
             generation_context.get('host_generation_context')
         )
+        # Component names come from the trusted runtime validator, never from
+        # candidate prose. Keep guidance bounded and omit private user content.
+        missing_components = list(dict.fromkeys(
+            item for item in (missing_required_components or [])
+            if isinstance(item, str) and 0 < len(item) <= 64
+            and item.replace("_", "").isalnum()
+        ))[:12]
         retry_bridge = {
             'schema_version': schema_version('chatgpt_host_bridge_turn'),
             'phase': 'host_visible_generation_requested',
@@ -142,7 +150,11 @@ def _request_repair_or_reject(
             'max_regeneration_attempts': retry_record.get('max_regeneration_attempts'),
             'regeneration_reason': regeneration.reason,
             'regeneration_violations': list(violation_codes),
-            'repair_guidance': _repair_guidance_for_codes(violation_codes),
+            'repair_guidance': [
+                *_repair_guidance_for_codes(violation_codes),
+                *(["Cover required components: " + ", ".join(missing_components)] if missing_components else []),
+            ],
+            'missing_required_components': missing_components,
         }
         retry_result = {
             'schema_version': schema_version('chatgpt_host_regeneration_requested'),
@@ -233,6 +245,9 @@ def finalize_host_candidate(
             binding=binding, chat_bridge_meta=chat_bridge_meta, contract=contract,
             violation_codes=violations or ["rejected"], error_prefix="host_candidate",
             finalization_payload=None,
+            missing_required_components=list(
+                json_object(semantic_validation.get("runtime_validation")).get("missing_required_components") or []
+            ),
         )
     service.transition(FinalizationState.CANDIDATE_VALIDATED)
     finalization = finalize_host_visible_text(
