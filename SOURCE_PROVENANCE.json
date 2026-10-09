@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "9fbe329b1dc25f5f1390132d8d878e588780a370",
-  "base_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
-  "commit_date": "2026-10-09T17:58:00+02:00",
+  "base_merge_commit": "d916176ff9f4d356f7aa1b7652e58c0a51188d52",
+  "base_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
+  "commit_date": "2026-10-09T16:03:33Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-09T15:58:00+00:00",
+  "generated_at_utc": "2026-10-09T16:03:33+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f9e0261a49aa6c45a76e36bf54c287b2fabba39e",
+  "git_tree_sha": "3f7a1a572a84c1533e0329b6757713dcef90d328",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "9fbe329b1dc25f5f1390132d8d878e588780a370",
-    "source_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence"
+    "source_commit": "d916176ff9f4d356f7aa1b7652e58c0a51188d52",
+    "source_version": "16.3.25.5.115.16-memory-studio-desktop-workspace"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "release_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "runtime_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "9fbe329b1dc25f5f1390132d8d878e588780a370",
+  "source_commit": "d916176ff9f4d356f7aa1b7652e58c0a51188d52",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "source_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "update_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
   "version_source": "latka_jazn/version.py"
 }
