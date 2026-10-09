@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import Mock
+
+from latka_jazn.core.engine import JaznEngine
 
 import pytest
 
@@ -115,7 +118,7 @@ def test_response_pipeline_uses_one_turn_adapter_for_synthesis(monkeypatch):
     state.frame = {}
     state.turn_response_policy = SimpleNamespace(required_components=[], forbidden_topics=[], exact_runtime_required=False, to_dict=lambda: {})
     state.envelope = env
-    ResponsePipeline(engine).produce(state)
+    ResponsePipeline(cast(JaznEngine, engine)).produce(state)
     assert synth.synthesize.call_args.kwargs["adapter"] is adapter
     assert engine._apply_model_synthesis_result.call_args.kwargs["adapter"] is adapter
     assert state.speech_adapter is adapter
