@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-  "runtime_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-  "package_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-  "generated_at_utc": "2026-10-09T04:07:51+00:00",
-  "updated_at_utc": "2026-10-09T04:07:51+00:00",
+  "version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "runtime_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "package_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+  "generated_at_utc": "2026-10-09T05:53:21+00:00",
+  "updated_at_utc": "2026-10-09T05:53:21+00:00",
   "start_file": "run.py",
   "file_count": 2145,
   "static_file_count": 2145,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "96dcfff806043040a23a6d3532a489feb4346e079f0c835bda902ed308b3afbe",
+      "size_bytes": 2990,
+      "sha256": "e15dc68fae311d8c9935c56826da56b26728421ea49530f5692f817a25cf6721",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -336,7 +336,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1726,
-      "sha256": "8908a3e81336e9f4a484fe00351e3dbd4da57830f365304864f1e73a183b6f07",
+      "sha256": "ed747640a4770c363e490b9eacab12a0a988f108b877bd268da6821428422014",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8121,7 +8121,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7007,
-      "sha256": "c387d3c461e0e723463bcf0420e31348a52900d0796c74d54d1ffceb4031da02",
+      "sha256": "adb08b503a11434d85670ce9ad49b7f264cab5c4561ad8ab1242d9828d053bc8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8939,8 +8939,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_bundle.py",
-      "size_bytes": 5005,
-      "sha256": "0b6d6ed981caf61d1ea4c33bfe14e1cc85dbf5c0cbf5ec8b5ccd59cae0b83a66",
+      "size_bytes": 5156,
+      "sha256": "43b0e31a5ec7cda5766ad14db811d86600ecdf67c1aaa7d5553a978ba4b746e4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8948,8 +8948,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_detection.py",
-      "size_bytes": 12525,
-      "sha256": "cc0f81987219b29ea28ff0c48b15222b60ab6f71139317d5486eb1e70235723a",
+      "size_bytes": 12621,
+      "sha256": "ef7c054ef3923ae065721e23149e3c1c30c43ec741da235e2d54d367aeca4740",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8966,8 +8966,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_inventory.py",
-      "size_bytes": 15611,
-      "sha256": "09f3c61e36ae33cc7731315d4534b73c9a091924760dc29c51dc7ea86c48ca99",
+      "size_bytes": 16301,
+      "sha256": "164edf5c00d8321c30630ed8b6871c069ea705d0f10935817070795d1c1e4d9e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9101,8 +9101,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/unified_core.py",
-      "size_bytes": 11974,
-      "sha256": "95200d7a6d66b2fb103fbb457455b049e6e596b52266ad0f033ea944b7014eb4",
+      "size_bytes": 12629,
+      "sha256": "0ea21d16df5a4f69e315bc8daddb531a938e15a9524de03cd674872902e146f5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9470,8 +9470,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5220,
-      "sha256": "0a23db3a3f9188f367bfc020cff58e14df657cc08b60a02aa17757a08f9e8098",
+      "size_bytes": 5210,
+      "sha256": "98d6140aaf829119f31d15a9da480392d048b0729ade0e8d836cd52919dd0a41",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19173,7 +19173,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1945137,
-      "sha256": "2a223e039a94a5cd6b3079702ef7626118d9e1804e3877863a7947c0c700fcb7",
+      "sha256": "f9327f57074bcd37f0284694572f49ab020b7120c4c07e985623d1eea153a464",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19757,11 +19757,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+  "release_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-    "package_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
-    "release_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence"
+    "runtime_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+    "package_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
+    "release_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
