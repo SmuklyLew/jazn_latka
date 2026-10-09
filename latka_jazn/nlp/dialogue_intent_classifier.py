@@ -760,8 +760,7 @@ class DialogueIntentClassifier:
             return report(norm,folded,'self_architecture_audit_request',['jawny audyt architektury Jaźni, refleksji, bramy pamięci, jakości recallu i planu rozwoju'],0.94,secondary,diag=True,speech_act=speech.speech_act,question_object='self_architecture_audit')
         completion_update_execution = (
             has_update
-            and component_report.explicit_execution
-            and not component_report.diagnostic_only
+            and (continuation_update_execution or (component_report.explicit_execution and not component_report.diagnostic_only))
             and not component_report.negated_actions
             and (
                 continuation_update_execution
