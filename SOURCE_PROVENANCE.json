@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b4f2c4b0ae439eda3273c369bd29378e5173f9e2",
-    "base_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
+    "base_commit": "8fba90cd71f72864db615f19ac8a30f5894bee1a",
+    "base_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "8fba90cd71f72864db615f19ac8a30f5894bee1a",
