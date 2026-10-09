@@ -116,3 +116,17 @@ def test_profile_inspection_does_not_apply_running_config(tmp_path: Path) -> Non
     assert data["applied_to_running_daemon"] is False
     assert data["values"] == {}
     assert not profile_file(root).exists()
+
+
+def test_symlink_parent_directory_is_rejected(tmp_path: Path) -> None:
+    root = fake_system(tmp_path)
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    other = tmp_path / "unrelated"
+    other.mkdir()
+    try:
+        (workspace / "configuration_studio").symlink_to(other, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlink creation unavailable")
+    with pytest.raises(ConfigValidationError):
+        profile_file(root, workspace=workspace)
