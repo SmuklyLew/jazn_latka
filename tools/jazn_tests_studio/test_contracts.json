@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.14",
-  "active_definition_count": 2072,
+  "active_definition_count": 2078,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -44953,6 +44953,152 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_speech_act_does_not_invent_write_authority": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_speech_act_does_not_invent_write_authority",
+      "purpose": "Speech act does not invent write authority",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_infinitive_does_not_match_rights_components": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_infinitive_does_not_match_rights_components",
+      "purpose": "Infinitive does not match rights components",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_runtime_failure_report_is_natural_and_is_not_auto_diagnostic": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_runtime_failure_report_is_natural_and_is_not_auto_diagnostic",
+      "purpose": "Runtime failure report is natural and is not auto diagnostic",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_policy_and_validator_share_one_component_source": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_policy_and_validator_share_one_component_source",
+      "purpose": "Policy and validator share one component source",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_focused_diagnostic_does_not_demand_implementation_plan": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_focused_diagnostic_does_not_demand_implementation_plan",
+      "purpose": "Focused diagnostic does not demand implementation plan",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_v16325511514_dialogue_intent_finalization.py::test_host_retry_names_trusted_missing_slots_without_replaying_user_text": {
+      "path": "tests/test_v16325511514_dialogue_intent_finalization.py",
+      "name": "test_host_retry_names_trusted_missing_slots_without_replaying_user_text",
+      "purpose": "Host retry names trusted missing slots without replaying user text",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
