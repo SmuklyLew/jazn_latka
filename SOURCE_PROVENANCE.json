@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a82d1a07bc898101416cd3d6d526f2bde25e8443",
+  "base_merge_commit": "f2c598c8fd98b1415589c1e1031ef819aef5a8d8",
   "base_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-  "commit_date": "2026-10-09T16:13:15Z",
+  "commit_date": "2026-10-09T18:14:28+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-09T16:13:15+00:00",
+  "generated_at_utc": "2026-10-09T16:14:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "07e60ef2b7ef2b9bbc6ad84897d6979137a24888",
+  "git_tree_sha": "7248d95f8e0029110a78c2f8eeed39c4acdb826f",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.15-memory-studio-affect-lineage-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "a82d1a07bc898101416cd3d6d526f2bde25e8443",
+    "source_commit": "f2c598c8fd98b1415589c1e1031ef819aef5a8d8",
     "source_version": "16.3.25.5.115.16-memory-studio-desktop-workspace"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "a82d1a07bc898101416cd3d6d526f2bde25e8443",
+  "source_commit": "f2c598c8fd98b1415589c1e1031ef819aef5a8d8",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
   "tag": null,
