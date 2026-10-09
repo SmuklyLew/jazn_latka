@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-  "runtime_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-  "package_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-  "generated_at_utc": "2026-10-09T16:55:53+00:00",
-  "updated_at_utc": "2026-10-09T16:55:53+00:00",
+  "version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+  "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+  "package_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+  "generated_at_utc": "2026-10-09T17:03:50+00:00",
+  "updated_at_utc": "2026-10-09T17:03:50+00:00",
   "start_file": "run.py",
-  "file_count": 2165,
-  "static_file_count": 2165,
+  "file_count": 2167,
+  "static_file_count": 2167,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -137,8 +137,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 3292,
-      "sha256": "a919209e7e489c424e9c6403f55410854aec713c85b821744678501e7570dd8b",
+      "size_bytes": 4920,
+      "sha256": "1c4739152173cdf3e5d4ac8d7d09b1afb56ac8088ab5876820b55ea98eb5b080",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2941,
-      "sha256": "c30bcd4f64f6571ba17304e44bb55a37ef56638f00f5219e9d8c01ba2a551f32",
+      "size_bytes": 2996,
+      "sha256": "ad46184e544c609cdb263a524221ab2d832cdb995e89476d0401f13f8e489bb1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1145,8 +1145,8 @@
     },
     {
       "path": "docs/memory/MEMORY_STUDIO_DESKTOP_V3_1.md",
-      "size_bytes": 4704,
-      "sha256": "67a94d7b3490afb44fc63546c3b66f075e02a4f45c880bd89c2f070b2398308c",
+      "size_bytes": 6088,
+      "sha256": "12d7d6863d92d630315bb9f97b672c9613c050e7d21d1b5b5c210ae5f73b7e4c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9038,8 +9038,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/studio_workflows.py",
-      "size_bytes": 45909,
-      "sha256": "e76f3c6b0ac6f4a72e4caa5075fc3bdfeb097598e1e50362232445e7ffaf9a08",
+      "size_bytes": 47267,
+      "sha256": "2c1734e8ee9a60d2e62a86628810c780cf691fc44e10bb28b683900ede684f08",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9110,8 +9110,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/ui_desktop.py",
-      "size_bytes": 38250,
-      "sha256": "60992eafe18a7e8f69107c9f7c6e41d4de872942456ec05674ef4a7cd1247f16",
+      "size_bytes": 40080,
+      "sha256": "e470c23a353c07fad31bf0623341045256939e28ff00fe5e64b073945cb86ba8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9506,8 +9506,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5197,
-      "sha256": "5a75e2268690e1ad595c733ce9029c6f808430cc5696cb81f836eff0b73a4825",
+      "size_bytes": 5209,
+      "sha256": "f294b6de7fd25133b94e76ec287b4644894fe580904e91ac0047aa64816de19e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17245,6 +17245,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_desktop_actions.py",
+      "size_bytes": 5832,
+      "sha256": "02d454302bd9ec21f181904192ff16b0b62ca0880c0d60c3b21ce322495530fd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_desktop_actions_windows.py",
+      "size_bytes": 1404,
+      "sha256": "8b8bc681cd15cda50e0a9556b6699e5a44083a29c3ec2ba26770cd5bb5cda653",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_desktop_gui_smoke.py",
       "size_bytes": 1101,
       "sha256": "8c6f3beea1a30a5f113965b36d897c251f24fd296c5f233e80ce71e5d65810e6",
@@ -19082,8 +19100,8 @@
     },
     {
       "path": "tools/jazn_memory_studio.py",
-      "size_bytes": 747,
-      "sha256": "1a65ab79d2ecf9851a9114f012e8810680709d993b641ea2d65d7ec631b6923b",
+      "size_bytes": 1610,
+      "sha256": "dbf727520279e31bcb79a1b66c229315e718e3546dbcc3546355e11bfecf3a6b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19343,8 +19361,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1957875,
-      "sha256": "662e3bf061b576ee9397b319624a52180b4ec79abe86069fe454954a5a68ee24",
+      "size_bytes": 1963903,
+      "sha256": "4d683526591e3929cfc046acfab381a6dc78ce9d950eac850cf829925aab052c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19937,11 +19955,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
+  "release_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-    "package_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
-    "release_version": "16.3.25.5.115.16-memory-studio-desktop-workspace"
+    "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+    "package_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
+    "release_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
