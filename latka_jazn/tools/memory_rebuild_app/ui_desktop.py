@@ -23,6 +23,7 @@ from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore, default_project_root
 from .studio import STUDIO_VERSION, StudioState, _run_test
 from .studio_workflows import StudioWorkflows
+from .studio_write_safety import require_isolated_database
 from .test_spec import TEST_SPECS
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 
@@ -136,6 +137,28 @@ class TkStudioDialogs:
                   default_values: Sequence[str] = ()) -> list[str] | None:
         return self._on_ui(lambda: self._pick(title, text, values, default=list(default_values), multiple=True))
 
+    def choose_files(self, *, title: str, initial_directory: str | Path | None = None,
+                     multiple: bool = True) -> list[Path]:
+        def pick() -> list[Path]:
+            options: dict[str, Any] = {"parent": self.root, "title": title}
+            if initial_directory:
+                options["initialdir"] = str(initial_directory)
+            if multiple:
+                result = filedialog.askopenfilenames(**options)
+                return [Path(item).expanduser().resolve() for item in result]
+            result = filedialog.askopenfilename(**options)
+            return [Path(result).expanduser().resolve()] if result else []
+        return self._on_ui(pick)
+
+    def choose_directory(self, *, title: str, initial_directory: str | Path | None = None) -> Path | None:
+        def pick() -> Path | None:
+            options: dict[str, Any] = {"parent": self.root, "title": title, "mustexist": True}
+            if initial_directory:
+                options["initialdir"] = str(initial_directory)
+            result = filedialog.askdirectory(**options)
+            return Path(result).expanduser().resolve() if result else None
+        return self._on_ui(pick)
+
     def _pick(self, title: str, text: str, values: Sequence[tuple[Any, str]], *,
               default: Any, multiple: bool) -> Any:
         window = tk.Toplevel(self.root)
@@ -225,6 +248,8 @@ class DesktopWorkspace:
             project_root=project_root, project=project, tool_root=self.tool_root,
             settings_path=settings_path,
         )
+        if project:
+            self.state.select_project(project)
         self.dialogs = TkStudioDialogs(root)
         self.state.bind_dialogs(self.dialogs)
         self.workflows = StudioWorkflows(self.state, self.dialogs)
@@ -360,9 +385,9 @@ class DesktopWorkspace:
             # Keep these workflows on the UI thread; long canonical protocols
             # use a worker and marshal all Tk dialogs back via TkStudioDialogs.
             job()
-            self._check_updates()
+            self._check_updates(schedule=False)
 
-    def _check_updates(self) -> None:
+    def _check_updates(self, *, schedule: bool = True) -> None:
         try:
             while True:
                 ok, result, title = self._updates.get_nowait()
@@ -379,7 +404,7 @@ class DesktopWorkspace:
                 self.open_page(self._page)
         except Empty:
             pass
-        if self.root.winfo_exists():
+        if schedule and self.root.winfo_exists():
             self.root.after(80, self._check_updates)
 
     def _project(self) -> Any | None:
@@ -423,18 +448,19 @@ class DesktopWorkspace:
         self._card("Afekt i rozmowy",
                    "Jawne identyfikatory conversation_id/message_id/turn_id/trace_id; "
                    "brak źródłowego związku oznacza source_only. Modelowany afekt ≠ przeżycie biologiczne.")
-        self._action_row(
-            ("Otwórz projekt", lambda: self.open_page("projects"), False),
-            ("Skonfiguruj ścieżki", lambda: self.open_page("paths"), False),
-            ("Plan bez zapisu", lambda: self.workflows.plan(compare=False), True),
-        )
+        quick = ttk.Frame(self.content)
+        quick.pack(fill="x", pady=8)
+        for caption, page in (("Otwórz projekt", "projects"), ("Skonfiguruj ścieżki", "paths")):
+            ttk.Button(quick, text=caption, command=lambda target=page: self.open_page(target)).pack(
+                side="left", padx=(0, 10), pady=7)
+        self._action_row(("Plan bez zapisu", lambda: self.workflows.plan(compare=False), True))
 
     def _page_projects(self) -> None:
         self._label(self.content, "Projekty i rejestr źródeł")
         self._action_row(
-            ("Wybierz / utwórz projekt", self.workflows.project_hub, False),
-            ("Przeskanuj / dodaj / edytuj źródła", self.workflows.sources_hub, False),
-            ("Baseline’y Testów 01–04", self.workflows.baselines_hub, False),
+            ("Wybierz / utwórz projekt", self.workflows.project_hub, True),
+            ("Przeskanuj / dodaj / edytuj źródła", self.workflows.sources_hub, True),
+            ("Baseline’y Testów 01–04", self.workflows.baselines_hub, True),
         )
         project = self._project()
         if not project:
@@ -514,6 +540,8 @@ class DesktopWorkspace:
                 project.settings[key] = changes[key]
             else:
                 project.settings.pop(key, None)
+        require_isolated_database(changes["database"], tool_root=self.tool_root,
+                                  project_target=changes["target_root"])
         project.settings["unified_database_path"] = changes["database"]
         ProjectStore(self.state.project_root).save(project)
         self.state.select_project(project.project_id)
@@ -523,7 +551,7 @@ class DesktopWorkspace:
     def _page_database(self) -> None:
         self._card("Docelowa SQLite", str(self.state.database))
         self._action_row(
-            ("Wybierz / utwórz bazę", self.workflows.database_hub, False),
+            ("Wybierz / utwórz bazę", self.workflows.database_hub, True),
             ("Pełna walidacja", lambda: self.dialogs.message("WALIDACJA",
                 _pretty(UnifiedMemoryDatabase(self.state.database).validate(full=True))), True),
             ("Recall / benchmark", self.workflows.recall_hub, True),
@@ -534,11 +562,11 @@ class DesktopWorkspace:
         self._card("Źródła ChatGPT, dzienniki, muzyka, stare bazy",
                    "Import zachowuje dane źródłowe i proweniencję, nie aktywuje L2/L3.")
         self._action_row(
-            ("Import źródeł projektu", self._import_project, False),
-            ("Wybierz pliki", self._import_files, False),
-            ("Migracja starych baz — zaawansowane", self.workflows.import_hub, False),
+            ("Import źródeł projektu", self._import_project, True),
+            ("Wybierz pliki", self._import_files, True),
+            ("Migracja starych baz — zaawansowane", self.workflows.import_hub, True),
         )
-        self._action_row(("Przejrzyj role źródeł", self.workflows.sources_hub, False),
+        self._action_row(("Przejrzyj role źródeł", self.workflows.sources_hub, True),
                          ("Plan bez zapisu", lambda: self.workflows.plan(compare=False), True))
 
     def _import_project(self) -> None:
@@ -548,11 +576,8 @@ class DesktopWorkspace:
         self._import_selected(paths)
 
     def _import_files(self) -> None:
-        paths = filedialog.askopenfilenames(
-            parent=self.root, title="Wybierz źródła do importu",
-            filetypes=[("Eksporty i źródła", "*.json *.jsonl *.ndjson *.zip *.sqlite *.sqlite3 *.html"),
-                       ("Wszystkie pliki", "*.*")])
-        self._import_selected([Path(item) for item in paths])
+        self._import_selected(
+            self.dialogs.choose_files(title="Wybierz źródła do importu", multiple=True))
 
     def _import_selected(self, paths: Sequence[Path]) -> None:
         if not paths:
@@ -563,11 +588,12 @@ class DesktopWorkspace:
             "Zapis przyrostowy nie aktywuje wspomnień. Kontynuować?"
         ):
             return
-        def work() -> None:
-            result = UnifiedMemoryDatabase(self.state.database).import_sources(
-                paths, full_validation=True)
-            self.dialogs.message("WYNIK IMPORTU", _pretty(result))
-        self._execute("Import do kanonicznego L0", work, threaded=True)
+        project = self._require_project()
+        require_isolated_database(self.state.database, tool_root=self.tool_root,
+                                  project_target=project.target_root)
+        result = UnifiedMemoryDatabase(self.state.database).import_sources(
+            paths, full_validation=True)
+        self.dialogs.message("WYNIK IMPORTU", _pretty(result))
 
     def _page_affect(self) -> None:
         self._card("Emocje — źródła i modelowane stany",
@@ -596,8 +622,14 @@ class DesktopWorkspace:
             ttk.Label(row, text=str(result.get("outcome") if result else "NIE URUCHOMIONO"),
                       width=20).pack(side="left", padx=4)
             ttk.Button(row, text="Uruchom", command=lambda p=item.profile:
-                       self._execute(f"Protokół {p}", lambda: _run_test(self.state, self.dialogs, p),
+                       self._execute(f"Protokół {p}", lambda: self._run_protocol_checked(p),
                                      threaded=True)).pack(side="right", padx=4)
+
+    def _run_protocol_checked(self, profile: str) -> None:
+        project = self._require_project()
+        require_isolated_database(self.state.database, tool_root=self.tool_root,
+                                  project_target=project.target_root)
+        _run_test(self.state, self.dialogs, profile)
 
     def _show_preflight(self) -> None:
         report = self.workflows._controller().preflight()
