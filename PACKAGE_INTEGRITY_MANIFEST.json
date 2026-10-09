@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
-  "runtime_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
-  "package_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
-  "generated_at_utc": "2026-10-09T03:11:47+00:00",
-  "updated_at_utc": "2026-10-09T03:11:47+00:00",
+  "version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+  "runtime_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+  "package_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+  "generated_at_utc": "2026-10-09T04:02:15+00:00",
+  "updated_at_utc": "2026-10-09T04:02:15+00:00",
   "start_file": "run.py",
   "file_count": 2138,
   "static_file_count": 2138,
@@ -299,8 +299,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3011,
-      "sha256": "d46f5690d3263b4baa8b06ffdee832352e074364fc7012f1a9d630f7e789c267",
+      "size_bytes": 2998,
+      "sha256": "01b66827757f1ec33d2bbbfe9c99766380305d2ee9f63a74f9f202afffa9ab1e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -335,8 +335,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1729,
-      "sha256": "508e4695d3bdcfa26f4e434129fc5b5de78efc5b6f1cafca2cb379c1410059af",
+      "size_bytes": 1726,
+      "sha256": "8908a3e81336e9f4a484fe00351e3dbd4da57830f365304864f1e73a183b6f07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4403,8 +4403,8 @@
     },
     {
       "path": "latka_jazn/core/host_finalization_transaction.py",
-      "size_bytes": 19685,
-      "sha256": "806a4423f75b5f45e8e265d0ecb9ea9bbdb96ec2695cd1b4abc819ee40bb9a5e",
+      "size_bytes": 20528,
+      "sha256": "7f1ee6e2e49b75b4a3d62e36bc29e77c6444aa5c0fddc47b18807d3663501600",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5105,8 +5105,8 @@
     },
     {
       "path": "latka_jazn/core/route_registry.py",
-      "size_bytes": 17150,
-      "sha256": "4d2b36033c5c5ae18a4cc047ebe9c2d6b415fb0ea4130dbfb3308ecc038e42c5",
+      "size_bytes": 17417,
+      "sha256": "d745a154653781773910af5709d5d55c6348c0e7fb9df3a24ffe009fe2de18e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5123,8 +5123,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_answer_validator.py",
-      "size_bytes": 59994,
-      "sha256": "fa6823b57b9576d7c34ca47718b9d68b118fee61da0ebc2810a788b96902a80a",
+      "size_bytes": 59976,
+      "sha256": "e1658915ad32f216c398a3156f745a643b135850f6a98fdb04ee9b8c49f2ea9d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5645,8 +5645,8 @@
     },
     {
       "path": "latka_jazn/core/turn_response_policy.py",
-      "size_bytes": 10484,
-      "sha256": "9d20dbdcc3fe641e347532e5f46070c963c0a0a1b9d22c63d228de4cb69c7311",
+      "size_bytes": 10618,
+      "sha256": "d7decd558a7aba561b79a69969073b9939e3ac209a8d93fd16b7407fcf181f55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6995,8 +6995,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 81134,
-      "sha256": "9b1ee39f85678a533d038b10b777083e892db5d0bb5b8c2fdac07eee062e8757",
+      "size_bytes": 81898,
+      "sha256": "32ce5b8cab1af6467e2664e976d19adb624b2b2bbfac15236c7eb8cb2797c6a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7382,8 +7382,8 @@
     },
     {
       "path": "latka_jazn/nlp/utterance_components.py",
-      "size_bytes": 20258,
-      "sha256": "7694369f89480de2e65ca0823f192800413de65c75b46f514a1ac3edc82c4bff",
+      "size_bytes": 20816,
+      "sha256": "9c3583ed27e15f4910e276bb7dbf22f06295b033f0259877cf2bd2ad0a574db1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8112,7 +8112,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7007,
-      "sha256": "8d502adf2f64278a588b8d09cf7a5b0498ffabbec7fe8bb45569e110622d4bde",
+      "sha256": "c387d3c461e0e723463bcf0420e31348a52900d0796c74d54d1ffceb4031da02",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9461,8 +9461,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5217,
-      "sha256": "e7250cf7ba4e5c92678b448b532c56fa0321163cb8318b2953cfd18f9d3f0366",
+      "size_bytes": 5220,
+      "sha256": "0a23db3a3f9188f367bfc020cff58e14df657cc08b60a02aa17757a08f9e8098",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19110,7 +19110,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 1938733,
-      "sha256": "edb671d7506363eb88b25f355eb7dbe73a91df1150af4b08a77a246414bba1c2",
+      "sha256": "fedf1a30d321953c8aecc76648f91ddf12589aa572c41925de443d0535d7b332",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19694,11 +19694,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
+  "release_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
-    "package_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence",
-    "release_version": "16.3.25.5.115.13-host-turn-contract-finalization-convergence"
+    "runtime_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+    "package_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence",
+    "release_version": "16.3.25.5.115.14-dialogue-intent-finalization-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
