@@ -7,7 +7,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from .configuration_studio import (
     SETTINGS, ConfigValidationError, describe_profile, inspect_system,
-    profile_digest, profile_file, read_profile, save_profile, system_root,
+    profile_file, profile_snapshot, read_profile, save_profile, restore_previous_profile, system_root,
     validate_values,
 )
 
@@ -29,6 +29,8 @@ class ConfigurationStudio:
         self._current_page = "overview"
         self._entries: dict[str, tk.StringVar] = {}
         self._known_hash: str | None = None
+        self._page_loaded_values: dict[str, str] = {}
+        self.root.protocol("WM_DELETE_WINDOW", self._close)
         self._set_theme()
         self.root.title("Jaźń — Studio konfiguracji")
         self.root.geometry("1210x790")
@@ -81,7 +83,25 @@ class ConfigurationStudio:
         ttk.Label(self.content, text=note, style="Note.TLabel",
                   wraplength=800).pack(anchor="w", pady=(6, 20))
 
+    def _dirty(self) -> bool:
+        return self._current_page == "settings" and bool(self._entries) and (
+            self._values() != self._page_loaded_values
+        )
+
+    def _may_discard(self) -> bool:
+        return not self._dirty() or messagebox.askyesno(
+            "Niezapisane zmiany",
+            "Niezapisane ustawienia zostaną utracone. Odrzucić je?",
+            parent=self.root,
+        )
+
+    def _close(self) -> None:
+        if self._may_discard():
+            self.root.destroy()
+
     def open_page(self, page: str) -> None:
+        if page != self._current_page and not self._may_discard():
+            return
         if page not in {key for key, _ in PAGES}:
             raise ValueError(f"Nieznana strona: {page}")
         self._current_page = page
@@ -146,12 +166,12 @@ class ConfigurationStudio:
     def _page_settings(self) -> None:
         self._heading("Profil uruchomieniowy", "Edytuj tylko zatwierdzone klucze. Puste pole oznacza brak nadpisania.")
         try:
-            stored = read_profile(self.system)
-            self._known_hash = profile_digest(self.system)
+            stored, self._known_hash = profile_snapshot(self.system)
         except (OSError, ValueError) as exc:
             messagebox.showerror("Nie można odczytać profilu", str(exc), parent=self.root)
             stored = {}
             self._known_hash = None
+        self._page_loaded_values = {spec.key: stored.get(spec.key, "") for spec in SETTINGS}
         outer = ttk.Frame(self.content)
         outer.pack(fill="both", expand=True)
         canvas = tk.Canvas(outer, bg=BG, borderwidth=0, highlightthickness=0)
@@ -182,7 +202,8 @@ class ConfigurationStudio:
         ttk.Button(actions, text="Sprawdź wartości", command=self._validate).pack(side="left", padx=(0, 7))
         ttk.Button(actions, text="Zapisz profil", style="Accent.TButton",
                    command=self._save).pack(side="left", padx=7)
-        ttk.Button(actions, text="Wczytaj z dysku", command=lambda: self.open_page("settings")).pack(side="left")
+        ttk.Button(actions, text="Wczytaj z dysku", command=self._reload_settings).pack(side="left")
+        ttk.Button(actions, text="Przywróć poprzedni", command=self._restore_previous).pack(side="left", padx=6)
         ttk.Button(actions, text="Kopiuj komendę uruchomienia",
                    command=self._copy_launch_command).pack(side="right")
 
@@ -206,6 +227,25 @@ class ConfigurationStudio:
         messagebox.showinfo("Kontrola zakończona", f"Poprawnych nadpisań: {len(result)}.\n"
                             "Nie zmieniono żadnego pliku.", parent=self.root)
 
+    def _reload_settings(self) -> None:
+        if self._may_discard():
+            self._clear()
+            self._page_settings()
+
+    def _restore_previous(self) -> None:
+        if not messagebox.askyesno(
+            "Przywróć profil", "Zastąpić obecny profil ostatnią kopią? Zmiana jest zapisywana.",
+            parent=self.root,
+        ):
+            return
+        try:
+            restored = restore_previous_profile(self.system, expected_sha256=self._known_hash)
+            self.status.set("Przywrócono profil: " + str(restored))
+            self._clear()
+            self._page_settings()
+        except (ValueError, OSError) as exc:
+            messagebox.showerror("Nie przywrócono profilu", str(exc), parent=self.root)
+
     def _save(self) -> None:
         try:
             result = validate_values(self.system, self._values())
@@ -220,15 +260,16 @@ class ConfigurationStudio:
                                        parent=self.root):
                 return
             destination = save_profile(self.system, result, expected_sha256=self._known_hash)
-            self._known_hash = profile_digest(self.system)
+            _, self._known_hash = profile_snapshot(self.system)
+            self._page_loaded_values = self._values()
             self.status.set("Profil zapisany: " + str(destination))
         except (ValueError, OSError) as exc:
             messagebox.showerror("Nie zapisano profilu", str(exc), parent=self.root)
 
     def _copy_launch_command(self) -> None:
         config = profile_file(self.system)
-        command = ("pwsh -File .\\tools\\windows\\Start-JaznWithConfig.ps1 "
-                   f'-Profile "{config}"')
+        launcher = self.system / "tools" / "windows" / "Start-JaznWithConfig.ps1"
+        command = f'pwsh -File "{launcher}" -Profile "{config}"'
         self.root.clipboard_clear()
         self.root.clipboard_append(command)
         self.status.set("Skopiowano polecenie startu Jaźni z profilem — wykonanie jest ręczne.")
