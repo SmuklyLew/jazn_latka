@@ -234,8 +234,19 @@ class DesktopWorkspace:
         self.root.minsize(990, 620)
         self.root.configure(bg=BG)
         self._layout()
+        self.root.protocol("WM_DELETE_WINDOW", self._request_close)
         self.open_page("home")
         self.root.after(80, self._check_updates)
+
+    def _request_close(self) -> None:
+        if self._busy:
+            self.dialogs.message(
+                "Trwa operacja pamięci",
+                "Zamykanie jest zablokowane podczas operacji. Zaczekaj na wynik, "
+                "aby nie przerwać zapisu ani publikacji w nieznanym stanie.",
+            )
+            return
+        self.root.destroy()
 
     def _configure_theme(self) -> None:
         style = ttk.Style(self.root)
