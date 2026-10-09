@@ -23,7 +23,7 @@ from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 from latka_jazn.memory.memory_root import resolve_memory_root
 from latka_jazn.tools.memory_rebuild_app.project_store import default_project_root
 from latka_jazn.tools.memory_rebuild_app.settings import resolve_settings_path
-from latka_jazn.nlp.local_resource_paths import resolve_local_nlp_data_dir
+from latka_jazn.nlp.local_resource_paths import polish_nlp_data_root
 from latka_jazn.version import PACKAGE_VERSION
 
 SCHEMA = "jazn_configuration_profile/v1"
@@ -144,7 +144,7 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
     for label, path in (("workspace", workspace), ("MEMORY", memory)):
         if _inside(path, source) or _inside(path, legacy_workspace):
             raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
-    if _inside(workspace, memory) or workspace == memory:
+    if _inside(workspace, memory) or _inside(workspace, current_memory) or workspace == memory:
         raise ConfigValidationError("Workspace nie może znajdować się w MEMORY.")
     if _inside(memory, workspace) and memory != workspace / "memory":
         raise ConfigValidationError("MEMORY w workspace może leżeć tylko w workspace/memory.")
@@ -294,7 +294,7 @@ def inspect_system(root: str | Path) -> list[dict[str, str]]:
     source = system_root(root)
     workspace = workspace_runtime_path(source)
     memory = resolve_memory_root(source)
-    nlp = resolve_local_nlp_data_dir(source)
+    nlp = polish_nlp_data_root(source)
     locations = (
         ("SYSTEM", source, "Kod SYSTEM"),
         ("WORKSPACE", workspace, "Stan procesów"),
