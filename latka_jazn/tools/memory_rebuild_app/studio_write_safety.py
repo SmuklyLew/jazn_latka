@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.runtime_root import legacy_workspace_runtime_path, workspace_runtime_path
 from latka_jazn.memory.memory_root import (
     default_memory_root,
     legacy_memory_root,
@@ -23,6 +23,7 @@ def require_isolated_staging_path(path: str | Path, *, tool_root: str | Path) ->
     root = Path(tool_root).expanduser().resolve()
     protected = (
         workspace_runtime_path(root),
+        legacy_workspace_runtime_path(root),
         default_memory_root(root),
         legacy_memory_root(root),
         resolve_memory_root(root),
