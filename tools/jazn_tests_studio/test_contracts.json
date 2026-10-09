@@ -21885,12 +21885,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio",
         "latka_jazn.tools.memory_rebuild_app.studio_workflows",
         "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 35
     },
     "tests/test_memory_desktop_actions.py::test_import_action_does_not_reenter_busy_executor": {
       "path": "tests/test_memory_desktop_actions.py",
@@ -21909,12 +21910,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio",
         "latka_jazn.tools.memory_rebuild_app.studio_workflows",
         "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 53
     },
     "tests/test_memory_desktop_actions.py::test_staging_guard_rejects_active_and_legacy_memory": {
       "path": "tests/test_memory_desktop_actions.py",
@@ -21935,12 +21937,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio",
         "latka_jazn.tools.memory_rebuild_app.studio_workflows",
         "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 77
     },
     "tests/test_memory_desktop_actions.py::test_export_uses_project_final_output_setting": {
       "path": "tests/test_memory_desktop_actions.py",
@@ -21959,12 +21962,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio",
         "latka_jazn.tools.memory_rebuild_app.studio_workflows",
         "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 94
     },
     "tests/test_memory_desktop_actions.py::test_launcher_import_path_without_repository_cwd": {
       "path": "tests/test_memory_desktop_actions.py",
@@ -21984,12 +21988,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio",
         "latka_jazn.tools.memory_rebuild_app.studio_workflows",
         "latka_jazn.tools.memory_rebuild_app.studio_write_safety"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 131
     },
     "tests/test_memory_desktop_actions_windows.py::test_home_quick_actions_navigate_real_widgets": {
       "path": "tests/test_memory_desktop_actions_windows.py",
