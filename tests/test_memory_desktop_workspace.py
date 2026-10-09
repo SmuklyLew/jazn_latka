@@ -5,6 +5,7 @@ import pytest
 
 pytest.importorskip("tkinter")
 
+from latka_jazn.tools.application_shell import DiagnosticsHub
 from latka_jazn.tools.memory_rebuild_app import ui_window
 from latka_jazn.tools.memory_rebuild_app.config import APP_VERSION
 from latka_jazn.tools.memory_rebuild_app.models import RebuildProject
@@ -17,7 +18,7 @@ def test_window_routes_to_native_canonical_workspace(monkeypatch, tmp_path: Path
     import latka_jazn.tools.memory_rebuild_app.ui_desktop as desktop
     calls = {}
     monkeypatch.setattr(desktop, "run_desktop", lambda **kwargs: calls.update(kwargs) or 0)
-    assert ui_window.run_window(tool_root=tmp_path, diagnostics=object(),
+    assert ui_window.run_window(tool_root=tmp_path, diagnostics=DiagnosticsHub("synthetic", tmp_path / "diagnostics", enabled=False),
         project_root=tmp_path / "projects", project="project-1",
         settings_path=tmp_path / "settings.json") == 0
     assert calls["tool_root"] == tmp_path
