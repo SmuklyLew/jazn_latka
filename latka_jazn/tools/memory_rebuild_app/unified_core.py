@@ -191,6 +191,71 @@ class UnifiedCoreMixin(UnifiedMixinHost):
             "automatic_activation": False,
         }
         return UnifiedImportResult(str(path), prepared.source_kind, status, payload)
+    def record_accepted_turn_affect(self, event: dict[str, Any]) -> dict[str, Any]:
+        """Archive modelled affect with explicit accepted-turn provenance in canonical L0.
+
+        The trusted runtime is responsible for verifying accepted finalization
+        BEFORE invoking this method. A string status is not a cryptographic proof.
+        """
+        from hashlib import sha256
+        from .intermediate import IntermediateRecord, PreparedSource, canonical_json
+
+        if event.get("finalization_status") != "accepted":
+            raise ValueError("affect_requires_accepted_finalization")
+        keys = ("turn_id", "trace_id", "conversation_id", "message_id", "event_time")
+        ids = {key: event.get(key) for key in keys}
+        if any(not isinstance(value, str) or not value.strip() for value in ids.values()):
+            raise ValueError("affect_requires_explicit_turn_context")
+        if not isinstance(event.get("modelled_affect"), dict):
+            raise ValueError("modelled_affect_is_required")
+        affect = event["modelled_affect"]
+        labels = affect.get("labels")
+        if (not isinstance(labels, list) or not labels or
+                any(not isinstance(label, str) or not label.strip() or len(label) > 128 for label in labels)):
+            raise ValueError("explicit_modelled_affect_labels_required")
+        if len(labels) > 32:
+            raise ValueError("too_many_modelled_affect_labels")
+        context_hash = event.get("context_sha256")
+        if context_hash is not None and (
+            not isinstance(context_hash, str) or len(context_hash) != 64 or
+            any(c not in "0123456789abcdefABCDEF" for c in context_hash)
+        ):
+            raise ValueError("invalid_context_sha256")
+        identity = f"{ids['turn_id']}:{ids['trace_id']}"
+        original = {
+            **ids, "context_sha256": context_hash or "",
+            "state_emoticon": str(affect.get("state_emoticon") or ""),
+            "affect_model": str(affect.get("model") or "unspecified"),
+            "finalization_status": "accepted",
+            "__jazn_affect_claims__": [
+                {"label": label.strip(), "source_field": "modelled_affect.labels",
+                 "claim_kind": "runtime_modelled_state", "subject": "latka",
+                 "boundary": "modelled_affect_not_biological_experience"}
+                for label in labels
+            ],
+        }
+        digest = sha256(canonical_json(original).encode("utf-8")).hexdigest()
+        record = IntermediateRecord(
+            logical_key=f"runtime-modelled-affect:{identity}",
+            source_record_id=identity, record_kind="runtime_modelled_affect",
+            title="Modelled runtime state at accepted turn",
+            content="Modelled state labels: " + ", ".join(labels),
+            event_time_start=ids["event_time"],
+            timestamp_status="source_recorded", conversation_id=ids["conversation_id"],
+            role="assistant", truth_status="runtime_modelled_not_biological",
+            importance=0.5, raw=original,
+            provenance={"boundary": "modelled_affect_not_biological_experience",
+                        "accepted_turn_id": ids["turn_id"], "trace_id": ids["trace_id"]},
+        )
+        prepared = PreparedSource(
+            adapter_id="accepted-turn-affect/v1", source_kind="affective",
+            source_sha256=digest, source_name="accepted_runtime_turn",
+            source_member=None, metadata={"truth_boundary": "modelled_not_biological"},
+            record_factory=lambda: iter((record,)), native_projection="l0_only",
+        )
+        self.ensure_initialized()
+        return UnifiedL0Store(self.path).ingest(prepared)
+
     def import_source_selected(
         self,
         source: str | Path,
