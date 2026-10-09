@@ -104,3 +104,13 @@ def test_validated_launch_is_exact_normalized_snapshot(root: Path) -> None:
     save_profile(root, {"JAZN_MEMORY_MODE": "OPTIONAL", "JAZN_LLM_ROUTE": "local"})
     assert validated_launch_values(root) == {"JAZN_MEMORY_MODE": "optional", "JAZN_LLM_ROUTE": "local"}
     assert json.loads(json.dumps(validated_launch_values(root))) == validated_launch_values(root)
+
+
+def test_inherited_legacy_memory_does_not_block_unrelated_profile_setting(root: Path) -> None:
+    legacy = root / "memory" / "sqlite"
+    legacy.mkdir(parents=True)
+    (legacy / "memory_jazn.sqlite3").write_bytes(b"synthetic")
+    values = validate_values(root, {"JAZN_MEMORY_MODE": "optional"})
+    assert values == {"JAZN_MEMORY_MODE": "optional"}
+    with pytest.raises(ConfigValidationError):
+        validate_values(root, {"JAZN_MEMORY_ROOT": str(legacy.parent)})
