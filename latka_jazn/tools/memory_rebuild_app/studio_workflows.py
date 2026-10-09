@@ -34,6 +34,7 @@ from .project_store import ProjectStore
 from .source_browser import discover_source_files, format_discovered_files
 from .unified_memory import UnifiedMemoryDatabase
 from .studio_dialogs import DialogBackend
+from .studio_write_safety import require_isolated_database, require_isolated_staging_path
 
 
 class StudioContext(Protocol):
@@ -67,6 +68,21 @@ class StudioWorkflows:
     def __init__(self, state: StudioContext, dialogs: DialogBackend):
         self.state = state
         self.dialogs = dialogs
+
+    def _choose_files(self, **kwargs: Any) -> list[Path]:
+        picker = getattr(self.dialogs, "choose_files", None)
+        return picker(**kwargs) if callable(picker) else choose_files(**kwargs)
+
+    def _choose_directory(self, **kwargs: Any) -> Path | None:
+        picker = getattr(self.dialogs, "choose_directory", None)
+        return picker(**kwargs) if callable(picker) else choose_directory(**kwargs)
+
+    def _require_safe_database_write(self) -> None:
+        project = self._project()
+        require_isolated_database(
+            self.state.database, tool_root=self.state.tool_root,
+            project_target=project.target_root,
+        )
 
     def _store(self) -> ProjectStore:
         return ProjectStore(self.state.project_root)
@@ -171,7 +187,7 @@ class StudioWorkflows:
         name = self.dialogs.input("NOWY PROJEKT", "Nazwa projektu:", "Pełna odbudowa pamięci Łatki")
         if not name or not name.strip():
             return
-        target_dir = choose_directory(
+        target_dir = self._choose_directory(
             title="Wybierz nowy katalog docelowy pamięci",
             initial_directory=Path.cwd(),
         )
@@ -182,7 +198,7 @@ class StudioWorkflows:
         )
         if not target_raw or not str(target_raw).strip():
             return
-        source_dir = choose_directory(
+        source_dir = self._choose_directory(
             title="Wybierz główny folder źródeł (opcjonalnie)",
             initial_directory=Path.cwd(),
         )
@@ -220,7 +236,7 @@ class StudioWorkflows:
             if action == "scan":
                 self._scan_sources()
             elif action == "files":
-                files = choose_files(
+                files = self._choose_files(
                     title="Wybierz źródła pamięci",
                     initial_directory=project.source_directory or Path.cwd(),
                     multiple=True,
@@ -279,7 +295,7 @@ class StudioWorkflows:
 
     def _scan_sources(self, preset: str | Path | None = None) -> None:
         project = self._project()
-        folder = Path(preset).expanduser().resolve() if preset else choose_directory(
+        folder = Path(preset).expanduser().resolve() if preset else self._choose_directory(
             title="Wybierz folder ze źródłami pamięci",
             initial_directory=project.source_directory or Path.cwd(),
         )
@@ -424,7 +440,7 @@ class StudioWorkflows:
             if action in {None, "back"}:
                 return
             if action == "discover":
-                folder = choose_directory(
+                folder = self._choose_directory(
                     title="Wybierz folder zawierający stare bazy Testów 01–04",
                     initial_directory=Path.cwd(),
                 )
@@ -520,7 +536,7 @@ class StudioWorkflows:
             if action in {None, "back"}:
                 return
             if action == "existing":
-                files = choose_files(
+                files = self._choose_files(
                     title="Wybierz memory_jazn.sqlite3",
                     initial_directory=self.state.database.parent,
                     multiple=False,
@@ -528,12 +544,13 @@ class StudioWorkflows:
                 if files:
                     self.state.set_database(files[0])
             elif action == "new":
-                folder = choose_directory(
+                folder = self._choose_directory(
                     title="Wybierz folder dla nowej memory_jazn.sqlite3",
                     initial_directory=self.state.database.parent,
                 )
                 if folder:
                     path = Path(folder) / "memory_jazn.sqlite3"
+                    require_isolated_staging_path(path, tool_root=self.state.tool_root)
                     if path.exists() or self.dialogs.confirm(
                         "UTWÓRZ BAZĘ",
                         f"Utworzyć i zainicjalizować:\n{path}?",
@@ -809,9 +826,9 @@ class StudioWorkflows:
                 project = self._project()
                 paths = [Path(item.path) for item in project.enabled_sources()]
             elif action == "files":
-                paths = choose_files(title="Wybierz źródła do importu", multiple=True)
+                paths = self._choose_files(title="Wybierz źródła do importu", multiple=True)
             elif action == "folder":
-                folder = choose_directory(title="Wybierz folder ze źródłami")
+                folder = self._choose_directory(title="Wybierz folder ze źródłami")
                 if folder:
                     recursive = self.dialogs.confirm("PODFOLDERY", "Skanować podfoldery?")
                     files = discover_source_files(folder, recursive=recursive)
@@ -823,7 +840,7 @@ class StudioWorkflows:
                     )
                     paths = [Path(item) for item in (selected or [])]
             elif action in {"legacy-plan", "legacy-run"}:
-                folder = choose_directory(title="Wybierz folder starych baz Testów 01–04")
+                folder = self._choose_directory(title="Wybierz folder starych baz Testów 01–04")
                 if not folder:
                     continue
                 dry_run = action == "legacy-plan"
@@ -832,14 +849,18 @@ class StudioWorkflows:
                     "Ta operacja zapisze kompatybilne rekordy do bieżącej bazy. Kontynuować?",
                 ):
                     continue
+                if not dry_run:
+                    self._require_safe_database_write()
                 result = store.migrate_legacy_root(folder, dry_run=dry_run)
                 self.dialogs.message("MIGRACJA", _json_text(result))
                 continue
             if paths:
+                self._require_safe_database_write()
                 result = store.import_sources(paths, full_validation=True)
                 self.dialogs.message("WYNIK IMPORTU", _json_text(result))
 
     def candidates_hub(self) -> None:
+        self._require_safe_database_write()
         store = UnifiedMemoryDatabase(self.state.database)
         while True:
             status = self.dialogs.choice(
@@ -1035,12 +1056,16 @@ class StudioWorkflows:
                 "Token nie zgadza się. Nie uruchomiono zapisu.",
             )
             return
+        self._require_safe_database_write()
         result = controller.run(confirmation=typed)
         self.dialogs.message("WYNIK ODBUDOWY", _json_text(result))
 
     def export(self) -> None:
         project = self._project() if self.state.project else None
+        configured_output = str(project.settings.get("final_output") or "").strip() if project else ""
         default_output = (
+            Path(configured_output).expanduser().resolve()
+            if configured_output else
             Path(project.target_root).expanduser().resolve().parent / "memory_final"
             if project and project.target_root
             else self.state.database.parent / "memory_final"
@@ -1052,7 +1077,7 @@ class StudioWorkflows:
         )
         if not raw:
             return
-        output = Path(raw).expanduser().resolve()
+        output = require_isolated_staging_path(raw, tool_root=self.state.tool_root)
         overwrite = output.exists() and self.dialogs.confirm(
             "NADPISAĆ EKSPORT",
             "Cel już istnieje. Przenieść stary katalog do backupu i opublikować nowy?",
