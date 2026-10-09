@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.115.16-memory-studio-desktop-workspace",
+  "runtime_version": "16.3.25.5.115.17-memory-studio-functional-safety-hardening",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
