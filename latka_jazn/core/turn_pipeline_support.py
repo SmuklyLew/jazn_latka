@@ -173,11 +173,19 @@ def _model_guided_rejection_disclosure(
     first_validation: Any,
 ) -> tuple[str, str, str, bool]:
     adapter_payload = dict(model_synthesis.adapter_response or {})
-    model_replied = bool(adapter_payload) and str(
-        adapter_payload.get("status") or model_synthesis.status
-    ) == "completed"
+    model_replied = (
+        bool(adapter_payload)
+        and str(adapter_payload.get("status") or model_synthesis.status) == "completed"
+        and str(adapter_payload.get("provider") or "").lower() not in {"", "none", "jazn_runtime"}
+        and str(adapter_payload.get("model") or "").lower() not in {"", "none", "runtime"}
+    )
     candidate_validation = dict(model_synthesis.candidate_validation or {})
-    candidate_violations = list(candidate_validation.get("violations") or [])
+    candidate_violations = [
+        violation
+        for evaluation in (model_synthesis.candidate_evaluations or [])
+        if evaluation.get("source") == "model_adapter"
+        for violation in (evaluation.get("violations") or [])
+    ] or list(candidate_validation.get("violations") or [])
     mismatch_reason = str(getattr(first_validation, "mismatch_reason", "") or "").strip()
     missing_components = list(
         getattr(first_validation, "missing_required_components", []) or []
@@ -188,12 +196,8 @@ def _model_guided_rejection_disclosure(
         if str(item).strip()
     ]
     if model_replied:
-        provider_name = str(
-            model_synthesis.provider or adapter_payload.get("provider") or "ollama"
-        )
-        model_name = str(
-            model_synthesis.model or adapter_payload.get("model") or "model"
-        )
+        provider_name = str(adapter_payload.get("provider") or "model")
+        model_name = str(adapter_payload.get("model") or "model")
         detail = ", ".join(str(item) for item in rejection_details[:4]) or str(
             model_synthesis.reason or "runtime_validation_rejected"
         )

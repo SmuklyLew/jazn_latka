@@ -10,6 +10,7 @@ from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("message_envelope")
 TIMESTAMP_HEADER_RE = re.compile(r"^🕒 (?P<value>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$")
+MODEL_INLINE_TIMESTAMP_RE = re.compile(r"^🕒 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?=\s|$)")
 
 
 def normalize_newlines(value: str | None) -> str:
@@ -142,4 +143,17 @@ def strip_recognized_visible_envelope(text: str) -> str:
     lines = value.split("\n")
     if len(lines) >= 4 and TIMESTAMP_HEADER_RE.fullmatch(lines[0].strip()) and lines[1].strip() and not lines[2].strip():
         return "\n".join(lines[3:]).strip()
+    return value
+
+
+def clean_model_generated_body(text: str) -> str:
+    """Remove only recognized leading generated envelopes, never timestamps within prose.
+
+    A model must not author its own turn timestamp; the final response contract
+    owns the timestamp and verified author metadata.
+    """
+    value = strip_recognized_visible_envelope(text)
+    match = MODEL_INLINE_TIMESTAMP_RE.match(value)
+    if match:
+        value = value[match.end():].lstrip()
     return value

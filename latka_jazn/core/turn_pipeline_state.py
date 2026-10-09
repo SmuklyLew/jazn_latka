@@ -29,6 +29,7 @@ class CognitiveFrame:
 class TurnPipelineState:
     request: TurnRequest
     response_plan: Any = None
+    speech_adapter: Any = None
     adapter_status: Any = None
     affect_mix: Any = None
     answer_validation: Any = None

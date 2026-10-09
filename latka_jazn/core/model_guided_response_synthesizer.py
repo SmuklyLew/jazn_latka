@@ -6,7 +6,7 @@ from typing import Any
 
 from latka_jazn.core.model_context_compiler import compile_model_context
 from latka_jazn.core.host_response_candidate_guard import build_host_generation_context
-from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
+from latka_jazn.core.message_envelope import clean_model_generated_body
 from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight, resolve_model_executor
 from latka_jazn.core.nlg_planner import build_nlg_plan
 from latka_jazn.core.operational_thought_frame import build_operational_thought_frame
@@ -27,6 +27,7 @@ class ModelGuidedSynthesis:
     endpoint_used: str | None = None
     adapter_response: dict[str, Any] | None = None
     candidate_validation: dict[str, Any] | None = None
+    candidate_evaluations: list[dict[str, Any]] | None = None
     host_generation_context: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -122,6 +123,18 @@ class ModelGuidedResponseSynthesizer:
             for candidate in candidates
         ]
         selected = select_best_candidate(candidates, evaluations)
+        # Diagnostics are metadata-only: never persist raw model text or memory excerpts.
+        candidate_evaluations = [
+            {
+                "candidate_id": item.candidate_id,
+                "source": next((c.source for c in candidates if c.candidate_id == item.candidate_id), "unknown"),
+                "accepted": item.accepted,
+                "score": item.score,
+                "violations": list(item.violations),
+                "selected": item.candidate_id == selected.candidate_id,
+            }
+            for item in evaluations
+        ]
         selected_evaluation = next(
             (evaluation for evaluation in evaluations if evaluation.candidate_id == selected.candidate_id),
             None,
@@ -142,6 +155,7 @@ class ModelGuidedResponseSynthesizer:
                     if selected_evaluation
                     else None
                 ),
+                candidate_evaluations=candidate_evaluations,
             )
         body = self._clean(selected.text)
         if not body:
@@ -160,6 +174,7 @@ class ModelGuidedResponseSynthesizer:
             endpoint_used=selected.endpoint_used,
             adapter_response=selected.adapter_response or None,
             candidate_validation=selected_evaluation.to_dict() if selected_evaluation else None,
+            candidate_evaluations=candidate_evaluations,
         )
 
     @staticmethod
@@ -186,7 +201,7 @@ class ModelGuidedResponseSynthesizer:
 
     @staticmethod
     def _clean(text: str) -> str:
-        return strip_recognized_visible_envelope(text)
+        return clean_model_generated_body(text)
 
     @staticmethod
     def _build_context(
