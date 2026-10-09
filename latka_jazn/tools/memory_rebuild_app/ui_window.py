@@ -50,7 +50,8 @@ def build_window_spec(*, tool_root: Path) -> CommandStudioSpec:
 
 
 def run_window(*, tool_root: Path, diagnostics: DiagnosticsHub) -> int:
-    return run_window_studio(build_studio_spec(tool_root=tool_root), diagnostics)
+    from .ui_desktop import run_desktop
+    return run_desktop(tool_root=Path(tool_root), diagnostics=diagnostics)
 
 
 __all__ = ["build_studio_spec", "build_window_spec", "run_window"]
