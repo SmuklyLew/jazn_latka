@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.10",
-  "active_definition_count": 2054,
+  "system_version": "16.3.25.5.115.11",
+  "active_definition_count": 2062,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -44520,6 +44520,208 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_safe_model_candidate_takes_precedence_over_runtime_draft_in_each_route": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_safe_model_candidate_takes_precedence_over_runtime_draft_in_each_route",
+      "purpose": "Safe model candidate takes precedence over runtime draft in each route",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_invalid_model_never_beats_safe_runtime_fallback": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_invalid_model_never_beats_safe_runtime_fallback",
+      "purpose": "Invalid model never beats safe runtime fallback",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_external_evidence_policy_and_exact_runtime_still_fail_closed": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_external_evidence_policy_and_exact_runtime_still_fail_closed",
+      "purpose": "External evidence policy and exact runtime still fail closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_internal_memory_evidence_draft_is_not_a_visible_candidate": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_internal_memory_evidence_draft_is_not_a_visible_candidate",
+      "purpose": "Internal memory evidence draft is not a visible candidate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_only_model_authored_prefix_is_stripped": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_only_model_authored_prefix_is_stripped",
+      "purpose": "Only model authored prefix is stripped",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_rejected_fallback_never_claims_runtime_is_a_model": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_rejected_fallback_never_claims_runtime_is_a_model",
+      "purpose": "Rejected fallback never claims runtime is a model",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_no_candidate_metadata_contains_raw_model_text": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_no_candidate_metadata_contains_raw_model_text",
+      "purpose": "No candidate metadata contains raw model text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_v11511_turn_candidate_route_regressions.py::test_response_pipeline_uses_one_turn_adapter_for_synthesis": {
+      "path": "tests/test_v11511_turn_candidate_route_regressions.py",
+      "name": "test_response_pipeline_uses_one_turn_adapter_for_synthesis",
+      "purpose": "Response pipeline uses one turn adapter for synthesis",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.turn_pipeline_state",
+        "latka_jazn.core.turn_pipeline_support"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
