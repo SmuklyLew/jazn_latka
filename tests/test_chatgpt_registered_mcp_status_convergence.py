@@ -29,8 +29,8 @@ NOW = datetime(2026, 10, 7, 18, 0, 0, tzinfo=timezone.utc)
 
 
 class _Gateway:
-    def __init__(self, *, heartbeat: datetime = NOW) -> None:
-        self.heartbeat = heartbeat
+    def __init__(self, *, heartbeat: datetime | None = None) -> None:
+        self.heartbeat = heartbeat if heartbeat is not None else datetime.now(timezone.utc)
 
     def status(self) -> dict[str, Any]:
         return {
