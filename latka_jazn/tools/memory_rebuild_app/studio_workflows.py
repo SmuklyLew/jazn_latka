@@ -71,11 +71,26 @@ class StudioWorkflows:
 
     def _choose_files(self, **kwargs: Any) -> list[Path]:
         picker = getattr(self.dialogs, "choose_files", None)
-        return picker(**kwargs) if callable(picker) else choose_files(**kwargs)
+        if not callable(picker):
+            return choose_files(**kwargs)
+        picked = picker(**kwargs)
+        if not isinstance(picked, list):
+            raise TypeError("Desktop file picker must return a list of paths.")
+        result: list[Path] = []
+        for item in picked:
+            if not isinstance(item, Path):
+                raise TypeError("Desktop file picker returned a non-Path.")
+            result.append(item)
+        return result
 
     def _choose_directory(self, **kwargs: Any) -> Path | None:
         picker = getattr(self.dialogs, "choose_directory", None)
-        return picker(**kwargs) if callable(picker) else choose_directory(**kwargs)
+        if not callable(picker):
+            return choose_directory(**kwargs)
+        selected = picker(**kwargs)
+        if selected is not None and not isinstance(selected, Path):
+            raise TypeError("Desktop directory picker must return Path or None.")
+        return selected
 
     def _require_safe_database_write(self) -> None:
         project = self._project()
