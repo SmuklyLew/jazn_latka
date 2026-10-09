@@ -73,7 +73,11 @@ def profile_directory(root: str | Path, *, workspace: Path | None = None) -> Pat
     target = Path(workspace).expanduser().resolve() if workspace is not None else workspace_runtime_path(source)
     if target == source or source in target.parents:
         raise ConfigValidationError("Profile nie mogą być zapisywane wewnątrz katalogu SYSTEM.")
-    return target / "configuration_studio" / "profiles"
+    config_home = target / "configuration_studio"
+    profile_home = config_home / "profiles"
+    if config_home.is_symlink() or profile_home.is_symlink():
+        raise ConfigValidationError("Symlink katalogu profili jest zabroniony.")
+    return profile_home
 
 
 def profile_file(root: str | Path, *, name: str = "operator", workspace: Path | None = None) -> Path:
