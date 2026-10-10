@@ -9,7 +9,7 @@ historical <active_root>/memory layouts.
 """
 
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
@@ -173,6 +173,32 @@ def resolve_memory_root_diagnostic(
     }
 
 
+def normalize_memory_relative_path(relative: str | Path) -> Path:
+    """Normalize one historical MEMORY prefix without accepting unsafe aliases.
+
+    Both path separators are accepted on every host because profiles and shard
+    manifests can travel between Windows and POSIX. Validate before Path erases
+    traversal components, and reject Windows drives even on a POSIX host.
+    """
+
+    raw = str(relative)
+    windows = PureWindowsPath(raw)
+    portable = raw.replace("\\", "/")
+    if not raw.strip() or windows.drive or windows.root or portable.startswith("/"):
+        raise ValueError(f"memory path must be relative: {relative}")
+    parts = portable.split("/")
+    if ".." in parts:
+        raise ValueError(f"memory path contains traversal: {relative}")
+    parts = [part for part in parts if part not in {"", "."}]
+    if parts and parts[0].casefold() == MEMORY_DIR_NAME:
+        parts = parts[1:]
+        if parts and parts[0].casefold() == MEMORY_DIR_NAME:
+            raise ValueError(f"memory path has duplicated memory prefix: {relative}")
+    if not parts:
+        raise ValueError(f"memory path must name a child of memory root: {relative}")
+    return Path(*parts)
+
+
 def memory_path(
     runtime_root: str | Path,
     relative: str | Path,
@@ -187,12 +213,7 @@ def memory_path(
         configured=configured_root,
         prefer_existing_legacy=prefer_existing_legacy,
     )
-    rel = Path(relative)
-    if rel.is_absolute():
-        raise ValueError(f"memory path must be relative: {relative}")
-    parts = rel.parts
-    if parts and parts[0].casefold() == MEMORY_DIR_NAME.casefold():
-        rel = Path(*parts[1:])
+    rel = normalize_memory_relative_path(relative)
     target = (base / rel).resolve()
     try:
         target.relative_to(base)
@@ -208,6 +229,7 @@ __all__ = [
     "legacy_memory_root",
     "memory_path",
     "memory_root_has_payload",
+    "normalize_memory_relative_path",
     "resolve_memory_root",
     "resolve_memory_root_diagnostic",
 ]

@@ -10,6 +10,8 @@ from typing import Any
 
 from latka_jazn.tools.application_shell import ShellSettings, load_shell_settings, save_shell_settings
 
+from latka_jazn.tools.application_shell.operator_paths import legacy_read_path, operator_file, operator_state_dir
+
 APP_NAME = "Jaźń - Studio Testów"
 APP_VERSION = "1.3.0"
 VALID_REVIEW = {"current", "review_required", "obsolete", "incompatible"}
@@ -45,8 +47,16 @@ def support_dir(root: Path) -> Path:
     return Path(root) / "tools" / "jazn_tests_studio"
 
 
+def state_dir(root: Path) -> Path:
+    return operator_state_dir("jazn-tests-studio", root, per_system=True)
+
+
 def local_settings_path(root: Path) -> Path:
-    return support_dir(root) / "local_settings.json"
+    return operator_file("jazn-tests-studio", root, "local_settings.json", per_system=True)
+
+
+def reviews_path(root: Path) -> Path:
+    return operator_file("jazn-tests-studio", root, "reviews.json", per_system=True)
 
 
 def default_shell_settings() -> ShellSettings:
@@ -54,7 +64,7 @@ def default_shell_settings() -> ShellSettings:
 
 
 def load_ui_settings(root: Path) -> ShellSettings:
-    return load_shell_settings(local_settings_path(root), defaults=default_shell_settings())
+    return load_shell_settings(legacy_read_path(local_settings_path(root), support_dir(root) / "local_settings.json"), defaults=default_shell_settings())
 
 
 def save_ui_settings(root: Path, settings: ShellSettings) -> ShellSettings:
@@ -95,7 +105,7 @@ def load_catalog(root: Path) -> dict[str, Any]:
 
 
 def load_reviews(root: Path) -> dict[str, Any]:
-    path = support_dir(root) / "reviews.json"
+    path = legacy_read_path(reviews_path(root), support_dir(root) / "reviews.json")
     if not path.is_file():
         return {"schema": "jazn_tests_studio_reviews/v1", "reviews": {}}
     try:
@@ -109,7 +119,7 @@ def load_reviews(root: Path) -> dict[str, Any]:
 
 
 def save_reviews(root: Path, payload: dict[str, Any]) -> None:
-    path = support_dir(root) / "reviews.json"
+    path = reviews_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Any, Callable
 
-from .core import EVENT_MARKER, UI_STATUS
+from .core import EVENT_MARKER, UI_STATUS, state_dir
 
 
 class PytestRun:
@@ -46,6 +46,7 @@ class PytestRun:
             sys.executable,
             "-X",
             "utf8",
+            "-B",
             "-m",
             "pytest",
             "-q",
@@ -54,6 +55,8 @@ class PytestRun:
             "--tb=short",
             "-ra",
             "--color=no",
+            "-o",
+            f"cache_dir={state_dir(self.root) / 'pytest_cache'}",
         ]
         cmd.extend(self.nodeids or ["tests", "--ignore=tests/archive"])
         return cmd
@@ -127,8 +130,9 @@ class PytestRun:
 
     def _worker(self) -> None:
         self.started = time.monotonic()
-        cmd = self.command()
+        cmd: list[str] = []
         env = os.environ.copy()
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
         tools_path = str(self.root / "tools")
         previous = env.get("PYTHONPATH", "")
         env["PYTHONPATH"] = tools_path + (os.pathsep + previous if previous else "")
@@ -138,6 +142,7 @@ class PytestRun:
         returncode: int | None = None
         launch_error: str | None = None
         try:
+            cmd = self.command()
             proc = subprocess.Popen(
                 cmd,
                 cwd=self.root,

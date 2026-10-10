@@ -20,6 +20,12 @@ from datetime import datetime
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Callable, Iterable, Mapping
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from latka_jazn.tools.application_shell.operator_paths import legacy_read_path, operator_file, operator_state_dir, validate_operator_path
+
 ProgressCallback = Callable[[int, str], None]
 OutputCallback = Callable[[str], None]
 
@@ -91,8 +97,12 @@ def clean_prefix(value: str) -> str:
     return value or BACKUP_PREFIX
 
 
+def default_settings_path() -> Path:
+    return operator_file("jazn-version-rebuild", discover_root(app_dir()), SETTINGS_NAME, per_system=True)
+
+
 def load_settings(path: Path) -> Settings:
-    default = Settings(str(discover_root(path.parent)), sys.executable)
+    default = Settings(str(discover_root(app_dir())), sys.executable)
     try:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
     except (FileNotFoundError, OSError, json.JSONDecodeError):
@@ -123,6 +133,8 @@ def atomic_write(path: Path, raw: bytes) -> None:
 
 
 def save_settings(path: Path, settings: Settings) -> None:
+    path = validate_operator_path(path, discover_root(app_dir()))
+    path = validate_operator_path(path, Path(settings.root))
     payload = {
         "schema_version": "jazn_version_rebuild_settings/v0.2",
         "app_version": APP_VERSION,
@@ -368,6 +380,12 @@ def unified_diff(before: Mapping[Path, bytes | None], after: Mapping[Path, bytes
     return text if not text or text.endswith("\n") else text + "\n"
 
 
+def backup_paths(folder: Path) -> list[Path]:
+    """List new and legacy backups without moving or rewriting either."""
+    paths = set(folder.glob("*.diff")) | set(app_dir().glob("*.diff"))
+    return sorted((path for path in paths if path.is_file()), key=lambda item: item.stat().st_mtime, reverse=True)
+
+
 def diff_backup(folder: Path, prefix: str, label: str, old: str, new: str, before: Mapping[Path, bytes | None], after: Mapping[Path, bytes | None]) -> Path:
     patch = unified_diff(before, after)
     if not patch:
@@ -381,6 +399,7 @@ def diff_backup(folder: Path, prefix: str, label: str, old: str, new: str, befor
         f"# Operacja: {label}\n"
         "# Cofnięcie: git apply --reverse --check plik.diff; git apply --reverse plik.diff\n"
     )
+    path = validate_operator_path(path, discover_root(app_dir()))
     atomic_write(path, (header + patch).encode("utf-8"))
     return path
 
@@ -553,9 +572,9 @@ def workflow_guidance(root: Path, version: VersionData) -> str:
 class App(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.folder = app_dir()
-        self.settings_path = self.folder / SETTINGS_NAME
-        self.settings = load_settings(self.settings_path)
+        self.folder = operator_state_dir("jazn-version-rebuild", discover_root(app_dir()), per_system=True)
+        self.settings_path = default_settings_path()
+        self.settings = load_settings(legacy_read_path(self.settings_path, app_dir() / SETTINGS_NAME))
         self.busy = False
         self.title(f"{APP_NAME} v{APP_VERSION}")
         self.geometry("1160x780")
@@ -698,7 +717,7 @@ class App(tk.Tk):
         ).grid(row=4, column=0, columnspan=3, sticky="w", pady=(10, 5))
         ttk.Label(
             frame,
-            text=f"Ustawienia i kopie diff są zapisywane obok aplikacji:\n{self.folder}\n\nAplikacja nie tworzy ani nie przełącza branchy i nie dotyka memory/, workspace_runtime/ ani SQLite.",
+            text=f"Ustawienia i kopie diff są zapisywane poza SYSTEM:\n{self.folder}\n\nAplikacja nie tworzy ani nie przełącza branchy i nie dotyka memory/, workspace_runtime/ ani SQLite.",
             wraplength=900,
         ).grid(row=5, column=0, columnspan=3, sticky="w", pady=(10, 8))
         ttk.Button(frame, text="Zapisz ustawienia", command=self.save_config).grid(row=6, column=0, sticky="w")
@@ -846,7 +865,7 @@ class App(tk.Tk):
                     raise RebuildError("Kontrola odczytu nie potwierdziła nowej wersji.")
                 progress(85, "Tworzę odwracalną kopię diff")
                 after = snapshot(root, [VERSION_PATH])
-                backup = diff_backup(self.folder, prefix, "version", current.full, target.full, before, after)
+                backup = diff_backup(validate_operator_path(self.folder, root, directory=True), prefix, "version", current.full, target.full, before, after)
             except Exception:
                 restore(root, before)
                 raise
@@ -888,7 +907,7 @@ class App(tk.Tk):
                 after = snapshot(root, GENERATED_PATHS)
                 changed = before != after
                 backup = (
-                    diff_backup(self.folder, prefix, "metadata", version.full, version.full, before, after)
+                    diff_backup(validate_operator_path(self.folder, root, directory=True), prefix, "metadata", version.full, version.full, before, after)
                     if changed
                     else None
                 )
@@ -936,7 +955,7 @@ class App(tk.Tk):
 
     def refresh_diffs(self) -> None:
         self.diffs.delete(*self.diffs.get_children())
-        for path in sorted(self.folder.glob("*.diff"), key=lambda item: item.stat().st_mtime, reverse=True):
+        for path in backup_paths(self.folder):
             stat = path.stat()
             self.diffs.insert("", "end", iid=str(path), values=(path.name, datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"), f"{stat.st_size / 1024:.1f} KiB"))
 

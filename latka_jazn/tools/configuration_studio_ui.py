@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from latka_jazn.memory.memory_root import resolve_memory_root
 
 from .configuration_studio import (
     SETTINGS, ConfigValidationError, describe_profile, inspect_system,
@@ -193,7 +194,7 @@ class ConfigurationStudio:
                 variable = tk.StringVar(value=stored.get(spec.key, ""))
                 self._entries[spec.key] = variable
                 ttk.Entry(line, textvariable=variable).pack(side="left", fill="x", expand=True, padx=8)
-                if spec.kind in {"directory", "file"}:
+                if spec.kind in {"directory", "file", "memory_database"}:
                     ttk.Button(line, text="…", width=3,
                                command=lambda v=variable, t=spec.kind: self._browse(v, t)).pack(side="right")
                 ttk.Label(rows, text=f"{spec.key} — {spec.hint}", style="Note.TLabel").pack(anchor="w", padx=12)
@@ -208,6 +209,22 @@ class ConfigurationStudio:
                    command=self._copy_launch_command).pack(side="right")
 
     def _browse(self, variable: tk.StringVar, kind: str) -> None:
+        if kind == "memory_database":
+            configured = self._values().get("JAZN_MEMORY_ROOT", "").strip()
+            base = resolve_memory_root(self.system, configured=configured or None)
+            selected = filedialog.askopenfilename(
+                parent=self.root, title="Wybierz bazę wewnątrz MEMORY", initialdir=str(base),
+                filetypes=[("SQLite", "*.sqlite *.sqlite3 *.db"), ("Wszystkie pliki", "*")],
+            )
+            if selected:
+                try:
+                    relative = Path(selected).resolve().relative_to(base)
+                    validate_values(self.system, {**self._values(), "JAZN_MEMORY_TIER_DB": relative.as_posix()})
+                except ValueError as exc:
+                    messagebox.showerror("Nie wybrano bazy", str(exc), parent=self.root)
+                    return
+                variable.set(relative.as_posix())
+            return
         if kind == "file":
             selected = filedialog.asksaveasfilename(parent=self.root, title="Wybierz ścieżkę pliku")
         else:

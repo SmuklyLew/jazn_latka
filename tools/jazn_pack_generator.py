@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from latka_jazn.tools.application_shell.operator_paths import operator_state_dir
+
 from latka_jazn.tools.application_shell import DiagnosticsHub, TerminalSplash, normalize_ui_mode, run_guarded
 
 try:
@@ -174,7 +176,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     settings = load_settings()
     diagnostics = DiagnosticsHub(
         "jazn-pack-generator",
-        settings_path().parent,
+        operator_state_dir("jazn-pack-generator", ROOT),
         enabled=bool(settings.get("diagnostics_enabled", True)),
         limit=int(settings.get("diagnostics_limit", 500)),
         minimum_level=str(settings.get("log_level") or "INFO"),

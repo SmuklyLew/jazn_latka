@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# v115.20 integrates Studio P0 with MCP ingress recovery.
 # v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.18.2"
-PACKAGE_VERSION = "16.3.25.5.115.18.2"
-PACKAGE_RELEASE_NAME = "mcp-ingress-job-recovery"
+DISTRIBUTION_VERSION = "16.3.25.5.115.20"
+PACKAGE_VERSION = "16.3.25.5.115.20"
+PACKAGE_RELEASE_NAME = "studios-mcp-ingress-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -29,7 +29,10 @@ Bez `--ui` używana jest lokalna konfiguracja operatora. Na Windows domyślnym t
 - `progress_plugin.py` — plugin pytest emitujący zdarzenia `collection/start/result/session_finish`;
 - `test_contracts.json` — generowany katalog aktywnych kontraktów testowych;
 - `settings.json` — polityka źródłowa Studia;
-- `reviews.json`, `local_settings.json`, `runtime/` — lokalny stan operatora, ignorowany przez Git.
+- `reviews.json`, `local_settings.json`, `runtime/` — stan poza SYSTEM:
+  `~/.jazn/tools/jazn-tests-studio/<system-id>/`. Root można wskazać przez
+  `JAZN_OPERATOR_STATE_ROOT`; walidator odrzuca kolizję z SYSTEM/MEMORY/runtime.
+  Poprzednie pliki w katalogu narzędzia pozostają fallbackiem tylko do odczytu.
 
 Każdy interfejs ma ekran główny i dostęp do ustawień. TUI oraz GUI mają oddzielny widok diagnostyczny; interfejs tekstowy udostępnia polecenia `settings` i `diagnostics`.
 
