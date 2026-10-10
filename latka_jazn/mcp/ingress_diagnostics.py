@@ -16,6 +16,8 @@ from urllib.parse import urlsplit
 MODERN_PROTOCOL_VERSION = "2026-07-28"
 LEGACY_PROTOCOL_VERSION = "2025-11-25"
 _MAX_RESPONSE_BYTES = 65536
+# Protocol 2026-07-28 errors plus modern Method Not Found: never downgrade.
+_MODERN_PROTOCOL_ERROR_CODES = frozenset({-32020, -32021, -32022, -32601})
 
 
 class _RejectRedirects(urllib.request.HTTPRedirectHandler):
@@ -158,9 +160,7 @@ def _round_trip(
         # Do not downgrade an auth challenge, rate limit, or recognized modern
         # protocol error to legacy initialize. A legacy fallback is at most one
         # additional POST to the exact same validated endpoint.
-        fallback = modern and code in {400, 404, 405, 406, 415, 422} and error_code not in {
-            -32020, -32022, -32601,
-        }
+        fallback = modern and code in {400, 404, 405, 406, 415, 422} and error_code not in _MODERN_PROTOCOL_ERROR_CODES
         reasons = {
             401: "mcp_authentication_required",
             403: "mcp_access_forbidden",
@@ -171,7 +171,7 @@ def _round_trip(
         return {
             **response_base, "ok": False, "http_status": code,
             "reason": (
-                "mcp_modern_protocol_error" if modern and error_code in {-32020, -32022, -32601}
+                "mcp_modern_protocol_error" if modern and error_code in _MODERN_PROTOCOL_ERROR_CODES
                 else reasons.get(code, "mcp_http_error")
             ),
             "_fallback_legacy": fallback,

@@ -1,4 +1,4 @@
-# P0 fix: MCP probe protocol-era safety — v16.3.25.5.115.20.2
+# P0 fix: MCP probe protocol-era safety — v16.3.25.5.115.20.3
 
 Stacked parent: upgrade/v16.3.25.5.115.20-studios-mcp-ingress-convergence
 Patch branch: fix/v16.3.25.5.115.20.2-mcp-probe-p0
@@ -12,6 +12,7 @@ The previous diagnostic labeled an MCP initialize handshake as protocol 2026-07-
 - Probe modern 2026-07-28 first: server/discover, body _meta with protocolVersion, clientInfo and clientCapabilities, and matching MCP-Protocol-Version and Mcp-Method HTTP headers.
 - A valid discovery result needs resultType=complete, capabilities object and supportedVersions containing 2026-07-28. HTTP 200 alone never proves readiness.
 - Permit one read-only legacy initialize probe (2025-11-25) to the exact same endpoint only after an unrecognized modern HTTP 4xx. Never downgrade on 401/403/429, redirects or recognized modern JSON-RPC errors.
+- The v115.20.3 follow-up includes `-32021` (MissingRequiredClientCapabilityError) among recognized modern errors, preventing incorrect legacy downgrade; the active test parametrization and historical snapshot cover this correction.
 - Explicitly disable automatic redirects for all diagnostic HTTP requests (including same-host and POST-preserving 307/308).
 - Preserve existing CLI (run.py mcp-probe) and diagnostic truth boundary. Neither this probe nor a legacy initialize response proves tools/list, tool exposure in ChatGPT, OAuth validity, MessageEnvelope or accepted visible turns.
 - Retain original versions of the six edited active test files in tests/archive/v16.3.25.5.115.20.1-pre-mcp-probe-p0/ (byte-identical Git blobs).
@@ -21,6 +22,7 @@ The previous diagnostic labeled an MCP initialize handshake as protocol 2026-07-
 - https://modelcontextprotocol.io/specification/2026-07-28/server/discover
 - https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http
 - https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning
+- https://ts.sdk.modelcontextprotocol.io/v2/migration/support-2026-07-28
 - https://github.com/modelcontextprotocol/python-sdk/blob/main/docs/protocol-versions.md
 
 ## Release gates

@@ -3,14 +3,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# v115.20.3 recognizes modern MCP -32021 without unsafe legacy downgrade.
 # v115.20.2 probes modern MCP discovery safely and keeps bounded legacy diagnostics.
 # v115.20.1 aligns startup/release identity and operator-state tests after MCP/Studio integration.
 # v115.20 integrates Studio P0 with MCP ingress recovery.
 # v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.20.2"
-PACKAGE_VERSION = "16.3.25.5.115.20.2"
+DISTRIBUTION_VERSION = "16.3.25.5.115.20.3"
+PACKAGE_VERSION = "16.3.25.5.115.20.3"
 PACKAGE_RELEASE_NAME = "mcp-probe-protocol-safety"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
