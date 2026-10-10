@@ -128,6 +128,7 @@ def _round_trip(
             if modern:
                 matched = (
                     matched
+                    and isinstance(result, dict)
                     and result.get("resultType") == "complete"
                     and isinstance(result.get("supportedVersions"), list)
                     and MODERN_PROTOCOL_VERSION in result["supportedVersions"]
