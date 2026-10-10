@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "36a5b5ab89897eb83fbd64bb0b25757f094a5c3d",
+  "base_merge_commit": "bb9c98523b29712f6fe4b6ce99afc87f13b09610",
   "base_version": "16.3.25.5.115.20.1-studios-mcp-ingress-ci-hardening",
-  "commit_date": "2026-10-10T20:16:45Z",
+  "commit_date": "2026-10-10T22:51:02+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-10T20:16:45+00:00",
+  "generated_at_utc": "2026-10-10T20:51:02+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "d2a2f9c9343755ba0ce3f60e78fad9286303da2f",
+  "git_tree_sha": "7fabb1c69093f57ba3721821c52bedaf1f81e73b",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "36a5b5ab89897eb83fbd64bb0b25757f094a5c3d",
+    "source_commit": "bb9c98523b29712f6fe4b6ce99afc87f13b09610",
     "source_version": "16.3.25.5.115.20.1-studios-mcp-ingress-ci-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "36a5b5ab89897eb83fbd64bb0b25757f094a5c3d",
+  "source_commit": "bb9c98523b29712f6fe4b6ce99afc87f13b09610",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.20.1-studios-mcp-ingress-ci-hardening",
   "tag": null,
