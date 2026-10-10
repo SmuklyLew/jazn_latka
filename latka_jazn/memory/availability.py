@@ -18,6 +18,7 @@ from latka_jazn.memory.memory_root import (
     MEMORY_ROOT_ENV,
     default_memory_root,
     legacy_memory_root,
+    normalize_memory_relative_path,
     resolve_memory_root,
 )
 from latka_jazn.version import schema_version
@@ -195,12 +196,7 @@ def runtime_memory_storage_path(
     mode: str | None = None,
 ) -> Path:
     base = runtime_memory_storage_root(runtime_root, mode=mode)
-    rel = Path(relative)
-    if rel.is_absolute():
-        raise ValueError(f"runtime memory storage path must be relative: {relative}")
-    parts = rel.parts
-    if parts and parts[0].casefold() == "memory":
-        rel = Path(*parts[1:])
+    rel = normalize_memory_relative_path(relative)
     target = (base / rel).resolve()
     try:
         target.relative_to(base)

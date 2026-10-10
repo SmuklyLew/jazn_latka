@@ -22,6 +22,7 @@ from .core import (
     _read_json_cached,
     set_review,
     support_dir,
+    state_dir,
 )
 from .runner import PytestRun, run_pytest
 from .ui_text import run_text_ui
@@ -188,7 +189,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     settings = load_ui_settings(root)
     diagnostics = DiagnosticsHub(
         "jazn-tests-studio",
-        support_dir(root),
+        state_dir(root),
         enabled=settings.diagnostics_enabled,
         limit=settings.diagnostics_limit,
         minimum_level=settings.log_level,

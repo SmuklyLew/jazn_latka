@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 import os
+import sqlite3
 
 from latka_jazn.memory.availability import build_memory_availability_status
-from latka_jazn.memory.memory_root import legacy_memory_root, memory_path, resolve_memory_root
+from latka_jazn.memory.database_identity import inspect_memory_database
+from latka_jazn.memory.memory_root import (
+    legacy_memory_root, memory_path, resolve_memory_root,
+)
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
 from latka_jazn.memory.runtime_memory import RuntimeMemoryCoordinator
 from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
@@ -63,17 +67,12 @@ class LegacyLayeredMemoryReadOnlyAdapter:
         }
 
 
-def _strip_memory_prefix(path: Path) -> Path:
-    parts = path.parts
-    if parts and parts[0].casefold() == "memory":
-        return Path(*parts[1:])
-    return path
-
-
 def _configured_tier_path(runtime_root: Path, configured: str | Path) -> Path:
     """Map historical version-local tier paths into the selected persistent memory root."""
 
     candidate = Path(configured).expanduser()
+    if ".." in str(configured).replace("\\", "/").split("/"):
+        raise ValueError("configured memory tier database contains traversal")
     selected_root = resolve_memory_root(runtime_root)
     if candidate.is_absolute():
         resolved = candidate.resolve()
@@ -82,13 +81,15 @@ def _configured_tier_path(runtime_root: Path, configured: str | Path) -> Path:
                 inner = resolved.relative_to(base)
             except ValueError:
                 continue
-            return (selected_root / inner).resolve()
+            if inner.parts and inner.parts[0].casefold() == "memory":
+                raise ValueError("configured memory tier database has duplicated memory prefix")
+            return memory_path(runtime_root, inner)
         try:
             relative_runtime = resolved.relative_to(runtime_root)
         except ValueError as exc:
             raise ValueError("configured memory tier database must be inside runtime or memory root") from exc
-        return memory_path(runtime_root, _strip_memory_prefix(relative_runtime))
-    return memory_path(runtime_root, _strip_memory_prefix(candidate))
+        return memory_path(runtime_root, relative_runtime)
+    return memory_path(runtime_root, configured)
 
 
 def _native_unified_tier_path(runtime_root: Path) -> Path | None:
@@ -129,15 +130,21 @@ def resolve_memory_tier_database_path(
         return configured_path
 
     if explicit_env is not None and explicit_env.strip():
-        raw = Path(explicit_env.strip())
-        if raw.is_absolute():
+        raw = explicit_env.strip()
+        if Path(raw).is_absolute() or PureWindowsPath(raw).drive or PureWindowsPath(raw).root:
             raise ValueError("JAZN_MEMORY_TIER_DB must be relative to JAZN_MEMORY_ROOT")
-        return memory_path(runtime_root, _strip_memory_prefix(raw))
+        return memory_path(runtime_root, raw)
 
     unified = _native_unified_tier_path(runtime_root)
     if unified is not None:
         return unified
     return memory_path(runtime_root, DEFAULT_TIER_DB)
+
+
+def _validate_existing_database(database: Path) -> None:
+    identity = inspect_memory_database(database)
+    if identity["exists"] and not identity["compatible"]:
+        raise ValueError("memory_database_schema_rejected: " + "; ".join(identity["issues"]))
 
 
 def initialize_transactional_memory_store(root: str | Path, *, configured: str | Path | None = None) -> dict[str, Any]:
@@ -158,9 +165,10 @@ def initialize_transactional_memory_store(root: str | Path, *, configured: str |
             "memory_availability": availability.to_dict(),
         }
     try:
+        _validate_existing_database(database_path)
         with MemoryTierStore(database_path) as store:
             validation = store.validate(full=False)
-    except (OSError, RuntimeError, ValueError) as exc:
+    except (OSError, RuntimeError, ValueError, sqlite3.Error) as exc:
         return {
             "ok": False,
             "status": "transactional_memory_initialization_failed",
@@ -208,6 +216,8 @@ def install_runtime_memory(engine: Any) -> RuntimeMemoryInstallStatus:
         raise RuntimeError("engine has no runtime memory classifier")
 
     database_path = _tier_database_path(engine)
+    if availability.persistent_memory_enabled:
+        _validate_existing_database(database_path)
     engine.runtime_memory_legacy_classifier = current
     engine.runtime_memory = RuntimeMemoryCoordinator(
         database_path,
