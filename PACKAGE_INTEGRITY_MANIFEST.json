@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
-  "runtime_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
-  "package_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
-  "generated_at_utc": "2026-10-10T21:06:47+00:00",
-  "updated_at_utc": "2026-10-10T21:06:47+00:00",
+  "version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "runtime_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "package_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "generated_at_utc": "2026-10-10T21:28:01+00:00",
+  "updated_at_utc": "2026-10-10T21:28:01+00:00",
   "start_file": "run.py",
-  "file_count": 2221,
-  "static_file_count": 2221,
+  "file_count": 2222,
+  "static_file_count": 2222,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -308,8 +308,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2917,
-      "sha256": "5e8d2536b7c299b18e41ffb407efacd63cfc1763ded473fe520f0484df272325",
+      "size_bytes": 2912,
+      "sha256": "6e9f6732e47bc16664287aadee0f4dcfd2c67b17f2119626b6fd2af52a1814f5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -345,7 +345,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1713,
-      "sha256": "78ca03e0ec64e48ac8cf5202c57329ec5016f0e4bf810902d40ae031fb297c7a",
+      "sha256": "11c9da88986a361a353f4561e69c0010cfa36efaddc05671eac35f9c3fd6e5ee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1343,8 +1343,8 @@
     },
     {
       "path": "docs/plans/P0_MCP_PROBE_PROTOCOL_SAFETY_11520_2.md",
-      "size_bytes": 2780,
-      "sha256": "44457a4ddcd15a57b94fa0bbbbff208d24517e2e8e736fa280c50f25bd7655a0",
+      "size_bytes": 3086,
+      "sha256": "21c54e0c02c7c30ee34937602a00db430e1fe9bd28e15f8953e7b7512e943517",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6086,8 +6086,8 @@
     },
     {
       "path": "latka_jazn/mcp/ingress_diagnostics.py",
-      "size_bytes": 9405,
-      "sha256": "121ce0dcefa19096cea612e841b1263aecfd8d6d9acb8a51c70c30eebcf3ddea",
+      "size_bytes": 9541,
+      "sha256": "11d8b7b0fbeaf9214f1635859582e8725e0845e677d7982ac1a60a99494c472e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8256,7 +8256,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7009,
-      "sha256": "b5f2a1f41c24f2a07dbb51198c509e85c3e5d2cc12b2cd30e04be4620c515801",
+      "sha256": "e0a5da8e02c7f5481694b570a1f9a2a4ee45acd4e9ba2c22af99243c485d9d0d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9650,8 +9650,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5511,
-      "sha256": "8f12375cac127b24e5bd2eb866669db095fc3bbb8fb9effaef62c57f758389d6",
+      "size_bytes": 5585,
+      "sha256": "86490a0d967aa3cf83f086a387db230b54d339afcb6b6be2c05b9e3c5314a368",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14050,6 +14050,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.115.20.2-pre-modern-error-code-hardening/test_mcp_ingress_diagnostics.py",
+      "size_bytes": 10442,
+      "sha256": "0324ddfadea01e315915fd6b03c168e223ad07d36e558780357a45939d098c8c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.115.3-pre-v115.4-chatgpt-explicit-consent-boundary/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2664,
       "sha256": "69d4721796577709406e58c9f9fb921815c2e9bb84287510c5e6d73a8c9a39ea",
@@ -17552,8 +17561,8 @@
     },
     {
       "path": "tests/test_mcp_ingress_diagnostics.py",
-      "size_bytes": 10442,
-      "sha256": "0324ddfadea01e315915fd6b03c168e223ad07d36e558780357a45939d098c8c",
+      "size_bytes": 10450,
+      "sha256": "543985f7a266cc09902b91616b6a54903a254f0798744ba75599548bb80cc502",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19830,7 +19839,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2020073,
-      "sha256": "dae13bfd63fe6aadf20f1e8b35c91ed91aeae520a11cb9ed0f9e1a9fee212941",
+      "sha256": "792c741065fd5202a6dc478361dceda198d61e56ac6ecd2c956aa555bee52aa3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20441,11 +20450,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
+  "release_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
-    "package_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety",
-    "release_version": "16.3.25.5.115.20.2-mcp-probe-protocol-safety"
+    "runtime_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+    "package_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+    "release_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety"
   },
   "legacy_aliases": {
     "version": "release_version"
