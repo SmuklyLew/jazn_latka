@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.0",
-  "active_definition_count": 2166,
+  "system_version": "16.3.25.5.115.21.1",
+  "active_definition_count": 2173,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -45729,6 +45729,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 73
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_history_discovery_is_read_only": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_history_discovery_is_read_only",
+      "purpose": "History discovery is read only",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_summary_is_redacted_and_isolated_from_system_memory": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_summary_is_redacted_and_isolated_from_system_memory",
+      "purpose": "Summary is redacted and isolated from system memory",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_history_retains_only_last_hundred": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_history_retains_only_last_hundred",
+      "purpose": "History retains only last hundred",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_invalid_history_fails_closed_without_replacement": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_invalid_history_fails_closed_without_replacement",
+      "purpose": "Invalid history fails closed without replacement",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "HistoryFormatError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_export_requires_external_new_absolute_path": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_export_requires_external_new_absolute_path",
+      "purpose": "Export requires external new absolute path",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "FileExistsError",
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_history_rejects_symlink_leaf": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_history_rejects_symlink_leaf",
+      "purpose": "History rejects symlink leaf",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "HistoryFormatError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_tests_studio_run_history_p1.py::test_invalid_scope_or_duration_does_not_create_history": {
+      "path": "tests/test_tests_studio_run_history_p1.py",
+      "name": "test_invalid_scope_or_duration_does_not_create_history",
+      "purpose": "Invalid scope or duration does not create history",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",
