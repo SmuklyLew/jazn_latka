@@ -1,4 +1,4 @@
-# P0 fix: MCP probe protocol-era safety — v16.3.25.5.115.20.3
+# P0 fix: MCP probe protocol-era safety — v16.3.25.5.115.20.4
 
 Stacked parent: upgrade/v16.3.25.5.115.20-studios-mcp-ingress-convergence
 Patch branch: fix/v16.3.25.5.115.20.2-mcp-probe-p0
@@ -24,6 +24,8 @@ The previous diagnostic labeled an MCP initialize handshake as protocol 2026-07-
 - https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning
 - https://ts.sdk.modelcontextprotocol.io/v2/migration/support-2026-07-28
 - https://github.com/modelcontextprotocol/python-sdk/blob/main/docs/protocol-versions.md
+
+- The v115.20.4 follow-up updates the five active release-identity test assertions that still expected 115.20.2 after the 115.20.3 version bump; original test sources are snapshotted byte-for-byte in `tests/archive/v16.3.25.5.115.20.3-pre-release-identity-fix/`. Runtime, startup and deployment identities match 115.20.4. This corrects the five failures in `release-hardening` run 38087717007 (2378 passed, 5 failed, 6 skipped); CI for the new revision must still pass independently.
 
 ## Release gates
 
