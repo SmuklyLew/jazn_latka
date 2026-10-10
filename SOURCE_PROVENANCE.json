@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "39dcbdba04a7d2fbb9e533ac9bc2b13fb46f8e18",
-  "base_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
-  "commit_date": "2026-10-10T18:51:45Z",
+  "base_merge_commit": "f325a97600763da31b3e9e2928d2772c81a16205",
+  "base_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence",
+  "commit_date": "2026-10-10T20:01:11Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-10T18:51:45+00:00",
+  "generated_at_utc": "2026-10-10T20:01:11+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "539210b67e005ee0d89601b38a92296dc5274b11",
+  "git_tree_sha": "241210a70854001fa2ee68acd80aa9c92b33ae98",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "39dcbdba04a7d2fbb9e533ac9bc2b13fb46f8e18",
-    "source_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery"
+    "source_commit": "f325a97600763da31b3e9e2928d2772c81a16205",
+    "source_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "release_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "runtime_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "39dcbdba04a7d2fbb9e533ac9bc2b13fb46f8e18",
+  "source_commit": "f325a97600763da31b3e9e2928d2772c81a16205",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "source_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "update_version": "16.3.25.5.115.20-studios-mcp-ingress-convergence",
   "version_source": "latka_jazn/version.py"
 }
