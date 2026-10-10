@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.20",
+  "system_version": "16.3.25.5.115.20.1",
   "active_definition_count": 2157,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -19992,7 +19992,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 10
+      "line": 12
     },
     "tests/test_jazn_pack_generator_two_file_bundle.py::test_source_layout_validator_passes": {
       "path": "tests/test_jazn_pack_generator_two_file_bundle.py",
@@ -20009,24 +20009,24 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 19
+      "line": 21
     },
-    "tests/test_jazn_pack_generator_two_file_bundle.py::test_settings_live_with_tool_app": {
+    "tests/test_jazn_pack_generator_two_file_bundle.py::test_settings_live_outside_verified_system": {
       "path": "tests/test_jazn_pack_generator_two_file_bundle.py",
-      "name": "test_settings_live_with_tool_app",
-      "purpose": "Settings live with tool app",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_settings_live_outside_verified_system",
+      "purpose": "Settings live outside verified system",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 27
+      "line": 29
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
