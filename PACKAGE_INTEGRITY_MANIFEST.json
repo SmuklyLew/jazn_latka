@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "runtime_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "package_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "generated_at_utc": "2026-10-09T20:24:16+00:00",
-  "updated_at_utc": "2026-10-09T20:24:16+00:00",
+  "version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
+  "runtime_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
+  "package_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
+  "generated_at_utc": "2026-10-10T16:27:14+00:00",
+  "updated_at_utc": "2026-10-10T16:27:14+00:00",
   "start_file": "run.py",
-  "file_count": 2197,
-  "static_file_count": 2197,
+  "file_count": 2204,
+  "static_file_count": 2204,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -308,8 +308,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "4bb41bf9afe1dfc9e0817ddbca4f5a7cf8c7ec45bf0b21211aa736356c5a28cb",
+      "size_bytes": 2953,
+      "sha256": "8d3823624087f405957e40416de5709ea0223e33fcc271512e5c8ebe32d92425",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1363,6 +1363,15 @@
       "path": "docs/plans/RESEARCH_EVIDENCE_BASE.md",
       "size_bytes": 10794,
       "sha256": "32705791622d135b6f33a1cc38f198fb6d2e3a5c624b7673d215cec5e2622f3c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/STUDIO_MODERNIZATION_PROGRESS.md",
+      "size_bytes": 6857,
+      "sha256": "152015f699d1c06a290e2a8d3ff04aac70d702deff6a0dea7583c73256b48cdc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6185,8 +6194,8 @@
     },
     {
       "path": "latka_jazn/memory/_living_memory_gateway_impl.py",
-      "size_bytes": 54719,
-      "sha256": "4559802fcf692ea56f85b4c29ba51e0a503a6000a2d371a35e61339897b65f04",
+      "size_bytes": 54735,
+      "sha256": "ed2c81609d1a3a35ba6cd520e432259a4fe8cfec6dadda164028cf6bc8ac4a33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6203,8 +6212,8 @@
     },
     {
       "path": "latka_jazn/memory/availability.py",
-      "size_bytes": 7627,
-      "sha256": "87b1c0958f596e4b5b219541084fad270bde16251222d053479d88fccc8f12a9",
+      "size_bytes": 7474,
+      "sha256": "94db772904744aa9560caeecb785ef8aa216f7cfa5f207c862a8a50016b2d844",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6275,8 +6284,17 @@
     },
     {
       "path": "latka_jazn/memory/database_identity.py",
-      "size_bytes": 3531,
-      "sha256": "37ac8f87f33f203fb2e58fd3f7ea9b8cd7fa50b591f5c34198b6922b607bc6f9",
+      "size_bytes": 7709,
+      "sha256": "715f52326f70a29dcde841c349673a4e175971c8a94b731ef65362b0929719ea",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/memory/database_paths.py",
+      "size_bytes": 2901,
+      "sha256": "c541b3b286bd0a80a9eae7b58ad5eac249b8d45b956d616a36b9df0825cdc21f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6509,8 +6527,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_root.py",
-      "size_bytes": 7269,
-      "sha256": "60f3cf37526fb6e12da8ae893ad11f413f90dd753bd813aa7b0ab6afc7b7e64a",
+      "size_bytes": 8322,
+      "sha256": "a52ff463cb8cb968155cc6eea768b874745db0b0ef18a1069e64d4226b2cfc61",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6797,8 +6815,8 @@
     },
     {
       "path": "latka_jazn/memory/runtime_memory_install.py",
-      "size_bytes": 9589,
-      "sha256": "3ccdb12550b09b88eb7df62b3a65f711d5bc8f2a333995268d0ef1c7edd1eaaf",
+      "size_bytes": 10258,
+      "sha256": "660a32f0d0197daca3ffb18dff9c28728892a3c1628dac7d3500dfdf2a356086",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8389,6 +8407,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/application_shell/operator_paths.py",
+      "size_bytes": 5557,
+      "sha256": "e3f6e76ad79ed810c53df5f661f6ad8ffffadab7396a581e0924371b798b0543",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/application_shell/settings.py",
       "size_bytes": 3438,
       "sha256": "f3b0f2000f05e8a5ab1a557312f73694094a8efb095c57f1a681c3fcaf8904a9",
@@ -8525,8 +8552,8 @@
     },
     {
       "path": "latka_jazn/tools/configuration_studio.py",
-      "size_bytes": 16690,
-      "sha256": "bf8a7890e07985fafdfec3ff557346c740b595b6d6cdfb6a097c857c1e5a869a",
+      "size_bytes": 18416,
+      "sha256": "4f61db89bdfafe1ec74378bc4e2c9b4ea6c6a50cc9e24b89ea223582256829c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8534,8 +8561,8 @@
     },
     {
       "path": "latka_jazn/tools/configuration_studio_ui.py",
-      "size_bytes": 14931,
-      "sha256": "94bacb34382e97b5e925ace5534b5f74798cf5d859b6345374b3fe927c1206c2",
+      "size_bytes": 15923,
+      "sha256": "3279576c1631f3f69fbe4f0b934ae1f1a1bd60b99c0da433db71b50772dc0459",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9020,8 +9047,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/settings.py",
-      "size_bytes": 9665,
-      "sha256": "13144c1cc21cfa735ff16cf6852b09c9eeb8ca42f670da0b1b59d60b9d1d748e",
+      "size_bytes": 10914,
+      "sha256": "e4e81abcb821f724b15bcb6f4c7e7d0b5499aeacfb957cd83cb7ffb5e2964820",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9083,8 +9110,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/sqlite_inspector.py",
-      "size_bytes": 9088,
-      "sha256": "487175a96a89e20497c723788664369997dce5501b18f2cc05ff692f801edebb",
+      "size_bytes": 8984,
+      "sha256": "e1fe7ee6570d54626e05a4b4c78c8427fcbcbc5727e5e23fa8dcf64a21a6bc33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9362,8 +9389,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_restore_storage.py",
-      "size_bytes": 8294,
-      "sha256": "1386fad15013f0c1829f50f6788cd3b956393f68a5d21c57da017cfbd528d110",
+      "size_bytes": 8268,
+      "sha256": "c480e61be4ca039cf17fe9f4855ba12b905a51b0ccc4e74a6350c75c084d6704",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9587,8 +9614,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5213,
-      "sha256": "0a3e1259c7ef943bc7c434fc58da54f13bb03dc793f4a0b467b1ea4ade8599c1",
+      "size_bytes": 5195,
+      "sha256": "23502988defa648e2fee3f1a62681c1cfff1bedd85e4d9e131c40ba6fc2a79b0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16453,6 +16480,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "size_bytes": 4447,
+      "sha256": "d9959fc606f42879d4e9f2dc761454049eb75adde0ba9fc4c8102e3e8a995fdc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_configuration_studio.py",
       "size_bytes": 5615,
       "sha256": "9c2067888834b9b72c9b1a21c3cd082200df1993a503d5521ddd52384d4df072",
@@ -18955,6 +18991,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_studio_operator_paths.py",
+      "size_bytes": 11933,
+      "sha256": "09a303c6bccfa3cadb719cf2a6528d813e3fc6889d997fc298bf6d0975b95472",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_studio_resume_regressions.py",
+      "size_bytes": 2549,
+      "sha256": "b80c0f7316ba48d02b1095110a394052a0122d3ea855904e22c038891e1e5a8d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "size_bytes": 6911,
+      "sha256": "218eb4348a021940f36e1c26cca6e5a613f94c404b0343d98a80af0e5b3620a4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_supervisor_identity_ownership.py",
       "size_bytes": 4587,
       "sha256": "81435eb0f8b8106521743c83eb520c2cc45ac518b21d806c3b287c94736a3104",
@@ -19361,8 +19424,8 @@
     },
     {
       "path": "tools/jazn_pack_generator.py",
-      "size_bytes": 9674,
-      "sha256": "84dea6ef36eabf9d83dea7620384de0ae67c91952a95ca541b4008a6a5732b76",
+      "size_bytes": 9781,
+      "sha256": "b10dc93598d8c308007950662ce8636ed1c82745079678874232509f0a27b868",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19460,8 +19523,8 @@
     },
     {
       "path": "tools/jazn_pack_generator_app/settings.py",
-      "size_bytes": 3248,
-      "sha256": "457c678e3bbda1a5297dc414b35963597ebd7009ddb37f169c9edb55553dcb7f",
+      "size_bytes": 3736,
+      "sha256": "b16f21be2ab596f452dcec89e671042caf720eae40b184ff2af11f2f6f7d63a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19532,8 +19595,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/README.md",
-      "size_bytes": 2319,
-      "sha256": "bf715e57d57e30d8f583c6a006f82cc77f186a6165952d157bf63727a3c13d2e",
+      "size_bytes": 2532,
+      "sha256": "311dcd687cae965a8bd6ecff973c77c2d69a34e30484a1b68162b5e5f9a25852",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19550,8 +19613,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/app.py",
-      "size_bytes": 9086,
-      "sha256": "82b7006bea9eecc76301d024deb66a0fc3c2464a5d0e2f68b3829ece3f742984",
+      "size_bytes": 9099,
+      "sha256": "8a47b8615cf043252184b531f87bdde4a2e1e6364cda6e49c1ce3c5420a907c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19559,8 +19622,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/core.py",
-      "size_bytes": 7533,
-      "sha256": "da4ef6150e8f8f45fc508d8bc5d3dbd4a5ee816a069f8f853414a36cfefd518a",
+      "size_bytes": 8006,
+      "sha256": "6012bc100911a94050a8b74ca2504400b2d45c4538237515ec136d322b4bdcd8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19586,8 +19649,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/runner.py",
-      "size_bytes": 8167,
-      "sha256": "3e3083ed5c3fcd125cf2adf31044ff57b3a08a8b48423998c90d0453514bd3d9",
+      "size_bytes": 8357,
+      "sha256": "8e2bf961e0a410b47fb61b8ab93e90d4a1c8952d5ea785425c5d2dd928a78c28",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19595,8 +19658,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/settings.json",
-      "size_bytes": 374,
-      "sha256": "63575b539231db6f6bfd0cb8b6d6a796d6ac3b701d619db5a2a574a985b3e45b",
+      "size_bytes": 395,
+      "sha256": "0182edde8f37784d859e94ddb5392be38305b349aa04192ca99ac4aff16b0ab5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19613,8 +19676,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1979220,
-      "sha256": "14ccd8ac76745ef57ad44ad16009e4b6a987d732d6120400050d578cf374bdb7",
+      "size_bytes": 2011098,
+      "sha256": "cd8fc1509bf7a7b36e942ec3fc6914179ebda15dc7c70fb543902c70fb1d1c15",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19649,8 +19712,8 @@
     },
     {
       "path": "tools/jazn_version_rebuild.py",
-      "size_bytes": 44594,
-      "sha256": "3c6fcf9969cd553ad1a931cd844c877cfa2a1b71a57502059063d8ed3753a5aa",
+      "size_bytes": 45630,
+      "sha256": "f3a36fe9c162f432e32860c4475ad99c482fc2275902fb7afdcdd59541882aae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19793,8 +19856,8 @@
     },
     {
       "path": "tools/windows/Start-JaznWithConfig.ps1",
-      "size_bytes": 2568,
-      "sha256": "1025bf53db94e500b1f472c0328f03eb6f058ac318d7e935fc4b399270fb4b76",
+      "size_bytes": 2591,
+      "sha256": "367b42fc2d787d45c81d1456debdb20c9ed014abc57c68f4ef4ae5b40c818672",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20225,11 +20288,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
+  "release_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-    "package_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-    "release_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening"
+    "runtime_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
+    "package_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
+    "release_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths"
   },
   "legacy_aliases": {
     "version": "release_version"
