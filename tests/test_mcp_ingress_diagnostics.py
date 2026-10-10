@@ -80,3 +80,40 @@ def test_cli_mcp_probe_exposes_machine_readable_diagnosis(
     code = cli.main(["mcp-probe", "--root", str(tmp_path), "--json"])
     assert code == 1
     assert json.loads(capsys.readouterr().out)["reason"] == "mcp_path_missing_or_wrong_service"
+
+
+def test_acknowledged_job_loss_is_diagnostic_not_replay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.core import runtime_daemon
+
+    monkeypatch.setattr(runtime_daemon, "chat_daemon_submit",
+                        lambda *args, **kwargs: {
+                            "accepted": True, "done": False,
+                            "request_id": "accepted-request-1",
+                            "job_status": "queued",
+                        })
+    seen: list[str] = []
+
+    def missing(config: object, request_id: str, **kwargs: object) -> dict[str, object]:
+        seen.append(request_id)
+        return {
+            "ok": False, "error_code": "chat_job_not_found",
+            "request_id": request_id,
+        }
+
+    monkeypatch.setattr(runtime_daemon, "chat_daemon_result", missing)
+    response = runtime_daemon.chat_daemon(
+        JaznConfig(root=tmp_path), "Test message",
+        session_id="test-session",
+        request_id="accepted-request-1",
+        timeout=0.2, poll_interval=0.02,
+    )
+    assert seen == ["accepted-request-1"]
+    assert response["ok"] is False
+    assert response["error_code"] == "chat_job_not_found"
+    assert response["submit_acknowledged"] is True
+    assert response["must_not_resubmit_user_message"] is True
+    assert response["diagnostic_reason"] == "acknowledged_job_missing_from_daemon"
+    assert response["submitted_request_id"] == "accepted-request-1"
