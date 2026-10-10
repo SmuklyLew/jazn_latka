@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from io import BytesIO
+from email.message import Message
+import urllib.request
 import json
 from pathlib import Path
 import urllib.error
@@ -29,7 +31,7 @@ def test_probe_rejects_public_plain_http_without_network(monkeypatch: pytest.Mon
 
 def test_probe_detects_port_used_by_other_service(monkeypatch: pytest.MonkeyPatch) -> None:
     def missing(req: object, *, timeout: float) -> None:
-        raise urllib.error.HTTPError("http://127.0.0.1:8080/mcp", 404, "missing", {}, BytesIO())
+        raise urllib.error.HTTPError("http://127.0.0.1:8080/mcp", 404, "missing", Message(), BytesIO())
     monkeypatch.setattr(ingress_diagnostics.urllib.request, "urlopen", missing)
     result = ingress_diagnostics.probe_mcp_endpoint("http://127.0.0.1:8080/mcp")
     assert result["reason"] == "mcp_path_missing_or_wrong_service"
@@ -39,7 +41,7 @@ def test_probe_detects_port_used_by_other_service(monkeypatch: pytest.MonkeyPatc
 
 def test_probe_does_not_treat_auth_challenge_as_ready(monkeypatch: pytest.MonkeyPatch) -> None:
     def denied(req: object, *, timeout: float) -> None:
-        raise urllib.error.HTTPError("https://mcp.example.org/mcp", 401, "auth", {}, BytesIO())
+        raise urllib.error.HTTPError("https://mcp.example.org/mcp", 401, "auth", Message(), BytesIO())
     monkeypatch.setattr(ingress_diagnostics.urllib.request, "urlopen", denied)
     result = ingress_diagnostics.probe_mcp_endpoint("https://mcp.example.org/mcp")
     assert result["reason"] == "mcp_authentication_required"
@@ -47,7 +49,7 @@ def test_probe_does_not_treat_auth_challenge_as_ready(monkeypatch: pytest.Monkey
 
 
 def test_probe_validates_initialize_but_not_tool_exposure(monkeypatch: pytest.MonkeyPatch) -> None:
-    def working(req: object, *, timeout: float) -> FakeResponse:
+    def working(req: urllib.request.Request, *, timeout: float) -> FakeResponse:
         body = json.loads(req.data)
         assert body["method"] == "initialize"
         assert "message" not in str(body)
