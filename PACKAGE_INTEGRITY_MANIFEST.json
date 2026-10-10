@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "runtime_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "package_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-  "generated_at_utc": "2026-10-10T18:46:44+00:00",
-  "updated_at_utc": "2026-10-10T18:46:44+00:00",
+  "version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "runtime_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "package_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+  "generated_at_utc": "2026-10-10T18:51:45+00:00",
+  "updated_at_utc": "2026-10-10T18:51:45+00:00",
   "start_file": "run.py",
   "file_count": 2200,
   "static_file_count": 2200,
@@ -308,8 +308,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2990,
-      "sha256": "479d31be97d74279a2670b64a0f5948d85bae05c0e5ea9ba2adab974b307b331",
+      "size_bytes": 2906,
+      "sha256": "6058bde70680324da980ac5ffddde90b04276c326ebb2abf83d11f0eead28289",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3323,8 +3323,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 47539,
-      "sha256": "cf4621da92a30475b7315e7350a1080be21889729c5065cf71810467b8e30755",
+      "size_bytes": 48028,
+      "sha256": "76b65714d0fc1b3ea1a9f255cc5f6c17a46c66e2b479f615a3897ea25574618d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5249,8 +5249,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 245943,
-      "sha256": "a43c684ff000269630a647be9edf3f1d4f53706f0b55bc45edd1c7e2493419ae",
+      "size_bytes": 246412,
+      "sha256": "d7b7f46f4ed8d39a00a47951630270f0544d34396acd142cd6e0637f1963c59a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9605,8 +9605,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5213,
-      "sha256": "0a3e1259c7ef943bc7c434fc58da54f13bb03dc793f4a0b467b1ea4ade8599c1",
+      "size_bytes": 5268,
+      "sha256": "df718b0bb26bfe7f5f237c3446d62b35bb5032cea85840dd82d39e6dcde8397d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17390,8 +17390,8 @@
     },
     {
       "path": "tests/test_mcp_ingress_diagnostics.py",
-      "size_bytes": 3751,
-      "sha256": "fafce753ae09791b6a472917691b7cc36f91ca74301b39a88a59187e2dbe48b1",
+      "size_bytes": 5366,
+      "sha256": "e135c845c9c61b17f59fd2d56075fcd2fca2e2f75c86673c12d2df5b7b65a61c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19640,8 +19640,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1983673,
-      "sha256": "8336258ded6785a1d4f7e6d510cf17afb9a2f899af842b19465fa3bca2f92f24",
+      "size_bytes": 1984808,
+      "sha256": "67a9d7cc0e0f46c5c41c76c2e2b838ce200fccfc739422641d15ac4e293e5ed0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20252,11 +20252,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
+  "release_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-    "package_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
-    "release_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening"
+    "runtime_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+    "package_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery",
+    "release_version": "16.3.25.5.115.18.2-mcp-ingress-job-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
