@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.3.2",
+  "system_version": "16.3.25.5.115.21.3.3",
   "active_definition_count": 2191,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -12478,19 +12478,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 29
     },
     "tests/test_current_line_migration.py::test_dynamic_version_detection_accepts_current_and_previous_release": {
       "path": "tests/test_current_line_migration.py",
       "name": "test_dynamic_version_detection_accepts_current_and_previous_release",
       "purpose": "Dynamic version detection accepts current and previous release",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.current_line_archive_audit",
@@ -12500,7 +12500,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 37
     },
     "tests/test_current_line_migration.py::test_legacy_memory_source_version_remains_distinct_from_runtime_version": {
       "path": "tests/test_current_line_migration.py",
@@ -12524,7 +12524,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 47
     },
     "tests/test_current_line_migration.py::test_current_tree_has_no_unapproved_old_references": {
       "path": "tests/test_current_line_migration.py",
@@ -12546,7 +12546,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 52
     },
     "tests/test_current_line_migration.py::test_scanner_does_not_treat_later_release_history_as_unfinished_migration": {
       "path": "tests/test_current_line_migration.py",
@@ -12568,7 +12568,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 58
     },
     "tests/test_current_line_migration.py::test_archive_manifest_preserves_exact_bytes": {
       "path": "tests/test_current_line_migration.py",
@@ -12591,7 +12591,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 69
     },
     "tests/test_daemon_instance_identity.py::test_instance_identity_allows_windows_redirector_pid_difference": {
       "path": "tests/test_daemon_instance_identity.py",
@@ -24233,13 +24233,14 @@
       "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.database_identity",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
         "latka_jazn.tools.memory_rebuild_app.unified_memory"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 37
     },
     "tests/test_memory_provenance_native_p1.py::test_equal_content_with_conflicting_lineage_is_not_false_identity": {
       "path": "tests/test_memory_provenance_native_p1.py",
@@ -24254,13 +24255,14 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.database_identity",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
         "latka_jazn.tools.memory_rebuild_app.unified_memory"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 59
     },
     "tests/test_memory_provenance_native_p1.py::test_source_sha_attestation_and_source_drift_are_detected": {
       "path": "tests/test_memory_provenance_native_p1.py",
@@ -24275,13 +24277,14 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.database_identity",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
         "latka_jazn.tools.memory_rebuild_app.unified_memory"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 80
     },
     "tests/test_memory_provenance_native_p1.py::test_temporary_snapshots_cannot_be_created_inside_host_memory": {
       "path": "tests/test_memory_provenance_native_p1.py",
@@ -24297,34 +24300,36 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.database_identity",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
         "latka_jazn.tools.memory_rebuild_app.unified_memory"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 106
     },
     "tests/test_memory_provenance_native_p1.py::test_online_backup_captures_committed_wal_without_altering_source": {
       "path": "tests/test_memory_provenance_native_p1.py",
       "name": "test_online_backup_captures_committed_wal_without_altering_source",
       "purpose": "Online backup captures committed wal without altering source",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.memory.database_identity",
         "latka_jazn.tools.memory_rebuild_app.models",
         "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
         "latka_jazn.tools.memory_rebuild_app.unified_memory"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 120
     },
     "tests/test_memory_provenance_p1.py::test_equal_rows_independent_of_insertion_order": {
       "path": "tests/test_memory_provenance_p1.py",
