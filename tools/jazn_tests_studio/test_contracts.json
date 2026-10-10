@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.1",
-  "active_definition_count": 2173,
+  "system_version": "16.3.25.5.115.21.2",
+  "active_definition_count": 2180,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30203,6 +30203,147 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 78
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_missing_inspection_does_not_create_files": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_missing_inspection_does_not_create_files",
+      "purpose": "Missing inspection does not create files",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_only_source_file_metadata_is_observed": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_only_source_file_metadata_is_observed",
+      "purpose": "Only source file metadata is observed",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_foreign_sqlite_is_not_declared_native": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_foreign_sqlite_is_not_declared_native",
+      "purpose": "Foreign sqlite is not declared native",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_single_staging_candidate_cannot_publish": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_single_staging_candidate_cannot_publish",
+      "purpose": "Single staging candidate cannot publish",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_ambiguous_staging_fails_closed": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_ambiguous_staging_fails_closed",
+      "purpose": "Ambiguous staging fails closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_host_selected_db_is_not_active_daemon_proof": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_host_selected_db_is_not_active_daemon_proof",
+      "purpose": "Host selected db is not active daemon proof",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_memory_studio_p1_inspection.py::test_symlink_database_is_rejected": {
+      "path": "tests/test_memory_studio_p1_inspection.py",
+      "name": "test_symlink_database_is_rejected",
+      "purpose": "Symlink database is rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_inspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
