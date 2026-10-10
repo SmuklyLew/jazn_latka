@@ -27,6 +27,7 @@ from .studio_write_safety import require_isolated_database
 from .test_spec import TEST_SPECS
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 from .p1_memory_inspection import inspect_memory_layout
+from .p1_memory_provenance import compare_memory_provenance
 
 BG = "#eef3f8"
 SIDEBAR = "#162b40"
@@ -557,6 +558,7 @@ class DesktopWorkspace:
                 _pretty(UnifiedMemoryDatabase(self.state.database).validate(full=True))), True),
             ("Recall / benchmark", self.workflows.recall_hub, True),
             ("Inspekcja P1: źródło / cel / staging / MEMORY", self._inspect_memory_roles, True),
+            ("P1: porównanie danych i proweniencji", self._compare_memory_provenance, True),
         )
         self._label(self.content, "Baza eksperymentalna nie może być tą samą bazą, którą zapisuje aktywny daemon.", note=True)
 
@@ -566,6 +568,13 @@ class DesktopWorkspace:
             project, system_root=self.tool_root, target_database=self.state.database,
         )
         self.dialogs.message("Inspekcja P1 — tylko odczyt", _pretty(report))
+
+    def _compare_memory_provenance(self) -> None:
+        project = self._require_project()
+        report = compare_memory_provenance(
+            project, system_root=self.tool_root, target_database=self.state.database,
+        )
+        self.dialogs.message("P1 — porównanie bez aktywacji", _pretty(report))
 
     def _page_import(self) -> None:
         self._card("Źródła ChatGPT, dzienniki, muzyka, stare bazy",

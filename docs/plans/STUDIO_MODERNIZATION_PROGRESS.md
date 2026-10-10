@@ -131,3 +131,7 @@ Niezrealizowane P1: pełne porównanie źródło/cel/staging/active w Studio Pam
 ## P1 checkpoint 16.3.25.5.115.21.2
 
 Dodano osobną, bezpieczną inspekcję źródeł, celu, stagingu i host-selected MEMORY. Resolver i schema probe pozostają kanoniczne. Ocena publikacji, ciągłości i aktywności daemona zawsze wymaga osobnych runtime gate; patch nie zapisuje MEMORY ani SQLite. Interfejs okienkowy zawiera przycisk podglądu; testy używają wyłącznie danych syntetycznych. P1 pozostaje częściowy, P2 i P3 nie rozpoczęte.
+
+## P1 checkpoint 16.3.25.5.115.21.3 — porównanie proweniencji
+
+Dodano oddzielny P1 snapshot comparison: SQLite Online Backup, strumieniowy indeks SHA256 stabilnych rekordów, liczniki zmian dla tabel, walidacja struktury, porównanie deklaracji lineage i źródłowych SHA256. Raport zawiera wyłącznie agregaty. Snapshoty są danymi wrażliwymi, tymczasowymi i usuwanymi w zakończonej operacji. Zgodność zawartości nie oznacza zgody na aktywację, a host-selected MEMORY nie jest dowodem aktywnego daemona. Etapy P1 activation, P2 i P3 pozostają osobnymi zadaniami.
