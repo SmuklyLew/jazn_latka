@@ -76,8 +76,8 @@ def test_startup_contract_separates_registered_app_binding_from_capability_evide
 
 
 def test_release_identity_tracks_desktop_app_binding_hybrid_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.20.4"
+    assert PACKAGE_VERSION == "16.3.25.5.115.21.0"
     assert (
         PACKAGE_RELEASE_NAME
-        == "mcp-probe-protocol-safety"
+        == "studio-configuration-preview-p1"
     )

@@ -343,6 +343,68 @@ def inspect_system(root: str | Path) -> list[dict[str, str]]:
             for key, path, note in locations]
 
 
+def preview_profile_changes(
+    root: str | Path,
+    proposed_entries: Mapping[str, str],
+    *,
+    expected_sha256: str | None,
+    name: str = "operator",
+    workspace: Path | None = None,
+) -> dict[str, Any]:
+    """Read-only CAS-checked dry run for a *future* launch profile.
+
+    Profile overrides are not the effective configuration of a running daemon.
+    Unconfigured defaults/inherited values are deliberately reported as unknown,
+    never invented. This operation neither saves a profile nor activates a daemon.
+    """
+    source = system_root(root)
+    saved, observed_sha256 = profile_snapshot(source, name=name, workspace=workspace)
+    if observed_sha256 != expected_sha256:
+        raise ConfigValidationError(
+            "Profil został zmieniony na dysku. Wczytaj go ponownie przed podglądem."
+        )
+    proposed = validate_values(source, proposed_entries)
+    rows: list[dict[str, Any]] = []
+    for spec in SETTINGS:
+        previous = saved.get(spec.key)
+        planned = proposed.get(spec.key)
+        rows.append({
+            "key": spec.key,
+            "title": spec.title,
+            "section": spec.section,
+            "kind": spec.kind,
+            "saved": previous,
+            "proposed": planned,
+            "changed": previous != planned,
+            "default": None,
+            "default_verified": False,
+            "future_override_source": "draft_profile" if planned is not None else "unresolved",
+            "future_override_value": planned,
+        })
+    changed_keys = [item["key"] for item in rows if item["changed"]]
+    location_keys = {"JAZN_MEMORY_ROOT", "JAZN_MEMORY_TIER_DB", "JAZN_RUNTIME_WORKSPACE_DIR"}
+    marker_present = active_runtime_marker_path(source).exists()
+    return {
+        "schema": "jazn_config_profile_preview/v1",
+        "version": PACKAGE_VERSION,
+        "profile_name": name,
+        "profile_sha256": observed_sha256,
+        "saved_overrides": saved,
+        "proposed_overrides": proposed,
+        "rows": rows,
+        "changed_keys": changed_keys,
+        "changes_count": len(changed_keys),
+        "read_only": True,
+        "applied_to_running_daemon": False,
+        "future_launch_only": True,
+        "runtime_effective_values_verified": False,
+        "runtime_marker_present": marker_present,
+        "location_change_requires_runtime_verification": bool(
+            marker_present and location_keys.intersection(changed_keys)
+        ),
+    }
+
+
 def describe_profile(root: str | Path, *, name: str = "operator", workspace: Path | None = None) -> dict[str, Any]:
     source = system_root(root)
     path = profile_file(source, name=name, workspace=workspace)
