@@ -3,6 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from email.message import Message
 import urllib.request
+from typing import cast
 import json
 from pathlib import Path
 import urllib.error
@@ -50,7 +51,7 @@ def test_probe_does_not_treat_auth_challenge_as_ready(monkeypatch: pytest.Monkey
 
 def test_probe_validates_initialize_but_not_tool_exposure(monkeypatch: pytest.MonkeyPatch) -> None:
     def working(req: urllib.request.Request, *, timeout: float) -> FakeResponse:
-        body = json.loads(req.data)
+        body = json.loads(cast(bytes, req.data))
         assert body["method"] == "initialize"
         assert "message" not in str(body)
         return FakeResponse(json.dumps({
