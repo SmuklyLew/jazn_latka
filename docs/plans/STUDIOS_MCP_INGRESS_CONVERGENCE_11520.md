@@ -27,3 +27,13 @@
 - GUI/EXE, host E2E i pełne pozostałe etapy Studio P1–P3 pozostają odrębnym zakresem.
 
 **Stan: integracja kodu w gałęzi roboczej, nie release candidate.** Samo zapisanie merge commita nie stanowi dowodu zaliczenia powyższych bram.
+
+## Naprawa CI po integracji — v16.3.25.5.115.20.1 (2026-10-10)
+
+- Ubuntu `release-hardening` na poprzednim commicie: **2361 PASS, 10 FAIL, 6 SKIP**.
+- Dziewięć błędów wynikało z wersji `16.3.25.5.115.18.1` utrwalonej w `startup_contract.json` i pięciu aktywnych testach wobec wydania `16.3.25.5.115.20`.
+- Jeden błąd wymagał historycznego katalogu `tools/jazn_pack_generator_app` jako celu ustawień, choć Studio P0 kieruje zapisywalny stan do `~/.jazn/tools/jazn-pack-generator` lub jawnego `JAZN_OPERATOR_STATE_ROOT`.
+- Wersja `16.3.25.5.115.20.1-studios-mcp-ingress-ci-hardening` jest jawnie testowana i spójna z runtime/MCP/startup. Test ustawień sprawdza izolowaną zewnętrzną ścieżkę i brak zapisów podczas odczytu.
+- Zachowano oryginały sześciu modyfikowanych testów bajt w bajt w `tests/archive/v16.3.25.5.115.20-pre-ci-hardening/`.
+- Kanoniczne `sync_contract_catalog.py --write` oraz `release_metadata_sync --write` pozostają wyłącznymi narzędziami synchronizacji. Wynik CI i `package-smoke` wymagają ponownej weryfikacji na nowym SHA.
+- Nie ruszono prywatnej MEMORY ani działającego daemona.
