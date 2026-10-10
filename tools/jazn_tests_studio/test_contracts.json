@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.20.4",
-  "active_definition_count": 2161,
+  "system_version": "16.3.25.5.115.21.0",
+  "active_definition_count": 2166,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11483,6 +11483,97 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 109
+    },
+    "tests/test_configuration_studio_p1_preview.py::test_dry_run_does_not_create_profile_or_apply_daemon": {
+      "path": "tests/test_configuration_studio_p1_preview.py",
+      "name": "test_dry_run_does_not_create_profile_or_apply_daemon",
+      "purpose": "Dry run does not create profile or apply daemon",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_configuration_studio_p1_preview.py::test_preview_differentiates_saved_and_proposed_without_writes": {
+      "path": "tests/test_configuration_studio_p1_preview.py",
+      "name": "test_preview_differentiates_saved_and_proposed_without_writes",
+      "purpose": "Preview differentiates saved and proposed without writes",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_configuration_studio_p1_preview.py::test_stale_profile_preview_fails_closed": {
+      "path": "tests/test_configuration_studio_p1_preview.py",
+      "name": "test_stale_profile_preview_fails_closed",
+      "purpose": "Stale profile preview fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_configuration_studio_p1_preview.py::test_dry_run_rejects_unknown_and_unsafe_configuration": {
+      "path": "tests/test_configuration_studio_p1_preview.py",
+      "name": "test_dry_run_rejects_unknown_and_unsafe_configuration",
+      "purpose": "Dry run rejects unknown and unsafe configuration",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_configuration_studio_p1_preview.py::test_marker_cannot_be_mistaken_for_runtime_readiness": {
+      "path": "tests/test_configuration_studio_p1_preview.py",
+      "name": "test_marker_cannot_be_mistaken_for_runtime_readiness",
+      "purpose": "Marker cannot be mistaken for runtime readiness",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
