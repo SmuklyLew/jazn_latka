@@ -81,6 +81,17 @@ build-set/copy-bundles wymagają preflight. Sukces dopiero po walidacji.
 
 ### Checkpoint napraw audytu (2026-10-10)
 
+Wypchnięty checkpoint: `7060b05e4bded8ca5386986795b3e046656f2209`
+(kod `a72a643eac594e50c24712f65eabda618b82cd45` + kanoniczne metadane).
+Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/341.
+Metadata check: PASS, manifest/provenance zgodne, 2204 pliki.
+Pełny Pyright: PASS, 0 błędów, 1 ostrzeżenie; compileall kodu i aktywnych
+testów: PASS. Pełny pytest zebrano 2370 przypadków, przebieg nadal trwa.
+CI persistent E2E wykrył pozostawiony stary runtime_version w
+deploy/chatgpt_mcp/deployment.contract.json (76 PASS, 1 FAIL).
+Poprawka aktualizuje deklarację do bieżącej wersji bez zmian asercji.
+Końcowy wynik CI musi zostać sprawdzony ponownie po pushu naprawy.
+
 P0 nadal IN_PROGRESS. Branch i wersja pozostają bez zmian. Przed naprawami
 zapisano kopię roboczych plików w lokalnym jazn_checkpoints. Nie odtwarzano ZIP.
 Naprawiono również `LivingMemoryGateway._as_sqlite_dir`, kierując go do
