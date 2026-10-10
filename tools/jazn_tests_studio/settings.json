@@ -4,7 +4,7 @@
   "active_tests": "tests",
   "archive_branches": "tests/archive/branches",
   "contract_catalog": "tools/jazn_tests_studio/test_contracts.json",
-  "reviews": "tools/jazn_tests_studio/reviews.json",
+  "reviews": "operator_state/jazn-tests-studio/<system-id>/reviews.json",
   "exclude_from_run_all": [
     "tests/archive"
   ],

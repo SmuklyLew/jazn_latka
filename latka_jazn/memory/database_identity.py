@@ -108,3 +108,81 @@ def mark_imported_untrusted(connection: sqlite3.Connection, *, schema_identity: 
         connection.execute(f"UPDATE {TABLE_NAME} SET trust_state='imported_untrusted' WHERE singleton=1")
         identity.trust_state = "imported_untrusted"
     return identity
+
+from contextlib import closing
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.memory.memory_tier_schema import SCHEMA_SQL
+from latka_jazn.version import schema_version_compatibility
+
+
+def inspect_memory_database(path: str | Path) -> dict[str, Any]:
+    """Check content, never infer identity from a filename or initialize tables.
+
+    A missing file is a possible future transactional store, not a ready memory.
+    An existing unrecognized database must go through an explicit migration.
+    """
+    database = Path(path).expanduser().resolve()
+    result: dict[str, Any] = {
+        "path": str(database), "exists": database.exists(), "read_only": True,
+        "kind": "missing", "compatible": False, "ready": False, "issues": [],
+    }
+    if not database.exists():
+        return result
+    if not database.is_file():
+        result.update(kind="invalid", issues=["database_not_file"])
+        return result
+    try:
+        with closing(connect_runtime_readonly(database, timeout_ms=1000)) as con:
+            tables = {str(row[0]) for row in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )}
+            if "unified_memory_meta" in tables:
+                result["kind"] = "native_unified"
+            elif "memory_store_meta" in tables:
+                row = con.execute(
+                    "SELECT value FROM memory_store_meta WHERE key='schema_version'"
+                ).fetchone()
+                identity = str(row[0]) if row else None
+                result["schema_identity"] = identity
+                compatible = schema_version_compatibility("memory_tier_store", identity)
+                issues: list[str] = []
+                if not compatible["compatible"]:
+                    issues.append("unsupported_transactional_schema")
+                # Compare the canonical structural contract without running its
+                # CREATE/INSERT statements against the selected database.
+                with closing(sqlite3.connect(":memory:")) as reference:
+                    reference.executescript(SCHEMA_SQL)
+                    expected = [str(item[0]) for item in reference.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                    )]
+                    for table in expected:
+                        if table not in tables:
+                            issues.append(f"missing_table:{table}")
+                            continue
+                        columns = {str(item[1]) for item in con.execute(f'PRAGMA table_info("{table}")')}
+                        required = {str(item[1]) for item in reference.execute(f'PRAGMA table_info("{table}")')}
+                        if not required <= columns:
+                            issues.append(f"missing_columns:{table}")
+                if [str(item[0]) for item in con.execute("PRAGMA quick_check")] != ["ok"]:
+                    issues.append("sqlite_integrity_failed")
+                if con.execute("PRAGMA foreign_key_check").fetchone() is not None:
+                    issues.append("sqlite_foreign_key_failed")
+                result.update(kind="transactional", compatible=not issues, ready=not issues, issues=issues)
+                return result
+            else:
+                result.update(kind="legacy_or_foreign", issues=["unrecognized_memory_schema"])
+                return result
+        from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
+        probe = probe_unified_memory_database(database, busy_timeout_ms=1000)
+        result.update(
+            schema_identity=probe.get("schema_identity"),
+            compatible=probe.get("memory_search_ready") is True,
+            ready=probe.get("memory_search_ready") is True,
+            native_probe=probe,
+            issues=list(probe.get("issues") or []),
+        )
+        if not result["compatible"] and not result["issues"]:
+            result["issues"] = ["native_unified_not_ready"]
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        result.update(kind="invalid", issues=[f"{type(exc).__name__}: {exc}"])
+    return result

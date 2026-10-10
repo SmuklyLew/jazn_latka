@@ -57,6 +57,11 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--daemon-port", type=int, default=8787)
     child.add_argument("--daemon-marker-output", type=Path)
 
+    child = sub.add_parser("mcp-probe", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--url", default="http://127.0.0.1:8080/mcp")
+    child.add_argument("--timeout", type=float, default=3.0)
+
     child = sub.add_parser("mcp-http", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--host", default="127.0.0.1")
@@ -461,7 +466,7 @@ def main(
         )
 
     known = {
-        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http", "chatgpt-plugin-package",
+        "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http", "mcp-probe", "chatgpt-plugin-package",
         "host-finalize", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
@@ -696,6 +701,12 @@ def main(
         payload = diagnostics.bridge_payload(root)
         _emit(payload, as_json=ns.as_json)
         return 0
+    if ns.command == "mcp-probe":
+        from latka_jazn.mcp.ingress_diagnostics import probe_mcp_endpoint
+
+        payload = probe_mcp_endpoint(ns.url, timeout=ns.timeout)
+        _emit(payload, as_json=ns.as_json)
+        return 0 if payload.get("ok") else 1
     if ns.command == "mcp-http":
         if not ns.loopback_dev and not ns.public_oauth:
             _emit(
