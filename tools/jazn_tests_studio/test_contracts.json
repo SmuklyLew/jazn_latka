@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.2",
-  "active_definition_count": 2180,
+  "system_version": "16.3.25.5.115.21.3",
+  "active_definition_count": 2186,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24219,6 +24219,128 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 158
+    },
+    "tests/test_memory_provenance_p1.py::test_equal_rows_independent_of_insertion_order": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_equal_rows_independent_of_insertion_order",
+      "purpose": "Equal rows independent of insertion order",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_provenance_p1.py::test_modified_key_payload_and_addition": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_modified_key_payload_and_addition",
+      "purpose": "Modified key payload and addition",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_memory_provenance_p1.py::test_removed_key": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_removed_key",
+      "purpose": "Removed key",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_memory_provenance_p1.py::test_table_schema_difference_blocks_equality": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_table_schema_difference_blocks_equality",
+      "purpose": "Table schema difference blocks equality",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_memory_provenance_p1.py::test_record_limit_is_fail_closed": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_record_limit_is_fail_closed",
+      "purpose": "Record limit is fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ComparisonBlocked"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_memory_provenance_p1.py::test_foreign_db_is_not_promoted_to_comparable_native": {
+      "path": "tests/test_memory_provenance_p1.py",
+      "name": "test_foreign_db_is_not_promoted_to_comparable_native",
+      "purpose": "Foreign db is not promoted to comparable native",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
     },
     "tests/test_memory_raw_segmentation.py::test_segmenter_preserves_exact_bytes_and_bounded_members": {
       "path": "tests/test_memory_raw_segmentation.py",
