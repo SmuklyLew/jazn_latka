@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e7abbd9ae7ca13d38d7776401a10a06699725cbf",
-  "base_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
-  "commit_date": "2026-10-10T21:28:01Z",
+  "base_merge_commit": "8519fba090587ed5baea987da4da36f3a3fccb46",
+  "base_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety",
+  "commit_date": "2026-10-10T21:33:28Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-10T21:28:01+00:00",
+  "generated_at_utc": "2026-10-10T21:33:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "0e568d8411f6811e42b3d5bbdf0cf23c35bb6ffc",
+  "git_tree_sha": "4d4099a77669a18cca2635b8c55abd2c3773af47",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "e7abbd9ae7ca13d38d7776401a10a06699725cbf",
-    "source_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety"
+    "source_commit": "8519fba090587ed5baea987da4da36f3a3fccb46",
+    "source_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "release_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "runtime_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "e7abbd9ae7ca13d38d7776401a10a06699725cbf",
+  "source_commit": "8519fba090587ed5baea987da4da36f3a3fccb46",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "source_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.20.3-mcp-probe-protocol-safety",
+  "update_version": "16.3.25.5.115.20.4-mcp-probe-protocol-safety",
   "version_source": "latka_jazn/version.py"
 }
