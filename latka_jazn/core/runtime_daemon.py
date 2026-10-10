@@ -5214,8 +5214,17 @@ def chat_daemon(
         if error_code in {"daemon_chat_result_failed", "daemon_chat_result_http_error"}:
             last_poll_error = str(polled.get("error") or error_code)
             continue
+        if error_code == "chat_job_not_found":
+            # The submit was acknowledged; the missing job is not permission
+            # to replay the user's message on this or another runtime route.
+            return {
+                **polled,
+                "submit_acknowledged": True,
+                "submitted_request_id": normalized_request_id,
+                "must_not_resubmit_user_message": True,
+                "diagnostic_reason": "acknowledged_job_missing_from_daemon",
+            }
         if error_code in {
-            "chat_job_not_found",
             "missing_request_id",
             "request_id_too_long",
             "request_id_contains_unsafe_characters",
