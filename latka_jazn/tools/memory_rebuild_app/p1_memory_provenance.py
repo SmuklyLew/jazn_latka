@@ -88,6 +88,14 @@ def _backup(src_path: Path, dest: Path) -> None:
         with closing(sqlite3.connect(dest, timeout=2.0)) as output:
             source.backup(output, pages=512, sleep=0.02, progress=progress)
             output.commit()
+    # Backup from WAL can leave a self-contained SQLite file with WAL header
+    # bytes (2,2) but without live -wal/-shm sidecars. Normalize ONLY this
+    # isolated temporary snapshot to a rollback journal before strict probing.
+    with closing(sqlite3.connect(dest, timeout=2.0)) as normalized:
+        row = normalized.execute("PRAGMA journal_mode=DELETE").fetchone()
+        if row is None or str(row[0]).lower() != "delete":
+            raise ComparisonBlocked("snapshot_journal_normalization_failed")
+        normalized.commit()
     if _inspect_db(dest)["status"] != "compatible":
         raise ComparisonBlocked("snapshot_validation_failed")
 

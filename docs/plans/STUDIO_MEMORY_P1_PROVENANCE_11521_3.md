@@ -54,3 +54,7 @@ Official references:
 ## Hardening checkpoint 16.3.25.5.115.21.3.1
 
 Snapshot-root containment also covers the host-selected MEMORY directory and the configured project source directory; backups can no longer be placed inside private MEMORY via an explicit temp_root. Source SHA-256 attestation checks size/mtime/inode before and after streaming to avoid recording a passing digest across source mutation. New native-unified synthetic and WAL snapshot tests independently exercise the real resolver and online-backup integration; they are not a real private MEMORY activation or accepted-turn test.
+
+## WAL snapshot normalization 16.3.25.5.115.21.3.2
+
+Observed using real local SQLite: Online Backup API may produce a standalone copied database with WAL header bytes 2/2 and no persistent -wal/-shm sidecars. After the backup completes and the source connection closes, the comparator switches *only the temporary destination* to journal_mode=DELETE, then runs the strict native SQLite inspection. This conversion does not checkpoint or write the source. See https://www.sqlite.org/backup.html and https://www.sqlite.org/wal.html. Native WAL regression added in v115.21.3.1 must pass on Windows/Linux.
