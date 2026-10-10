@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.18.1",
-  "active_definition_count": 2116,
+  "active_definition_count": 2122,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21116,6 +21116,127 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 267
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_probe_rejects_public_plain_http_without_network": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_probe_rejects_public_plain_http_without_network",
+      "purpose": "Probe rejects public plain http without network",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "network"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_probe_detects_port_used_by_other_service": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_probe_detects_port_used_by_other_service",
+      "purpose": "Probe detects port used by other service",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_probe_does_not_treat_auth_challenge_as_ready": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_probe_does_not_treat_auth_challenge_as_ready",
+      "purpose": "Probe does not treat auth challenge as ready",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_probe_validates_initialize_but_not_tool_exposure": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_probe_validates_initialize_but_not_tool_exposure",
+      "purpose": "Probe validates initialize but not tool exposure",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_probe_sse_does_not_fake_initialized_tools": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_probe_sse_does_not_fake_initialized_tools",
+      "purpose": "Probe sse does not fake initialized tools",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_mcp_ingress_diagnostics.py::test_cli_mcp_probe_exposes_machine_readable_diagnosis": {
+      "path": "tests/test_mcp_ingress_diagnostics.py",
+      "name": "test_cli_mcp_probe_exposes_machine_readable_diagnosis",
+      "purpose": "Cli mcp probe exposes machine readable diagnosis",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
     },
     "tests/test_mcp_modern_protocol.py::test_server_discover_exposes_modern_tasks_and_resources": {
       "path": "tests/test_mcp_modern_protocol.py",
