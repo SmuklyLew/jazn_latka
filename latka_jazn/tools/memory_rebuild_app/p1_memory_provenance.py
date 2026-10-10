@@ -177,7 +177,8 @@ def _attest_sources(project: RebuildProject, meta: dict[str, Any], *, byte_limit
         if not path.is_file():
             out["missing"] += 1
             continue
-        size = path.stat().st_size
+        stat_before = path.stat()
+        size = stat_before.st_size
         if size > remaining:
             return {**out, "state": "source_size_limit"}
         remaining -= size
@@ -186,6 +187,11 @@ def _attest_sources(project: RebuildProject, meta: dict[str, Any], *, byte_limit
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(chunk)
                 out["bytes_hashed"] += len(chunk)
+        stat_after = path.stat()
+        if (stat_before.st_size != stat_after.st_size
+                or stat_before.st_mtime_ns != stat_after.st_mtime_ns
+                or stat_before.st_ino != stat_after.st_ino):
+            return {**out, "state": "source_changed_during_hash"}
         observed = digest.hexdigest()
         if declared.get(spec.source_id) == observed and (
             not spec.sha256 or spec.sha256 == observed
@@ -364,8 +370,14 @@ def compare_memory_provenance(
         report["issue"] = "target_native_unverified"
         return report
     base = Path(temp_root).expanduser() if temp_root else Path(tempfile.gettempdir())
+    protected = [system, target.parent, Path(project.target_root)]
+    if host_path is not None:
+        selected_root = host_path.parent.parent if host_path.parent.name == "sqlite" else host_path.parent
+        protected.append(selected_root)
+    if project.source_directory:
+        protected.append(Path(project.source_directory).expanduser())
     if (_has_symlink(base) or not base.is_dir()
-            or any(_within(base, p) for p in (system, target.parent, Path(project.target_root)))):
+            or any(_within(base, p) for p in protected)):
         report["issue"] = "unsafe_snapshot_root"
         return report
     if shutil.disk_usage(base).free < total + 64 * 1024**2:

@@ -50,3 +50,7 @@ Official references:
 - https://www.sqlite.org/backup.html
 - https://www.sqlite.org/wal.html
 - https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup
+
+## Hardening checkpoint 16.3.25.5.115.21.3.1
+
+Snapshot-root containment also covers the host-selected MEMORY directory and the configured project source directory; backups can no longer be placed inside private MEMORY via an explicit temp_root. Source SHA-256 attestation checks size/mtime/inode before and after streaming to avoid recording a passing digest across source mutation. New native-unified synthetic and WAL snapshot tests independently exercise the real resolver and online-backup integration; they are not a real private MEMORY activation or accepted-turn test.
