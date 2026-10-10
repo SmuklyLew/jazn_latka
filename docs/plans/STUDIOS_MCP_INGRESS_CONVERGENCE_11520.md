@@ -37,3 +37,11 @@
 - Zachowano oryginały sześciu modyfikowanych testów bajt w bajt w `tests/archive/v16.3.25.5.115.20-pre-ci-hardening/`.
 - Kanoniczne `sync_contract_catalog.py --write` oraz `release_metadata_sync --write` pozostają wyłącznymi narzędziami synchronizacji. Wynik CI i `package-smoke` wymagają ponownej weryfikacji na nowym SHA.
 - Nie ruszono prywatnej MEMORY ani działającego daemona.
+
+## Ponowna walidacja Windows na zsynchronizowanym katalogu — 2026-10-10
+
+- Pierwszy pełny `powershell-terminal-regressions` na commicie `666d0f87` zakończył się `2354 passed, 1 failed, 7 skipped`. Jedyny test `tests/test_test_suite_governance.py::test_contract_catalog_covers_every_active_definition` zastał wcześniejszy katalog z `test_settings_live_with_tool_app`, gdy kod zawierał już `test_settings_live_outside_verified_system`.
+- Kanoniczny workflow `Stable test contracts` zsynchronizował `tools/jazn_tests_studio/test_contracts.json` na późniejszym HEAD `513e48e0`: 2157 pozycji; nowy identyfikator testu jest obecny, stary usunięty; wersja katalogu `16.3.25.5.115.20.1`.
+- Ubuntu `release-hardening` i pozostałe 10 workflow na `666d0f87` zakończyły się sukcesem. Nie traktuje się tego jako zaliczenia Windows full suite na nowszym SHA.
+- Niniejszy commit dokumentacyjny jest nowym eventem push po synchronizacji katalogu, żeby uruchomić pełne CI z aktualnym katalogiem; nie zmienia testów ani ich kryteriów akceptacji.
+- Finalny GO zależy od nowego `powershell-terminal-regressions` i `release-hardening` oraz pozostałych wymaganych workflow; jeśli którykolwiek zawiedzie, pozostawić Draft.
