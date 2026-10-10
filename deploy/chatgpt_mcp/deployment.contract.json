@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
+  "runtime_version": "16.3.25.5.115.19-studios-p0-integrity-memory-paths",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",

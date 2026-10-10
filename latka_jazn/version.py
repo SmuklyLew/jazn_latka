@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.18.1 hardens Configuration Studio profiles, path safety, launch and GUI.
+# v115.19 separates operator state and unifies MEMORY path validation.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.18.1"
-PACKAGE_VERSION = "16.3.25.5.115.18.1"
-PACKAGE_RELEASE_NAME = "configuration-studio-profile-hardening"
+DISTRIBUTION_VERSION = "16.3.25.5.115.19"
+PACKAGE_VERSION = "16.3.25.5.115.19"
+PACKAGE_RELEASE_NAME = "studios-p0-integrity-memory-paths"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

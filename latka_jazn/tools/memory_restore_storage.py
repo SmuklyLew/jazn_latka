@@ -5,13 +5,14 @@ from typing import Any, Sequence
 import hashlib
 import sqlite3
 
+from latka_jazn.memory.database_paths import resolve_sqlite_directory
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, sqlite_check
 from latka_jazn.tools.memory_restore_types import ProgressCallback, SCHEMA_VERSION, atomic_json, sha256_file
 
 def resolve_database_paths(root: str | Path) -> dict[str, Path]:
-    base = Path(root).expanduser().resolve()
-    nested = base / "memory" / "sqlite"
-    chosen = nested if (nested / DATABASE_FILENAMES["archive_chats"]).exists() or not (base / DATABASE_FILENAMES["archive_chats"]).exists() else base
+    chosen = resolve_sqlite_directory(
+        root, database_filenames=tuple(DATABASE_FILENAMES.values()), missing_layout="system",
+    )
     return {name: chosen / filename for name, filename in DATABASE_FILENAMES.items()}
 
 def _database_summary(path: Path, *, include_hash: bool = False) -> dict[str, Any]:

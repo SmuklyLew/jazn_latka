@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.18.1",
-  "active_definition_count": 2116,
+  "system_version": "16.3.25.5.115.19",
+  "active_definition_count": 2150,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10960,6 +10960,145 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 42
+    },
+    "tests/test_configuration_memory_database_selection.py::test_database_profile_rejects_unsafe_paths": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_database_profile_rejects_unsafe_paths",
+      "purpose": "Database profile rejects unsafe paths",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_configuration_memory_database_selection.py::test_database_profile_roundtrip_backup_without_creating_database": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_database_profile_roundtrip_backup_without_creating_database",
+      "purpose": "Database profile roundtrip backup without creating database",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_configuration_memory_database_selection.py::test_legacy_database_name_does_not_authorize_schema_mutation": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_legacy_database_name_does_not_authorize_schema_mutation",
+      "purpose": "Legacy database name does not authorize schema mutation",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_configuration_memory_database_selection.py::test_transactional_schema_is_verified_without_writes": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_transactional_schema_is_verified_without_writes",
+      "purpose": "Transactional schema is verified without writes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_configuration_memory_database_selection.py::test_corrupt_database_is_reported_without_mutation": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_corrupt_database_is_reported_without_mutation",
+      "purpose": "Corrupt database is reported without mutation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_configuration_memory_database_selection.py::test_runtime_preflight_does_not_initialize_foreign_database": {
+      "path": "tests/test_configuration_memory_database_selection.py",
+      "name": "test_runtime_preflight_does_not_initialize_foreign_database",
+      "purpose": "Runtime preflight does not initialize foreign database",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
     },
     "tests/test_configuration_studio.py::test_snapshot_is_read_only_and_reports_host_separation": {
       "path": "tests/test_configuration_studio.py",
@@ -44210,6 +44349,649 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 176
+    },
+    "tests/test_studio_operator_paths.py::test_defaults_are_external_and_discovery_does_not_create_directories": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_defaults_are_external_and_discovery_does_not_create_directories",
+      "purpose": "Defaults are external and discovery does not create directories",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_studio_operator_paths.py::test_test_studio_roundtrip_and_log_preserve_system_bytes": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_test_studio_roundtrip_and_log_preserve_system_bytes",
+      "purpose": "Test studio roundtrip and log preserve system bytes",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_studio_operator_paths.py::test_reviews_are_isolated_by_system": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_reviews_are_isolated_by_system",
+      "purpose": "Reviews are isolated by system",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_studio_operator_paths.py::test_legacy_test_state_is_read_only_until_explicit_save": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_legacy_test_state_is_read_only_until_explicit_save",
+      "purpose": "Legacy test state is read only until explicit save",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_studio_operator_paths.py::test_pack_configuration_legacy_fallback_and_new_save_leave_system_unchanged": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_pack_configuration_legacy_fallback_and_new_save_leave_system_unchanged",
+      "purpose": "Pack configuration legacy fallback and new save leave system unchanged",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_studio_operator_paths.py::test_version_settings_and_diff_backup_preserve_system": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_version_settings_and_diff_backup_preserve_system",
+      "purpose": "Version settings and diff backup preserve system",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_studio_operator_paths.py::test_explicit_operator_root_rejects_protected_and_invalid_paths": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_explicit_operator_root_rejects_protected_and_invalid_paths",
+      "purpose": "Explicit operator root rejects protected and invalid paths",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
+    },
+    "tests/test_studio_operator_paths.py::test_pack_explicit_settings_cannot_write_to_system": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_pack_explicit_settings_cannot_write_to_system",
+      "purpose": "Pack explicit settings cannot write to system",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_studio_operator_paths.py::test_redirected_state_children_are_rejected": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_redirected_state_children_are_rejected",
+      "purpose": "Redirected state children are rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
+    },
+    "tests/test_studio_operator_paths.py::test_redirected_operator_root_into_system_is_rejected": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_redirected_operator_root_into_system_is_rejected",
+      "purpose": "Redirected operator root into system is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 162
+    },
+    "tests/test_studio_operator_paths.py::test_invalid_filenames_and_directory_leaf_are_rejected": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_invalid_filenames_and_directory_leaf_are_rejected",
+      "purpose": "Invalid filenames and directory leaf are rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 170
+    },
+    "tests/test_studio_operator_paths.py::test_real_pytest_run_keeps_cache_and_bytecode_outside_system": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_real_pytest_run_keeps_cache_and_bytecode_outside_system",
+      "purpose": "Real pytest run keeps cache and bytecode outside system",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 180
+    },
+    "tests/test_studio_operator_paths.py::test_runner_reports_invalid_state_destination_without_hanging": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_runner_reports_invalid_state_destination_without_hanging",
+      "purpose": "Runner reports invalid state destination without hanging",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 198
+    },
+    "tests/test_studio_operator_paths.py::test_pack_explicit_external_settings_roundtrip_does_not_read_legacy": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_pack_explicit_external_settings_roundtrip_does_not_read_legacy",
+      "purpose": "Pack explicit external settings roundtrip does not read legacy",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 210
+    },
+    "tests/test_studio_operator_paths.py::test_relative_memory_override_uses_workspace_even_when_junction_points_outside": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_relative_memory_override_uses_workspace_even_when_junction_points_outside",
+      "purpose": "Relative memory override uses workspace even when junction points outside",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 226
+    },
+    "tests/test_studio_operator_paths.py::test_version_legacy_backups_remain_readable_without_migration": {
+      "path": "tests/test_studio_operator_paths.py",
+      "name": "test_version_legacy_backups_remain_readable_without_migration",
+      "purpose": "Version legacy backups remain readable without migration",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 240
+    },
+    "tests/test_studio_resume_regressions.py::test_gateway_finds_real_database_when_given_memory_root": {
+      "path": "tests/test_studio_resume_regressions.py",
+      "name": "test_gateway_finds_real_database_when_given_memory_root",
+      "purpose": "Gateway finds real database when given memory root",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_studio_resume_regressions.py::test_identity_api_remains_compatible_with_existing_clients": {
+      "path": "tests/test_studio_resume_regressions.py",
+      "name": "test_identity_api_remains_compatible_with_existing_clients",
+      "purpose": "Identity api remains compatible with existing clients",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_studio_resume_regressions.py::test_memory_settings_workspace_roundtrip_and_system_rejection": {
+      "path": "tests/test_studio_resume_regressions.py",
+      "name": "test_memory_settings_workspace_roundtrip_and_system_rejection",
+      "purpose": "Memory settings workspace roundtrip and system rejection",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.database_identity",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_studios_memory_path_normalization.py::test_memory_and_tier_paths_share_one_normalization": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_memory_and_tier_paths_share_one_normalization",
+      "purpose": "Memory and tier paths share one normalization",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_studios_memory_path_normalization.py::test_memory_paths_reject_unsafe_aliases_consistently": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_memory_paths_reject_unsafe_aliases_consistently",
+      "purpose": "Memory paths reject unsafe aliases consistently",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_studios_memory_path_normalization.py::test_absolute_configured_tier_keeps_selected_memory_path": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_absolute_configured_tier_keeps_selected_memory_path",
+      "purpose": "Absolute configured tier keeps selected memory path",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_studios_memory_path_normalization.py::test_absolute_configured_tier_rejects_memory_nested_in_memory": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_absolute_configured_tier_rejects_memory_nested_in_memory",
+      "purpose": "Absolute configured tier rejects memory nested in memory",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_studios_memory_path_normalization.py::test_memory_path_rejects_symlink_escape": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_memory_path_rejects_symlink_escape",
+      "purpose": "Memory path rejects symlink escape",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_studios_memory_path_normalization.py::test_restore_and_inspector_resolve_existing_memory_layouts": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_restore_and_inspector_resolve_existing_memory_layouts",
+      "purpose": "Restore and inspector resolve existing memory layouts",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_studios_memory_path_normalization.py::test_missing_path_fallback_preserves_explicit_roles_and_caller_contract": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_missing_path_fallback_preserves_explicit_roles_and_caller_contract",
+      "purpose": "Missing path fallback preserves explicit roles and caller contract",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_studios_memory_path_normalization.py::test_database_directory_rejects_ambiguous_or_unsafe_input": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_database_directory_rejects_ambiguous_or_unsafe_input",
+      "purpose": "Database directory rejects ambiguous or unsafe input",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
+    },
+    "tests/test_studios_memory_path_normalization.py::test_database_discovery_rejects_nested_symlink_escape": {
+      "path": "tests/test_studios_memory_path_normalization.py",
+      "name": "test_database_discovery_rejects_nested_symlink_escape",
+      "purpose": "Database discovery rejects nested symlink escape",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.database_paths",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_inspector",
+        "latka_jazn.tools.memory_restore_storage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
     },
     "tests/test_supervisor_identity_ownership.py::test_supervisor_reclaims_live_reused_pid_record": {
       "path": "tests/test_supervisor_identity_ownership.py",
