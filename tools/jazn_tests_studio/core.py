@@ -13,7 +13,7 @@ from latka_jazn.tools.application_shell import ShellSettings, load_shell_setting
 from latka_jazn.tools.application_shell.operator_paths import legacy_read_path, operator_file, operator_state_dir
 
 APP_NAME = "Jaźń - Studio Testów"
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 VALID_REVIEW = {"current", "review_required", "obsolete", "incompatible"}
 EVENT_MARKER = "JAZN_TEST_STUDIO_EVENT "
 UI_STATUS = {

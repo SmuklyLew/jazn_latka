@@ -121,3 +121,9 @@ restartować aktywnego joba wyłącznie z powodu utraty obserwacji. Nowe testy
 dołączyć przez kanoniczny sync_contract_catalog przed release_metadata_sync.
 Istniejący test przed zmianą zarchiwizować bajt w bajt. Nie commitować
 lokalnych logów, baz, venv, ZIP ani prywatnych danych.
+
+## Checkpoint P1 — 16.3.25.5.115.21.1 (Studio Testów)
+
+Po odrębnym P1 podglądzie profilu (PR #344) wykonano kolejny fragment na osobnej gałęzi, bez zmiany oryginalnego SYSTEM/MEMORY. Dotyczy redaktowanej historii uruchomień pytest, jawnego eksportu JSON oraz zakładki Historia w interfejsie okienkowym. Bez nowych backendów testowych i bez uruchamiania testów w pętli UI. Każdy run zapisuje zwięzłe dane w katalogu operatora per-system; nie zapisuje stdout, nodeidów ani komend. Historia jest ograniczona, a export to operacja wyłącznie na polecenie operatora. Status przebiegu pytest pozostaje odrębny od statusu zapisu historii.
+
+Niezrealizowane P1: pełne porównanie źródło/cel/staging/active w Studio Pamięci i zarządzanie aktywacją profilu. P2 (formularze Dependency/Python, Pack) i P3 (Version Rebuild) nadal wymagają osobnych PR oraz walidacji. Nie uznawać za zamknięcie pełnego P1.

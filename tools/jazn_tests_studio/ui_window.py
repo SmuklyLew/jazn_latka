@@ -13,6 +13,7 @@ from .core import (
     load_ui_settings, save_ui_settings, set_review,
 )
 from .runner import PytestRun
+from .history import load_run_history
 
 def run_window_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
     import tkinter as tk
@@ -38,6 +39,8 @@ def run_window_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
     notebook.add(tests, text="Testy")
     notebook.add(expectations, text="Oczekiwania")
     notebook.add(results, text="Wyniki")
+    history_page = ttk.Frame(notebook)
+    notebook.add(history_page, text="Historia")
     settings_page = ttk.Frame(notebook)
     diagnostics_page = ttk.Frame(notebook)
     notebook.add(settings_page, text="Ustawienia")
@@ -56,6 +59,33 @@ def run_window_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
         ybar.grid(row=0, column=1, sticky="ns")
         xbar.grid(row=1, column=0, sticky="ew")
         return widget
+
+    # Operator-only history: no raw test output or node IDs are retained.
+    history_controls = ttk.Frame(history_page)
+    history_controls.pack(fill="x", padx=12, pady=10)
+    history_text = text_with_scrollbars(history_page, wrap="word")
+
+    def refresh_history() -> None:
+        history_text.configure(state="normal")
+        history_text.delete("1.0", "end")
+        try:
+            rows = load_run_history(root, limit=50)["runs"]
+        except (OSError, ValueError) as exc:
+            history_text.insert("end", f"Błąd odczytu historii: {type(exc).__name__}\n")
+        else:
+            if not rows:
+                history_text.insert("end", "Brak zapisanych uruchomień testów.\n")
+            for entry in reversed(rows):
+                history_text.insert(
+                    "end",
+                    f'{entry["finished_at_utc"]} | {entry["scope"]} | '
+                    f'{entry["outcome"]} | {entry["completed"]}/{entry["total"]} | '
+                    f'{entry["duration_seconds"]}s\n',
+                )
+        history_text.configure(state="disabled")
+
+    ttk.Button(history_controls, text="Odśwież historię", command=refresh_history).pack(side="left")
+    refresh_history()
 
     shell_settings = load_ui_settings(root)
     settings_page.columnconfigure(1, weight=1)

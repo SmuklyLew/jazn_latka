@@ -10,6 +10,7 @@ import time
 from typing import Any, Callable
 
 from .core import EVENT_MARKER, UI_STATUS, state_dir
+from .history import record_run_summary
 
 
 class PytestRun:
@@ -200,6 +201,16 @@ class PytestRun:
         }
         if launch_error:
             self.result["error"] = launch_error
+        try:
+            entry = record_run_summary(
+                self.root, self.result, scope="selected" if self.nodeids else "all",
+            )
+            self.result["history_recorded"] = True
+            self.result["history_id"] = entry["id"]
+        except (OSError, ValueError, RuntimeError) as exc:
+            # Test execution outcome is independent of optional operator history.
+            self.result["history_recorded"] = False
+            self.result["history_error_code"] = type(exc).__name__
         self._emit({"type": "finished", **self.result})
         self.done.set()
 
