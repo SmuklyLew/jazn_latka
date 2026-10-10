@@ -17,6 +17,7 @@ import time
 from typing import Any, Iterator
 
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.memory.database_identity import inspect_memory_database
 from .canonical_rebuild import canonical_database_path
 from .models import RebuildProject
 from .p1_memory_inspection import (
@@ -96,7 +97,12 @@ def _backup(src_path: Path, dest: Path) -> None:
         if row is None or str(row[0]).lower() != "delete":
             raise ComparisonBlocked("snapshot_journal_normalization_failed")
         normalized.commit()
-    if _inspect_db(dest)["status"] != "compatible":
+    # The destination is a role-labelled, isolated snapshot, not a selected
+    # canonical source database. Validate its *content* without conflating
+    # the filename with native SQLite readiness.
+    snapshot_info = inspect_memory_database(dest)
+    if not (snapshot_info["kind"] == "native_unified"
+            and snapshot_info["compatible"] is True):
         raise ComparisonBlocked("snapshot_validation_failed")
 
 

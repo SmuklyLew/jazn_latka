@@ -8,6 +8,7 @@ import sqlite3
 
 import pytest
 
+from latka_jazn.memory.database_identity import inspect_memory_database
 from latka_jazn.tools.memory_rebuild_app.models import RebuildProject, SourceSpec
 from latka_jazn.tools.memory_rebuild_app.p1_memory_provenance import (
     _backup, compare_memory_provenance,
@@ -136,3 +137,5 @@ def test_online_backup_captures_committed_wal_without_altering_source(
             ).fetchone()
         assert observed == ("wal-committed-generation",)
         assert snap.is_file()
+        # The standalone snapshot is intentionally not called memory_jazn.sqlite3.
+        assert inspect_memory_database(snap)["compatible"] is True
