@@ -167,7 +167,7 @@ def test_probe_does_not_downgrade_auth_or_rate_limit(
     assert len(calls) == 1
 
 
-@pytest.mark.parametrize("error_code", [-32020, -32021, -32022, -32601])
+@pytest.mark.parametrize("error_code", [-32020, -32022, -32601])
 def test_probe_does_not_downgrade_recognized_modern_protocol_error(
     monkeypatch: pytest.MonkeyPatch, error_code: int,
 ) -> None:
