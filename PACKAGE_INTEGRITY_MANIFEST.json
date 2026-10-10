@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
-  "runtime_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
-  "package_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
-  "generated_at_utc": "2026-10-10T22:30:03+00:00",
-  "updated_at_utc": "2026-10-10T22:30:03+00:00",
+  "version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
+  "runtime_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
+  "package_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
+  "generated_at_utc": "2026-10-10T22:51:39+00:00",
+  "updated_at_utc": "2026-10-10T22:51:39+00:00",
   "start_file": "run.py",
-  "file_count": 2250,
-  "static_file_count": 2250,
+  "file_count": 2258,
+  "static_file_count": 2258,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -308,8 +308,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2924,
-      "sha256": "8e1a65d12ef1c82794bac33ca0845f1920be86ea2d47f6c8d27fc9b232a36e95",
+      "size_bytes": 2990,
+      "sha256": "45555421f25a5e4a07b876582294f3acb70a1069ab500621d09d3c9edbedbb5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -344,8 +344,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1715,
-      "sha256": "dff9192ea4f8b9ed518b52f515318ac3900befc0e62efba8ad4bc3ad2e7b3893",
+      "size_bytes": 1726,
+      "sha256": "144e84662de07c5ac9ff9696124a99f083eee181992fac8745793ed0f62ff8d2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1396,9 +1396,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/STUDIO_MEMORY_P1_PROVENANCE_11521_3.md",
+      "size_bytes": 2787,
+      "sha256": "e6dd954f958cab67be7f29d6383c5d7b87e97d119142044e7fcb2656b2055beb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/STUDIO_MODERNIZATION_PROGRESS.md",
-      "size_bytes": 8914,
-      "sha256": "03b79561e9bb1fed0583ff99b957af8036c049e7bd1a861a70318f7f6bda4a4b",
+      "size_bytes": 9491,
+      "sha256": "7455fd00b00e5eb5f8971fa79d3708c7a4f0ec29dc3c192a149390c16b88d0e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8283,7 +8292,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7009,
-      "sha256": "4641799a171a5175e7b41d7acd3aef727ad2c2dbab63c2ddd375bc7cb9d08cfb",
+      "sha256": "414fec6fa889408768876fc0d0e86fa7e68ad32d0af9c2356902d6f3bcdae09a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8983,6 +8992,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/memory_rebuild_app/p1_memory_provenance.py",
+      "size_bytes": 18214,
+      "sha256": "d2476f36fac8845707163bd81f5b5d50632a8457508345211a1d6dedba6f17e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_rebuild_app/path_picker.py",
       "size_bytes": 2824,
       "sha256": "5ba4e4eb227ece8b2116de680525922717b9113567711ba4b09a1ce51937a78d",
@@ -9290,8 +9308,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/ui_desktop.py",
-      "size_bytes": 40539,
-      "sha256": "e12f9f6c4d24bc675bf61d58c849495045bfcc4057231314566cb71524b599f4",
+      "size_bytes": 41008,
+      "sha256": "295a60dc19884115dcef41b6a9798cc594141389c49274696786a1b82b84d194",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9686,8 +9704,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 5898,
-      "sha256": "25fe22c09b532323ea1e09fed3c0f77ef439ef011db159c8f2c59ddfa417fe1e",
+      "size_bytes": 5994,
+      "sha256": "7480569a611bb1a0d48b3da4afb50bccb86a93253e402107150c401f1badf3c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14275,6 +14293,51 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2690,
+      "sha256": "546f99d7d9a7a546ca0906b701d42b6865534083c8bd35cbc1b0e9a055ff1b8a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "size_bytes": 3037,
+      "sha256": "8b1d8b6a74f802e97d09be1fefab7fb2de5d8b5eb6248a1da6d91dd68bff4503",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
+      "size_bytes": 10382,
+      "sha256": "c4030e69a639374c818e643ed5cdf52bb29f270d84bb4c81a8417901a140ab54",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6950,
+      "sha256": "501fc34c447b6b25c86407e3886998c2f2a89dcf1590446d188f20780c80d99e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8675,
+      "sha256": "de72a4a9dcc997db166e65969e87aed8d65fbf6ea4aae21e1f23604f08d17c24",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.115.3-pre-v115.4-chatgpt-explicit-consent-boundary/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2664,
       "sha256": "69d4721796577709406e58c9f9fb921815c2e9bb84287510c5e6d73a8c9a39ea",
@@ -16274,8 +16337,8 @@
     },
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "size_bytes": 2690,
-      "sha256": "546f99d7d9a7a546ca0906b701d42b6865534083c8bd35cbc1b0e9a055ff1b8a",
+      "size_bytes": 2701,
+      "sha256": "f12b27218b20f45ac2d43cb1d8bcba88478c735b28d74e2b1e88272e681ff1a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16283,8 +16346,8 @@
     },
     {
       "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
-      "size_bytes": 3037,
-      "sha256": "8b1d8b6a74f802e97d09be1fefab7fb2de5d8b5eb6248a1da6d91dd68bff4503",
+      "size_bytes": 3048,
+      "sha256": "05e6d5d4b47d99c858019141825abfbc048da383affdd6eac93268846772417d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16499,8 +16562,8 @@
     },
     {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
-      "size_bytes": 10382,
-      "sha256": "c4030e69a639374c818e643ed5cdf52bb29f270d84bb4c81a8417901a140ab54",
+      "size_bytes": 10393,
+      "sha256": "7174b1850bdce81027575d7d8dae6493cdd60ba898090833e08a5b7b86d11b91",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16715,8 +16778,8 @@
     },
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
-      "size_bytes": 6950,
-      "sha256": "501fc34c447b6b25c86407e3886998c2f2a89dcf1590446d188f20780c80d99e",
+      "size_bytes": 6961,
+      "sha256": "ca0f260aefca0844289727b9ddc94fbc6ea5b20c1d87344596f9a51cc9ad9252",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17174,8 +17237,8 @@
     },
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
-      "size_bytes": 8675,
-      "sha256": "de72a4a9dcc997db166e65969e87aed8d65fbf6ea4aae21e1f23604f08d17c24",
+      "size_bytes": 8686,
+      "sha256": "6df6e45a885d0239e28ac67ec74aa25c6190dace319ffc305921d690c5b7e65a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17995,6 +18058,15 @@
       "path": "tests/test_memory_provenance_fail_closed.py",
       "size_bytes": 7037,
       "sha256": "3048b9fbcd60b78c5af53e0924c43c710248ce0060950f1ef92c98cbae8336fa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_provenance_p1.py",
+      "size_bytes": 4486,
+      "sha256": "11809797ca54980c5cd929b132d9cc7d9879c1038c4356511af8b238fa2cf78b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20090,8 +20162,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2034299,
-      "sha256": "8b9239ec6e9f2c532884a484604a56ad4812137b7b54d330638f267889bfb0ee",
+      "size_bytes": 2038988,
+      "sha256": "0ec9760ac22769d0e29640851b6ec0289b5fd131e520409c845c879ec911c350",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20702,11 +20774,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
+  "release_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
-    "package_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1",
-    "release_version": "16.3.25.5.115.21.2-studio-memory-inspection-p1"
+    "runtime_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
+    "package_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1",
+    "release_version": "16.3.25.5.115.21.3-studio-memory-provenance-comparison-p1"
   },
   "legacy_aliases": {
     "version": "release_version"
