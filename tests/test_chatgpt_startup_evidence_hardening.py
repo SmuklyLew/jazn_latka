@@ -40,6 +40,15 @@ def test_startup_instructions_and_manifests_have_one_exact_file_identity_policy(
     assert "Nie cytuj wyniku narzędzia" in loader
     assert "library_materialize_available=true" in host
     assert manifest["diagnostics"]["no_fabricated_tool_citations"] is True
+    from latka_jazn.mcp.chatgpt_plugin import build_portable_plugin_documents
+    prompt = " ".join(build_portable_plugin_documents("https://jazn.example.test/mcp")["plugin.json"]["extensions"]["com.openai"]["interface"]["defaultPrompt"])
+    assert "file_id/version_id" in prompt and "artifacts[]" in prompt
+    # Standalone stdlib-only bootstrap also advertises the policy to the host.
+    import runpy
+    bootstrap = runpy.run_path(str(ROOT / "CHATGPT_BOOTSTRAP.py"))
+    contract = bootstrap["build_post_materialization_activation_contract"](ROOT)
+    assert contract["materialization_requires_exact_discovered_file_id"] is True
+    assert contract["materialization_empty_artifacts_is_failure"] is True
 
 
 def test_packager_requires_startup_evidence_contract(tmp_path: Path) -> None:
@@ -61,7 +70,6 @@ def startup_path() -> str:
 def test_host_report_hej_failure_not_misclassified_as_success(tmp_path: Path) -> None:
     # Replays the *observed facts* of the 2026-10-09 incident; no invented remote status.
     from latka_jazn.bootstrap.chatgpt_host_preflight import HostDiscoveryEvidence, plan_chatgpt_host_preflight
-    from latka_jazn.core.chatgpt_host_executor_contract import HostExecutorObservation
     decision = plan_chatgpt_host_preflight(
         [], discovery_evidence=HostDiscoveryEvidence(
             library_search_available=True, library_materialize_available=True,

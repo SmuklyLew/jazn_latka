@@ -848,6 +848,9 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
     return {
         "schema_version": POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION,
         "active_root_candidate": str(root),
+        "startup_evidence_contract_member": "latka_jazn/resources/chatgpt_startup_evidence_contract.json",
+        "materialization_requires_exact_discovered_file_id": True,
+        "materialization_empty_artifacts_is_failure": True,
         "operator_entrypoint": "run.py",
         "control_plane": "main.py",
         "local": {
