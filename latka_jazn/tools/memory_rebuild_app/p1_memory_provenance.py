@@ -10,15 +10,17 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sqlite3
 import tempfile
 import time
+import uuid
 from typing import Any, Iterator
 
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.database_identity import inspect_memory_database
-from .canonical_rebuild import canonical_database_path
+from .canonical_rebuild import CanonicalMemoryRebuildPipeline, _source_disposition, canonical_database_path
 from .models import RebuildProject
 from .p1_memory_inspection import (
     _has_symlink, _inspect_db, _inspect_host_selection,
@@ -33,6 +35,18 @@ SCHEMA = "jazn_memory_provenance_comparison/v1"
 MAX_DATABASE_BYTES = 8 * 1024**3
 MAX_SOURCE_BYTES = 8 * 1024**3
 MAX_ROWS = 1_000_000
+MAX_INDEX_BYTES = 512 * 1024**2
+MAX_ROW_BYTES = 16 * 1024**2
+OPERATION_SECONDS = 90
+
+
+def _unsafe_path(path: Path) -> bool:
+    return _has_symlink(path) or any(p.is_junction() for p in (path, *path.parents))
+
+
+def _file_identity(path: Path) -> tuple[int, int]:
+    stat = path.stat()
+    return stat.st_dev, stat.st_ino
 
 
 class ComparisonBlocked(ValueError):
@@ -59,7 +73,7 @@ def _staged(target: Path) -> Path | None:
 def _eligible(path: Path | None, byte_limit: int) -> tuple[bool, str, int]:
     if path is None:
         return False, "role_not_selected", 0
-    if _has_symlink(path):
+    if _unsafe_path(path):
         return False, "symlink_rejected", 0
     inspected = _inspect_db(path)
     if (inspected["status"] != "compatible"
@@ -75,20 +89,32 @@ def _eligible(path: Path | None, byte_limit: int) -> tuple[bool, str, int]:
     return True, "native_probe_passed", size
 
 
-def _backup(src_path: Path, dest: Path) -> None:
+def _backup(src_path: Path, dest: Path, *, byte_limit: int = MAX_DATABASE_BYTES) -> None:
+    if _unsafe_path(src_path) or _unsafe_path(dest):
+        raise ComparisonBlocked("snapshot_unsafe_path")
+    identity = _file_identity(src_path)
     descriptor = os.open(str(dest), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     os.close(descriptor)
-    deadline = time.monotonic() + 90
+    deadline = time.monotonic() + OPERATION_SECONDS
 
     def progress(_status: int, _remaining: int, _total: int) -> None:
         if time.monotonic() > deadline:
             raise ComparisonBlocked("snapshot_timeout")
+        if _total * page_size > byte_limit or dest.stat().st_size > byte_limit:
+            raise ComparisonBlocked("snapshot_size_limit")
+        if _unsafe_path(src_path) or _file_identity(src_path) != identity:
+            raise ComparisonBlocked("source_replaced_during_snapshot")
 
     # Online backup captures committed WAL data consistently, unlike file copy.
     with closing(connect_runtime_readonly(src_path, timeout_ms=2000)) as source:
+        page_size = int(source.execute("PRAGMA page_size").fetchone()[0])
+        if int(source.execute("PRAGMA page_count").fetchone()[0]) * page_size > byte_limit:
+            raise ComparisonBlocked("snapshot_size_limit")
         with closing(sqlite3.connect(dest, timeout=2.0)) as output:
             source.backup(output, pages=512, sleep=0.02, progress=progress)
             output.commit()
+    if _unsafe_path(src_path) or _file_identity(src_path) != identity:
+        raise ComparisonBlocked("source_replaced_during_snapshot")
     # Backup from WAL can leave a self-contained SQLite file with WAL header
     # bytes (2,2) but without live -wal/-shm sidecars. Normalize ONLY this
     # isolated temporary snapshot to a rollback journal before strict probing.
@@ -139,6 +165,37 @@ def _read_meta(path: Path) -> dict[str, Any]:
     return {"fields": fields, "identity": identity, "manifest": manifest}
 
 
+def audit_claims(meta: dict[str, Any]) -> dict[str, Any]:
+    """Validate producer syntax, not authorship; never return claim contents."""
+    fields, identity = meta.get("fields", {}), meta.get("identity", {})
+    checks: dict[str, bool | None] = {}
+    raw_uuid = identity.get("uuid")
+    try:
+        checks["database_uuid"] = bool(uuid.UUID(raw_uuid)) if raw_uuid else None
+    except (ValueError, TypeError, AttributeError):
+        checks["database_uuid"] = False
+    generation = fields.get("memory_generation")
+    checks["memory_generation"] = generation in {"alpha", "beta"} if generation else None
+    run = fields.get("restore_run_id")
+    checks["restore_run_id"] = bool(re.fullmatch(r"\d{8}T\d{6}Z-[0-9a-f]{12}", run)) if run else None
+    for key in ("source_union_sha256", "parent_database_sha256"):
+        value = fields.get(key)
+        checks[key] = bool(re.fullmatch(r"[0-9a-f]{64}", value)) if value else None
+    manifest = meta.get("manifest")
+    checks["source_restore_status_json"] = None if manifest is None else bool(
+        isinstance(manifest, list) and manifest and all(
+            isinstance(item, dict) and all(isinstance(item.get(k), str) for k in
+                ("source_id", "sha256", "role", "pipeline", "disposition", "reason"))
+            and re.fullmatch(r"[0-9a-f]{64}", item["sha256"])
+            and (item["disposition"], item["reason"]) == _source_disposition(item["pipeline"])
+            for item in manifest
+        ) and len({item["source_id"] for item in manifest}) == len(manifest)
+    )
+    return {"state": "unverified", "syntax_checks": checks,
+            "malformed_claims": sorted(key for key, value in checks.items() if value is False),
+            "trusted_reference_available": False, "parent_chain_verified": False}
+
+
 def _lineage(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
     first, second = a["fields"], b["fields"]
     keys = ("memory_generation", "source_union_sha256", "restore_run_id")
@@ -162,6 +219,9 @@ def _lineage(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
         "database_uuid_equal": uuid_equal,
         "both_trusted_identities": x.get("trust") == y.get("trust") == "trusted",
         "parent_chain_verified": False,
+        "verification_state": "conflict" if state == "conflict" else "different" if state == "different" else "unverified",
+        "trusted_reference_available": False,
+        "matching_claims_are_not_identity_verification": True,
     }
 
 
@@ -183,9 +243,13 @@ def _attest_sources(project: RebuildProject, meta: dict[str, Any], *, byte_limit
         declared[key] = sha
     out["unattributed"] = len(set(declared) - {spec.source_id for spec in sources})
     remaining = byte_limit
+    deadline = time.monotonic() + OPERATION_SECONDS
+    observed_inventory: list[dict[str, Any]] = []
+    entries = {item["source_id"]: item for item in manifest}
+    producer_contract = audit_claims(meta)["syntax_checks"]["source_restore_status_json"] is True
     for spec in sources:
         path = Path(spec.path).expanduser()
-        if _has_symlink(path):
+        if _unsafe_path(path):
             out["unsafe"] += 1
             continue
         if not path.is_file():
@@ -198,18 +262,31 @@ def _attest_sources(project: RebuildProject, meta: dict[str, Any], *, byte_limit
         remaining -= size
         digest = hashlib.sha256()
         with path.open("rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if (opened.st_dev, opened.st_ino) != (stat_before.st_dev, stat_before.st_ino):
+                return {**out, "state": "source_changed_during_hash", "verification_state": "blocked"}
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                if time.monotonic() > deadline or out["bytes_hashed"] + len(chunk) > byte_limit:
+                    return {**out, "state": "source_resource_limit", "verification_state": "blocked"}
                 digest.update(chunk)
                 out["bytes_hashed"] += len(chunk)
         stat_after = path.stat()
         if (stat_before.st_size != stat_after.st_size
                 or stat_before.st_mtime_ns != stat_after.st_mtime_ns
-                or stat_before.st_ino != stat_after.st_ino):
+                or stat_before.st_ino != stat_after.st_ino or _unsafe_path(path)):
             return {**out, "state": "source_changed_during_hash"}
         observed = digest.hexdigest()
+        disposition, reason = _source_disposition(spec.pipeline)
+        entry = entries.get(spec.source_id, {})
+        attributes_match = not producer_contract or all(entry.get(key) == value for key, value in {
+            "role": spec.role, "pipeline": spec.pipeline, "disposition": disposition, "reason": reason,
+        }.items())
+        observed_inventory.append({"role": spec.role, "pipeline": spec.pipeline,
+            "truth_domain": spec.truth_domain, "source_family": spec.source_family,
+            "size_bytes": size, "sha256": observed, "disposition": disposition, "disposition_reason": reason})
         if declared.get(spec.source_id) == observed and (
             not spec.sha256 or spec.sha256 == observed
-        ):
+        ) and attributes_match:
             out["matching"] += 1
         else:
             out["changed"] += 1
@@ -217,12 +294,38 @@ def _attest_sources(project: RebuildProject, meta: dict[str, Any], *, byte_limit
         "matching" if out["matching"] == len(sources) and out["unattributed"] == 0
         else "different"
     )
+    out["verification_state"] = "unverified"
+    out["source_bytes_match_claims"] = out["state"] == "matching"
+    out["producer_contract_valid"] = producer_contract
+    out["source_union_matches_observed"] = None
+    if producer_contract and out["state"] == "matching" and meta["fields"].get("source_union_sha256"):
+        union = CanonicalMemoryRebuildPipeline._source_union_sha256(observed_inventory)
+        out["source_union_matches_observed"] = union == meta["fields"]["source_union_sha256"]
+        if not out["source_union_matches_observed"]:
+            out["state"] = "conflict"
+            out["verification_state"] = "conflict"
+    out["trusted_reference_available"] = False
     return out
 
 
 def _canonical(value: object) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True,
-                      separators=(",", ":"), default=str).encode("utf-8")
+    def typed(item: object) -> object:
+        if item is None:
+            return ["null"]
+        if isinstance(item, bytes):
+            return ["blob", item.hex()]
+        if isinstance(item, str):
+            return ["text", item]
+        if isinstance(item, int):
+            return ["integer", str(item)]
+        if isinstance(item, float):
+            return ["real", item.hex()]
+        if isinstance(item, list):
+            return ["list", [typed(v) for v in item]]
+        if isinstance(item, dict):
+            return ["mapping", [[k, typed(v)] for k, v in sorted(item.items())]]
+        raise ComparisonBlocked("unsupported_sqlite_value")
+    return json.dumps(typed(value), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
 def _index_snapshot(
