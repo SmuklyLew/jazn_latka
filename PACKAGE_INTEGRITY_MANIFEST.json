@@ -3,11 +3,11 @@
   "version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
   "runtime_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
   "package_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
-  "generated_at_utc": "2026-10-11T00:56:54+00:00",
-  "updated_at_utc": "2026-10-11T00:56:54+00:00",
+  "generated_at_utc": "2026-10-11T01:01:27+00:00",
+  "updated_at_utc": "2026-10-11T01:01:27+00:00",
   "start_file": "run.py",
-  "file_count": 2284,
-  "static_file_count": 2284,
+  "file_count": 2287,
+  "static_file_count": 2287,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -309,7 +309,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2960,
-      "sha256": "6bc3255681412a87fc594c6e92de7c9599f5027250b41f444904663198eaaf99",
+      "sha256": "e80ddf35a541c29a528e5ae6f44356d35a13ef17828daecb3e170edf0cd6382f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1381,6 +1381,15 @@
       "path": "docs/plans/STUDIOS_MCP_INGRESS_CONVERGENCE_11520.md",
       "size_bytes": 4972,
       "sha256": "239d107149d75404109396f73342aa0aaa7e1bb3bee42266f0c83b2a123245a7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/STUDIO_MEMORY_P1_ACTIVE_READINESS_11521_4.md",
+      "size_bytes": 2482,
+      "sha256": "6afdd956b2bfb416ea1184f5953168128b677d2782527e3dfbc78f202b04f93f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16300,6 +16309,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "size_bytes": 4752,
+      "sha256": "d14a98ace88041acfd6d86a907c779660c3fd656c4a70b7405b7f0d63a5cc7ee",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_active_memory_recall_e2e.py",
       "size_bytes": 33787,
       "sha256": "7d74a17e36103e8bb5448eb919b7182f507cfa86582d11c3d2070f3e8527e373",
@@ -18274,6 +18292,15 @@
       "path": "tests/test_memory_promotion_and_offline_rest.py",
       "size_bytes": 3644,
       "sha256": "a8da4311b258a2055d7435257978e6e82e68221b0d8dfb6318bf5b2991d1de02",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "size_bytes": 3356,
+      "sha256": "c472d2e1256d212dfd562c16fe5364781cd8b92389df6fedc33bce9297cd954a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20396,8 +20423,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2043849,
-      "sha256": "e32cc32fd3e9a98d6e51d06fda8a1c6c8df2231c40a0d4ce404b664d5f61e45b",
+      "size_bytes": 2052728,
+      "sha256": "e016e348162c1923645663f1eb2102900ab64bf42e7467a8d469c97929046f09",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
