@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "15faa2c6da5b8b9171a03b459824902869f002a6",
+  "base_merge_commit": "8acea9c53f9c07cb1f08d69fd1a026cb877779ad",
   "base_version": "16.3.25.5.115.21.3.3-studio-memory-provenance-snapshot-validation-p1",
-  "commit_date": "2026-10-10T23:09:41Z",
+  "commit_date": "2026-10-11T02:35:38+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-10T23:09:41+00:00",
+  "generated_at_utc": "2026-10-11T00:35:38+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "24764b3e926fb18c6447c62c8379ca148faa9393",
+  "git_tree_sha": "b0fe9c6eff363126ad9c7dadfd8d0eef7d2ee542",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "15faa2c6da5b8b9171a03b459824902869f002a6",
+    "source_commit": "8acea9c53f9c07cb1f08d69fd1a026cb877779ad",
     "source_version": "16.3.25.5.115.21.3.3-studio-memory-provenance-snapshot-validation-p1"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "15faa2c6da5b8b9171a03b459824902869f002a6",
+  "source_commit": "8acea9c53f9c07cb1f08d69fd1a026cb877779ad",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.21.3.3-studio-memory-provenance-snapshot-validation-p1",
   "tag": null,
