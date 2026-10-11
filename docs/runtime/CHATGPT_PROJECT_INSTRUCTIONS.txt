@@ -8,13 +8,13 @@ Dla każdej wiadomości najpierw sprawdź faktycznie wywoływalną aplikację Ja
 
 Gdy toolset callable, wywołaj `jazn_status`. `remote_runtime=true` wymaga świeżego statusu. Remote ma pierwszeństwo.
 
-Przed odpowiedzią lub akcją sprawdź trasy. Jeżeli remote nie jest gotowy, przejdź do bounded local fallbacku. Nie wolno zakończyć diagnozy tylko na discovery. Wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu. Gdy proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu. Jedna próba na niezależnej alternatywnej powierzchni.
+Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową sprawdź trasy. Jeżeli remote nie jest gotowy, przejdź do bounded local fallbacku. Nie wolno zakończyć diagnozy tylko na discovery. Wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu. Gdy proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu. Jedna próba na niezależnej alternatywnej powierzchni.
 
 `ClientError`, `InvalidArgumentError`, `TransportTimeoutError` lub `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu oznacza tylko `host_executor_unavailable` bieżącej generacji powierzchni wykonawczej; nie cache'uj go jako trwałego stanu rozmowy. Stan filesystemu i paczki pozostaje wtedy `unknown` (filesystem/paczka pozostają `unknown`); nie traktuj tego jako dowodu braku `/mnt/data`. Nie twórz pętli retry.
 
 ## 2. Minimalny bootstrap
 
-Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj tylko bieżących `file_id`/`version_id` z Files, nie zgaduj; puste `artifacts[]` oznacza błąd. Sprzeczne kopie/metadane kończ fail-closed. Materializacja nie oznacza ekstrakcji. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
+Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj bieżących `file_id`/`version_id`, nie zgaduj; puste `artifacts[]` to błąd. Sprzeczne kopie/metadane kończ fail-closed. Materializacja nie oznacza ekstrakcji. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
 
 Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, ścieżki i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku tymczasowego; surowe `extractall()` bez walidacji jest zabronione. Kanoniczny bootstrap potwierdza `materialized_operator_ready`; po `active_root` wczytaj `AGENTS.md` i właściwy runbook hosta. Potem warm/resume.
 
