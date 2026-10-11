@@ -8421,17 +8421,17 @@
       "path": "tests/test_chatgpt_startup_evidence_hardening.py",
       "name": "test_startup_instructions_and_manifests_have_one_exact_file_identity_policy",
       "purpose": "Startup instructions and manifests have one exact file identity policy",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 18,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
-        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
         "latka_jazn.version"
       ],
       "status": "current",
@@ -8453,12 +8453,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
-        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 54
     },
     "tests/test_chatgpt_startup_evidence_hardening.py::test_host_report_hej_failure_not_misclassified_as_success": {
       "path": "tests/test_chatgpt_startup_evidence_hardening.py",
@@ -8475,12 +8475,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
-        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 70
     },
     "tests/test_chatgpt_startup_evidence_hardening.py::test_real_host_system_zip_bootstrap_e2e": {
       "path": "tests/test_chatgpt_startup_evidence_hardening.py",
@@ -8499,12 +8499,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
-        "latka_jazn.core.chatgpt_host_executor_contract",
+        "latka_jazn.mcp.chatgpt_plugin",
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 86
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
