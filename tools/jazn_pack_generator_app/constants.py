@@ -21,6 +21,7 @@ SYSTEM_BOOTSTRAP_REQUIRED_FILES = (
     "main.py",
     "AGENTS.md",
     "AGENTS.chatgpt.md",
+    "latka_jazn/resources/chatgpt_startup_evidence_contract.json",
     "MEMORY_ATTACHMENT_CONTRACT.json",
     "latka_jazn/version.py",
     "PACKAGE_INTEGRITY_MANIFEST.json",

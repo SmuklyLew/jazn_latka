@@ -80,6 +80,10 @@ fresh observation/heartbeat and the complete current-message toolset. The
 model-visible status is redacted and cannot expose local runtime roots, memory
 database paths, PID/private daemon fields or secrets.
 
+## Host Files handoff — evidence binding (v115.18.2)
+
+If a local process exists but SYSTEM is supplied by ChatGPT Files/Library, use only exact current `files.search`/`files.list` returned `file_id` and available `version_id`; do not guess identifiers or silently substitute a sidecar/older package. Exhaust relevant pagination before claiming absence. `files.materialize` returning no `artifacts` is a failed transfer, even when the tool interface is callable. Only the host-returned physical path, size, trusted SHA-256 and ZIP validation can establish bootstrap eligibility. A tool citation is valid only after an actual invocation and returned result. The release-bundled machine contract is `latka_jazn/resources/chatgpt_startup_evidence_contract.json`.
+
 ## Bounded local fallback
 
 Local fallback is permitted only before the user message has crossed a
