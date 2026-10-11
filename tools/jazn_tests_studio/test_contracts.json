@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.21.4",
-  "active_definition_count": 2191,
+  "active_definition_count": 2201,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -211,6 +211,123 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 223
+    },
+    "tests/test_active_memory_readiness_p1.py::test_evidence_endpoint_requires_auth_and_nonce": {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "name": "test_evidence_endpoint_requires_auth_and_nonce",
+      "purpose": "Evidence endpoint requires auth and nonce",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [
+        "HTTPError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_active_memory_readiness_p1.py::test_missing_marker_fails_closed_without_files": {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "name": "test_missing_marker_fails_closed_without_files",
+      "purpose": "Missing marker fails closed without files",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_active_memory_readiness_p1.py::test_status_redacts_private_metadata_and_does_not_infer_recall": {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "name": "test_status_redacts_private_metadata_and_does_not_infer_recall",
+      "purpose": "Status redacts private metadata and does not infer recall",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_active_memory_readiness_p1.py::test_independent_pin_still_cannot_grant_activation": {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "name": "test_independent_pin_still_cannot_grant_activation",
+      "purpose": "Independent pin still cannot grant activation",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_active_memory_readiness_p1.py::test_sqlite_blob_text_integer_and_real_cannot_hash_identically": {
+      "path": "tests/test_active_memory_readiness_p1.py",
+      "name": "test_sqlite_blob_text_integer_and_real_cannot_hash_identically",
+      "purpose": "Sqlite blob text integer and real cannot hash identically",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
     },
     "tests/test_active_memory_recall_e2e.py::test_frozen_recall_contract_preserves_typed_provenance": {
       "path": "tests/test_active_memory_recall_e2e.py",
@@ -24074,6 +24191,106 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 97
+    },
+    "tests/test_memory_provenance_chain_p1.py::test_missing_independent_reference_is_unverified": {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "name": "test_missing_independent_reference_is_unverified",
+      "purpose": "Missing independent reference is unverified",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_memory_provenance_chain_p1.py::test_exact_independent_artifact_pin_is_verified_only_within_scope": {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "name": "test_exact_independent_artifact_pin_is_verified_only_within_scope",
+      "purpose": "Exact independent artifact pin is verified only within scope",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_memory_provenance_chain_p1.py::test_pin_mismatch_is_conflict": {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "name": "test_pin_mismatch_is_conflict",
+      "purpose": "Pin mismatch is conflict",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_memory_provenance_chain_p1.py::test_symlinked_reference_is_blocked": {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "name": "test_symlinked_reference_is_blocked",
+      "purpose": "Symlinked reference is blocked",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_memory_provenance_chain_p1.py::test_beta_without_independent_parent_pin_remains_unverified": {
+      "path": "tests/test_memory_provenance_chain_p1.py",
+      "name": "test_beta_without_independent_parent_pin_remains_unverified",
+      "purpose": "Beta without independent parent pin remains unverified",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
     },
     "tests/test_memory_provenance_fail_closed.py::test_contract_uses_the_frozen_presenter_payload_and_stable_item_id": {
       "path": "tests/test_memory_provenance_fail_closed.py",
