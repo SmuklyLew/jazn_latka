@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "b7d2307d7cebcbb32d310070c0b8d68c15b8d713",
+  "base_merge_commit": "4c2d8b49d6efca0ea4531f8e089cb11050a55bb4",
   "base_version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening",
-  "commit_date": "2026-10-11T13:42:27Z",
+  "commit_date": "2026-10-11T13:48:37Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-11T13:42:27+00:00",
+  "generated_at_utc": "2026-10-11T13:48:37+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b1a7f1b524544e9105c7012817fac0cbf1516fd5",
+  "git_tree_sha": "cd45a4515185c4603af0c56758ec9a122f192a39",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "b7d2307d7cebcbb32d310070c0b8d68c15b8d713",
+    "source_commit": "4c2d8b49d6efca0ea4531f8e089cb11050a55bb4",
     "source_version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "b7d2307d7cebcbb32d310070c0b8d68c15b8d713",
+  "source_commit": "4c2d8b49d6efca0ea4531f8e089cb11050a55bb4",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening",
   "tag": null,

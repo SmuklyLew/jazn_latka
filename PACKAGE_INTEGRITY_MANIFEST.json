@@ -3,8 +3,8 @@
   "version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening",
   "runtime_version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening",
   "package_version": "16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening",
-  "generated_at_utc": "2026-10-11T13:42:27+00:00",
-  "updated_at_utc": "2026-10-11T13:42:27+00:00",
+  "generated_at_utc": "2026-10-11T13:48:37+00:00",
+  "updated_at_utc": "2026-10-11T13:48:37+00:00",
   "start_file": "run.py",
   "file_count": 2204,
   "static_file_count": 2204,
@@ -309,7 +309,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "dd829379a1b096a4920fd985283648d18b2d9455910fe7dc39724b44a2d33dbf",
+      "sha256": "69bd77583099376bb762e8ea60b58ac331110ae2179577878e445d31041cbd38",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2711,8 +2711,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5152,
-      "sha256": "77d95e0fc530508dc9840b14b9804adae4d0c6109e4dd1e0cb49013d25b446c1",
+      "size_bytes": 5124,
+      "sha256": "ede4cf193ad68924899d079718eebc30de47bd5f0c53794df57c53925a7b3cfe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16345,7 +16345,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_chatgpt_startup_evidence_hardening_v115182.py",
+      "path": "tests/test_chatgpt_startup_evidence_hardening.py",
       "size_bytes": 5155,
       "sha256": "ac03cdecf5634db75265b7c633204986b81e91cf7e3177a79b11c481794cabad",
       "mutable_runtime": false,
@@ -19676,8 +19676,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 1982881,
-      "sha256": "0864a3fc4f74d1a79c720fcc2afbca67bc3f1fe19371ead0aeaeecd78a868094",
+      "size_bytes": 1982817,
+      "sha256": "0a25c6d64c55b3818f43802b17900139bb25548dc46704301101f57eb0a1b4f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
