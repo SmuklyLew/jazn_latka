@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# v115.21.4 completes read-only active MEMORY evidence and readiness preflight.
 # v115.21.3.3 validates noncanonical snapshot names by native content and supports extended version components.
 # v115.21.3.2 normalizes WAL-origin temporary snapshots before strict SQLite validation.
 # v115.21.3.1 closes host-MEMORY temp-root aliasing and adds native/WAL regression evidence.
@@ -18,9 +19,9 @@ from typing import Any
 # v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.21.3.3"
-PACKAGE_VERSION = "16.3.25.5.115.21.3.3"
-PACKAGE_RELEASE_NAME = "studio-memory-provenance-snapshot-validation-p1"
+DISTRIBUTION_VERSION = "16.3.25.5.115.21.4"
+PACKAGE_VERSION = "16.3.25.5.115.21.4"
+PACKAGE_RELEASE_NAME = "studio-active-memory-readiness-p1"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

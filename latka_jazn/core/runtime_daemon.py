@@ -3620,6 +3620,22 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 return
             self._chat_job_response(job, created=False, force_envelope=True)
             return
+        if path == "/active-memory-evidence":
+            # Existing daemon auth and loopback-only policy apply first.
+            from latka_jazn.core.active_memory_evidence import build_active_memory_payload
+            values = query.get("nonce") or []
+            if len(values) != 1 or re.fullmatch(r"[0-9a-f]{32}", values[0]) is None:
+                self._json_response({"ok": False, "error_code": "invalid_evidence_nonce"}, status=HTTPStatus.BAD_REQUEST)
+                return
+            server = self._daemon_server()
+            payload = build_active_memory_payload(
+                server.config,
+                liveness=server.liveness_status_payload(endpoint=path),
+                nonce=values[0],
+                token=server.auth_token,
+            )
+            self._json_response(payload)
+            return
         if path == "/chat-jobs":
             self._json_response({"ok": True, "daemon_chat_jobs": self._daemon_server().chat_job_summary()})
             return

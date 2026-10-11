@@ -21,17 +21,20 @@ import sqlite3
 import subprocess
 import time
 from typing import Any
+import urllib.error
+import urllib.request
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.process_identity import process_fingerprint, process_fingerprint_matches
 from latka_jazn.core.runtime_root import resolve_active_runtime_marker_path
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
-from latka_jazn.memory.database_identity import read_database_identity
+from latka_jazn.memory.database_identity import read_database_identity, inspect_memory_database
 
 SCHEMA = "jazn_active_memory_evidence/v1"
 ENDPOINT = "/active-memory-evidence"
 CHECKS = ("runtime_root", "version_integrity", "process", "endpoint", "heartbeat",
-          "memory_root", "database_identity", "recall", "continuity")
+          "memory_root", "memory_schema", "database_identity", "provenance",
+          "recall", "continuity")
 META_KEYS = ("schema_version", "memory_generation", "source_union_sha256",
              "restore_run_id", "parent_database_sha256")
 
@@ -128,6 +131,30 @@ def build_active_memory_payload(
     return payload
 
 
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> None:
+        """Never forward the daemon capability token to a redirect target."""
+        return None
+
+
+def _fetch_attestation(url: str, *, token: str) -> dict[str, Any]:
+    """Authenticated bounded GET, no redirects, no raw response in error paths."""
+    from latka_jazn.core.runtime_daemon import DAEMON_AUTH_HEADER
+    request = urllib.request.Request(url, headers={"Accept": "application/json", DAEMON_AUTH_HEADER: token})
+    opener = urllib.request.build_opener(_NoRedirect())
+    with opener.open(request, timeout=3) as response:
+        if response.status != 200 or response.headers.get_content_type() != "application/json":
+            raise ValueError("evidence_response_type")
+        raw = response.read(65537)
+        if len(raw) > 65536:
+            raise ValueError("evidence_response_too_large")
+    payload = json.loads(raw.decode("utf-8", errors="strict"))
+    if not isinstance(payload, dict):
+        raise ValueError("evidence_response_invalid")
+    return payload
+
+
 def _observe_process_command(pid: int, root: Path) -> bool | None:
     """Observe OS command arguments, not marker claims; never return arguments."""
     try:
@@ -209,7 +236,7 @@ def collect_active_memory_evidence(system_root: Path) -> dict[str, Any]:
         pid = int(status.get("pid") or 0)
         before = process_fingerprint(pid)
         nonce = secrets.token_hex(16)
-        response = daemon.http_json("GET", daemon.daemon_url(host, port, ENDPOINT) + "?nonce=" + nonce, timeout=3.0, token=token)
+        response = _fetch_attestation(daemon.daemon_url(host, port, ENDPOINT) + "?nonce=" + nonce, token=token)
         if not isinstance(response, dict):
             return result
         proof = response.pop("proof", "")
@@ -257,6 +284,14 @@ def collect_active_memory_evidence(system_root: Path) -> dict[str, Any]:
         if database != expected_database or response.get("database_observation") != "observed":
             checks["database_identity"] = _check("unverified", "configured_database_not_observed")
             return result
+        native = inspect_memory_database(database)
+        native_ok = native.get("kind") == "native_unified" and native.get("compatible") is True
+        checks["memory_schema"] = _check(
+            "verified" if native_ok else "unverified",
+            "native_unified_schema_verified" if native_ok else "native_unified_schema_not_verified",
+        )
+        if not native_ok:
+            return result
         local_metadata = _database_metadata(database)
         runtime_metadata = response.get("database_metadata")
         identity_ok = (isinstance(runtime_metadata, dict) and local_metadata == runtime_metadata
@@ -273,6 +308,6 @@ def collect_active_memory_evidence(system_root: Path) -> dict[str, Any]:
         result["database_metadata"] = local_metadata
         result["observation_scope"] = "sequential_config_bound_metadata_not_recall"
         return result
-    except (OSError, ValueError, TypeError, RuntimeError, sqlite3.Error):
+    except (OSError, ValueError, TypeError, RuntimeError, sqlite3.Error, urllib.error.URLError, UnicodeError):
         checks["database_identity"] = _check("unverified", "evidence_collection_incomplete")
         return result
