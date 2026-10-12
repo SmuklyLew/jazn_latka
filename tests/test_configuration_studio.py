@@ -136,3 +136,25 @@ def test_symlink_parent_directory_is_rejected(tmp_path: Path) -> None:
         pytest.skip("Symlink creation unavailable")
     with pytest.raises(ConfigValidationError):
         profile_file(root, workspace=workspace)
+
+def test_root_scoped_default_profile_and_explicit_root_token(tmp_path: Path, monkeypatch) -> None:
+    root = fake_system(tmp_path)
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    expected = (root / "workspace_runtime").resolve()
+    assert profile_file(root) == expected / "configuration_studio" / "profiles" / "operator.json"
+    assert validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "$ROOT/workspace_runtime"})[
+        "JAZN_RUNTIME_WORKSPACE_DIR"
+    ] == str(expected)
+    assert validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "${ROOT}/workspace_runtime"})[
+        "JAZN_RUNTIME_WORKSPACE_DIR"
+    ] == str(expected)
+    with pytest.raises(ConfigValidationError):
+        validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "$ROOT/../escape"})
+
+
+def test_workspace_override_outside_root_remains_available(tmp_path: Path) -> None:
+    root = fake_system(tmp_path)
+    outside = tmp_path / "explicit_workspace"
+    result = validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(outside)})
+    assert result["JAZN_RUNTIME_WORKSPACE_DIR"] == str(outside.resolve())
+
