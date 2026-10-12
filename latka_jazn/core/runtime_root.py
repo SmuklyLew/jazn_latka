@@ -75,9 +75,9 @@ def find_runtime_root(start: Path | None = None) -> Path:
 def default_runtime_workspace_path(root: Path) -> Path:
     """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
 
-    Editable SYSTEM checkouts use ROOT/workspace_runtime. Versioned release roots
-    keep their shared host workspace for daemon/session continuity. Host-managed
-    runtime layouts reuse the parent workspace instead of creating nested state.
+    The named editable jazn_latka_master checkout uses ROOT/workspace_runtime.
+    All other roots retain the shared host-level default for compatibility.
+    Host-managed runtime layouts reuse their existing parent workspace.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -86,10 +86,12 @@ def default_runtime_workspace_path(root: Path) -> Path:
         return parent.resolve()
     if parent.name.casefold() in {"runtime_roots", "runtime-roots"}:
         return (parent.parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
-    # Versioned releases retain host-level daemon and session continuity.
-    if runtime_root.name.casefold().startswith("jazn_latka_v"):
-        return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
-    return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+    # Only the established editable master checkout changes its implicit
+    # layout. All other (including versioned/host-managed) roots retain their
+    # historical shared workspace, protecting daemon and memory continuity.
+    if runtime_root.name.casefold() == "jazn_latka_master":
+        return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+    return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 
 
 def legacy_workspace_runtime_path(root: Path) -> Path:
