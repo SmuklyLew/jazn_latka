@@ -1,7 +1,0 @@
-{
-  "active": false,
-  "archive_path": ".archives/pre_v15_1_0_3_90/tree/docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
-  "schema_version": "historical_artifact_pointer/v1",
-  "status": "archived_exact_copy",
-  "truth_boundary": "The historical payload is preserved byte-for-byte in the current-line archive; this active-tree file is only a non-executable pointer."
-}

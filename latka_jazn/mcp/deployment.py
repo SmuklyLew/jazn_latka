@@ -77,6 +77,11 @@ def _required_https_url(value: str | None, *, name: str) -> str:
             f"{name} must not contain embedded credentials",
             code=f"invalid_{name}",
         )
+    if parsed.fragment:
+        raise DeploymentError(
+            f"{name} must not contain a URL fragment",
+            code=f"invalid_{name}",
+        )
     return candidate
 
 
@@ -231,10 +236,17 @@ class PublicMcpDeploymentConfig:
             name="oauth_resource_server_url",
         )
         resource_path = urlsplit(resource_url).path.rstrip("/")
-        if resource_path != "/mcp":
+        if resource_path != "/mcp" or urlsplit(resource_url).query:
             raise DeploymentError(
-                "OAuth resource-server URL must identify the public /mcp endpoint",
+                "OAuth resource-server URL must identify the public /mcp endpoint without query",
                 code="oauth_resource_server_path_mismatch",
+            )
+        resource_host = (urlsplit(resource_url).hostname or "").lower()
+        allowed_host_names = {host.split(":", 1)[0].lower() for host in allowed_hosts}
+        if resource_host not in allowed_host_names:
+            raise DeploymentError(
+                "JAZN_MCP_ALLOWED_HOSTS must include the public resource-server hostname",
+                code="public_allowed_hosts_resource_mismatch",
             )
 
         return cls(

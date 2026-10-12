@@ -8,8 +8,10 @@ services:
       - ./jazn-mcp.env
     environment:
       JAZN_MCP_REQUIRE_SUPERVISOR: "1"
+      JAZN_MEMORY_ROOT: /opt/jazn/memory
     volumes:
       - jazn-runtime:/opt/jazn/workspace_runtime
+      - jazn-memory:/opt/jazn/memory
     expose:
       - "8080"
     healthcheck:
@@ -32,12 +34,19 @@ services:
     depends_on:
       jazn-mcp:
         condition: service_healthy
+    secrets:
+      - cloudflare_tunnel_token
     command:
       - tunnel
       - --no-autoupdate
       - run
-      - --token
-      - ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN outside the repository}
+      - --token-file
+      - /run/secrets/cloudflare_tunnel_token
+
+secrets:
+  cloudflare_tunnel_token:
+    file: ${CLOUDFLARE_TUNNEL_TOKEN_FILE:?set CLOUDFLARE_TUNNEL_TOKEN_FILE to a private absolute path}
 
 volumes:
   jazn-runtime:
+  jazn-memory:
