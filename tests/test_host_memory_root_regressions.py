@@ -150,7 +150,8 @@ def test_conversation_archive_uses_host_memory_sqlite_root(tmp_path: Path) -> No
     assert archive.archive_dir == memory / "sqlite" / "conversation_archive_v1"
     assert archive.fts_dir == memory / "sqlite" / "conversation_fts_v1"
     assert archive.staging_dir == memory / "sqlite" / "staging_v1"
-    assert (root / "memory" / "sqlite").exists()
+    # Constructing a reader must not materialize a database directory.
+    assert not (root / "memory" / "sqlite").exists()
 
 
 def test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory(

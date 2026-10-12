@@ -24,12 +24,37 @@ function Assert-ChildPath([string]$Base, [string]$Candidate) {
 function Get-WorkspaceRoot([string]$AppRoot) {
     $configured = [string]$env:JAZN_RUNTIME_WORKSPACE_DIR
     if (-not [string]::IsNullOrWhiteSpace($configured)) {
+        $portable = $configured.Replace([char]92, '/')
+        if ($portable.StartsWith('$ROOT/', [StringComparison]::Ordinal) -or
+            $portable.StartsWith('${ROOT}/', [StringComparison]::Ordinal)) {
+            $prefixLength = if ($portable.StartsWith('$ROOT/')) { 6 } else { 8 }
+            $suffix = $portable.Substring($prefixLength)
+            if ([string]::IsNullOrWhiteSpace($suffix) -or
+                $suffix -match '(^|/)\.\.(/|$)|(^|/)\.(/|$)|:' -or
+                $suffix.StartsWith('/')) {
+                throw "unsafe_root_relative_workspace"
+            }
+            $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $suffix))
+            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd([char[]]@([char]92, [char]47))) + [IO.Path]::DirectorySeparatorChar
+            if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "workspace_escapes_root"
+            }
+            return $resolved
+        }
         if ([IO.Path]::IsPathRooted($configured)) {
             return [IO.Path]::GetFullPath($configured)
         }
         return [IO.Path]::GetFullPath((Join-Path $AppRoot $configured))
     }
-    return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $AppRoot) "workspace_runtime"))
+    $parent = Split-Path -Parent $AppRoot
+    if ((Split-Path -Leaf $parent) -ieq "workspace_runtime") { return [IO.Path]::GetFullPath($parent) }
+    if ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
+        return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
+    }
+    if ((Split-Path -Leaf $AppRoot) -ieq "jazn_latka_master") {
+        return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
+    }
+    return [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
 }
 
 function Assert-RuntimeSetIntegrity([string]$AppRoot, [string]$SetPath) {

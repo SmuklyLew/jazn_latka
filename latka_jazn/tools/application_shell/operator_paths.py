@@ -29,7 +29,13 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
         raise OperatorPathError("Ścieżka stanu operatora musi być absolutna i nie może zawierać '..'.")
     target = raw.resolve()
     system = Path(system_root).expanduser().resolve()
-    workspaces = (default_runtime_workspace_path(system).resolve(), workspace_runtime_path(system).resolve())
+    # The previous host-wide sibling location stays protected after opting
+    # into ROOT/workspace_runtime, even before an operator-led migration.
+    workspaces = tuple(dict.fromkeys((
+        default_runtime_workspace_path(system).resolve(),
+        workspace_runtime_path(system).resolve(),
+        (system.parent / "workspace_runtime").resolve(),
+    )))
     protected = [system, system.parent / "memory", *(workspace / "memory" for workspace in workspaces)]
     for workspace in workspaces:
         allowed = {workspace / "memory_rebuild_settings.json", workspace / "memory_rebuild_settings.json.tmp"}

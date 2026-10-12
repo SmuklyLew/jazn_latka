@@ -73,10 +73,17 @@ def test_dry_run_rejects_unknown_and_unsafe_configuration(tmp_path: Path) -> Non
     for entry in (
         {"OPENAI_API_KEY": "secret"},
         {"JAZN_MEMORY_MODE": "invalid"},
-        {"JAZN_MEMORY_ROOT": str(root / "memory")},
+        {"JAZN_MEMORY_ROOT": str(root / "latka_jazn" / "private")},
     ):
         with pytest.raises(ConfigValidationError):
             preview_profile_changes(root, entry, expected_sha256=None)
+    # The dedicated canonical SYSTEM/memory folder is permitted by the
+    # runtime and validation contract; preview must not contradict it.
+    preview = preview_profile_changes(
+        root, {"JAZN_MEMORY_ROOT": str(root / "memory")},
+        expected_sha256=None,
+    )
+    assert preview["proposed_overrides"]["JAZN_MEMORY_ROOT"] == str(root / "memory")
 
 
 def test_marker_cannot_be_mistaken_for_runtime_readiness(tmp_path: Path) -> None:

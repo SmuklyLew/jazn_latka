@@ -41,7 +41,7 @@ class Setting:
 
 
 SETTINGS: tuple[Setting, ...] = (
-    Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Absolutny katalog stanu poza SYSTEM"),
+    Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Domyślnie $ROOT/workspace_runtime; inne lokalizacje tylko jawnie"),
     Setting("JAZN_MEMORY_ROOT", "Pamięć prywatna", "Ścieżki", "directory", "Kanoniczne <SYSTEM>/memory lub jawna ścieżka zewnętrzna"),
     Setting("JAZN_MEMORY_TIER_DB", "Baza pamięci", "Ścieżki", "memory_database", "Ścieżka względna wewnątrz MEMORY, np. sqlite/runtime_write_v2/runtime_memory.sqlite3"),
     Setting("LATKA_NLP_DATA_DIR", "Zasoby NLP", "Ścieżki", "directory", "Zewnętrzny katalog modeli"),
@@ -91,8 +91,8 @@ def profile_directory(root: str | Path, *, workspace: Path | None = None) -> Pat
     source = system_root(root)
     target = Path(workspace).expanduser().resolve() if workspace is not None else workspace_runtime_path(source)
     home = target / "configuration_studio" / "profiles"
-    if _inside(home.resolve(), source) or _inside(target, resolve_memory_root(source)):
-        raise ConfigValidationError("Profile nie mogą znajdować się wewnątrz SYSTEM ani MEMORY.")
+    if (_inside(home.resolve(), source) and target != workspace_runtime_path(source)) or _inside(target, resolve_memory_root(source)):
+        raise ConfigValidationError("Profile mogą leżeć tylko w kanonicznym workspace albo poza SYSTEM/MEMORY.")
     _checked_folder(home)
     return home
 
@@ -106,10 +106,26 @@ def profile_file(root: str | Path, *, name: str = "operator", workspace: Path | 
     return path
 
 
-def _checked_path(key: str, value: str) -> Path:
+def _checked_path(key: str, value: str, root: Path) -> Path:
+    """Accept absolute paths or a bounded, portable $ROOT/ prefix."""
+    portable = value.replace("\\", "/")
+    if portable.startswith("$ROOT/"):
+        suffix = portable[len("$ROOT/"):]
+    elif portable.startswith("${ROOT}/"):
+        suffix = portable[len("${ROOT}/"):]
+    else:
+        suffix = None
+    if suffix is not None:
+        parts = PureWindowsPath(suffix).parts
+        if not suffix or ".." in parts or PureWindowsPath(suffix).anchor:
+            raise ConfigValidationError(f"{key}: niedozwolona ścieżka względna $ROOT.")
+        candidate = (root / suffix).resolve()
+        if not _inside(candidate, root):
+            raise ConfigValidationError(f"{key}: ścieżka wychodzi poza $ROOT.")
+        return candidate
     candidate = Path(value).expanduser()
     if not candidate.is_absolute():
-        raise ConfigValidationError(f"{key}: wymagana jest ścieżka bezwzględna.")
+        raise ConfigValidationError(f"{key}: wymagana jest ścieżka bezwzględna lub $ROOT/...")
     return candidate.resolve()
 
 
@@ -129,7 +145,7 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         if len(value) > 4096 or any(ord(ch) < 32 or ord(ch) == 127 for ch in value):
             raise ConfigValidationError(f"{key}: niedozwolone znaki lub długość.")
         if setting.kind in {"directory", "file"}:
-            result[key] = str(_checked_path(key, value))
+            result[key] = str(_checked_path(key, value, source))
         elif setting.kind == "memory_database":
             portable = value.replace("\\", "/")
             candidate = PureWindowsPath(portable)
@@ -175,7 +191,8 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         if key in result and (_inside(path, source) or _inside(path, legacy_workspace)):
             # Only the exact dedicated <SYSTEM>/memory directory is allowed.
             # Other paths within the code tree still fail closed.
-            if not (key == "JAZN_MEMORY_ROOT" and path == source / "memory"):
+            if not ((key == "JAZN_MEMORY_ROOT" and path == source / "memory") or
+                    (key == "JAZN_RUNTIME_WORKSPACE_DIR" and path == workspace_runtime_path(source))):
                 raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
     if _inside(workspace, memory) or _inside(workspace, current_memory) or workspace == memory:
         raise ConfigValidationError("Workspace nie może znajdować się w MEMORY.")
@@ -326,11 +343,14 @@ def inspect_system(root: str | Path) -> list[dict[str, str]]:
     """Effective, read-only locations; existence is not daemon readiness."""
     source = system_root(root)
     workspace = workspace_runtime_path(source)
+    # Historical sibling location is diagnostic only; never auto-attach state.
+    previous_host_workspace = (source.parent / "workspace_runtime").resolve()
     memory = resolve_memory_root(source)
     nlp = polish_nlp_data_root(source)
     locations = (
         ("SYSTEM", source, "Kod SYSTEM"),
         ("WORKSPACE", workspace, "Stan procesów"),
+        ("PREVIOUS_HOST_WORKSPACE", previous_host_workspace, "Historyczna lokalizacja; tylko diagnostyka, bez automatycznej migracji"),
         ("MEMORY", memory, "Prywatna pamięć"),
         ("CORE_STATE", workspace / "core_state", "Operacyjne SQLite"),
         ("MARKER", active_runtime_marker_path(source), "Znacznik, nie dowód aktywności"),

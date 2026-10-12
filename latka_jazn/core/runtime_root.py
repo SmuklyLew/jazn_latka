@@ -73,13 +73,11 @@ def find_runtime_root(start: Path | None = None) -> Path:
 
 
 def default_runtime_workspace_path(root: Path) -> Path:
-    """Return the one host-level mutable workspace shared by sibling runtime versions.
+    """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
 
-    Runtime code may live in versioned directories, but the active marker, daemon PID,
-    checkpoints and other mutable host state must not be versioned with that code.
-    When a runtime is already materialized directly under ``workspace_runtime`` (the
-    ChatGPT host layout), the parent itself is the canonical workspace. Otherwise the
-    canonical workspace is a sibling of the active runtime root.
+    The named editable jazn_latka_master checkout uses ROOT/workspace_runtime.
+    All other roots retain the shared host-level default for compatibility.
+    Host-managed runtime layouts reuse their existing parent workspace.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -88,6 +86,11 @@ def default_runtime_workspace_path(root: Path) -> Path:
         return parent.resolve()
     if parent.name.casefold() in {"runtime_roots", "runtime-roots"}:
         return (parent.parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+    # Only the established editable master checkout changes its implicit
+    # layout. All other (including versioned/host-managed) roots retain their
+    # historical shared workspace, protecting daemon and memory continuity.
+    if runtime_root.name.casefold() == "jazn_latka_master":
+        return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
     return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 
 
@@ -101,12 +104,12 @@ def workspace_runtime_path(
     root: Path,
     configured: str | Path | None = None,
 ) -> Path:
-    """Resolve the single mutable host workspace independently from code versions.
+    """Resolve the mutable workspace relative to the verified SYSTEM ROOT.
 
     ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override. Absolute
     overrides are used directly; relative overrides remain relative to ``active_root``
     for compatibility. Without an override the workspace is host-level, outside the
-    versioned runtime root, so upgrades replace only code while preserving live state.
+    active runtime root. Never relocate existing state implicitly when defaults change.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -117,7 +120,20 @@ def workspace_runtime_path(
         raw = env_raw if env_raw and env_raw.strip() else None
     if raw is None or not str(raw).strip():
         return default_runtime_workspace_path(runtime_root)
-    candidate = Path(str(raw).strip()).expanduser()
+    raw_text = str(raw).strip()
+    portable = raw_text.replace("\\", "/")
+    prefix = "$ROOT/" if portable.startswith("$ROOT/") else ("${ROOT}/" if portable.startswith("${ROOT}/") else None)
+    if prefix is not None:
+        relative = Path(portable[len(prefix):])
+        if (not relative.parts or relative.is_absolute()
+                or any(part in {".", ".."} for part in relative.parts)
+                or ":" in portable[len(prefix):]):
+            raise ValueError("unsafe_root_relative_workspace")
+        candidate = (runtime_root / relative).resolve()
+        if not candidate.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+        return candidate
+    candidate = Path(raw_text).expanduser()
     return candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
 
 

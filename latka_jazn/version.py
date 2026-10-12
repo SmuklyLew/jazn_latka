@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# v115.21.11 restores thin loader identity and independent MEMORY bootstrap assertions.
+# v115.21.10 restores ChatGPT loader consent and MEMORY discovery.
 # v115.21.8 separates local SYSTEM bootstrap from remote MCP exposure.
 # v115.21.7 makes <SYSTEM>/memory canonical while preserving legacy host storage without implicit migration.
 # v115.21.6 fixes legacy shard-manifest path resolution and fail-closed diagnostics.
@@ -22,9 +24,10 @@ from typing import Any
 # v115.20 integrates Studio P0 with MCP ingress recovery.
 # v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
+# v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.21.8"
-PACKAGE_VERSION = "16.3.25.5.115.21.8"
+DISTRIBUTION_VERSION = "16.3.25.5.115.21.11"
+PACKAGE_VERSION = "16.3.25.5.115.21.11"
 PACKAGE_RELEASE_NAME = "local-bootstrap-mcp-gate-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

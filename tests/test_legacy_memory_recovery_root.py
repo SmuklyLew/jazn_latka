@@ -23,7 +23,8 @@ def test_legacy_memory_recovery_uses_canonical_host_memory_root(tmp_path: Path) 
     ).resolve()
     assert recovery.journal_path == (canonical / "raw" / "dziennik.json").resolve()
     assert recovery.output_path.is_relative_to(canonical.resolve())
-    assert not (runtime_root / "memory").exists()
+    assert (runtime_root / "memory").resolve() == canonical.resolve()
+    assert canonical.exists()
 
 
 def test_legacy_memory_recovery_respects_explicit_memory_root_env(

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.8",
-  "active_definition_count": 2227,
+  "system_version": "16.3.25.5.115.21.11",
+  "active_definition_count": 2236,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11462,13 +11462,13 @@
       "path": "tests/test_configuration_studio.py",
       "name": "test_snapshot_is_read_only_and_reports_host_separation",
       "purpose": "Snapshot is read only and reports host separation",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio"
@@ -11492,7 +11492,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_configuration_studio.py::test_compare_and_swap_rejects_stale_ui": {
       "path": "tests/test_configuration_studio.py",
@@ -11511,7 +11511,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 51
     },
     "tests/test_configuration_studio.py::test_invalid_values_fail_closed": {
       "path": "tests/test_configuration_studio.py",
@@ -11532,7 +11532,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 67
+      "line": 68
     },
     "tests/test_configuration_studio.py::test_canonical_memory_root_is_allowed_but_other_system_children_are_not": {
       "path": "tests/test_configuration_studio.py",
@@ -11551,7 +11551,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 74
     },
     "tests/test_configuration_studio.py::test_no_path_inside_system_or_legacy_workspace": {
       "path": "tests/test_configuration_studio.py",
@@ -11570,7 +11570,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 80
     },
     "tests/test_configuration_studio.py::test_profile_rejects_corruption_and_symlink": {
       "path": "tests/test_configuration_studio.py",
@@ -11589,7 +11589,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 88
     },
     "tests/test_configuration_studio.py::test_memory_and_workspace_cannot_overlap": {
       "path": "tests/test_configuration_studio.py",
@@ -11610,7 +11610,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 109
     },
     "tests/test_configuration_studio.py::test_profile_inspection_does_not_apply_running_config": {
       "path": "tests/test_configuration_studio.py",
@@ -11627,7 +11627,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 120
     },
     "tests/test_configuration_studio.py::test_symlink_parent_directory_is_rejected": {
       "path": "tests/test_configuration_studio.py",
@@ -11646,7 +11646,43 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 128
+    },
+    "tests/test_configuration_studio.py::test_root_scoped_default_profile_and_explicit_root_token": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_root_scoped_default_profile_and_explicit_root_token",
+      "purpose": "Root scoped default profile and explicit root token",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 141
+    },
+    "tests/test_configuration_studio.py::test_workspace_override_outside_root_remains_available": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_workspace_override_outside_root_remains_available",
+      "purpose": "Workspace override outside root remains available",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
     },
     "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
       "path": "tests/test_configuration_studio_gui_windows.py",
@@ -11916,11 +11952,11 @@
       "path": "tests/test_configuration_studio_p1_preview.py",
       "name": "test_dry_run_rejects_unknown_and_unsafe_configuration",
       "purpose": "Dry run rejects unknown and unsafe configuration",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 0,
+      "assertion_count": 1,
       "expected_exceptions": [
         "ConfigValidationError"
       ],
@@ -11948,7 +11984,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 89
     },
     "tests/test_conversation_archive_routing_guard.py::test_conversation_archive_recall_beats_previous_package_context": {
       "path": "tests/test_conversation_archive_routing_guard.py",
@@ -18205,7 +18241,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 156
+      "line": 157
     },
     "tests/test_host_memory_root_regressions.py::test_polish_understanding_reads_private_lexicon_from_host_memory": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -18234,7 +18270,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 173
+      "line": 174
     },
     "tests/test_host_operation_memory_converge_retry.py::test_memory_converge_pending_retries_are_bounded": {
       "path": "tests/test_host_operation_memory_converge_retry.py",
@@ -20619,14 +20655,14 @@
       "path": "tests/test_legacy_memory_recovery_root.py",
       "name": "test_legacy_memory_recovery_uses_canonical_host_memory_root",
       "purpose": "Legacy memory recovery uses canonical host memory root",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host",
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.memory.legacy_memory_recovery",
@@ -20654,7 +20690,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 30
     },
     "tests/test_lexical_intelligence.py::test_plwordnet_local_index_is_read_only_and_returns_relations": {
       "path": "tests/test_lexical_intelligence.py",
@@ -21257,6 +21293,113 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 58
+    },
+    "tests/test_master_root_workspace_policy.py::test_master_checkout_uses_root_workspace_without_creating_it": {
+      "path": "tests/test_master_root_workspace_policy.py",
+      "name": "test_master_checkout_uses_root_workspace_without_creating_it",
+      "purpose": "Master checkout uses root workspace without creating it",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_master_root_workspace_policy.py::test_other_runtime_roots_keep_their_previous_workspace": {
+      "path": "tests/test_master_root_workspace_policy.py",
+      "name": "test_other_runtime_roots_keep_their_previous_workspace",
+      "purpose": "Other runtime roots keep their previous workspace",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_master_root_workspace_policy.py::test_root_token_is_portable": {
+      "path": "tests/test_master_root_workspace_policy.py",
+      "name": "test_root_token_is_portable",
+      "purpose": "Root token is portable",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_master_root_workspace_policy.py::test_root_token_rejects_escape": {
+      "path": "tests/test_master_root_workspace_policy.py",
+      "name": "test_root_token_rejects_escape",
+      "purpose": "Root token rejects escape",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_master_root_workspace_policy.py::test_windows_launcher_matches_python_root_resolution": {
+      "path": "tests/test_master_root_workspace_policy.py",
+      "name": "test_windows_launcher_matches_python_root_resolution",
+      "purpose": "Windows launcher matches python root resolution",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
     },
     "tests/test_mcp_connector_status_probe_contract.py::test_jazn_status_emits_self_describing_connector_probe_contract": {
       "path": "tests/test_mcp_connector_status_probe_contract.py",
@@ -30952,7 +31095,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 388
+      "line": 390
     },
     "tests/test_memory_streaming_attach_convergence.py::test_runtime_converge_source_does_not_reintroduce_transport_repack_or_compat_copy": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -30976,7 +31119,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 406
+      "line": 408
     },
     "tests/test_memory_streaming_hardening_convergence.py::test_memory_zip_resource_policy_rejects_high_compression_ratio": {
       "path": "tests/test_memory_streaming_hardening_convergence.py",
@@ -43942,6 +44085,77 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 137
+    },
+    "tests/test_runtime_workspace_override.py::test_root_token_is_consistent_for_runtime_configuration": {
+      "path": "tests/test_runtime_workspace_override.py",
+      "name": "test_root_token_is_consistent_for_runtime_configuration",
+      "purpose": "Root token is consistent for runtime configuration",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.adapters.codex_session_bridge",
+        "latka_jazn.config",
+        "latka_jazn.core.continuity_badge",
+        "latka_jazn.core.module_responsibility_map",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.turn_checkpoint_writer",
+        "latka_jazn.core.turn_trace_reader",
+        "latka_jazn.model_adapters.openai_state_tracker",
+        "latka_jazn.nlp.network_dictionary_cache",
+        "latka_jazn.nlp_reasoning.adapters.polimorf_adapter",
+        "latka_jazn.nlp_reasoning.lexical_resource_cache",
+        "latka_jazn.nlp_reasoning.lexical_resource_registry",
+        "latka_jazn.tools.runtime_contract_version_normalizer"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 162
+    },
+    "tests/test_runtime_workspace_override.py::test_versioned_runtime_keeps_shared_host_workspace": {
+      "path": "tests/test_runtime_workspace_override.py",
+      "name": "test_versioned_runtime_keeps_shared_host_workspace",
+      "purpose": "Versioned runtime keeps shared host workspace",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.adapters.codex_session_bridge",
+        "latka_jazn.config",
+        "latka_jazn.core.continuity_badge",
+        "latka_jazn.core.module_responsibility_map",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_daemon",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.turn_checkpoint_writer",
+        "latka_jazn.core.turn_trace_reader",
+        "latka_jazn.model_adapters.openai_state_tracker",
+        "latka_jazn.nlp.network_dictionary_cache",
+        "latka_jazn.nlp_reasoning.adapters.polimorf_adapter",
+        "latka_jazn.nlp_reasoning.lexical_resource_cache",
+        "latka_jazn.nlp_reasoning.lexical_resource_registry",
+        "latka_jazn.tools.runtime_contract_version_normalizer"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 177
     },
     "tests/test_safe_path_reparse_observation.py::test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection": {
       "path": "tests/test_safe_path_reparse_observation.py",

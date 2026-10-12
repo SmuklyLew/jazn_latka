@@ -24,6 +24,7 @@ def test_snapshot_is_read_only_and_reports_host_separation(tmp_path: Path) -> No
     data = {row["name"]: row for row in inspect_system(root)}
     assert data["SYSTEM"]["path"] == str(root.resolve())
     assert data["WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
+    assert data["PREVIOUS_HOST_WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
     assert data["MARKER"]["exists"] == "false"
     assert data["PROFILES"]["exists"] == "false"
     assert not (tmp_path / "workspace_runtime").exists()
@@ -136,3 +137,27 @@ def test_symlink_parent_directory_is_rejected(tmp_path: Path) -> None:
         pytest.skip("Symlink creation unavailable")
     with pytest.raises(ConfigValidationError):
         profile_file(root, workspace=workspace)
+
+def test_root_scoped_default_profile_and_explicit_root_token(tmp_path: Path, monkeypatch) -> None:
+    original = fake_system(tmp_path)
+    root = tmp_path / "jazn_latka_master"
+    original.rename(root)
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    expected = (root / "workspace_runtime").resolve()
+    assert profile_file(root) == expected / "configuration_studio" / "profiles" / "operator.json"
+    assert validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "$ROOT/workspace_runtime"})[
+        "JAZN_RUNTIME_WORKSPACE_DIR"
+    ] == str(expected)
+    assert validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "${ROOT}/workspace_runtime"})[
+        "JAZN_RUNTIME_WORKSPACE_DIR"
+    ] == str(expected)
+    with pytest.raises(ConfigValidationError):
+        validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": "$ROOT/../escape"})
+
+
+def test_workspace_override_outside_root_remains_available(tmp_path: Path) -> None:
+    root = fake_system(tmp_path)
+    outside = tmp_path / "explicit_workspace"
+    result = validate_values(root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(outside)})
+    assert result["JAZN_RUNTIME_WORKSPACE_DIR"] == str(outside.resolve())
+
