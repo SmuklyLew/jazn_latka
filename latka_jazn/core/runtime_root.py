@@ -118,7 +118,20 @@ def workspace_runtime_path(
         raw = env_raw if env_raw and env_raw.strip() else None
     if raw is None or not str(raw).strip():
         return default_runtime_workspace_path(runtime_root)
-    candidate = Path(str(raw).strip()).expanduser()
+    raw_text = str(raw).strip()
+    portable = raw_text.replace("\\", "/")
+    prefix = "$ROOT/" if portable.startswith("$ROOT/") else ("${ROOT}/" if portable.startswith("${ROOT}/") else None)
+    if prefix is not None:
+        relative = Path(portable[len(prefix):])
+        if (not relative.parts or relative.is_absolute()
+                or any(part in {".", ".."} for part in relative.parts)
+                or ":" in portable[len(prefix):]):
+            raise ValueError("unsafe_root_relative_workspace")
+        candidate = (runtime_root / relative).resolve()
+        if not candidate.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+        return candidate
+    candidate = Path(raw_text).expanduser()
     return candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
 
 
