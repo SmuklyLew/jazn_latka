@@ -11,7 +11,10 @@
     "name_matching": "exact_callable_tool_name",
     "description_regex_sufficient": false,
     "installed_or_catalog_sufficient": false,
-    "fresh_jazn_status_required": true
+    "fresh_jazn_status_required": true,
+    "complete_toolset_required_for_remote_only": true,
+    "complete_toolset_required_for_local_bootstrap": false,
+    "mcp_registration_requires_host_connection": true
   },
   "file_discovery": {
     "surfaces": [
@@ -66,7 +69,18 @@
     "positive_executor_requires_process_created": true,
     "positive_remote_requires_live_status_and_complete_toolset": true,
     "no_fabricated_tool_citations": true,
-    "no_claim_of_matched_archives_from_sidecars_alone": true
+    "no_claim_of_matched_archives_from_sidecars_alone": true,
+    "prespawn_client_error_is_runtime_error": false,
+    "host_probe_elapsed_time_is_failure_evidence": false,
+    "model_identity_requires_host_evidence": true,
+    "callable_materialization_interface_proves_bytes": false
   },
-  "truth_boundary": "This manifest is release/startup policy, not a host tool-call result. A ZIP, sidecar, installed app, or callable Files interface cannot prove a materialized artifact, executable host, live Jaźń runtime or accepted visible reply."
+  "truth_boundary": "This manifest is release/startup policy, not a host tool-call result. A ZIP, sidecar, installed app, or callable Files interface cannot prove a materialized artifact, executable host, live Jaźń runtime or accepted visible reply.",
+  "local_bootstrap": {
+    "requires_host_process_creation": true,
+    "requires_remote_mcp_tools": false,
+    "system_zip_integrity_before_execution": true,
+    "project_loader_can_guarantee_host_probe_wallclock_timeout": false,
+    "on_pre_spawn_client_error": "surface_generation_unavailable_do_not_replay_or_imply_python_executed"
+  }
 }
