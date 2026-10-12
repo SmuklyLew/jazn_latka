@@ -237,3 +237,16 @@ def test_host_context_preserves_bounded_autobiographical_provenance() -> None:
     assert host["generation_contract"][
         "positive_memory_claim_requires_autobiographical_source_ready"
     ] is True
+
+
+def test_missing_optional_memory_reports_unavailable_without_false_recall(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    monkeypatch.setenv("JAZN_MEMORY_READINESS_POLICY", "native_unified_required")
+    monkeypatch.delenv("JAZN_MEMORY_SOURCE_ROOTS", raising=False)
+    gateway = LivingMemoryGateway(tmp_path, discovery_cache_seconds=0)
+    report = gateway.readiness()
+    assert report["memory_search_ready"] is False
+    assert report["full_autobiographical_recall_ready"] is False
+    assert report["status"] == "no_ready_memory_source"
