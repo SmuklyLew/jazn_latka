@@ -34,8 +34,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
+      - name: Add temporary deployment env file to verify Docker context exclusion
+        run: cp deploy/chatgpt_mcp/jazn-mcp.env.example deploy/chatgpt_mcp/jazn-mcp.env
+
       - name: Build production container
         run: docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:ci .
+
+      - name: Confirm local deployment credentials are never baked into image
+        run: docker run --rm --entrypoint test jazn-mcp:ci ! -e /opt/jazn/deploy/chatgpt_mcp/jazn-mcp.env
 
       - name: Validate production interpreter and SDK
         run: |

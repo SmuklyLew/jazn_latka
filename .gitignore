@@ -13,6 +13,9 @@ node_modules/
 npm-debug.log*
 
 # Runtime/private state at repository root
+.env
+.env.*
+**/*.env
 /ACTIVE_RUNTIME_CACHE_CONTRACT.json
 /BOOTSTRAP_JAZN_CURRENT.json
 /RUNTIME_STATE.json
