@@ -21,6 +21,7 @@ from latka_jazn.version_contract import (
     component_schema_version,
     mentions_current_jazn_version,
     mentions_jazn_version,
+    extract_jazn_versions,
     normalize_component_schema,
 )
 
@@ -38,6 +39,9 @@ def test_dynamic_version_detection_accepts_current_and_previous_release() -> Non
     assert mentions_current_jazn_version(f"status {PACKAGE_VERSION}") is True
     assert mentions_jazn_version(f"migracja z {LEGACY_CURRENT_LINE_VERSION}") is True
     assert mentions_jazn_version("zwykła rozmowa bez numeru") is False
+    assert extract_jazn_versions("status 16.3.25.5.115.21.3.3") == ("v16.3.25.5.115.21.3.3",)
+    assert extract_jazn_versions("status 16.3.25.5.115.21.3.3.42.1") == ("v16.3.25.5.115.21.3.3.42.1",)
+    assert extract_jazn_versions("prefix16.3.25.5") == ()
 
 
 def test_legacy_memory_source_version_remains_distinct_from_runtime_version() -> None:

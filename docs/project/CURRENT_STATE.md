@@ -1,21 +1,20 @@
 # Current project state
 
-**Snapshot date:** 2026-10-07
+**Snapshot date:** 2026-10-11
 **Repository:** `SmuklyLew/jazn_latka`  
-**Current master at documentation baseline:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1`
-**Current master version:** `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`
-**Current implementation candidate:** `16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence` on `update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`
+**Verified master baseline:** `48168b74ccfce42318c2568fbc78433c6051a0d5`
+**Master version at this baseline:** `16.3.25.5.115.18.1-configuration-studio-profile-hardening`
+**Current patch candidate:** `16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` on `fix/v16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` (not yet merged)
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 
 ## 1. Release / control plane
 
-Aktualna linia master to v16.3.25.5.113. v115 jest implementacyjnym kandydatem na osobnym branchu i konwerguje v114 hybrid/adaptive ingress z kompatybilnymi zmianami ChatGPT Desktop/App Binding z v119.2.0.
+Master zweryfikowany 2026-10-11 zawiera już v16.3.25.5.115.18.1. Poniższe sekcje v115/v114/v113 opisują historyczne etapy integracji, a nie aktualną gałąź master. Patch v115.18.2 rozwija dowody startupu ChatGPT bez zmiany priorytetu hybrid/adaptive ingress.
 
 ## v115 — ChatGPT Desktop/App Binding Hybrid Convergence
 
-**Status:** `IMPLEMENTATION CANDIDATE` on
-`update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`.
+**Status:** `HISTORICAL IMPLEMENTATION CANDIDATE`, subsequently integrated into the verified master baseline v115.18.1.
 
 v115 bazuje na finalnym v114 i zachowuje `HYBRID_ADAPTIVE` jako domyślny
 ordinary-chat ingress: verified current-message MCP/app route -> bounded

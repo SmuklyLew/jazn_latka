@@ -3,11 +3,26 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# v115.18.1 hardens Configuration Studio profiles, path safety, launch and GUI.
+# v115.21.5 integrates ChatGPT startup evidence and P1 memory readiness.
+# v115.21.4 completes read-only active MEMORY evidence and readiness preflight.
+# v115.21.3.3 validates noncanonical snapshot names by native content and supports extended version components.
+# v115.21.3.2 normalizes WAL-origin temporary snapshots before strict SQLite validation.
+# v115.21.3.1 closes host-MEMORY temp-root aliasing and adds native/WAL regression evidence.
+# v115.21.3 adds snapshot-consistent memory provenance and record-level differences.
+# v115.21.2 adds fail-closed P1 Studio Pamięci inspection and comparison.
+# v115.21.1 adds bounded, redacted Studio Testów run-history and JSON export.
+# v115.21.0 adds read-only, CAS-checked P1 Configuration Studio profile preview.
+# v115.20.4 synchronizes release-identity tests after MCP -32021 hardening.
+# v115.20.3 recognizes modern MCP -32021 without unsafe legacy downgrade.
+# v115.20.2 probes modern MCP discovery safely and keeps bounded legacy diagnostics.
+# v115.20.1 aligns startup/release identity and operator-state tests after MCP/Studio integration.
+# v115.20 integrates Studio P0 with MCP ingress recovery.
+# v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
+# v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.18.1"
-PACKAGE_VERSION = "16.3.25.5.115.18.1"
-PACKAGE_RELEASE_NAME = "configuration-studio-profile-hardening"
+DISTRIBUTION_VERSION = "16.3.25.5.115.21.5"
+PACKAGE_VERSION = "16.3.25.5.115.21.5"
+PACKAGE_RELEASE_NAME = "startup-memory-readiness-integration"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

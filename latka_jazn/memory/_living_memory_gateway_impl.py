@@ -13,6 +13,7 @@ import sqlite3
 
 from latka_jazn.core.memory_intent_contract import TemporalScope
 from latka_jazn.memory.source_archive_gateway import SourceArchiveGateway
+from latka_jazn.memory.database_paths import resolve_sqlite_directory
 from latka_jazn.memory.graph_aware_retrieval import GraphAwareRetrievalController
 from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.memory_tier_reader import search_memory_tier_database_readonly
@@ -474,9 +475,7 @@ class LivingMemoryGateway:
 
     @staticmethod
     def _as_sqlite_dir(path: Path) -> Path:
-        if path.name == "sqlite" or any((path / filename).is_file() for filename in DATABASE_FILENAMES.values()):
-            return path
-        return path / "memory" / "sqlite"
+        return resolve_sqlite_directory(path, database_filenames=tuple(DATABASE_FILENAMES.values()), missing_layout="system")
 
     def _connect(
         self,

@@ -8,6 +8,11 @@ from typing import Any, Mapping
 import json
 import os
 
+from latka_jazn.core.runtime_root import RuntimeRootNotFoundError, find_runtime_root
+from latka_jazn.tools.application_shell.operator_paths import (
+    legacy_read_path, operator_file, validate_operator_path,
+)
+
 SETTINGS_SCHEMA = "jazn_memory_rebuild_settings/v1"
 DEFAULT_SETTINGS_FILENAME = "memory_rebuild_settings.json"
 DEFAULT_STUDIO_THEME = "latka-terminal"
@@ -149,26 +154,42 @@ class MemoryRebuildToolSettings:
         }
 
 
+def _settings_system_root(tool_root: str | Path | None) -> Path:
+    try:
+        return find_runtime_root(Path(tool_root) if tool_root is not None else Path.cwd())
+    except RuntimeRootNotFoundError:
+        return Path(__file__).resolve().parents[3]
+
+
+def _validate_settings_destination(path: str | Path, system_root: Path) -> Path:
+    """Protect both the selected deployment and the code supplying this module."""
+    candidate = Path(path).expanduser()
+    for root in {system_root, Path(__file__).resolve().parents[3]}:
+        validate_operator_path(candidate, root, allow_memory_settings=True)
+        validate_operator_path(candidate.with_name(candidate.name + ".tmp"), root, allow_memory_settings=True)
+    return candidate.resolve()
+
+
 def resolve_settings_path(
     path: str | Path | None = None,
     *,
     tool_root: str | Path | None = None,
 ) -> Path:
-    """Resolve mutable settings outside package code whenever host workspace is known.
-
-    Precedence: explicit CLI path -> JAZN_MEMORY_REBUILD_SETTINGS ->
-    JAZN_RUNTIME_WORKSPACE_DIR -> supplied tool_root -> current working directory.
-    """
+    """Resolve writable settings independently of the tool or working directory."""
+    system_root = _settings_system_root(tool_root)
     configured = str(path or "").strip() or os.environ.get("JAZN_MEMORY_REBUILD_SETTINGS", "").strip()
     if configured:
-        return Path(configured).expanduser().resolve()
+        return _validate_settings_destination(configured, system_root)
 
     workspace = os.environ.get("JAZN_RUNTIME_WORKSPACE_DIR", "").strip()
     if workspace:
-        return (Path(workspace).expanduser().resolve() / DEFAULT_SETTINGS_FILENAME).resolve()
+        return _validate_settings_destination(
+            Path(workspace).expanduser() / DEFAULT_SETTINGS_FILENAME, system_root,
+        )
 
-    root = Path(tool_root or Path.cwd()).expanduser().resolve()
-    return (root / DEFAULT_SETTINGS_FILENAME).resolve()
+    return _validate_settings_destination(
+        operator_file("memory_rebuild", system_root, DEFAULT_SETTINGS_FILENAME), system_root,
+    )
 
 
 def _read_mapping(source: Path) -> dict[str, Any]:
@@ -207,14 +228,18 @@ def load_tool_settings(
     create: bool = False,
 ) -> MemoryRebuildToolSettings:
     source = resolve_settings_path(path, tool_root=tool_root)
+    destination = source
+    if source == resolve_settings_path(tool_root=tool_root):
+        legacy = Path(tool_root or Path.cwd()).expanduser().resolve() / DEFAULT_SETTINGS_FILENAME
+        source = legacy_read_path(destination, legacy)
     if not source.is_file():
         settings = MemoryRebuildToolSettings()
         if create:
-            save_tool_settings(settings, source)
+            save_tool_settings(settings, destination, tool_root=tool_root)
         return settings
     settings, legacy = _decode_tool_settings(_read_mapping(source))
-    if create and legacy:
-        save_tool_settings(settings, source)
+    if create and legacy and source == destination:
+        save_tool_settings(settings, destination, tool_root=tool_root)
     return settings
 
 

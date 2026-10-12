@@ -6,6 +6,7 @@ from typing import Any, Iterable
 import hashlib
 import sqlite3
 
+from latka_jazn.memory.database_paths import resolve_sqlite_directory
 from .sqlite_utils import ClosingSQLiteConnection
 
 DATABASE_FILENAMES: dict[str, str] = {
@@ -59,12 +60,9 @@ def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
 
 
 def resolve_database_root(value: str | Path) -> Path:
-    root = Path(value).expanduser().resolve()
-    candidates = [root, root / "memory" / "sqlite", root / "sqlite"]
-    for candidate in candidates:
-        if any((candidate / filename).is_file() for filename in DATABASE_FILENAMES.values()):
-            return candidate
-    return root
+    return resolve_sqlite_directory(
+        value, database_filenames=tuple(DATABASE_FILENAMES.values()),
+    )
 
 
 def resolve_database_paths(value: str | Path) -> dict[str, Path]:

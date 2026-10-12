@@ -29,7 +29,10 @@ Bez `--ui` używana jest lokalna konfiguracja operatora. Na Windows domyślnym t
 - `progress_plugin.py` — plugin pytest emitujący zdarzenia `collection/start/result/session_finish`;
 - `test_contracts.json` — generowany katalog aktywnych kontraktów testowych;
 - `settings.json` — polityka źródłowa Studia;
-- `reviews.json`, `local_settings.json`, `runtime/` — lokalny stan operatora, ignorowany przez Git.
+- `reviews.json`, `local_settings.json`, `runtime/` — stan poza SYSTEM:
+  `~/.jazn/tools/jazn-tests-studio/<system-id>/`. Root można wskazać przez
+  `JAZN_OPERATOR_STATE_ROOT`; walidator odrzuca kolizję z SYSTEM/MEMORY/runtime.
+  Poprzednie pliki w katalogu narzędzia pozostają fallbackiem tylko do odczytu.
 
 Każdy interfejs ma ekran główny i dostęp do ustawień. TUI oraz GUI mają oddzielny widok diagnostyczny; interfejs tekstowy udostępnia polecenia `settings` i `diagnostics`.
 
@@ -38,3 +41,14 @@ Każdy interfejs ma ekran główny i dostęp do ustawień. TUI oraz GUI mają od
 Długie uruchomienia pytest pracują poza główną pętlą UI. `Ctrl+C` kończy aplikację kodem `130` bez tracebacku; aktywny subprocess testów jest najpierw zatrzymywany. Gdy diagnostyka jest włączona, zdarzenia aplikacji są zapisywane jako JSONL w `runtime/jazn-tests-studio.jsonl`.
 
 Katalog JSON jest parsowany raz na zmianę pliku (cache kluczowany `mtime + size`), dlatego renderowanie listy testów nie wykonuje ponownie pełnego `json.loads()` dla każdego wiersza.
+
+## P1: historia i eksport wyników (Studio Testów 1.4.0)
+
+Każdy zakończony przebieg pytest zapisuje wyłącznie podsumowanie do `run_history.json` w izolowanym stanie operatora (`~/.jazn/tools/jazn-tests-studio/<system-id>/`). Dziennik jest ograniczony do 100 wpisów i nie zawiera stdout, parametrów poleceń, identyfikatorów testów, promptów, ścieżek ani treści MEMORY. Przekroczenie limitu, zły JSON lub niedozwolona lokalizacja kończy się diagnozą fail-closed, nigdy czyszczeniem historii bez wiedzy operatora. Testy i zapisy historii mają oddzielne statusy sukcesu.
+
+```powershell
+py -X utf8 .\tools\jazn_tests_studio.py history --limit 20
+py -X utf8 .\tools\jazn_tests_studio.py history-export --output "D:\Raporty\jazn-tests-history.json"
+```
+
+Eksport tworzy wyłącznie nowy plik JSON pod jawną, absolutną ścieżką. Nadpisanie istniejącego pliku i zapis w SYSTEM/MEMORY/runtime są zabronione. Okienko Studio ma oddzielną zakładkę Historia z ręcznym odświeżeniem. Brak historii nie jest dowodem, że testy nigdy się nie odbyły.

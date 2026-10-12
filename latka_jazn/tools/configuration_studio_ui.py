@@ -4,11 +4,12 @@ from __future__ import annotations
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from latka_jazn.memory.memory_root import resolve_memory_root
 
 from .configuration_studio import (
     SETTINGS, ConfigValidationError, describe_profile, inspect_system,
     profile_file, profile_snapshot, read_profile, save_profile, restore_previous_profile, system_root,
-    validate_values,
+    preview_profile_changes, validate_values,
 )
 
 BG = "#edf3f8"
@@ -193,13 +194,14 @@ class ConfigurationStudio:
                 variable = tk.StringVar(value=stored.get(spec.key, ""))
                 self._entries[spec.key] = variable
                 ttk.Entry(line, textvariable=variable).pack(side="left", fill="x", expand=True, padx=8)
-                if spec.kind in {"directory", "file"}:
+                if spec.kind in {"directory", "file", "memory_database"}:
                     ttk.Button(line, text="…", width=3,
                                command=lambda v=variable, t=spec.kind: self._browse(v, t)).pack(side="right")
                 ttk.Label(rows, text=f"{spec.key} — {spec.hint}", style="Note.TLabel").pack(anchor="w", padx=12)
         actions = ttk.Frame(self.content)
         actions.pack(fill="x", pady=(12, 0))
         ttk.Button(actions, text="Sprawdź wartości", command=self._validate).pack(side="left", padx=(0, 7))
+        ttk.Button(actions, text="Podgląd zmian", command=self._preview).pack(side="left", padx=7)
         ttk.Button(actions, text="Zapisz profil", style="Accent.TButton",
                    command=self._save).pack(side="left", padx=7)
         ttk.Button(actions, text="Wczytaj z dysku", command=self._reload_settings).pack(side="left")
@@ -208,6 +210,22 @@ class ConfigurationStudio:
                    command=self._copy_launch_command).pack(side="right")
 
     def _browse(self, variable: tk.StringVar, kind: str) -> None:
+        if kind == "memory_database":
+            configured = self._values().get("JAZN_MEMORY_ROOT", "").strip()
+            base = resolve_memory_root(self.system, configured=configured or None)
+            selected = filedialog.askopenfilename(
+                parent=self.root, title="Wybierz bazę wewnątrz MEMORY", initialdir=str(base),
+                filetypes=[("SQLite", "*.sqlite *.sqlite3 *.db"), ("Wszystkie pliki", "*")],
+            )
+            if selected:
+                try:
+                    relative = Path(selected).resolve().relative_to(base)
+                    validate_values(self.system, {**self._values(), "JAZN_MEMORY_TIER_DB": relative.as_posix()})
+                except ValueError as exc:
+                    messagebox.showerror("Nie wybrano bazy", str(exc), parent=self.root)
+                    return
+                variable.set(relative.as_posix())
+            return
         if kind == "file":
             selected = filedialog.asksaveasfilename(parent=self.root, title="Wybierz ścieżkę pliku")
         else:
@@ -226,6 +244,49 @@ class ConfigurationStudio:
             return
         messagebox.showinfo("Kontrola zakończona", f"Poprawnych nadpisań: {len(result)}.\n"
                             "Nie zmieniono żadnego pliku.", parent=self.root)
+
+
+    def _preview(self) -> None:
+        """Render a read-only diff; never write or apply a daemon profile."""
+        try:
+            preview = preview_profile_changes(
+                self.system, self._values(), expected_sha256=self._known_hash,
+            )
+        except (ConfigValidationError, OSError) as exc:
+            messagebox.showerror("Podgląd profilu", str(exc), parent=self.root)
+            return
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Jaźń — podgląd zmian profilu (dry-run)")
+        dialog.geometry("900x540")
+        dialog.transient(self.root)
+        frame = ttk.Frame(dialog, padding=16)
+        frame.pack(fill="both", expand=True)
+        ttk.Label(frame, text="Zmiany dla przyszłego uruchomienia", style="Title.TLabel").pack(anchor="w")
+        ttk.Label(
+            frame,
+            text="Nie wyświetla aktywnych wartości daemona. Domyślne i dziedziczone wartości są niezweryfikowane.",
+            style="Note.TLabel",
+            wraplength=840,
+        ).pack(anchor="w", pady=(5, 12))
+        listing = tk.Text(frame, wrap="word", bg=WHITE, fg=FG, font=("Consolas", 10))
+        bar = ttk.Scrollbar(frame, orient="vertical", command=listing.yview)
+        listing.configure(yscrollcommand=bar.set)
+        listing.pack(side="left", fill="both", expand=True)
+        bar.pack(side="right", fill="y")
+        listing.insert("end", f'Zmienionych ustawień: {preview["changes_count"]}\n')
+        if preview["location_change_requires_runtime_verification"]:
+            listing.insert("end", "UWAGA: istnieje marker runtime. Zmiana lokalizacji wymaga osobnej weryfikacji i zatrzymania daemona.\n")
+        for entry in preview["rows"]:
+            if not entry["changed"]:
+                continue
+            old = entry["saved"] if entry["saved"] is not None else "(brak nadpisania)"
+            new = entry["proposed"] if entry["proposed"] is not None else "(brak nadpisania)"
+            listing.insert("end", f'\n{entry["title"]} — {entry["key"]}\n  zapisane: {old}\n  projekt:  {new}\n')
+        if not preview["changed_keys"]:
+            listing.insert("end", "\nBrak zmian względem zapisanego profilu.\n")
+        listing.insert("end", "\nPodgląd nie zapisuje profilu, nie aktywuje runtime i nie dowodzi gotowości Jaźni.\n")
+        listing.configure(state="disabled")
+        self.status.set("Wyświetlono podgląd zmian bez zapisu i aktywacji runtime.")
 
     def _reload_settings(self) -> None:
         if self._may_discard():

@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.tools.application_shell.operator_paths import legacy_read_path, operator_file, validate_operator_path
+
 from .constants import (
     DEFAULT_COMPRESSION_LEVEL,
     DEFAULT_PART_SIZE_MIB,
@@ -20,8 +22,11 @@ from .errors import PackValidationError
 def settings_path() -> Path:
     explicit = str(os.environ.get("JAZN_PACK_GENERATOR_SETTINGS") or "").strip()
     if explicit:
-        return Path(explicit).expanduser().resolve()
-    return Path(__file__).resolve().with_name(SETTINGS_FILENAME)
+        system = Path(__file__).resolve().parents[2]
+        target = validate_operator_path(explicit, system)
+        validate_operator_path(target.with_name(target.name + ".tmp"), system)
+        return target
+    return operator_file("jazn-pack-generator", Path(__file__).resolve().parents[2], SETTINGS_FILENAME)
 
 
 def default_settings() -> dict[str, Any]:
@@ -66,6 +71,8 @@ def _normalized(payload: dict[str, Any]) -> dict[str, Any]:
 
 def load_settings() -> dict[str, Any]:
     path = settings_path()
+    if not str(os.environ.get("JAZN_PACK_GENERATOR_SETTINGS") or "").strip():
+        path = legacy_read_path(path, Path(__file__).resolve().with_name(SETTINGS_FILENAME))
     if not path.is_file():
         return default_settings()
     try:

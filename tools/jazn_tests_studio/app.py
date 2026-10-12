@@ -22,8 +22,10 @@ from .core import (
     _read_json_cached,
     set_review,
     support_dir,
+    state_dir,
 )
 from .runner import PytestRun, run_pytest
+from .history import export_run_history, load_run_history
 from .ui_text import run_text_ui
 from .ui_tui import run_tui
 from .ui_window import run_window_ui
@@ -60,6 +62,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_all = sub.add_parser("run-all", help="Uruchom cały aktywny zestaw testów.", allow_abbrev=False)
     p_all.add_argument("--timeout", type=int, default=1800)
+
+    p_history = sub.add_parser("history", help="Pokaż redaktowaną historię wyników.", allow_abbrev=False)
+    p_history.add_argument("--limit", type=int, default=20)
+    p_export = sub.add_parser("history-export", help="Wyeksportuj historię JSON do nowego pliku.", allow_abbrev=False)
+    p_export.add_argument("--output", required=True, help="Absolutna ścieżka nowego pliku .json poza SYSTEM i MEMORY.")
 
     sub.add_parser("audit", help="Pokaż audyt katalogu testów.", allow_abbrev=False)
     sub.add_parser("self-test", help="Sprawdź kanał zdarzeń i runner Studia.", allow_abbrev=False)
@@ -135,6 +142,12 @@ def self_test() -> dict[str, Any]:
 
 def _run_command(args: argparse.Namespace, root: Path) -> int:
     command = args.command
+    if command == "history":
+        print(json.dumps(load_run_history(root, limit=args.limit), indent=2, ensure_ascii=False))
+        return 0
+    if command == "history-export":
+        print(str(export_run_history(root, args.output)))
+        return 0
     if command == "audit":
         print(json.dumps(audit(root), indent=2, ensure_ascii=False))
         return 0
@@ -188,7 +201,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     settings = load_ui_settings(root)
     diagnostics = DiagnosticsHub(
         "jazn-tests-studio",
-        support_dir(root),
+        state_dir(root),
         enabled=settings.diagnostics_enabled,
         limit=settings.diagnostics_limit,
         minimum_level=settings.log_level,

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from hashlib import sha256
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import re
 import sqlite3
 import tempfile
@@ -20,7 +20,8 @@ from latka_jazn.core.runtime_root import (
     workspace_runtime_path,
 )
 from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
-from latka_jazn.memory.memory_root import resolve_memory_root
+from latka_jazn.memory.memory_root import memory_path, resolve_memory_root
+from latka_jazn.memory.database_identity import inspect_memory_database
 from latka_jazn.tools.memory_rebuild_app.project_store import default_project_root
 from latka_jazn.tools.memory_rebuild_app.settings import resolve_settings_path
 from latka_jazn.nlp.local_resource_paths import polish_nlp_data_root
@@ -42,6 +43,7 @@ class Setting:
 SETTINGS: tuple[Setting, ...] = (
     Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Absolutny katalog stanu poza SYSTEM"),
     Setting("JAZN_MEMORY_ROOT", "Pamięć prywatna", "Ścieżki", "directory", "Oddzielony katalog MEMORY"),
+    Setting("JAZN_MEMORY_TIER_DB", "Baza pamięci", "Ścieżki", "memory_database", "Ścieżka względna wewnątrz MEMORY, np. sqlite/runtime_write_v2/runtime_memory.sqlite3"),
     Setting("LATKA_NLP_DATA_DIR", "Zasoby NLP", "Ścieżki", "directory", "Zewnętrzny katalog modeli"),
     Setting("JAZN_MEMORY_REBUILD_PROJECTS", "Projekty odbudowy", "Ścieżki", "directory", "Katalog projektów, nie katalog pamięci"),
     Setting("JAZN_MEMORY_REBUILD_SETTINGS", "Ustawienia odbudowy", "Ścieżki", "file", "Oddzielny plik JSON ustawień"),
@@ -128,6 +130,16 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
             raise ConfigValidationError(f"{key}: niedozwolone znaki lub długość.")
         if setting.kind in {"directory", "file"}:
             result[key] = str(_checked_path(key, value))
+        elif setting.kind == "memory_database":
+            portable = value.replace("\\", "/")
+            candidate = PureWindowsPath(portable)
+            if candidate.anchor or ".." in candidate.parts or ":" in portable:
+                raise ConfigValidationError(f"{key}: wymagana bezpieczna ścieżka względna bez '..'.")
+            if candidate.parts and candidate.parts[0].casefold() == "memory":
+                raise ConfigValidationError(f"{key}: ścieżka jest względem MEMORY; usuń prefiks memory/.")
+            if candidate.suffix.lower() not in {".sqlite", ".sqlite3", ".db"}:
+                raise ConfigValidationError(f"{key}: wymagany plik SQLite (.sqlite, .sqlite3, .db).")
+            result[key] = portable
         elif setting.kind in ENUMS:
             normalized = value.lower()
             if normalized not in ENUMS[setting.kind]:
@@ -140,6 +152,19 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
     workspace = Path(result.get("JAZN_RUNTIME_WORKSPACE_DIR", str(current_workspace))).resolve()
     memory = Path(result.get("JAZN_MEMORY_ROOT", str(resolve_memory_root(source)))).resolve()
     current_memory = resolve_memory_root(source)
+    if "JAZN_MEMORY_TIER_DB" in result:
+        try:
+            selected_db = memory_path(source, result["JAZN_MEMORY_TIER_DB"], configured_root=memory)
+        except ValueError as exc:
+            raise ConfigValidationError(f"JAZN_MEMORY_TIER_DB: {exc}") from exc
+        if _inside(selected_db, source):
+            raise ConfigValidationError("JAZN_MEMORY_TIER_DB: kolizja z SYSTEM.")
+        identity = inspect_memory_database(selected_db)
+        if identity["exists"] and not identity["compatible"]:
+            raise ConfigValidationError(
+                "JAZN_MEMORY_TIER_DB: niezgodny schemat istniejącej bazy; "
+                + "; ".join(identity["issues"])
+            )
     legacy_workspace = legacy_workspace_runtime_path(source)
     # Existing legacy paths may be inherited read-only; a new profile must not
     # explicitly route data back into the versioned SYSTEM.
@@ -283,7 +308,7 @@ def validated_launch_values(root: str | Path, *, name: str = "operator") -> dict
     values, digest = profile_snapshot(source, name=name)
     if digest is None:
         raise ConfigValidationError("Nie znaleziono profilu.")
-    if any(key in values for key in ("JAZN_MEMORY_ROOT", "JAZN_RUNTIME_WORKSPACE_DIR")):
+    if any(key in values for key in ("JAZN_MEMORY_ROOT", "JAZN_RUNTIME_WORKSPACE_DIR", "JAZN_MEMORY_TIER_DB")):
         # A stale PID/marker is not proof of running daemon. Be conservative:
         # require explicit operator stop/cleanup of conflicting state first.
         workspace = workspace_runtime_path(source)
@@ -316,6 +341,68 @@ def inspect_system(root: str | Path) -> list[dict[str, str]]:
     )
     return [{"name": key, "path": str(path), "exists": str(path.exists()).lower(), "note": note}
             for key, path, note in locations]
+
+
+def preview_profile_changes(
+    root: str | Path,
+    proposed_entries: Mapping[str, str],
+    *,
+    expected_sha256: str | None,
+    name: str = "operator",
+    workspace: Path | None = None,
+) -> dict[str, Any]:
+    """Read-only CAS-checked dry run for a *future* launch profile.
+
+    Profile overrides are not the effective configuration of a running daemon.
+    Unconfigured defaults/inherited values are deliberately reported as unknown,
+    never invented. This operation neither saves a profile nor activates a daemon.
+    """
+    source = system_root(root)
+    saved, observed_sha256 = profile_snapshot(source, name=name, workspace=workspace)
+    if observed_sha256 != expected_sha256:
+        raise ConfigValidationError(
+            "Profil został zmieniony na dysku. Wczytaj go ponownie przed podglądem."
+        )
+    proposed = validate_values(source, proposed_entries)
+    rows: list[dict[str, Any]] = []
+    for spec in SETTINGS:
+        previous = saved.get(spec.key)
+        planned = proposed.get(spec.key)
+        rows.append({
+            "key": spec.key,
+            "title": spec.title,
+            "section": spec.section,
+            "kind": spec.kind,
+            "saved": previous,
+            "proposed": planned,
+            "changed": previous != planned,
+            "default": None,
+            "default_verified": False,
+            "future_override_source": "draft_profile" if planned is not None else "unresolved",
+            "future_override_value": planned,
+        })
+    changed_keys = [item["key"] for item in rows if item["changed"]]
+    location_keys = {"JAZN_MEMORY_ROOT", "JAZN_MEMORY_TIER_DB", "JAZN_RUNTIME_WORKSPACE_DIR"}
+    marker_present = active_runtime_marker_path(source).exists()
+    return {
+        "schema": "jazn_config_profile_preview/v1",
+        "version": PACKAGE_VERSION,
+        "profile_name": name,
+        "profile_sha256": observed_sha256,
+        "saved_overrides": saved,
+        "proposed_overrides": proposed,
+        "rows": rows,
+        "changed_keys": changed_keys,
+        "changes_count": len(changed_keys),
+        "read_only": True,
+        "applied_to_running_daemon": False,
+        "future_launch_only": True,
+        "runtime_effective_values_verified": False,
+        "runtime_marker_present": marker_present,
+        "location_change_requires_runtime_verification": bool(
+            marker_present and location_keys.intersection(changed_keys)
+        ),
+    }
 
 
 def describe_profile(root: str | Path, *, name: str = "operator", workspace: Path | None = None) -> dict[str, Any]:
