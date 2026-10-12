@@ -18861,13 +18861,13 @@
       "path": "tests/test_host_spawn_diagnostics.py",
       "name": "test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected",
       "purpose": "Empty canonical placeholder is reported but legacy stays selected",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
@@ -18895,7 +18895,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 38
     },
     "tests/test_host_spawn_diagnostics.py::test_post_spawn_diagnostics_reports_process_and_memory_metadata": {
       "path": "tests/test_host_spawn_diagnostics.py",
@@ -18916,7 +18916,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 53
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",
