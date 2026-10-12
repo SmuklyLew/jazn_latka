@@ -117,3 +117,14 @@ Tryb `--gui-smoke` rzeczywiście tworzy `Tk`, `ConfigurationStudio`, otwiera
 wszystkie cztery strony, aktualizuje pętlę układu i zamyka okno. W CI
 uruchamiany jest **zbudowany plik EXE** z obcego katalogu roboczego.
 Nie zastępuje to interaktywnego testu kliknięć ani pełnej sesji Jaźni.
+
+
+## Kontrakt ścieżek ROOT (patch 2026-10-12)
+
+Dla edytowalnego katalogu głównego SYSTEM (np. `D:\\.AI\\jazn_latka_master`) domyślnym katalogiem operacyjnym jest `$ROOT/workspace_runtime` (np. `D:\\.AI\\jazn_latka_master\\workspace_runtime`). Studio Konfiguracji, konfiguracja `JaznConfig` i launcher PowerShell korzystają z tej samej reguły. W profilu przyszłego procesu można użyć `$ROOT/workspace_runtime` lub `${ROOT}/workspace_runtime`; zapisywana jest bezwzględna, zweryfikowana lokalizacja. Inne ścieżki absolutne pozostają świadomym nadpisaniem operatora.
+
+Wyjątki zgodności: wydania z katalogiem w rodzaju `jazn_latka_v16...` zachowują dawny współdzielony hostowy workspace, a runtime'y wewnątrz hostowego `workspace_runtime` i `runtime_roots` również używają tej samej historycznej lokalizacji. Zmiana domyślna nie wykonuje migracji zawartości starego workspace.
+
+**Przed zmianą aktywnego wdrożenia:** wyłącz i zweryfikuj stan daemona. Wykonaj kopię zapasową `D:\\.AI\\workspace_runtime`, sprawdź konfigurację jawną `JAZN_RUNTIME_WORKSPACE_DIR` oraz marker PID i historię sesji. Nie przenoś samego pliku SQLite bez procedury SQLite Backup/WAL. Migracja danych i zmiana umiejscowienia aktywnej pamięci wymagają osobnego planu operatorskiego. Nie umieszczaj `workspace_runtime` w publikowanych archiwach SYSTEM; katalog powinien być wykluczony z pakowania i z kontroli integralności statycznych plików.
+
+Stan profilu to konfiguracja **przyszłego** procesu; niczego nie włącza w aktualnie działającym daemonie.
