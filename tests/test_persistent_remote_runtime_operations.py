@@ -69,10 +69,12 @@ def test_deployment_examples_keep_secrets_and_daemon_private() -> None:
     )
 
     assert "8787:" not in compose
-    assert "CLOUDFLARE_TUNNEL_TOKEN:?" in compose
+    assert "CLOUDFLARE_TUNNEL_TOKEN_FILE:?" in compose
+    assert "--token-file" in compose
+    assert "      - --token\n" not in compose
     assert "CLOUDFLARED_IMAGE:?" in compose
     assert "cloudflare/cloudflared:latest" not in compose
     assert "JAZN_MCP_REQUIRE_SUPERVISOR: \"1\"" in compose
-    assert "CLOUDFLARE_TUNNEL_TOKEN=" in env_example
+    assert "CLOUDFLARE_TUNNEL_TOKEN_FILE" in env_example
     assert "Restart=on-failure" in service
     assert "KillMode=control-group" in service
