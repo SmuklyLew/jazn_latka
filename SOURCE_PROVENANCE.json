@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "19eaf7eb2f15e67a13fa2ca5a4e7874bc08e6c6d",
+  "base_merge_commit": "a98b8ae1d145e40af4f52e401ce25e98b309cf74",
   "base_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
-  "commit_date": "2026-10-12T23:50:35Z",
+  "commit_date": "2026-10-13T01:55:37+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-12T23:50:35+00:00",
+  "generated_at_utc": "2026-10-12T23:55:37+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "9f9eaf1416b365e14cc9831ff83dcfa7bf6108c4",
+  "git_tree_sha": "0ffb71b40000c31f6124731dcb805ad795843392",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "19eaf7eb2f15e67a13fa2ca5a4e7874bc08e6c6d",
+    "source_commit": "a98b8ae1d145e40af4f52e401ce25e98b309cf74",
     "source_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "19eaf7eb2f15e67a13fa2ca5a4e7874bc08e6c6d",
+  "source_commit": "a98b8ae1d145e40af4f52e401ce25e98b309cf74",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
   "tag": null,
