@@ -41,7 +41,7 @@ class Setting:
 
 
 SETTINGS: tuple[Setting, ...] = (
-    Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Absolutny katalog stanu poza SYSTEM"),
+    Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Domyślnie $ROOT/workspace_runtime; inne lokalizacje tylko jawnie"),
     Setting("JAZN_MEMORY_ROOT", "Pamięć prywatna", "Ścieżki", "directory", "Kanoniczne <SYSTEM>/memory lub jawna ścieżka zewnętrzna"),
     Setting("JAZN_MEMORY_TIER_DB", "Baza pamięci", "Ścieżki", "memory_database", "Ścieżka względna wewnątrz MEMORY, np. sqlite/runtime_write_v2/runtime_memory.sqlite3"),
     Setting("LATKA_NLP_DATA_DIR", "Zasoby NLP", "Ścieżki", "directory", "Zewnętrzny katalog modeli"),
@@ -106,10 +106,26 @@ def profile_file(root: str | Path, *, name: str = "operator", workspace: Path | 
     return path
 
 
-def _checked_path(key: str, value: str) -> Path:
+def _checked_path(key: str, value: str, root: Path) -> Path:
+    """Accept absolute paths or a bounded, portable $ROOT/ prefix."""
+    portable = value.replace("\\", "/")
+    if portable.startswith("$ROOT/"):
+        suffix = portable[len("$ROOT/"):]
+    elif portable.startswith("${ROOT}/"):
+        suffix = portable[len("${ROOT}/"):]
+    else:
+        suffix = None
+    if suffix is not None:
+        parts = PureWindowsPath(suffix).parts
+        if not suffix or ".." in parts or PureWindowsPath(suffix).anchor:
+            raise ConfigValidationError(f"{key}: niedozwolona ścieżka względna $ROOT.")
+        candidate = (root / suffix).resolve()
+        if not _inside(candidate, root):
+            raise ConfigValidationError(f"{key}: ścieżka wychodzi poza $ROOT.")
+        return candidate
     candidate = Path(value).expanduser()
     if not candidate.is_absolute():
-        raise ConfigValidationError(f"{key}: wymagana jest ścieżka bezwzględna.")
+        raise ConfigValidationError(f"{key}: wymagana jest ścieżka bezwzględna lub $ROOT/...")
     return candidate.resolve()
 
 
@@ -129,7 +145,7 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         if len(value) > 4096 or any(ord(ch) < 32 or ord(ch) == 127 for ch in value):
             raise ConfigValidationError(f"{key}: niedozwolone znaki lub długość.")
         if setting.kind in {"directory", "file"}:
-            result[key] = str(_checked_path(key, value))
+            result[key] = str(_checked_path(key, value, source))
         elif setting.kind == "memory_database":
             portable = value.replace("\\", "/")
             candidate = PureWindowsPath(portable)
