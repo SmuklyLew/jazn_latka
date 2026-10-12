@@ -25,4 +25,6 @@ VOLUME ["/opt/jazn/workspace_runtime", "/opt/jazn/memory"]
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3); raise SystemExit(0 if r.status == 200 else 1)"
 
-STOPSIGNAL SIGTERM\n\nENTRYPOINT ["python", "-X", "utf8", "-m", "latka_jazn.mcp.deployment"]
+STOPSIGNAL SIGTERM
+
+ENTRYPOINT ["python", "-X", "utf8", "-m", "latka_jazn.mcp.deployment"]
