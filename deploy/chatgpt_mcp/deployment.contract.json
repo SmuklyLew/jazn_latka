@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
+  "runtime_version": "16.3.25.5.115.21.6-memory-path-readiness-repair",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",

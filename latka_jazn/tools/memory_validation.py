@@ -11,6 +11,7 @@ import sqlite3
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
+from latka_jazn.memory.memory_root import normalize_memory_relative_path
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.version import schema_version
 
@@ -136,22 +137,60 @@ def _known_targets(config: JaznConfig) -> list[MemoryValidationTarget]:
     return values
 
 
-def _manifest_targets(root: Path, manifest_path: Path, role_prefix: str) -> list[MemoryValidationTarget]:
+def _manifest_targets(
+    root: Path,
+    manifest_path: Path,
+    role_prefix: str,
+    *,
+    issues: list[dict[str, str]] | None = None,
+) -> list[MemoryValidationTarget]:
     if not manifest_path.is_file():
         return []
+
+    def record(reason: str, shard_id: str = "") -> None:
+        if issues is not None:
+            issues.append({
+                "manifest": str(manifest_path),
+                "role": role_prefix,
+                "shard_id": shard_id,
+                "reason": reason,
+            })
+
     try:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
+        record("manifest_unreadable")
         return []
+    if not isinstance(payload, dict) or not isinstance(payload.get("shards"), list):
+        record("manifest_invalid_structure")
+        return []
+
     result: list[MemoryValidationTarget] = []
     active = str(payload.get("active_write_shard") or "")
-    for item in payload.get("shards") or []:
-        if not isinstance(item, dict) or not item.get("path"):
+    seen_ids: set[str] = set()
+    found_active = False
+    for item in payload["shards"]:
+        if not isinstance(item, dict):
+            record("shard_invalid_structure")
             continue
-        candidate = _safe_under(root, root / str(item["path"]))
+        shard_id = str(item.get("shard_id") or "")
+        raw_path = item.get("path")
+        if not shard_id or shard_id in seen_ids or not isinstance(raw_path, str):
+            record("shard_missing_or_duplicate_identity", shard_id)
+            continue
+        seen_ids.add(shard_id)
+        if shard_id == active:
+            found_active = True
+        try:
+            # Historical shard manifests may prefix paths with "memory/" or use
+            # Windows separators. Do not resolve that prefix a second time.
+            relative = normalize_memory_relative_path(raw_path)
+            candidate = _safe_under(root, root / relative)
+        except (ValueError, OSError, RuntimeError):
+            candidate = None
         if candidate is None:
+            record("shard_path_unsafe", shard_id)
             continue
-        shard_id = str(item.get("shard_id") or "unknown")
         result.append(
             MemoryValidationTarget(
                 role=f"{role_prefix}_shard_{shard_id}",
@@ -160,6 +199,8 @@ def _manifest_targets(root: Path, manifest_path: Path, role_prefix: str) -> list
                 required=shard_id == active,
             )
         )
+    if not active or not found_active:
+        record("active_shard_missing")
     return result
 
 
@@ -167,6 +208,7 @@ def discover_memory_validation_targets(
     root: Path | str,
     *,
     include_all_sqlite: bool = False,
+    manifest_issues: list[dict[str, str]] | None = None,
 ) -> list[MemoryValidationTarget]:
     runtime_root = Path(root).expanduser().resolve()
     config = JaznConfig(root=runtime_root)
@@ -179,6 +221,7 @@ def discover_memory_validation_targets(
             memory_root,
             config.resolve(config.conversation_shard_manifest_name),
             "conversation",
+            issues=manifest_issues,
         )
     )
     targets.extend(
@@ -186,6 +229,7 @@ def discover_memory_validation_targets(
             memory_root,
             config.resolve(config.audit_shard_manifest_name),
             "audit",
+            issues=manifest_issues,
         )
     )
     if include_all_sqlite:
@@ -423,9 +467,11 @@ def validate_large_memory(
 ) -> dict[str, Any]:
     runtime_root = Path(root).expanduser().resolve()
     config = JaznConfig(root=runtime_root)
+    manifest_issues: list[dict[str, str]] = []
     targets = discover_memory_validation_targets(
         runtime_root,
         include_all_sqlite=include_all_sqlite,
+        manifest_issues=manifest_issues,
     )
     total_steps = max(1, len(targets) + 2)
     results: list[dict[str, Any]] = []
@@ -473,6 +519,7 @@ def validate_large_memory(
         "table_counts_enabled": bool(table_counts),
         "hash_files_enabled": bool(hash_files),
         "targets": [item.to_dict() for item in targets],
+        "manifest_issues": manifest_issues,
         "databases": results,
         "wake_state": wake_state,
         "memory_tiers_transactional": tier_status,
@@ -482,6 +529,7 @@ def validate_large_memory(
             "validated_ok_count": sum(1 for item in results if item.get("ok")),
             "failed_count": len(failed),
             "required_missing_count": len(required_missing),
+            "manifest_issue_count": len(manifest_issues),
             "total_database_bytes": sum(int(item.get("size_bytes") or 0) for item in existing),
             "wake_state_ready": wake_state.get("status") == "ready",
             "memory_tiers_ready": tier_status.get("ready") is True,
@@ -492,6 +540,7 @@ def validate_large_memory(
         existing
         and not failed
         and not required_missing
+        and not manifest_issues
         and wake_state.get("status") == "ready"
         and tier_status.get("ready") is True
     )

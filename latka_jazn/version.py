@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+# v115.21.6 fixes legacy shard-manifest path resolution and fail-closed diagnostics.
 # v115.21.5 integrates ChatGPT startup evidence and P1 memory readiness.
 # v115.21.4 completes read-only active MEMORY evidence and readiness preflight.
 # v115.21.3.3 validates noncanonical snapshot names by native content and supports extended version components.
@@ -20,9 +21,9 @@ from typing import Any
 # v115.18.2 diagnoses MCP ingress and acknowledged daemon job loss.
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.21.5"
-PACKAGE_VERSION = "16.3.25.5.115.21.5"
-PACKAGE_RELEASE_NAME = "startup-memory-readiness-integration"
+DISTRIBUTION_VERSION = "16.3.25.5.115.21.6"
+PACKAGE_VERSION = "16.3.25.5.115.21.6"
+PACKAGE_RELEASE_NAME = "memory-path-readiness-repair"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

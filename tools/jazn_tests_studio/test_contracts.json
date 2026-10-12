@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.5",
-  "active_definition_count": 2205,
+  "system_version": "16.3.25.5.115.21.6",
+  "active_definition_count": 2208,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29738,6 +29738,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 133
+    },
+    "tests/test_memory_shard_manifest_portable_paths.py::test_memory_manifest_path_is_bound_once_to_memory_root": {
+      "path": "tests/test_memory_shard_manifest_portable_paths.py",
+      "name": "test_memory_manifest_path_is_bound_once_to_memory_root",
+      "purpose": "Memory manifest path is bound once to memory root",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.tools.memory_validation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_memory_shard_manifest_portable_paths.py::test_unsafe_manifest_path_is_rejected_and_reported": {
+      "path": "tests/test_memory_shard_manifest_portable_paths.py",
+      "name": "test_unsafe_manifest_path_is_rejected_and_reported",
+      "purpose": "Unsafe manifest path is rejected and reported",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.tools.memory_validation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_memory_shard_manifest_portable_paths.py::test_broken_manifest_cannot_silently_look_healthy": {
+      "path": "tests/test_memory_shard_manifest_portable_paths.py",
+      "name": "test_broken_manifest_cannot_silently_look_healthy",
+      "purpose": "Broken manifest cannot silently look healthy",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.tools.memory_validation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
     },
     "tests/test_memory_snapshot_runtime.py::test_online_backup_snapshot_restore_is_chunked_verified_and_exact": {
       "path": "tests/test_memory_snapshot_runtime.py",

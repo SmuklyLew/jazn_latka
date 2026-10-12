@@ -3,7 +3,7 @@ from __future__ import annotations
 from latka_jazn.version_contract import normalize_component_schema
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 from dataclasses import dataclass, asdict
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 import datetime
 import hashlib
@@ -37,26 +37,27 @@ def _sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str | None:
 
 
 def _safe_relative_path(root: Path, raw: str) -> str:
-    candidate = Path(str(raw))
-    if candidate.is_absolute() or any(part in {"", ".", ".."} for part in candidate.parts):
+    # Shard manifests are portable data: a Windows-produced manifest must
+    # resolve to the same file on POSIX, without interpreting a drive or a
+    # backslash traversal as an ordinary filename.
+    text = str(raw)
+    win = PureWindowsPath(text)
+    portable = text.replace("\\", "/")
+    if not text.strip() or win.drive or win.root or portable.startswith("/"):
+        raise ShardManifestError(f"unsafe shard path: {raw!r}")
+    parts = portable.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
         raise ShardManifestError(f"unsafe shard path: {raw!r}")
 
     resolved_root = root.resolve()
-    parts = candidate.parts
-    # v16.3.9 moved private memory from <active_root>/memory to the canonical
-    # host-level workspace_runtime/memory root. Historical manifests can still
-    # contain paths such as memory/sqlite/runtime_write_v1/runtime_memory.sqlite3.
-    # When the manager root is already that memory directory, strip exactly one
-    # legacy "memory" prefix so it cannot resolve as memory/memory/....
-    if (
-        resolved_root.name.casefold() == "memory"
-        and parts
-        and parts[0].casefold() == "memory"
-    ):
-        candidate = Path(*parts[1:])
-        if not candidate.parts:
+    # Historical package manifests store paths relative to a project root
+    # (memory/sqlite/...), whereas the active manager is rooted at MEMORY.
+    # Strip *exactly one* legacy prefix and reject ambiguous double prefixes.
+    if resolved_root.name.casefold() == "memory" and parts[0].casefold() == "memory":
+        parts = parts[1:]
+        if not parts or parts[0].casefold() == "memory":
             raise ShardManifestError(f"unsafe shard path: {raw!r}")
-
+    candidate = Path(*parts)
     resolved = (resolved_root / candidate).resolve()
     try:
         resolved.relative_to(resolved_root)
