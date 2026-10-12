@@ -23,10 +23,10 @@ def test_snapshot_is_read_only_and_reports_host_separation(tmp_path: Path) -> No
     root = fake_system(tmp_path)
     data = {row["name"]: row for row in inspect_system(root)}
     assert data["SYSTEM"]["path"] == str(root.resolve())
-    assert data["WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
+    assert data["WORKSPACE"]["path"] == str((root / "workspace_runtime").resolve())
     assert data["MARKER"]["exists"] == "false"
     assert data["PROFILES"]["exists"] == "false"
-    assert not (tmp_path / "workspace_runtime").exists()
+    assert not (root / "workspace_runtime").exists()
 
 
 def test_validated_profile_roundtrip_and_rollback_backup(tmp_path: Path) -> None:
