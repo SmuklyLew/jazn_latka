@@ -42,7 +42,7 @@ class Setting:
 
 SETTINGS: tuple[Setting, ...] = (
     Setting("JAZN_RUNTIME_WORKSPACE_DIR", "Stan operacyjny", "Ścieżki", "directory", "Absolutny katalog stanu poza SYSTEM"),
-    Setting("JAZN_MEMORY_ROOT", "Pamięć prywatna", "Ścieżki", "directory", "Oddzielony katalog MEMORY"),
+    Setting("JAZN_MEMORY_ROOT", "Pamięć prywatna", "Ścieżki", "directory", "Kanoniczne <SYSTEM>/memory lub jawna ścieżka zewnętrzna"),
     Setting("JAZN_MEMORY_TIER_DB", "Baza pamięci", "Ścieżki", "memory_database", "Ścieżka względna wewnątrz MEMORY, np. sqlite/runtime_write_v2/runtime_memory.sqlite3"),
     Setting("LATKA_NLP_DATA_DIR", "Zasoby NLP", "Ścieżki", "directory", "Zewnętrzny katalog modeli"),
     Setting("JAZN_MEMORY_REBUILD_PROJECTS", "Projekty odbudowy", "Ścieżki", "directory", "Katalog projektów, nie katalog pamięci"),
@@ -157,7 +157,7 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
             selected_db = memory_path(source, result["JAZN_MEMORY_TIER_DB"], configured_root=memory)
         except ValueError as exc:
             raise ConfigValidationError(f"JAZN_MEMORY_TIER_DB: {exc}") from exc
-        if _inside(selected_db, source):
+        if _inside(selected_db, source) and not _inside(selected_db, source / "memory"):
             raise ConfigValidationError("JAZN_MEMORY_TIER_DB: kolizja z SYSTEM.")
         identity = inspect_memory_database(selected_db)
         if identity["exists"] and not identity["compatible"]:
@@ -173,7 +173,10 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         ("MEMORY", "JAZN_MEMORY_ROOT", memory),
     ):
         if key in result and (_inside(path, source) or _inside(path, legacy_workspace)):
-            raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
+            # Only the exact dedicated <SYSTEM>/memory directory is allowed.
+            # Other paths within the code tree still fail closed.
+            if not (key == "JAZN_MEMORY_ROOT" and path == source / "memory"):
+                raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
     if _inside(workspace, memory) or _inside(workspace, current_memory) or workspace == memory:
         raise ConfigValidationError("Workspace nie może znajdować się w MEMORY.")
     if _inside(memory, workspace) and memory != workspace / "memory":

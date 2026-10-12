@@ -48,7 +48,7 @@ def build_memory_attachment_contract(plan: PackPlan) -> dict[str, Any]:
         "external_memory_attach_supported": carries_system,
         "memory_package_profile": "memory",
         "memory_package_is_active_root": False,
-        "canonical_memory_root": "workspace_runtime/memory",
+        "canonical_memory_root": "memory",
         "operational_core_state_root": "workspace_runtime/core_state",
         "memory_root_env": "JAZN_MEMORY_ROOT",
         "memory_mode_env": "JAZN_MEMORY_MODE",

@@ -5,7 +5,7 @@ from __future__ import annotations
 The Jaźń SYSTEM package is executable without private/persistent MEMORY data.
 Private memory is an optional host-level capability that can be attached later.
 Operational runtime state must therefore never create or impersonate the
-canonical ``workspace_runtime/memory`` tree when no memory package is present.
+canonical ``<SYSTEM>/memory`` tree when no memory package is present.
 """
 
 from dataclasses import asdict, dataclass
@@ -18,6 +18,7 @@ from latka_jazn.memory.memory_root import (
     MEMORY_ROOT_ENV,
     default_memory_root,
     legacy_memory_root,
+    previous_host_memory_root,
     normalize_memory_relative_path,
     resolve_memory_root,
 )
@@ -119,6 +120,7 @@ def build_memory_availability_status(
     resolved_mode = memory_mode(mode)
     canonical = default_memory_root(root)
     legacy = legacy_memory_root(root)
+    previous_host = previous_host_memory_root(root)
     selected = resolve_memory_root(root)
 
     configured = str(os.environ.get(MEMORY_ROOT_ENV) or "").strip()
@@ -126,8 +128,8 @@ def build_memory_availability_status(
         source = "environment_override"
     elif selected == canonical:
         source = "canonical_host_memory_root"
-    elif selected == legacy:
-        source = "legacy_runtime_memory_root"
+    elif selected == previous_host:
+        source = "previous_host_memory_compatibility"
     else:
         source = "configured_memory_root"
 

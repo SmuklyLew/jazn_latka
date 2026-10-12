@@ -46,9 +46,13 @@ innego szablonu projektu.
 └─ .github/workflows/             # CI/release evidence
 ```
 
-Mutable/private state nie należy do drzewa wydania: `workspace_runtime/`,
-`memory/`, SQLite/WAL/SHM, logi, PID-y, heartbeat, sekrety i staging są
-oddzielone od statycznego kodu i manifestu paczki.
+Mutable/private data is excluded from the *release package*, even if it
+physically resides under the installation root: `<SYSTEM>/memory/` is the
+canonical private-memory directory, ignored by Git and excluded from SYSTEM
+archive generation. `workspace_runtime/` remains the operational host
+workspace. SQLite/WAL/SHM, logs, PIDs, heartbeat, secrets and staging are not
+release assets. Preexisting `workspace_runtime/memory/` may be selected
+read-only for backward compatibility until an explicit verified migration.
 
 ## 3. Publiczne entrypointy
 

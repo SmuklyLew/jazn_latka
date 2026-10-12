@@ -11,6 +11,7 @@ from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.memory.memory_root import (
     default_memory_root,
     legacy_memory_root,
+    previous_host_memory_root,
     memory_path,
     resolve_memory_root,
 )
@@ -23,31 +24,31 @@ def _runtime_root(tmp_path: Path) -> Path:
     return root
 
 
-def test_memory_root_defaults_outside_versioned_runtime(tmp_path: Path) -> None:
+def test_memory_root_defaults_under_system_root(tmp_path: Path) -> None:
     root = _runtime_root(tmp_path)
-    expected = tmp_path / "workspace_runtime" / "memory"
+    expected = root / "memory"
     assert default_memory_root(root) == expected.resolve()
     assert resolve_memory_root(root) == expected.resolve()
-    assert expected.resolve() != legacy_memory_root(root)
+    assert expected.resolve() == legacy_memory_root(root)
 
 
-def test_memory_root_preserves_existing_legacy_layout_until_attach(tmp_path: Path) -> None:
+def test_memory_root_preserves_previous_host_payload_until_attach(tmp_path: Path) -> None:
     root = _runtime_root(tmp_path)
-    legacy = legacy_memory_root(root)
-    legacy.mkdir(parents=True)
-    (legacy / "sentinel.txt").write_text("legacy", encoding="utf-8")
-
-    assert resolve_memory_root(root) == legacy
+    previous = previous_host_memory_root(root)
+    previous.mkdir(parents=True)
+    (previous / "sqlite").mkdir()
+    (previous / "sqlite" / "memory_jazn.sqlite3").write_bytes(b"synthetic")
+    assert resolve_memory_root(root) == previous
     assert resolve_memory_root(root, prefer_existing_legacy=False) == default_memory_root(root)
 
 
-def test_memory_root_relative_override_is_workspace_scoped(
+def test_memory_root_relative_override_is_system_scoped(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     root = _runtime_root(tmp_path)
     monkeypatch.setenv("JAZN_MEMORY_ROOT", "private-memory")
-    expected = tmp_path / "workspace_runtime" / "private-memory"
+    expected = root / "private-memory"
     assert resolve_memory_root(root) == expected.resolve()
     assert memory_path(root, "memory/sqlite/memory_jazn.sqlite3") == (
         expected / "sqlite" / "memory_jazn.sqlite3"
@@ -114,8 +115,10 @@ def test_memory_attach_moves_existing_legacy_memory_to_backup(
 ) -> None:
     root = _runtime_root(tmp_path)
     workspace = tmp_path / "workspace_runtime"
-    legacy = legacy_memory_root(root)
+    legacy = previous_host_memory_root(root)
     legacy.mkdir(parents=True)
+    (legacy / "sqlite").mkdir()
+    (legacy / "sqlite" / "memory_jazn.sqlite3").write_bytes(b"legacy")
     (legacy / "old.txt").write_text("old", encoding="utf-8")
     source = tmp_path / "staging" / "memory"
     source.mkdir(parents=True)

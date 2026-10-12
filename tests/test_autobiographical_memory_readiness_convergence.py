@@ -13,6 +13,7 @@ from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.memory.memory_root import (
     default_memory_root,
     legacy_memory_root,
+    previous_host_memory_root,
     resolve_memory_root,
 )
 from latka_jazn.memory.unified_memory_runtime import probe_unified_memory_database
@@ -40,7 +41,7 @@ def test_empty_canonical_memory_root_does_not_shadow_populated_legacy_root(
     runtime_root.mkdir()
     canonical = default_memory_root(runtime_root)
     canonical.mkdir(parents=True)
-    legacy = legacy_memory_root(runtime_root)
+    legacy = previous_host_memory_root(runtime_root)
     legacy_db = legacy / "sqlite" / "memory_jazn.sqlite3"
     legacy_db.parent.mkdir(parents=True)
     legacy_db.write_bytes(b"synthetic-memory-payload")

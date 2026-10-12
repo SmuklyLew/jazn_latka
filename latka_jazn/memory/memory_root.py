@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-"""Canonical host-level memory root resolution.
+"""Canonical SYSTEM-root memory path resolution.
 
-Runtime code may live in versioned active_root directories, while private
-memory is mutable host state that should survive code upgrades. This module
-keeps that boundary explicit and preserves a read-compatible fallback for
-historical <active_root>/memory layouts.
+Private MEMORY is separate from the SYSTEM release package even when placed
+at <active_root>/memory. Historical host-workspace MEMORY remains read-compatible
+until a separately approved, verified migration. Code upgrades must not silently
+move or replace private data.
 """
 
 import os
@@ -60,7 +60,13 @@ def legacy_memory_root(runtime_root: str | Path) -> Path:
 
 
 def default_memory_root(runtime_root: str | Path) -> Path:
-    """Return the host-level memory directory shared by sibling runtimes."""
+    """Return <SYSTEM root>/memory, independent of the process working directory."""
+
+    return legacy_memory_root(runtime_root)
+
+
+def previous_host_memory_root(runtime_root: str | Path) -> Path:
+    """Return the pre-v115.21.7 host-level MEMORY location for compatibility."""
 
     root = Path(runtime_root).expanduser().resolve()
     return (workspace_runtime_path(root) / MEMORY_DIR_NAME).resolve()
@@ -72,47 +78,45 @@ def resolve_memory_root(
     configured: str | Path | None = None,
     prefer_existing_legacy: bool = True,
 ) -> Path:
-    """Resolve the canonical memory directory without creating it.
+    """Select MEMORY without creating or migrating any data.
 
-    Resolution order:
-    1. explicit configured value;
-    2. JAZN_MEMORY_ROOT;
-    3. host-level workspace_runtime/memory;
-    4. historical <active_root>/memory only when the host-level directory
-       does not yet exist and compatibility fallback is enabled.
-
-    Relative explicit values are resolved against the host-level runtime
-    workspace, not the versioned code root. This prevents a new override from
-    accidentally re-introducing version-coupled private memory.
+    Explicit paths override all fallback rules; relative values are anchored to
+    the SYSTEM root (not CWD or workspace_runtime). In compatibility mode an
+    existing older host MEMORY payload remains selectable until migration.
     """
 
     root = Path(runtime_root).expanduser().resolve()
     raw: str | Path | None = configured
     if raw is None or not str(raw).strip():
-        env_value = os.environ.get(MEMORY_ROOT_ENV)
-        raw = env_value if env_value and env_value.strip() else None
-
+        value = os.environ.get(MEMORY_ROOT_ENV)
+        raw = value if value and value.strip() else None
     if raw is not None and str(raw).strip():
+        portable = str(raw).strip().replace("\\", "/")
+        windows = PureWindowsPath(str(raw).strip())
+        # On POSIX do not misinterpret Windows absolute paths as relative.
+        if windows.drive or windows.root:
+            if os.name != "nt":
+                raise ValueError(f"{MEMORY_ROOT_ENV} Windows-absolute path invalid on this host: {raw}")
         candidate = Path(str(raw).strip()).expanduser()
         if candidate.is_absolute():
             return candidate.resolve()
-        workspace = workspace_runtime_path(root)
-        resolved = (workspace / candidate).resolve()
+        if ".." in portable.split("/"):
+            raise ValueError(f"{MEMORY_ROOT_ENV} relative traversal denied: {raw}")
+        resolved = (root / candidate).resolve()
         try:
-            resolved.relative_to(workspace)
+            resolved.relative_to(root)
         except ValueError as exc:
-            raise ValueError(f"{MEMORY_ROOT_ENV} escapes runtime workspace: {raw}") from exc
+            raise ValueError(f"{MEMORY_ROOT_ENV} escapes SYSTEM root: {raw}") from exc
         return resolved
 
     canonical = default_memory_root(root)
     if not prefer_existing_legacy:
         return canonical
-
     if memory_root_has_payload(canonical):
         return canonical
-    legacy = legacy_memory_root(root)
-    if legacy.exists():
-        return legacy
+    previous_host = previous_host_memory_root(root)
+    if previous_host != canonical and memory_root_has_payload(previous_host):
+        return previous_host
     return canonical
 
 
@@ -122,11 +126,12 @@ def resolve_memory_root_diagnostic(
     configured: str | Path | None = None,
     prefer_existing_legacy: bool = True,
 ) -> dict[str, Any]:
-    """Explain memory-root selection without reading private memory contents."""
+    """Explain selected MEMORY paths without opening private records."""
 
     root = Path(runtime_root).expanduser().resolve()
     canonical = default_memory_root(root)
     legacy = legacy_memory_root(root)
+    previous_host = previous_host_memory_root(root)
     env_raw = os.environ.get(MEMORY_ROOT_ENV)
     explicit_raw = configured if configured is not None else env_raw
     explicit_configured = bool(str(explicit_raw or "").strip())
@@ -135,36 +140,31 @@ def resolve_memory_root_diagnostic(
         configured=configured,
         prefer_existing_legacy=prefer_existing_legacy,
     )
-
     if explicit_configured:
         source = "explicit_configured" if configured is not None else "environment"
     elif selected == canonical:
-        source = "canonical_host_memory"
-    elif selected == legacy:
-        source = "legacy_compatibility"
+        source = "canonical_system_memory"
+    elif selected == previous_host:
+        source = "previous_host_memory_compatibility"
     else:
         source = "resolved_other"
-
-    canonical_exists = canonical.exists()
-    legacy_exists = legacy.exists()
     canonical_has_payload = memory_root_has_payload(canonical)
-    legacy_has_payload = memory_root_has_payload(legacy)
-
+    previous_host_has_payload = memory_root_has_payload(previous_host)
     return {
         "selected": str(selected),
         "selection_source": source,
         "explicit_configured": explicit_configured,
         "canonical": str(canonical),
-        "canonical_exists": canonical_exists,
+        "canonical_exists": canonical.exists(),
         "canonical_has_payload": canonical_has_payload,
         "legacy": str(legacy),
-        "legacy_exists": legacy_exists,
-        "legacy_has_payload": legacy_has_payload,
+        "legacy_exists": legacy.exists(),
+        "legacy_has_payload": memory_root_has_payload(legacy),
+        "previous_host": str(previous_host),
+        "previous_host_exists": previous_host.exists(),
+        "previous_host_has_payload": previous_host_has_payload,
         "empty_canonical_placeholder_detected": bool(
-            canonical.is_dir()
-            and not canonical_has_payload
-            and legacy_exists
-            and legacy_has_payload
+            canonical.is_dir() and not canonical_has_payload and previous_host_has_payload
         ),
         "selected_exists": selected.exists(),
         "selected_has_payload": memory_root_has_payload(selected),
@@ -230,6 +230,7 @@ __all__ = [
     "memory_path",
     "memory_root_has_payload",
     "normalize_memory_relative_path",
+    "previous_host_memory_root",
     "resolve_memory_root",
     "resolve_memory_root_diagnostic",
 ]

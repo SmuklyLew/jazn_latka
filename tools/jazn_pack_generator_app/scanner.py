@@ -37,10 +37,11 @@ def parse_package_version(source_root: Path) -> str:
 def resolve_memory_root(source_root: Path, explicit: Path | None) -> Path:
     candidates: list[Path] = []
     if explicit is not None:
-        candidates.append(explicit)
+        candidates.append(explicit if explicit.is_absolute() else source_root / explicit)
     env_value = str(os.environ.get("JAZN_MEMORY_ROOT") or "").strip()
     if env_value:
-        candidates.append(Path(env_value))
+        configured = Path(env_value)
+        candidates.append(configured if configured.is_absolute() else source_root / configured)
     candidates.append(source_root / "memory")
     for candidate in candidates:
         path = candidate.expanduser().resolve()

@@ -8,7 +8,7 @@
   "external_memory_attach_supported": true,
   "memory_package_profile": "memory",
   "memory_package_is_active_root": false,
-  "canonical_memory_root": "workspace_runtime/memory",
+  "canonical_memory_root": "memory",
   "memory_root_env": "JAZN_MEMORY_ROOT",
   "memory_mode_env": "JAZN_MEMORY_MODE",
   "memory_modes": [

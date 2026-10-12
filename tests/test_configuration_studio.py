@@ -70,9 +70,15 @@ def test_invalid_values_fail_closed(tmp_path: Path, invalid: dict[str, str]) -> 
         validate_values(root, invalid)
 
 
+def test_canonical_memory_root_is_allowed_but_other_system_children_are_not(tmp_path: Path) -> None:
+    root = fake_system(tmp_path)
+    selected = str((root / "memory").resolve())
+    assert validate_values(root, {"JAZN_MEMORY_ROOT": selected})["JAZN_MEMORY_ROOT"] == selected
+
+
 def test_no_path_inside_system_or_legacy_workspace(tmp_path: Path) -> None:
     root = fake_system(tmp_path)
-    for candidate in (root / "memory", root / "workspace_runtime" / "memory",
+    for candidate in (root / "memory" / "sqlite", root / "workspace_runtime" / "memory",
                       root / "latka_jazn" / "local_resources"):
         with pytest.raises(ConfigValidationError):
             validate_values(root, {"JAZN_MEMORY_ROOT": str(candidate)})
