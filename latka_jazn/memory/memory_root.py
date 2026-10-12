@@ -94,10 +94,11 @@ def resolve_memory_root(
         portable = str(raw).strip().replace("\\", "/")
         windows = PureWindowsPath(str(raw).strip())
         # On POSIX do not misinterpret Windows absolute paths as relative.
-        if windows.drive or windows.root:
-            if os.name != "nt":
-                raise ValueError(f"{MEMORY_ROOT_ENV} Windows-absolute path invalid on this host: {raw}")
-        candidate = Path(str(raw).strip()).expanduser()
+        if os.name != "nt" and (
+            windows.drive or (windows.root and not portable.startswith("/"))
+        ):
+            raise ValueError(f"{MEMORY_ROOT_ENV} Windows-absolute path invalid on this host: {raw}")
+        candidate = Path(portable).expanduser()
         if candidate.is_absolute():
             return candidate.resolve()
         if ".." in portable.split("/"):

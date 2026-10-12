@@ -12,6 +12,8 @@ from .constants import (
     EXCLUDED_SECRET_FILE_NAMES,
     EXCLUDED_SECRET_NAME_TOKENS,
 )
+from latka_jazn.memory.memory_root import resolve_memory_root as resolve_runtime_memory_root
+
 from .errors import PackSafetyError, PackValidationError
 from .models import ContentMode, PackPlan, PackRequest, SourceEntry
 
@@ -35,22 +37,17 @@ def parse_package_version(source_root: Path) -> str:
 
 
 def resolve_memory_root(source_root: Path, explicit: Path | None) -> Path:
-    candidates: list[Path] = []
-    if explicit is not None:
-        candidates.append(explicit if explicit.is_absolute() else source_root / explicit)
-    env_value = str(os.environ.get("JAZN_MEMORY_ROOT") or "").strip()
-    if env_value:
-        configured = Path(env_value)
-        candidates.append(configured if configured.is_absolute() else source_root / configured)
-    candidates.append(source_root / "memory")
-    for candidate in candidates:
-        path = candidate.expanduser().resolve()
-        if path.is_dir():
-            return path
-    rendered = ", ".join(str(item) for item in candidates)
+    """Use the same selected MEMORY as Jaźń runtime, not a competing heuristic."""
+
+    try:
+        selected = resolve_runtime_memory_root(source_root, configured=explicit)
+    except ValueError as exc:
+        raise PackValidationError(f"Nieprawidłowy katalog MEMORY: {exc}") from exc
+    if selected.is_dir():
+        return selected
     raise PackValidationError(
         "Nie znaleziono pamięci Jaźni. Wskaż --memory-root albo ustaw JAZN_MEMORY_ROOT. "
-        f"Sprawdzone: {rendered}"
+        f"Sprawdzono: {selected}"
     )
 
 

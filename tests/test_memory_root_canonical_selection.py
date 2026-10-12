@@ -139,3 +139,11 @@ def test_failed_backup_never_erases_existing_memory(root: Path, tmp_path: Path, 
     assert marker.read_text(encoding="utf-8") == "original"
     assert (source / "new.txt").is_file()
     assert not (root / ".memory-backups").exists()
+
+def test_generator_selects_same_legacy_host_fallback_as_runtime(root: Path) -> None:
+    from tools.jazn_pack_generator_app.scanner import resolve_memory_root as generator_root
+    older = previous_host_memory_root(root)
+    _payload(older)
+    assert generator_root(root, None) == resolve_memory_root(root) == older
+    _payload(root / "memory")
+    assert generator_root(root, None) == resolve_memory_root(root) == (root / "memory").resolve()
