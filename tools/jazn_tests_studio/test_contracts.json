@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.21.7",
-  "active_definition_count": 2219,
+  "active_definition_count": 2220,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29893,6 +29893,29 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 119
+    },
+    "tests/test_memory_root_canonical_selection.py::test_generator_selects_same_legacy_host_fallback_as_runtime": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_generator_selects_same_legacy_host_fallback_as_runtime",
+      "purpose": "Generator selects same legacy host fallback as runtime",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_memory_round_trip_acceptance.py::test_source_backed_temporal_recall_survives_dialogue_and_restart_round_trip": {
       "path": "tests/test_memory_round_trip_acceptance.py",
