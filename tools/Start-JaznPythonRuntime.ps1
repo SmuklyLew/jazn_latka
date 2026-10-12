@@ -24,6 +24,23 @@ function Assert-ChildPath([string]$Base, [string]$Candidate) {
 function Get-WorkspaceRoot([string]$AppRoot) {
     $configured = [string]$env:JAZN_RUNTIME_WORKSPACE_DIR
     if (-not [string]::IsNullOrWhiteSpace($configured)) {
+        $portable = $configured.Replace('\\', '/')
+        if ($portable.StartsWith('$ROOT/', [StringComparison]::Ordinal) -or
+            $portable.StartsWith('${ROOT}/', [StringComparison]::Ordinal)) {
+            $prefixLength = if ($portable.StartsWith('$ROOT/')) { 6 } else { 8 }
+            $suffix = $portable.Substring($prefixLength)
+            if ([string]::IsNullOrWhiteSpace($suffix) -or
+                $suffix -match '(^|/)\.\.(/|$)|(^|/)\.(/|$)|:' -or
+                $suffix.StartsWith('/')) {
+                throw "unsafe_root_relative_workspace"
+            }
+            $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $suffix))
+            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd('\\', '/')) + [IO.Path]::DirectorySeparatorChar
+            if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "workspace_escapes_root"
+            }
+            return $resolved
+        }
         if ([IO.Path]::IsPathRooted($configured)) {
             return [IO.Path]::GetFullPath($configured)
         }
