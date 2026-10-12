@@ -927,10 +927,23 @@ def _ensure_daemon_or_error(
         and result.one_shot_allowed
     ):
         return result, None
+    # Do not turn a transport/root identity failure into a memory failure.
+    # A second daemon on the same endpoint must never be treated as this runtime.
+    diagnostic = {
+        "reason_code": result.reason,
+        "memory_is_not_the_cause": result.reason == "daemon_identity_root_mismatch",
+    }
+    if result.reason == "daemon_identity_root_mismatch":
+        diagnostic["operator_action"] = (
+            "Endpoint jest zajęty przez inny katalog runtime. Użyj --daemon-port "
+            "z wolnym portem albo po weryfikacji zatrzymaj obcy daemon; "
+            "nie omijaj sprawdzania tożsamości."
+        )
     print(json.dumps({
         "ok": False,
         "error_code": "daemon_ensure_failed",
         "command": command,
+        "diagnostic": diagnostic,
         "daemon_autostart": result.to_dict(),
         "truth_boundary": "Trasa rozmowy wymaga działającego daemonu; ponieważ ensure nie potwierdził active_trusted/active_degraded, runtime nie udaje rozmowy z aktywną Jaźnią.",
     }, ensure_ascii=False, indent=2, sort_keys=True))
