@@ -1,0 +1,63 @@
+name: Stable test contracts
+
+on:
+  push:
+    branches:
+      - master
+      - "update/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "upgrade/**"
+      - "release/**"
+    paths:
+      - tests/**
+      - tools/jazn_tests_studio.py
+      - tools/jazn_tests_studio/**
+      - pyproject.toml
+      - latka_jazn/version.py
+      - .github/workflows/stable-test-contracts.yml
+      - .github/workflows/release-hardening.yml
+  pull_request:
+    paths:
+      - tests/**
+      - tools/jazn_tests_studio.py
+      - tools/jazn_tests_studio/**
+      - pyproject.toml
+      - latka_jazn/version.py
+      - .github/workflows/stable-test-contracts.yml
+      - .github/workflows/release-hardening.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate stable Test Studio contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        with:
+          python-version: '3.12'
+      - name: Install test runner
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+      - name: Compile Test Studio
+        run: |
+          python -m py_compile tools/jazn_tests_studio.py
+          python -m py_compile tools/jazn_tests_studio/progress_plugin.py
+          python -m py_compile tools/jazn_tests_studio/sync_contract_catalog.py
+      - name: Test live Test Studio runner
+        run: python -X utf8 tools/jazn_tests_studio.py self-test
+      - name: Audit GitHub Actions Node24 pins
+        run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
+      - name: Collect active suite
+        run: python -m pytest --collect-only -q tests --ignore=tests/archive
+      - name: Materialize deterministic Test Studio catalog for validation
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
+      - name: Verify deterministic Test Studio catalog
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
+      - name: Test governance against materialized catalog
+        run: python -m pytest -q tests/test_test_suite_governance.py

@@ -1,0 +1,67 @@
+{
+  "schema_version": "nlp_provider_registry/v1",
+  "description": "Rejestr providerów NLP Jaźni. Builtin_safe jest zawsze dostępny; lokalne providery Morfeusz2/Stanza mogą aktywować się po zweryfikowanej instalacji w latka_jazn/local_resources/nlp. Brak ciężkich zasobów nie blokuje runtime.",
+  "enable_optional_providers_by_default": false,
+  "providers": [
+    {
+      "name": "builtin_safe_polish_current_line",
+      "required": true,
+      "status": "always_available",
+      "features": [
+        "normalization",
+        "tokenization",
+        "safe_lemma_candidates",
+        "confidence",
+        "provider_label"
+      ]
+    },
+    {
+      "name": "optional_morfeusz2_pl",
+      "required": false,
+      "status": "auto_enable_after_verified_local_install",
+      "features": [
+        "morphological_analysis",
+        "lemma_candidates",
+        "pos_tags"
+      ]
+    },
+    {
+      "name": "optional_stanza_pl",
+      "required": false,
+      "status": "auto_enable_after_verified_local_install",
+      "features": [
+        "tokenize",
+        "pos",
+        "lemma",
+        "morphological_features"
+      ],
+      "data_root": "latka_jazn/local_resources/nlp/stanza",
+      "network_during_turn": false
+    },
+    {
+      "name": "future_llm_context_provider",
+      "required": false,
+      "status": "planned",
+      "features": [
+        "contextual_disambiguation",
+        "sense_selection",
+        "route_explanation"
+      ]
+    }
+  ],
+  "truth_boundary": "Brak zewnętrznego providera nie jest błędem runtime. Oznacza tryb builtin_safe, który nie udaje pełnej kontekstowej lematyzacji języka polskiego.",
+  "runtime_preview_contract": {
+    "enabled": true,
+    "cli_flag": "--runtime-preview",
+    "contains": [
+      "runtime_text",
+      "source_origin",
+      "self_state_runtime",
+      "cognitive_frame"
+    ],
+    "truth_boundary": "tryb diagnostyczny nie jest stałym procesem w tle i nie zastępuje normalnej odpowiedzi rozmownej"
+  },
+  "hotfix_note": "Bieżące wydanie używa semantycznych nazw zasobów NLP i utrzymuje kontrakt treści recall w rdzeniu.",
+  "version_source": "latka_jazn.version.PACKAGE_VERSION",
+  "enable_optional_providers_if_installed": true
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "jazn_private_recall_cases/v1",
+  "minimums": {
+    "counts.archive_chats.conversations": 1,
+    "counts.archive_chats.nodes": 1
+  },
+  "source_files": [
+    "D:\\PRIVATE\\chatgpt-export.zip"
+  ],
+  "recall_cases": [
+    {
+      "id": "case-001",
+      "query": "Wpisz prywatne pytanie kontrolne.",
+      "expected_any": [
+        "oczekiwany termin A",
+        "oczekiwany termin B"
+      ],
+      "expected_all": [],
+      "forbidden_any": [
+        "termin, którego nie powinno być"
+      ],
+      "expected_sources": [
+        "archive_chats"
+      ],
+      "minimum_hits": 1,
+      "limit": 20
+    }
+  ]
+}

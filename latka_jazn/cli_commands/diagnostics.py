@@ -1,0 +1,679 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any, Callable
+
+from latka_jazn.bridge.secure_host_runtime_gateway import GatewayConfig, GatewayError
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.bridge_discovery import discover_runtime_bridges
+from latka_jazn.core.chatgpt_host_pending_store import host_request_store_status
+from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.core.operator_capabilities import operator_capability_report
+from latka_jazn.core.readiness import (
+    evaluate_runtime_readiness,
+    evaluate_system_readiness_profile,
+)
+from latka_jazn.core.runtime_daemon import (
+    DEFAULT_DAEMON_HOST,
+    DEFAULT_DAEMON_PORT,
+    daemon_url,
+    http_json,
+    status_daemon,
+)
+from latka_jazn.core.source_provenance import read_source_provenance
+from latka_jazn.core.startup_contract import build_startup_status
+from latka_jazn.core.tool_execution_controller import ToolExecutionController
+from latka_jazn.memory.memory_tier_status import inspect_memory_tier_store
+from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
+from latka_jazn.memory.runtime_memory_install import resolve_memory_tier_database_path
+from latka_jazn.nlp.runtime_capability_probe import probe_nlp_runtime_capability
+from latka_jazn.plugins import plugin_readiness_report
+from latka_jazn.tools.package_integrity import verify_package_integrity_manifest
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+
+DoctorProgressCallback = Callable[[int, int, str], None]
+
+
+def _report_progress(
+    callback: DoctorProgressCallback | None,
+    completed: int,
+    total: int,
+    label: str,
+) -> None:
+    if callback is not None:
+        callback(completed, total, label)
+
+
+def _transactional_memory_status(cfg: JaznConfig) -> dict[str, Any]:
+    try:
+        path = resolve_memory_tier_database_path(
+            cfg.root,
+            configured=getattr(cfg, "memory_tier_db_path", None),
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        return {
+            "path": None,
+            "exists": False,
+            "ready": False,
+            "read_only": True,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "truth_boundary": (
+                "Nie udało się rozwiązać kanonicznej ścieżki L1/L2/L3. "
+                "Nie jest to dowód pustej ani uszkodzonej pamięci."
+            ),
+        }
+    return inspect_memory_tier_store(path, full=False).to_dict()
+
+
+def _daemon_runtime_write_ready(daemon: dict[str, Any]) -> tuple[bool, str]:
+    """Read readiness from the live response without treating a missing top-level alias as false."""
+    direct = daemon.get("runtime_write_ready")
+    if isinstance(direct, bool):
+        return direct, "daemon.runtime_write_ready"
+
+    ping_value = daemon.get("ping")
+    ping: dict[str, Any] = ping_value if isinstance(ping_value, dict) else {}
+    nested = ping.get("runtime_write_ready")
+    if isinstance(nested, bool):
+        return nested, "daemon.ping.runtime_write_ready"
+
+    readiness_value = daemon.get("readiness")
+    readiness: dict[str, Any] = readiness_value if isinstance(readiness_value, dict) else {}
+    nested = readiness.get("runtime_write_ready")
+    if isinstance(nested, bool):
+        return nested, "daemon.readiness.runtime_write_ready"
+
+    for source, payload in (
+        ("daemon.runtime_write_access_status.ok", daemon.get("runtime_write_access_status")),
+        ("daemon.ping.runtime_write_access_status.ok", ping.get("runtime_write_access_status")),
+    ):
+        if isinstance(payload, dict) and isinstance(payload.get("ok"), bool):
+            return bool(payload["ok"]), source
+    return False, "unavailable"
+
+
+def _probe_daemon_readiness(host: str, port: int) -> dict[str, Any]:
+    try:
+        payload = http_json(
+            "GET",
+            daemon_url(host, int(port), "/ready"),
+            timeout=10.0,
+        )
+        payload.setdefault("endpoint", "/ready")
+        return payload
+    except (OSError, TimeoutError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        return {
+            "ok": False,
+            "endpoint": "/ready",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+
+
+def _daemon_subsystem_status(daemon: dict[str, Any], key: str) -> tuple[dict[str, Any], str]:
+    """Resolve subsystem evidence without conflating liveness with readiness.
+
+    ``status_daemon`` deliberately treats ``/live`` as the primary liveness probe.
+    Optional subsystem readiness is returned by the separate ``/ready`` probe and
+    stored under ``daemon["readiness"]``. Older payload shapes are retained only
+    as bounded compatibility fallbacks.
+    """
+    for source, candidate in (
+        (f"daemon.{key}", daemon.get(key)),
+        (f"daemon.readiness.{key}", (daemon.get("readiness") or {}).get(key) if isinstance(daemon.get("readiness"), dict) else None),
+        (f"daemon.ping.{key}", (daemon.get("ping") or {}).get(key) if isinstance(daemon.get("ping"), dict) else None),
+    ):
+        if isinstance(candidate, dict) and candidate:
+            return candidate, source
+    return {}, "unavailable"
+
+
+def _rest_scheduler_capability(rest_status: dict[str, Any]) -> tuple[bool, bool, str]:
+    if not rest_status:
+        return False, False, "readiness_evidence_unavailable"
+    running_value = rest_status.get("rest_scheduler_running")
+    if not isinstance(running_value, bool):
+        running_value = rest_status.get("running")
+    running = running_value is True
+    reported_ready = rest_status.get("rest_scheduler_ready") is True
+    enabled = rest_status.get("enabled") is not False
+    ready = bool(enabled and reported_ready and running)
+    if rest_status.get("enabled") is False:
+        state = "disabled"
+    else:
+        state = str(rest_status.get("state") or rest_status.get("status") or "state_unreported")
+    return ready, running, state
+
+
+def status_payload(
+    root: Path,
+    *,
+    probe_endpoint: bool = True,
+    daemon_host: str = DEFAULT_DAEMON_HOST,
+    daemon_port: int = DEFAULT_DAEMON_PORT,
+    marker_output: Path | None = None,
+    nlp_probe_mode: str = "fast",
+) -> dict[str, Any]:
+    cfg = JaznConfig(root=root)
+    daemon = status_daemon(
+        cfg,
+        host=daemon_host,
+        port=daemon_port,
+        marker_output=marker_output,
+        probe_endpoint=probe_endpoint,
+    )
+    startup = build_startup_status(
+        cfg,
+        mode="fast",
+        infer_host_environment=True,
+        canonical_daemon_status=daemon,
+    ).to_dict()
+    transactional_memory = _transactional_memory_status(cfg)
+    daemon["readiness"] = (
+        _probe_daemon_readiness(daemon_host, daemon_port)
+        if probe_endpoint and daemon.get("endpoint_reachable") is True
+        else {"ok": False, "endpoint": "/ready", "probe_skipped": True}
+    )
+    active_state = str(daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive")
+    process_ok = active_state in {"active_trusted", "active_degraded"}
+    runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
+    transactional_memory_ready = bool(transactional_memory.get("ready"))
+    runtime_core_ready = bool(process_ok and runtime_write_ready and transactional_memory_ready)
+    fully_ready = runtime_core_ready
+    conversation_memory = startup.get("conversation_archive_status") or {}
+    try:
+        living_memory = LivingMemoryGateway(root).readiness()
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        living_memory = {
+            "status": "memory_readiness_probe_failed",
+            "memory_search_ready": False,
+            "native_unified_recall_ready": False,
+            "full_autobiographical_recall_ready": False,
+            "memory_readiness_policy": "unknown",
+            "memory_readiness_policy_satisfied": False,
+            "legacy_search_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    continuity = startup.get("memory_continuity_status") or {}
+    full_autobiographical_recall_ready = bool(
+        living_memory.get("full_autobiographical_recall_ready")
+    )
+    memory_readiness_policy = str(
+        living_memory.get("memory_readiness_policy") or "searchable"
+    )
+    memory_readiness_policy_satisfied = bool(
+        living_memory.get("memory_readiness_policy_satisfied")
+    )
+    rest_status, rest_status_source = _daemon_subsystem_status(daemon, "rest_cycle_status")
+    rest_scheduler_ready, rest_scheduler_running, rest_scheduler_state = _rest_scheduler_capability(rest_status)
+    try:
+        nlp_probe = probe_nlp_runtime_capability(
+            root,
+            mode="deep" if nlp_probe_mode == "deep" else "fast",
+        ).to_dict()
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        nlp_probe = {
+            "schema_version": schema_version("nlp_runtime_capability_probe"),
+            "mode": "deep" if nlp_probe_mode == "deep" else "fast",
+            "status": "nlp_capability_probe_failed",
+            "core_probe_executed": False,
+            "core_ready": False,
+            "enhanced_probe_requested": nlp_probe_mode == "deep",
+            "enhanced_probe_executed": False,
+            "enhanced_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "truth_boundary": "Probe failure is reported fail-closed and does not become NLP readiness.",
+        }
+    plugin_readiness = plugin_readiness_report()
+    operator_capabilities = operator_capability_report(root)
+    try:
+        from latka_jazn.memory.memory_sync_runtime import MemorySyncRuntime
+
+        memory_sync = MemorySyncRuntime(cfg).status(probe_remote=False)
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        memory_sync = {
+            "schema_version": "jazn_memory_sync_runtime_status/v1",
+            "configuration": {"enabled": False},
+            "cloud_sync_ready": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "truth_boundary": "Cloud sync diagnostics are non-blocking for local runtime readiness.",
+        }
+
+    archive_plugin = next(
+        (item for item in plugin_readiness.get("plugins") or [] if item.get("plugin_id") == "archive"),
+        {},
+    )
+    system_readiness = evaluate_system_readiness_profile(
+        profile="interactive_live_voice",
+        capabilities={
+            "runtime_core": {
+                "classification": "required",
+                "ready": runtime_core_ready,
+                "status": "ready" if runtime_core_ready else "not_ready",
+            },
+            "live_voice": {
+                "classification": "required",
+                "ready": startup.get("voice_live_ready"),
+                "status": "ready" if startup.get("voice_live_ready") is True else "not_ready",
+            },
+            "dictionary_lookup": {
+                "classification": "optional",
+                "ready": (startup.get("dictionary_provider_status") or {}).get("dictionary_lookup_ready"),
+                "status": "not_yet_capability_probed",
+            },
+            "nlp_core": {
+                "classification": "optional",
+                "ready": bool(nlp_probe.get("core_ready")),
+                "status": "ready" if nlp_probe.get("core_ready") is True else str(nlp_probe.get("status") or "probe_failed"),
+                "probe_executed": bool(nlp_probe.get("core_probe_executed")),
+            },
+            "nlp_enhanced": {
+                "classification": "optional",
+                "ready": bool(nlp_probe.get("enhanced_ready")),
+                "status": str(nlp_probe.get("status") or "probe_failed"),
+                "probe_requested": bool(nlp_probe.get("enhanced_probe_requested")),
+                "probe_executed": bool(nlp_probe.get("enhanced_probe_executed")),
+            },
+            "memory_search": {
+                "classification": "degraded_allowed",
+                "ready": bool(living_memory.get("memory_search_ready")),
+                "status": str(living_memory.get("status") or "unknown"),
+            },
+            "autobiographical_memory": {
+                "classification": (
+                    "required"
+                    if memory_readiness_policy == "native_unified_required"
+                    else "degraded_allowed"
+                ),
+                "ready": full_autobiographical_recall_ready,
+                "status": str(living_memory.get("status") or "unknown"),
+                "policy": memory_readiness_policy,
+                "policy_satisfied": memory_readiness_policy_satisfied,
+                "canonical_database": living_memory.get("autobiographical_database"),
+            },
+            "continuity": {
+                "classification": "degraded_allowed",
+                "ready": bool(continuity.get("continuity_claim_allowed")),
+                "status": str(continuity.get("status") or "unknown"),
+            },
+            "rest_scheduler": {
+                "classification": "degraded_allowed",
+                "ready": rest_scheduler_ready,
+                "status": rest_scheduler_state,
+                "running": rest_scheduler_running,
+                "evidence_source": rest_status_source,
+            },
+            "rest_dream": {
+                "classification": "not_applicable",
+                "ready": None,
+                "status": "not_applicable_to_interactive_live_voice",
+            },
+            "archive": {
+                "classification": "optional",
+                "ready": bool(archive_plugin.get("ready")),
+                "status": str(archive_plugin.get("state") or "unavailable"),
+            },
+            "git_operator": {
+                "classification": "optional",
+                "ready": bool((operator_capabilities.get("git") or {}).get("available")),
+                "status": str((operator_capabilities.get("git") or {}).get("status") or "unavailable"),
+            },
+            "pip_operator": {
+                "classification": "optional",
+                "ready": bool((operator_capabilities.get("pip") or {}).get("available")),
+                "status": str((operator_capabilities.get("pip") or {}).get("status") or "unavailable"),
+            },
+            "cognitive_integration": {
+                "classification": "unknown",
+                "ready": None,
+                "status": "requires_cognitive_architecture_audit_or_live_effect_probe",
+            },
+        },
+    )
+    chatgpt_visible_turn_readiness = {
+        "scope": "per_turn",
+        "status": "accepted_final_required_per_turn",
+        "ready": None,
+        "accepted_visible_turn_required": True,
+        "visible_turn_readiness": "accepted_final_visible_text_only",
+        "daemon_liveness_sufficient": False,
+        "requires": [
+            "verified_runtime_turn_lineage",
+            "accepted_host_or_runtime_finalization",
+            "verified_message_envelope",
+            "display_exact",
+        ],
+        "truth_boundary": (
+            "PID, heartbeat, endpoint and runtime_core_ready prove liveness/readiness of the "
+            "runtime substrate only. They never authorize a future/current visible ChatGPT turn; "
+            "that authority is recomputed for each turn after finalization."
+        ),
+    }
+    capability_readiness = {
+        "runtime_core_ready": runtime_core_ready,
+        "runtime_ready": runtime_core_ready,
+        "chatgpt_visible_turn_readiness": chatgpt_visible_turn_readiness,
+        "nlp_core_ready": bool(nlp_probe.get("core_ready")),
+        "nlp_core_probe_executed": bool(nlp_probe.get("core_probe_executed")),
+        "nlp_enhanced_ready": bool(nlp_probe.get("enhanced_ready")),
+        "nlp_enhanced_status": str(nlp_probe.get("status") or "probe_failed"),
+        "nlp_enhanced_probe_requested": bool(nlp_probe.get("enhanced_probe_requested")),
+        "nlp_enhanced_probe_executed": bool(nlp_probe.get("enhanced_probe_executed")),
+        "nlp_capability_probe": nlp_probe,
+        "memory_search_ready": bool(living_memory.get("memory_search_ready")),
+        "memory_search_status": living_memory.get("status"),
+        "native_unified_recall_ready": bool(living_memory.get("native_unified_recall_ready")),
+        "full_autobiographical_recall_ready": full_autobiographical_recall_ready,
+        "memory_readiness_policy": memory_readiness_policy,
+        "memory_readiness_policy_satisfied": memory_readiness_policy_satisfied,
+        "autobiographical_memory_database": living_memory.get("autobiographical_database"),
+        "legacy_memory_search_ready": bool(living_memory.get("legacy_search_ready")),
+        "continuity_ready": bool(continuity.get("continuity_claim_allowed")),
+        "rest_scheduler_ready": rest_scheduler_ready,
+        "rest_scheduler_running": rest_scheduler_running,
+        "rest_scheduler_status": rest_scheduler_state,
+        "rest_scheduler_evidence_source": rest_status_source,
+        "rest_dream_ready": bool(rest_status.get("rest_dream_ready")),
+        "cognitive_integration_ready": None,
+        "cognitive_integration_status": "requires_cognitive_architecture_audit_or_live_effect_probe",
+        "system_fully_ready": system_readiness["system_fully_ready"],
+        "system_readiness_profile": system_readiness,
+        "plugin_readiness": plugin_readiness,
+        "operator_capabilities": operator_capabilities,
+        "truth_boundary": (
+            "Process readiness does not imply native autobiographical memory, continuity, dream generation, cognitive integration, "
+            "optional plugin, Git-operator, or pip-operator readiness. memory_search_ready may represent transactional-only search; "
+            "full_autobiographical_recall_ready requires trusted native unified memory. Optional capabilities never become "
+            "installation blockers unless an explicit readiness policy classifies them as required."
+        ),
+    }
+    if not process_ok:
+        operational_state = "inactive_or_untrusted"
+    elif runtime_core_ready and active_state == "active_trusted":
+        operational_state = "active_ready"
+    elif not runtime_write_ready or not transactional_memory_ready:
+        operational_state = "active_memory_degraded"
+    else:
+        operational_state = "active_process_degraded"
+    return {
+        "schema_version": schema_version("runpy_status"),
+        "runtime_version": PACKAGE_VERSION_FULL,
+        "root": str(root),
+        "ok": process_ok,
+        "process_ok": process_ok,
+        "runtime_core_ready": runtime_core_ready,
+        "fully_ready": fully_ready,
+        "fully_ready_compatibility_alias_of": "runtime_core_ready",
+        "system_fully_ready": system_readiness["system_fully_ready"],
+        "system_readiness_profile": system_readiness,
+        "operational_state": operational_state,
+        "operational_reasons": [
+            reason
+            for reason, failed in (
+                ("daemon_not_confirmed", not process_ok),
+                ("runtime_write_not_ready", not runtime_write_ready),
+                ("transactional_memory_not_ready", not transactional_memory_ready),
+            )
+            if failed
+        ],
+        "runtime_write_ready": runtime_write_ready,
+        "runtime_write_ready_source": runtime_write_ready_source,
+        "capability_readiness": capability_readiness,
+        "chatgpt_visible_turn_readiness": chatgpt_visible_turn_readiness,
+        "endpoint_probe_requested": bool(probe_endpoint),
+        "status_scope": "live_endpoint" if probe_endpoint else "offline_snapshot",
+        "activation_truth_gate_eligible": bool(probe_endpoint),
+        "status_exit_contract": (
+            "zero_only_for_confirmed_active_process; runtime_core_ready is reported separately; "
+            "fully_ready is its compatibility alias; system_fully_ready uses the explicit capability profile; "
+            "offline_snapshot is never sufficient to prove a live runtime"
+        ),
+        "startup": startup,
+        "transactional_memory": transactional_memory,
+        "memory_sync": memory_sync,
+        "plugin_readiness": plugin_readiness,
+        "operator_capabilities": operator_capabilities,
+        "daemon": daemon,
+    }
+
+
+def _read_manifest(root: Path) -> tuple[dict[str, Any], str | None]:
+    status = package_integrity_manifest_status(root)
+    if not status.present or not status.path:
+        return {}, "package_integrity_manifest_missing"
+    path = Path(status.path)
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return {}, f"{type(exc).__name__}: {exc}"
+    if not isinstance(value, dict):
+        return {}, "manifest_not_object"
+    return value, None
+
+
+def _live_evidence(
+    *,
+    marker: dict[str, Any],
+    daemon: dict[str, Any],
+    timestamp: dict[str, Any],
+    transactional_memory: dict[str, Any],
+) -> dict[str, Any]:
+    runtime_write_ready, runtime_write_ready_source = _daemon_runtime_write_ready(daemon)
+    return {
+        "marker_found": bool(marker.get("existing_marker_found") or daemon.get("marker_found")),
+        "marker_valid": bool(marker.get("active_marker_valid") or daemon.get("marker_valid")),
+        "daemon_active_state": daemon.get("active_state") or daemon.get("runtime_active_state") or "inactive",
+        "daemon_pid_alive": bool(daemon.get("pid_alive")),
+        "endpoint_probe_performed": bool(daemon.get("endpoint_probe_performed")),
+        "endpoint_reachable": bool(daemon.get("endpoint_reachable")),
+        "heartbeat_fresh": bool(daemon.get("heartbeat_fresh")),
+        "timestamp_status_available": bool(timestamp),
+        "timestamp_trusted": timestamp.get("trusted"),
+        "time_trust_state": timestamp.get("time_trust_state") or daemon.get("time_trust_state") or "unknown",
+        "runtime_write_ready": runtime_write_ready,
+        "runtime_write_ready_source": runtime_write_ready_source,
+        "transactional_memory_ready": bool(transactional_memory.get("ready")),
+    }
+
+
+def doctor_payload(
+    root: Path,
+    *,
+    daemon_host: str = DEFAULT_DAEMON_HOST,
+    daemon_port: int = DEFAULT_DAEMON_PORT,
+    marker_output: Path | None = None,
+    deep_capability_probes: bool = False,
+    progress: DoctorProgressCallback | None = None,
+) -> dict[str, Any]:
+    progress_total = 8
+    _report_progress(progress, 0, progress_total, "Wczytywanie stanu runtime i pamięci")
+    status = status_payload(
+        root, daemon_host=daemon_host, daemon_port=daemon_port, marker_output=marker_output,
+        nlp_probe_mode="deep" if deep_capability_probes else "fast",
+    )
+    _report_progress(progress, 1, progress_total, "Wczytywanie stanu runtime i pamięci")
+    startup = status.get("startup") or {}
+    daemon = status.get("daemon") or {}
+    transactional_memory = status.get("transactional_memory") or {}
+    manifest, manifest_error = _read_manifest(root)
+    marker = startup.get("active_cache_status") or {}
+    model = startup.get("model_adapter_status") or {}
+    conversation_memory = startup.get("conversation_archive_status") or {}
+    runtime_memory = startup.get("runtime_write_access_status") or {}
+    daemon_marker = daemon.get("marker") or {}
+    timestamp = daemon.get("timestamp_contract") or daemon_marker.get("timestamp_contract") or {}
+    package_integrity = package_integrity_manifest_status(root)
+    _report_progress(progress, 2, progress_total, "Manifest i kontrakty podstawowe wczytane")
+
+    controller = ToolExecutionController()
+    read_plan = controller.plan(
+        tool_name="doctor_probe",
+        action="read_status",
+        source_kind="generated_report",
+        source_content="doctor self-test",
+        source_origin="run.py doctor",
+        actor="operator_cli",
+        reason="read_only_gate_self_test",
+        write_action=False,
+    )
+    denied_write_plan = controller.plan(
+        tool_name="doctor_probe",
+        action="write_status",
+        source_kind="generated_report",
+        source_content="doctor self-test",
+        source_origin="run.py doctor",
+        actor="operator_cli",
+        reason="unconfirmed_write_gate_self_test",
+        write_action=True,
+        user_confirmed=False,
+    )
+    try:
+        GatewayConfig(runtime_root=root).validate()
+        mcp_policy_error = None
+    except GatewayError as exc:
+        mcp_policy_error = f"{type(exc).__name__}: {exc}"
+    _report_progress(progress, 3, progress_total, "Bramki narzędzi i polityka MCP sprawdzone")
+
+    required_checks = {
+        "root_exists": root.is_dir(),
+        "main_exists": (root / "main.py").is_file(),
+        "run_exists": (root / "run.py").is_file(),
+        "version_py_exists": (root / "latka_jazn/version.py").is_file(),
+        "package_exists": (root / "latka_jazn").is_dir(),
+        "startup_status_available": bool(startup),
+        "daemon_status_available": bool(daemon),
+        "model_status_available": bool(model),
+        "memory_status_available": bool(conversation_memory or runtime_memory or transactional_memory),
+        "transactional_memory_status_available": bool(transactional_memory) or "transactional_memory" not in status,
+        "tool_read_allowed": read_plan.allowed,
+        "tool_unconfirmed_write_denied": not denied_write_plan.allowed,
+        "mcp_loopback_policy_valid": mcp_policy_error is None,
+        "privacy_gate_available": (root / "latka_jazn/core/private_data_export_gate.py").is_file(),
+        "finalization_gate_available": (root / "latka_jazn/core/host_visible_finalization.py").is_file(),
+    }
+    _report_progress(progress, 4, progress_total, "Pliki i wymagane podsystemy sprawdzone")
+    manifest_verification = verify_package_integrity_manifest(root)
+    _report_progress(progress, 5, progress_total, "Integralność paczki zweryfikowana")
+    provenance = read_source_provenance(root, profile="system_smoke").to_dict()
+    package_integrity_checks = {
+        "present": package_integrity.present,
+        "parse_ok": manifest_error is None,
+        "version_matches": str(manifest.get("runtime_version") or manifest.get("version") or "").lstrip("v")
+        == PACKAGE_VERSION_FULL.lstrip("v"),
+        "primary_present": package_integrity.primary_present,
+        "legacy_alias_absent": not package_integrity.legacy_present,
+        "canonical_source_name": package_integrity.source_name == "PACKAGE_INTEGRITY_MANIFEST.json",
+        "verification_ok": bool(manifest_verification.get("ok")),
+        "verification_errors": list(manifest_verification.get("errors") or []),
+        "runtime_start_blocking": True,
+    }
+    readiness = evaluate_runtime_readiness(
+        required_checks=required_checks,
+        package_integrity_checks=package_integrity_checks,
+        provenance=provenance,
+        daemon=daemon,
+        transactional_memory=transactional_memory,
+    )
+    _report_progress(progress, 6, progress_total, "Gotowość aktywacji i wydania obliczona")
+
+    live_evidence = _live_evidence(
+        marker=marker,
+        daemon=daemon,
+        timestamp=timestamp,
+        transactional_memory=transactional_memory,
+    )
+    subsystem_status = {
+        "package_integrity_manifest": {
+            **package_integrity.to_dict(),
+            "ok": bool(manifest_verification.get("ok")),
+            "error": manifest_error,
+            "version": manifest.get("version") or manifest.get("runtime_version"),
+            "start_file": manifest.get("start_file"),
+            "verification": manifest_verification,
+            "runtime_start_blocking": True,
+        },
+        "source_provenance": provenance,
+        "model": {
+            "available": bool(model),
+            "adapter_id": model.get("adapter_id") or model.get("selected_adapter"),
+            "status": model.get("status"),
+            "requires_api_key": model.get("requires_api_key"),
+        },
+        "memory": {
+            "conversation_archive": conversation_memory,
+            "runtime_write_legacy": runtime_memory,
+            "transactional_tier": transactional_memory,
+            "truth_boundary": (
+                "Legacy runtime_write i transactional_tier są raportowane osobno. "
+                "Gotowa baza L1/L2/L3 nie dowodzi poprawnego recall ani uruchomionej Jaźni."
+            ),
+        },
+        "tool_gates": {
+            "read_plan": read_plan.to_dict(),
+            "unconfirmed_write_plan": denied_write_plan.to_dict(),
+        },
+        "mcp": {
+            "server_file_exists": (root / "latka_jazn/mcp/server.py").is_file(),
+            "loopback_policy_valid": mcp_policy_error is None,
+            "policy_error": mcp_policy_error,
+            "public_ingress_default": False,
+            "transport": "authenticated local stdio/loopback; optional outbound tunnel",
+            "host_request_store": host_request_store_status(root),
+        },
+        "privacy": {
+            "gate_file_exists": (root / "latka_jazn/core/private_data_export_gate.py").is_file(),
+            "private_profiles_require_second_confirmation": ["memory", "full"],
+        },
+        "time": timestamp,
+        "nlp": (status.get("capability_readiness") or {}).get("nlp_capability_probe") or {},
+        "plugins": status.get("plugin_readiness") or plugin_readiness_report(),
+        "operator_capabilities": status.get("operator_capabilities") or operator_capability_report(root),
+    }
+    _report_progress(progress, 7, progress_total, "Gotowość aktywacji i wydania obliczona")
+    payload = {
+        "schema_version": schema_version("runpy_doctor"),
+        "ok": readiness.installation_ok,
+        "installation_ok": readiness.installation_ok,
+        "activation_ready": readiness.activation_ready,
+        "activation_prerequisites_ready": readiness.activation_prerequisites_ready,
+        "release_metadata_current": readiness.release_metadata_current,
+        "release_ready": readiness.release_ready,
+        "live_runtime_ready": readiness.live_runtime_ready,
+        "readiness": readiness.to_dict(),
+        "readiness_summary": readiness.summary(),
+        "checks": required_checks,
+        "package_integrity_checks": package_integrity_checks,
+        "live_evidence": live_evidence,
+        "subsystems": subsystem_status,
+        "status": status,
+        "read_only": True,
+        "truth_boundary": (
+            "Doctor reports structural installation health separately from activation prerequisites, release metadata, "
+            "live runtime readiness and transactional_memory readiness. The legacy activation_ready field is retained as an alias "
+            "for activation_prerequisites_ready; it does not mean that a daemon is running. Optional plugin and operator "
+            "capabilities are reported independently and do not become installation blockers."
+        ),
+    }
+    _report_progress(progress, 8, progress_total, "Gotowość aktywacji i wydania obliczona")
+    return payload
+
+
+def bridge_payload(root: Path) -> dict[str, Any]:
+    payload = discover_runtime_bridges(JaznConfig(root=root))
+    payload["v15_secure_mcp"] = {
+        "server": "python -X utf8 -m latka_jazn.mcp.server",
+        "transport": "authenticated stdio/local + optional outbound Secure MCP Tunnel",
+        "public_ingress_default": False,
+        "auth_required": True,
+        "two_phase_continuation": True,
+    }
+    payload["finalization_gate"] = "latka_jazn.core.host_visible_finalization.HostVisibleFinalizationGate"
+    payload["audit"] = "memory/sqlite/runtime_write_v1/runtime_audit.sqlite3"
+    payload["fallback"] = "copy-paste helper using the same finalization gate"
+    return payload

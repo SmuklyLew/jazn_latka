@@ -1,0 +1,758 @@
+from __future__ import annotations
+
+import argparse
+from copy import deepcopy
+import hashlib
+import json
+from pathlib import Path
+import sys
+from typing import Any, Mapping
+import uuid
+
+from latka_jazn.bridge.auth_policy import AuthPolicy
+from latka_jazn.bridge.secure_host_runtime_gateway import (
+    GatewayConfig,
+    GatewayError,
+    SecureHostRuntimeGateway,
+)
+from latka_jazn.config import JaznConfig
+from latka_jazn.mcp.task_resume import McpTaskResumeAdapter, TASK_EXTENSION_ID
+from latka_jazn.mcp.tools import (
+    jazn_audit_lookup,
+    jazn_finalize_reply,
+    jazn_generate_visible_reply,
+    jazn_resume_visible_reply,
+    jazn_status,
+)
+from latka_jazn.runtime.host_bridge_audit import HostBridgeAuditEvent, HostBridgeAuditStore
+from latka_jazn.runtime.idempotency import IdempotencyStore, build_idempotency_key, payload_hash
+from latka_jazn.runtime.mcp_tool_audit import McpToolAuditEvent, McpToolAuditStore
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+SCHEMA_VERSION = schema_version("jazn_mcp_server")
+IDEMPOTENT_SIDE_EFFECT_TOOLS = {"jazn_generate_visible_reply"}
+READ_ONLY_TOOLS = {"jazn_status", "jazn_audit_lookup", "jazn_resume_visible_reply"}
+DENIED_APPROVAL_STATES = {"denied", "rejected", "not_approved"}
+
+
+def _object_schema(
+    properties: dict[str, Any],
+    *,
+    required: list[str] | None = None,
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": list(required or []),
+        "additionalProperties": False,
+    }
+
+
+TOOL_DEFINITIONS = [
+    {
+        "name": "jazn_generate_visible_reply",
+        "title": "Start a validated Jaźń turn",
+        "description": (
+            "Send the exact user message to the private Jaźń runtime. Returns exactly one action: "
+            "display_exact, generate_then_finalize, poll_runtime, or a fail-closed diagnostic."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "message": {"type": "string", "minLength": 1},
+                "session_id": {"type": "string", "minLength": 1, "maxLength": 128},
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            },
+            required=["message"],
+        ),
+        "annotations": {
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+    },
+    {
+        "name": "jazn_resume_visible_reply",
+        "title": "Resume an existing Jaźń host-finalization turn",
+        "description": (
+            "Poll and resume one existing daemon request without resubmitting the user message. "
+            "If phase 1 is still pending, returns the same HMAC-bound continuation and the persisted "
+            "host generation contract; consumed, claimed, expired, mismatched, or ambiguous records fail closed."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "daemon_request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "turn_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "host_request_contract_hash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-fA-F]{64}$",
+                },
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            },
+            required=["daemon_request_id"],
+        ),
+        "annotations": {
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
+    },
+    {
+        "name": "jazn_status",
+        "title": "Read Jaźń runtime status",
+        "description": "Read authenticated private runtime/gateway status without mutation.",
+        "inputSchema": _object_schema(
+            {
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            }
+        ),
+        "annotations": {
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
+    },
+    {
+        "name": "jazn_finalize_reply",
+        "title": "Finalize a host-visible Jaźń reply",
+        "description": (
+            "Consume one opaque continuation token and atomically validate, persist, and return the exact "
+            "runtime-approved visible text. Immutable turn, author, timestamp, and contract fields are loaded "
+            "server-side and cannot be supplied by the host."
+        ),
+        "inputSchema": _object_schema(
+            {
+                "continuation_token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 256,
+                    "pattern": "^jct1\\.[A-Za-z0-9_-]+$",
+                },
+                "final_text": {"type": "string", "minLength": 1, "maxLength": 2097152},
+                "final_text_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+                "used_memory_item_ids": {
+                    "type": "array",
+                    "items": {"type": "string", "minLength": 1, "maxLength": 256},
+                    "maxItems": 8,
+                },
+                "external_tool_evidence": {
+                    "type": "array",
+                    "maxItems": 8,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "tool": {"type": "string", "enum": ["GitHub", "web.run"]},
+                            "operation": {"type": "string", "minLength": 1, "maxLength": 64},
+                            "source_refs": {
+                                "type": "array",
+                                "items": {"type": "string", "minLength": 1, "maxLength": 128},
+                                "maxItems": 16,
+                            },
+                            "source_urls": {
+                                "type": "array",
+                                "items": {"type": "string", "minLength": 8, "maxLength": 2048},
+                                "maxItems": 16,
+                            },
+                        },
+                        "required": ["tool", "operation"],
+                    },
+                },
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            },
+            required=["continuation_token", "final_text", "final_text_sha256"],
+        ),
+        "annotations": {
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": False,
+        },
+    },
+    {
+        "name": "jazn_audit_lookup",
+        "title": "Read redacted Jaźń audit",
+        "description": "Read redacted audit evidence for one turn.",
+        "inputSchema": _object_schema(
+            {
+                "turn_id": {"type": "string", "minLength": 1},
+                "trace_id": {"type": "string", "minLength": 1},
+                "request_id": {"type": "string", "minLength": 1, "maxLength": 256},
+                "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+            },
+            required=["turn_id"],
+        ),
+        "annotations": {
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+        "_meta": {"ui": {"visibility": ["app"]}, "openai/visibility": "private"},
+    },
+]
+
+
+def _tool_contract_hash(tool_name: str) -> str:
+    raw = json.dumps(
+        {
+            "tool_name": tool_name,
+            "server_schema": SCHEMA_VERSION,
+            "runtime_version": PACKAGE_VERSION_FULL,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _tool_error(reason: str, **details: Any) -> dict[str, Any]:
+    structured: dict[str, Any] = {"ok": False, "reason": reason, "action": "host_diagnostic"}
+    structured.update(details)
+    return {
+        "content": [{"type": "text", "text": f"Jaźń MCP tool failed safely: {reason}."}],
+        "structuredContent": structured,
+        "_meta": {},
+        "isError": True,
+    }
+
+
+def _result_action(result: Mapping[str, Any] | None) -> str:
+    if not isinstance(result, Mapping):
+        return ""
+    structured = result.get("structuredContent")
+    if isinstance(structured, Mapping):
+        return str(structured.get("action") or "").strip()
+    return ""
+
+
+class JaznMcpServer:
+    def __init__(
+        self,
+        *,
+        root: Path,
+        daemon_url: str = "http://127.0.0.1:8787",
+        token: str | None = None,
+        allow_unauthenticated_local_test: bool = False,
+        trust_stdio_parent: bool = False,
+    ) -> None:
+        self.root = root.resolve()
+        auth = AuthPolicy(
+            token,
+            allow_unauthenticated_local_test=allow_unauthenticated_local_test,
+            trust_stdio_parent=trust_stdio_parent,
+        )
+        self.gateway = SecureHostRuntimeGateway(
+            GatewayConfig(daemon_url=daemon_url, runtime_root=self.root),
+            auth_policy=auth,
+        )
+        config = JaznConfig(root=self.root)
+        # Audit/idempotency state is operational core state in SYSTEM-only mode;
+        # it must not materialize or impersonate private persistent MEMORY.
+        self.audit_database = config.audit_db_path
+        self.idempotency = IdempotencyStore(self.audit_database)
+        self.host_audit = HostBridgeAuditStore(self.audit_database)
+        self.mcp_audit = McpToolAuditStore(self.audit_database)
+        self.task_resume = McpTaskResumeAdapter(root=self.root, gateway=self.gateway)
+
+    def _authorize(self, name: str, arguments: dict[str, Any], meta: dict[str, Any]) -> str:
+        token = arguments.pop("auth_token", None) or meta.get("authorization") or meta.get("token")
+        subject = str(meta.get("openai/subject") or meta.get("subject") or "mcp-client")
+        self.gateway.authorize(tool_name=name, token=token, subject=subject)
+        return subject
+
+    @staticmethod
+    def _approval_state(name: str, metadata: dict[str, Any]) -> str:
+        declared = str(metadata.get("approval_state") or "").strip().lower()
+        if declared:
+            return declared
+        if name in READ_ONLY_TOOLS:
+            return "not_required_read_only"
+        return "host_managed_authenticated"
+
+    @staticmethod
+    def _control_fields(args: dict[str, Any], metadata: dict[str, Any]) -> tuple[str | None, str | None]:
+        explicit_key = args.pop("idempotency_key", None) or metadata.get("idempotency_key")
+        request_id = args.pop("request_id", None) or metadata.get("request_id")
+        return (
+            str(explicit_key).strip() if explicit_key is not None else None,
+            str(request_id).strip() if request_id is not None else None,
+        )
+
+    @staticmethod
+    def _daemon_request_id(
+        name: str,
+        *,
+        explicit_request_id: str | None,
+        metadata: dict[str, Any],
+        subject: str,
+    ) -> str | None:
+        """Allocate the side-effect identity before MCP dispatch."""
+
+        if name != "jazn_generate_visible_reply":
+            return explicit_request_id
+        explicit = str(explicit_request_id or "").strip()
+        if explicit:
+            return explicit
+        transport_id = metadata.get("transport_request_id")
+        if transport_id is not None and str(transport_id).strip():
+            material = f"{subject}\0{transport_id}".encode("utf-8")
+            return "mcp-" + hashlib.sha256(material).hexdigest()[:48]
+        return "mcp-" + uuid.uuid4().hex
+
+    def _request_identity(
+        self,
+        name: str,
+        args: dict[str, Any],
+        *,
+        subject: str,
+        request_id: str | None,
+    ) -> tuple[str, str, str]:
+        if name == "jazn_finalize_reply":
+            token_digest = hashlib.sha256(str(args["continuation_token"]).encode("utf-8")).hexdigest()
+            return token_digest, token_digest, token_digest
+        if name == "jazn_generate_visible_reply":
+            if request_id:
+                identity = request_id
+            else:
+                material = json.dumps(
+                    {
+                        "message": str(args.get("message") or ""),
+                        "session_id": str(args.get("session_id") or ""),
+                        "subject": subject,
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                identity = hashlib.sha256(material.encode("utf-8")).hexdigest()
+            return identity, identity, _tool_contract_hash(name)
+        if name == "jazn_resume_visible_reply":
+            identity = str(args["daemon_request_id"])
+            return identity, identity, _tool_contract_hash(name)
+        if name == "jazn_audit_lookup":
+            turn_id = str(args["turn_id"])
+            trace_id = str(args.get("trace_id") or turn_id)
+            return turn_id, trace_id, _tool_contract_hash(name)
+        identity = request_id or f"{subject}:{name}"
+        return identity, identity, _tool_contract_hash(name)
+
+    @staticmethod
+    def _augment_result(
+        result: dict[str, Any],
+        *,
+        idempotency_key: str,
+        idempotency_state: str,
+        approval_state: str,
+        audit_id: str,
+        host_bridge_audit_id: str | None = None,
+        replay_audit_id: str | None = None,
+    ) -> dict[str, Any]:
+        value = deepcopy(result)
+        structured = dict(value.get("structuredContent") or {})
+        structured.update(
+            {
+                "idempotency_key": idempotency_key,
+                "idempotency_state": idempotency_state,
+                "approval_state": approval_state,
+                "audit_id": audit_id,
+            }
+        )
+        if host_bridge_audit_id:
+            structured["host_bridge_audit_id"] = host_bridge_audit_id
+        if replay_audit_id:
+            structured["replay_audit_id"] = replay_audit_id
+        value["structuredContent"] = structured
+        meta = dict(value.get("_meta") or {})
+        meta["mcp_invocation"] = {
+            "idempotency_key": idempotency_key,
+            "idempotency_state": idempotency_state,
+            "approval_state": approval_state,
+            "audit_id": audit_id,
+        }
+        value["_meta"] = meta
+        return value
+
+    def _append_mcp_audit(
+        self,
+        *,
+        name: str,
+        subject: str,
+        key: str,
+        payload_digest: str,
+        approval_state: str,
+        outcome: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> str:
+        return self.mcp_audit.append(
+            McpToolAuditEvent(
+                tool_name=name,
+                subject=subject,
+                idempotency_key=key,
+                payload_hash=payload_digest,
+                approval_state=approval_state,
+                outcome=outcome,
+                metadata=dict(metadata or {}),
+            )
+        )
+
+    def _append_host_audit(
+        self,
+        *,
+        event_type: str,
+        turn_id: str,
+        trace_id: str,
+        key: str,
+        contract_hash: str,
+        payload_digest: str,
+        result: dict[str, Any] | None,
+        approval_state: str,
+    ) -> str:
+        structured = dict((result or {}).get("structuredContent") or {})
+        actual_turn_id = str(structured.get("turn_id") or turn_id)
+        actual_trace_id = str(structured.get("trace_id") or trace_id)
+        return self.host_audit.append(
+            HostBridgeAuditEvent(
+                event_type=event_type,
+                turn_id=actual_turn_id,
+                trace_id=actual_trace_id,
+                idempotency_key=key,
+                contract_hash=str(structured.get("host_request_contract_hash") or contract_hash),
+                payload_hash=payload_digest,
+                final_hash=structured.get("final_text_sha256"),
+                metadata={
+                    "tool_name": "jazn_finalize_reply",
+                    "approval_state": approval_state,
+                    "accepted": structured.get("accepted"),
+                    "state": structured.get("state"),
+                    "opaque_identity_used_before_resolution": actual_turn_id == turn_id,
+                },
+            )
+        )
+
+    def _dispatch(
+        self,
+        name: str,
+        args: dict[str, Any],
+        *,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
+        if name == "jazn_status":
+            return jazn_status.run(self.gateway)
+        if name == "jazn_generate_visible_reply":
+            return jazn_generate_visible_reply.run(
+                self.gateway,
+                message=str(args["message"]),
+                session_id=args.get("session_id"),
+                request_id=request_id,
+            )
+        if name == "jazn_resume_visible_reply":
+            return jazn_resume_visible_reply.run(
+                root=self.root,
+                gateway=self.gateway,
+                daemon_request_id=str(args["daemon_request_id"]),
+                turn_id=args.get("turn_id"),
+                host_request_contract_hash=args.get("host_request_contract_hash"),
+            )
+        if name == "jazn_finalize_reply":
+            return jazn_finalize_reply.run(root=self.root, lifecycle_gateway=self.gateway, **args)
+        if name == "jazn_audit_lookup":
+            return jazn_audit_lookup.run(
+                audit_database=self.audit_database,
+                turn_id=str(args["turn_id"]),
+                trace_id=args.get("trace_id"),
+            )
+        raise GatewayError("tool_not_allowlisted")
+
+    def call_tool(
+        self,
+        name: str,
+        arguments: dict[str, Any],
+        meta: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        args = dict(arguments or {})
+        metadata = dict(meta or {})
+        subject = self._authorize(name, args, metadata)
+        approval_state = self._approval_state(name, metadata)
+        explicit_key, request_id = self._control_fields(args, metadata)
+        request_id = self._daemon_request_id(
+            name,
+            explicit_request_id=request_id,
+            metadata=metadata,
+            subject=subject,
+        )
+        turn_id, trace_id, contract_hash = self._request_identity(
+            name,
+            args,
+            subject=subject,
+            request_id=request_id,
+        )
+        key = explicit_key or build_idempotency_key(
+            turn_id=turn_id,
+            trace_id=trace_id,
+            operation=f"mcp:{name}",
+            contract_hash=contract_hash,
+        )
+        if len(key) > 512:
+            raise ValueError("idempotency_key_too_large")
+        payload_digest = payload_hash(args)
+
+        if approval_state in DENIED_APPROVAL_STATES:
+            audit_id = self._append_mcp_audit(
+                name=name,
+                subject=subject,
+                key=key,
+                payload_digest=payload_digest,
+                approval_state=approval_state,
+                outcome="approval_rejected",
+            )
+            return self._augment_result(
+                _tool_error("approval_rejected"),
+                idempotency_key=key,
+                idempotency_state="not_executed",
+                approval_state=approval_state,
+                audit_id=audit_id,
+            )
+
+        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
+            decision = self.idempotency.claim(
+                idempotency_key=key,
+                payload_hash_value=payload_digest,
+                operation=f"mcp:{name}",
+                turn_id=turn_id,
+                trace_id=trace_id,
+                contract_hash=contract_hash,
+            )
+            if decision.state == "conflict":
+                audit_id = self._append_mcp_audit(
+                    name=name,
+                    subject=subject,
+                    key=key,
+                    payload_digest=payload_digest,
+                    approval_state=approval_state,
+                    outcome="conflict",
+                )
+                return self._augment_result(
+                    _tool_error("idempotency_conflict"),
+                    idempotency_key=key,
+                    idempotency_state="conflict",
+                    approval_state=approval_state,
+                    audit_id=audit_id,
+                )
+            if decision.state == "replay":
+                cached = decision.result
+                # A cached poll_runtime is not a terminal tool result. Recover
+                # the same daemon request rather than replaying stale pending
+                # output forever.
+                if (
+                    name == "jazn_generate_visible_reply"
+                    and request_id
+                    and (cached is None or _result_action(cached) == "poll_runtime")
+                ):
+                    stored = jazn_resume_visible_reply.run(
+                        root=self.root,
+                        gateway=self.gateway,
+                        daemon_request_id=request_id,
+                    )
+                else:
+                    stored = cached or _tool_error("idempotency_result_unavailable")
+                replay_audit_id = self._append_mcp_audit(
+                    name=name,
+                    subject=subject,
+                    key=key,
+                    payload_digest=payload_digest,
+                    approval_state=approval_state,
+                    outcome="replay",
+                )
+                original_audit_id = str(
+                    (stored.get("structuredContent") or {}).get("audit_id") or replay_audit_id
+                )
+                return self._augment_result(
+                    stored,
+                    idempotency_key=key,
+                    idempotency_state="replay",
+                    approval_state=approval_state,
+                    audit_id=original_audit_id,
+                    replay_audit_id=replay_audit_id,
+                )
+
+        try:
+            result = self._dispatch(name, args, request_id=request_id)
+        except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
+            result = _tool_error(f"{type(exc).__name__}:{exc}")
+
+        is_error = bool(result.get("isError"))
+        host_audit_id = None
+        if name == "jazn_finalize_reply":
+            state = str((result.get("structuredContent") or {}).get("state") or "reject")
+            event_type = state if state in {"accept", "repair", "reject"} else "reject"
+            host_audit_id = self._append_host_audit(
+                event_type=event_type,
+                turn_id=turn_id,
+                trace_id=trace_id,
+                key=key,
+                contract_hash=contract_hash,
+                payload_digest=payload_digest,
+                result=result,
+                approval_state=approval_state,
+            )
+        audit_id = self._append_mcp_audit(
+            name=name,
+            subject=subject,
+            key=key,
+            payload_digest=payload_digest,
+            approval_state=approval_state,
+            outcome="error" if is_error else "completed",
+            metadata={
+                "host_bridge_audit_id": host_audit_id,
+                "turn_id": (result.get("structuredContent") or {}).get("turn_id") or turn_id,
+                "trace_id": (result.get("structuredContent") or {}).get("trace_id") or trace_id,
+                "daemon_request_id": request_id if name == "jazn_generate_visible_reply" else None,
+            },
+        )
+        result = self._augment_result(
+            result,
+            idempotency_key=key,
+            idempotency_state=(
+                "completed"
+                if name in IDEMPOTENT_SIDE_EFFECT_TOOLS
+                else "one_shot" if name == "jazn_finalize_reply" else "read_only"
+            ),
+            approval_state=approval_state,
+            audit_id=audit_id,
+            host_bridge_audit_id=host_audit_id,
+        )
+        if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
+            self.idempotency.finalize(key, result, state="error" if is_error else "completed")
+        return result
+
+    @staticmethod
+    def _client_supports_tasks(metadata: Mapping[str, Any]) -> bool:
+        capabilities = metadata.get("io.modelcontextprotocol/clientCapabilities")
+        if not isinstance(capabilities, Mapping):
+            return False
+        extensions = capabilities.get("extensions")
+        return isinstance(extensions, Mapping) and TASK_EXTENSION_ID in extensions
+
+    def _server_capabilities(self) -> dict[str, Any]:
+        return {
+            "tools": {"listChanged": False},
+            "extensions": {TASK_EXTENSION_ID: {}},
+        }
+
+    def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None:
+        method = request_value.get("method")
+        request_id = request_value.get("id")
+        if method == "notifications/initialized":
+            return None
+        try:
+            if method == "initialize":
+                result: dict[str, Any] = {
+                    "protocolVersion": request_value.get("params", {}).get(
+                        "protocolVersion", "2025-06-18"
+                    ),
+                    "capabilities": self._server_capabilities(),
+                    "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
+                }
+            elif method == "server/discover":
+                result = {
+                    "capabilities": self._server_capabilities(),
+                    "serverInfo": {"name": "jazn-private-mcp", "version": PACKAGE_VERSION_FULL},
+                }
+            elif method == "tools/list":
+                result = {"tools": TOOL_DEFINITIONS}
+            elif method == "tools/call":
+                params = dict(request_value.get("params") or {})
+                metadata = dict(params.get("_meta") or {})
+                if request_id is not None:
+                    metadata.setdefault("transport_request_id", str(request_id))
+                tool_name = str(params.get("name") or "")
+                result = self.call_tool(
+                    tool_name,
+                    dict(params.get("arguments") or {}),
+                    metadata,
+                )
+                if tool_name == "jazn_generate_visible_reply" and self._client_supports_tasks(metadata):
+                    task_result = self.task_resume.create_from_pending_result(result)
+                    if task_result is not None:
+                        result = task_result
+            elif method == "tasks/get":
+                params = dict(request_value.get("params") or {})
+                result = self.task_resume.get(str(params.get("taskId") or ""))
+            elif method == "tasks/cancel":
+                params = dict(request_value.get("params") or {})
+                result = self.task_resume.cancel(str(params.get("taskId") or ""))
+            elif method == "tasks/update":
+                params = dict(request_value.get("params") or {})
+                responses = params.get("inputResponses")
+                result = self.task_resume.update_input(
+                    str(params.get("taskId") or ""),
+                    responses if isinstance(responses, Mapping) else None,
+                )
+            else:
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {"code": -32601, "message": "Method not found"},
+                }
+            return {"jsonrpc": "2.0", "id": request_id, "result": result}
+        except (GatewayError, KeyError, TypeError, ValueError, PermissionError, RuntimeError) as exc:
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {"code": -32001, "message": str(exc)},
+            }
+
+    def serve_stdio(self) -> int:
+        for line in sys.stdin:
+            raw = line.strip()
+            if not raw:
+                continue
+            try:
+                request_value = json.loads(raw)
+                if not isinstance(request_value, dict):
+                    raise ValueError("request must be an object")
+                response = self.handle(request_value)
+            except Exception as exc:
+                response = {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {"code": -32700, "message": f"Parse error: {exc}"},
+                }
+            if response is not None:
+                sys.stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":")) + "\n")
+                sys.stdout.flush()
+        return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Private stdio MCP server for Jaźń v16.")
+    parser.add_argument("--root", default=str(Path(__file__).resolve().parents[2]))
+    parser.add_argument("--daemon-url", default="http://127.0.0.1:8787")
+    parser.add_argument("--allow-unauthenticated-local-test", action="store_true")
+    parser.add_argument(
+        "--trust-secure-tunnel-association",
+        action="store_true",
+        help="Trust the authenticated local stdio parent (for outbound Secure MCP Tunnel only).",
+    )
+    args = parser.parse_args(argv)
+    server = JaznMcpServer(
+        root=Path(args.root),
+        daemon_url=args.daemon_url,
+        allow_unauthenticated_local_test=args.allow_unauthenticated_local_test,
+        trust_stdio_parent=args.trust_secure_tunnel_association,
+    )
+    return server.serve_stdio()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

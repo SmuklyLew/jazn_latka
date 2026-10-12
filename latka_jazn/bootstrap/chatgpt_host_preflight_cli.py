@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from typing import Sequence
+
+from latka_jazn.bootstrap.chatgpt_host_discovery_evidence import discovery_evidence_from_payload
+from latka_jazn.bootstrap.chatgpt_ingress_policy import (
+    ChatGptIngressMode,
+    normalize_chatgpt_ingress_mode,
+)
+from latka_jazn.bootstrap.chatgpt_host_preflight_attachments_parse import attachment_reports_from_payload
+from latka_jazn.bootstrap.chatgpt_host_preflight_parse import (
+    executor_observations_from_payload,
+    json_object_from_file,
+    optional_bool,
+)
+from latka_jazn.bootstrap.chatgpt_host_preflight_plan import plan_chatgpt_host_preflight
+
+
+def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="run.py host-preflight",
+        description="Classify host execution surfaces, handoff outcomes, alternate routes, and attachment materialization.",
+        allow_abbrev=False,
+    )
+    parser.add_argument("--input", help="Optional JSON contract path or '-' for stdin")
+    parser.add_argument("--json", action="store_true", help="Pretty-print JSON output")
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    try:
+        payload = json_object_from_file(args.input) if args.input else {
+            "ingress_mode": ChatGptIngressMode.OPERATOR_RECOVERY.value,
+            "package_required": False,
+            "executor_observations": [{
+                "surface": "current_local_python_process",
+                "process_created": True,
+                "command_completed": True,
+                "returncode": 0,
+                "filesystem_probe_succeeded": True,
+            }],
+            "attachments": [],
+        }
+        package_required = optional_bool(payload, "package_required", False)
+        ingress_mode = normalize_chatgpt_ingress_mode(
+            payload.get(
+                "ingress_mode",
+                ChatGptIngressMode.OPERATOR_RECOVERY.value,
+            )
+        )
+        decision = plan_chatgpt_host_preflight(
+            executor_observations_from_payload(payload),
+            attachment_reports=attachment_reports_from_payload(payload),
+            package_required=bool(package_required),
+            discovery_evidence=discovery_evidence_from_payload(payload),
+            ingress_mode=ingress_mode,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        print(json.dumps({
+            "ok": False,
+            "error_code": "invalid_host_preflight_input",
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }, ensure_ascii=False, indent=2 if args.json else None, sort_keys=True), file=sys.stderr)
+        return 2
+
+    result = decision.to_dict()
+    result["ok"] = True
+    gate_passed = bool(decision.bootstrap_allowed or decision.remote_runtime_allowed)
+    result["gate_passed"] = gate_passed
+    print(json.dumps(result, ensure_ascii=False, indent=2 if args.json else None, sort_keys=True))
+    return 0 if gate_passed else 3

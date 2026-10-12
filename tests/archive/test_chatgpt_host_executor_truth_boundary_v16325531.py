@@ -1,0 +1,48 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION, PACKAGE_VERSION_FULL
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _read(relative_path: str) -> str:
+    return (ROOT / relative_path).read_text(encoding="utf-8")
+
+
+def test_chatgpt_runbook_distinguishes_host_executor_failure_from_filesystem_absence() -> None:
+    text = _read("AGENTS.chatgpt.md")
+
+    assert "host_executor_unavailable" in text
+    assert "filesystem_state = unknown" in text
+    assert "package_state = unknown" in text
+    assert "przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu" in text
+    assert "nie twierdź, że `/mnt/data` nie istnieje" in text
+    assert "dokładnie jedna niezależna alternatywna lokalna powierzchnia wykonawcza" in text
+    assert "nie zapętlaj retry między narzędziami" in text
+
+
+def test_chatgpt_runbook_resumes_only_through_canonical_runtime_lifecycle() -> None:
+    text = _read("AGENTS.chatgpt.md")
+
+    assert "po odzyskaniu executora wróć do zwykłego discovery/bootstrapu" in text
+    assert "kanonicznego lifecycle `run.py`" in text
+    assert "nie twórz równoległej ścieżki uruchamiania" in text
+    assert "One-shot dowodzi wyłącznie wykonania danej tury" in text
+
+
+def test_project_loader_preserves_unknown_local_state_on_pre_process_host_failure() -> None:
+    text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
+
+    assert "host_executor_unavailable" in text
+    assert "stan lokalnego filesystemu i paczki jest `unknown`" in text
+    assert "nie traktuj tego jako dowodu braku `/mnt/data`" in text
+    assert "przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu" in text
+
+
+def test_release_identity_matches_host_executor_truth_boundary_patch() -> None:
+    assert PACKAGE_VERSION == "16.3.25.5.31"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-host-executor-truth-boundary"
+    assert PACKAGE_VERSION_FULL == "16.3.25.5.31-chatgpt-host-executor-truth-boundary"

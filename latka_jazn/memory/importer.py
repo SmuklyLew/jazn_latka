@@ -1,0 +1,148 @@
+from __future__ import annotations
+from latka_jazn.version import PACKAGE_VERSION
+from pathlib import Path
+from datetime import datetime, timezone
+import json
+from .store import MemoryStore
+from .file_sync import MemoryFileSync
+from .chat_html_importer import import_chat_html_to_store
+from .memory_root import resolve_memory_root
+
+class MemoryImporter:
+    def __init__(self, store: MemoryStore, root: Path) -> None:
+        self.store = store
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
+
+    def register_packaged_sources(
+        self,
+        *,
+        auto_import_raw_chat_html: bool = True,
+        limit_conversations: int | None = None,
+    ) -> dict:
+        """Rejestruje źródła pamięci i aktywuje dostępne warstwy.
+
+        Jeżeli istnieje RAW_MEMORY_MANIFEST.json, ufa hashom utworzonym podczas
+        budowania paczki. Automatyczny import jest wykonywany wyłącznie z jawnego
+        memory/raw/chat.html. Brak HTML nie uruchamia żadnego rozpakowywania.
+        """
+        manifest_path = self.memory_root / "RAW_MEMORY_MANIFEST.json"
+        counts = {
+            "raw": 0,
+            "versioned_sources": 0,
+            "manifest_mode": False,
+            "chat_html_auto_import": "not_requested" if not auto_import_raw_chat_html else "not_needed",
+        }
+        if manifest_path.exists():
+            rows = json.loads(manifest_path.read_text(encoding="utf-8"))
+            now = datetime.now(timezone.utc).isoformat()
+            for row in rows:
+                stored = row.get("stored_as")
+                sha = row.get("sha256")
+                if not stored or not sha:
+                    continue
+                stored_path = Path(str(stored))
+                stored_parts = stored_path.parts
+                if stored_parts and stored_parts[0].casefold() == "memory":
+                    stored_path = Path(*stored_parts[1:])
+                path = (self.memory_root / stored_path).resolve()
+                try:
+                    path.relative_to(self.memory_root)
+                except ValueError:
+                    continue
+                if not path.exists():
+                    continue
+                kind = row.get("kind", "raw_memory")
+                self.store.con.execute(
+                    "INSERT OR REPLACE INTO source_files VALUES(?,?,?,?,?,?)",
+                    (sha, str(path), int(row.get("size_bytes") or path.stat().st_size), kind, row.get("source") or row.get("source_relative_path"), now),
+                )
+                if str(stored).replace("\\", "/").startswith("memory/raw"):
+                    counts["raw"] += 1
+                else:
+                    counts["versioned_sources"] += 1
+            self.store.con.commit()
+            counts["manifest_mode"] = True
+        else:
+            for folder, kind in [("raw", "raw_memory"), ("versioned_sources", "versioned_memory")]:
+                base = self.memory_root / folder
+                if not base.exists():
+                    continue
+                for p in base.rglob("*"):
+                    if p.is_file():
+                        self.store.register_source_file(p, kind=kind)
+                        counts["raw" if kind == "raw_memory" else "versioned_sources"] += 1
+
+        # poprzednia linia runtime: same zarejestrowanie plików nie wystarcza. Runtime musi
+        # przepisać istniejące JSON/JSONL do SQLite, żeby wyszukiwanie pamięci
+        # widziało epizody, fakty, procedury i dziennik po świeżym starcie.
+        try:
+            sync_report = MemoryFileSync(self.root, self.store).synchronize_all(export=False)
+            counts["file_sync_imported"] = sync_report.imported
+            counts["file_sync_errors"] = len(sync_report.errors)
+        except Exception as exc:
+            counts["file_sync_error"] = repr(exc)
+
+        if auto_import_raw_chat_html:
+            legacy_count = self.store.stats().get("legacy_messages", 0)
+            chat_path = self.memory_root / "raw" / "chat.html"
+            if legacy_count == 0 and chat_path.exists():
+                try:
+                    counts["chat_html_auto_import"] = self.import_raw_chat_html(
+                        force=False,
+                        limit_conversations=limit_conversations,
+                    )
+                except Exception as exc:
+                    counts["chat_html_auto_import"] = {"status": "error", "error": repr(exc)}
+            elif legacy_count > 0:
+                counts["chat_html_auto_import"] = {"status": "already_indexed", "legacy_messages": legacy_count}
+            elif not chat_path.exists():
+                counts["chat_html_auto_import"] = {
+                    "status": "not_possible",
+                    "reason": "chat_html_missing",
+                    "error": None,
+                }
+
+        self.store.add_event("packaged_sources_registered", counts, source="MemoryImporter", actor="system", tags=["migration", "integrity", PACKAGE_VERSION], importance=0.8)
+        return counts
+
+    def import_raw_chat_html(self, *, force: bool = False, limit_conversations: int | None = None) -> dict:
+        path = self.memory_root / "raw" / "chat.html"
+        if not path.exists():
+            result = {
+                "status": "missing_raw_chat_html",
+                "path": str(path),
+                "errors": ["memory/raw/chat.html nie istnieje; runtime nie rozpakowuje archiwów 7z."],
+            }
+            self.store.add_event(
+                "chat_html_import",
+                result,
+                source="MemoryImporter",
+                actor="system",
+                tags=["raw_memory", "chat_html", PACKAGE_VERSION, "missing_dependency"],
+                importance=0.5,
+            )
+            return result
+        report = import_chat_html_to_store(self.store, path, force=force, limit_conversations=limit_conversations)
+        result = report.to_dict()
+        self.store.add_event(
+            "chat_html_import",
+            result,
+            source="MemoryImporter",
+            actor="system",
+            tags=["raw_memory", "chat_html", PACKAGE_VERSION],
+            importance=0.9 if report.status in {"ok", "already_imported"} else 0.5,
+        )
+        return result
+
+    def synchronize_memory_files(self, *, export: bool = True) -> dict:
+        report = MemoryFileSync(self.root, self.store).synchronize_all(export=export)
+        self.store.add_event(
+            "memory_files_synchronized",
+            report.to_dict(),
+            source="MemoryImporter",
+            actor="system",
+            tags=["memory_files", "sqlite", PACKAGE_VERSION],
+            importance=0.88,
+        )
+        return report.to_dict()

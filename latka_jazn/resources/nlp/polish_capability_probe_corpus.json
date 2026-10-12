@@ -1,0 +1,75 @@
+{
+  "schema_version": "jazn_polish_nlp_capability_probe_corpus/v1",
+  "language": "pl",
+  "source_kind": "synthetic_regression_corpus",
+  "private_data": false,
+  "purpose": "Deterministyczny smoke/probe aktywnej ścieżki NLP. Zbiór nie jest benchmarkiem jakości modelu ani korpusem treningowym.",
+  "cases": [
+    {
+      "id": "compound_identity_capabilities",
+      "text": "Kim jesteś i co potrafisz?",
+      "expect": {
+        "primary_intent": "capability_status_question",
+        "update_request": false,
+        "diagnostic_request": false,
+        "compound": true,
+        "question_components_contains": ["identity", "capabilities"]
+      }
+    },
+    {
+      "id": "negated_update_diagnostic",
+      "text": "Nie aktualizuj kodu, tylko sprawdź co jest źle.",
+      "expect": {
+        "primary_intent": "system_diagnostic_question",
+        "update_request": false,
+        "diagnostic_request": true,
+        "negated_actions_contains": ["update"]
+      }
+    },
+    {
+      "id": "explicit_update",
+      "text": "Zaktualizuj system i przygotuj patch.",
+      "expect": {
+        "primary_intent": "system_update_execution_request",
+        "update_request": true,
+        "diagnostic_request": false
+      }
+    },
+    {
+      "id": "future_update_not_now",
+      "text": "Trzeba będzie później wdrożyć patch, teraz zrób audyt kodu.",
+      "expect": {
+        "primary_intent": "system_diagnostic_question",
+        "update_request": false,
+        "diagnostic_request": true
+      }
+    },
+    {
+      "id": "memory_experience",
+      "text": "Co pamiętasz z naszej poprzedniej rozmowy?",
+      "expect": {
+        "primary_intent": "memory_experience_question",
+        "update_request": false,
+        "question_components_contains": ["memory"]
+      }
+    },
+    {
+      "id": "self_state",
+      "text": "Hej, jak się masz?",
+      "expect": {
+        "primary_intent": "self_state_question",
+        "update_request": false,
+        "diagnostic_request": false
+      }
+    },
+    {
+      "id": "runtime_health",
+      "text": "Czy runtime działa po aktualizacji?",
+      "expect": {
+        "primary_intent": "runtime_health_check",
+        "update_request": false,
+        "diagnostic_request": true
+      }
+    }
+  ]
+}

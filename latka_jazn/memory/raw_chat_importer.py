@@ -1,0 +1,76 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+import hashlib
+
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.memory.memory_root import resolve_memory_root
+
+SCHEMA_VERSION = "raw_chat_importer/v2"
+
+
+def _sha(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+@dataclass(slots=True)
+class RawChatStatus:
+    status: str
+    chat_html_present: bool
+    sqlite_index_available: bool
+    chat_html_sha256: str | None = None
+    schema_version: str = SCHEMA_VERSION
+    truth_boundary: str = (
+        "Surowy import rozmów korzysta wyłącznie z jawnego memory/raw/chat.html "
+        "albo z istniejącego, zweryfikowanego indeksu SQLite. Runtime nie rozpakowuje archiwum 7z."
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+class RawChatImporter:
+    def __init__(self, root: Path) -> None:
+        self.root = Path(root).expanduser().resolve()
+        self.memory_root = resolve_memory_root(self.root)
+
+    def inspect(self) -> RawChatStatus:
+        raw = self.memory_root / "raw" / "chat.html"
+        runtime = workspace_runtime_path(self.root)
+        sqlite_dir = self.memory_root / "sqlite"
+        config = JaznConfig(root=self.root)
+        dbs = [
+            path
+            for path in (
+                config.recovered_memory_db_path,
+                config.memory_db_path_readonly,
+                sqlite_dir / "chat_context.sqlite3",
+                runtime / "latka_jazn_current_line.sqlite3",
+            )
+            if path.is_file()
+        ]
+        chat_present = raw.is_file()
+        index_available = bool(dbs)
+        if chat_present and index_available:
+            status = "raw_and_index_available"
+        elif chat_present:
+            status = "raw_only"
+        elif index_available:
+            status = "index_only"
+        else:
+            status = "unavailable"
+        return RawChatStatus(
+            status=status,
+            chat_html_present=chat_present,
+            sqlite_index_available=index_available,
+            chat_html_sha256=_sha(raw),
+        )

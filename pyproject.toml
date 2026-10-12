@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "latka-jazn"
+dynamic = ["version"]
+description = "System Jaźni - Łatka"
+requires-python = ">=3.12"
+dependencies = [
+  "tzdata>=2024.1",
+  "packaging>=24.2,<27",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = ["archive"]
+strict_config = true
+addopts = ["--strict-markers"]
+markers = [
+  "unit: isolated deterministic unit test",
+  "integration: integration test across runtime components",
+  "windows: Windows-specific behavior or PowerShell contract",
+  "mcp: Model Context Protocol contract test",
+  "network: test that may require network access",
+  "live_model: live model adapter test requiring explicit credentials",
+  "live_mcp: live Secure MCP Tunnel test requiring explicit credentials",
+  "private_data: test using private-data export or redaction fixtures",
+  "security: security boundary regression test",
+  "slow: intentionally slow release or soak test",
+]
+
+[project.optional-dependencies]
+pdf = [
+  "pypdf>=6.19.0,<7",
+]
+archive = [
+  "py7zr>=1.1.3,<2",
+  "pyzipper>=0.4.0,<1",
+  "rarfile>=4.5,<5",
+]
+mcp-http = [
+  "mcp==2.2.0",
+  "pydantic>=2.7",
+  "starlette>=0.48.0",
+  "uvicorn>=0.31.1,<1",
+]
+memory-rebuild-ui = [
+  "prompt-toolkit>=3.0.52,<4",
+]
+memory-cloud = [
+  "PyNaCl>=1.5,<2",
+]
+memory-cloud-server = [
+  "PyNaCl>=1.5,<2",
+  "psycopg[binary]>=3.2,<4",
+  "boto3>=1.35,<2",
+]
+polish-nlp = [
+  "spacy>=3.7,<3.9",
+  "morfeusz2>=1.99.15",
+  "stanza>=1.14,<2",
+  "transformers>=4.40",
+  "accelerate>=0.30",
+  "torch>=2.13,<3",
+  "datasets>=2.19",
+  "sentencepiece>=0.2",
+  "tokenizers>=0.19",
+  "rapidfuzz>=3.9",
+  "orjson>=3.10",
+  "pydantic>=2.7",
+  "requests>=2.31",
+  "diskcache>=5.6",
+  "conllu>=4.5",
+  "networkx>=3.2",
+  "language-tool-python>=2.8",
+]
+
+[project.entry-points."jazn.plugins"]
+archive = "latka_jazn.plugins.archive_plugin:plugin"
+
+[tool.setuptools.dynamic]
+version = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["latka_jazn*"]
+exclude = ["memory*", "workspace_runtime*", "status*", "reports*", "requests*", "responses*", "processed*", "tests*", "tools*", "docs*"]
+namespaces = false

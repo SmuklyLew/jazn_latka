@@ -1,0 +1,33 @@
+[Unit]
+Description=Jaźń persistent MCP gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jazn
+Group=jazn
+WorkingDirectory=/opt/jazn
+Environment=PYTHONUTF8=1
+Environment=PYTHONUNBUFFERED=1
+Environment=JAZN_ROOT=/opt/jazn
+Environment=JAZN_MCP_REQUIRE_SUPERVISOR=1
+EnvironmentFile=/etc/jazn/jazn-mcp.env
+ExecStart=/opt/jazn/.venv/bin/python -X utf8 -m latka_jazn.mcp.deployment
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+KillMode=control-group
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/jazn/workspace_runtime
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

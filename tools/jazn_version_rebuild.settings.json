@@ -1,0 +1,9 @@
+{
+  "allow_unrelated_changes": false,
+  "app_version": "0.2",
+  "backup_prefix": "jazn_version_rebuild_backup",
+  "base_branch": "master",
+  "python": "D:\\.AI\\.venv\\Scripts\\python.exe",
+  "root": "D:\\.AI\\jazn_latka_master",
+  "schema_version": "jazn_version_rebuild_settings/v0.2"
+}

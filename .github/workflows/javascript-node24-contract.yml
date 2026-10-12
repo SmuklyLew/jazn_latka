@@ -1,0 +1,93 @@
+name: javascript-node24-contract
+
+on:
+  push:
+    branches:
+      - master
+      - "update/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "upgrade/**"
+      - "tools/upgrade-*"
+    paths:
+      - ".github/workflows/**"
+      - "latka_jazn/tools/javascript_runtime.py"
+      - "tools/github_actions_node24_audit.py"
+      - "tools/javascript/**"
+      - "tests/test_github_actions_node24_convergence_v16325530.py"
+      - "latka_jazn/version.py"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/**"
+      - "latka_jazn/tools/javascript_runtime.py"
+      - "tools/github_actions_node24_audit.py"
+      - "tools/javascript/**"
+      - "tests/test_github_actions_node24_convergence_v16325530.py"
+      - "latka_jazn/version.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  node24_contract:
+    name: Node24 JavaScript contract (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js 24 LTS line
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Audit every active external GitHub Action pin
+        run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
+
+      - name: Install frozen JavaScript tooling state
+        shell: bash
+        run: npm ci --prefix tools/javascript --ignore-scripts --no-audit --no-fund
+
+      - name: Validate JavaScript syntax and ESM runtime contract
+        shell: bash
+        run: |
+          npm run --prefix tools/javascript check
+          npm run --prefix tools/javascript probe
+
+      - name: Validate Jaźń optional JavaScript capability boundary
+        run: >-
+          python -X utf8 -m latka_jazn.tools.javascript_runtime
+          --require-node24 --json
+
+      - name: Clean checkout guard
+        if: always()
+        shell: bash
+        run: |
+          git diff --check
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"

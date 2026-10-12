@@ -1,0 +1,49 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
+
+@dataclass(slots=True)
+class TurnRouteTrace:
+    schema_version: str = "turn_route_trace/v1"
+    user_text_preview: str = ""
+    speech_act: str | None = None
+    question_object: str | None = None
+    primary_intent_initial: str | None = None
+    primary_intent_final: str | None = None
+    secondary_intents: list[str] = field(default_factory=list)
+    topic_guard: dict[str, Any] = field(default_factory=dict)
+    turn_logic_audit: dict[str, Any] = field(default_factory=dict)
+    selected_route: str | None = None
+    selected_handler: str | None = None
+    memory_gate: str = "not_needed"
+    startup_status_mode: str = "fast"
+    sqlite_health_mode: str = "metadata"
+    network_time_used: bool = False
+    deep_audit_used: bool = False
+    runtime_answer_validation: dict[str, Any] = field(default_factory=dict)
+    final_text_source: str | None = None
+    fallback_classification: str | None = None
+    source_origin_detail: str | None = None
+    can_generate_model_guided_speech: bool = False
+    requires_host_model: bool = False
+    retry_count: int = 0
+    thought_id: str | None = None
+    parent_thought_id: str | None = None
+    anchored_goal_ids: list[str] = field(default_factory=list)
+    anchored_constraint_ids: list[str] = field(default_factory=list)
+    anchored_evidence_ids: list[str] = field(default_factory=list)
+    lineage_observation_count: int = 0
+    lineage_break_count: int = 0
+    lineage_state_sha256: str | None = None
+    lineage_shadow_mode: bool = True
+    state_graph_node_count: int = 0
+    state_graph_edge_count: int = 0
+    state_graph_transition_count: int = 0
+    state_graph_break_count: int = 0
+    state_graph_state_sha256: str | None = None
+    state_graph_shadow_mode: bool = True
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)

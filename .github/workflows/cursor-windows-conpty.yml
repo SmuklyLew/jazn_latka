@@ -1,0 +1,40 @@
+name: cursor-windows-conpty
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "latka_jazn/tools/chat_export_ui.py"
+      - "tools/memory_import_ui.py"
+      - "tools/windows_cursor_conpty_smoke.py"
+      - ".github/workflows/cursor-windows-conpty.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conpty-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.14"
+      - name: Install project and native ConPTY wrapper
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pywinpty
+      - name: Run cursor UI in native Windows ConPTY
+        shell: pwsh
+        run: python -X utf8 tools/windows_cursor_conpty_smoke.py

@@ -1,0 +1,152 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any, Mapping
+import hashlib
+
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
+from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
+from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
+from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.version import schema_version
+
+SCHEMA_VERSION = schema_version("final_visible_reply_capture")
+
+
+def _sha(value: str) -> str:
+    return hashlib.sha256(normalize_newlines(value).encode("utf-8")).hexdigest()
+
+
+@dataclass(slots=True)
+class FinalVisibleReplyCapture:
+    turn_id: str
+    trace_id: str
+    timestamp_header: str
+    timezone: str
+    timestamp_sample_iso: str
+    timestamp_source: str
+    timestamp_trusted: bool
+    author_id: str
+    author_label: str
+    author_source: str
+    state_emoticon: str
+    source: str
+    original_text_sha256: str
+    final_text_sha256: str
+    envelope_present_in_original: bool
+    envelope_present_in_final: bool
+    was_rendered_from_body: bool
+    epistemic_evidence: dict[str, Any]
+    epistemic_claims: tuple[dict[str, Any], ...]
+    final_visible_text: str
+    schema_version: str = SCHEMA_VERSION
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        turn_id: str,
+        trace_id: str,
+        timestamp_header: str,
+        timezone: str,
+        timestamp_sample_iso: str,
+        timestamp_source: str,
+        timestamp_trusted: bool,
+        author_id: str,
+        author_label: str,
+        author_source: str,
+        state_emoticon: str,
+        final_text: str,
+        source: str = "chatgpt_visible_layer",
+        config: JaznConfig | None = None,
+        epistemic_evidence: Mapping[str, Any] | None = None,
+        runtime_evidence: Mapping[str, Any] | None = None,
+        memory_evidence: Mapping[str, Any] | None = None,
+        external_evidence: Mapping[str, Any] | None = None,
+        generated_evidence: Mapping[str, Any] | None = None,
+        persist_epistemic_ledger: bool = False,
+    ) -> "FinalVisibleReplyCapture":
+        if not turn_id or not trace_id:
+            raise ValueError("turn_id and trace_id are required")
+        original = normalize_newlines(final_text)
+        envelope = MessageEnvelope.build(
+            timestamp_header=timestamp_header,
+            timezone=timezone,
+            timestamp_sample_iso=timestamp_sample_iso,
+            timestamp_source=timestamp_source,
+            timestamp_trusted=timestamp_trusted,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
+            state_emoticon=state_emoticon,
+            body="capture-validation",
+        )
+        prefix = f"{timestamp_header}\n{state_emoticon} {author_label}\n\n"
+        original_has_envelope = original.startswith(prefix)
+        if original_has_envelope:
+            final_visible_text = original
+            rendered = False
+        else:
+            if original.startswith(timestamp_header) or original.split("\n", 1)[0].startswith("🕒 "):
+                raise ValueError("partial or foreign message envelope cannot be repaired")
+            final_visible_text = MessageEnvelope.build(
+                timestamp_header=timestamp_header,
+                timezone=timezone,
+                timestamp_sample_iso=timestamp_sample_iso,
+                timestamp_source=timestamp_source,
+                timestamp_trusted=timestamp_trusted,
+                author_id=author_id,
+                author_label=author_label,
+                author_source=author_source,
+                state_emoticon=state_emoticon,
+                body=original,
+            ).render()
+            rendered = True
+        if not envelope.timestamp_matches_sample():
+            raise ValueError("timestamp header does not match timestamp sample")
+        evidence = dict(epistemic_evidence or {})
+        if config is not None and epistemic_evidence is None and hasattr(config, "rest_cycle_db_path"):
+            evidence = EpistemicEvidenceCollector(config).collect(
+                runtime_evidence=runtime_evidence,
+                memory_evidence=memory_evidence,
+                external_evidence=external_evidence,
+                generated_evidence=generated_evidence,
+            ).to_dict()
+        assessments = EpistemicClaimGuard().enforce(final_visible_text, evidence=evidence)
+        assessment_payloads = tuple(item.to_dict() for item in assessments)
+        if persist_epistemic_ledger:
+            if config is None:
+                raise ValueError("config is required to persist the epistemic ledger")
+            with EpistemicDecisionLedger(epistemic_ledger_path(workspace_runtime_path(config.root))) as ledger:
+                ledger.append_assessments(
+                    turn_id=turn_id,
+                    trace_id=trace_id,
+                    assessments=assessment_payloads,
+                )
+        return cls(
+            turn_id=turn_id,
+            trace_id=trace_id,
+            timestamp_header=timestamp_header,
+            timezone=timezone,
+            timestamp_sample_iso=timestamp_sample_iso,
+            timestamp_source=timestamp_source,
+            timestamp_trusted=timestamp_trusted,
+            author_id=author_id,
+            author_label=author_label,
+            author_source=author_source,
+            state_emoticon=state_emoticon,
+            source=source,
+            original_text_sha256=_sha(original),
+            final_text_sha256=_sha(final_visible_text),
+            envelope_present_in_original=original_has_envelope,
+            envelope_present_in_final=True,
+            was_rendered_from_body=rendered,
+            epistemic_evidence=evidence,
+            epistemic_claims=assessment_payloads,
+            final_visible_text=final_visible_text,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)

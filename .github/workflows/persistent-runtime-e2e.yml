@@ -1,0 +1,369 @@
+name: persistent-runtime-e2e
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "AGENTS.chatgpt.md"
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/adapters/chatgpt_adapter.py"
+      - "latka_jazn/bridge/secure_host_runtime_gateway.py"
+      - "latka_jazn/core/runtime_environment.py"
+      - "latka_jazn/core/runtime_root.py"
+      - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/readiness.py"
+      - "latka_jazn/core/voice_e2e_verification.py"
+      - "latka_jazn/core/voice_source_contract.py"
+      - "latka_jazn/core/chat_command_contract.py"
+      - "latka_jazn/core/chatgpt_host_pre_response_gate.py"
+      - "latka_jazn/core/host_response_candidate_guard.py"
+      - "latka_jazn/core/memory_recall_observability.py"
+      - "latka_jazn/core/memory_recall_presenter.py"
+      - "latka_jazn/core/runtime_session.py"
+      - "latka_jazn/core/runtime_daemon.py"
+      - "latka_jazn/core/daemon_autostart.py"
+      - "latka_jazn/core/engine.py"
+      - "latka_jazn/core/turn_execution.py"
+      - "latka_jazn/core/turn_diagnostics.py"
+      - "latka_jazn/core/blind_route_detector.py"
+      - "latka_jazn/core/route_graph_contract.py"
+      - "latka_jazn/core/engine_services.py"
+      - "latka_jazn/core/route_handler_dispatcher.py"
+      - "latka_jazn/tools/route_graph_audit.py"
+      - "latka_jazn/core/typed_memory_source_policy.py"
+      - "latka_jazn/core/epistemic_decision_ledger.py"
+      - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_executor_failure_codes.py"
+      - "latka_jazn/core/chatgpt_host_executor_failure_policy.py"
+      - "latka_jazn/core/host_spawn_diagnostics.py"
+      - "latka_jazn/core/host_operation_retry.py"
+      - "latka_jazn/core/host_operations.py"
+      - "latka_jazn/memory/memory_root.py"
+      - "latka_jazn/memory/sentinel_recall.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
+      - "latka_jazn/memory/memory_recall_contract.py"
+      - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/deployment.py"
+      - "deploy/chatgpt_mcp/**"
+      - ".dockerignore"
+      - "latka_jazn/mcp/oauth_introspection.py"
+      - "latka_jazn/mcp/chatgpt_plugin.py"
+      - "latka_jazn/mcp/http_tasks_bridge.py"
+      - "latka_jazn/mcp/remote_runtime.py"
+      - "latka_jazn/mcp/task_resume.py"
+      - "latka_jazn/runtime/capability_matrix.py"
+      - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
+      - "tools/jazn_pack_generator_app/manifest.py"
+      - "tools/jazn_pack_generator_app/staging.py"
+      - "pyproject.toml"
+      - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
+      - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
+      - "latka_jazn/db/runtime_sqlite.py"
+      - "latka_jazn/version.py"
+      - "tests/test_host_pre_response_gate.py"
+      - "tests/test_host_finalization_gate.py"
+      - "tests/test_live_voice_readiness.py"
+      - "tests/test_persistent_runtime_lifecycle_transport.py"
+      - "tests/test_active_memory_recall_e2e.py"
+      - "tests/test_active_runtime_subject_root.py"
+      - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
+      - "tests/test_persistent_runtime_e2e_hardening.py"
+      - "tests/test_host_finalization_recovery.py"
+      - "tests/test_host_finalization_notification_idempotency.py"
+      - "tests/test_runtime_daemon_security_contract.py"
+      - "tests/test_runtime_stability_daemon_status.py"
+      - "tests/test_chatgpt_mcp_two_phase_protocol.py"
+      - "tests/test_mcp_modern_protocol.py"
+      - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_lifecycle_bounds.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
+      - "tests/test_mcp_remote_runtime.py"
+      - "tests/test_mcp_http_tasks_bridge.py"
+      - "tests/test_mcp_http_resources.py"
+      - "tests/test_mcp_http_cli.py"
+      - "tests/test_mcp_oauth_introspection.py"
+      - "tests/test_chatgpt_plugin_package.py"
+      - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_persistent_remote_runtime_operations.py"
+      - "tests/test_memory_manifest_producer_gate.py"
+      - "tests/test_turn_diagnostics_contract.py"
+      - "tests/test_blind_route_and_route_graph_audit.py"
+      - "tests/test_route_dispatcher_fallback_diagnostics.py"
+      - "tests/test_engine_service_decomposition_seams.py"
+      - "tests/test_turn_route_characterization.py"
+      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
+      - "tests/test_host_finalization_lifecycle.py"
+      - "tests/test_memory_recall_timeout_hardening.py"
+      - "tests/test_chatgpt_host_executor_failure_mapping.py"
+      - "tests/test_host_spawn_diagnostics.py"
+      - "tests/test_host_operation_memory_converge_retry.py"
+      - "tests/test_memory_sentinel_recall.py"
+      - "tests/test_autobiographical_memory_readiness_convergence.py"
+      - "tests/test_host_finalization_provenance_polish_nlp.py"
+      - ".github/workflows/persistent-runtime-e2e.yml"
+  push:
+    branches:
+      - master
+      - "update/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "upgrade/**"
+    paths:
+      - "AGENTS.chatgpt.md"
+      - "main.py"
+      - "run.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/adapters/chatgpt_adapter.py"
+      - "latka_jazn/bridge/secure_host_runtime_gateway.py"
+      - "latka_jazn/core/runtime_environment.py"
+      - "latka_jazn/core/runtime_root.py"
+      - "latka_jazn/core/startup_contract.py"
+      - "latka_jazn/core/readiness.py"
+      - "latka_jazn/core/voice_e2e_verification.py"
+      - "latka_jazn/core/voice_source_contract.py"
+      - "latka_jazn/core/chat_command_contract.py"
+      - "latka_jazn/core/chatgpt_host_pre_response_gate.py"
+      - "latka_jazn/core/host_response_candidate_guard.py"
+      - "latka_jazn/core/memory_recall_observability.py"
+      - "latka_jazn/core/memory_recall_presenter.py"
+      - "latka_jazn/core/runtime_session.py"
+      - "latka_jazn/core/runtime_daemon.py"
+      - "latka_jazn/core/daemon_autostart.py"
+      - "latka_jazn/core/engine.py"
+      - "latka_jazn/core/turn_execution.py"
+      - "latka_jazn/core/turn_diagnostics.py"
+      - "latka_jazn/core/blind_route_detector.py"
+      - "latka_jazn/core/route_graph_contract.py"
+      - "latka_jazn/core/engine_services.py"
+      - "latka_jazn/core/route_handler_dispatcher.py"
+      - "latka_jazn/tools/route_graph_audit.py"
+      - "latka_jazn/core/typed_memory_source_policy.py"
+      - "latka_jazn/core/epistemic_decision_ledger.py"
+      - "latka_jazn/core/chatgpt_host_recovery.py"
+      - "latka_jazn/bootstrap/chatgpt_host_preflight_parse.py"
+      - "latka_jazn/core/chatgpt_host_executor_observation.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate.py"
+      - "latka_jazn/core/chatgpt_host_executor_aggregate_helpers.py"
+      - "latka_jazn/core/chatgpt_host_executor_failure_codes.py"
+      - "latka_jazn/core/chatgpt_host_executor_failure_policy.py"
+      - "latka_jazn/core/host_spawn_diagnostics.py"
+      - "latka_jazn/core/host_operation_retry.py"
+      - "latka_jazn/core/host_operations.py"
+      - "latka_jazn/memory/memory_root.py"
+      - "latka_jazn/memory/sentinel_recall.py"
+      - "latka_jazn/core/chatgpt_host_capability_snapshot.py"
+      - "latka_jazn/memory/memory_recall_contract.py"
+      - "latka_jazn/mcp/server.py"
+      - "latka_jazn/mcp/http_gateway.py"
+      - "latka_jazn/mcp/deployment.py"
+      - "deploy/chatgpt_mcp/**"
+      - ".dockerignore"
+      - "latka_jazn/mcp/oauth_introspection.py"
+      - "latka_jazn/mcp/chatgpt_plugin.py"
+      - "latka_jazn/mcp/http_tasks_bridge.py"
+      - "latka_jazn/mcp/remote_runtime.py"
+      - "latka_jazn/mcp/task_resume.py"
+      - "latka_jazn/runtime/capability_matrix.py"
+      - "latka_jazn/runtime/turn_runtime.py"
+      - "latka_jazn/resources/dependencies/profiles.json"
+      - "tools/jazn_pack_generator_app/manifest.py"
+      - "tools/jazn_pack_generator_app/staging.py"
+      - "pyproject.toml"
+      - "latka_jazn/mcp/tools/jazn_generate_visible_reply.py"
+      - "latka_jazn/mcp/tools/jazn_resume_visible_reply.py"
+      - "latka_jazn/db/runtime_sqlite.py"
+      - "latka_jazn/version.py"
+      - "tests/test_host_pre_response_gate.py"
+      - "tests/test_host_finalization_gate.py"
+      - "tests/test_live_voice_readiness.py"
+      - "tests/test_persistent_runtime_lifecycle_transport.py"
+      - "tests/test_active_memory_recall_e2e.py"
+      - "tests/test_active_runtime_subject_root.py"
+      - "tests/test_chatgpt_runtime_fallback_hardening.py"
+      - "tests/test_chatgpt_remote_runtime_evidence.py"
+      - "tests/test_persistent_runtime_e2e_hardening.py"
+      - "tests/test_host_finalization_recovery.py"
+      - "tests/test_host_finalization_notification_idempotency.py"
+      - "tests/test_runtime_daemon_security_contract.py"
+      - "tests/test_runtime_stability_daemon_status.py"
+      - "tests/test_chatgpt_mcp_two_phase_protocol.py"
+      - "tests/test_mcp_modern_protocol.py"
+      - "tests/test_mcp_task_registry.py"
+      - "tests/test_mcp_task_lifecycle_bounds.py"
+      - "tests/test_mcp_task_input_fail_closed.py"
+      - "tests/test_mcp_http_dependency_profile.py"
+      - "tests/test_mcp_remote_runtime.py"
+      - "tests/test_mcp_http_tasks_bridge.py"
+      - "tests/test_mcp_http_resources.py"
+      - "tests/test_mcp_http_cli.py"
+      - "tests/test_mcp_oauth_introspection.py"
+      - "tests/test_chatgpt_plugin_package.py"
+      - "tests/test_chatgpt_public_mcp_deployment.py"
+      - "tests/test_persistent_remote_runtime_operations.py"
+      - "tests/test_memory_manifest_producer_gate.py"
+      - "tests/test_turn_diagnostics_contract.py"
+      - "tests/test_blind_route_and_route_graph_audit.py"
+      - "tests/test_route_dispatcher_fallback_diagnostics.py"
+      - "tests/test_engine_service_decomposition_seams.py"
+      - "tests/test_turn_route_characterization.py"
+      - "tests/test_pack_generator_secure_mcp_bridge_contract.py"
+      - "tests/test_host_finalization_lifecycle.py"
+      - "tests/test_memory_recall_timeout_hardening.py"
+      - "tests/test_chatgpt_host_executor_failure_mapping.py"
+      - "tests/test_host_spawn_diagnostics.py"
+      - "tests/test_host_operation_memory_converge_retry.py"
+      - "tests/test_memory_sentinel_recall.py"
+      - "tests/test_autobiographical_memory_readiness_convergence.py"
+      - "tests/test_host_finalization_provenance_polish_nlp.py"
+      - ".github/workflows/persistent-runtime-e2e.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  persistent_runtime_e2e:
+    name: persistent runtime E2E (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      JAZN_NETWORK_TIME_FIRST: "0"
+      JAZN_NETWORK_TIME_IN_TURN: "0"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[mcp-http]" pytest
+
+      - name: Compile runtime, gate, and regression paths
+        run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
+
+      - name: v108 turn diagnostics and route graph matrix
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_turn_diagnostics_contract.py
+          tests/test_blind_route_and_route_graph_audit.py
+          tests/test_route_dispatcher_fallback_diagnostics.py
+          tests/test_engine_service_decomposition_seams.py
+          tests/test_turn_route_characterization.py
+
+      - name: Turn route graph audit
+        run: python -X utf8 -m latka_jazn.tools.route_graph_audit --root . --json
+
+      - name: MCP 2026 remote ingress, Tasks, resources, and package contract
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_mcp_modern_protocol.py
+          tests/test_mcp_task_registry.py
+          tests/test_mcp_task_lifecycle_bounds.py
+          tests/test_mcp_task_input_fail_closed.py
+          tests/test_mcp_http_dependency_profile.py
+          tests/test_mcp_remote_runtime.py
+          tests/test_mcp_http_tasks_bridge.py
+          tests/test_mcp_http_resources.py
+          tests/test_mcp_http_cli.py
+          tests/test_mcp_oauth_introspection.py
+          tests/test_chatgpt_plugin_package.py
+          tests/test_chatgpt_public_mcp_deployment.py
+          tests/test_persistent_remote_runtime_operations.py
+          tests/test_memory_manifest_producer_gate.py
+          tests/test_pack_generator_secure_mcp_bridge_contract.py
+
+      - name: Host gate and persistent lifecycle E2E
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_host_pre_response_gate.py
+          tests/test_persistent_runtime_lifecycle_transport.py
+          tests/test_active_memory_recall_e2e.py
+          tests/test_active_runtime_subject_root.py
+          tests/test_chatgpt_runtime_fallback_hardening.py
+          tests/test_chatgpt_remote_runtime_evidence.py
+          tests/test_persistent_runtime_e2e_hardening.py
+          tests/test_host_finalization_recovery.py
+          tests/test_host_finalization_notification_idempotency.py
+
+      - name: Daemon identity, security, atomicity, and timeout matrix
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_runtime_daemon_security_contract.py
+          tests/test_runtime_stability_daemon_status.py
+          tests/test_memory_recall_timeout_hardening.py
+          tests/test_live_voice_readiness.py
+
+      - name: Presentation and finalization fail-closed matrix
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_chatgpt_mcp_two_phase_protocol.py
+          tests/test_host_finalization_lifecycle.py
+          tests/test_host_finalization_provenance_polish_nlp.py
+          tests/test_host_finalization_gate.py
+
+      - name: v109-v111 composition, runner, cutover, and crash recovery
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=20
+          tests/test_runtime_composition_lifecycle.py
+          tests/test_finalization_service.py
+          tests/test_finalization_crash_atomicity.py
+          tests/test_finalization_projection_recovery.py
+          tests/test_turn_orchestrator_pipeline.py
+          tests/test_turn_orchestrator_parity.py
+          tests/test_conversation_runner_contract.py
+          tests/test_legacy_dialogue_cutover.py
+          tests/test_public_direct_message_runner.py
+          tests/test_safe_path_reparse_observation.py
+
+      - name: Clean checkout guard
+        if: always()
+        shell: bash
+        run: |
+          git diff --check
+          git diff --exit-code
+          status="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$status" ]; then
+            echo "Unexpected worktree changes after persistent-runtime E2E:"
+            printf '%s\n' "$status"
+            exit 1
+          fi

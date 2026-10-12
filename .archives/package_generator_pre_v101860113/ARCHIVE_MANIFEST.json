@@ -1,0 +1,25 @@
+{
+  "schema_version": "jazn_archive_snapshot/v1",
+  "archive": "package_generator_pre_v101860113",
+  "source_commit": "4722332abcb36cc573ef489cbc9ac0bdca26cd58",
+  "source_release": "16.3.25.5.26-package-generator-v10.1.86.0.112-byte-exact-eol-staging",
+  "reason": "Retire superseded Pack Generator implementation lineage and v112 EOL-fail-closed contract while restoring selected-folder ZIP snapshot semantics.",
+  "entries": [
+    {
+      "source_path": "tools/pack_generator_sources",
+      "archived_path": ".archives/package_generator_pre_v101860113/tree/tools/pack_generator_sources",
+      "git_tree_sha": "e4468c0d6c48a4a398a637d3bef0d84a06bc6ad7"
+    },
+    {
+      "source_path": "tests/test_jazn_pack_generator_v101860112_byte_exact_staging.py",
+      "archived_path": ".archives/package_generator_pre_v101860113/tree/tests/test_jazn_pack_generator_v101860112_byte_exact_staging.py",
+      "git_blob_sha": "f750284f6d979ec8721292e011081d560664107b"
+    },
+    {
+      "source_path": "docs/runtime/JAZN_PACK_GENERATOR_V101860112_BYTE_EXACT_STAGING.md",
+      "archived_path": ".archives/package_generator_pre_v101860113/tree/docs/runtime/JAZN_PACK_GENERATOR_V101860112_BYTE_EXACT_STAGING.md",
+      "git_blob_sha": "dfdd0568f772a927fa7be5048c12de8c7e590282"
+    }
+  ],
+  "tests_archive_policy": "Existing tests/archive snapshots remain in place because tests/archive/README.md defines them as append-only and forbids moving or renaming existing evidence."
+}

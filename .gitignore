@@ -1,0 +1,124 @@
+# Python/cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.pytest-tmp/
+.mypy_cache/
+.ruff_cache/
+
+# JavaScript/Node tooling (source and lockfiles stay tracked; installs do not)
+node_modules/
+.npm/
+npm-debug.log*
+
+# Runtime/private state at repository root
+/ACTIVE_RUNTIME_CACHE_CONTRACT.json
+/BOOTSTRAP_JAZN_CURRENT.json
+/RUNTIME_STATE.json
+/workspace_runtime/
+/memory/
+/processed/
+/requests/
+/responses/
+/status/
+
+# Private/runtime databases anywhere
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+*.db-wal
+*.db-shm
+
+# Archives / split packages / raw exports
+/exports/
+*.zip
+*.zip.*
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.part_*
+*.sha256
+*.parts.sha256
+*.source_files.sha256
+*.join.ps1
+
+# Patch/recovery artifacts generated during ChatGPT/Codex update work
+
+# Keep source, tests and docs in Git; keep ad-hoc patch bundles outside the repo.
+/*.patch
+/*.rej
+/*.orig
+/*.BAD.patch
+/*_PATCH_REPORT.md
+/LATKA_*_COMMANDS.ps1
+
+# Local root inventory reports
+/docs/.root/
+_root_list.py
+
+# Local packaging helper scripts
+/split_zip_sha.py
+
+# Codex/editor local state. Keep only the shared type-checker parity settings.
+.codex/
+.vscode/*
+!.vscode/settings.json
+
+# Backups/temp
+/backups/
+/backups_git/
+/tmp/
+/temp/
+*.tmp
+*.bak
+*.bad
+*.corrupt
+
+# Logs generated during runtime
+*.log
+
+# Local/private canon extraction outputs
+latka_jazn/core/canon/local_private_canon_extension.py
+
+# Heavy local documentation artifacts / generated reports
+*.bundle
+*_stdout.txt
+
+# Local generated pack helper scripts
+tools/__jazn_pack_generator.lock.json
+__jazn_pack_generator_settings.json
+tools/__jazn_pack_generator_settings.json
+tools/_jazn_pack_generator.py
+tools/jazn_pack_generator_settings.json
+tools/jazn_pack_generator_app/jazn_pack_generator_settings.json
+tools/jazn_pack_generator_app/jazn_pack_generator_settings.json.tmp
+
+# Local Memory Rebuild operator settings (mutable, never release/source data)
+memory_rebuild_settings.json
+
+# Local runtime state / parent checkpoint safety
+/CHECKPOINTS/
+CHECKPOINTS/
+*.checkpoint/
+*_checkpoint/
+branch_*/
+branches/
+
+# Versioned test snapshots are source evidence, not local branch workspaces.
+!tests/archive/branches/
+!tests/archive/branches/**
+
+# Python packaging metadata
+*.egg-info/
+PACKAGE_INTEGRITY_MANIFEST.json
+
+# Persistent local NLP models/data and Python wheelhouses/environments.
+/latka_jazn/local_resources/
+
+
+# Local pytest integration workspaces
+/.pytest-p1b/
+tools/jazn_pack_generator_app/runtime/jazn-pack-generator.jsonl

@@ -1,0 +1,38 @@
+{
+  "schema_version": "jazn_lexical_sources/v1",
+  "policy": "code ships provider contracts and small project-owned resources; large or externally licensed corpora are provisioned separately and never downloaded at runtime startup",
+  "sources": [
+    {
+      "id": "morfeusz2",
+      "kind": "polish_morphology",
+      "url": "https://morfeusz.sgjp.pl/",
+      "runtime_mode": "optional_local_provider",
+      "capabilities": ["morphological_analysis", "lemmatization", "morphological_generation", "custom_dictionary_tooling"],
+      "limitations": ["does_not_contextually_disambiguate_by_itself"],
+      "license_policy": "verify installed dictionary/data license before redistribution"
+    },
+    {
+      "id": "plwordnet",
+      "kind": "polish_lexical_semantic_network",
+      "url": "https://clarin-pl.eu/",
+      "runtime_mode": "optional_local_read_only_index",
+      "capabilities": ["synsets", "semantic_relations", "lexical_relations"],
+      "license_policy": "version and license metadata required for every provisioned index"
+    },
+    {
+      "id": "nkjp",
+      "kind": "polish_reference_corpus",
+      "url": "https://nkjp.pl/",
+      "runtime_mode": "reference_or_separately_provisioned_corpus",
+      "capabilities": ["usage_examples", "collocations", "register_evidence"],
+      "license_policy": "do not bundle corpus content into source repository without explicit license review"
+    },
+    {
+      "id": "sqlite_fts5",
+      "kind": "local_full_text_index",
+      "url": "https://www.sqlite.org/fts5.html",
+      "runtime_mode": "core_local_index",
+      "capabilities": ["fts5", "bm25", "phrase_queries", "prefix_queries", "near_queries"]
+    }
+  ]
+}

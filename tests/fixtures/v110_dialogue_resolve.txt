@@ -1,0 +1,51 @@
+    def resolve(self, state: TurnPipelineState) -> DialogueRouteDecision:
+        engine = self.engine
+        state.decision = engine.conversation_responder.compose(
+            state.request.text,
+            intent_tags=state.frame.get("intent_tags") or [],
+            affect_marker=state.affect_mix.get("state_emoticon") or engine.affect.marker(),
+            memory_counts=((state.frame.get("memory_context") or {}).get("counts") if isinstance(state.frame.get("memory_context"), dict) else None),
+            memory_context=state.frame.get("memory_context") if isinstance(state.frame.get("memory_context"), dict) else None,
+            diagnostics=state.frame.get("fallback_diagnostics") if isinstance(state.frame.get("fallback_diagnostics"), dict) else None,
+            polish_understanding=state.frame.get("polish_understanding") if isinstance(state.frame.get("polish_understanding"), dict) else None,
+            lexical_semantic_understanding=state.frame.get("lexical_semantic_understanding") if isinstance(state.frame.get("lexical_semantic_understanding"), dict) else None,
+        )
+        state.decision_dict = state.decision.to_dict()
+        state.decision_dict["timestamp_contract"] = state.envelope.cognitive_frame.get("timestamp_contract") or {}
+        state.decision_dict["voice_source_contract"] = state.envelope.cognitive_frame.get("voice_source_contract") or engine.voice_source_contract.to_dict()
+        state.decision_dict["state_emoticon"] = str(state.affect_mix.get("state_emoticon") or engine.affect.marker() or "").strip()
+        state.decision_dict["runtime_rendering_mode"] = state.envelope.cognitive_frame.get("runtime_rendering_mode") or {}
+        state.decision_dict["memory_recall_contract_status"] = {
+            "items": len((state.envelope.cognitive_frame.get("memory_recall_contract") or {}).get("items") or []),
+            "schema_version": "memory_recall_contract_status/v1",
+            "truth_boundary": "same liczniki nie wystarczają; pełny payload jest w cognitive_frame.memory_recall_contract",
+        }
+        state.detected_dialogue_intent, state.route_entry, state.current_dialogue_task_state, state.turn_response_policy = (
+            engine._apply_current_dialogue_control(
+                text=state.request.text, frame=state.frame, envelope=state.envelope, decision_dict=state.decision_dict,
+                dialogue_intent_report=state.dialogue_intent_report, previous_task_state=state.previous_task_state,
+                client_context=state.ctx,
+            )
+        )
+        engine._record_route_diagnostic(state.turn_context, state.detected_dialogue_intent, state.route_entry)
+        engine._apply_cognitive_control_policy(
+            state.envelope, state.frame, state.current_dialogue_task_state, state.turn_response_policy, state.decision_dict)
+        state.handler_context = engine._build_route_handler_context(
+            decision=state.decision,
+            detected_intent=state.detected_dialogue_intent,
+            dialogue_intent_report=state.dialogue_intent_report,
+            client_context=state.ctx,
+            frame=state.frame,
+            route_entry=state.route_entry,
+            task_state=state.current_dialogue_task_state,
+            response_policy=state.turn_response_policy,
+            carryover_allowed=state.carryover_allowed,
+            prior_user_text=state.prior_user_text,
+            prior_detected_intent=state.prior_detected_intent,
+            prior_runtime_route=state.prior_runtime_route,
+            previous_task_state=state.previous_task_state,
+        )
+        return DialogueRouteDecision(
+            str(state.detected_dialogue_intent), state.route_entry.route,
+            state.route_entry.handler_name, tuple(state.route_entry.required_components),
+        )

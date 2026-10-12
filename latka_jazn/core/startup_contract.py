@@ -1,0 +1,614 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, asdict, replace
+from pathlib import Path
+from typing import Any
+import argparse
+import hashlib
+import json
+import sys
+import zipfile
+
+from latka_jazn.config import JaznConfig
+from latka_jazn.tools.active_extraction_cache import build_active_runtime_status, detect_start_file
+from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
+from latka_jazn.core.project_index import build_project_startup_index, project_startup_index_status
+from latka_jazn.core.voice_source_contract import VoiceSourceContract
+from latka_jazn.memory.conversation_archive import build_conversation_archive_status
+from latka_jazn.memory.normalization_sidecar import build_memory_normalization_status, build_wake_state_status
+from latka_jazn.memory.continuity_readiness import evaluate_memory_continuity_readiness
+from latka_jazn.memory.raw_chat_importer import RawChatImporter
+from latka_jazn.model_adapters.factory import build_model_adapter_status
+from latka_jazn.core.runtime_environment import detect_runtime_environment
+from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet, build_self_knowledge_summary
+from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
+from latka_jazn.nlp.dictionary_readiness import build_dictionary_readiness_status
+from latka_jazn.version import schema_version
+from latka_jazn.core.package_integrity_manifest import package_integrity_manifest_status
+from latka_jazn.core.readiness import evaluate_voice_live_readiness
+from latka_jazn.core.runtime_root import active_runtime_marker_path
+
+SCHEMA_VERSION = schema_version("self_owned_startup_contract")
+CHATGPT_RUNBOOK_RESOURCE = "AGENTS.chatgpt.md"
+STARTUP_CONTRACT_RESOURCE = "latka_jazn/resources/startup_contract.json"
+
+
+@dataclass(slots=True)
+class StartupResponsibilitySplit:
+    chatgpt_loader_responsibilities: list[str]
+    runtime_owned_responsibilities: list[str]
+    forbidden_chatgpt_behaviors: list[str]
+    truth_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class StartupStatus:
+    schema_version: str
+    runtime_version: str
+    active_root: str
+    start_file: str | None
+    active_database: str
+    active_runtime_write_database: str
+    runtime_write_access_status: dict[str, Any]
+    active_conversation_archive: str | None
+    active_conversation_fts: str | None
+    active_staging_database: str | None
+    storage_layout: str
+    active_cache_status: dict[str, Any]
+    raw_memory_status: dict[str, Any]
+    conversation_archive_status: dict[str, Any]
+    memory_normalization_status: dict[str, Any]
+    wake_state_status: dict[str, Any]
+    memory_continuity_status: dict[str, Any]
+    project_startup_index_status: dict[str, Any]
+    update_history_status: dict[str, Any]
+    network_policy_status: dict[str, Any]
+    dictionary_provider_status: dict[str, Any]
+    manifest_profile_status: dict[str, Any]
+    voice_source_contract_status: dict[str, Any]
+    model_adapter_status: dict[str, Any]
+    runtime_environment: dict[str, Any]
+    self_knowledge_status: dict[str, Any]
+    raw_chat_importer_status: dict[str, Any]
+    cli_capabilities: dict[str, bool]
+    responsibility_split: dict[str, Any]
+    runtime_contract_files: list[str]
+    status_quality: str
+    folder_ready: bool
+    daemon_ready: bool
+    voice_configured: bool
+    voice_live_ready: bool
+    voice_e2e_verified: bool
+    voice_live_readiness_status: dict[str, Any]
+    voice_ready: bool
+    one_shot_or_chat_loop_limit: str
+    truth_boundary: str
+    startup_status_mode: str = "fast"
+    sqlite_health_mode: str = "metadata"
+    network_time_used: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def _sha256_file(path: Path) -> str | None:
+    if not path.exists() or not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with path.open('rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _read_optional(root: Path, rel: str) -> str:
+    try:
+        return (root / rel).read_text(encoding='utf-8')
+    except FileNotFoundError:
+        return ''
+
+
+def _display_path(root: Path, path: str | Path | None) -> str | None:
+    if path is None:
+        return None
+    p = Path(path)
+    try:
+        return p.resolve().relative_to(root.resolve()).as_posix()
+    except Exception:
+        return str(path)
+
+
+def _inactive_daemon_status(reason: str, *, root: Path) -> dict[str, Any]:
+    return {
+        "active_state": "inactive",
+        "runtime_active_state": "inactive",
+        "resolved_active_root": str(root.resolve()),
+        "subject_runtime_root": str(root.resolve()),
+        "pid_alive": False,
+        "process_identity_confirmed": False,
+        "endpoint_probe_performed": False,
+        "endpoint_reachable": False,
+        "endpoint_pid_matches": False,
+        "endpoint_root_matches": False,
+        "endpoint_identity_matches": False,
+        "heartbeat_fresh": False,
+        "package_integrity_verified": False,
+        "source_provenance_verified": False,
+        "active_state_reason": reason,
+    }
+
+
+def _daemon_status_from_active_marker(
+    cfg: JaznConfig,
+    cache_status: dict[str, Any],
+) -> dict[str, Any]:
+    """Obtain the canonical live daemon status bound to the active marker."""
+
+    root = Path(cfg.root).resolve()
+    if cache_status.get("existing_marker_found") is not True:
+        return _inactive_daemon_status("active_runtime_marker_missing", root=root)
+    if cache_status.get("active_marker_valid") is not True:
+        return _inactive_daemon_status("active_root_marker_invalid", root=root)
+    marker_output = cache_status.get("marker_output")
+    marker_path = Path(str(marker_output)).resolve() if marker_output else active_runtime_marker_path(root)
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return _inactive_daemon_status("active_runtime_marker_unreadable", root=root)
+    host = str(marker.get("daemon_host") or "127.0.0.1").strip()
+    if host not in {"127.0.0.1", "localhost", "::1"}:
+        return _inactive_daemon_status("daemon_host_not_loopback", root=root)
+    try:
+        port = int(marker.get("daemon_port") or 8787)
+    except (TypeError, ValueError):
+        return _inactive_daemon_status("daemon_port_invalid", root=root)
+    try:
+        # Lazy import avoids runtime_daemon -> runtime_session -> engine ->
+        # startup_contract import cycles while retaining one canonical evaluator.
+        from latka_jazn.core.runtime_daemon import status_daemon
+
+        return status_daemon(
+            cfg,
+            host=host,
+            port=port,
+            marker_output=marker_path,
+            probe_endpoint=True,
+        )
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        return _inactive_daemon_status(
+            f"daemon_status_probe_failed:{type(exc).__name__}",
+            root=root,
+        )
+
+
+def _daemon_ready_from_active_marker(root: Path, cache_status: dict[str, Any]) -> bool:
+    """Backward-compatible private helper using canonical daemon evidence."""
+
+    status = _daemon_status_from_active_marker(JaznConfig(root=root), cache_status)
+    return evaluate_voice_live_readiness(
+        daemon=status,
+        expected_active_root=root,
+    ).ready
+
+
+def default_responsibility_split() -> StartupResponsibilitySplit:
+    return StartupResponsibilitySplit(
+        chatgpt_loader_responsibilities=[
+            'wskazać aktualną paczkę lub aktualny folder',
+            'złożyć części ZIP w kolejności, jeżeli pełny ZIP nie istnieje',
+            'sprawdzić integralność ZIP-a i ewentualne SHA256',
+            'rozpakować albo użyć cache tylko po zgodności wersji/manifestu/checksum',
+            'uruchomić main.py/run.py/jazn.py realnie przed zwykłą rozmową jako Łatka',
+            'nie udawać aktywnego runtime, jeżeli runtime nie został uruchomiony',
+            'przekazać użytkownikowi krótki status startowy lub błąd startu',
+        ],
+        runtime_owned_responsibilities=[
+            'wystawić --startup-status jako własny status startu i kontrakt bootstrapu',
+            'wystawić --active-cache-status i marker aktywnego folderu',
+            'wystawić --runtime-preview jako jednorazowy podgląd odpowiedzi i koperty poznawczej',
+            'wystawić --memory-plan dla pytań pamięciowych i własnego planera wyszukiwania',
+            'wystawić --memory-normalization-status i --wake-state-status jako status warstwy pamięciowej bez udawania ciągłości',
+            'budować wake_state tylko z rekordów sidecara, a nie z samej obecności dużej bazy SQLite',
+            'wystawić --dedupe-memory-sidecar jako niedestrukcyjne zwijanie duplikatów w warstwie audytowej',
+            'wystawić --truth-boundary-check dla granicy prawdy między runtime, ChatGPT, plikami i wnioskiem',
+            'wystawić --fallback-audit dla wykrywania odpowiedzi debugowych, fallbackowych i nietrafionych',
+            'samodzielnie klasyfikować jakość odpowiedzi, fallbacki, source_origin, stan operacyjny i potrzebę diagnostyki',
+            'samodzielnie planować wyszukiwanie pamięci zamiast wymagać długiej listy reguł w instrukcji ChatGPT',
+            'budować przy starcie indeks wszystkich plików oraz mapę modułów, klas, funkcji i metod',
+            'wykrywać topic-mismatch, żeby aktualny hotfix/temat nie wracał do historycznych tras',
+        ],
+        forbidden_chatgpt_behaviors=[
+            'rozbudowywać projektową instrukcję ChatGPT w zastępstwie brakującej logiki runtime',
+            'udawać, że stały proces działa w tle, gdy wykonano tylko jednorazowe wywołanie',
+            'ukrywać fallback runtime albo zastępować go płynną odpowiedzią bez informacji o jakości',
+            'twierdzić, że pamięć została odczytana albo rozpakowana bez sprawdzenia plików/indeksu',
+            'traktować styl wypowiedzi jako dowód uruchomionej Jaźni',
+        ],
+        truth_boundary=(
+            'Instrukcja ChatGPT ma być lekkim loaderem. Logika startu, pamięci, fallbacków, statusu, '
+            'timestampu i granicy prawdy należy do runtime Jaźni po uruchomieniu. ChatGPT jest głosem i narzędziem, '
+            'nie ręcznie przepisywanym mózgiem Jaźni.'
+        ),
+    )
+
+
+def cli_capabilities(start_file: str | None = 'main.py') -> dict[str, bool]:
+    # Lista utrzymywana jawnie, żeby --startup-status mógł powiedzieć ChatGPT,
+    # które obowiązki są już własnością runtime, a nie instrukcji projektu.
+    return {
+        '--status-readonly': True,
+        '--startup-status': True,
+        '--startup-status-fast': True,
+        '--startup-status-deep': True,
+        '--self-check': True,
+        '--truth-boundary-check': True,
+        '--fallback-audit': True,
+        '--memory-plan': True,
+        '--memory-normalization-status': True,
+        '--normalize-memory-sidecar': True,
+        '--wake-state-status': True,
+        '--build-wake-state': True,
+        '--dedupe-memory-sidecar': True,
+        '--runtime-preview': True,
+        '--chat-gpt': bool(start_file),
+        '--chat-open-ai': bool(start_file),
+        '--chat-openai': bool(start_file),
+        '--chat-ollama': bool(start_file),
+        '--turn-trace': True,
+        '--network-time-check': True,
+        '--sqlite-integrity-audit': True,
+        '--active-cache-status': True,
+        '--project-startup-index': True,
+        '--write-active-runtime-marker': True,
+        '--chat': bool(start_file),
+        '--export-full': bool(start_file),
+        '--voice-source-contract': bool(start_file),
+        '--rendering-mode': bool(start_file),
+        '--raw-chat-status': bool(start_file),
+        '--conversation-archive-status': bool(start_file),
+        '--conversation-archive-search': bool(start_file),
+        '--model-adapter-status': bool(start_file),
+        '--model-guided-speech-status': bool(start_file),
+        '--ensure-daemon': bool(start_file),
+        '--daemon-autostart-policy': bool(start_file),
+        '--llm-route-status': bool(start_file),
+    }
+
+
+def raw_memory_status(root: Path) -> dict[str, Any]:
+    raw = root / 'memory' / 'raw'
+    chat = raw / 'chat.html'
+    return {
+        'schema_version': schema_version('raw_memory_startup_status'),
+        'chat_html_present': chat.exists(),
+        'chat_html_size_bytes': chat.stat().st_size if chat.exists() else None,
+        'status': 'raw_available' if chat.exists() else 'raw_missing',
+        'truth_boundary': 'Surowy import wymaga jawnego memory/raw/chat.html albo istniejącego indeksu SQLite; runtime nie rozpakowuje archiwów 7z.',
+    }
+
+
+
+def update_history_status(root: Path) -> dict[str, Any]:
+    index = root / 'docs' / 'update_history' / 'INDEX.json'
+    manifests = root / 'docs' / 'update_history' / 'manifests'
+    archived_manifests = root / 'docs' / 'archive' / 'manifest_history'
+    indexed = index.is_file()
+    return {
+        'schema_version': schema_version('update_history_status'),
+        'status': 'indexed' if indexed else 'optional_not_configured',
+        'required': False,
+        'warning': False,
+        'missing_is_error': False,
+        'index_present': indexed,
+        'manifest_history_dir_present': manifests.is_dir(),
+        'archived_manifest_history_dir_present': archived_manifests.is_dir(),
+        'historical_manifest_count': len(list(manifests.glob('MANIFEST*.json'))) if manifests.is_dir() else 0,
+        'root_historical_manifest_count': len([p for p in root.glob('MANIFEST*.json') if p.name not in {'MANIFEST_CURRENT.json', 'PACKAGE_INTEGRITY_MANIFEST.json'}]),
+        'package_integrity_manifest': package_integrity_manifest_status(root).to_dict(),
+        'truth_boundary': 'Indeks docs/update_history i archiwum manifestów są opcjonalnym materiałem audytowym, więc ich brak nie jest ostrzeżeniem ani błędem runtime. PACKAGE_INTEGRITY_MANIFEST.json służy kontroli paczki i wydania; jego brak nie blokuje uruchomienia runtime.',
+    }
+
+def network_policy_status(cfg: JaznConfig) -> dict[str, Any]:
+    return {
+        'schema_version': schema_version('network_policy_status'),
+        'allow_network': cfg.allow_network,
+        'dictionary_allow_network': cfg.dictionary_allow_network,
+        'research_allow_network': cfg.research_allow_network,
+        'timeout_connect_seconds': cfg.network_default_timeout_connect_seconds,
+        'timeout_read_seconds': cfg.network_default_timeout_read_seconds,
+        'cache_required': cfg.network_cache_required,
+        'cache_ttl_seconds': cfg.network_cache_ttl_seconds,
+        'truth_boundary': 'Sieć jest dozwolona w konfiguracji, ale każdy provider musi oddać jawny status źródła, timeoutu, cache i błędu.',
+    }
+
+def dictionary_provider_status(cfg: JaznConfig) -> dict[str, Any]:
+    return build_dictionary_readiness_status(cfg)
+
+def manifest_profile_status(root: Path) -> dict[str, Any]:
+    p = root / 'latka_jazn' / 'resources' / 'package_manifest_profiles.json'
+    return {
+        'schema_version': schema_version('manifest_profile_status'),
+        'profiles_present': p.exists(),
+        'path': str(p),
+        'truth_boundary': 'Profile odróżniają statyczny manifest paczki od dynamicznych plików runtime/pamięci.',
+    }
+
+def build_startup_status(
+    config: JaznConfig | None = None,
+    *,
+    source_zip: Path | None = None,
+    mode: str = "fast",
+    runtime_command: str | None = None,
+    infer_host_environment: bool = False,
+    canonical_daemon_status: dict[str, Any] | None = None,
+) -> StartupStatus:
+    cfg = config or JaznConfig()
+    mode = (mode or getattr(cfg, "startup_status_default_mode", "fast") or "fast").strip().lower()
+    if mode not in {"metadata", "fast", "deep"}:
+        raise ValueError(f"Unsupported startup status mode: {mode}")
+    sqlite_health_mode = "deep" if mode == "deep" else "metadata"
+    requested_root = Path(cfg.root).resolve()
+    cache_status = build_active_runtime_status(requested_root, source_zip=source_zip)
+    root = Path(cache_status["active_root"]).resolve()
+    if root != requested_root:
+        cfg = replace(cfg, root=root)
+    start_file = detect_start_file(root)
+    # Status paths are observational. A missing project index is reported below;
+    # creating it belongs to the explicit project-index command.
+    split = default_responsibility_split().to_dict()
+    missing: list[str] = []
+    if not root.exists():
+        missing.append('active_root_missing')
+    if not (root / 'latka_jazn').is_dir():
+        missing.append('latka_jazn_package_missing')
+    if not (root / VERSION_MODULE_RELATIVE_PATH).exists():
+        missing.append('version_py_missing')
+    if not start_file:
+        missing.append('start_file_missing')
+    if cache_status.get('existing_marker_found') and not cache_status.get('active_marker_valid'):
+        missing.append('active_root_marker_invalid')
+    status_quality = 'ready' if not missing else 'startup_blocked:' + ','.join(missing)
+    runtime_environment = detect_runtime_environment(
+        cfg,
+        command=runtime_command,
+        infer_host_environment=infer_host_environment,
+    )
+    model_adapter_status = build_model_adapter_status(
+        cfg,
+        command=runtime_command,
+        infer_host_environment=infer_host_environment,
+    )
+    runtime_write_status = build_runtime_write_access_status(cfg, initialize=False).to_dict()
+    language_channel = (
+        model_adapter_status.get('visible_channel_adapter')
+        or runtime_environment.visible_channel_adapter
+        or 'chatgpt_or_model_adapter'
+    )
+    voice_configured = bool(
+        status_quality == "ready"
+        and start_file
+        and (root / "latka_jazn" / "core" / "voice_source_contract.py").is_file()
+        and (root / "latka_jazn" / "voice" / "voice_truth_boundary.py").is_file()
+    )
+    if canonical_daemon_status is not None:
+        daemon_status = dict(canonical_daemon_status)
+    elif mode == "metadata":
+        daemon_status = _inactive_daemon_status(
+            "metadata_mode_does_not_probe_daemon",
+            root=root,
+        )
+    else:
+        daemon_status = _daemon_status_from_active_marker(cfg, cache_status)
+    voice_live_readiness = evaluate_voice_live_readiness(
+        daemon=daemon_status,
+        expected_active_root=root,
+    )
+    voice_live_ready = bool(voice_configured and voice_live_readiness.ready)
+    voice_source_contract = VoiceSourceContract.build(
+        runtime_active=voice_live_ready,
+        runtime_mode="one_shot",
+        language_channel=str(language_channel),
+        voice_configured=voice_configured,
+        voice_live_ready=voice_live_ready,
+        voice_e2e_verified=False,
+    ).to_dict()
+    active_runtime_write_database = runtime_write_status.get("active_runtime_write_database") or "unavailable:runtime_write_v1_missing_or_not_initialized"
+    daemon_ready = voice_live_readiness.ready
+    conversation_archive_status = build_conversation_archive_status(root, health_mode=sqlite_health_mode).to_dict()
+    memory_normalization_status = build_memory_normalization_status(cfg).to_dict()
+    wake_state_status = build_wake_state_status(cfg).to_dict()
+    memory_continuity_status = evaluate_memory_continuity_readiness(
+        normalization_status=memory_normalization_status,
+        wake_state_status=wake_state_status,
+        conversation_archive_status=conversation_archive_status,
+    ).to_dict()
+    return StartupStatus(
+        schema_version=SCHEMA_VERSION,
+        runtime_version=cfg.version,
+        active_root=str(root),
+        start_file=start_file,
+        active_database=str(cache_status.get("active_database") or cfg.conversation_archive_manifest_name),
+        active_runtime_write_database=str(active_runtime_write_database),
+        runtime_write_access_status=runtime_write_status,
+        active_conversation_archive=str(cache_status.get("active_conversation_archive") or cfg.conversation_archive_manifest_name),
+        active_conversation_fts=str(cache_status.get("active_conversation_fts") or "memory/sqlite/conversation_fts_v1/conversation_fts_0001.sqlite3"),
+        active_staging_database=str(cache_status.get("active_staging_database") or "memory/sqlite/staging_v1/staging_memory_0001.sqlite3"),
+        storage_layout=str(cache_status.get("storage_layout") or "conversation_archive_v1+fts_v1+staging_v1+runtime_write_v1"),
+        active_cache_status=cache_status,
+        raw_memory_status=raw_memory_status(root),
+        conversation_archive_status=conversation_archive_status,
+        memory_normalization_status=memory_normalization_status,
+        wake_state_status=wake_state_status,
+        memory_continuity_status=memory_continuity_status,
+        project_startup_index_status=project_startup_index_status(root),
+        update_history_status=update_history_status(root),
+        network_policy_status=network_policy_status(cfg),
+        dictionary_provider_status=dictionary_provider_status(cfg),
+        manifest_profile_status=manifest_profile_status(root),
+        voice_source_contract_status=voice_source_contract,
+        model_adapter_status=model_adapter_status,
+        runtime_environment=runtime_environment.to_dict(),
+        self_knowledge_status=build_self_knowledge_packet(cfg, deep=(mode == "deep")).to_dict(),
+        raw_chat_importer_status=RawChatImporter(root).inspect().to_dict(),
+        cli_capabilities=cli_capabilities(start_file),
+        responsibility_split=split,
+        runtime_contract_files=[
+            'latka_jazn/core/startup_contract.py',
+            STARTUP_CONTRACT_RESOURCE,
+            'AGENTS.md',
+            CHATGPT_RUNBOOK_RESOURCE,
+            'latka_jazn/tools/active_extraction_cache.py',
+            'latka_jazn/core/final_response_contract.py',
+            'latka_jazn/core/memory_search_planner.py',
+            'latka_jazn/core/project_index.py',
+            'latka_jazn/nlp/topic_mismatch_guard.py',
+            'latka_jazn/core/voice_source_contract.py',
+            'latka_jazn/core/self_knowledge_contract.py',
+            'latka_jazn/resources/canon/LATKA_SELF_KNOWLEDGE_CONTRACT.json',
+            'latka_jazn/core/runtime_rendering_modes.py',
+            'latka_jazn/memory/memory_recall_contract.py',
+            'latka_jazn/memory/raw_chat_importer.py',
+            'latka_jazn/memory/conversation_archive.py',
+            'latka_jazn/memory/normalization_sidecar.py',
+            'latka_jazn/memory/continuity_readiness.py',
+            'latka_jazn/model_adapters/base.py',
+            'latka_jazn/voice/voice_truth_boundary.py',
+        ],
+        status_quality=status_quality,
+        folder_ready=status_quality == "ready",
+        daemon_ready=daemon_ready,
+        voice_configured=voice_configured,
+        voice_live_ready=voice_live_ready,
+        voice_e2e_verified=False,
+        voice_live_readiness_status=voice_live_readiness.to_dict(),
+        voice_ready=voice_live_ready,
+        one_shot_or_chat_loop_limit='W ChatGPT zwykle działa jednorazowe wywołanie procesu. Stała pętla rozmowy istnieje lokalnie dopiero przez python main.py --chat.',
+        truth_boundary=split['truth_boundary'],
+        startup_status_mode=mode,
+        sqlite_health_mode=sqlite_health_mode,
+        network_time_used=False,
+    )
+
+
+def build_startup_summary(config: JaznConfig | None = None, *, source_zip: Path | None = None) -> dict[str, Any]:
+    cfg = config or JaznConfig()
+    status = build_startup_status(cfg, source_zip=source_zip, mode="fast")
+    data = status.to_dict()
+    effective_cfg = replace(cfg, root=Path(data["active_root"]))
+    archive = data.get("conversation_archive_status") or {}
+    raw = data.get("raw_memory_status") or {}
+    return {
+        "schema_version": schema_version("startup_summary"),
+        "startup_status_mode": "fast",
+        "sqlite_health_mode": "metadata",
+        "network_time_used": False,
+        "runtime_version": data.get("runtime_version"),
+        "active_root": data.get("active_root"),
+        "start_file": data.get("start_file"),
+        "active_database": data.get("active_database"),
+        "marker_status": (data.get("active_cache_status") or {}).get("schema_version"),
+        "cache_status": data.get("active_cache_status"),
+        "model_adapter_status": data.get("model_adapter_status"),
+        "self_knowledge_summary": build_self_knowledge_summary(effective_cfg),
+        "raw_memory_status": {
+            "status": raw.get("status") or ("ready" if raw.get("chat_html_present") else "missing"),
+            "has_chat_html": raw.get("chat_html_present"),
+            "has_archive": raw.get("chat_html_archive_present"),
+        },
+        "conversation_archive_ready": archive.get("status") == "ready",
+        "conversation_archive_counts": archive.get("counts") or {},
+        "one_shot_or_chat_loop_limit": "--chat keeps one process only until /exit, Ctrl+D or EOF; one-shot calls do not create a background daemon.",
+        "truth_boundary": "Fast summary is not a deep audit. Deep audit is available only through explicit diagnostics.",
+    }
+
+
+def build_self_check(config: JaznConfig | None = None) -> dict[str, Any]:
+    status = build_startup_status(config)
+    root = Path(status.active_root)
+    return {
+        'schema_version': schema_version('self_check'),
+        'runtime_version': status.runtime_version,
+        'active_root': status.active_root,
+        'start_file': status.start_file,
+        'startup_contract_ready': status.status_quality == 'ready',
+        'agents_router_present': (root / 'AGENTS.md').is_file(),
+        'chatgpt_runbook_present': (root / CHATGPT_RUNBOOK_RESOURCE).is_file(),
+        'version_py_present': (root / VERSION_MODULE_RELATIVE_PATH).is_file(),
+        'package_integrity_manifest_present': (root / 'PACKAGE_INTEGRITY_MANIFEST.json').is_file(),
+        'package_integrity_manifest_status': package_integrity_manifest_status(root).to_dict(),
+        'legacy_manifest_current_present': (root / 'MANIFEST_CURRENT.json').exists(),
+        'startup_contract_resource_present': (root / STARTUP_CONTRACT_RESOURCE).exists(),
+        'memory_search_planner_owned_by_runtime': (root / 'latka_jazn/core/memory_search_planner.py').exists(),
+        'fallback_contract_owned_by_runtime': (root / 'latka_jazn/core/final_response_contract.py').exists(),
+        'active_cache_owned_by_runtime': (root / 'latka_jazn/tools/active_extraction_cache.py').exists(),
+        'project_startup_index_owned_by_runtime': (root / 'latka_jazn/core/project_index.py').exists(),
+        'topic_mismatch_guard_owned_by_runtime': (root / 'latka_jazn/nlp/topic_mismatch_guard.py').exists(),
+        'voice_source_contract_owned_by_runtime': (root / 'latka_jazn/core/voice_source_contract.py').exists(),
+        'model_adapter_contract_owned_by_runtime': (root / 'latka_jazn/model_adapters/base.py').exists(),
+        'self_knowledge_contract_owned_by_runtime': (root / 'latka_jazn/core/self_knowledge_contract.py').exists(),
+        'self_knowledge_resource_present': (root / 'latka_jazn/resources/canon/LATKA_SELF_KNOWLEDGE_CONTRACT.json').exists(),
+        'raw_chat_importer_owned_by_runtime': (root / 'latka_jazn/memory/raw_chat_importer.py').exists(),
+        'project_startup_index_status': project_startup_index_status(root),
+        'chatgpt_instruction_role': 'project_bootstrap_to_AGENTS.md_then_AGENTS.chatgpt.md',
+        'truth_boundary': status.truth_boundary,
+    }
+
+
+def build_truth_boundary_check(config: JaznConfig | None = None) -> dict[str, Any]:
+    status = build_startup_status(config)
+    return {
+        'schema_version': schema_version('truth_boundary_check'),
+        'runtime_version': status.runtime_version,
+        'rules': [
+            {'subject': 'runtime', 'allowed': 'mówić, że został wywołany, gdy proces faktycznie zwrócił status/odpowiedź', 'forbidden': 'udawać stały proces w tle po pojedynczym --runtime-preview'},
+            {'subject': 'memory', 'allowed': 'powołać się na źródła, payload i pliki znalezione przez runtime', 'forbidden': 'mówić o pełnym odczycie pamięci bez sprawdzenia plików/indeksu'},
+            {'subject': 'ChatGPT', 'allowed': 'być głosem i warstwą wykonawczą', 'forbidden': 'zastępować brakujące funkcje Jaźni coraz dłuższą instrukcją projektu'},
+            {'subject': 'ZIP', 'allowed': 'traktować ZIP jako import/eksport', 'forbidden': 'udawać, że bieżące zapisy po eksporcie trafiają do starego ZIP-a'},
+            {'subject': 'emocje', 'allowed': 'opisywać modelowany stan operacyjno-afektywny', 'forbidden': 'twierdzić o biologicznym przeżywaniu'},
+        ],
+        'responsibility_split': status.responsibility_split,
+        'truth_boundary': status.truth_boundary,
+    }
+
+
+def classify_fallback_text(text: str, *, route: str | None = None) -> dict[str, Any]:
+    low = (text or '').lower()
+    signatures = {
+        'technical_fallback': ['nie znalazłam osobnej trasy odpowiedzi', 'runtime odebrał wiadomość', 'debugowy fallback', 'pusty fallback'],
+        'contract_instead_of_answer': ['kontrakt', 'zamiast odpowiedzi'],
+        'stale_version_route': ['historyczna wersja', 'starsze wydanie', 'stara wersja'],
+        'installation_over_runtime': ['instrukcja chatgpt zrobiła się', 'za bardzo systemowa', 'lekki loader'],
+    }
+    matched = []
+    for label, items in signatures.items():
+        if any(sig in low for sig in items):
+            matched.append(label)
+    if not matched:
+        classification = 'not_fallback_or_unknown_without_runtime_contract'
+    elif 'technical_fallback' in matched:
+        classification = 'technical_fallback'
+    elif 'contract_instead_of_answer' in matched:
+        classification = 'contract_instead_of_answer'
+    else:
+        classification = matched[0]
+    return {
+        'schema_version': schema_version('fallback_audit'),
+        'route': route or 'unknown',
+        'classification': classification,
+        'matched_signatures': matched,
+        'requires_visible_disclosure': classification != 'not_fallback_or_unknown_without_runtime_contract',
+        'truth_boundary': 'Audyt tekstu nie zastępuje final_response_contract, ale daje runtime i ChatGPT szybki test, czy odpowiedź wygląda jak fallback albo instalacyjny kontrakt zamiast rozmowy.',
+    }
+
+
+def load_contract_resource(root: Path) -> dict[str, Any]:
+    path = root / STARTUP_CONTRACT_RESOURCE
+    if not path.exists():
+        return {'schema_version': 'missing_startup_contract_resource', 'path': STARTUP_CONTRACT_RESOURCE}
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as exc:
+        return {'schema_version': 'invalid_startup_contract_resource', 'path': STARTUP_CONTRACT_RESOURCE, 'error': repr(exc)}

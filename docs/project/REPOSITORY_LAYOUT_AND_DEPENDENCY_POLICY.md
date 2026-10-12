@@ -1,0 +1,188 @@
+# Kanoniczny układ repozytorium i polityka zależności Jaźni
+
+Ten dokument definiuje bieżący kontrakt organizacji repozytorium `SmuklyLew/jazn_latka`.
+Nie jest historycznym planem migracji. Jego celem jest utrzymanie jednego
+przewidywalnego układu dla Windows, Linux, rozpakowanej paczki runtime, hosta
+ChatGPT oraz lokalnych backendów LLM takich jak Ollama.
+
+## 1. Zasada nadrzędna
+
+Struktura ma służyć działającemu runtime, a nie estetyce drzewa.
+
+`run.py` pozostaje publicznym, cienkim starterem użytkownika i musi działać bezpośrednio
+z poprawnie rozpakowanego rootu systemu. Centralny control plane należy do `main.py`. Z tego powodu projekt świadomie
+pozostaje przy flat-layout dla pakietu `latka_jazn/`: przeniesienie całego kodu
+do `src/` wymagałoby instalacji pakietu albo manipulacji `sys.path`, co
+osłabiałoby kontrakt portable/offline runtime.
+
+Nie przenoś stabilnych ścieżek operatorskich tylko po to, aby upodobnić repo do
+innego szablonu projektu.
+
+## 2. Kanoniczne role katalogów
+
+```text
+/
+├─ run.py                         # cienki starter użytkownika
+├─ main.py                        # centralny control plane / główny entrypoint
+├─ AGENTS*.md                     # routing i runbooki hostów/agentów
+├─ pyproject.toml                 # kanoniczne deklaracje zależności Pythona
+├─ requirements.txt               # compatibility/cache marker, nie drugie źródło deps
+├─ latka_jazn/                    # importowalny kod systemu
+│  ├─ bootstrap/                  # discovery/materializacja/recovery
+│  ├─ core/                       # runtime, gates, routing, lifecycle i kontrakty tury
+│  ├─ adapters/ + model_adapters/ # granice modeli i hostów
+│  ├─ bridge/ + mcp/              # transporty host-runtime
+│  ├─ memory/ + db/               # pamięć i trwałe magazyny
+│  ├─ dependencies/               # dependency studio i offline bundles
+│  ├─ plugins/                    # optional capabilities + PyPA entry-point registry
+│  ├─ nlp/                        # przetwarzanie języka
+│  ├─ resources/                  # wersjonowane zasoby statyczne
+│  └─ tools/                      # narzędzia należące do pakietu
+├─ tools/                         # narzędzia repo/release/operator studio
+│  └─ javascript/                 # opcjonalny, izolowany Node/ESM tooling contract
+├─ tests/                         # aktywne testy
+│  └─ archive/                    # append-only snapshoty historycznych testów
+├─ docs/                          # żywa dokumentacja i archiwum
+└─ .github/workflows/             # CI/release evidence
+```
+
+Mutable/private data is excluded from the *release package*, even if it
+physically resides under the installation root: `<SYSTEM>/memory/` is the
+canonical private-memory directory, ignored by Git and excluded from SYSTEM
+archive generation. `workspace_runtime/` remains the operational host
+workspace. SQLite/WAL/SHM, logs, PIDs, heartbeat, secrets and staging are not
+release assets. Preexisting `workspace_runtime/memory/` may be selected
+read-only for backward compatibility until an explicit verified migration.
+
+## 3. Publiczne entrypointy
+
+- `run.py` przekazuje każdą komendę do centralnego `main.py`;
+- lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
+- domyślna rozmowa: `python -X utf8 run.py`;
+- uniwersalna rozmowa i auto-routing: `python -X utf8 run.py chat ...`;
+- host ChatGPT: preferowany `python -X utf8 run.py chat-gpt --session-id <id>` z jednym otwartym stdin/JSONL bridge; jeżeli host nie utrzymuje persistent stdio, krótkie procesy `chat-gpt` są dozwolone wyłącznie jako transport `daemon_bound_transactional_turns` z prealokowanym `request_id`, bez lokalnego replayu;
+- wyspecjalizowany backend Ollama: `python -X utf8 run.py chat-ollama ...`;
+- logika komend, lifecycle i routingu nie może być implementowana w `run.py`.
+
+Warstwa modelu nie jest właścicielem tożsamości, pamięci, provenance,
+uprawnień ani finalizacji. Te granice pozostają w runtime Jaźni.
+
+`run.py chat` nie oznacza „lokalny model”. Jest kontraktem wyboru kanału językowego; w trybie `auto` priorytet wynosi: potwierdzony host ChatGPT → dostępna lokalna Ollama → jawnie dopuszczone płatne OpenAI API → prawdomówny `null_fallback`. Tę kolejność definiuje wspólny kontrakt kodu, nie osobne opisy w help/discovery.
+
+## 4. Polityka zależności: stdlib/host-first
+
+Nowa biblioteka zewnętrzna nie trafia do rdzenia dlatego, że jest popularna albo
+ułatwia kilka linii kodu. Dodanie zależności wymaga jednocześnie:
+
+1. konkretnej brakującej capability, której nie zapewnia bezpiecznie standardowa
+   biblioteka Pythona ani host wykonawczy;
+2. uzasadnienia cross-platform dla Windows i Linux;
+3. testu regresyjnego/kontraktowego;
+4. zgodności licencyjnej i wersji wspieranej przez używane Python ABI;
+5. możliwości materializacji w zweryfikowanym offline wheelhouse z hash-lockiem;
+6. fail-closed zachowania, gdy dependency bundle jest niedostępny lub niezgodny.
+
+`pyproject.toml [project].dependencies` jest źródłem bezpośrednich zależności
+rdzenia. Capability opcjonalne należą do `[project.optional-dependencies]`.
+Dokładne, reprodukowalne artefakty instalacyjne należą do
+`JAZN_WHEELHOUSE_REQUIREMENTS.txt` generowanego przez Dependency Studio; hashy
+nie wpisuje się ręcznie.
+
+Od `16.3.25.5.99` obsługa PDF jest osobną capability `pdf`. `pypdf>=6.19.0,<7`
+pozostaje pinem bezpieczeństwa/funkcjonalności dla tej capability, ale nie należy
+do activation-required `core`, ponieważ zwykły start i dialog runtime nie importują
+`pypdf`. Standardowy release sidecar jawnie obejmuje `core+archive+pdf`, więc
+obsługa PDF pozostaje dostarczana jako zweryfikowany, hash-locked wheel bez
+wprowadzania sieciowego `pip install` do bootstrapu.
+
+## 5. ChatGPT
+
+ChatGPT w Projekcie jest hostem/runtime executor channel, a nie pakietem Python
+instalowanym przez Jaźń. Nie dodawaj `openai` SDK jako zależności tylko po to,
+aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta preferuje jedną utrzymywaną sesję `run.py chat-gpt`/stdin JSONL. Gdy host nie udostępnia persistent/streaming stdio, ten sam publiczny entrypoint pracuje przez krótkie procesy CLI związane z trwałym daemonem: host prealokuje unikalny `request_id`, zachowuje stabilny `session_id`, polluje/resume'uje ten sam request i nigdy nie zamienia niepewnego transportu na niezależną lokalną turę. Nie wymaga `OPENAI_API_KEY`; MCP jest opcjonalnym transportem hosta, nie warunkiem działania na ChatGPT.
+
+Instrukcje Projektu pozostają cienkim loaderem. Dostęp do terminala, plików,
+sieci i innych narzędzi jest capability hosta i musi być wykrywany, a nie
+zakładany. Minimalny pre-SYSTEM host bootstrap primitive może materializować
+dokładne bajty, sprawdzić size/SHA-256 oraz tylko odczytać katalog ZIP i
+pojedynczy member. Nie jest drugim lifecycle ani warstwą poznawczą: pełną
+materializację SYSTEM-u przejmuje zweryfikowany standalone bootstrap, a
+uwaga/pamięć/replay/affect i inne neuro-inspirowane funkcje należą do runtime.
+
+## 6. Ollama
+
+Lokalna Ollama pozostaje wymienną warstwą językową. Runtime korzysta z jej
+lokalnego HTTP API i nie wymaga `OPENAI_API_KEY`. Nie dodawaj pakietu Python
+`ollama` ani `openai` do rdzenia, dopóki natywny transport HTTP spełnia
+kontrakt i nie istnieje zmierzona luka funkcjonalna.
+
+Stan Ollamy i stan Jaźni raportuj oddzielnie: działający endpoint modelu nie
+jest dowodem aktywnego runtime Jaźni.
+
+## 7. JavaScript i Node.js
+
+JavaScript jest od wersji `16.3.25.5.30` jawnie obsługiwaną **opcjonalną
+capability narzędziową**, a nie drugim rdzeniem runtime. Python i `run.py`
+pozostają kanoniczną ścieżką startu systemu; brak `node` w środowisku nie może
+blokować Jaźni.
+
+Bieżąca linia testowana przez CI to **Node.js 24 LTS**. Kod JavaScript projektu
+używa ESM i jest izolowany pod `tools/javascript/`. Capability hosta można
+sprawdzić bez instalowania czegokolwiek:
+
+```text
+python -X utf8 -m latka_jazn.tools.javascript_runtime --json
+```
+
+Wymagania dla repo JavaScript:
+
+- `package.json` i `package-lock.json` są śledzone; `node_modules/` nigdy;
+- CI używa `npm ci`, nie mutującego lockfile `npm install`;
+- instalacja CI ma wyłączone zbędne skrypty/audit/funding, gdy nie są potrzebne;
+- nowa zależność npm wymaga konkretnej capability, przeglądu supply-chain,
+  lockfile i testów Windows/Linux;
+- Node nie trafia do Python wheelhouse i nie jest automatycznie pobierany przez
+  portable runtime;
+- akcje GitHub pozostają przypięte do pełnych 40-znakowych SHA. Każdy nowy albo
+  zmieniony external Action wymaga ponownego audytu upstreamowego `action.yml`,
+  w tym `runs.using`, zanim SHA zostanie zaakceptowany przez
+  `tools/github_actions_node24_audit.py`.
+
+Dla obecnej migracji `checkout`, `setup-python` i `setup-node` zostały
+przeniesione z upstreamowych wydań deklarujących `node20` na zweryfikowane
+wydania deklarujące `node24`. Akcje już korzystające z Node 24 nie są
+podnoszone wyłącznie dla numeru wersji.
+
+## 8. Release i synchronizacja metadanych
+
+Każdy systemowy patch podnosi `latka_jazn/version.py`.
+
+Kanoniczne `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` tworzy
+wyłącznie `latka_jazn.tools.release_metadata_sync`. Na dozwolonych branchach
+`master`, `update/*`, `fix/*`, `hotfix/*`, `upgrade/*` i `tools/upgrade-*`
+workflow `release-hardening/manifest_sync` ma po pushu synchronizować i
+commitować wyłącznie te dwa pliki. Pull request nadal waliduje metadane bez
+samodzielnego przesuwania headu PR.
+
+Branch nie jest gotowy do raportu jako release candidate, dopóki synchronizacja
+jest idempotentna i wymagane CI nie jest zielone.
+
+## 9. Zmiany strukturalne
+
+Masowe przeniesienie katalogu jest dopuszczalne tylko wtedy, gdy jednocześnie:
+
+- istnieje zmierzony problem, który przeniesienie rozwiązuje;
+- wszystkie publiczne entrypointy i package profiles mają plan migracji;
+- testy Windows/Linux i clean-room package przechodzą przed usunięciem aliasów;
+- manifest, provenance, dokumentacja i recovery zostały zaktualizowane;
+- nie powstaje drugi kanoniczny root, pamięć ani workspace.
+
+Bez tych dowodów preferuj reorganizację odpowiedzialności wewnątrz istniejących
+modułów zamiast masowego rename/move.
+
+
+## 10. Pluginy i capability operatorskie
+
+Opcjonalne rozszerzenia używają grupy PyPA entry points `jazn.plugins`. Discovery nie importuje third-party kodu domyślnie; jawne ładowanie izoluje błąd pluginu jako stan pluginu, nie błąd core. `archive` jest pierwszą built-in optional capability: stdlib ZIP pozostaje dostępny bez extras, natomiast 7z/AES ZIP/RAR mają osobną enhanced readiness.
+
+Git i pip są capability operatorskimi. Live daemon nie może automatycznie wykonywać mutujących `git pull/checkout/reset/merge/push` ani sieciowego `pip install`. pip jest backendem Dependency Studio; bootstrap runtime korzysta tylko z verified local wheelhouse, hash lock i binary wheels.

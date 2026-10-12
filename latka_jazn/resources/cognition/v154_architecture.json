@@ -1,0 +1,59 @@
+{
+  "schema_version": "jazn_cognitive_architecture/v1",
+  "target_release": "v15.4.0.0-cognitive-architecture",
+  "principles": [
+    "preserve_existing_public_contracts",
+    "structured_dialogue_state_before_keyword_fallback",
+    "fast_path_for_simple_turns",
+    "deliberative_plan_execute_verify_only_when_needed",
+    "selective_retrieval_with_provenance",
+    "source_and_license_aware_lexical_intelligence",
+    "operational_learning_without_self_modifying_code",
+    "no_raw_private_chain_of_thought_persistence",
+    "feature_gates_and_safe_fallbacks",
+    "regression_benchmarks_before_release"
+  ],
+  "layers": {
+    "conversation_task_state": {
+      "module": "latka_jazn.core.dialogue_task_state",
+      "responsibility": "active goal, expected action, referents, safe multi-turn continuation"
+    },
+    "reasoning_orchestrator": {
+      "module": "latka_jazn.core.reasoning_orchestrator",
+      "modes": ["fast", "standard", "deliberative"],
+      "responsibility": "auditable operational planning and verification gates"
+    },
+    "knowledge_fabric": {
+      "module": "latka_jazn.core.knowledge_fabric",
+      "retrieval": ["fts5_bm25", "vector_if_available", "relation_graph_if_available"],
+      "responsibility": "selective grounded retrieval over existing knowledge/memory indexes"
+    },
+    "lexical_intelligence": {
+      "module": "latka_jazn.nlp.lexical_intelligence",
+      "providers": ["local_jazn_mini_lexicon", "Morfeusz2_optional", "plWordNet_local_optional", "corpus_reference_optional"],
+      "responsibility": "morphology, lexical evidence, semantic relations, provenance-aware cache"
+    },
+    "operational_learning": {
+      "module": "latka_jazn.core.operational_learning_memory",
+      "responsibility": "verified anti-regression lessons linked to tests"
+    }
+  },
+  "performance_budgets": {
+    "fast_path_extra_ms_target": 10,
+    "standard_path_extra_ms_target": 40,
+    "deliberative_path_is_conditional": true,
+    "graph_retrieval_is_conditional": true,
+    "lexical_cache_required_for_repeated_external_provider_results": true
+  },
+  "release_gates": [
+    "compileall",
+    "full_pytest_non_live",
+    "dialogue_continuity_regression_suite",
+    "semantic_route_audit",
+    "doctor",
+    "package_smoke_system",
+    "release_metadata_sync",
+    "clean_checkout_ci",
+    "post_merge_ci"
+  ]
+}

@@ -1,0 +1,1265 @@
+{
+  "archive_root": ".archives/pre_v15_1_0_3_90",
+  "created_at_utc": "2026-07-26T23:17:06.133663+00:00",
+  "exact_copy_count": 138,
+  "file_count": 139,
+  "files": [
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
+      "category": "historical_artifact",
+      "original_path": "PATCH_BUMP_JAZN_TO_v15.1.0.3.90.ps1",
+      "reason": "archive_and_remove_from_active_tree",
+      "retention": "exact_copy",
+      "sha256": "5c10a6296c2076d0e93dcae9094082e2a22c345aac8cd0a7bbe49fc77f634696",
+      "size_bytes": 8847
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/README.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "README.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "246a2a01a44eb64d5bf134923913bdc247d401080c5fb38c332d1a2f1dc06a6a",
+      "size_bytes": 6889
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/docs/MEMORY_RECOVERY_CURRENT.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "docs/MEMORY_RECOVERY_CURRENT.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "700971a231cb692e4a270bdae0dc23bc35533b3f1bac83145f8469fca91b184b",
+      "size_bytes": 6799
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "docs/plans/MEMORY_CONTINUITY_VALIDATION_BACKLOG.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d871e00e43c5fcaa03b11f63f8cbb90bdc613bd3157437541e0d16d734588c15",
+      "size_bytes": 2268
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
+      "category": "historical_artifact",
+      "original_path": "docs/plans/memory_rebuild_plan/jazn_memory_tests_deep_archive_search.json",
+      "reason": "archive_and_remove_from_active_tree",
+      "retention": "exact_copy",
+      "sha256": "61e78ea45c8012b6840c97531c7ba1eb1be3cd8fc4c2433122900a062ccaa068",
+      "size_bytes": 1202899
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "docs/reports/MEMORY_SQLITE_TEST_04_IMPLEMENTATION_REPORT.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "392e6ffb1517b2ad04a16f47d101bf7c8026adb40304aaf4dc98042b0f60a6b5",
+      "size_bytes": 4423
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/audit/audit_context_store.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/audit/audit_context_store.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "7888028f4ae02d39681fb3873eb770194d520eab7b9d916942572fa901ef3368",
+      "size_bytes": 3893
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/birth_manifest.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/birth_manifest.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "c7687c63b6184996b3a142e255230750b9ebf872a3fbd567ad8c41fc496bc429",
+      "size_bytes": 9772
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/canon/extraction.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/canon/extraction.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "edc04b69d1ffd8f1f9410c6cf4381acc5bb878890f17a82ceb1de39bfd7bf3ac",
+      "size_bytes": 17698
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/canon/identity_canon.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/canon/identity_canon.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "9c87f8834dfff9cdb3628eb5a9877c5cc6dc54bf626c920b4f83e99bf3def4d2",
+      "size_bytes": 6268
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/capability_reality_checker.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/capability_reality_checker.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "877a8d1e237090658955b11836994d9a73b8b035f749279ee71fe72706db80d1",
+      "size_bytes": 4634
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/chat_command_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/chat_command_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4458173f08b970fe5850ac042d29d6a6ce3f09692c6708b698ddc39aedbaef61",
+      "size_bytes": 40343
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/clock.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/clock.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "054e215732134a5119d1df531d030bbba2398adc8dfd5fdee02130721a85629b",
+      "size_bytes": 25514
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/cognitive_turn_envelope.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/cognitive_turn_envelope.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4c09f3a48f2ea93ebc1a3882e345e24d0036e579f49b71495b2a66e0ae962927",
+      "size_bytes": 7466
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/continuity_badge.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/continuity_badge.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "5847a3bda0485072d7ce3a476e0279f2cf69b1d816b5a92d4f7b5f76e936aff3",
+      "size_bytes": 5107
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/conversation.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/conversation.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "108e57b4a3bd3a7da2f39f154b8df038fb12406e18b0800483e34f87c193bd8c",
+      "size_bytes": 79879
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/engine.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/engine.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "cd65893fecce52bcd9f6694fde76222d48f9da49948ed40e72f423679daf2512",
+      "size_bytes": 177550
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/external_research_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/external_research_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "956d6a7af0f15a94af4ec9554a1967dddec98bd95af8db1f0b5d3a3b44b328ce",
+      "size_bytes": 1076
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/final_visible_reply_capture.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/final_visible_reply_capture.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "3243a0fb6cbe3a2225307d2419d774d5ca1ddf3c6cea6da86e4f3459be6d90cc",
+      "size_bytes": 2582
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/free_dialogue_synthesizer.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/free_dialogue_synthesizer.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ee8a278d494020151851d0f46f50c394000dffddb2651c7aefc395cdad4fab7c",
+      "size_bytes": 34677
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "8d9b6e17270049d38b624efecf2e9a5769605b65dd321e0042e2827ffe347712",
+      "size_bytes": 132
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/capability_status_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/capability_status_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1cd17e4a5e0df5a3ff4f025cf868740ef14be82f92acaba360f069a3f5cba4b3",
+      "size_bytes": 14988
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/external_research_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/external_research_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e7b18cbfdc724536701a42e1b7077505ae5e38a120b4d0c778e07a7a1e1c6635",
+      "size_bytes": 2066
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/identity_memory_existence_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/identity_memory_existence_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "516778af9f7d7bec79808987b521d18cf85f9e0a925e4f2bc2159a91fdb1fad2",
+      "size_bytes": 2779
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/runtime_activation_status_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/runtime_activation_status_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "f3a8e58123f40b244b9855dbb6b344d56983de51d084681a8453c19c8fa9b9a1",
+      "size_bytes": 2585
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/runtime_chat_mode_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/runtime_chat_mode_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ab1b4b73556f078a5b1f4824e16f6cecf9e37452e5034fa893c9c627ab023c3a",
+      "size_bytes": 1361
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/runtime_diagnostic_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/runtime_diagnostic_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "5c07ec65103940f9685c5f8f956b665cec869aca7270bef8cc4b4ee3c55a701a",
+      "size_bytes": 4818
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/handlers/system_repair_plan_handler.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/handlers/system_repair_plan_handler.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "2d300fec15149eca74c3040f62e04cf14195762d8afc9fcc989c9bb71fbd91e5",
+      "size_bytes": 1671
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/lexical_semantics.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/lexical_semantics.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "81f13cf0e4b3fff0aabdb802c4e66dd732a2a89450d27a819d9c694d72e4575d",
+      "size_bytes": 14618
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/memory_grounded_generation_bridge.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/memory_grounded_generation_bridge.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "7c4b2c53cc07c4ecd303b5c1e87564a3eb7e3aa9b1aaa3e468fd8d6eb678840c",
+      "size_bytes": 8074
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/memory_recall_presenter.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/memory_recall_presenter.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "b1dbdf41be47245fabe8e3f9363482c4b0e136c148c6c4bf728f2f68dea924c1",
+      "size_bytes": 17270
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/memory_recall_quality.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/memory_recall_quality.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4d03298b9f7832e9b1df1b5f6a5445dc39b21e1db5721e9c0295f7d68fb80d76",
+      "size_bytes": 4398
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/memory_search_planner.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/memory_search_planner.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "0ac2c56eed37f99bf3b98fcd7c22ca562ca9f8754035acae9ff53ad54df438cf",
+      "size_bytes": 24638
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/memory_use_gate.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/memory_use_gate.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "0d05e8b0b926ce6fbae0b7e97d95b2cd183268851714990f6ce9f199679200d5",
+      "size_bytes": 3290
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/module_responsibility_map.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/module_responsibility_map.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "750a296f54ee3b7e1efc4cfe815c10b8cc5c5f453bbfab6d490e26c47b014e3d",
+      "size_bytes": 3774
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/nlg_plan.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/nlg_plan.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "40e308ca683cb66d9161b896c58b3a9031fcc6e59b8799baf6f027ce65bc7065",
+      "size_bytes": 3683
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/operational_thought_frame.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/operational_thought_frame.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "748fafd11577a9c29ed2da1b1226d8c30e082beb52beed61b437d152cfb6c66d",
+      "size_bytes": 10267
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/project_index.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/project_index.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "0bdc3ddd3a19de1b812d2187a7f829279c7b3bb29fa848793fe46db0013be925",
+      "size_bytes": 16356
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/response_candidate.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/response_candidate.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "2561387c59d9234855f26837299b5832766ed25725ff5269f8036f6c0d0b9ef9",
+      "size_bytes": 3172
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/response_generation_mode.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/response_generation_mode.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "f52b5fc24e39749dde58ab18257bfd8977de9b713001516a37a96abefb173f06",
+      "size_bytes": 8363
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/route_handler_base.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/route_handler_base.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "835b12b49de948896fa1fc147beccc6e64e0fd81a391b5ea36d1e860096eba40",
+      "size_bytes": 1541
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/runtime_answer_validator.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/runtime_answer_validator.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "620a6b7931d2451d43db29a30f60ef35e0f312fc5af9e6d3e475c7e28354df38",
+      "size_bytes": 49987
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/runtime_session.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/runtime_session.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1662df596ff8f6e9eb12d593ae0e83e659d5b3708496e6991c63eeb65980d9ea",
+      "size_bytes": 14442
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/runtime_visible_answer_comparator.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/runtime_visible_answer_comparator.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "f7955fe65b2b4263772d36cd2d0d57666115eca9722891ae713111679a4746e8",
+      "size_bytes": 1920
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/self_architecture_audit.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/self_architecture_audit.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "6c522613f2e8ef98896fbed63bd3f735af313a2d2f46b8b0f4c0dd9116617c21",
+      "size_bytes": 11158
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/self_state_runtime.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/self_state_runtime.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "b568f99ccb42405285a9340bf7e97f486fbbbd93953ba7939eb61cc346c30181",
+      "size_bytes": 6082
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/source_library.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/source_library.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d91e0c438be59d31fb431a9739bb3e7c587e7d38146431b11e127aaca24c2f26",
+      "size_bytes": 1333
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/source_origin.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/source_origin.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "5c2732a320758f8e80784795756683ff49486a5b63689888767a98fa207dded0",
+      "size_bytes": 4697
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/source_origin_ledger.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/source_origin_ledger.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "790f98b469bb3b5acd73e28e289e75719628cfa926f9ed263d9d49933562d430",
+      "size_bytes": 7451
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/source_text_preservation_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/source_text_preservation_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1b8efdf39dfaf299369cc6794d0bc7ff65e62dcf07b31147cb80cf2b43a7fec0",
+      "size_bytes": 1775
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/startup_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/startup_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "c805a18f12e374e4482ae722165199a7ef4d105ce140ce07b6943343d19bf879",
+      "size_bytes": 29425
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/template_origin.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/template_origin.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1f11a87f8f0095f8e2779620cfe5560704d62b262f85c03d279795f497e79515",
+      "size_bytes": 764
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/tool_use_policy.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/tool_use_policy.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "7c291c200037f889c126915eb7bc508b21cf89353fdfc3a7a35e55c397b579bd",
+      "size_bytes": 1055
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/turn_checkpoint_writer.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/turn_checkpoint_writer.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e82216c418709b73a5d697ab0b044cc5edddcffbd7bc0849f838fe511070c905",
+      "size_bytes": 3658
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/turn_execution.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/turn_execution.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ea56ea75407d151ee9586773479dca78e58e15626d237691120a288e4cfafd13",
+      "size_bytes": 18546
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/turn_logic_auditor.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/turn_logic_auditor.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "8846d691473140bfbfe53814ccffbe7090bad80bdf2131a8cbf58f154bf52cbf",
+      "size_bytes": 6235
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/turn_route_trace.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/turn_route_trace.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d9746b3c7cbd117a722cac9180927df47376b9583e852ef3549f8bf43b24fccf",
+      "size_bytes": 1255
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/turn_trace_reader.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/turn_trace_reader.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4f132f7687b4d9d88579f0e118d497a1b0f81ff6f929dc8ae09b08c5997cb285",
+      "size_bytes": 1269
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/core/voice_source_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/core/voice_source_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "95249dc169b80e5aa92486c110fa0bc1cad46ac45f85dbbf60eed0d23e5e56be",
+      "size_bytes": 2807
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/db/shard_manifest.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/db/shard_manifest.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "23fb673f291f1d70b8caa13af843175ca8a7b387e0b9386462761bb05ff28d0e",
+      "size_bytes": 6445
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/auto_memory_update.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/auto_memory_update.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d0d7d906b24201723c85f62a405e0a8a9cbb3af36d54ace326aa8063da4c5f2a",
+      "size_bytes": 31272
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/dziennik.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/dziennik.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4c8d7ff71d4bf43585f1f0bc1344f004cea580c7cc5559ae68cc6a315b7fb9a9",
+      "size_bytes": 4966
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/event_ledger.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/event_ledger.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e4e2ac7e0036450132fba6e83745e03e65c3fae4056c0464c2fa1570912866bf",
+      "size_bytes": 13816
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/importer.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/importer.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "696b6af42d0c44904f673c5755340993a8bbe619ee7294ccbd9aabcfe1232b26",
+      "size_bytes": 6945
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/layered_memory.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/layered_memory.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "59e3fe404b358b4166a0a8a131eed16e3a59c3a5d68e321d22d02e37ecec224e",
+      "size_bytes": 13144
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/memory_recall_contract.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/memory_recall_contract.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1ce1b08fbe9cc9ff6fed7cae003c83a4ed4ae0ea40c91266652b680b5cd998b9",
+      "size_bytes": 3838
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/raw_chat_importer.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/raw_chat_importer.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "3cdf04cc96cf8edb497b1f883cc492961f74ccf5a3180d3fe05952fbefcedbff",
+      "size_bytes": 1773
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/raw_memory_status.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/raw_memory_status.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "74d87b470beb9522e7e512a14d0371463097303be427b00ba826d000f24f22f4",
+      "size_bytes": 5708
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/requirements_ledger.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/requirements_ledger.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e4bbba2df77590860171c39655c3c4cbf566cd7c22426ff30b352281d81ce1a9",
+      "size_bytes": 2846
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/runtime_persistence.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/runtime_persistence.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "552170dde0ecaa7407c446e11b0d0b4d69e41983b48dc607d4a651b30e60d97e",
+      "size_bytes": 25550
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/session_continuity.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/session_continuity.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "b02f4590fa37ae1043b7ca20ded858aa0b3f7ca12776e8acfd07878855bee498",
+      "size_bytes": 8695
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/store.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/store.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "26a9ad0421b69619d8e80a0e806deaeb79d9bb5be89ab648eea7239f7c964905",
+      "size_bytes": 10724
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/memory/version_update_recorder.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/memory/version_update_recorder.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "744a5aed18402fa79522d1d464345b21e13271b93796248a8d4c90fc98b3c69a",
+      "size_bytes": 12203
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d1ba04eeba0cd2f97c12cac1cdd4c5d6569379e194768338a361614a17fad321",
+      "size_bytes": 1287
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/context_carryover.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/context_carryover.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "681d210fafef255b2ab5a6d336082056510c4ed2e7f228fdb53f18ace998eb5e",
+      "size_bytes": 846
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/dialogue_intent_classifier.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/dialogue_intent_classifier.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "14370f1558d110d43fe3d969eff3a836d45756407f2020d1ec57220d4543f259",
+      "size_bytes": 51892
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/dictionary_entry.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/dictionary_entry.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "8ad31d1e51bf304b656c0fe206023d85e8bc6373f88e2854e2c952cb8a9497d3",
+      "size_bytes": 3690
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/dictionary_source_policy.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/dictionary_source_policy.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ddeeea0f9f8134b72a2b0bb0e76fc1e5e9b0d3ce8319a18f5cad83b452c210a9",
+      "size_bytes": 718
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/ellipsis_resolver.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/ellipsis_resolver.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "559302bb1b952529350eecb22f8ccf097e9d6937b74901b2c4a2698cbcfe9f4e",
+      "size_bytes": 5395
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/entity_and_topic_frame.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/entity_and_topic_frame.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "1fca31467fb585fd68e7f0d7ca2074e50214a41a6e8771858ec640a68da8ee51",
+      "size_bytes": 831
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/external_dictionary_adapter.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/external_dictionary_adapter.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "530d16ae91bd6041253c7cd2c178632ba0eb2d2d80f84d8ddb4a96530b96b8a8",
+      "size_bytes": 10381
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/intent_confidence_calibrator.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/intent_confidence_calibrator.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "bd2269e0f07aea258dcb35b0a0cd97cb5bc4d0485d4139b7f8d5ab5cc9b0f347",
+      "size_bytes": 464
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/intent_training_examples.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/intent_training_examples.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4f28f6d2d9bb71d01a57b03126e14dc7982e4188c921892b9e998d7eb765c482",
+      "size_bytes": 1099
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/language_resource_registry.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/language_resource_registry.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d93d38fd47b1f57ede4c2568cc51536c6d05c1b8fd9e9522b6bc2f2f22242ffb",
+      "size_bytes": 2650
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/lexical_license_guard.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/lexical_license_guard.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "b3fd7ddcd54208cbe0ac2bf0c0b7ad798f3d99d34ea6a1e02ac76206e0cc42f9",
+      "size_bytes": 769
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/negative_examples.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/negative_examples.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "5cddfe37ab5b6264048ebf7a6a823be860ea5337e83658d79a728e2e0273b4e9",
+      "size_bytes": 597
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/network_dictionary_cache.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/network_dictionary_cache.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "74512a711cae71258d1ca6273e4ff140931de13aaaeece94ce23e839c2212d61",
+      "size_bytes": 4956
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/polish_lemmatizer.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/polish_lemmatizer.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "a8797631de182a7e7ce6d170ed5dd508b5da07c6c70528e9d277c4e62ae0643b",
+      "size_bytes": 7331
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/polish_morphology_frame.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/polish_morphology_frame.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "91913adecf91b70198137b35bb2c4e87865792e03d8ec3393752eca35f2732f1",
+      "size_bytes": 939
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/providers/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/providers/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "3495544805af9f5760aaa5d0ae7418b1dee6e7edcc60feb8618b0161d1152a25",
+      "size_bytes": 66
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/providers/languagetool_http_provider.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/providers/languagetool_http_provider.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e1e11af6baa4c04a1cb2523e2edc0c1e341cd1cc76ea6ab3fa7695f91d70d4af",
+      "size_bytes": 1695
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/source_preservation_detector.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/source_preservation_detector.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ead5c85710079f07cd040d493b8add1be95ccaa4238d7255b835bc5818dccdd6",
+      "size_bytes": 794
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp/speech_act_detector.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp/speech_act_detector.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d35bd6bd517314d6129bd47fe8680d2783f94be467aa67f7940567a8b5473aa6",
+      "size_bytes": 1053
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ee19422bffb5c6fd0b40cc22998d508f220a2f62b97440d6d8c8dbd526c6608f",
+      "size_bytes": 714
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/diagnostics.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/diagnostics.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "008a3a90f64e892c995273003842f966ea1026c101d30df44704ec0b7c4f0e41",
+      "size_bytes": 2693
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/lexical_resource_cache.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/lexical_resource_cache.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "9b8ab375aba3020a529a49e387839cfd9a7dd17dddc69ca84594d67b628c32d6",
+      "size_bytes": 5984
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/lexical_resource_registry.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/lexical_resource_registry.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "2f19f5889b62b24676ae941c16a8b58c1e4aace637c081dc7c205bf16cbac33e",
+      "size_bytes": 10077
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/models.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/models.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "c5eedd90469e3cbf4229f36945a1e20c5f2ff35ee598ffc871654ba9587a5521",
+      "size_bytes": 3941
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/nlp_reasoning/source_registry.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/nlp_reasoning/source_registry.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "cd9b9e73d58af9974738b347aef3c9bc03f80c9662b22b5136ecf97ca6e0cc43",
+      "size_bytes": 1530
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/canon/LATKA_CHARACTER_PROFILE.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/canon/LATKA_CHARACTER_PROFILE.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "79c28bb14862a693e2a09eede529028709f5f7a6b9846dbac10b6d7114c6e004",
+      "size_bytes": 1681
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/canon/LATKA_IDENTITY_CANON.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "0d16904d4e1d6f85d27d176e5496e03a79784f004cd5fe7edbc44c5cc8f48cd3",
+      "size_bytes": 4823
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/canon/LATKA_ORIGIN_STORY.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/canon/LATKA_ORIGIN_STORY.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "c2d6e2d9ca8c43f0de532b2e6880c1348a1d25628d6521f48d66a94de78d6291",
+      "size_bytes": 1604
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/canon/LATKA_SYMBOLIC_WORLD.md",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/canon/LATKA_SYMBOLIC_WORLD.md",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "41b9e85dc7619cbc7f9ea5a3d8fd15259717f93ace23d2a1e5b5c337d4a1d3b0",
+      "size_bytes": 1561
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/chatgpt_startup_loader.txt",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/chatgpt_startup_loader.txt",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "e19cde773bef3233fe5ad6bd1d20d9f47b4ca13af246f94347de4082bc5d0cf4",
+      "size_bytes": 693
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/cognitive_packet_catalog.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/cognitive_packet_catalog.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "97eef26fcc1824b97590c278ecc83a449dfd033aef71a02bfd0a60972e94cecf",
+      "size_bytes": 20484
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/memory_search_topics.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/memory_search_topics.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "22fb8473106a9ac9fde503dc100aca0c109e9e4e10b8ee8e43f4063451740510",
+      "size_bytes": 6331
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/nlp/latka_project_lexicon.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/nlp/latka_project_lexicon.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "f9bc34991db457b910127edd9d2ce1074ec7016acc0f91282c03b0a9531eb6ec",
+      "size_bytes": 3326
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/nlp/nlp_architecture_sources.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/nlp/nlp_architecture_sources.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "bc3589870e7378bc87d4b84463c468161b014c42a6a3fc6e7d673931e56b3c94",
+      "size_bytes": 3120
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/nlp/polish_dialogue_route_lexicon.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/nlp/polish_dialogue_route_lexicon.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "73c6f7904a60b8582eeff52e6d34aa44032980b7bac1e0737e086ca8da42a79e",
+      "size_bytes": 5263
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/nlp/verified_sources.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/nlp/verified_sources.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d787eec6fb47a6a2153b201e465e3df7c3163ed40b2165f612deea40fa871a9f",
+      "size_bytes": 5431
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/nlp_provider_registry.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/nlp_provider_registry.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "84eae637172b3ce7d59faad30d96f25b7b9954c3600742a002da0cb335403ad9",
+      "size_bytes": 2097
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/polish_lemma_overrides.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/polish_lemma_overrides.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "05ed096df58718f5f7f563243b3939a11f7c71b0d019fcabfb1393fbb4b9b7a7",
+      "size_bytes": 1260
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/polish_reasoning/sources.lock.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/polish_reasoning/sources.lock.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "a7423948d8b55189ef5ac1de82bfbd9772a07a0569c610cd7c7ca662f59279fe",
+      "size_bytes": 7719
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/polish_understanding_lexicon.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/polish_understanding_lexicon.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d501c90164edfa57c2b320b3385d13687665f0e0fc18bc8ee0fe4a570c59c563",
+      "size_bytes": 16736
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/self_development/self_development_backlog.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/self_development/self_development_backlog.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "50cdede39285809e317ceaa8ef2cc23828e4ce0284b334542eb02654474332d2",
+      "size_bytes": 2774
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/semantic_lexicon.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/semantic_lexicon.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "b1d171f1f2a0218c27da10c2de98cf74ffa6d1a81581fa752188a6e54ebdf395",
+      "size_bytes": 14074
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/resources/startup_contract.json",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/resources/startup_contract.json",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "05206b3c69d967348dc0ce364cc1969e57faff6a54fcfcca82c9d322bc3d0b7b",
+      "size_bytes": 797
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/tools/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/tools/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d340bc4a6425aecc46b031151cd365488fb160cfce61381ad52daee741271161",
+      "size_bytes": 77
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/tools/current_line_archive_audit.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/tools/current_line_archive_audit.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "ad6d6be2325b9dec7822d8668efb9cb81958bd06dea2404285e5d79d52673439",
+      "size_bytes": 9033
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/tools/update_history_audit.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/tools/update_history_audit.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "314814ecff3ac06ac4d1b0a7a5d197260215a53c173afbe20d940148c52afa7e",
+      "size_bytes": 7693
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/__init__.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/__init__.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4930d5e95662ed1de97cd20e9fb3fe4953df13b1c623aed3e8d4f5f9c78cc4be",
+      "size_bytes": 71
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/audio_session_ledger.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/audio_session_ledger.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "a38f473fe54fec7fb6c183216650009f72b36d88495dda17552f5ab8c8819a70",
+      "size_bytes": 288
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/voice_consent_policy.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/voice_consent_policy.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "7a290189f066ad4fbb97fa6d1e2ea35ce161c07bcba875c97ce2ca70b4f4a448",
+      "size_bytes": 188
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/voice_identity_policy.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/voice_identity_policy.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "114295893f219154156bfc346930d600fda6e47d98ea6ab160f0844dfa2d263b",
+      "size_bytes": 218
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/voice_style_profile.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/voice_style_profile.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4ff22cd6a2511344f9714b25b579a4c904db289946cc8f45a36ab5cd20f5b838",
+      "size_bytes": 263
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/latka_jazn/voice/voice_truth_boundary.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "latka_jazn/voice/voice_truth_boundary.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "dd77b26df43969a472df54f4532ac8e8a6f4f7fd223aec47759619538052d1d0",
+      "size_bytes": 218
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/main.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "main.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "9bbf3751435517d478997b130be0ab1f615b86a1e3ffe15cb99d2e5bc65371f3",
+      "size_bytes": 105761
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_current_line_archive_audit.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_current_line_archive_audit.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "3e3d6481a07494f66e0a39045a952c149c49d031ca9b7fe5c233e3ee8dd5f351",
+      "size_bytes": 1427
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_dziennik_migration.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_dziennik_migration.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "c22538dbd3139d9d71c0c7d7bb514db13669222d642a7b7b37a2aeca8aced04a",
+      "size_bytes": 4509
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_release_completion.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_release_completion.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "5d8a93257991755390a89841093ec04e554efddfe3afc1cecbc0df830097ef57",
+      "size_bytes": 11645
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_release_hardening_active_contracts.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_release_hardening_active_contracts.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "cc331790846d4880eb62e436dfa1bacb96e3fee8ce3e5306355e8324bad8764e",
+      "size_bytes": 11782
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_release_hardening_integrity_pipeline.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_release_hardening_integrity_pipeline.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "f8bad480571ce9af57a3b2ac6b8697c5e7350768ae59c4b6fc30891803000605",
+      "size_bytes": 8706
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_release_hardening_safe_paths.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_release_hardening_safe_paths.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "9cb91a868ffeaeda88fb2b9f648fd3ce3d95663abf4abae2f5b244d9e24e9aea",
+      "size_bytes": 4444
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_release_workflow_hardening.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_release_workflow_hardening.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "780e682b650af59a0183ba38a9d8aaf2db98836cc8a3979fff7da3566192bf06",
+      "size_bytes": 2338
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_runtime_stability_visible_integrity.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_runtime_stability_visible_integrity.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "4eea297ba501d8f694f60fb2f7ab767639e6a17b0a8fcea736efcf84774f66fc",
+      "size_bytes": 6764
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tests/test_runtime_stability_wake_state.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tests/test_runtime_stability_wake_state.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "86b417b638cc286c52d0bbc1fbf441abe625301bce0f3140607f2aa979c798bc",
+      "size_bytes": 16503
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tools/jazn_version_rebuild.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tools/jazn_version_rebuild.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "801064956ae546399d00155333beeb69559823ae671b8433e18413456b649170",
+      "size_bytes": 34585
+    },
+    {
+      "archive_path": ".archives/pre_v15_1_0_3_90/tree/tools/memory_migrate_legacy.py",
+      "category": "active_source_before_v90_migration",
+      "original_path": "tools/memory_migrate_legacy.py",
+      "reason": "archive_exact_before_semantic_migration",
+      "retention": "exact_copy",
+      "sha256": "d21e1c458e2a1fcb86c46243dda1384f445aa394dc6222911647ed9336cff572",
+      "size_bytes": 8026
+    },
+    {
+      "archive_path": null,
+      "category": "generated_private_source",
+      "original_path": "latka_jazn/contracts/embedded_sources.py",
+      "reason": "carry_forward_private_metadata_only",
+      "retention": "metadata_only_private_source",
+      "sha256": "03cfd168533486e1633823b446fb3b1fd614d8c11dd981b6a8d8b842d72ccd68",
+      "size_bytes": 271555
+    }
+  ],
+  "metadata_only_private_count": 1,
+  "schema_version": "current_line_archive/v1",
+  "source_commit": "0ba25bdd884ec1737c50956f1d3c7e3ff6a53043",
+  "source_package_version": "v15.1.0.3.89",
+  "target_package_version": "v15.1.0.3.90",
+  "truth_boundary": "Exact copies preserve pre-migration tracked content byte-for-byte. Private generated source content is not duplicated; only inherited integrity metadata is retained."
+}

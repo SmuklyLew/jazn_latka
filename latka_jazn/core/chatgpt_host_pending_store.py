@@ -1,0 +1,826 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta, timezone
+import base64
+import hashlib
+import hmac
+import json
+import os
+from pathlib import Path
+import secrets
+import time
+from typing import Any, Mapping
+
+from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+SCHEMA_VERSION = schema_version("chatgpt_host_pending_request")
+DEFAULT_CONTINUATION_TTL_SECONDS = 60 * 60
+LONG_WORK_CONTINUATION_TTL_SECONDS = 4 * 60 * 60
+MIN_CONTINUATION_TTL_SECONDS = 30
+MAX_CONTINUATION_TTL_SECONDS = 24 * 60 * 60
+_TOKEN_PREFIX = "jct1"
+
+
+class HostRequestStoreError(RuntimeError):
+    """Raised when the two-phase ChatGPT host contract cannot be trusted."""
+
+    def __init__(self, message: str, *, record: Mapping[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.record = dict(record or {})
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _parse_utc(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _canonical_json(value: Mapping[str, Any]) -> bytes:
+    return json.dumps(dict(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _safe_id(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        raise HostRequestStoreError("turn_id_missing")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _store_root(root: Path) -> Path:
+    return workspace_runtime_path(Path(root)) / "chatgpt_host_bridge"
+
+
+def _path(root: Path, state: str, turn_id: str) -> Path:
+    return _store_root(root) / state / f"{_safe_id(turn_id)}.json"
+
+
+def _continuation_secret_path(root: Path) -> Path:
+    return _store_root(root) / "continuation.secret"
+
+
+def _write_private_bytes(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp")
+    try:
+        temporary.write_bytes(payload)
+        try:
+            os.chmod(temporary, 0o600)
+        except OSError:
+            pass
+        os.replace(temporary, path)
+        try:
+            os.chmod(path, 0o600)
+        except OSError:
+            pass
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _continuation_secret(root: Path) -> bytes:
+    path = _continuation_secret_path(root)
+    try:
+        value = path.read_bytes()
+    except FileNotFoundError:
+        value = secrets.token_bytes(32)
+        try:
+            _write_private_bytes(path, value)
+        except OSError as exc:
+            raise HostRequestStoreError(f"continuation_secret_unwritable:{type(exc).__name__}") from exc
+    except OSError as exc:
+        raise HostRequestStoreError(f"continuation_secret_unreadable:{type(exc).__name__}") from exc
+    if len(value) < 32:
+        raise HostRequestStoreError("continuation_secret_invalid")
+    return value
+
+
+def _normalize_ttl(ttl_seconds: int | float | None) -> int:
+    try:
+        requested = int(ttl_seconds if ttl_seconds is not None else DEFAULT_CONTINUATION_TTL_SECONDS)
+    except (TypeError, ValueError) as exc:
+        raise HostRequestStoreError("continuation_ttl_invalid") from exc
+    return max(MIN_CONTINUATION_TTL_SECONDS, min(requested, MAX_CONTINUATION_TTL_SECONDS))
+
+
+LONG_WORK_INTENTS = frozenset({
+    "external_research_request",
+    "system_update_execution_request",
+    "system_update_manifest_request",
+    "runtime_behavior_diagnostic_request",
+    "system_diagnostic_question",
+    "self_architecture_audit_request",
+    "post_update_coverage_audit_request",
+    "external_tool_assistance_request",
+    "memory_audit_request",
+})
+LONG_WORK_ROUTES = frozenset({
+    "external_research",
+    "system_update",
+    "runtime_diagnostic_repair",
+    "self_architecture_audit",
+    "post_update_coverage_audit",
+    "external_tool_assistance",
+    "memory_audit",
+})
+
+
+def continuation_ttl_for_bridge(bridge: Mapping[str, Any]) -> int:
+    """Return a bounded lease selected from immutable phase-1 work metadata."""
+    summary_value = bridge.get("runtime_summary")
+    summary: Mapping[str, Any] = summary_value if isinstance(summary_value, Mapping) else {}
+    intent = str(summary.get("detected_intent") or bridge.get("detected_intent") or "").strip()
+    route = str(summary.get("route") or bridge.get("route") or "").strip()
+    if intent in LONG_WORK_INTENTS or route in LONG_WORK_ROUTES:
+        return LONG_WORK_CONTINUATION_TTL_SECONDS
+    return DEFAULT_CONTINUATION_TTL_SECONDS
+
+
+def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the immutable phase-1 fields that a phase-2 reply must match."""
+    binding = {
+        "schema_version": SCHEMA_VERSION,
+        "runtime_version": str(bridge.get("runtime_version") or PACKAGE_VERSION_FULL),
+        "phase": str(bridge.get("phase") or ""),
+        "turn_id": str(bridge.get("turn_id") or ""),
+        "trace_id": str(bridge.get("trace_id") or ""),
+        "timestamp_header": str(bridge.get("timestamp_header") or ""),
+        "timezone": str(bridge.get("timezone") or ""),
+        "timestamp_sample_iso": str(bridge.get("timestamp_sample_iso") or ""),
+        "timestamp_source": str(bridge.get("timestamp_source") or ""),
+        "timestamp_trusted": bridge.get("timestamp_trusted"),
+        "author_id": str(bridge.get("author_id") or ""),
+        "author_label": str(bridge.get("author_label") or ""),
+        "author_source": str(bridge.get("author_source") or ""),
+        "state_emoticon": str(bridge.get("state_emoticon") or ""),
+        "user_text_sha256": str(bridge.get("user_text_sha256") or ""),
+        "finalization_contract_hash": str(bridge.get("finalization_contract_hash") or ""),
+        "runtime_context_sha256": str(bridge.get("runtime_context_sha256") or ""),
+        # Optional v15.4 binding.  Empty remains valid for pending requests
+        # produced by pre-v15.4 code, preserving replay-safe compatibility.
+        "session_continuity_commit_sha256": str(
+            bridge.get("session_continuity_commit_sha256") or ""
+        ),
+    }
+    daemon_request_id = str(bridge.get("daemon_request_id") or "").strip()
+    host_generation_context_sha256 = str(
+        bridge.get("host_generation_context_sha256") or ""
+    ).strip()
+    if host_generation_context_sha256:
+        binding["host_generation_context_sha256"] = host_generation_context_sha256
+    if daemon_request_id:
+        # Omit the field for legacy/one-shot contracts so their pre-v16.0.7 hash
+        # remains valid. Daemon turns bind both phases to one logical job.
+        binding["daemon_request_id"] = daemon_request_id
+    return binding
+
+
+def calculate_host_request_contract_hash(bridge: Mapping[str, Any]) -> str:
+    return hashlib.sha256(_canonical_json(canonical_host_request_binding(bridge))).hexdigest()
+
+
+@dataclass(slots=True)
+class PendingHostRequest:
+    state: str
+    request_contract_hash: str
+    binding: dict[str, Any]
+    created_at_utc: str
+    expires_at_utc: str
+    generation_context: dict[str, Any] = field(default_factory=dict)
+    regeneration_attempts: int = 0
+    max_regeneration_attempts: int = 1
+    last_regeneration_reason: str | None = None
+    last_regeneration_at_utc: str | None = None
+    continuation_token_sha256: str | None = None
+    token_issued_at_utc: str | None = None
+    claimed_at_utc: str | None = None
+    consumed_at_utc: str | None = None
+    expired_at_utc: str | None = None
+    schema_version: str = SCHEMA_VERSION
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def _atomic_write(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + f".{os.getpid()}.{secrets.token_hex(6)}.tmp")
+    temporary.write_text(
+        json.dumps(dict(payload), ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    try:
+        _replace_path(temporary, path)
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _replace_path(source: Path, destination: Path) -> None:
+    """Retry transient Windows sharing violations without weakening atomicity."""
+
+    last_error: PermissionError | None = None
+    for attempt in range(6):
+        try:
+            os.replace(source, destination)
+            return
+        except PermissionError as exc:
+            last_error = exc
+            if attempt == 5:
+                raise
+            time.sleep(0.02 * (attempt + 1))
+    if last_error is not None:
+        raise last_error
+
+
+def _read(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise HostRequestStoreError("pending_host_request_not_found") from exc
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise HostRequestStoreError(f"pending_host_request_unreadable:{type(exc).__name__}") from exc
+    if not isinstance(value, dict):
+        raise HostRequestStoreError("pending_host_request_not_object")
+    return value
+
+
+def _is_expired(record: Mapping[str, Any], *, now: datetime | None = None) -> bool:
+    expires = _parse_utc(record.get("expires_at_utc"))
+    return bool(expires is not None and expires <= (now or _utc_now()))
+
+
+def _expire_record(root: Path, source: Path, record: dict[str, Any], *, reason: str) -> dict[str, Any]:
+    record["state"] = "expired"
+    record["expired_at_utc"] = _utc_now().isoformat()
+    record["expiration_reason"] = reason
+    turn_id = str((record.get("binding") or {}).get("turn_id") or "")
+    if not turn_id:
+        raise HostRequestStoreError("pending_host_request_turn_id_missing")
+    destination = _path(root, "expired", turn_id)
+    _atomic_write(source, record)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    _replace_path(source, destination)
+    return record
+
+
+def cleanup_expired_host_requests(root: Path, *, now: datetime | None = None) -> dict[str, int]:
+    """Move expired pending/claimed records out of active state without enabling replay."""
+    current = now or _utc_now()
+    counts = {"pending_expired": 0, "claimed_expired": 0, "unreadable": 0}
+    for state in ("pending", "claimed"):
+        directory = _store_root(root) / state
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("*.json"):
+            try:
+                record = _read(path)
+            except HostRequestStoreError:
+                counts["unreadable"] += 1
+                continue
+            if not _is_expired(record, now=current):
+                continue
+            _expire_record(root, path, record, reason=f"{state}_ttl_elapsed")
+            counts[f"{state}_expired"] += 1
+    return counts
+
+
+def abandon_pending_host_request(
+    root: Path,
+    *,
+    turn_id: str,
+    request_contract_hash: str,
+    reason: str,
+) -> dict[str, Any]:
+    """Atomically terminalize one *unclaimed* phase-1 request as expired.
+
+    This is the bounded supersession path used when a newer user turn has
+    waited for the previous host-finalization gate and that previous request is
+    still merely pending. A claimed request may already be committing phase 2,
+    so it is never cancelled here. Consumed/expired records are returned
+    idempotently and replay protection remains authoritative.
+    """
+
+    cleanup_expired_host_requests(root)
+    supplied_hash = str(request_contract_hash or "").strip().lower()
+    if not supplied_hash:
+        raise HostRequestStoreError("host_request_contract_hash_missing")
+
+    consumed_path = _path(root, "consumed", turn_id)
+    expired_path = _path(root, "expired", turn_id)
+    claimed_path = _path(root, "claimed", turn_id)
+    pending_path = _path(root, "pending", turn_id)
+    for state, path in (("consumed", consumed_path), ("expired", expired_path), ("claimed", claimed_path)):
+        if not path.is_file():
+            continue
+        record = _read(path)
+        expected = str(record.get("request_contract_hash") or "").strip().lower()
+        if not hmac.compare_digest(expected, supplied_hash):
+            raise HostRequestStoreError("host_request_contract_hash_mismatch")
+        return _host_request_lifecycle_payload(record, state=state)
+
+    record = _read(pending_path)
+    expected = str(record.get("request_contract_hash") or "").strip().lower()
+    if not hmac.compare_digest(expected, supplied_hash):
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+
+    # Move first: directory/state is the atomic authority. If a concurrent
+    # finalizer claimed the request, the source disappears and we re-read its
+    # authoritative lifecycle instead of manufacturing a second terminal state.
+    expired_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        _replace_path(pending_path, expired_path)
+    except FileNotFoundError:
+        return host_request_lifecycle_state(root, turn_id=turn_id)
+
+    record["state"] = "expired"
+    record["expired_at_utc"] = _utc_now().isoformat()
+    record["expiration_reason"] = str(reason or "host_finalization_abandoned")[:160]
+    record["settlement_authority"] = "durable_host_request_store"
+    record["abandoned_for_successor"] = True
+    _atomic_write(expired_path, record)
+    return _host_request_lifecycle_payload(record, state="expired")
+
+
+def persist_pending_host_request(
+    root: Path,
+    bridge: Mapping[str, Any],
+    *,
+    ttl_seconds: int | float | None = None,
+) -> dict[str, Any]:
+    cleanup_expired_host_requests(root)
+    binding = canonical_host_request_binding(bridge)
+    if binding["phase"] != "host_visible_generation_requested":
+        raise HostRequestStoreError("host_request_phase_invalid")
+    required = (
+        "turn_id", "trace_id", "timestamp_header", "timezone", "timestamp_sample_iso",
+        "timestamp_source", "author_id", "author_label", "author_source", "state_emoticon",
+        "user_text_sha256", "finalization_contract_hash", "runtime_context_sha256",
+    )
+    missing = [name for name in required if not str(binding.get(name) or "").strip()]
+    if not isinstance(binding.get("timestamp_trusted"), bool):
+        missing.append("timestamp_trusted")
+    if missing:
+        raise HostRequestStoreError("host_request_binding_missing:" + ",".join(missing))
+    calculated = calculate_host_request_contract_hash(bridge)
+    supplied = str(bridge.get("host_request_contract_hash") or "").strip().lower()
+    if supplied != calculated:
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    pending_path = _path(root, "pending", binding["turn_id"])
+    consumed_path = _path(root, "consumed", binding["turn_id"])
+    claimed_path = _path(root, "claimed", binding["turn_id"])
+    expired_path = _path(root, "expired", binding["turn_id"])
+    if consumed_path.exists():
+        raise HostRequestStoreError("host_request_already_consumed")
+    if claimed_path.exists():
+        raise HostRequestStoreError("host_request_already_claimed")
+    if expired_path.exists():
+        raise HostRequestStoreError("host_request_expired")
+    if pending_path.exists():
+        existing = _read(pending_path)
+        if str(existing.get("request_contract_hash") or "") != calculated:
+            raise HostRequestStoreError("pending_host_request_conflict")
+        if _is_expired(existing):
+            _expire_record(root, pending_path, existing, reason="pending_ttl_elapsed")
+            raise HostRequestStoreError("host_request_expired")
+        return existing
+    now = _utc_now()
+    ttl = _normalize_ttl(ttl_seconds)
+    record = PendingHostRequest(
+        state="pending",
+        request_contract_hash=calculated,
+        binding=binding,
+        created_at_utc=now.isoformat(),
+        expires_at_utc=(now + timedelta(seconds=ttl)).isoformat(),
+        generation_context={
+            'host_generation_policy': dict(bridge.get('host_generation_policy') or {}),
+            'host_generation_rules': list(bridge.get('host_generation_rules') or []),
+            'required_visible_prefix': bridge.get('required_visible_prefix'),
+            'runtime_summary': dict(bridge.get('runtime_summary') or {}),
+            'session_continuity_commit': dict(bridge.get('session_continuity_commit') or {}),
+            'host_generation_context': dict(bridge.get('host_generation_context') or {}),
+            'daemon_request_id': str(bridge.get('daemon_request_id') or ''),
+        },
+    ).to_dict()
+    _atomic_write(pending_path, record)
+    return record
+
+
+def _token_for_record(root: Path, record: Mapping[str, Any]) -> str:
+    contract_hash = str(record.get("request_contract_hash") or "").strip().lower()
+    binding_value = record.get("binding")
+    binding: dict[str, Any] = binding_value if isinstance(binding_value, dict) else {}
+    turn_id = str(binding.get("turn_id") or "").strip()
+    created_at = str(record.get("created_at_utc") or "").strip()
+    if not contract_hash or not turn_id or not created_at:
+        raise HostRequestStoreError("continuation_binding_invalid")
+    material = f"{SCHEMA_VERSION}\n{contract_hash}\n{turn_id}\n{created_at}".encode("utf-8")
+    digest = hmac.new(_continuation_secret(root), material, hashlib.sha256).digest()
+    encoded = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+    return f"{_TOKEN_PREFIX}.{encoded}"
+
+
+def issue_continuation_token(
+    root: Path,
+    *,
+    turn_id: str,
+    request_contract_hash: str,
+) -> dict[str, Any]:
+    cleanup_expired_host_requests(root)
+    pending_path = _path(root, "pending", turn_id)
+    record = _read(pending_path)
+    if _is_expired(record):
+        _expire_record(root, pending_path, record, reason="token_issue_after_expiry")
+        raise HostRequestStoreError("host_request_expired")
+    expected = str(record.get("request_contract_hash") or "")
+    supplied = str(request_contract_hash or "").strip().lower()
+    if expected != supplied:
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    token = _token_for_record(root, record)
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    existing_hash = str(record.get("continuation_token_sha256") or "")
+    if existing_hash and not hmac.compare_digest(existing_hash, token_hash):
+        raise HostRequestStoreError("continuation_token_conflict")
+    if not existing_hash:
+        record["continuation_token_sha256"] = token_hash
+        record["token_issued_at_utc"] = _utc_now().isoformat()
+        _atomic_write(pending_path, record)
+    return {
+        "continuation_token": token,
+        "expires_at_utc": record.get("expires_at_utc"),
+        "turn_id": turn_id,
+        "trace_id": (record.get("binding") or {}).get("trace_id"),
+        "request_contract_hash": expected,
+        "state": record.get("state"),
+    }
+
+
+def resolve_continuation_token(root: Path, token: str) -> dict[str, Any]:
+    cleanup_expired_host_requests(root)
+    candidate = str(token or "").strip()
+    if not candidate.startswith(f"{_TOKEN_PREFIX}.") or len(candidate) > 256:
+        raise HostRequestStoreError("continuation_token_invalid")
+    candidate_hash = hashlib.sha256(candidate.encode("utf-8")).hexdigest()
+    for state in ("pending", "claimed", "consumed", "expired"):
+        directory = _store_root(root) / state
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("*.json"):
+            record = _read(path)
+            stored_hash = str(record.get("continuation_token_sha256") or "")
+            if not stored_hash or not hmac.compare_digest(stored_hash, candidate_hash):
+                continue
+            expected_token = _token_for_record(root, record)
+            if not hmac.compare_digest(expected_token, candidate):
+                raise HostRequestStoreError("continuation_token_invalid")
+            if state == "consumed":
+                raise HostRequestStoreError("host_request_replay_detected", record=record)
+            if state == "expired" or _is_expired(record):
+                if state != "expired":
+                    _expire_record(root, path, record, reason="token_resolve_after_expiry")
+                raise HostRequestStoreError("host_request_expired", record=record)
+            if state == "claimed":
+                if str(record.get("state") or "") == "indeterminate":
+                    raise HostRequestStoreError("host_request_persistence_indeterminate", record=record)
+                raise HostRequestStoreError("host_request_in_progress", record=record)
+            return record
+    raise HostRequestStoreError("continuation_token_not_found")
+
+
+def claim_pending_host_request(root: Path, *, turn_id: str, request_contract_hash: str) -> dict[str, Any]:
+    cleanup_expired_host_requests(root)
+    pending_path = _path(root, "pending", turn_id)
+    claimed_path = _path(root, "claimed", turn_id)
+    consumed_path = _path(root, "consumed", turn_id)
+    expired_path = _path(root, "expired", turn_id)
+    if consumed_path.exists():
+        raise HostRequestStoreError("host_request_replay_detected")
+    if expired_path.exists():
+        raise HostRequestStoreError("host_request_expired")
+    if claimed_path.exists():
+        claimed = _read(claimed_path)
+        if str(claimed.get("state") or "") == "indeterminate":
+            raise HostRequestStoreError("host_request_persistence_indeterminate")
+        raise HostRequestStoreError("host_request_in_progress")
+    record = _read(pending_path)
+    if _is_expired(record):
+        _expire_record(root, pending_path, record, reason="claim_after_expiry")
+        raise HostRequestStoreError("host_request_expired")
+    expected = str(record.get("request_contract_hash") or "")
+    if expected != str(request_contract_hash or "").strip().lower():
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    record["state"] = "claimed"
+    record["claimed_at_utc"] = _utc_now().isoformat()
+    claimed_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        _replace_path(pending_path, claimed_path)
+    except FileNotFoundError as exc:
+        if consumed_path.exists():
+            raise HostRequestStoreError("host_request_replay_detected") from exc
+        raise HostRequestStoreError("pending_host_request_not_found") from exc
+    _atomic_write(claimed_path, record)
+    return record
+
+
+def release_claimed_host_request(root: Path, *, turn_id: str) -> None:
+    claimed_path = _path(root, "claimed", turn_id)
+    if not claimed_path.exists():
+        return
+    record = _read(claimed_path)
+    if _is_expired(record):
+        _expire_record(root, claimed_path, record, reason="release_after_expiry")
+        return
+    record["state"] = "pending"
+    record["claimed_at_utc"] = None
+    pending_path = _path(root, "pending", turn_id)
+    _atomic_write(claimed_path, record)
+    pending_path.parent.mkdir(parents=True, exist_ok=True)
+    _replace_path(claimed_path, pending_path)
+
+
+def request_host_regeneration(root: Path, *, turn_id: str, reason: str) -> dict[str, Any]:
+    claimed_path = _path(root, 'claimed', turn_id)
+    record = _read(claimed_path)
+    attempts = int(record.get('regeneration_attempts') or 0)
+    maximum = int(record.get('max_regeneration_attempts') or 1)
+    if attempts >= maximum:
+        _expire_record(root, claimed_path, record, reason='regeneration_budget_exhausted')
+        raise HostRequestStoreError('host_regeneration_budget_exhausted')
+    record['state'] = 'pending'
+    record['claimed_at_utc'] = None
+    record['regeneration_attempts'] = attempts + 1
+    record['last_regeneration_reason'] = str(reason or 'host_finalization_rejected')
+    record['last_regeneration_at_utc'] = _utc_now().isoformat()
+    pending_path = _path(root, 'pending', turn_id)
+    _atomic_write(claimed_path, record)
+    pending_path.parent.mkdir(parents=True, exist_ok=True)
+    _replace_path(claimed_path, pending_path)
+    return record
+
+
+def mark_claimed_host_request_indeterminate(root: Path, *, turn_id: str, error: str) -> dict[str, Any]:
+    """Fail closed after persistence starts and its exact outcome cannot be proven."""
+    claimed_path = _path(root, "claimed", turn_id)
+    record = _read(claimed_path)
+    record["state"] = "indeterminate"
+    record["persistence_error"] = str(error or "host_visible_reply_persistence_failed")
+    record["indeterminate_at_utc"] = _utc_now().isoformat()
+    _atomic_write(claimed_path, record)
+    return record
+
+
+def consume_claimed_host_request(
+    root: Path, *, turn_id: str, request_contract_hash: str,
+    final_visible_capture: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    claimed_path = _path(root, "claimed", turn_id)
+    record = _read(claimed_path)
+    if str(record.get("request_contract_hash") or "") != str(request_contract_hash or "").strip().lower():
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    binding_value = record.get("binding")
+    binding = binding_value if isinstance(binding_value, Mapping) else {}
+    daemon_request_id = str(binding.get("daemon_request_id") or "").strip()
+    record["state"] = "consumed"
+    if final_visible_capture is not None:
+        # Candidate and acceptance share the same atomic rename. Before this
+        # commit there is no accepted assistant event or conversation projection.
+        record["final_visible_capture"] = final_visible_capture
+        record["finalization_state"] = "commit_accepted"
+    record["consumed_at_utc"] = _utc_now().isoformat()
+    # The durable consumed record is the settlement authority for a host-finalized
+    # turn.  Daemon notification is an idempotent projection/outbox delivery, not
+    # a second source of truth.  This prevents a lost ACK from manufacturing a
+    # second terminal state for the same logical turn.
+    record["settlement_authority"] = "durable_host_request_store"
+    record["daemon_finalization_notification_state"] = (
+        "pending" if daemon_request_id else "not_applicable"
+    )
+    record["daemon_finalization_notification_attempts"] = int(
+        record.get("daemon_finalization_notification_attempts") or 0
+    )
+    record["daemon_finalization_notification_last_at_utc"] = None
+    record["daemon_finalization_notification_error"] = None
+    consumed_path = _path(root, "consumed", turn_id)
+    _atomic_write(claimed_path, record)
+    consumed_path.parent.mkdir(parents=True, exist_ok=True)
+    _replace_path(claimed_path, consumed_path)
+    return record
+
+
+def read_committed_host_request(root: Path, *, turn_id: str) -> dict[str, Any]:
+    """Read the accepted candidate for projection repair; never create a claim."""
+    path = _path(root, "consumed", turn_id)
+    if not path.is_file():
+        raise HostRequestStoreError("committed_host_request_missing")
+    record = _read(path)
+    if record.get("state") != "consumed" or record.get("finalization_state") != "commit_accepted":
+        raise HostRequestStoreError("committed_host_request_capture_unavailable")
+    capture = record.get("final_visible_capture")
+    binding = record.get("binding")
+    if not isinstance(capture, dict) or not isinstance(binding, dict):
+        raise HostRequestStoreError("committed_host_request_capture_invalid")
+    text = str(capture.get("final_visible_text") or "")
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    expected_prefix = f"{binding.get('timestamp_header') or ''}\n{binding.get('state_emoticon') or ''} {binding.get('author_label') or ''}\n\n"
+    if (
+        not text or capture.get("final_text_sha256") != digest
+        or capture.get("turn_id") != turn_id or capture.get("turn_id") != binding.get("turn_id")
+        or capture.get("trace_id") != binding.get("trace_id")
+        or capture.get("envelope_present_in_final") is not True
+        or not text.startswith(expected_prefix)
+    ):
+        raise HostRequestStoreError("committed_host_request_capture_binding_mismatch")
+    prepared = capture.get("prepared_projection")
+    if not isinstance(prepared, dict) or not isinstance(prepared.get("envelope"), dict):
+        raise HostRequestStoreError("committed_host_request_projection_invalid")
+    envelope = prepared["envelope"]
+    trace = envelope.get("trace") or {}
+    contract = envelope.get("final_response_contract") or {}
+    if (
+        not isinstance(trace, dict) or not isinstance(contract, dict)
+        or trace.get("turn_id") != turn_id or trace.get("trace_id") != binding.get("trace_id")
+        or trace.get("timestamp_header") != binding.get("timestamp_header")
+        or contract.get("turn_id") != turn_id or contract.get("trace_id") != binding.get("trace_id")
+        or contract.get("final_visible_text") != text
+        or prepared.get("timestamp_header") != binding.get("timestamp_header")
+        or not str(prepared.get("source") or "").strip()
+        or not isinstance(prepared.get("client_context"), dict)
+    ):
+        raise HostRequestStoreError("committed_host_request_projection_binding_mismatch")
+    return record
+
+
+def host_request_store_status(root: Path) -> dict[str, Any]:
+    cleanup = cleanup_expired_host_requests(root)
+    counts: dict[str, int] = {}
+    for state in ("pending", "claimed", "consumed", "expired"):
+        directory = _store_root(root) / state
+        counts[state] = len(list(directory.glob("*.json"))) if directory.is_dir() else 0
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "counts": counts,
+        "cleanup": cleanup,
+        "continuation_ttl_default_seconds": DEFAULT_CONTINUATION_TTL_SECONDS,
+        "continuation_ttl_long_work_seconds": LONG_WORK_CONTINUATION_TTL_SECONDS,
+        "replay_protection": True,
+        "max_host_regeneration_attempts": 1,
+        "plaintext_tokens_persisted": False,
+    }
+
+
+def _host_request_lifecycle_payload(record: Mapping[str, Any], *, state: str) -> dict[str, Any]:
+    # Directory placement is the atomic durable lifecycle authority. The only
+    # intentional in-directory substate is ``indeterminate`` under ``claimed``
+    # after phase-2 persistence crossed an ambiguous side-effect boundary.
+    recorded_state = str(record.get("state") or "").strip()
+    effective_state = (
+        "indeterminate"
+        if state == "claimed" and recorded_state == "indeterminate"
+        else state
+    )
+    return {
+        "found": True,
+        "state": effective_state,
+        "request_contract_hash": str(record.get("request_contract_hash") or ""),
+        "binding": dict(record.get("binding") or {}),
+        "generation_context": dict(record.get("generation_context") or {}),
+        "created_at_utc": record.get("created_at_utc"),
+        "expires_at_utc": record.get("expires_at_utc"),
+        "claimed_at_utc": record.get("claimed_at_utc"),
+        "consumed_at_utc": record.get("consumed_at_utc"),
+        "expired_at_utc": record.get("expired_at_utc"),
+        "expiration_reason": record.get("expiration_reason"),
+        "indeterminate_at_utc": record.get("indeterminate_at_utc"),
+        "persistence_error": record.get("persistence_error"),
+        "settlement_authority": str(
+            record.get("settlement_authority") or "durable_host_request_store"
+        ),
+        "daemon_finalization_notification_state": record.get(
+            "daemon_finalization_notification_state"
+        ),
+        "daemon_finalization_notification_attempts": int(
+            record.get("daemon_finalization_notification_attempts") or 0
+        ),
+        "daemon_finalization_notification_last_at_utc": record.get(
+            "daemon_finalization_notification_last_at_utc"
+        ),
+        "daemon_finalization_notification_error": record.get(
+            "daemon_finalization_notification_error"
+        ),
+    }
+
+
+def host_request_lifecycle_state(root: Path, *, turn_id: str) -> dict[str, Any]:
+    """Read one host request's durable settlement state without exposing its token."""
+
+    cleanup_expired_host_requests(root)
+    for state in ("consumed", "expired", "claimed", "pending"):
+        path = _path(root, state, turn_id)
+        if not path.is_file():
+            continue
+        return _host_request_lifecycle_payload(_read(path), state=state)
+    return {
+        "found": False,
+        "state": "missing",
+        "binding": {},
+        "generation_context": {},
+        "settlement_authority": "durable_host_request_store",
+    }
+
+
+def host_request_lifecycle_by_daemon_request_id(
+    root: Path,
+    *,
+    daemon_request_id: str,
+) -> dict[str, Any]:
+    """Resolve exactly one durable host settlement by daemon request lineage.
+
+    The daemon request id is part of the immutable phase-1 binding.  Recovery
+    must fail closed if more than one durable record claims the same daemon job.
+    """
+
+    requested = str(daemon_request_id or "").strip()
+    if not requested:
+        raise HostRequestStoreError("daemon_request_id_missing")
+    if len(requested) > 256:
+        raise HostRequestStoreError("daemon_request_id_too_large")
+    cleanup_expired_host_requests(root)
+    matches: list[tuple[str, dict[str, Any]]] = []
+    for state in ("consumed", "expired", "claimed", "pending"):
+        directory = _store_root(root) / state
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.glob("*.json")):
+            record = _read(path)
+            binding_value = record.get("binding")
+            binding = binding_value if isinstance(binding_value, Mapping) else {}
+            generation_value = record.get("generation_context")
+            generation = (
+                generation_value if isinstance(generation_value, Mapping) else {}
+            )
+            bound_request_id = str(
+                binding.get("daemon_request_id")
+                or generation.get("daemon_request_id")
+                or ""
+            ).strip()
+            if hmac.compare_digest(bound_request_id, requested):
+                matches.append((state, record))
+    if not matches:
+        return {
+            "found": False,
+            "state": "missing",
+            "binding": {},
+            "generation_context": {},
+            "settlement_authority": "durable_host_request_store",
+        }
+    if len(matches) != 1:
+        raise HostRequestStoreError("daemon_request_binding_ambiguous")
+    state, record = matches[0]
+    return _host_request_lifecycle_payload(record, state=state)
+
+
+def mark_daemon_finalization_notification(
+    root: Path,
+    *,
+    turn_id: str,
+    request_contract_hash: str,
+    delivered: bool,
+    error: str | None = None,
+) -> dict[str, Any]:
+    """Record outbox delivery status without changing the canonical consumed state."""
+
+    path = _path(root, "consumed", turn_id)
+    record = _read(path)
+    expected = str(record.get("request_contract_hash") or "")
+    supplied = str(request_contract_hash or "").strip().lower()
+    if not hmac.compare_digest(expected, supplied):
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    record["settlement_authority"] = "durable_host_request_store"
+    record["daemon_finalization_notification_attempts"] = int(
+        record.get("daemon_finalization_notification_attempts") or 0
+    ) + 1
+    record["daemon_finalization_notification_last_at_utc"] = _utc_now().isoformat()
+    record["daemon_finalization_notification_state"] = (
+        "delivered" if delivered else "pending_retry"
+    )
+    record["daemon_finalization_notification_error"] = None if delivered else str(
+        error or "daemon_finalization_notification_failed"
+    )
+    _atomic_write(path, record)
+    return _host_request_lifecycle_payload(record, state="consumed")
