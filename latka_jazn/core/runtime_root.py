@@ -73,7 +73,7 @@ def find_runtime_root(start: Path | None = None) -> Path:
 
 
 def default_runtime_workspace_path(root: Path) -> Path:
-    """Return the one host-level mutable workspace shared by sibling runtime versions.
+    """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
 
     Runtime code may live in versioned directories, but the active marker, daemon PID,
     checkpoints and other mutable host state must not be versioned with that code.
@@ -88,7 +88,7 @@ def default_runtime_workspace_path(root: Path) -> Path:
         return parent.resolve()
     if parent.name.casefold() in {"runtime_roots", "runtime-roots"}:
         return (parent.parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
-    return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+    return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 
 
 def legacy_workspace_runtime_path(root: Path) -> Path:
@@ -101,12 +101,12 @@ def workspace_runtime_path(
     root: Path,
     configured: str | Path | None = None,
 ) -> Path:
-    """Resolve the single mutable host workspace independently from code versions.
+    """Resolve the mutable workspace relative to the verified SYSTEM ROOT.
 
     ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override. Absolute
     overrides are used directly; relative overrides remain relative to ``active_root``
     for compatibility. Without an override the workspace is host-level, outside the
-    versioned runtime root, so upgrades replace only code while preserving live state.
+    active runtime root. Never relocate existing state implicitly when defaults change.
     """
 
     runtime_root = Path(root).expanduser().resolve()
