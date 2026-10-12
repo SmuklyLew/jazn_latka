@@ -75,11 +75,9 @@ def find_runtime_root(start: Path | None = None) -> Path:
 def default_runtime_workspace_path(root: Path) -> Path:
     """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
 
-    Runtime code may live in versioned directories, but the active marker, daemon PID,
-    checkpoints and other mutable host state must not be versioned with that code.
-    When a runtime is already materialized directly under ``workspace_runtime`` (the
-    ChatGPT host layout), the parent itself is the canonical workspace. Otherwise the
-    canonical workspace is a sibling of the active runtime root.
+    Editable SYSTEM checkouts use ROOT/workspace_runtime. Versioned release roots
+    keep their shared host workspace for daemon/session continuity. Host-managed
+    runtime layouts reuse the parent workspace instead of creating nested state.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -88,6 +86,9 @@ def default_runtime_workspace_path(root: Path) -> Path:
         return parent.resolve()
     if parent.name.casefold() in {"runtime_roots", "runtime-roots"}:
         return (parent.parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+    # Versioned releases retain host-level daemon and session continuity.
+    if runtime_root.name.casefold().startswith("jazn_latka_v"):
+        return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
     return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 
 
