@@ -3,11 +3,11 @@
   "version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
   "runtime_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
   "package_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
-  "generated_at_utc": "2026-10-12T23:45:50+00:00",
-  "updated_at_utc": "2026-10-12T23:45:50+00:00",
+  "generated_at_utc": "2026-10-12T23:50:35+00:00",
+  "updated_at_utc": "2026-10-12T23:50:35+00:00",
   "start_file": "run.py",
-  "file_count": 2351,
-  "static_file_count": 2351,
+  "file_count": 2355,
+  "static_file_count": 2355,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -65,8 +65,8 @@
   "files": [
     {
       "path": ".dockerignore",
-      "size_bytes": 333,
-      "sha256": "c564771ccc944bae24fe6f20f6e862c6c8c46ae471604383650668a481be60c4",
+      "size_bytes": 342,
+      "sha256": "002c512ae0d89f86ecff2f473b9919bf137d22a631506cd283d18a6acf3fe0ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -139,6 +139,15 @@
       "path": ".github/workflows/javascript-node24-contract.yml",
       "size_bytes": 2709,
       "sha256": "a20b92e717a98e9680cda5724f663f8f4e819c1fb2097e983241248ed35c28e7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/mcp-container-smoke.yml",
+      "size_bytes": 3236,
+      "sha256": "d2d2db88a442237e605fd12e6d65a67bf25f2fc2fa71294dcce8613aefff6a84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -218,8 +227,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2448,
-      "sha256": "1c403b7c55f173cd7097f22f743c1da2a05a628977c82c0f013872e9d95d8a6e",
+      "size_bytes": 2469,
+      "sha256": "dbb31d54fc5c5fc9d813d7ad01f8775b80c7b36007ff110719ecbf4f26c34c78",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -309,7 +318,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2977,
-      "sha256": "9892d91e85f4d897137559e6e34358e2143870568b5bd31d96790e08c3a4412f",
+      "sha256": "653393ca869c066cf825c57337c85955d434e1a61371bbd2a0805d9daeda7737",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -317,8 +326,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/Dockerfile",
-      "size_bytes": 959,
-      "sha256": "a21a2f43f30ff0886623532836b085ad45a98b934af060ad86980ea78d41d1b7",
+      "size_bytes": 957,
+      "sha256": "c9abd5edb1dfd51f4e261a5eb37659445483134f534f2aeb4bb68b4cc7de1e37",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14464,6 +14473,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.115.21.11-mcp-deployment-pre-hardening/test_persistent_remote_runtime_operations.py",
+      "size_bytes": 2824,
+      "sha256": "6607016232fe173d1fb71562d20812f8083c1a8ff85a1c16bb5c234dc1b3c6bc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2690,
       "sha256": "546f99d7d9a7a546ca0906b701d42b6865534083c8bd35cbc1b0e9a055ff1b8a",
@@ -18595,9 +18613,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "path": "tests/test_mcp_deployment_security.py",
       "size_bytes": 3573,
       "sha256": "b501ea65152f889c3970c5b11f3f41a263e909514a3cd82d66a947f37f01d37a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_mcp_dockerfile_instruction_boundaries.py",
+      "size_bytes": 592,
+      "sha256": "f09a085a7634432d0551a4791534248414b78f5343a4e57657c8d6555d8801ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18670,6 +18697,15 @@
       "path": "tests/test_mcp_oauth_introspection.py",
       "size_bytes": 3755,
       "sha256": "a9ae44e7e5b07180289bf4f10553642c1b749743a02e2cc492f476d9074411b7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_mcp_private_deployment_context.py",
+      "size_bytes": 650,
+      "sha256": "6da23bdcec3b40a3eb0512588c10b9ed190c4527ab696a8a79dd5f2b9a7baff1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19550,8 +19586,8 @@
     },
     {
       "path": "tests/test_persistent_remote_runtime_operations.py",
-      "size_bytes": 2824,
-      "sha256": "6607016232fe173d1fb71562d20812f8083c1a8ff85a1c16bb5c234dc1b3c6bc",
+      "size_bytes": 2916,
+      "sha256": "92142f66283f951c7d9782bc1127a306e2721562fb9d96bad08bf76fb7791fda",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20999,8 +21035,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2087761,
-      "sha256": "357aa154697b2bf59a0844b387f9a163a0fc3808808ae469d24f37eb03236a63",
+      "size_bytes": 2089177,
+      "sha256": "ed28f8335b52583231a2bd5c837f22c59d92ef08fd4424004df1cccfea70c427",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
