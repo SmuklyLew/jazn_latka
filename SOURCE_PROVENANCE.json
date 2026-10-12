@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2242baf440f7d95e5056310269067cc6d0410f2b",
-  "base_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
-  "commit_date": "2026-10-11T01:01:27Z",
+  "base_merge_commit": "cea868e2a05be3b8f1cd39ae3039f7571cfc2980",
+  "base_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
+  "commit_date": "2026-10-12T02:09:08+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-11T01:01:27+00:00",
+  "generated_at_utc": "2026-10-12T00:09:08+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "3d20015f9d29c7cb39b8d4de09691668f0b060c6",
+  "git_tree_sha": "a1ff9c627f7e0ef5c2dce49d1eb18cd30adee20c",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.115.18.1-configuration-studio-profile-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2242baf440f7d95e5056310269067cc6d0410f2b",
-    "source_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1"
+    "source_commit": "cea868e2a05be3b8f1cd39ae3039f7571cfc2980",
+    "source_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
+  "release_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
+  "runtime_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2242baf440f7d95e5056310269067cc6d0410f2b",
+  "source_commit": "cea868e2a05be3b8f1cd39ae3039f7571cfc2980",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
+  "source_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.115.21.4-studio-active-memory-readiness-p1",
+  "update_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
   "version_source": "latka_jazn/version.py"
 }
