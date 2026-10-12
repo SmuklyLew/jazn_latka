@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.6",
-  "active_definition_count": 2208,
+  "system_version": "16.3.25.5.115.21.7",
+  "active_definition_count": 2220,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1905,7 +1905,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 36
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_explicit_memory_root_remains_authoritative_even_when_empty": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -1930,7 +1930,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 53
+      "line": 54
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_v3_native_probe_requires_memory_records_fts": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -1955,7 +1955,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 72
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_transactional_tier_only_is_searchable_but_not_autobiographical": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -1980,7 +1980,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 91
+      "line": 92
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_native_unified_source_satisfies_autobiographical_policy": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -2005,7 +2005,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 120
+      "line": 121
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_positive_memory_claim_rejects_transactional_only_provenance": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -2030,7 +2030,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 148
+      "line": 149
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_positive_memory_claim_accepts_native_autobiographical_provenance": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -2055,7 +2055,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 177
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_host_context_preserves_bounded_autobiographical_provenance": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
@@ -2081,7 +2081,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 204
+      "line": 205
     },
     "tests/test_blind_route_and_route_graph_audit.py::test_route_graph_audit_is_green_for_current_registered_graph": {
       "path": "tests/test_blind_route_and_route_graph_audit.py",
@@ -11382,6 +11382,25 @@
       "description_source": "source_identity",
       "line": 67
     },
+    "tests/test_configuration_studio.py::test_canonical_memory_root_is_allowed_but_other_system_children_are_not": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_canonical_memory_root_is_allowed_but_other_system_children_are_not",
+      "purpose": "Canonical memory root is allowed but other system children are not",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
     "tests/test_configuration_studio.py::test_no_path_inside_system_or_legacy_workspace": {
       "path": "tests/test_configuration_studio.py",
       "name": "test_no_path_inside_system_or_legacy_workspace",
@@ -11399,7 +11418,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 79
     },
     "tests/test_configuration_studio.py::test_profile_rejects_corruption_and_symlink": {
       "path": "tests/test_configuration_studio.py",
@@ -11418,7 +11437,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 87
     },
     "tests/test_configuration_studio.py::test_memory_and_workspace_cannot_overlap": {
       "path": "tests/test_configuration_studio.py",
@@ -11439,7 +11458,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 108
     },
     "tests/test_configuration_studio.py::test_profile_inspection_does_not_apply_running_config": {
       "path": "tests/test_configuration_studio.py",
@@ -11456,7 +11475,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 113
+      "line": 119
     },
     "tests/test_configuration_studio.py::test_symlink_parent_directory_is_rejected": {
       "path": "tests/test_configuration_studio.py",
@@ -11475,7 +11494,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 127
     },
     "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
       "path": "tests/test_configuration_studio_gui_windows.py",
@@ -11673,16 +11692,14 @@
       "path": "tests/test_configuration_studio_hardening.py",
       "name": "test_inherited_legacy_memory_does_not_block_unrelated_profile_setting",
       "purpose": "Inherited legacy memory does not block unrelated profile setting",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "ConfigValidationError"
-      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio"
       ],
@@ -17638,16 +17655,15 @@
       "description_source": "source_identity",
       "line": 92
     },
-    "tests/test_host_memory_direct_sqlite.py::test_memory_root_defaults_outside_versioned_runtime": {
+    "tests/test_host_memory_direct_sqlite.py::test_memory_root_defaults_under_system_root": {
       "path": "tests/test_host_memory_direct_sqlite.py",
-      "name": "test_memory_root_defaults_outside_versioned_runtime",
-      "purpose": "Memory root defaults outside versioned runtime",
+      "name": "test_memory_root_defaults_under_system_root",
+      "purpose": "Memory root defaults under system root",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "category": "unit",
       "tags": [
         "host",
-        "memory",
-        "runtime"
+        "memory"
       ],
       "markers": [],
       "assertion_count": 3,
@@ -17661,12 +17677,12 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 26
+      "line": 27
     },
-    "tests/test_host_memory_direct_sqlite.py::test_memory_root_preserves_existing_legacy_layout_until_attach": {
+    "tests/test_host_memory_direct_sqlite.py::test_memory_root_preserves_previous_host_payload_until_attach": {
       "path": "tests/test_host_memory_direct_sqlite.py",
-      "name": "test_memory_root_preserves_existing_legacy_layout_until_attach",
-      "purpose": "Memory root preserves existing legacy layout until attach",
+      "name": "test_memory_root_preserves_previous_host_payload_until_attach",
+      "purpose": "Memory root preserves previous host payload until attach",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -17685,12 +17701,12 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 35
     },
-    "tests/test_host_memory_direct_sqlite.py::test_memory_root_relative_override_is_workspace_scoped": {
+    "tests/test_host_memory_direct_sqlite.py::test_memory_root_relative_override_is_system_scoped": {
       "path": "tests/test_host_memory_direct_sqlite.py",
-      "name": "test_memory_root_relative_override_is_workspace_scoped",
-      "purpose": "Memory root relative override is workspace scoped",
+      "name": "test_memory_root_relative_override_is_system_scoped",
+      "purpose": "Memory root relative override is system scoped",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -17709,7 +17725,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 45
     },
     "tests/test_host_memory_direct_sqlite.py::test_source_origin_ledger_uses_selected_memory_root": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -17733,7 +17749,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 58
     },
     "tests/test_host_memory_direct_sqlite.py::test_default_transactional_tier_prefers_ready_native_unified": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -17757,7 +17773,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 70
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_creates_fresh_host_parent_and_restores_no_legacy": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -17781,7 +17797,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 89
     },
     "tests/test_host_memory_direct_sqlite.py::test_memory_attach_moves_existing_legacy_memory_to_backup": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -17805,7 +17821,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 111
+      "line": 112
     },
     "tests/test_host_memory_direct_sqlite.py::test_gateway_deduplicates_native_unified_and_transactional_same_file": {
       "path": "tests/test_host_memory_direct_sqlite.py",
@@ -17829,7 +17845,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 140
     },
     "tests/test_host_memory_root_regressions.py::test_shard_manager_normalizes_legacy_memory_prefix_at_host_memory_root": {
       "path": "tests/test_host_memory_root_regressions.py",
@@ -18845,13 +18861,13 @@
       "path": "tests/test_host_spawn_diagnostics.py",
       "name": "test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected",
       "purpose": "Empty canonical placeholder is reported but legacy stays selected",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
@@ -18879,7 +18895,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 38
     },
     "tests/test_host_spawn_diagnostics.py::test_post_spawn_diagnostics_reports_process_and_memory_metadata": {
       "path": "tests/test_host_spawn_diagnostics.py",
@@ -18900,7 +18916,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 53
     },
     "tests/test_host_tool_capability_discovery_convergence.py::test_missing_host_manifest_does_not_claim_tool_verification": {
       "path": "tests/test_host_tool_capability_discovery_convergence.py",
@@ -29655,6 +29671,251 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 247
+    },
+    "tests/test_memory_root_canonical_selection.py::test_default_is_direct_system_child_independent_of_cwd": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_default_is_direct_system_child_independent_of_cwd",
+      "purpose": "Default is direct system child independent of cwd",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_memory_root_canonical_selection.py::test_new_memory_does_not_get_shadowed_by_old_host_payload": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_new_memory_does_not_get_shadowed_by_old_host_payload",
+      "purpose": "New memory does not get shadowed by old host payload",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_memory_root_canonical_selection.py::test_explicit_relative_memory_is_system_relative": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_explicit_relative_memory_is_system_relative",
+      "purpose": "Explicit relative memory is system relative",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_memory_root_canonical_selection.py::test_explicit_absolute_memory_remains_authoritative": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_explicit_absolute_memory_remains_authoritative",
+      "purpose": "Explicit absolute memory remains authoritative",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_memory_root_canonical_selection.py::test_relative_traversal_rejected": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_relative_traversal_rejected",
+      "purpose": "Relative traversal rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_memory_root_canonical_selection.py::test_windows_absolute_override_rejected_on_posix": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_windows_absolute_override_rejected_on_posix",
+      "purpose": "Windows absolute override rejected on posix",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_memory_root_canonical_selection.py::test_readonly_diagnostic_exposes_old_root_without_claiming_migration": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_readonly_diagnostic_exposes_old_root_without_claiming_migration",
+      "purpose": "Readonly diagnostic exposes old root without claiming migration",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_memory_root_canonical_selection.py::test_attach_rollback_backup_never_written_into_system_tree": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_attach_rollback_backup_never_written_into_system_tree",
+      "purpose": "Attach rollback backup never written into system tree",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_memory_root_canonical_selection.py::test_system_pack_excludes_private_memory_and_backups": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_system_pack_excludes_private_memory_and_backups",
+      "purpose": "System pack excludes private memory and backups",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_memory_root_canonical_selection.py::test_failed_backup_never_erases_existing_memory": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_failed_backup_never_erases_existing_memory",
+      "purpose": "Failed backup never erases existing memory",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_memory_root_canonical_selection.py::test_generator_selects_same_legacy_host_fallback_as_runtime": {
+      "path": "tests/test_memory_root_canonical_selection.py",
+      "name": "test_generator_selects_same_legacy_host_fallback_as_runtime",
+      "purpose": "Generator selects same legacy host fallback as runtime",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.packaging"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_memory_round_trip_acceptance.py::test_source_backed_temporal_recall_survives_dialogue_and_restart_round_trip": {
       "path": "tests/test_memory_round_trip_acceptance.py",

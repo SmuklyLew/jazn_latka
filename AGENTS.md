@@ -84,7 +84,7 @@ Dla Projektu ChatGPT instrukcja projektu ma być cienkim loaderem prowadzącym d
 - układ repozytorium i polityka zależności: `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`
 - założenia tożsamości i ciągłości: `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`
 - aktywny runtime: zweryfikowany `workspace_runtime/JAZN_ACTIVE_RUNTIME.json` i wskazany `active_root`
-- aktywna pamięć: `JAZN_MEMORY_ROOT` albo kanoniczny host-level `workspace_runtime/memory`
+- aktywna pamięć: `JAZN_MEMORY_ROOT` albo kanoniczny `<active_root>/memory`; istniejące `workspace_runtime/memory` jest wyłącznie odczytywane jako kompatybilność przed oddzielną migracją
 - repozytorium kanoniczne: `SmuklyLew/jazn_latka`
 
 Nie wymagaj, nie twórz ani nie odtwarzaj `VERSION.txt` lub `MANIFEST_CURRENT.json`. `RUNTIME_STATE.json` jest snapshotem stanu, nie manifestem paczki.

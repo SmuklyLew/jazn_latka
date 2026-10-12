@@ -31,7 +31,7 @@ SYSTEM_BOOTSTRAP_REQUIRED_FILES = (
 SETTINGS_FILENAME = "jazn_pack_generator_settings.json"
 
 EXCLUDED_DIR_NAMES = frozenset({
-    ".git", ".hg", ".svn", ".venv", "venv", "__pycache__", ".pytest_cache",
+    ".git", ".hg", ".svn", ".memory-backups", ".memory-failed", ".venv", "venv", "__pycache__", ".pytest_cache",
     ".pytest-tmp", ".mypy_cache", ".ruff_cache", ".codex", ".vscode", ".archives",
     "workspace_runtime", "logs", "log", "tmp", "temp", "backups", "backups_git",
     "exports", "requests", "responses", "status", "processed",

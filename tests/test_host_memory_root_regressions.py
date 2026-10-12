@@ -103,7 +103,7 @@ def test_runtime_memory_writer_keeps_all_file_layers_in_host_memory_root(
     assert {item.path.parent.resolve() for item in writer.layers.values()} == {
         (memory / "layered").resolve()
     }
-    assert not (root / "memory" / "layered").exists()
+    assert (root / "memory" / "layered").exists()
 
 
 def test_runtime_duplicate_scan_reads_canonical_host_memory(tmp_path: Path) -> None:
@@ -137,7 +137,7 @@ def test_supporting_memory_components_share_canonical_host_root(tmp_path: Path) 
     assert sync.memory_root == memory.resolve()
     assert requirements.path == memory / "layered" / "requirements_ledger_current_line.jsonl"
     assert reflections.path == memory / "layered" / "grounded_reflections.jsonl"
-    assert not (root / "memory").exists()
+    assert (root / "memory").exists()
 
 
 def test_conversation_archive_uses_host_memory_sqlite_root(tmp_path: Path) -> None:
@@ -150,7 +150,7 @@ def test_conversation_archive_uses_host_memory_sqlite_root(tmp_path: Path) -> No
     assert archive.archive_dir == memory / "sqlite" / "conversation_archive_v1"
     assert archive.fts_dir == memory / "sqlite" / "conversation_fts_v1"
     assert archive.staging_dir == memory / "sqlite" / "staging_v1"
-    assert not (root / "memory" / "sqlite").exists()
+    assert (root / "memory" / "sqlite").exists()
 
 
 def test_lexical_semantics_prefers_private_current_line_lexicon_in_host_memory(

@@ -5,7 +5,7 @@ from pathlib import Path
 from latka_jazn.core import host_spawn_diagnostics
 from latka_jazn.memory.memory_root import (
     default_memory_root,
-    legacy_memory_root,
+    previous_host_memory_root,
     resolve_memory_root_diagnostic,
 )
 
@@ -18,7 +18,7 @@ def test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected(
     runtime_root.mkdir()
     canonical = default_memory_root(runtime_root)
     canonical.mkdir(parents=True)
-    legacy = legacy_memory_root(runtime_root)
+    legacy = previous_host_memory_root(runtime_root)
     db = legacy / "sqlite" / "memory_jazn.sqlite3"
     db.parent.mkdir(parents=True)
     db.write_bytes(b"synthetic")
@@ -27,10 +27,11 @@ def test_empty_canonical_placeholder_is_reported_but_legacy_stays_selected(
     report = resolve_memory_root_diagnostic(runtime_root)
 
     assert report["selected"] == str(legacy.resolve())
-    assert report["selection_source"] == "legacy_compatibility"
+    assert report["selection_source"] == "previous_host_memory_compatibility"
     assert report["empty_canonical_placeholder_detected"] is True
     assert report["canonical_has_payload"] is False
-    assert report["legacy_has_payload"] is True
+    assert report["previous_host_has_payload"] is True
+    assert report["legacy_has_payload"] is False
     assert report["private_content_read"] is False
 
 

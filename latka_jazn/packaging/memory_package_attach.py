@@ -256,12 +256,12 @@ def _install_memory_tree(
     target_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=False)
     target_memory.parent.mkdir(parents=True, exist_ok=True)
     backup_memory = (
-        target_memory.parent
+        workspace
         / ".memory-backups"
         / transaction_id
         / target_memory.name
     )
-    failed_memory = target_memory.parent / ".memory-failed" / transaction_id
+    failed_memory = workspace / ".memory-failed" / transaction_id
     previous_memory = resolve_memory_root(runtime_root, prefer_existing_legacy=True)
     had_previous = previous_memory.exists()
     installed_new = False
@@ -297,13 +297,12 @@ def _install_memory_tree(
         if transactional.get("ok") is not True:
             raise RuntimeError("transactional_memory_initialization_failed")
     except Exception:
-        if target_memory.exists():
-            if installed_new:
-                failed_memory.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(target_memory, failed_memory)
-                report["failed_memory_preserved_at"] = str(failed_memory)
-            else:
-                shutil.rmtree(target_memory, ignore_errors=True)
+        # Do not delete an existing live MEMORY tree when backing it up failed.
+        # Only a candidate installed by this transaction may be quarantined.
+        if installed_new and target_memory.exists():
+            failed_memory.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(target_memory, failed_memory)
+            report["failed_memory_preserved_at"] = str(failed_memory)
         if had_previous and backup_memory.exists():
             previous_memory.parent.mkdir(parents=True, exist_ok=True)
             os.replace(backup_memory, previous_memory)

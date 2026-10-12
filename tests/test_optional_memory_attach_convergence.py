@@ -213,7 +213,7 @@ def test_generator_declares_system_memory_as_optional_and_attachable(tmp_path: P
     assert system["ordinary_dialogue_without_persistent_memory"] is True
     assert system["recall_without_verified_persistent_memory"] is False
     assert system["external_memory_attach_supported"] is True
-    assert system["canonical_memory_root"] == "workspace_runtime/memory"
+    assert system["canonical_memory_root"] == "memory"
     assert system["operational_core_state_root"] == "workspace_runtime/core_state"
     assert system["bootstrap_contract_member"] == "MEMORY_ATTACHMENT_CONTRACT.json"
     assert "MEMORY_ATTACHMENT_CONTRACT.json" in SYSTEM_BOOTSTRAP_REQUIRED_FILES
@@ -234,5 +234,5 @@ def test_root_memory_attachment_contract_matches_runtime_policy() -> None:
     assert payload["persistent_memory_required_for_core_runtime"] is False
     assert payload["ordinary_dialogue_without_persistent_memory"] is True
     assert payload["recall_without_verified_persistent_memory"] is False
-    assert payload["canonical_memory_root"] == "workspace_runtime/memory"
+    assert payload["canonical_memory_root"] == "memory"
     assert payload["operational_core_state_root"] == "workspace_runtime/core_state"

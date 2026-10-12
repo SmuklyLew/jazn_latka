@@ -112,5 +112,4 @@ def test_inherited_legacy_memory_does_not_block_unrelated_profile_setting(root: 
     (legacy / "memory_jazn.sqlite3").write_bytes(b"synthetic")
     values = validate_values(root, {"JAZN_MEMORY_MODE": "optional"})
     assert values == {"JAZN_MEMORY_MODE": "optional"}
-    with pytest.raises(ConfigValidationError):
-        validate_values(root, {"JAZN_MEMORY_ROOT": str(legacy.parent)})
+    assert validate_values(root, {"JAZN_MEMORY_ROOT": str(legacy.parent)})["JAZN_MEMORY_ROOT"] == str(legacy.parent.resolve())
