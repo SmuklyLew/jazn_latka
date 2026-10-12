@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.21.8",
-  "active_definition_count": 2226,
+  "active_definition_count": 2227,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2082,6 +2082,31 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 205
+    },
+    "tests/test_autobiographical_memory_readiness_convergence.py::test_missing_optional_memory_reports_unavailable_without_false_recall": {
+      "path": "tests/test_autobiographical_memory_readiness_convergence.py",
+      "name": "test_missing_optional_memory_reports_unavailable_without_false_recall",
+      "purpose": "Missing optional memory reports unavailable without false recall",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_response_candidate_guard",
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 242
     },
     "tests/test_blind_route_and_route_graph_audit.py::test_route_graph_audit_is_green_for_current_registered_graph": {
       "path": "tests/test_blind_route_and_route_graph_audit.py",
