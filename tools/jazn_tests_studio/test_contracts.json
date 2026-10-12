@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.11",
-  "active_definition_count": 2236,
+  "system_version": "16.3.25.5.115.21.12",
+  "active_definition_count": 2241,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21423,6 +21423,115 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 48
+    },
+    "tests/test_mcp_deployment_security_v1152112.py::test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter": {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "name": "test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter",
+      "purpose": "Cloudflare token is a mounted secret not an argv parameter",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_mcp_deployment_security_v1152112.py::test_memory_is_persistent_and_separate_from_operational_workspace": {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "name": "test_memory_is_persistent_and_separate_from_operational_workspace",
+      "purpose": "Memory is persistent and separate from operational workspace",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_mcp_deployment_security_v1152112.py::test_public_oauth_resource_host_must_be_allowlisted": {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "name": "test_public_oauth_resource_host_must_be_allowlisted",
+      "purpose": "Public oauth resource host must be allowlisted",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "host",
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_mcp_deployment_security_v1152112.py::test_public_oauth_url_rejects_ambiguous_suffixes": {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "name": "test_public_oauth_url_rejects_ambiguous_suffixes",
+      "purpose": "Public oauth url rejects ambiguous suffixes",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DeploymentError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_mcp_deployment_security_v1152112.py::test_deployment_contract_version_and_memory_truth_boundary": {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "name": "test_deployment_contract_version_and_memory_truth_boundary",
+      "purpose": "Deployment contract version and memory truth boundary",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.deployment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
     },
     "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
       "path": "tests/test_mcp_http_cli.py",
