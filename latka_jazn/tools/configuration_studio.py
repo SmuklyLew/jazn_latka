@@ -343,11 +343,14 @@ def inspect_system(root: str | Path) -> list[dict[str, str]]:
     """Effective, read-only locations; existence is not daemon readiness."""
     source = system_root(root)
     workspace = workspace_runtime_path(source)
+    # Historical sibling location is diagnostic only; never auto-attach state.
+    previous_host_workspace = (source.parent / "workspace_runtime").resolve()
     memory = resolve_memory_root(source)
     nlp = polish_nlp_data_root(source)
     locations = (
         ("SYSTEM", source, "Kod SYSTEM"),
         ("WORKSPACE", workspace, "Stan procesów"),
+        ("PREVIOUS_HOST_WORKSPACE", previous_host_workspace, "Historyczna lokalizacja; tylko diagnostyka, bez automatycznej migracji"),
         ("MEMORY", memory, "Prywatna pamięć"),
         ("CORE_STATE", workspace / "core_state", "Operacyjne SQLite"),
         ("MARKER", active_runtime_marker_path(source), "Znacznik, nie dowód aktywności"),
