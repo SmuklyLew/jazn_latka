@@ -23,11 +23,11 @@ def test_snapshot_is_read_only_and_reports_host_separation(tmp_path: Path) -> No
     root = fake_system(tmp_path)
     data = {row["name"]: row for row in inspect_system(root)}
     assert data["SYSTEM"]["path"] == str(root.resolve())
-    assert data["WORKSPACE"]["path"] == str((root / "workspace_runtime").resolve())
+    assert data["WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
     assert data["PREVIOUS_HOST_WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
     assert data["MARKER"]["exists"] == "false"
     assert data["PROFILES"]["exists"] == "false"
-    assert not (root / "workspace_runtime").exists()
+    assert not (tmp_path / "workspace_runtime").exists()
 
 
 def test_validated_profile_roundtrip_and_rollback_backup(tmp_path: Path) -> None:
@@ -139,7 +139,9 @@ def test_symlink_parent_directory_is_rejected(tmp_path: Path) -> None:
         profile_file(root, workspace=workspace)
 
 def test_root_scoped_default_profile_and_explicit_root_token(tmp_path: Path, monkeypatch) -> None:
-    root = fake_system(tmp_path)
+    original = fake_system(tmp_path)
+    root = tmp_path / "jazn_latka_master"
+    original.rename(root)
     monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
     expected = (root / "workspace_runtime").resolve()
     assert profile_file(root) == expected / "configuration_studio" / "profiles" / "operator.json"
