@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.21.8",
-  "active_definition_count": 2227,
+  "active_definition_count": 2229,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11647,6 +11647,42 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 127
+    },
+    "tests/test_configuration_studio.py::test_root_scoped_default_profile_and_explicit_root_token": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_root_scoped_default_profile_and_explicit_root_token",
+      "purpose": "Root scoped default profile and explicit root token",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ConfigValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_configuration_studio.py::test_workspace_override_outside_root_remains_available": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_workspace_override_outside_root_remains_available",
+      "purpose": "Workspace override outside root remains available",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 155
     },
     "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
       "path": "tests/test_configuration_studio_gui_windows.py",
