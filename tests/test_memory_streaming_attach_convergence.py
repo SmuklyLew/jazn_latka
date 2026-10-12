@@ -330,7 +330,9 @@ def test_atomic_install_refuses_cross_filesystem_copy_fallback(
     (source_memory / "payload.txt").write_text("memory", encoding="utf-8")
     monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(workspace))
 
-    target = workspace / "memory"
+    # Atomic install targets the canonical SYSTEM/memory directory; the
+    # workspace is used for transactional rollback, not live MEMORY.
+    target = runtime_root / "memory"
     original_replace = attach_module.os.replace
 
     def replace_with_exdev(src: str | Path, dst: str | Path) -> None:
