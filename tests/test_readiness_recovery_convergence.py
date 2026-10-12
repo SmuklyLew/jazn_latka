@@ -69,7 +69,7 @@ def test_system_only_status_is_core_ready_without_transactional_memory(
     assert status["memory_availability"]["persistent_memory_enabled"] is False
     assert status["startup"]["raw_memory_status"]["status"] == "raw_missing"
     assert status["startup"]["raw_memory_status"]["memory_root"] == str(
-        (workspace / "memory").resolve()
+        (root / "memory").resolve()
     )
     assert "transactional_memory_not_ready" not in status["operational_reasons"]
     assert "persistent_memory_optional_absent" in status["operational_degradations"]
