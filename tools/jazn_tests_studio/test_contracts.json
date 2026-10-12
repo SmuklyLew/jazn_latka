@@ -11682,7 +11682,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 156
+      "line": 158
     },
     "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
       "path": "tests/test_configuration_studio_gui_windows.py",
