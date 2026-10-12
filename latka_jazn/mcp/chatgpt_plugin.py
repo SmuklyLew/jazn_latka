@@ -80,6 +80,7 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
                 "Call jazn_status as the read-only readiness probe; if the current MCP/app route is conversation-ready, use jazn_generate_visible_reply and preserve its request_id through resume/finalization.",
                 "If the current MCP/app route is unavailable or stale before turn submission, use at most the bounded verified host-local bootstrap fallback when the host actually exposes process execution.",
                 "Once a Jaźń request has been submitted on either route, keep the same route and request_id, never replay the user message or switch routes mid-turn, and display Jaźń text only after accepted action=display_exact.",
+                "For a local Files/Library bootstrap, use exact current files.search/files.list file_id/version_id, reject empty artifacts[], and never cite unobserved tool results.",
             ],
             "brandColor": "#5B4B8A",
         }

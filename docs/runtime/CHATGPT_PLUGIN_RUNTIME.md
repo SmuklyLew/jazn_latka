@@ -117,6 +117,10 @@ Registered app references are for local/workspace packaging and testing.
 Current OpenAI public plugin submission does not publish packages carrying app
 references; public distribution uses a stable remote HTTPS MCP endpoint instead.
 
+## Files/Library startup evidence
+
+After host capability negotiation, a local SYSTEM transfer must bind the exact current Files `file_id` and optional `version_id` to the selected archive and sidecars. A successful API response with empty `artifacts[]` does not create a physical file; verify the returned path, size, trusted SHA-256, ZIP catalog and CRC before invoking the bootstrap primitive. Tool citations require the actual invocation. The machine-readable startup evidence contract is `latka_jazn/resources/chatgpt_startup_evidence_contract.json` and is required in SYSTEM packages.
+
 ## Local ChatGPT executor path
 
 When the current ChatGPT host actually exposes Python/process execution, the

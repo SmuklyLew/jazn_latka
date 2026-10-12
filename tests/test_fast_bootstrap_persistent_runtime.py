@@ -260,5 +260,5 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.21.4"
-    assert PACKAGE_RELEASE_NAME == "studio-active-memory-readiness-p1"
+    assert PACKAGE_VERSION == "16.3.25.5.115.21.5"
+    assert PACKAGE_RELEASE_NAME == "startup-memory-readiness-integration"

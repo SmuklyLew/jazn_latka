@@ -107,7 +107,7 @@ Każda aktualizacja albo patch systemu musi podnieść numer wersji w `latka_jaz
 
 Nie edytuj ręcznie `PACKAGE_INTEGRITY_MANIFEST.json` ani `SOURCE_PROVENANCE.json`. Po zmianie śledzonych plików statycznych użyj kanonicznego generatora metadanych albo zgodnego workflow repozytorium. Przed uznaniem brancha za release candidate zweryfikuj idempotencję synchronizacji i wymagane CI.
 
-Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia.
+Nie deklaruj powodzenia testu, commita, pushu, startu procesu ani zapisu pliku bez rzeczywistego wyniku narzędzia. W szczególności nie cytuj niewykonanych narzędzi, nie twórz `file_id` z pamięci ani z nazwy pliku i nie uznawaj samego wywołania materializacji za powstanie fizycznego pliku. Szczegóły hostowego dowodu definiują `AGENTS.chatgpt.md` i `latka_jazn/resources/chatgpt_startup_evidence_contract.json`.
 
 ## 8. Dane wyłączone z repozytorium
 

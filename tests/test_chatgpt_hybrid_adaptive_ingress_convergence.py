@@ -222,5 +222,5 @@ def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootst
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.21.4"
-    assert PACKAGE_RELEASE_NAME == "studio-active-memory-readiness-p1"
+    assert PACKAGE_VERSION == "16.3.25.5.115.21.5"
+    assert PACKAGE_RELEASE_NAME == "startup-memory-readiness-integration"

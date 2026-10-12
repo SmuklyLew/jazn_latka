@@ -178,6 +178,15 @@ Po zweryfikowaniu SYSTEM i odczytaniu `MEMORY_ATTACHMENT_CONTRACT.json`, jeżeli
 
 Przed joinem lub ekstrakcją wymagaj stabilnego fizycznego pliku, oczekiwanego rozmiaru, gdy jest znany, oraz zgodnego zaufanego SHA-256.
 
+
+### 3.y Związanie plików hosta z materializacją — obowiązkowy evidence gate
+
+Przed każdą materializacją SYSTEM ZIP lub jego sidecarów użyj **dokładnie** `file_id` (i `version_id`, jeśli dostępne) uzyskanych z bieżącej odpowiedzi `files.search`/`files.list` dla wybranego fizycznie istniejącego kandydata. Nigdy nie generuj `file_id`, nie przepisuj go z pamięci/raportu i nie rekonstruuj z nazwy lub `ref_id`. Wyszukiwarka może zwrócić starszy wariant albo strony wyników; metadane `created_at`, dopasowanie podobnej nazwy i samo `package.json` nie dowodzą, że żądany ZIP jest dostępny. Przy wyniku stronicowanym wyczerp dozwoloną paginację przed stwierdzeniem nieobecności kandydata; przy sprzecznych wydaniach nie wybieraj starszej paczki milcząco.
+
+`files.materialize` należy do **logicznej** przestrzeni plików hosta i musi otrzymać `file_ref.file_id` z rzeczywistego wyniku discovery, nie identyfikator wymyślony, `turn...` użyty jako ścieżka OS ani nazwę pliku. Zachowaj pary `logical_name/file_id/version_id` w jednym bieżącym zestawie evidence. Po wywołaniu sprawdź faktyczny wynik `artifacts[]`: pusty zbiór, odmowa dostępu, brak danej pozycji, brak lokalnej ścieżki lub niedostępny plik to **materialization_failed**; nie przechodź do ZipFile ani bootstrapu. `library_materialize_available=true` potwierdza wyłącznie wywoływalność interfejsu, nie sukces. Pozytywny wynik API oznacza tylko uzyskanie lokalnego artefaktu; integralność następuje dopiero po sprawdzeniu istnienia fizycznego pliku, rozmiaru, SHA-256 i zgodności sidecarów z zaufanym źródłem.
+
+Nie wstawiaj `CodeCite`, cytatu z terminala ani stanu `executor_available=true` bez rzeczywistego wywołania narzędzia oraz jego wyniku. Nie ustawiaj `remote_runtime_available=false`, jeśli brak sprawdzenia zdalnej trasy — zachowaj `unknown`. W diagnostyce rozdziel `discovery`, `tool_callable`, `materialization_attempted`, `artifacts_returned`, `byte_integrity_verified`, `operator_ready`, `runtime_live_ready` oraz `accepted_visible_turn`; wykonanie późniejszej fazy nie może być domniemane. Kontrakt maszynowy: `latka_jazn/resources/chatgpt_startup_evidence_contract.json`.
+
 ### 3.x Host bootstrap primitive przed SYSTEM-em
 
 Odczyt struktury ZIP-a nie jest logiką Jaźni i nie wymaga wcześniej rozpakowanego SYSTEM-u. Jest to minimalna capability hosta/stdlib wykonywana wyłącznie wtedy, gdy lokalny proces faktycznie może zostać utworzony. Host może otworzyć fizyczny ZIP tylko do odczytu, sprawdzić jego katalog i odczytać pojedynczy member bez pełnej ekstrakcji. Nie wolno jednak wykonywać kodu z archiwum przed zweryfikowaniem całego ZIP-a z zaufanym SHA-256 oraz rozmiarem, gdy jest znany.

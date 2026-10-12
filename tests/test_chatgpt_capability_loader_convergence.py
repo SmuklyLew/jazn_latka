@@ -59,5 +59,5 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.21.4"
-    assert PACKAGE_RELEASE_NAME == "studio-active-memory-readiness-p1"
+    assert PACKAGE_VERSION == "16.3.25.5.115.21.5"
+    assert PACKAGE_RELEASE_NAME == "startup-memory-readiness-integration"
