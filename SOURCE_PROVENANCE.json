@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "fb8cd24aa3cd70b473c930346e44674da402e4ed",
-    "base_version": "16.3.25.5.115.21.6-memory-path-readiness-repair",
+    "base_commit": "b688944ffdbcbb35ad307519a2eca06d69d5e17b",
+    "base_version": "16.3.25.5.115.21.7-root-memory-canonical-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "b688944ffdbcbb35ad307519a2eca06d69d5e17b",
