@@ -24,7 +24,7 @@ function Assert-ChildPath([string]$Base, [string]$Candidate) {
 function Get-WorkspaceRoot([string]$AppRoot) {
     $configured = [string]$env:JAZN_RUNTIME_WORKSPACE_DIR
     if (-not [string]::IsNullOrWhiteSpace($configured)) {
-        $portable = $configured.Replace('\\', '/')
+        $portable = $configured.Replace([char]92, '/')
         if ($portable.StartsWith('$ROOT/', [StringComparison]::Ordinal) -or
             $portable.StartsWith('${ROOT}/', [StringComparison]::Ordinal)) {
             $prefixLength = if ($portable.StartsWith('$ROOT/')) { 6 } else { 8 }
@@ -35,7 +35,7 @@ function Get-WorkspaceRoot([string]$AppRoot) {
                 throw "unsafe_root_relative_workspace"
             }
             $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $suffix))
-            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd('\\', '/')) + [IO.Path]::DirectorySeparatorChar
+            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd([char]92, [char]47)) + [IO.Path]::DirectorySeparatorChar
             if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
                 throw "workspace_escapes_root"
             }
@@ -51,10 +51,10 @@ function Get-WorkspaceRoot([string]$AppRoot) {
     if ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
         return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
     }
-    if ((Split-Path -Leaf $AppRoot) -match '^jazn_latka_v') {
-        return [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
+    if ((Split-Path -Leaf $AppRoot) -ieq "jazn_latka_master") {
+        return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
     }
-    return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
+    return [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
 }
 
 function Assert-RuntimeSetIntegrity([string]$AppRoot, [string]$SetPath) {
