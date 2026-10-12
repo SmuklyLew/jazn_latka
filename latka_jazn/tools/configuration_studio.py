@@ -91,8 +91,8 @@ def profile_directory(root: str | Path, *, workspace: Path | None = None) -> Pat
     source = system_root(root)
     target = Path(workspace).expanduser().resolve() if workspace is not None else workspace_runtime_path(source)
     home = target / "configuration_studio" / "profiles"
-    if _inside(home.resolve(), source) or _inside(target, resolve_memory_root(source)):
-        raise ConfigValidationError("Profile nie mogą znajdować się wewnątrz SYSTEM ani MEMORY.")
+    if (_inside(home.resolve(), source) and target != workspace_runtime_path(source)) or _inside(target, resolve_memory_root(source)):
+        raise ConfigValidationError("Profile mogą leżeć tylko w kanonicznym workspace albo poza SYSTEM/MEMORY.")
     _checked_folder(home)
     return home
 
@@ -175,7 +175,8 @@ def validate_values(root: str | Path, entries: Mapping[str, str]) -> dict[str, s
         if key in result and (_inside(path, source) or _inside(path, legacy_workspace)):
             # Only the exact dedicated <SYSTEM>/memory directory is allowed.
             # Other paths within the code tree still fail closed.
-            if not (key == "JAZN_MEMORY_ROOT" and path == source / "memory"):
+            if not ((key == "JAZN_MEMORY_ROOT" and path == source / "memory") or
+                    (key == "JAZN_RUNTIME_WORKSPACE_DIR" and path == workspace_runtime_path(source))):
                 raise ConfigValidationError(f"{label}: niedozwolony katalog w drzewie SYSTEM.")
     if _inside(workspace, memory) or _inside(workspace, current_memory) or workspace == memory:
         raise ConfigValidationError("Workspace nie może znajdować się w MEMORY.")
