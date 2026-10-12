@@ -31,7 +31,7 @@ def test_other_runtime_roots_keep_their_previous_workspace(
     assert workspace_runtime_path(runtime) == tmp_path / "workspace_runtime"
 
 
-@pytest.mark.parametrize("token", ["$ROOT/workspace_runtime", "${ROOT}/workspace_runtime", r"$ROOT\\workspace_runtime"])
+@pytest.mark.parametrize("token", ["$ROOT/workspace_runtime", "${ROOT}/workspace_runtime", r"$ROOT\workspace_runtime"])
 def test_root_token_is_portable(tmp_path: Path, monkeypatch, token: str) -> None:
     monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
     root = tmp_path / "jazn_latka_master"
