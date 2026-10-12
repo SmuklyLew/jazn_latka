@@ -158,3 +158,25 @@ def test_legacy_per_version_workspace_is_migrated_without_overwriting_canonical_
     assert archived.is_file()
     assert not legacy.exists()
     assert (canonical / "runtime_workspace_migrations.jsonl").is_file()
+
+def test_root_token_is_consistent_for_runtime_configuration(tmp_path: Path, monkeypatch) -> None:
+    root = tmp_path / "jazn_latka_master"
+    root.mkdir()
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    expected = (root / "workspace_runtime").resolve()
+    assert workspace_runtime_path(root) == expected
+    assert workspace_runtime_path(root, "$ROOT/workspace_runtime") == expected
+    assert workspace_runtime_path(root, "${ROOT}/workspace_runtime") == expected
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", "$ROOT/workspace_runtime")
+    assert JaznConfig(root=root).runtime_workspace_dir == expected
+    assert daemon_pid_path(root) == expected / "jazn_daemon.pid"
+    with pytest.raises(ValueError, match="unsafe_root_relative_workspace"):
+        workspace_runtime_path(root, "$ROOT/../escape")
+
+
+def test_versioned_runtime_keeps_shared_host_workspace(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    root = tmp_path / "jazn_latka_v16.3.25"
+    root.mkdir()
+    assert workspace_runtime_path(root) == (tmp_path / "workspace_runtime").resolve()
+
