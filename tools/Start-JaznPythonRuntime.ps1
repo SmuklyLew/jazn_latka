@@ -34,6 +34,9 @@ function Get-WorkspaceRoot([string]$AppRoot) {
     if ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
         return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
     }
+    if ((Split-Path -Leaf $AppRoot) -match '^jazn_latka_v') {
+        return [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
+    }
     return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
 }
 
