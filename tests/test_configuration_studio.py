@@ -24,6 +24,7 @@ def test_snapshot_is_read_only_and_reports_host_separation(tmp_path: Path) -> No
     data = {row["name"]: row for row in inspect_system(root)}
     assert data["SYSTEM"]["path"] == str(root.resolve())
     assert data["WORKSPACE"]["path"] == str((root / "workspace_runtime").resolve())
+    assert data["PREVIOUS_HOST_WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
     assert data["MARKER"]["exists"] == "false"
     assert data["PROFILES"]["exists"] == "false"
     assert not (root / "workspace_runtime").exists()
