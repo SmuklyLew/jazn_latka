@@ -29,7 +29,12 @@ function Get-WorkspaceRoot([string]$AppRoot) {
         }
         return [IO.Path]::GetFullPath((Join-Path $AppRoot $configured))
     }
-    return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $AppRoot) "workspace_runtime"))
+    $parent = Split-Path -Parent $AppRoot
+    if ((Split-Path -Leaf $parent) -ieq "workspace_runtime") { return [IO.Path]::GetFullPath($parent) }
+    if ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
+        return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
+    }
+    return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
 }
 
 function Assert-RuntimeSetIntegrity([string]$AppRoot, [string]$SetPath) {
