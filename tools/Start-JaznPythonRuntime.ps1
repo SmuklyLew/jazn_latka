@@ -35,7 +35,7 @@ function Get-WorkspaceRoot([string]$AppRoot) {
                 throw "unsafe_root_relative_workspace"
             }
             $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $suffix))
-            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd([char]92, [char]47)) + [IO.Path]::DirectorySeparatorChar
+            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd([char[]]@([char]92, [char]47))) + [IO.Path]::DirectorySeparatorChar
             if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
                 throw "workspace_escapes_root"
             }
