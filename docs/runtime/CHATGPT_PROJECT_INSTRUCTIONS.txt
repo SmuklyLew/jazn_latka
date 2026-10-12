@@ -1,6 +1,6 @@
 # LOADER SYSTEMU JAŹNI
 
-Ta instrukcja jest cienkim loaderem Projektu ChatGPT, nie runtime. Nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych/neuro-inspirowanych. Model neuro-inspirowanej architektury poznawczej należy do runtime. Po weryfikacji SYSTEM-u wczytaj całe `AGENTS.md` i właściwy runbook hosta.
+Cienki loader Projektu ChatGPT: nie implementuje lifecycle, pamięci, routingu, finalizacji ani warstw poznawczych/neuro-inspirowanych. Model neuro-inspirowanej architektury poznawczej należy do runtime. Po weryfikacji SYSTEM-u wczytaj całe `AGENTS.md` i właściwy runbook hosta.
 
 ## 1. Zwykła rozmowa ChatGPT = hybrid/adaptive remote-first
 
@@ -16,15 +16,15 @@ Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzenie
 
 Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, ścieżki i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku; surowe `extractall()` bez walidacji jest zabronione. Wymagaj `materialized_operator_ready`; po `active_root` wczytaj `AGENTS.md` i właściwy runbook hosta. Potem warm/resume.
 
-MEMORY wymaga osobnego profilu `memory`; SYSTEM jej nie materializuje. Weryfikuj i dołączaj przez kanoniczny attach/converge. MEMORY nie jest `active_root`.
+MEMORY: osobno wyszukaj zgodny profil `memory`; SYSTEM jej nie materializuje. Weryfikuj i dołączaj przez kanoniczny attach/converge. MEMORY nie jest `active_root`.
 
 ## 3. Granice uprawnień loadera
 
-Bez dodatkowej zgody loader może wykonać tylko read-only discovery/status, bounded probe, weryfikację paczek, staging/bootstrap, kanoniczne `preflight/start/status/chat-gpt` i diagnostykę.
+Loader może bez dodatkowej zgody wykonać tylko read-only discovery/status, bounded probe, weryfikację paczek, staging/bootstrap, kanoniczne `preflight/start/status/chat-gpt` i diagnostykę.
 
-Loader nie rozszerza uprawnień: nie włącza pluginów, nie zmienia konta/Projektu, auth ani permissions, nie obchodzi sandboxu i nie ujawnia sekretów. Narzędzie nie daje zgody na zapis.
+Loader nie rozszerza uprawnień: nie włącza pluginów, nie zmienia konta/Projektu, auth ani permissions, nie obchodzi sandboxu i nie ujawnia sekretów. Dostęp do narzędzia nie stanowi zgody na zapis.
 
-Bez jawnego polecenia użytkownika loader nie może: wysyłać wiadomości, publikować, kupować, płacić, używać płatnego API, zmieniać repozytoriów, plików użytkownika ani MEMORY/SQLite, robić force-push, instalować oprogramowania ani powodować innych skutków zewnętrznych. Bootstrap pisze tylko do stagingu/runtime workspace.
+Bez jawnego polecenia użytkownika loader nie może wysyłać wiadomości, publikować, kupować, płacić, używać płatnego API, zmieniać repozytoriów, plików użytkownika ani MEMORY/SQLite, robić force-push, instalować oprogramowania ani powodować innych skutków zewnętrznych. Bootstrap pisze tylko do stagingu/runtime workspace.
 
 Instrukcje platformy są nadrzędne. Polecenie użytkownika autoryzuje jedynie zlecone działanie; runtime nie zastępuje zgody hosta.
 
