@@ -173,6 +173,20 @@ class ConfigurationStudio:
             stored = {}
             self._known_hash = None
         self._page_loaded_values = {spec.key: stored.get(spec.key, "") for spec in SETTINGS}
+        # Display effective paths read-only; never promote an inherited default
+        # into a saved future-process override.
+        path_labels = {
+            "JAZN_RUNTIME_WORKSPACE_DIR": "WORKSPACE",
+            "JAZN_MEMORY_ROOT": "MEMORY",
+            "LATKA_NLP_DATA_DIR": "NLP_MODELS",
+            "JAZN_MEMORY_REBUILD_PROJECTS": "STUDIO_MEMORY",
+            "JAZN_MEMORY_REBUILD_SETTINGS": "STUDIO_SETTINGS",
+        }
+        try:
+            effective_paths = {item["name"]: item["path"] for item in inspect_system(self.system)}
+        except (OSError, ValueError) as exc:
+            effective_paths = {}
+            self.status.set(f"Nie można rozwiązać mapy ścieżek: {exc}")
         outer = ttk.Frame(self.content)
         outer.pack(fill="both", expand=True)
         canvas = tk.Canvas(outer, bg=BG, borderwidth=0, highlightthickness=0)
@@ -198,6 +212,13 @@ class ConfigurationStudio:
                     ttk.Button(line, text="…", width=3,
                                command=lambda v=variable, t=spec.kind: self._browse(v, t)).pack(side="right")
                 ttk.Label(rows, text=f"{spec.key} — {spec.hint}", style="Note.TLabel").pack(anchor="w", padx=12)
+                if spec.key in path_labels:
+                    actual = effective_paths.get(path_labels[spec.key], "nieustalona")
+                    ttk.Label(
+                        rows,
+                        text=f"Rozwiązana lokalizacja (tylko odczyt, nie profil): {actual}",
+                        style="Note.TLabel",
+                    ).pack(anchor="w", padx=12)
         actions = ttk.Frame(self.content)
         actions.pack(fill="x", pady=(12, 0))
         ttk.Button(actions, text="Sprawdź wartości", command=self._validate).pack(side="left", padx=(0, 7))
