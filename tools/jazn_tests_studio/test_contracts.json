@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.115.21.12",
-  "active_definition_count": 2241,
+  "active_definition_count": 2243,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21424,8 +21424,8 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_mcp_deployment_security_v1152112.py::test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter": {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+    "tests/test_mcp_deployment_security.py::test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter": {
+      "path": "tests/test_mcp_deployment_security.py",
       "name": "test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter",
       "purpose": "Cloudflare token is a mounted secret not an argv parameter",
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21444,8 +21444,8 @@
       "description_source": "source_identity",
       "line": 30
     },
-    "tests/test_mcp_deployment_security_v1152112.py::test_memory_is_persistent_and_separate_from_operational_workspace": {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+    "tests/test_mcp_deployment_security.py::test_memory_is_persistent_and_separate_from_operational_workspace": {
+      "path": "tests/test_mcp_deployment_security.py",
       "name": "test_memory_is_persistent_and_separate_from_operational_workspace",
       "purpose": "Memory is persistent and separate from operational workspace",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21465,8 +21465,8 @@
       "description_source": "source_identity",
       "line": 42
     },
-    "tests/test_mcp_deployment_security_v1152112.py::test_public_oauth_resource_host_must_be_allowlisted": {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+    "tests/test_mcp_deployment_security.py::test_public_oauth_resource_host_must_be_allowlisted": {
+      "path": "tests/test_mcp_deployment_security.py",
       "name": "test_public_oauth_resource_host_must_be_allowlisted",
       "purpose": "Public oauth resource host must be allowlisted",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21488,8 +21488,8 @@
       "description_source": "source_identity",
       "line": 55
     },
-    "tests/test_mcp_deployment_security_v1152112.py::test_public_oauth_url_rejects_ambiguous_suffixes": {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+    "tests/test_mcp_deployment_security.py::test_public_oauth_url_rejects_ambiguous_suffixes": {
+      "path": "tests/test_mcp_deployment_security.py",
       "name": "test_public_oauth_url_rejects_ambiguous_suffixes",
       "purpose": "Public oauth url rejects ambiguous suffixes",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21512,8 +21512,8 @@
       "description_source": "source_identity",
       "line": 67
     },
-    "tests/test_mcp_deployment_security_v1152112.py::test_deployment_contract_version_and_memory_truth_boundary": {
-      "path": "tests/test_mcp_deployment_security_v1152112.py",
+    "tests/test_mcp_deployment_security.py::test_deployment_contract_version_and_memory_truth_boundary": {
+      "path": "tests/test_mcp_deployment_security.py",
       "name": "test_deployment_contract_version_and_memory_truth_boundary",
       "purpose": "Deployment contract version and memory truth boundary",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -21532,6 +21532,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 76
+    },
+    "tests/test_mcp_dockerfile_instruction_boundaries.py::test_mcp_dockerfile_ends_with_separate_valid_instructions": {
+      "path": "tests/test_mcp_dockerfile_instruction_boundaries.py",
+      "name": "test_mcp_dockerfile_ends_with_separate_valid_instructions",
+      "purpose": "Mcp dockerfile ends with separate valid instructions",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
       "path": "tests/test_mcp_http_cli.py",
@@ -22472,6 +22489,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 106
+    },
+    "tests/test_mcp_private_deployment_context.py::test_local_mcp_oauth_environment_file_is_excluded_from_all_build_contexts": {
+      "path": "tests/test_mcp_private_deployment_context.py",
+      "name": "test_local_mcp_oauth_environment_file_is_excluded_from_all_build_contexts",
+      "purpose": "Local mcp oauth environment file is excluded from all build contexts",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_mcp_remote_runtime.py::test_public_streamable_http_route_requires_all_independent_evidence": {
       "path": "tests/test_mcp_remote_runtime.py",
@@ -35055,13 +35089,13 @@
       "path": "tests/test_persistent_remote_runtime_operations.py",
       "name": "test_deployment_examples_keep_secrets_and_daemon_private",
       "purpose": "Deployment examples keep secrets and daemon private",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
