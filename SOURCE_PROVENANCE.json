@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "a0c4d64ca6c6caaa99c6368aa58bc993ba1f7d6a",
-    "base_version": "16.3.25.5.115.21.5-startup-memory-readiness-integration",
+    "base_commit": "810b65d5c9c17f1fce8e92f85a9252e94af275c9",
+    "base_version": "16.3.25.5.115.21.6-memory-path-readiness-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "810b65d5c9c17f1fce8e92f85a9252e94af275c9",
