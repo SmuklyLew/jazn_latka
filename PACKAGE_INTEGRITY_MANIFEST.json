@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
-  "runtime_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
-  "package_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
-  "generated_at_utc": "2026-10-12T17:28:40+00:00",
-  "updated_at_utc": "2026-10-12T17:28:40+00:00",
+  "version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
+  "runtime_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
+  "package_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
+  "generated_at_utc": "2026-10-12T23:45:50+00:00",
+  "updated_at_utc": "2026-10-12T23:45:50+00:00",
   "start_file": "run.py",
-  "file_count": 2350,
-  "static_file_count": 2350,
+  "file_count": 2351,
+  "static_file_count": 2351,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -308,8 +308,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2983,
-      "sha256": "d69bcad03dc6fe51aa06e4966ffb7cd229e2df0c4e9c17814d4e512c00f75d07",
+      "size_bytes": 2977,
+      "sha256": "9892d91e85f4d897137559e6e34358e2143870568b5bd31d96790e08c3a4412f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -317,8 +317,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/Dockerfile",
-      "size_bytes": 882,
-      "sha256": "6a85b3220e9eb43de3e41a55e33b818560b6491401c5a5b96303961064471be6",
+      "size_bytes": 959,
+      "sha256": "a21a2f43f30ff0886623532836b085ad45a98b934af060ad86980ea78d41d1b7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -326,8 +326,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/README.md",
-      "size_bytes": 5331,
-      "sha256": "d163baa48232abe8dac49c687fa3bb965dbeb97f71b3d5161828c0256c0d6685",
+      "size_bytes": 6347,
+      "sha256": "5a137f86dfe4b9b05ec3fcf31ab14f8ab87acfd509acc4e2d47e9332f8ac093b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -335,8 +335,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/compose.cloudflare.example.yml",
-      "size_bytes": 1043,
-      "sha256": "d52b2f9ca3afa821faa9609a9d8f63464d0111021b61c826fb91e041e25cd08f",
+      "size_bytes": 1284,
+      "sha256": "1f73a4eaa7785bdd5c28364467fbb00fc01753e8b39345e4903829bd9fa06a23",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -344,8 +344,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1725,
-      "sha256": "bf17a169bbf36c3f72b820ad314d0d06dd1404686a026f9dbf555b602c5dc227",
+      "size_bytes": 1948,
+      "sha256": "3200ae4e5efc5e538aaf96f8f52fa9a386131c96ed62fb4575d316716601c7c4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -353,8 +353,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/jazn-mcp.env.example",
-      "size_bytes": 585,
-      "sha256": "2e75e49458e91add742feb82513b7d1c8b9a5cab7fcebaba921a8dd5ceb82188",
+      "size_bytes": 758,
+      "sha256": "d3778448fa14324237b929e120cf82e3f1ae77a09a1dd3b7184b5b60276bfa21",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6140,8 +6140,8 @@
     },
     {
       "path": "latka_jazn/mcp/deployment.py",
-      "size_bytes": 16941,
-      "sha256": "fcad0eb97e2761834bf2a5362456d1e8868b50286737e598b7132233b631b750",
+      "size_bytes": 17557,
+      "sha256": "6687505fc1d4f9990eb0f62dc82c9ad9ae3a9595403b8318b301b3a63ccd2938",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9785,8 +9785,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 6940,
-      "sha256": "05ff41339cc9dfd0554545fc8fd3860ded1e19abaae07e092cb3dfd538924872",
+      "size_bytes": 7036,
+      "sha256": "1f7c1350a710e8bd070f44bdf0010328788905ef381f10b268cb5eab88a7ce17",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18595,6 +18595,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_deployment_security_v1152112.py",
+      "size_bytes": 3573,
+      "sha256": "b501ea65152f889c3970c5b11f3f41a263e909514a3cd82d66a947f37f01d37a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_http_cli.py",
       "size_bytes": 873,
       "sha256": "9383fce7e7e36be7f4635e808456360b5b225b845ca826eb24e89090ecec40b4",
@@ -20990,8 +20999,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2083604,
-      "sha256": "1fb70eebef95e82145569629a716515f4c8f3919ba4ad53d8c727fd5fe2f5342",
+      "size_bytes": 2087761,
+      "sha256": "357aa154697b2bf59a0844b387f9a163a0fc3808808ae469d24f37eb03236a63",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21602,11 +21611,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
+  "release_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
-    "package_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
-    "release_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence"
+    "runtime_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
+    "package_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
+    "release_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
