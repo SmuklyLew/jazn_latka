@@ -99,5 +99,10 @@
   "chatgpt_materialization_tool_call_proves_artifact_created": false,
   "chatgpt_tool_citations_require_observed_invocation": true,
   "chatgpt_no_executor_without_process_created_claim": true,
-  "chatgpt_files_pagination_before_not_found_claim": true
+  "chatgpt_files_pagination_before_not_found_claim": true,
+  "chatgpt_local_bootstrap_requires_mcp_toolset": false,
+  "chatgpt_local_bootstrap_entry": "host_executor_then_verified_system_then_runpy",
+  "chatgpt_remote_toolset_gate_applies_only_to_remote": true,
+  "chatgpt_pre_spawn_host_error_proves_runtime_failure": false,
+  "chatgpt_host_tool_probe_latency_is_runtime_controlled": false
 }

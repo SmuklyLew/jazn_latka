@@ -6,7 +6,7 @@ Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjono
 
 ## 0. Zasada nadrzędna: runtime-first, identity-by-lineage
 
-Celem hosta w zwykłej rozmowie ChatGPT jest najpierw zweryfikować bieżącą ekspozycję aplikacji Jaźni i połączyć wiadomość z właściwym persistent runtime. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, ordinary-chat może wykonać bounded local bootstrap przez host-supplied process execution. `run.py`/`main.py` pozostają kanonicznym control plane tej lokalnej ścieżki oraz `operator_recovery`; nie wolno tworzyć równoległego lifecycle. Żywotność procesu, pipe'a, endpointu ani samej aplikacji nie jest dowodem gotowej wypowiedzi.
+Celem hosta w zwykłej rozmowie ChatGPT jest najpierw zweryfikować bieżącą ekspozycję aplikacji Jaźni i połączyć wiadomość z właściwym persistent runtime. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, ordinary-chat może wykonać bounded local bootstrap przez host-supplied process execution. Brak narzędzi MCP nie blokuje lokalnej próby hostowego startu. `run.py`/`main.py` pozostają kanonicznym control plane tej lokalnej ścieżki oraz `operator_recovery`; nie wolno tworzyć równoległego lifecycle. Żywotność procesu, pipe'a, endpointu ani samej aplikacji nie jest dowodem gotowej wypowiedzi.
 
 Po znalezieniu zweryfikowanego `active_root`:
 - `run.py` jest wyłącznie cienkim starterem użytkownika;
@@ -87,6 +87,8 @@ Jeżeli publiczny lub tunelowany remote runtime przeszedł bieżący fresh-messa
 ### 2.1. Fresh-message app exposure gate
 
 Instrukcja Projektu działa w rozmowach Projektu, ale nie może sama włączyć aplikacji ani odziedziczyć ekspozycji narzędzi z poprzedniej wiadomości. Dla zdalnej Jaźni rozróżniaj: (1) plugin/app istnieje lub jest zainstalowany, (2) app jest wybrany/wspomniany dla bieżącej wiadomości, (3) host faktycznie wystawił modelowi narzędzia, (4) `jazn_status` został wywołany i potwierdził świeży runtime, (5) pełna tura jest wykonalna. Tylko rzeczywiście zaobserwowane stany są evidence dla następnego kroku.
+
+Bramka narzędzi dotyczy WYŁĄCZNIE zdalnej aplikacji. Nie jest warunkiem startu lokalnego SYSTEM ZIP. Sprawdzenie ekspozycji aplikacji powinno być tanie, bez instalowania/wyszukiwania nowego MCP; następnie oceń local fallback. Czas oczekiwania zewnętrznego host executor (także 2m44s) nie jest dowodem procesu, a kod Jaźni nie może narzucić timeoutu zewnętrznego narzędzia. Model oraz autor Łatka wymagają host evidence lub accepted finalization.
 
 Dla zwykłej wiadomości zdalna trasa jest conversation-ready wyłącznie wtedy, gdy host na **tej samej bieżącej wiadomości** obserwuje jako callable pełny kanoniczny zestaw: `jazn_status`, `jazn_generate_visible_reply`, `jazn_resume_visible_reply`, `jazn_finalize_reply`. Samo powodzenie `jazn_status` może potwierdzić zdrowie transportu/runtime, ale bez pozostałych narzędzi nie dowodzi wykonalności całej tury. Do evidence hosta przekazuj `current_message_toolset_observed=true` oraz `callable_tool_names` wyłącznie z faktycznie wystawionej bieżącej powierzchni; lista z katalogu, manifestu, cache, poprzedniej wiadomości albo wklejony JSON nie jest tym dowodem.
 

@@ -17,13 +17,13 @@ v115 zachowuje trzy tryby v114:
 
 ```text
 current user message
-  -> observe current-message Jaźń tool exposure
+  -> cheap current-message remote tool exposure check (no install)
   -> complete toolset?
        yes -> jazn_status
               -> verified conversation-ready remote?
                    yes -> submit exactly once through remote runtime
                    no  -> local fallback gate
-       no  -> local fallback gate
+       no  -> local fallback gate (no MCP prerequisites)
   -> local fallback gate
        -> at most one primary process-creation probe
        -> at most one explicitly exposed independent alternative probe
@@ -36,7 +36,13 @@ current user message
 ```
 
 Remote readiness always wins over an available local executor. The host does not
-start both routes speculatively.
+start both routes speculatively. Checking remote app exposure is cheap and does
+not block host-local ZIP bootstrap if four tools are missing. Local bootstrap
+uses the host process executor plus `run.py/main.py`, never an MCP toolset.
+
+A 2m44s host call ending in pre-spawn `ClientError` is **not** a Python failure.
+Host tool invocation latency is outside Jaźń code control. Never infer active
+Jaźń, model identity, materialized MEMORY or accepted finalization from it.
 
 ## Current-message remote gate
 
