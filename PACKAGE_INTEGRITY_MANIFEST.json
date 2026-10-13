@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.3-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.3-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.3-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T05:22:07+00:00",
-  "updated_at_utc": "2026-10-13T05:22:07+00:00",
+  "generated_at_utc": "2026-10-13T05:25:58+00:00",
+  "updated_at_utc": "2026-10-13T05:25:58+00:00",
   "start_file": "run.py",
   "file_count": 2397,
   "static_file_count": 2397,
@@ -327,7 +327,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2979,
-      "sha256": "42fb4ae4b0d5561d360361ca5bf427aec834d1ef0b49244301a434d6a460ab51",
+      "sha256": "ae69c08c30041d9cedd8cde676e6e153409f432772bdb4215592c497802b9552",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19054,6 +19054,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_task_input_delivery_acceptance.py",
+      "size_bytes": 2857,
+      "sha256": "b6f69425152ae2d37c21f4bf3ae6d1bfe501f42921d67f9845adce57aa5d8791",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_task_input_fail_closed.py",
       "size_bytes": 1988,
       "sha256": "56d928d7c430ddafb486a410f27924a3541576f83f78b40cca9ca9850f1618fc",
@@ -19093,15 +19102,6 @@
       "path": "tests/test_mcp_task_registry.py",
       "size_bytes": 1733,
       "sha256": "91a815176471ab9adffd4975b9707b2e876d6b0bdd043965d70ac5a6f898156f",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_mcp_v116_acceptance.py",
-      "size_bytes": 2804,
-      "sha256": "efa20ad591b6e398dfd448989c98447d51dbe629cac51335e05bbb071c37f60a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21413,8 +21413,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2109460,
-      "sha256": "6c126c575ec5058aadfe9f34aa3537173a4db54a385108766e635d38f8058ccf",
+      "size_bytes": 2109490,
+      "sha256": "479958d375c3b835f39cb8fa2a88cab2ea791b16fc33c494c1c8b2b03a3f5784",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
