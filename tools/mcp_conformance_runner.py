@@ -15,7 +15,20 @@ import sys
 import time
 
 
+def _configure_unicode_console() -> None:
+    """CI on Windows may attach cp1252 stdout despite PYTHONUTF8 for children.
+
+    The upstream suite prints arbitrary Unicode in failure explanations.
+    Keep exact artifacts and do not lose exit status to a logging exception.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        adjust = getattr(stream, "reconfigure", None)
+        if callable(adjust):
+            adjust(encoding="utf-8", errors="backslashreplace")
+
+
 def main() -> int:
+    _configure_unicode_console()
     parser = argparse.ArgumentParser()
     parser.add_argument("--conformance", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
