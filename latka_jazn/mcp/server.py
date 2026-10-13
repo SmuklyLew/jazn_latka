@@ -408,6 +408,10 @@ class JaznMcpServer(_V76JaznMcpServer):
         method = str(request_value.get("method") or "")
         owner = self._authenticated_task_owner(request_value)
         try:
+            if not owner:
+                existing = self.task_resume.store.get(task_id)
+                if existing is not None and existing.owner_subject is not None:
+                    raise KeyError("unknown_task")
             if method == "tasks/get":
                 result = self.task_resume.get(task_id, **owner)
             elif method == "tasks/cancel":
