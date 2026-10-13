@@ -37,7 +37,7 @@ The versioned machine-readable contract is
 ## Build
 
 ```bash
-docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.107 .
+docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.115.21.12 .
 ```
 
 The image runs as uid/gid 10001, never exposes the daemon port 8787, and uses
@@ -70,10 +70,14 @@ token in the shell/secret store, not in Git.
 ```bash
 cp deploy/chatgpt_mcp/jazn-mcp.env.example deploy/chatgpt_mcp/jazn-mcp.env
 # fill OAuth/resource-server values locally
-export CLOUDFLARE_TUNNEL_TOKEN='...'
+export CLOUDFLARE_TUNNEL_TOKEN_FILE='/absolute/private/path/cloudflare-tunnel.token'
 export CLOUDFLARED_IMAGE='cloudflare/cloudflared:<reviewed-version-or-digest>'
 docker compose -f deploy/chatgpt_mcp/compose.cloudflare.example.yml up -d
 ```
+
+The Compose file uses Docker Compose Secrets and cloudflared `--token-file` (cloudflared 2025.4.0 or newer). The token file must exist outside the repository and must be readable by the Docker engine. The token never appears in Compose command arguments or environment values. Do not print `docker compose config` with inline secrets.
+
+The MCP container mounts **two different persistent volumes**: `jazn-runtime` for operational host state and `jazn-memory` for canonical private memory at `/opt/jazn/memory`. An empty `jazn-memory` volume is not evidence of memory restoration. Restore/converge private MEMORY through the canonical `run.py memory-converge` maintenance pipeline (with daemon inactive as required), and require `native_unified_required` plus live `full_autobiographical_recall_ready` before claiming autobiographical continuity. Back up volumes outside the container lifecycle; never copy private MEMORY into the Docker build context or image.
 
 The Compose file intentionally refuses an implicit `latest`; pin a reviewed
 cloudflared version or immutable digest in production. Configure the Cloudflare

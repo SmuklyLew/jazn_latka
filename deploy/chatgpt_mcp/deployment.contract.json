@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
+  "runtime_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
@@ -48,6 +48,10 @@
     "oauth_required_for_public_non_loopback": true,
     "secrets_in_argv": false,
     "cloudflare_tunnel_token_in_repo": false,
+    "cloudflare_tunnel_token_transport": "docker_compose_secret_token_file",
+    "cloudflare_minimum_token_file_version": "2025.4.0",
+    "memory_volume": "/opt/jazn/memory",
+    "private_memory_attached_by_release": false,
     "openai_api_key_required_for_public_https_route": false,
     "secure_mcp_tunnel_runtime_api_key_external_to_repo": true
   },

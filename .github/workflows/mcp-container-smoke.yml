@@ -1,0 +1,80 @@
+name: MCP container build and Compose deployment smoke
+
+on:
+  push:
+    branches:
+      - master
+      - "update/**"
+      - "fix/**"
+    paths:
+      - "deploy/chatgpt_mcp/**"
+      - "latka_jazn/mcp/**"
+      - "pyproject.toml"
+      - ".dockerignore"
+      - ".github/workflows/mcp-container-smoke.yml"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "deploy/chatgpt_mcp/**"
+      - "latka_jazn/mcp/**"
+      - "pyproject.toml"
+      - ".dockerignore"
+      - ".github/workflows/mcp-container-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  container-and-compose:
+    name: Build Jaźń MCP image and validate secure Compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Add temporary deployment env file to verify Docker context exclusion
+        run: cp deploy/chatgpt_mcp/jazn-mcp.env.example deploy/chatgpt_mcp/jazn-mcp.env
+
+      - name: Build production container
+        run: docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:ci .
+
+      - name: Confirm local deployment credentials are never baked into image
+        run: docker run --rm --entrypoint test jazn-mcp:ci ! -e /opt/jazn/deploy/chatgpt_mcp/jazn-mcp.env
+
+      - name: Validate production interpreter and SDK
+        run: |
+          docker run --rm --entrypoint python jazn-mcp:ci -c "from mcp.server import MCPServer; import latka_jazn.mcp.http_gateway; print('MCP SDK and HTTP gateway imports OK')"
+
+      - name: Check Compose mounts and token-file wiring with placeholders
+        shell: bash
+        env:
+          CLOUDFLARED_IMAGE: cloudflare/cloudflared:2025.4.0
+          CLOUDFLARE_TUNNEL_TOKEN_FILE: /tmp/jazn-cloudflare-ci-token
+        run: |
+          set -euo pipefail
+          # These are CI-only dummy values. No production credentials are used.
+          umask 077
+          printf '%s' 'not-a-production-tunnel-token' > "$CLOUDFLARE_TUNNEL_TOKEN_FILE"
+          cp deploy/chatgpt_mcp/jazn-mcp.env.example deploy/chatgpt_mcp/jazn-mcp.env
+          trap 'rm -f "$CLOUDFLARE_TUNNEL_TOKEN_FILE" deploy/chatgpt_mcp/jazn-mcp.env' EXIT
+          docker compose -f deploy/chatgpt_mcp/compose.cloudflare.example.yml config --quiet
+          docker compose -f deploy/chatgpt_mcp/compose.cloudflare.example.yml config --format json > /tmp/jazn-mcp-compose-ci.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("/tmp/jazn-mcp-compose-ci.json").read_text())
+          services = data["services"]
+          cloud = services["cloudflared"]
+          cmd = cloud["command"]
+          assert "--token-file" in cmd and "--token" not in cmd
+          assert "/run/secrets/cloudflare_tunnel_token" in cmd
+          assert "cloudflare_tunnel_token" in data["secrets"]
+          assert "ports" not in services["jazn-mcp"], "private runtime must not publish host ports"
+          mounts = services["jazn-mcp"]["volumes"]
+          targets = {m["target"] for m in mounts}
+          assert "/opt/jazn/memory" in targets
+          assert "/opt/jazn/workspace_runtime" in targets
+          print("Secure Compose contract OK")
+          PY
