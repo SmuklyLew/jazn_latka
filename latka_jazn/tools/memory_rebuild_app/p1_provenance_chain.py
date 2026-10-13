@@ -27,7 +27,23 @@ class PinnedMemoryArtifact:
 
 
 def _stamp(stat: os.stat_result) -> tuple[int, int, int, int, int]:
-    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
+    # On Windows Python 3.12+, stat(path).st_ctime_ns describes creation time,
+    # while fstat(fd).st_ctime_ns may describe metadata change time (CPython
+    # python/cpython#157671). Compare birthtime across the two APIs instead.
+    # Do not discard ctime: compare it separately *within* each API below.
+    creation_or_change_ns = (
+        stat.st_birthtime_ns if os.name == "nt" else stat.st_ctime_ns
+    )
+    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, creation_or_change_ns
+
+
+def _same_source_stamp(before: os.stat_result, after: os.stat_result) -> bool:
+    # Keep metadata-change protection on Windows, without equating path stat's
+    # birthtime with fstat's change time. No special-case for known hashes.
+    return (
+        _stamp(before) == _stamp(after)
+        and (os.name != "nt" or before.st_ctime_ns == after.st_ctime_ns)
+    )
 
 
 def _stable_digest(path: Path, *, max_bytes: int, deadline: float) -> str:
@@ -43,16 +59,17 @@ def _stable_digest(path: Path, *, max_bytes: int, deadline: float) -> str:
     digest = hashlib.sha256()
     count = 0
     with path.open("rb") as stream:
-        if _stamp(os.fstat(stream.fileno())) != _stamp(before):
+        fd_before = os.fstat(stream.fileno())
+        if _stamp(fd_before) != _stamp(before):
             raise ValueError("artifact_changed")
         while chunk := stream.read(1024 * 1024):
             count += len(chunk)
             if count > max_bytes or time.monotonic() > deadline:
                 raise ValueError("artifact_resource_limit")
             digest.update(chunk)
-        if _stamp(os.fstat(stream.fileno())) != _stamp(before):
+        if not _same_source_stamp(fd_before, os.fstat(stream.fileno())):
             raise ValueError("artifact_changed")
-    if _stamp(path.stat()) != _stamp(before) or _has_symlink(path):
+    if not _same_source_stamp(before, path.stat()) or _has_symlink(path):
         raise ValueError("artifact_changed")
     return digest.hexdigest()
 
