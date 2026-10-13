@@ -27,7 +27,9 @@ def test_task_owner_is_persisted_and_isolation_survives_reopen(tmp_path: Path) -
         )
     with pytest.raises(KeyError, match="unknown_task"):
         reopened.request_cancel(task.task_id, owner_subject="client/B", owner_transport="public_http")
-    assert reopened.get(task.task_id, owner_subject="client/A", owner_transport="public_http").cancel_requested is False
+    permitted = reopened.get(task.task_id, owner_subject="client/A", owner_transport="public_http")
+    assert permitted is not None
+    assert permitted.cancel_requested is False
 
 
 def test_legacy_unowned_task_never_adopted_by_remote_caller(tmp_path: Path) -> None:
@@ -40,7 +42,9 @@ def test_legacy_unowned_task_never_adopted_by_remote_caller(tmp_path: Path) -> N
         )
     with pytest.raises(KeyError):
         store.request_cancel(task.task_id, owner_subject="client/A", owner_transport="public_http")
-    assert store.get(task.task_id).owner_subject is None
+    persisted = store.get(task.task_id)
+    assert persisted is not None
+    assert persisted.owner_subject is None
 
 
 def test_existing_legacy_sqlite_schema_migrates_additively(tmp_path: Path) -> None:

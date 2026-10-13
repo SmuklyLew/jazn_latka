@@ -118,4 +118,6 @@ async def test_http_gateway_refuses_unowned_task_resource_to_public_client(tmp_p
     async with Client(gateway.mcp, raise_exceptions=True) as client:
         with pytest.raises(Exception):
             await client.read_resource(f"jazn://task/{legacy.task_id}")
-    assert McpTaskStore(tmp_path).get(legacy.task_id).owner_subject is None
+    persisted = McpTaskStore(tmp_path).get(legacy.task_id)
+    assert persisted is not None
+    assert persisted.owner_subject is None

@@ -30,7 +30,9 @@ def test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject(tmp_pat
         denied = server.handle_public_authenticated(_request(method, task.task_id, subject="bob"), owner_subject="bob", owner_transport="public_http")
         assert denied is not None
         assert denied.get("error", {}).get("message") == "Unknown taskId"
-    assert server.task_resume.store.get(task.task_id).cancel_requested is False
+    persisted = server.task_resume.store.get(task.task_id)
+    assert persisted is not None
+    assert persisted.cancel_requested is False
 
 
 def test_mcp_tasks_get_accepts_matching_authenticated_subject(tmp_path: Path) -> None:

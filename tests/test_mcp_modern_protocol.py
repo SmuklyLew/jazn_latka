@@ -132,7 +132,7 @@ def test_modern_tasks_require_per_request_extension_capability(tmp_path: Path) -
 
 def test_modern_task_methods_dispatch_when_extension_is_declared(tmp_path: Path) -> None:
     server = _server(tmp_path)
-    server.task_resume.get = lambda task_id: {
+    server.task_resume.get = lambda task_id, *, owner_subject=None, owner_transport=None: {
         "resultType": "complete",
         "taskId": task_id,
         "status": "working",

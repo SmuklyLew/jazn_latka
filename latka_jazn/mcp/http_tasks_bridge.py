@@ -546,6 +546,12 @@ class ModernTasksHttpBridge:
         if response_value is None:
             await Response(status_code=202)(scope, receive, send)
             return
+        if not isinstance(response_value, dict):
+            response_value = _jsonrpc_error(
+                prepared.get("id"),
+                code=INTERNAL_ERROR,
+                message="Invalid MCP task backend response",
+            )
         await self._send_json(scope, receive, send, response_value)
 
 

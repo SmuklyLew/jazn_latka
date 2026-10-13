@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.1",
+  "system_version": "16.3.25.5.116.0.2",
   "active_definition_count": 2267,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -22062,7 +22062,7 @@
       "path": "tests/test_mcp_http_resources.py",
       "name": "test_http_gateway_refuses_unowned_task_resource_to_public_client",
       "purpose": "Http gateway refuses unowned task resource to public client",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "security",
       "tags": [
         "mcp"
@@ -22070,7 +22070,7 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 1,
+      "assertion_count": 2,
       "expected_exceptions": [
         "Exception"
       ],
@@ -23012,13 +23012,13 @@
       "path": "tests/test_mcp_task_principal_isolation.py",
       "name": "test_task_owner_is_persisted_and_isolation_survives_reopen",
       "purpose": "Task owner is persisted and isolation survives reopen",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 8,
       "expected_exceptions": [
         "KeyError"
       ],
@@ -23033,13 +23033,13 @@
       "path": "tests/test_mcp_task_principal_isolation.py",
       "name": "test_legacy_unowned_task_never_adopted_by_remote_caller",
       "purpose": "Legacy unowned task never adopted by remote caller",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [
         "KeyError"
       ],
@@ -23048,7 +23048,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 35
     },
     "tests/test_mcp_task_principal_isolation.py::test_existing_legacy_sqlite_schema_migrates_additively": {
       "path": "tests/test_mcp_task_principal_isolation.py",
@@ -23067,7 +23067,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 50
     },
     "tests/test_mcp_task_principal_isolation.py::test_incomplete_owner_fail_closed": {
       "path": "tests/test_mcp_task_principal_isolation.py",
@@ -23088,19 +23088,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 69
     },
     "tests/test_mcp_task_protocol_authorization.py::test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
       "name": "test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject",
       "purpose": "Mcp tasks get and cancel reject unrelated authenticated subject",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.server"
@@ -23126,7 +23126,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 38
     },
     "tests/test_mcp_task_protocol_authorization.py::test_legacy_unowned_task_cannot_be_read_via_public_http": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
@@ -23145,7 +23145,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 50
     },
     "tests/test_mcp_task_protocol_authorization.py::test_spoofed_client_metadata_does_not_grant_task_ownership": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
@@ -23164,7 +23164,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 57
     },
     "tests/test_mcp_task_registry.py::test_task_registry_is_sqlite_durable_and_idempotent": {
       "path": "tests/test_mcp_task_registry.py",
