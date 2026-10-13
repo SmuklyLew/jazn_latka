@@ -9,7 +9,7 @@ Eksperymentalny lokalny system rozmowny budowany wokół **zweryfikowanego runti
 
 > Prawda runtime i źródeł ma pierwszeństwo przed stylem odpowiedzi.
 
-Styl, pierwsza osoba, nazwa folderu, ZIP, sam marker, SQLite ani obecność kodu nie dowodzą aktywnej Jaźni. Aktywność wymaga zweryfikowanego procesu/tury zgodnie z `AGENTS.md` i właściwym runbookiem.
+Styl, pierwsza osoba, nazwa folderu, ZIP, sam marker, SQLite ani obecność kodu nie dowodzą aktywnej Jaźni. ChatGPT nie wykonuje systemu przez samo czytanie AGENTS lub manifestów: uruchamia wyłącznie jawnie dostępny proces albo autoryzowane narzędzia MCP; kod Python jest właścicielem zachowania systemu. Aktywność wymaga zweryfikowanego procesu/tury zgodnie z `AGENTS.md` i właściwym runbookiem.
 
 ## Wejście dla agentów i hostów
 
