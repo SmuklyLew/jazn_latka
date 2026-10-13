@@ -60,6 +60,9 @@ class McpTaskRecord:
     input_requests: dict[str, Any] | None = None
     request_state: str | None = None
     cancel_requested: bool = False
+    owner_subject: str | None = None
+    owner_transport: str | None = None
+    authorization_revision: int = 1
     schema_version: str = SCHEMA_VERSION
 
     @property
@@ -211,10 +214,25 @@ class McpTaskStore:
                     input_requests_json TEXT,
                     request_state TEXT,
                     cancel_requested INTEGER NOT NULL DEFAULT 0,
+                    owner_subject TEXT,
+                    owner_transport TEXT,
+                    authorization_revision INTEGER NOT NULL DEFAULT 1,
                     schema_version TEXT NOT NULL
                 )
                 """
             )
+            # Extend existing v115 stores in-place without assigning old private
+            # tasks to the first remote caller who happens to poll them.
+            existing_columns = {
+                str(row[1]) for row in conn.execute("PRAGMA table_info(mcp_tasks)")
+            }
+            for column, declaration in (
+                ("owner_subject", "TEXT"),
+                ("owner_transport", "TEXT"),
+                ("authorization_revision", "INTEGER NOT NULL DEFAULT 1"),
+            ):
+                if column not in existing_columns:
+                    conn.execute(f"ALTER TABLE mcp_tasks ADD COLUMN {column} {declaration}")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_mcp_tasks_status_updated "
                 "ON mcp_tasks(status, last_updated_at)"
@@ -259,6 +277,9 @@ class McpTaskStore:
             input_requests=cls._load_object(row["input_requests_json"]),
             request_state=str(row["request_state"]) if row["request_state"] is not None else None,
             cancel_requested=bool(row["cancel_requested"]),
+            owner_subject=str(row["owner_subject"]) if row["owner_subject"] is not None else None,
+            owner_transport=str(row["owner_transport"]) if row["owner_transport"] is not None else None,
+            authorization_revision=int(row["authorization_revision"]),
             schema_version=str(row["schema_version"]),
         )
         if record.status not in VALID_TASK_STATES:
@@ -322,8 +343,9 @@ class McpTaskStore:
                 task_id, daemon_request_id, status, created_at, last_updated_at,
                 ttl_ms, poll_interval_ms, result_json, error_json, status_message,
                 request_id, turn_id, trace_id, host_request_contract_hash,
-                input_requests_json, request_state, cancel_requested, schema_version
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                input_requests_json, request_state, cancel_requested,
+                owner_subject, owner_transport, authorization_revision, schema_version
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(task_id) DO UPDATE SET
                 status=excluded.status,
                 last_updated_at=excluded.last_updated_at,
@@ -342,6 +364,9 @@ class McpTaskStore:
                 input_requests_json=excluded.input_requests_json,
                 request_state=excluded.request_state,
                 cancel_requested=excluded.cancel_requested,
+                owner_subject=COALESCE(mcp_tasks.owner_subject, excluded.owner_subject),
+                owner_transport=COALESCE(mcp_tasks.owner_transport, excluded.owner_transport),
+                authorization_revision=excluded.authorization_revision,
                 schema_version=excluded.schema_version
             """,
             (
@@ -362,6 +387,9 @@ class McpTaskStore:
                 self._dump_object(record.input_requests),
                 record.request_state,
                 1 if record.cancel_requested else 0,
+                record.owner_subject,
+                record.owner_transport,
+                record.authorization_revision,
                 record.schema_version,
             ),
         )
