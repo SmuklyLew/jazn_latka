@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "bda6ac2242f86cd0f610a4f17a6802c9af48c4d6",
+  "base_merge_commit": "4bc4e8c5e512351f1148731ea77cae923f564be6",
   "base_version": "16.3.25.5.115.21.13-code-first-runtime-documentation-convergence",
-  "commit_date": "2026-10-13T01:37:41Z",
+  "commit_date": "2026-10-13T03:43:41+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-13T01:37:41+00:00",
+  "generated_at_utc": "2026-10-13T01:43:41+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "9bf70b6347c55ab570c34eeaa4b82080499eafae",
+  "git_tree_sha": "da8bc47938e4a7a552e1e9ae91890130d7eae655",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "bda6ac2242f86cd0f610a4f17a6802c9af48c4d6",
+    "source_commit": "4bc4e8c5e512351f1148731ea77cae923f564be6",
     "source_version": "16.3.25.5.115.21.13-code-first-runtime-documentation-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "bda6ac2242f86cd0f610a4f17a6802c9af48c4d6",
+  "source_commit": "4bc4e8c5e512351f1148731ea77cae923f564be6",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.115.21.13-code-first-runtime-documentation-convergence",
   "tag": null,
