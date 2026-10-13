@@ -53,6 +53,9 @@ from latka_jazn.mcp.chatgpt_toolset import (
 )
 from latka_jazn.mcp.finalization_input import validated_final_text_digest
 from latka_jazn.mcp.host_guidance import MCP_HOST_TURN_INSTRUCTIONS
+from latka_jazn.mcp.operator_prompts import (
+    PROMPT_NAME, PROMPT_DESCRIPTION, complete_runtime_prompt, runtime_review_text,
+)
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
@@ -328,6 +331,7 @@ class PublicMcpGateway:
         )
         self._register_tools()
         self._register_resources()
+        self._register_prompts()
         self._register_routes()
 
     def _principal(self) -> _Principal | None:
@@ -679,6 +683,34 @@ class PublicMcpGateway:
                 self._public_task_status(taskId),
                 ensure_ascii=False,
                 sort_keys=True,
+            )
+
+    def _register_prompts(self) -> None:
+        """Register the same stateless, non-persona prompts on the public SDK."""
+        from mcp.types import Completion
+
+        @self.mcp.prompt(name=PROMPT_NAME, description=PROMPT_DESCRIPTION)
+        def jazn_runtime_review(focus: str = "readiness") -> str:
+            return runtime_review_text(focus)
+
+        @self.mcp.completion()
+        async def complete_operational(
+            ref: Any, argument: Any, context: Any,
+        ) -> Completion | None:
+            if getattr(ref, "type", None) != "ref/prompt":
+                return None
+            try:
+                result = complete_runtime_prompt(
+                    {"type": "ref/prompt", "name": getattr(ref, "name", None)},
+                    {"name": getattr(argument, "name", None),
+                     "value": getattr(argument, "value", None)},
+                )["completion"]
+            except ValueError:
+                return None
+            return Completion(
+                values=result["values"],
+                total=result["total"],
+                has_more=result["hasMore"],
             )
 
     def _register_routes(self) -> None:

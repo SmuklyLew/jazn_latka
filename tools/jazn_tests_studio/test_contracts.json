@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.11",
-  "active_definition_count": 2268,
+  "system_version": "16.3.25.5.116.0.12",
+  "active_definition_count": 2269,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -22721,6 +22721,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 106
+    },
+    "tests/test_mcp_operational_prompts_acceptance.py::test_operational_prompts_and_completion_are_read_only_and_stateless": {
+      "path": "tests/test_mcp_operational_prompts_acceptance.py",
+      "name": "test_operational_prompts_and_completion_are_read_only_and_stateless",
+      "purpose": "Operational prompts and completion are read only and stateless",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.operator_prompts",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
     },
     "tests/test_mcp_private_deployment_context.py::test_local_mcp_oauth_environment_file_is_excluded_from_all_build_contexts": {
       "path": "tests/test_mcp_private_deployment_context.py",
