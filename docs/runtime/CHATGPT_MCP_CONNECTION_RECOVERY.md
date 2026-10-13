@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.15  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.16  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -184,3 +184,20 @@ Refresh, nowa rozmowa, wybór aplikacji i rzeczywista obserwacja `jazn_status`
 oraz dwóch kolejnych prawidłowo zakończonych tur.
 Źródła: https://developers.openai.com/plugins/deploy/connect-chatgpt
 oraz https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx
+
+## Poprawne łączenie OAuth w ChatGPT (v116.0.16)
+
+Generator paczki zdalnej deklaruje `auth.type=oauth` w
+`mcpServers.jazn.extensions.com.openai`. Serwer publikuje
+`_meta.securitySchemes` dla sześciu narzędzi, z wymaganym
+`jazn:mcp:connect` i osobnymi scope operacji.
+Bez jawnego token verifier tylko lokalny tryb developerski może
+reklamować `noauth`.
+
+Wykonaj MCP Inspector: sprawdź discovery zasobu, OAuth authorization
+server, PKCE S256, wyzwanie 401 i scope. Zarejestruj serwer
+w ChatGPT Plugins i wybierz go w bieżącej rozmowie. `tools/list`
+oraz metadane nadal nie dowodzą bieżącej ekspozycji narzędzi,
+gotowości daemona, ani `action=display_exact`.
+Źródła: https://developers.openai.com/plugins/build/auth
+https://developers.openai.com/plugins/build/plugins

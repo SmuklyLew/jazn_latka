@@ -166,3 +166,18 @@ token in the environment. The program never prints the bearer token.
 **Server catalog PASS is not ChatGPT current-message tool exposure.**
 Follow `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md` to register a
 public HTTPS MCP or Secure MCP Tunnel and then prove two real accepted turns.
+
+## ChatGPT OAuth link metadata
+
+Publiczny gateway Jaźni wymaga OAuth. Każde narzędzie w MCP SDK v2
+publikuje teraz `_meta.securitySchemes` ze scope wymaganym przez
+serwer. Portable `mcp.json` zawiera
+`mcpServers.jazn.extensions.com.openai.auth.type=oauth`.
+Lokalny tryb `--loopback-dev` deklaruje `noauth` wyłącznie lokalnie.
+
+Weryfikuj `/.well-known/oauth-protected-resource`, OAuth issuer,
+PKCE S256, zakresy i bezpieczne wyzwanie HTTP 401 z użyciem MCP Inspector.
+Następnie rejestruj, instaluj i wybieraj wtyczkę przez natywny klient MCP
+ChatGPT, przeprowadź test `jazn_status` i dwie zaakceptowane tury.
+Same metadane nie instalują wtyczki ani nie uruchamiają daemona.
+Oficjalne źródło: https://developers.openai.com/plugins/build/auth

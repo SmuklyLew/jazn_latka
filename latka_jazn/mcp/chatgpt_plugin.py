@@ -161,6 +161,7 @@ def build_portable_plugin_documents(
                 MCP_SERVER_NAME: {
                     "type": "streamable-http",
                     "url": remote_endpoint,
+                    "extensions": {"com.openai": {"auth": {"type": "oauth"}}},
                 }
             },
         }

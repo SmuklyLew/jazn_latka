@@ -423,6 +423,14 @@ class PublicMcpGateway:
         structured = value.get("structuredContent") if isinstance(value, Mapping) else None
         return dict(structured) if isinstance(structured, Mapping) else {}
 
+    def _tool_security_meta(self, required_scope: str) -> dict[str, Any]:
+        """Advertise actual enforced scopes to ChatGPT without granting access."""
+        if self._token_verifier is None:
+            # Only a validated explicit loopback development server can be noauth.
+            return {"securitySchemes": [{"type": "noauth"}]}
+        scopes = list(dict.fromkeys((*self.config.oauth_required_scopes, required_scope)))
+        return {"securitySchemes": [{"type": "oauth2", "scopes": scopes}]}
+
     def _register_tools(self) -> None:
         mutating_idempotent = ToolAnnotations(
             read_only_hint=False,
@@ -446,6 +454,7 @@ class PublicMcpGateway:
                 "if the result says poll_runtime, call jazn_resume_visible_reply and do not resubmit the message."
             ),
             annotations=mutating_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_SUBMIT),
         )
         def jazn_generate_visible_reply(
             request_id: RequestId,
@@ -472,6 +481,7 @@ class PublicMcpGateway:
                 "Poll the same daemon_request_id; never replay the original user message."
             ),
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_READ),
         )
         def jazn_resume_visible_reply(
             daemon_request_id: RequestId,
@@ -497,6 +507,7 @@ class PublicMcpGateway:
                 "returned by the same Jaźń turn."
             ),
             annotations=mutating_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_FINALIZE),
         )
         def jazn_finalize_reply(
             continuation_token: ContinuationToken,
@@ -521,6 +532,7 @@ class PublicMcpGateway:
             title="Read Jaźń readiness",
             description="Read a redacted runtime readiness view. Private operator/audit details are not exposed.",
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_status() -> CallToolResult:
             principal = self._principal()
@@ -568,6 +580,7 @@ class PublicMcpGateway:
             title="Read Jaźń gateway health",
             description="Read redacted transport liveness. Do not use this tool to submit a user message.",
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_health() -> CallToolResult:
             return self._invoke(JAZN_HEALTH_TOOL, {})
@@ -579,6 +592,7 @@ class PublicMcpGateway:
                 "Read redacted persistent-memory and recall readiness without returning raw memory content or local paths."
             ),
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_memory_status() -> CallToolResult:
             return self._invoke(JAZN_MEMORY_STATUS_TOOL, {})

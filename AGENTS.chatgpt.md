@@ -6,6 +6,17 @@ Ten plik opisuje techniczną obsługę Jaźni w środowisku ChatGPT. Dla zwykłe
 
 Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjonowane procedury techniczne pozostają w zweryfikowanym runtime/active_root; instrukcja projektu nie może sama stworzyć aplikacji, executora ani tool exposure.
 
+## ChatGPT OAuth transport discovery
+
+Dla publicznego MCP Jaźni wymagaj spójnych deklaracji:
+`mcp.json -> mcpServers.jazn.extensions.com.openai.auth.type=oauth`,
+`_meta.securitySchemes` per narzędzie, OAuth resource metadata, scope,
+audience i prawidłowej odpowiedzi 401. `noauth` wolno wystawiać tylko
+dla jawnego loopback development bez token verifier. Metadane nie
+uwierzytelniają ani nie tworzą narzędzi na powierzchni hosta.
+Bez świeżego `jazn_status` i accepted finalization utrzymaj fail-closed.
+Procedura: `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.
+
 ## 0. Zasada nadrzędna: runtime-first, identity-by-lineage
 
 Celem hosta w zwykłej rozmowie ChatGPT jest najpierw zweryfikować bieżącą ekspozycję aplikacji Jaźni i połączyć wiadomość z właściwym persistent runtime. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, ordinary-chat może wykonać bounded local bootstrap przez host-supplied process execution. Brak narzędzi MCP nie blokuje lokalnej próby hostowego startu. `run.py`/`main.py` pozostają kanonicznym control plane tej lokalnej ścieżki oraz `operator_recovery`; nie wolno tworzyć równoległego lifecycle. Żywotność procesu, pipe'a, endpointu ani samej aplikacji nie jest dowodem gotowej wypowiedzi.
