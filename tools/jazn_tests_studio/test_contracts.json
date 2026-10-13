@@ -25233,7 +25233,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 31
     },
     "tests/test_memory_provenance_windows_file_stability.py::test_windows_metadata_change_remains_detectable_within_a_single_api": {
       "path": "tests/test_memory_provenance_windows_file_stability.py",
@@ -25255,7 +25255,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 39
+      "line": 40
     },
     "tests/test_memory_provenance_windows_file_stability.py::test_frozen_file_digest_matches_sha256_on_supported_platforms": {
       "path": "tests/test_memory_provenance_windows_file_stability.py",
@@ -25275,7 +25275,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 45
     },
     "tests/test_memory_provenance_windows_file_stability.py::test_sidecar_rejects_snapshot_even_with_valid_bytes": {
       "path": "tests/test_memory_provenance_windows_file_stability.py",
@@ -25297,7 +25297,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 52
     },
     "tests/test_memory_provenance_windows_file_stability.py::test_size_limit_blocks_digest_on_supported_platforms": {
       "path": "tests/test_memory_provenance_windows_file_stability.py",
@@ -25319,7 +25319,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 60
     },
     "tests/test_memory_raw_segmentation.py::test_segmenter_preserves_exact_bytes_and_bounded_members": {
       "path": "tests/test_memory_raw_segmentation.py",
