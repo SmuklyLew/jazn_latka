@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.14"]
+        python-version: ["3.12.9", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -51,6 +51,12 @@ jobs:
       - name: Install dependencies
         shell: pwsh
         run: python -m pip install -e . pytest
+
+      - name: Verify real Tcl/Tk installation before GUI tests
+        shell: pwsh
+        run: |
+          python -X utf8 tools/windows/check_tk_runtime.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Compile Studio
         shell: pwsh
@@ -97,11 +103,17 @@ jobs:
       - name: Python 3.12
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: "3.12.9"
 
       - name: Install PyInstaller
         shell: pwsh
         run: python -m pip install -e . pyinstaller
+
+      - name: Verify Tk for packaged GUI
+        shell: pwsh
+        run: |
+          python -X utf8 tools/windows/check_tk_runtime.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Create EXE
         shell: pwsh

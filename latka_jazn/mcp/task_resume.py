@@ -25,6 +25,7 @@ import time
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
+from latka_jazn.mcp.task_input_delivery import TaskInputDelivery
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("mcp_task_resume")
@@ -60,6 +61,9 @@ class McpTaskRecord:
     input_requests: dict[str, Any] | None = None
     request_state: str | None = None
     cancel_requested: bool = False
+    owner_subject: str | None = None
+    owner_transport: str | None = None
+    authorization_revision: int = 1
     schema_version: str = SCHEMA_VERSION
 
     @property
@@ -211,14 +215,40 @@ class McpTaskStore:
                     input_requests_json TEXT,
                     request_state TEXT,
                     cancel_requested INTEGER NOT NULL DEFAULT 0,
+                    owner_subject TEXT,
+                    owner_transport TEXT,
+                    authorization_revision INTEGER NOT NULL DEFAULT 1,
                     schema_version TEXT NOT NULL
                 )
                 """
             )
+            # Extend existing v115 stores in-place without assigning old private
+            # tasks to the first remote caller who happens to poll them.
+            existing_columns = {
+                str(row[1]) for row in conn.execute("PRAGMA table_info(mcp_tasks)")
+            }
+            for column, declaration in (
+                ("owner_subject", "TEXT"),
+                ("owner_transport", "TEXT"),
+                ("authorization_revision", "INTEGER NOT NULL DEFAULT 1"),
+            ):
+                if column not in existing_columns:
+                    conn.execute(f"ALTER TABLE mcp_tasks ADD COLUMN {column} {declaration}")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_mcp_tasks_status_updated "
                 "ON mcp_tasks(status, last_updated_at)"
             )
+            # Input payloads are not copied into this ledger; only receipt digests.
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS mcp_task_input_receipts (
+                    task_id TEXT NOT NULL,
+                    input_sha256 TEXT NOT NULL,
+                    accepted_keys_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(task_id, input_sha256),
+                    FOREIGN KEY(task_id) REFERENCES mcp_tasks(task_id)
+                )
+            """)
 
     @staticmethod
     def _dump_object(value: Mapping[str, Any] | None) -> str | None:
@@ -259,6 +289,9 @@ class McpTaskStore:
             input_requests=cls._load_object(row["input_requests_json"]),
             request_state=str(row["request_state"]) if row["request_state"] is not None else None,
             cancel_requested=bool(row["cancel_requested"]),
+            owner_subject=str(row["owner_subject"]) if row["owner_subject"] is not None else None,
+            owner_transport=str(row["owner_transport"]) if row["owner_transport"] is not None else None,
+            authorization_revision=int(row["authorization_revision"]),
             schema_version=str(row["schema_version"]),
         )
         if record.status not in VALID_TASK_STATES:
@@ -322,8 +355,9 @@ class McpTaskStore:
                 task_id, daemon_request_id, status, created_at, last_updated_at,
                 ttl_ms, poll_interval_ms, result_json, error_json, status_message,
                 request_id, turn_id, trace_id, host_request_contract_hash,
-                input_requests_json, request_state, cancel_requested, schema_version
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                input_requests_json, request_state, cancel_requested,
+                owner_subject, owner_transport, authorization_revision, schema_version
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(task_id) DO UPDATE SET
                 status=excluded.status,
                 last_updated_at=excluded.last_updated_at,
@@ -342,6 +376,9 @@ class McpTaskStore:
                 input_requests_json=excluded.input_requests_json,
                 request_state=excluded.request_state,
                 cancel_requested=excluded.cancel_requested,
+                owner_subject=COALESCE(mcp_tasks.owner_subject, excluded.owner_subject),
+                owner_transport=COALESCE(mcp_tasks.owner_transport, excluded.owner_transport),
+                authorization_revision=excluded.authorization_revision,
                 schema_version=excluded.schema_version
             """,
             (
@@ -362,21 +399,45 @@ class McpTaskStore:
                 self._dump_object(record.input_requests),
                 record.request_state,
                 1 if record.cancel_requested else 0,
+                record.owner_subject,
+                record.owner_transport,
+                record.authorization_revision,
                 record.schema_version,
             ),
         )
         return record
 
-    def get(self, task_id: str) -> McpTaskRecord | None:
+    @staticmethod
+    def _owner_matches(
+        record: McpTaskRecord, *, owner_subject: str | None, owner_transport: str | None,
+    ) -> bool:
+        if owner_subject is None and owner_transport is None:
+            return True  # Trusted local / internal operator path only.
+        if not owner_subject or not owner_transport:
+            return False
+        return (
+            record.owner_subject is not None
+            and secrets.compare_digest(record.owner_subject.encode("utf-8"), owner_subject.encode("utf-8"))
+            and record.owner_transport == owner_transport
+        )
+
+    def get(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord | None:
         value = str(task_id or "").strip()
         if not value or len(value) > 256:
             raise ValueError("invalid_task_id")
         with self._lock, self._connect() as conn:
             record = self._select_task(conn, value)
             if record is not None:
-                return record
+                return record if self._owner_matches(
+                    record, owner_subject=owner_subject, owner_transport=owner_transport
+                ) else None
             legacy = self._read_legacy_task(value)
-            if legacy is None:
+            if legacy is None or not self._owner_matches(
+                legacy, owner_subject=owner_subject, owner_transport=owner_transport
+            ):
                 return None
             self._upsert(conn, legacy)
             return legacy
@@ -401,12 +462,18 @@ class McpTaskStore:
         turn_id: str | None = None,
         trace_id: str | None = None,
         host_request_contract_hash: str | None = None,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
     ) -> McpTaskRecord:
         request_value = str(daemon_request_id or "").strip()
         if not request_value or len(request_value) > 256:
             raise ValueError("daemon_request_id_required")
         if ttl_ms is not None and int(ttl_ms) < 0:
             raise ValueError("task_ttl_must_be_non_negative_or_none")
+        if (owner_subject is None) != (owner_transport is None):
+            raise ValueError("task_owner_incomplete")
+        if owner_subject is not None and (not owner_subject.strip() or not owner_transport or not owner_transport.strip()):
+            raise ValueError("task_owner_invalid")
         with self._lock, self._connect() as conn:
             # Acquire the SQLite write reservation before the read/modify/write
             # sequence. RLock only serializes one Python object; BEGIN IMMEDIATE
@@ -414,9 +481,13 @@ class McpTaskStore:
             conn.execute("BEGIN IMMEDIATE")
             existing = self._select_request(conn, request_value)
             if existing is not None:
+                if not self._owner_matches(existing, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 return existing
             legacy = self._read_legacy_by_request(request_value)
             if legacy is not None:
+                if not self._owner_matches(legacy, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 self._upsert(conn, legacy)
                 return legacy
             now = datetime.now(timezone.utc).isoformat()
@@ -429,6 +500,8 @@ class McpTaskStore:
                 ttl_ms=ttl_ms,
                 poll_interval_ms=max(100, int(poll_interval_ms)),
                 status_message=status_message,
+                owner_subject=owner_subject,
+                owner_transport=owner_transport,
                 request_id=str(request_id or request_value),
                 turn_id=str(turn_id) if turn_id else None,
                 trace_id=str(trace_id) if trace_id else None,
@@ -444,6 +517,8 @@ class McpTaskStore:
                 winner = self._select_request(conn, request_value)
                 if winner is None:
                     raise
+                if not self._owner_matches(winner, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 return winner
             return record
 
@@ -496,7 +571,84 @@ class McpTaskStore:
                 record.cancel_requested = bool(cancel_requested)
             return self._upsert(conn, record)
 
-    def request_cancel(self, task_id: str) -> McpTaskRecord:
+    def confirmed_input_receipt(
+        self, task_id: str, digest: str, keys: tuple[str, ...], *,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> bool:
+        """Read durable input ACK history with task-owner authorization."""
+        with self._lock, self._connect() as conn:
+            record = self._select_task(conn, task_id)
+            if record is None or not self._owner_matches(
+                record, owner_subject=owner_subject, owner_transport=owner_transport,
+            ):
+                raise KeyError("unknown_task")
+            row = conn.execute(
+                "SELECT accepted_keys_json FROM mcp_task_input_receipts "
+                "WHERE task_id=? AND input_sha256=?", (task_id, digest),
+            ).fetchone()
+            return row is not None and tuple(json.loads(row[0])) == keys
+
+    def accept_confirmed_input(
+        self,
+        task_id: str,
+        accepted_keys: tuple[str, ...],
+        *,
+        input_sha256: str,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord:
+        """Commit a verified runtime receipt without racing other MCP clients.
+
+        Input payloads never enter this registry. The canonical runtime owns
+        durable content and deduplication. This transaction only removes keys
+        already acknowledged by that runtime.
+        """
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            record = self._select_task(conn, str(task_id))
+            if record is None or not self._owner_matches(
+                record, owner_subject=owner_subject, owner_transport=owner_transport,
+            ):
+                raise KeyError("unknown_task")
+            existing = conn.execute(
+                "SELECT accepted_keys_json FROM mcp_task_input_receipts "
+                "WHERE task_id=? AND input_sha256=?", (task_id, input_sha256),
+            ).fetchone()
+            if existing is not None:
+                if tuple(json.loads(existing[0])) != accepted_keys:
+                    raise RuntimeError("task_input_digest_key_conflict")
+                return record
+            if record.status != "input_required" or not set(accepted_keys).issubset(
+                record.input_requests or {}
+            ):
+                raise RuntimeError("task_input_outstanding_changed_before_commit")
+            remaining = {
+                key: value for key, value in (record.input_requests or {}).items()
+                if key not in accepted_keys
+            }
+            record.status = "input_required" if remaining else "working"
+            record.input_requests = remaining if remaining else None
+            if not remaining:
+                record.request_state = None
+            record.status_message = (
+                "Awaiting remaining input." if remaining
+                else "Runtime confirmed task input delivery."
+            )
+            record.last_updated_at = datetime.now(timezone.utc).isoformat()
+            persisted = self._upsert(conn, record)
+            conn.execute(
+                "INSERT INTO mcp_task_input_receipts "
+                "(task_id, input_sha256, accepted_keys_json, created_at) "
+                "VALUES (?, ?, ?, ?)",
+                (task_id, input_sha256, json.dumps(accepted_keys), record.last_updated_at),
+            )
+            return persisted
+
+    def request_cancel(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord:
         value = str(task_id or "").strip()
         if not value or len(value) > 256:
             raise ValueError("invalid_task_id")
@@ -510,8 +662,9 @@ class McpTaskStore:
                 legacy = self._read_legacy_task(value)
                 if legacy is None:
                     raise KeyError("unknown_task")
-                self._upsert(conn, legacy)
                 record = legacy
+            if not self._owner_matches(record, owner_subject=owner_subject, owner_transport=owner_transport):
+                raise KeyError("unknown_task")
             if record.terminal:
                 return record
             record.status = "working"
@@ -553,7 +706,10 @@ class McpTaskResumeAdapter:
         ).strip()
         return value or None
 
-    def create_from_pending_result(self, tool_result: Mapping[str, Any]) -> dict[str, Any] | None:
+    def create_from_pending_result(
+        self, tool_result: Mapping[str, Any], *,
+        owner_subject: str | None = None, owner_transport: str | None = None,
+    ) -> dict[str, Any] | None:
         request_id = self.pending_daemon_request_id(tool_result)
         if not request_id:
             return None
@@ -561,6 +717,8 @@ class McpTaskResumeAdapter:
         structured_map = structured if isinstance(structured, Mapping) else {}
         record = self.store.create_or_get(
             daemon_request_id=request_id,
+            owner_subject=owner_subject,
+            owner_transport=owner_transport,
             ttl_ms=self.ttl_ms,
             poll_interval_ms=self.poll_interval_ms,
             request_id=str(structured_map.get("request_id") or request_id),
@@ -572,8 +730,11 @@ class McpTaskResumeAdapter:
         )
         return record.to_task_result(creation=True)
 
-    def get(self, task_id: str) -> dict[str, Any]:
-        record = self.store.get(task_id)
+    def get(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> dict[str, Any]:
+        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record is None:
             raise KeyError("unknown_task")
         if record.terminal:
@@ -648,8 +809,11 @@ class McpTaskResumeAdapter:
         )
         return completed.to_task_result()
 
-    def cancel(self, task_id: str) -> dict[str, Any]:
-        self.store.request_cancel(task_id)
+    def cancel(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> dict[str, Any]:
+        self.store.request_cancel(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         # Cancellation is cooperative.  We acknowledge receipt but do not lie
         # that the underlying runtime stopped before it confirms cancellation.
         return {"resultType": "complete"}
@@ -658,20 +822,53 @@ class McpTaskResumeAdapter:
         self,
         task_id: str,
         input_responses: Mapping[str, Any] | None = None,
+        *, owner_subject: str | None = None, owner_transport: str | None = None,
     ) -> dict[str, Any]:
-        record = self.store.get(task_id)
+        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record is None:
             raise KeyError("unknown_task")
+        fingerprint = TaskInputDelivery.from_responses(dict(input_responses or {}))
+        if self.store.confirmed_input_receipt(
+            record.task_id, fingerprint.digest, fingerprint.keys,
+            owner_subject=owner_subject, owner_transport=owner_transport,
+        ):
+            return {"resultType": "complete"}
         if record.status != "input_required":
             return {"resultType": "complete"}
 
-        # The current Jaźń visible-turn runtime has no transport that can consume
-        # task inputResponses. Never delete/acknowledge even a partial set only
-        # in the adapter: that would make tasks/get claim progress the runtime
-        # never observed. Preserve the exact outstanding snapshot and fail
-        # closed until a real runtime-input channel exists.
-        _ = dict(input_responses or {})
-        raise RuntimeError("task_input_runtime_transport_not_implemented")
+        prepared = TaskInputDelivery.prepare(
+            outstanding=record.input_requests or {},
+            responses=dict(input_responses or {}),
+        )
+        deliver = getattr(self.gateway, "submit_task_input", None)
+        if not callable(deliver):
+            raise RuntimeError("task_input_runtime_transport_not_implemented")
+        # Never replay the original user text. The runtime is responsible for
+        # durably accepting and deduplicating input by SHA-256.
+        try:
+            receipt = deliver(
+                daemon_request_id=record.daemon_request_id,
+                task_id=record.task_id,
+                input_responses=prepared.responses,
+                request_state=record.request_state,
+                lineage=record.lineage(),
+                input_sha256=prepared.digest,
+            )
+        except Exception as exc:
+            raise RuntimeError("task_input_runtime_delivery_unconfirmed") from exc
+        if not isinstance(receipt, Mapping):
+            raise RuntimeError("task_input_runtime_ack_unverified")
+        prepared.require_runtime_receipt(
+            receipt, request_id=record.daemon_request_id, task_id=record.task_id,
+        )
+        self.store.accept_confirmed_input(
+            record.task_id,
+            prepared.keys,
+            input_sha256=prepared.digest,
+            owner_subject=owner_subject,
+            owner_transport=owner_transport,
+        )
+        return {"resultType": "complete"}
 
 
 __all__ = [

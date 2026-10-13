@@ -1,0 +1,61 @@
+name: memory-cloud optional capability release gate
+
+on:
+  push:
+    branches:
+      - master
+      - "release/**"
+      - "update/**"
+      - "fix/**"
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  memory-cloud:
+    name: ${{ matrix.os }} / ${{ matrix.profile }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        profile: [memory-cloud, memory-cloud-server]
+    env:
+      PYTHONUTF8: "1"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+    steps:
+      - name: Checkout Jaźń
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12.9"
+      - name: Install optional capability
+        shell: bash
+        run: |
+          python -m pip install -e ".[${{ matrix.profile }}]"
+          python -m pip install pytest
+      - name: Check real optional dependencies
+        run: >-
+          python -X utf8 -c
+          "import nacl; import importlib.util;
+          assert importlib.util.find_spec('nacl') is not None"
+      - name: Check server profile dependencies
+        if: matrix.profile == 'memory-cloud-server'
+        run: >-
+          python -X utf8 -c
+          "import boto3, psycopg; assert boto3 is not None and psycopg is not None"
+      - name: Cloud snapshot, encryption and storage acceptance
+        run: >-
+          python -X utf8 -m pytest -q -ra --tb=short
+          tests/test_memory_cloud_gateway.py
+          tests/test_memory_cloud_server.py
+          tests/test_memory_cloud_snapshot_controller.py
+          tests/test_memory_cloud_sync.py
+          tests/test_memory_snapshot_runtime.py

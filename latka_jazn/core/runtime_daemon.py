@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from latka_jazn.dependencies.process_handoff import managed_python_command
+from latka_jazn.core.daemon_process_control import pid_is_alive
+from latka_jazn.core.daemon_status_sanitizer import (
+    sanitize_status_payload, sanitized_daemon_status, STATUS_TEXT_REPLACEMENTS,
+)
 
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timedelta, timezone
@@ -341,7 +345,7 @@ _JSON_ATOMIC_WRITE_LOCK = threading.RLock()
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    serialized = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    serialized = json.dumps(sanitize_status_payload(payload), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     tmp = path.with_name(
         f".{path.name}.{os.getpid()}.{threading.get_ident()}.{uuid.uuid4().hex}.tmp"
     )
@@ -584,63 +588,6 @@ def _project_retained_trusted_time(
         "degradation_reason": None,
     })
     return retained
-
-
-def pid_is_alive(pid: int | None) -> bool:
-    if not pid or int(pid) <= 0:
-        return False
-    if os.name == "posix":
-        # ``kill(pid, 0)`` reports zombie children as existing even though they
-        # can no longer serve requests.  Treat terminal /proc states as dead so
-        # daemon stop can complete without weakening the endpoint+PID identity
-        # checks used before shutdown.
-        try:
-            stat_text = Path(f"/proc/{int(pid)}/stat").read_text(encoding="utf-8", errors="replace")
-            closing = stat_text.rfind(")")
-            state = stat_text[closing + 2 : closing + 3] if closing >= 0 else ""
-            if state in {"Z", "X", "x"}:
-                return False
-        except (FileNotFoundError, ProcessLookupError):
-            return False
-        except (OSError, ValueError):
-            # /proc may be unavailable in some POSIX environments; the portable
-            # signal probe below remains the fallback.
-            pass
-    if os.name == "nt":
-        try:
-            import ctypes
-            from ctypes import wintypes
-
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-            kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-            kernel32.OpenProcess.restype = wintypes.HANDLE
-            kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
-            kernel32.GetExitCodeProcess.restype = wintypes.BOOL
-            kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-            kernel32.CloseHandle.restype = wintypes.BOOL
-            process_query_limited_information = 0x1000
-            still_active = 259
-            handle = kernel32.OpenProcess(process_query_limited_information, False, int(pid))
-            if not handle:
-                return ctypes.get_last_error() == 5  # access denied still proves an existing PID
-            try:
-                exit_code = wintypes.DWORD()
-                if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
-                    return False
-                return int(exit_code.value) == still_active
-            finally:
-                kernel32.CloseHandle(handle)
-        except Exception:
-            # Fall through to the portable probe only if the Windows API is
-            # unexpectedly unavailable.
-            pass
-    try:
-        os.kill(int(pid), 0)
-        return True
-    except PermissionError:
-        return True
-    except OSError:
-        return False
 
 
 def extract_daemon_user_text(payload: dict[str, Any] | str) -> tuple[str, str]:
@@ -4095,6 +4042,7 @@ def _daemon_degraded_recommendation(
     return None
 
 
+@sanitized_daemon_status
 def start_daemon(
     config: JaznConfig,
     *,
@@ -4582,6 +4530,7 @@ def start_daemon(
     }
 
 
+@sanitized_daemon_status
 def status_daemon(
     config: JaznConfig,
     *,
@@ -4852,6 +4801,7 @@ def status_daemon(
     }
 
 
+@sanitized_daemon_status
 def refresh_daemon_time(
     config: JaznConfig,
     *,
@@ -4892,6 +4842,7 @@ def refresh_daemon_time(
     }
 
 
+@sanitized_daemon_status
 def inject_daemon_trusted_time(
     config: JaznConfig,
     *,
@@ -5261,6 +5212,7 @@ def chat_daemon(
     return pending
 
 
+@sanitized_daemon_status
 def stop_daemon(
     config: JaznConfig,
     *,
@@ -5347,71 +5299,3 @@ def stop_daemon(
     }
 
 
-# Current release: status text sanitizer.
-# This does not change runtime mechanics. It only normalizes diagnostic/status text
-# emitted through daemon marker, /status, /ready and CLI daemon commands.
-STATUS_TEXT_REPLACEMENTS = {
-    "albo" + "wstrzyknięty": "albo wstrzyknięty",
-    "brak" + "nie": "brak nie",
-    "blokuje" + "zwykłej": "blokuje zwykłej",
-    "proces" + "daemonu": "proces daemonu",
-    "endpoint" + "nie": "endpoint nie",
-    "nie" + "blokuje": "nie blokuje",
-    "PID" + "dają": "PID dają",
-    "active_state" + "depends": "active_state depends",
-}
-
-
-def sanitize_status_payload(value: Any) -> Any:
-    if isinstance(value, str):
-        for old, new in STATUS_TEXT_REPLACEMENTS.items():
-            value = value.replace(old, new)
-        return value
-    if isinstance(value, dict):
-        return {key: sanitize_status_payload(item) for key, item in value.items()}
-    if isinstance(value, list):
-        return [sanitize_status_payload(item) for item in value]
-    if isinstance(value, tuple):
-        return tuple(sanitize_status_payload(item) for item in value)
-    return value
-
-
-if "_ORIGINAL_WRITE_JSON_ATOMIC_UNSANITIZED" not in globals():
-    _ORIGINAL_WRITE_JSON_ATOMIC_UNSANITIZED = write_json_atomic
-
-    def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
-        return _ORIGINAL_WRITE_JSON_ATOMIC_UNSANITIZED(path, sanitize_status_payload(payload))
-
-
-if "_ORIGINAL_JSON_RESPONSE_UNSANITIZED" not in globals():
-    _ORIGINAL_JSON_RESPONSE_UNSANITIZED = JaznDaemonHandler._json_response
-
-    def _sanitized_json_response(self: JaznDaemonHandler, payload: dict[str, Any], *, status: int = 200) -> None:
-        return _ORIGINAL_JSON_RESPONSE_UNSANITIZED(self, sanitize_status_payload(payload), status=status)
-
-    JaznDaemonHandler._json_response = _sanitized_json_response
-
-
-def _wrap_status_payload_function(name: str) -> None:
-    original = globals().get(name)
-    if original is None or getattr(original, "_status_payload_sanitized", False):
-        return
-
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        return sanitize_status_payload(original(*args, **kwargs))
-
-    wrapped.__name__ = getattr(original, "__name__", name)
-    wrapped.__doc__ = getattr(original, "__doc__", None)
-    wrapped._status_payload_sanitized = True  # type: ignore[attr-defined]
-    globals()[f"_ORIGINAL_{name.upper()}_UNSANITIZED"] = original
-    globals()[name] = wrapped
-
-
-for _status_function_name in (
-    "start_daemon",
-    "status_daemon",
-    "stop_daemon",
-    "refresh_daemon_time",
-    "inject_daemon_trusted_time",
-):
-    _wrap_status_payload_function(_status_function_name)

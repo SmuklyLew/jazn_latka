@@ -3,11 +3,35 @@ from __future__ import annotations
 import time
 from latka_jazn.core.turn_execution import TurnExecutionContext
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any, Protocol
 from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 
-if TYPE_CHECKING:
-    from latka_jazn.core.engine import JaznEngine
+class ContextRuntimePort(Protocol):
+    """The narrow subset of canonical runtime capabilities used for turn context.
+
+    This port is structurally fulfilled by the existing JaznEngine and does
+    not create a second owner of the session, memory or finalization.
+    """
+
+    @property
+    def last_turn_at(self) -> Any: ...
+    @property
+    def last_user_text(self) -> Any: ...
+    @property
+    def last_detected_intent(self) -> Any: ...
+    @property
+    def last_runtime_route(self) -> Any: ...
+    @property
+    def turn_context_resolver(self) -> Any: ...
+
+    def _configure_preview_turn_context(self, context: dict[str, Any]) -> bool: ...
+    def _initial_task_state_for_process_turn(
+        self, client_context: dict[str, Any], *, no_carryover: bool,
+    ) -> dict[str, Any]: ...
+    def _previous_task_state_for_turn(
+        self, client_context: dict[str, Any], *, carryover_allowed: bool,
+    ) -> dict[str, Any]: ...
+    def _audit_process_turn_started(self, text: str, context: dict[str, Any]) -> None: ...
 
 
 @dataclass(frozen=True)
@@ -22,7 +46,7 @@ class TurnContextSnapshot:
 class ContextCoordinator:
     """Turn-local context coordinator over the existing runtime services."""
 
-    def __init__(self, engine: JaznEngine) -> None:
+    def __init__(self, engine: ContextRuntimePort) -> None:
         self.engine = engine
 
     def build(self, state: TurnPipelineState) -> TurnContextSnapshot:

@@ -345,7 +345,9 @@ class PublicMcpGateway:
                     },
                 )
             return None
-        subject = str(token.subject or token.client_id or "oauth-client").strip() or "oauth-client"
+        subject = str(token.subject or "").strip()
+        if not subject:
+            return None  # A shared client_id cannot identify one user-owned task.
         return _Principal(subject=subject, scopes=frozenset(str(scope) for scope in token.scopes))
 
     def _invoke(
@@ -628,8 +630,10 @@ class PublicMcpGateway:
         return result
 
     def _public_task_status(self, task_id: str) -> dict[str, Any]:
-        self._require_public_scope(SCOPE_TASK_READ)
-        record = McpTaskStore(self.config.root).get(task_id)
+        principal = self._require_public_scope(SCOPE_TASK_READ)
+        record = McpTaskStore(self.config.root).get(
+            task_id, owner_subject=principal.subject, owner_transport="public_http",
+        )
         if record is None:
             raise KeyError("unknown_task")
         return {

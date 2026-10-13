@@ -192,11 +192,9 @@ class ModernTasksHttpBridge:
         access_token = getattr(user, "access_token", None)
         if access_token is None:
             return None
-        subject = str(
-            getattr(access_token, "subject", None)
-            or getattr(access_token, "client_id", None)
-            or "oauth-client"
-        ).strip() or "oauth-client"
+        subject = str(getattr(access_token, "subject", None) or "").strip()
+        if not subject:
+            return None  # Reject shared client-id fallback for user-specific Tasks.
         return _Principal(
             subject=subject,
             scopes=frozenset(str(item) for item in credentials.scopes),
@@ -523,13 +521,22 @@ class ModernTasksHttpBridge:
                 "authorization": self.internal_token,
                 "subject": principal.subject,
                 "openai/subject": principal.subject,
+                "jazn/authenticated_transport": "public_http",
             }
         )
         prepared_params["_meta"] = prepared_meta
         prepared["params"] = prepared_params
 
         try:
-            response_value = self.protocol_backend.handle(prepared)
+            verified = getattr(self.protocol_backend, "handle_public_authenticated", None)
+            if callable(verified):
+                response_value = verified(
+                    prepared, owner_subject=principal.subject, owner_transport="public_http"
+                )
+            elif self.allow_unauthenticated_loopback_dev:
+                response_value = self.protocol_backend.handle(prepared)
+            else:
+                raise RuntimeError("verified_task_principal_dispatch_unavailable")
         except Exception:
             response_value = _jsonrpc_error(
                 prepared.get("id"),
@@ -539,6 +546,12 @@ class ModernTasksHttpBridge:
         if response_value is None:
             await Response(status_code=202)(scope, receive, send)
             return
+        if not isinstance(response_value, dict):
+            response_value = _jsonrpc_error(
+                prepared.get("id"),
+                code=INTERNAL_ERROR,
+                message="Invalid MCP task backend response",
+            )
         await self._send_json(scope, receive, send, response_value)
 
 

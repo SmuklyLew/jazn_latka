@@ -5,7 +5,7 @@ import hashlib
 import ipaddress
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 from urllib import error, parse, request
 
 from latka_jazn.bridge.auth_policy import AuthPolicy, SlidingWindowRateLimiter
@@ -488,6 +488,44 @@ class SecureHostRuntimeGateway:
             except OperationConflictError:
                 pass
         return value
+
+    def submit_task_input(
+        self,
+        *,
+        daemon_request_id: str,
+        task_id: str,
+        input_responses: Mapping[str, Any],
+        request_state: str | None,
+        lineage: Mapping[str, str],
+        input_sha256: str,
+    ) -> dict[str, Any]:
+        """Submit one existing task input to the authenticated daemon.
+
+        Never resubmit original user text and never retry POST after a
+        potentially ambiguous transport failure. The daemon must return its
+        *own durable* receipt; this adapter cannot create one.
+        """
+        request_id = str(daemon_request_id or "").strip()
+        task = str(task_id or "").strip()
+        digest = str(input_sha256 or "").strip().lower()
+        if not request_id or not task or len(task) > 256:
+            raise GatewayError("task_input_identity_invalid")
+        if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            raise GatewayError("task_input_digest_invalid")
+        from latka_jazn.mcp.task_input_delivery import TaskInputDelivery
+
+        delivery = TaskInputDelivery.from_responses(input_responses)
+        if delivery.digest != digest:
+            raise GatewayError("task_input_digest_mismatch")
+        payload = {
+            "daemon_request_id": request_id,
+            "task_id": task,
+            "input_responses": dict(input_responses),
+            "request_state": request_state,
+            "lineage": dict(lineage),
+            "input_sha256": digest,
+        }
+        return self._http_json("POST", "/task-input", payload, retry_safe=False)
 
     def issue_continuation(self, response: dict[str, Any]) -> dict[str, Any]:
         presentation = response.get("chatgpt_host_presentation")
