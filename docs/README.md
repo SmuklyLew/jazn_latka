@@ -8,6 +8,8 @@ Nie wolno odczytywać daty, brancha lub wersji z historii dokumentacji jako live
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
 
+Dokument wdrożenia bieżącego code-first patcha: [`reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md`](reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md).
+
 ## Zacznij tutaj
 
 1. [`../AGENTS.md`](../AGENTS.md) — router instrukcji.
