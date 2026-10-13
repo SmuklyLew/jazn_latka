@@ -62,6 +62,12 @@ def test_mcp_task_input_end_to_end_receipt_and_fail_closed(tmp_path: Path) -> No
     ) == {"resultType": "complete"}
     waiting = adapter.store.get(task.task_id)
     assert waiting is not None and waiting.status == "input_required" and waiting.input_requests == {"b": {}}
+    delivered_before_retry = len(runtime.deliveries)
+    assert adapter.update_input(
+        task.task_id, {"a": {"value": 1}},
+        owner_subject="alice", owner_transport="public_http",
+    ) == {"resultType": "complete"}
+    assert len(runtime.deliveries) == delivered_before_retry
     assert adapter.update_input(
         task.task_id, {"b": {"value": 2}},
         owner_subject="alice", owner_transport="public_http",
