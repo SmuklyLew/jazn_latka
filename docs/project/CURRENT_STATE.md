@@ -1,10 +1,19 @@
-# Current project state
+# Jaźń — current state, code-first
+
+**Wersja bieżąca:** dynamiczna — `latka_jazn/version.py`  
+**Data przeglądu:** 2026-10-13  
+**Status:** `IMPLEMENTATION_CANDIDATE` — nie oznacza aktualnego live-runtime ani zakończonego CI.
+
+Rzeczywisty release jest obliczany z `version.py`; master HEAD i statusy workflow sprawdzaj w GitHub. Rzeczywisty daemon i accepted visible turn sprawdzaj przez kod (`run.py status --json`, `jazn_status`, turn finalization), a nie przez ten tekst. Nowa ścieżka adaptera HTTP wylicza SHA-256 UTF-8 kodem, nadal zachowując kanoniczną finalizację. SYSTEM ZIP pozostaje tylko paczką, a MEMORY oddzielną zdolnością wymagającą walidacji.
+
+## Poprzedni snapshot statusu (HISTORICAL_ONLY; nie jest bieżącym masterem)
+
 
 **Snapshot date:** 2026-10-11
 **Repository:** `SmuklyLew/jazn_latka`  
 **Verified master baseline:** `48168b74ccfce42318c2568fbc78433c6051a0d5`
-**Master version at this baseline:** `16.3.25.5.115.18.1-configuration-studio-profile-hardening`
-**Current patch candidate:** `16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` on `fix/v16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` (not yet merged)
+**Historyczna wersja master: `16.3.25.5.115.18.1-configuration-studio-profile-hardening`
+**Historyczny patch candidate:** `16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` on `fix/v16.3.25.5.115.18.2-chatgpt-startup-evidence-hardening` (not yet merged)
 
 Ten plik jest krótkim overlayem stanu. Kanoniczną wersję zawsze czytać z `latka_jazn/version.py`, a status implementacji z bieżącego kodu, testów, CI, PR/issue i live runtime evidence.
 

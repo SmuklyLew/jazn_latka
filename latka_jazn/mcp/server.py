@@ -27,6 +27,7 @@ from latka_jazn.mcp.developer_mode_surface import (
     adapt_developer_mode_tool_result,
     translate_developer_mode_tool_call,
 )
+from latka_jazn.mcp.host_guidance import MCP_HOST_TURN_INSTRUCTIONS
 from latka_jazn.mcp.remote_runtime import REGISTERED_MCP_STATUS_SCHEMA
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
@@ -97,15 +98,7 @@ class JaznMcpServer(_V76JaznMcpServer):
 
     @staticmethod
     def _instructions() -> str:
-        return (
-            "When the Jaźń plugin is selected, use jazn_generate_visible_reply for every ordinary user "
-            "message with one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
-            "with that same daemon_request_id and never replay the user message. If action=generate_then_finalize, "
-            "generate only from the returned host contract and finish with jazn_finalize_reply. Display "
-            "Jaźń output only when the returned action is display_exact. jazn_status is the readiness probe. "
-            "A host must also observe the complete Jaźń turn toolset on the current message surface; "
-            "installed/catalog state or a previous message's tools do not satisfy that gate."
-        )
+        return MCP_HOST_TURN_INSTRUCTIONS
 
     @staticmethod
     def _negotiate_legacy_protocol_version(requested: Any) -> str:

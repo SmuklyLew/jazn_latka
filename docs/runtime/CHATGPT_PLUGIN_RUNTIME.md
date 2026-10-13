@@ -1,5 +1,7 @@
 # ChatGPT Plugin Runtime — real ChatGPT → Jaźń ingress
 
+**Code-first (2026-10-13):** To dokumentacja integracyjna, a nie bieżący status procesu. Żaden opis nie zastępuje wywołania adaptera Python/MCP. Adapter publiczny wylicza SHA-256 finalnego tekstu w kodzie, sprawdza opcjonalny digest, a kanoniczna finalizacja nadal chroni continuation token, lineage i persistence. Wdrażane zmiany wymagają odrębnego live-host acceptance po podłączeniu aplikacji.
+
 This runbook describes the v16.3.25.5.115 ingress/bootstrap contract. Its acceptance
 boundary is intentionally stricter than "the repository contains MCP code":
 ChatGPT must discover and call the Jaźń actions from a connected MCP app/plugin

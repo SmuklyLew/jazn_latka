@@ -1,6 +1,22 @@
 # Jaźń — CURRENT STEP
 
-**Status:** `CANONICAL_CURRENT_STEP`  
+**Wersja bieżąca:** dynamiczna — `latka_jazn/version.py`  
+**Stan planu:** 2026-10-13  
+**Status:** `CODE_FIRST_HOST_CONVERGENCE_IMPLEMENTATION_CANDIDATE` (nie jest to dowód CI ani wdrożenia)
+
+## Aktywny zakres code-first
+
+- Pozostawić `run.py` cienkim starterem, `main.py` jedynym control plane, a persistent daemon właścicielem trwałej tury.
+- Ograniczyć modelowi instrukcje do sterowania potrzebnym generowaniem; wejście, SHA-256 finalnego tekstu, uwierzytelnienie, walidacja i idempotencja mają być deterministyczne w Pythonie.
+- Zachować `request_id/turn_id/trace_id` i finalizację `display_exact`; nie dodawać replayu przy utracie odpowiedzi.
+- Utrzymywać SYSTEM/MEMORY rozłącznie; nie zmieniać SQLite ani prywatnej pamięci w tej konwergencji.
+- Zsynchronizować aktywne dokumenty i automatycznie wykrywać stale statusy oraz niezgodność kontraktów wersji/narzędzi.
+- Kryterium wydania: compileall, deterministyczne testy, Pyright, lint, Windows/Linux i GitHub CI na finalnym SHA; rzeczywiste użycie ChatGPT wymaga osobnego live MCP connector acceptance.
+
+## Historyczny snapshot poprzedniego kroku (NIEAKTYWNY)
+
+
+**Status poprzedniego snapshotu:** `HISTORICAL_ONLY`  
 **Stan:** 2026-10-07  
 **Baza master:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1` / `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`  
 **Zweryfikowany v111:** `ee00529cdbd9a4d0a469007db787ed4895667ddf`  

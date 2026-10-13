@@ -1,5 +1,7 @@
 # ChatGPT Hybrid/Adaptive Ingress — 16.3.25.5.115
 
+**Code-first (2026-10-13):** To dokumentacja integracyjna, a nie bieżący status procesu. Żaden opis nie zastępuje wywołania adaptera Python/MCP. Adapter publiczny wylicza SHA-256 finalnego tekstu w kodzie, sprawdza opcjonalny digest, a kanoniczna finalizacja nadal chroni continuation token, lineage i persistence. Wdrażane zmiany wymagają odrębnego live-host acceptance po podłączeniu aplikacji.
+
 ## Cel
 
 Ordinary ChatGPT ma zachować preferowaną trasę do jednego persistent runtime

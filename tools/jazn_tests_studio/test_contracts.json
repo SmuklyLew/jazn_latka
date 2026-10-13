@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.12",
-  "active_definition_count": 2248,
+  "system_version": "16.3.25.5.115.21.14",
+  "active_definition_count": 2255,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -9764,6 +9764,152 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 97
+    },
+    "tests/test_codefirst_host_contracts.py::test_adapter_computes_utf8_bytes_not_codepoints": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_adapter_computes_utf8_bytes_not_codepoints",
+      "purpose": "Adapter computes utf8 bytes not codepoints",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_codefirst_host_contracts.py::test_adapter_rejects_mismatched_or_malformed_sha_fail_closed": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_adapter_rejects_mismatched_or_malformed_sha_fail_closed",
+      "purpose": "Adapter rejects mismatched or malformed sha fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_codefirst_host_contracts.py::test_adapter_rejects_empty_invalid_and_byte_oversize": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_adapter_rejects_empty_invalid_and_byte_oversize",
+      "purpose": "Adapter rejects empty invalid and byte oversize",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_codefirst_host_contracts.py::test_host_guidance_is_shared_and_not_a_runtime_claim": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_host_guidance_is_shared_and_not_a_runtime_claim",
+      "purpose": "Host guidance is shared and not a runtime claim",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_codefirst_host_contracts.py::test_public_adapter_validates_before_canonical_finalize_dispatch": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_public_adapter_validates_before_canonical_finalize_dispatch",
+      "purpose": "Public adapter validates before canonical finalize dispatch",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_codefirst_host_contracts.py::test_active_docs_metadata_and_deployment_are_consistent": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_active_docs_metadata_and_deployment_are_consistent",
+      "purpose": "Active docs metadata and deployment are consistent",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_codefirst_host_contracts.py::test_doc_audit_detects_both_stale_doc_and_runtime_identity": {
+      "path": "tests/test_codefirst_host_contracts.py",
+      "name": "test_doc_audit_detects_both_stale_doc_and_runtime_identity",
+      "purpose": "Doc audit detects both stale doc and runtime identity",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.finalization_input",
+        "latka_jazn.mcp.host_guidance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
     },
     "tests/test_cognitive_control.py::test_global_salience_is_deterministic_bounded_and_content_free": {
       "path": "tests/test_cognitive_control.py",

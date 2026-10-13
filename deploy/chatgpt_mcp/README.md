@@ -37,7 +37,7 @@ The versioned machine-readable contract is
 ## Build
 
 ```bash
-docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.115.21.12 .
+docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.115.21.14 .
 ```
 
 The image runs as uid/gid 10001, never exposes the daemon port 8787, and uses
@@ -126,3 +126,7 @@ runtime turn lineage and accepted `display_exact` finalization.
 
 See `docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md` for rollout, rollback
 and failure-injection checks.
+
+## Code-first phase-2 integrity
+
+The HTTP adapter computes SHA-256 over the exact UTF-8 final text before calling the canonical runtime finalizer; an optional caller-supplied checksum must match. The continuation token, accepted turn lineage and persistence validation stay inside the runtime. Do not ask a language model to calculate a cryptographic digest.

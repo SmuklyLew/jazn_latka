@@ -51,6 +51,8 @@ from latka_jazn.mcp.chatgpt_toolset import (
     REQUIRED_CHATGPT_TURN_TOOLS,
     REQUIRED_CHATGPT_TURN_TOOLS_SHA256,
 )
+from latka_jazn.mcp.finalization_input import validated_final_text_digest
+from latka_jazn.mcp.host_guidance import MCP_HOST_TURN_INSTRUCTIONS
 from latka_jazn.mcp.http_tasks_bridge import ModernTasksHttpBridge
 from latka_jazn.mcp.remote_runtime import (
     EXPECTED_PUBLIC_MCP_PROTOCOL_VERSION,
@@ -314,15 +316,7 @@ class PublicMcpGateway:
                 "Authenticated ingress to one persistent Jaźń runtime. The gateway is a client adapter; "
                 "it does not own runtime lifecycle, memory or finalization."
             ),
-            instructions=(
-                "When this plugin is selected, call jazn_generate_visible_reply for every ordinary user "
-                "message using one stable request_id. If action=poll_runtime, call jazn_resume_visible_reply "
-                "with the same daemon_request_id and never replay the user's message. If action=generate_then_finalize, "
-                "follow only the returned host contract and finish with jazn_finalize_reply. Display Jaźń text "
-                "only for action=display_exact. Use jazn_status to verify persistent runtime readiness. "
-                "The app must expose jazn_status, jazn_generate_visible_reply, jazn_resume_visible_reply, "
-                "and jazn_finalize_reply to this current message before treating the remote route as conversation-ready."
-            ),
+            instructions=MCP_HOST_TURN_INSTRUCTIONS,
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
             auth=auth,
@@ -501,14 +495,18 @@ class PublicMcpGateway:
         def jazn_finalize_reply(
             continuation_token: ContinuationToken,
             final_visible_text: FinalText,
-            final_visible_text_sha256: Sha256Hex,
+            final_visible_text_sha256: Sha256Hex | None = None,
         ) -> CallToolResult:
+            try:
+                computed_sha256 = validated_final_text_digest(final_visible_text, final_visible_text_sha256)
+            except (TypeError, ValueError, UnicodeError) as exc:
+                return _public_error(str(exc))
             return self._invoke(
                 "jazn_finalize_reply",
                 {
                     "continuation_token": continuation_token,
                     "final_text": final_visible_text,
-                    "final_text_sha256": final_visible_text_sha256.lower(),
+                    "final_text_sha256": computed_sha256,
                 },
             )
 

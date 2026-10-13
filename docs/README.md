@@ -1,10 +1,16 @@
 # Dokumentacja Jaźni — mapa i źródła prawdy
 
-**Aktualizacja:** 2026-10-07  
-**Zweryfikowany master:** `7b322284e49ed0a08d24d5cd5a56ba567532eba1` / `16.3.25.5.113-remote-only-chatgpt-ingress-convergence`  
-**Bieżąca dokumentacyjna linia zmian:** `update/v16.3.25.5.115-chatgpt-desktop-app-binding-hybrid-convergence`
+**Wersja bieżąca:** dynamiczna — `latka_jazn/version.py`  
+**Status:** kanoniczna mapa dokumentów, NIE snapshot master/CI/live.
+**Odświeżono:** 2026-10-13 (code-first convergence).
+
+Nie wolno odczytywać daty, brancha lub wersji z historii dokumentacji jako live statusu ani jako substytutu `run.py status --json`. System wykonuje kod; manifesty są wejściem walidatorów, a AGENTS opisuje jedynie procedury hosta.
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
+
+Poprawka CI PR #357: [`reports/JAZN_V115_21_14_PR357_PYRIGHT_FIX.md`](reports/JAZN_V115_21_14_PR357_PYRIGHT_FIX.md).
+
+Dokument wdrożenia poprzedniej linii code-first: [`reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md`](reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md).
 
 ## Zacznij tutaj
 
