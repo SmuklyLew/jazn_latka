@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# v116.0.14 hardens Windows slow-Runner persistence evidence and MCP recovery acceptance.
 # v116.0.13 diagnoses and refuses local-only MCP endpoints in ChatGPT web plugin packages.
 # v116.0.12 adds safe operational MCP prompts and focus completion.
 # v116.0.11 passes upstream CLI --output-dir to generate real checks.json.
@@ -40,8 +41,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.13"
-PACKAGE_VERSION = "16.3.25.5.116.0.13"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.14"
+PACKAGE_VERSION = "16.3.25.5.116.0.14"
 PACKAGE_RELEASE_NAME = "runtime-ingress-security-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.13  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.14  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -132,3 +132,26 @@ w niedostępnej powierzchni hosta.
 - OpenAI, [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
 - OpenAI, [Plugin packaging](https://developers.openai.com/plugins/build/plugins)
 - MCP, [Specification](https://modelcontextprotocol.io/specification/2026-07-28)
+
+## Zbieżność CI: precyzyjne rozróżnienie dwóch blokad
+
+- PowerShell (PR #364): jeden niestabilny na Windows test integracyjny
+  trwałego zapisu tury (`tests/test_runtime_full_turn.py`). Przed zmianą test
+  nie drukował statusu `canonical_persistence` przy asercji. Na wolnym
+  runnerze zwykły 45-sekundowy limit produkcyjny może być niewystarczający
+  do testowania wielu operacji pamięci, dlatego **tylko fixture testowa**
+  ma jawny limit 180 sekund i drukuje przyczynę odmowy zapisu. Jeżeli test
+  nadal zawiedzie, powód `canonical_persistence.reason/error_code` musi
+  zostać naprawiony w odpowiedniej warstwie — nie wolno zastępować go
+  `committed=True` ani usuwać asercji.
+- MCP 2026-07-28: oficjalny runner testuje syntetyczne narzędzia (np.
+  `slow_compute`, `greet`) oraz testowe URI `test://...` nieobecne
+  w produkcyjnym serwerze Jaźni. To jest problem zgodności testowego
+  targetu ze scenariuszami upstream **oraz** wymaga osobnego testowania
+  rzeczywistego produkcyjnego API. Nie oznaczać conformance PASS bez
+  wyraźnego test-only adaptera na tej samej warstwie MCP i bez niezależnych
+  produkcyjnych testów transportu, auth, status/generate/resume/finalize.
+  Bramka pozostaje FAIL, dopóki właściwa implementacja fixture i wszystkie
+  wymagane scenariusze nie przejdą.
+
+Źródło: [MCP conformance --requirements](https://github.com/modelcontextprotocol/conformance#conformance-requirements), [Python sqlite3 transaction control](https://docs.python.org/3.13/library/sqlite3.html#transaction-control).
