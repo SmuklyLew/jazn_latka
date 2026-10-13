@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T07:40:45+00:00",
-  "updated_at_utc": "2026-10-13T07:40:45+00:00",
+  "generated_at_utc": "2026-10-13T07:47:39+00:00",
+  "updated_at_utc": "2026-10-13T07:47:39+00:00",
   "start_file": "run.py",
-  "file_count": 2412,
-  "static_file_count": 2412,
+  "file_count": 2414,
+  "static_file_count": 2414,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -345,7 +345,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2984,
-      "sha256": "d152a1079b044bf24a33158a67a6db707c1b482217159c641fc31e2efd11fb54",
+      "sha256": "7dfff1a3bee7d165b19b04af417516d25e49f56cef1da6a5532ddc202efc860a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2359,6 +2359,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_FULL_RELEASE_ACCEPTANCE_CHECKPOINT.md",
+      "size_bytes": 4109,
+      "sha256": "fabeee39a3ab91c2b963c6927c8db653e9ee350e87aa0bf8fdf5e520d9bac04d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_31_CHATGPT_HOST_EXECUTOR_TRUTH_BOUNDARY.md",
       "size_bytes": 3617,
       "sha256": "f62a9201f81896f781bb96b6f94f1788a249a943e055a4614cdb262595530d6c",
@@ -3494,8 +3503,8 @@
     },
     {
       "path": "latka_jazn/bridge/secure_host_runtime_gateway.py",
-      "size_bytes": 23785,
-      "sha256": "5072be8519cbe2510b0c464bbe94338a766fa430e461e92a6a6aeb3929712cdd",
+      "size_bytes": 25380,
+      "sha256": "b4744abcfd8a9f35da4bf76a3633886352175789a5e3d53abbc72f7004b8a860",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4225,6 +4234,15 @@
       "path": "latka_jazn/core/daemon_conversation_session.py",
       "size_bytes": 4925,
       "sha256": "c68961ba2c39bfaf1830bd6f76435a28606f8f27c2ac86f7b02de66b96f3448e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/daemon_process_control.py",
+      "size_bytes": 2693,
+      "sha256": "8949a2f43e66998366a57d72fca575129a86a49deb556cbbdb639fb301a96722",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5456,8 +5474,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 244891,
-      "sha256": "0646ef1726c545e3c39488c2ab548bc70bfe341f8e091cbd072e047fa697de34",
+      "size_bytes": 242446,
+      "sha256": "d577e2e064a87fb921dfc4005b2a8934d5795232bd4d2cc5ef0d4f72969d8b22",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
