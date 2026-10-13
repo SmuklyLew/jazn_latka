@@ -376,13 +376,24 @@ class JaznMcpServer(_V76JaznMcpServer):
 
     @classmethod
     def _authenticated_task_owner(cls, request_value: Mapping[str, Any]) -> dict[str, str]:
-        metadata = cls._request_meta(request_value)
-        # The authenticated HTTP bridge overrides this marker and subject only
-        # after successful OAuth/scope verification. Do not trust user tool args.
-        if metadata.get("jazn/authenticated_transport") == "public_http":
-            subject = str(metadata.get("subject") or "").strip()
-            return {"owner_subject": subject, "owner_transport": "public_http"}
-        return {}
+        _ = request_value
+        subject = _AUTHENTICATED_HTTP_OWNER.get()
+        if subject is None:
+            return {}
+        return {"owner_subject": subject, "owner_transport": "public_http"}
+
+    def handle_public_authenticated(
+        self, request_value: dict[str, Any], *, owner_subject: str, owner_transport: str
+    ) -> dict[str, Any] | None:
+        """Bind a previously verified caller to one task request, not to its JSON metadata."""
+        subject = str(owner_subject or "").strip()
+        if not subject or owner_transport != "public_http":
+            raise ValueError("mcp_task_verified_principal_required")
+        token = _AUTHENTICATED_HTTP_OWNER.set(subject)
+        try:
+            return self.handle(request_value)
+        finally:
+            _AUTHENTICATED_HTTP_OWNER.reset(token)
 
     def _modern_task_dispatch(self, request_value: Mapping[str, Any]) -> dict[str, Any]:
         request_id = request_value.get("id")
