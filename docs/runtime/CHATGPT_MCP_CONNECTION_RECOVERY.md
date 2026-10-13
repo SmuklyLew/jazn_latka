@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.18  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.19  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -258,3 +258,22 @@ https://github.com/modelcontextprotocol/python-sdk
 Podejście bazuje na:
 https://github.com/modelcontextprotocol/conformance#conformance-requirements
 https://developers.openai.com/plugins/deploy/connect-chatgpt
+
+## Windows PowerShell CI: isolated daemon startup (v116.0.19)
+
+Run #38480662846 on SHA `cc8ba468`: the same integration passed in a
+59-test subset, then failed in the full 2527-test suite because the
+isolated subprocess had not proven readiness within its hard-coded
+20-second **test** deadline. The reason (slow process creation,
+early child exit, endpoint/instance mismatch) was not preserved in the
+pytest assertion message. A pass in isolation alone does not establish
+root cause.
+
+The fixture now uses a bounded 90-second Windows-only (30-second other OS)
+startup wait; production defaults and readiness/trust gates are unchanged.
+On failure the test shows `error_code`, last error, elapsed/budget,
+cleanup status and bounded/redacted synthetic stderr/stdout/event tails.
+No retry, fake READY, or accepted visible turn is inferred.
+Merge remains blocked until the **new-commit** full PowerShell run passes.
+See Python `subprocess.Popen.poll()` documentation and pytest flaky tests
+guidance on isolation vs shared system state.
