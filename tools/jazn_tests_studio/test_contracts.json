@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.18",
-  "active_definition_count": 2298,
+  "active_definition_count": 2300,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -22097,6 +22097,41 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_mcp_conformance_ci_contract.py::test_official_mcp_conformance_installs_test_dependencies_before_contract_gate": {
+      "path": "tests/test_mcp_conformance_ci_contract.py",
+      "name": "test_official_mcp_conformance_installs_test_dependencies_before_contract_gate",
+      "purpose": "Official mcp conformance installs test dependencies before contract gate",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_mcp_conformance_console_utf8.py::test_mcp_runner_unicode_logs_work_on_windows_cp1252": {
+      "path": "tests/test_mcp_conformance_console_utf8.py",
+      "name": "test_mcp_runner_unicode_logs_work_on_windows_cp1252",
+      "purpose": "Mcp runner unicode logs work on windows cp1252",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
     },
     "tests/test_mcp_conformance_fixture_server.py::test_fixture_has_synthetic_protocol_tools_but_production_has_none": {
       "path": "tests/test_mcp_conformance_fixture_server.py",
