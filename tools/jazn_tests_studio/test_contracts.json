@@ -22102,7 +22102,7 @@
       "path": "tests/test_mcp_conformance_fixture_server.py",
       "name": "test_fixture_has_synthetic_protocol_tools_but_production_has_none",
       "purpose": "Fixture has synthetic protocol tools but production has none",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
@@ -22110,14 +22110,14 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 4,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 14
+      "line": 16
     },
     "tests/test_mcp_conformance_fixture_server.py::test_fixture_registers_resources_and_prompts": {
       "path": "tests/test_mcp_conformance_fixture_server.py",
@@ -22138,7 +22138,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 42
     },
     "tests/test_mcp_conformance_fixture_server.py::test_synthetic_tools_return_real_mcp_content_types": {
       "path": "tests/test_mcp_conformance_fixture_server.py",
@@ -22159,7 +22159,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 53
     },
     "tests/test_mcp_conformance_fixture_server.py::test_fixture_port_is_bounded_and_no_external_bind": {
       "path": "tests/test_mcp_conformance_fixture_server.py",
@@ -22180,7 +22180,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 66
     },
     "tests/test_mcp_connector_status_probe_contract.py::test_jazn_status_emits_self_describing_connector_probe_contract": {
       "path": "tests/test_mcp_connector_status_probe_contract.py",
