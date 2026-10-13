@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.15-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.15-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.15-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T20:41:34+00:00",
-  "updated_at_utc": "2026-10-13T20:41:34+00:00",
+  "generated_at_utc": "2026-10-13T20:46:04+00:00",
+  "updated_at_utc": "2026-10-13T20:46:04+00:00",
   "start_file": "run.py",
-  "file_count": 2468,
-  "static_file_count": 2468,
+  "file_count": 2469,
+  "static_file_count": 2469,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -344,8 +344,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2976,
-      "sha256": "dc91c20067d6637ef56db1ef501bd391e35706b7f4156de80edcb37e81beeddc",
+      "size_bytes": 2981,
+      "sha256": "1f0d472684c7ce8c70efbe5d3e40f504e0f2ce097e1d6168888f056d65e4da2e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15949,6 +15949,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.15-pre-pyright-regression-fix/test_chatgpt_bridge_tool_catalog_probe.py",
+      "size_bytes": 7470,
+      "sha256": "49760e7a117d03ee3381ff013cbdbf0d34de99952bc1320a1dea26f46195d341",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.2-before-task-input/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "6e363dcbbe563fb856a5b05dd38598eb9b0a4327b07be5d4107f2ee88a2a3934",
@@ -18020,8 +18029,8 @@
     },
     {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
-      "size_bytes": 7470,
-      "sha256": "49760e7a117d03ee3381ff013cbdbf0d34de99952bc1320a1dea26f46195d341",
+      "size_bytes": 7488,
+      "sha256": "280717e28072b9d1f5b39172ceefe00e4279bb1042aa531afb2f289e7debdd33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
