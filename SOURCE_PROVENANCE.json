@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "0fc28cc7fcc9afa08c5e84cc4655a00bb293558b",
-  "base_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence",
-  "commit_date": "2026-10-13T08:39:08+02:00",
+  "base_merge_commit": "48c9ad5e57553239315d0cf25e707718f89b1d8b",
+  "base_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
+  "commit_date": "2026-10-13T07:38:27Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-13T06:39:08+00:00",
+  "generated_at_utc": "2026-10-13T07:38:27+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6136400b1c1d8024c04cb72b6d26afdf28e326e2",
+  "git_tree_sha": "9e07b829f8cd67799d1ca121a3944a1333c66356",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "0fc28cc7fcc9afa08c5e84cc4655a00bb293558b",
-    "source_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence"
+    "source_commit": "48c9ad5e57553239315d0cf25e707718f89b1d8b",
+    "source_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence",
+  "release_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence",
+  "runtime_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "0fc28cc7fcc9afa08c5e84cc4655a00bb293558b",
+  "source_commit": "48c9ad5e57553239315d0cf25e707718f89b1d8b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence",
+  "source_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.4-runtime-ingress-security-convergence",
+  "update_version": "16.3.25.5.116.0.5-runtime-ingress-security-convergence",
   "version_source": "latka_jazn/version.py"
 }
