@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+from typing import cast
 
 import pytest
 
@@ -22,9 +23,12 @@ def test_adapter_computes_utf8_bytes_not_codepoints():
 
 
 def test_adapter_rejects_mismatched_or_malformed_sha_fail_closed():
-    for invalid in ("f" * 64, "not-a-hash", "", 5):
+    for invalid in ("f" * 64, "not-a-hash", ""):
         with pytest.raises(ValueError):
             validated_final_text_digest("Łatka", invalid)
+    # Deliberate invalid runtime input; cast keeps static type checking meaningful.
+    with pytest.raises(ValueError):
+        validated_final_text_digest("Łatka", cast(str, 5))
 
 
 def test_adapter_rejects_empty_invalid_and_byte_oversize():

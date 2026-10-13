@@ -8,7 +8,9 @@ Nie wolno odczytywać daty, brancha lub wersji z historii dokumentacji jako live
 
 Dokumentacja jest uporządkowana według odpowiedzialności, aktualności i poziomu dowodu.
 
-Dokument wdrożenia bieżącego code-first patcha: [`reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md`](reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md).
+Poprawka CI PR #357: [`reports/JAZN_V115_21_14_PR357_PYRIGHT_FIX.md`](reports/JAZN_V115_21_14_PR357_PYRIGHT_FIX.md).
+
+Dokument wdrożenia poprzedniej linii code-first: [`reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md`](reports/JAZN_V115_21_13_CODE_FIRST_HOST_CONVERGENCE.md).
 
 ## Zacznij tutaj
 

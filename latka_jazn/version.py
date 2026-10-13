@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# v115.21.14 fixes PR357 Pyright-negative-input regression while retaining test coverage.
 # v115.21.13 centralizes MCP host guidance, code-owned UTF-8 digest verification and docs contracts.
 # v115.21.12 hardens MCP Cloudflare secrets, private-memory volume and OAuth endpoint preflight.
 import re
@@ -28,8 +29,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.115.21.13"
-PACKAGE_VERSION = "16.3.25.5.115.21.13"
+DISTRIBUTION_VERSION = "16.3.25.5.115.21.14"
+PACKAGE_VERSION = "16.3.25.5.115.21.14"
 PACKAGE_RELEASE_NAME = "code-first-runtime-documentation-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
