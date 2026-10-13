@@ -523,6 +523,7 @@ class ModernTasksHttpBridge:
                 "authorization": self.internal_token,
                 "subject": principal.subject,
                 "openai/subject": principal.subject,
+                "jazn/authenticated_transport": "public_http",
             }
         )
         prepared_params["_meta"] = prepared_meta
