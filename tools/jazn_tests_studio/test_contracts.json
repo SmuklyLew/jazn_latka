@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.15",
-  "active_definition_count": 2287,
+  "system_version": "16.3.25.5.116.0.16",
+  "active_definition_count": 2290,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -7369,6 +7369,44 @@
       "description_source": "source_identity",
       "line": 195
     },
+    "tests/test_chatgpt_oauth_tool_metadata.py::test_explicit_local_development_advertises_noauth": {
+      "path": "tests/test_chatgpt_oauth_tool_metadata.py",
+      "name": "test_explicit_local_development_advertises_noauth",
+      "purpose": "Explicit local development advertises noauth",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_chatgpt_oauth_tool_metadata.py::test_authenticated_gateway_describes_actual_operation_scopes": {
+      "path": "tests/test_chatgpt_oauth_tool_metadata.py",
+      "name": "test_authenticated_gateway_describes_actual_operation_scopes",
+      "purpose": "Authenticated gateway describes actual operation scopes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
     "tests/test_chatgpt_package_discovery_bootstrap.py::test_runtime_discovery_ignores_memory_profile_and_finds_checksum_only_system_zip": {
       "path": "tests/test_chatgpt_package_discovery_bootstrap.py",
       "name": "test_runtime_discovery_ignores_memory_profile_and_finds_checksum_only_system_zip",
@@ -7494,7 +7532,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 36
     },
     "tests/test_chatgpt_plugin_package.py::test_plugin_endpoint_is_https_mcp_without_embedded_credentials": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7519,7 +7557,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 62
     },
     "tests/test_chatgpt_plugin_package.py::test_registered_app_id_is_fail_closed": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7543,7 +7581,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 76
     },
     "tests/test_chatgpt_plugin_package.py::test_write_plugin_package_is_atomic_bounded_and_refuses_overwrite": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7565,7 +7603,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 80
+      "line": 81
     },
     "tests/test_chatgpt_plugin_package.py::test_registered_app_binding_without_endpoint_omits_mcp_manifest": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7586,7 +7624,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_chatgpt_plugin_package.py::test_plugin_package_requires_endpoint_or_registered_app": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7608,7 +7646,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 123
     },
     "tests/test_chatgpt_plugin_package.py::test_write_registered_app_binding_omits_mcp_json": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7629,7 +7667,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 131
     },
     "tests/test_chatgpt_plugin_package.py::test_force_replaces_known_plugin_shape_without_stale_optional_manifests": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7649,7 +7687,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 150
+      "line": 151
     },
     "tests/test_chatgpt_plugin_package.py::test_cli_parser_accepts_production_oauth_and_plugin_package_modes": {
       "path": "tests/test_chatgpt_plugin_package.py",
@@ -7669,7 +7707,27 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 180
+      "line": 181
+    },
+    "tests/test_chatgpt_plugin_package.py::test_remote_package_declares_server_oauth_without_secrets": {
+      "path": "tests/test_chatgpt_plugin_package.py",
+      "name": "test_remote_package_declares_server_oauth_without_secrets",
+      "purpose": "Remote package declares server oauth without secrets",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 227
     },
     "tests/test_chatgpt_post_materialization_launch_contract.py::test_post_materialization_contract_exposes_exact_chatgpt_control_plane_launch": {
       "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
