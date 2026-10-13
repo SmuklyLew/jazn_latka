@@ -28,10 +28,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.12.9 (complete Windows Tcl/Tk)
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: "3.12.9"
           cache: pip
           cache-dependency-path: |
             requirements.txt
@@ -43,6 +43,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[archive,memory-rebuild-ui]" pytest
           python -m pip check
+
+      - name: Validate Tk assets and run real GUI tests in clean process
+        shell: pwsh
+        run: |
+          python -X utf8 tools/windows/check_tk_runtime.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 -m pytest -q -ra --tb=short tests/test_configuration_studio_gui_windows.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Materialize canonical PR metadata locally
         if: github.event_name == 'pull_request'
@@ -78,6 +86,7 @@ jobs:
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=25
           -m "not live_model and not live_mcp"
+          --ignore=tests/test_configuration_studio_gui_windows.py
 
       - name: Capture system package smoke report
         shell: pwsh
