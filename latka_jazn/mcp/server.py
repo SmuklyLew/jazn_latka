@@ -16,6 +16,7 @@ to the same Jaźń runtime and tool implementations.
 import argparse
 import json
 from copy import deepcopy
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -69,6 +70,8 @@ MODERN_TOOL_LIST_TTL_MS = 5 * 60 * 1000
 
 _CURRENT_TASK_METHODS = frozenset({"tasks/get", "tasks/update", "tasks/cancel"})
 _REMOVED_TASK_METHODS = frozenset({"tasks/list", "tasks/result"})
+
+_AUTHENTICATED_HTTP_OWNER: ContextVar[str | None] = ContextVar("jazn_authenticated_http_owner", default=None)
 
 
 def __getattr__(name: str) -> Any:
