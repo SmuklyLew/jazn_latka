@@ -63,7 +63,7 @@ jobs:
         run: |
           python tools/mcp_conformance_runner.py \
             --conformance .ci-upstream-mcp-conformance/dist/index.js \
-            --output-dir .ci-mcp-conformance-results \
+            --output-dir ci-mcp-conformance-results \
             --scenario "$CONFORMANCE_SCENARIO"
       - name: Verify advertised Tasks contract (independent release blocker)
         run: >-
@@ -80,5 +80,5 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: mcp-conformance-${{ matrix.os }}
-          path: .ci-mcp-conformance-results/
-          if-no-files-found: warn
+          path: ci-mcp-conformance-results/
+          if-no-files-found: error
