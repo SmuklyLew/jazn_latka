@@ -57,7 +57,26 @@ class _NoPrivateRuntime:
         self, name: str, arguments: dict[str, Any],
         *, meta: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        # Conformance must never depend on a private runtime or execute Jaźń.
+        # Non-sensitive synthetic status: NO daemon, memory, or user session.
+        # This allows protocol resource-read/caching checks to exercise
+        # Jaźń's real gateway serializer without claiming runtime readiness.
+        if name == "jazn_status":
+            return {
+                "content": [{"type": "text", "text": "Conformance fixture only; Jaźń is not running."}],
+                "structuredContent": {
+                    "gateway_ok": True, "daemon_reachable": False,
+                    "capability_matrix": {
+                        "conversation_ready": False,
+                        "ordinary_dialogue_allowed": False,
+                        "components": {
+                            "persistent_memory": {"status": "unavailable", "available": False},
+                            "recall": {"status": "unavailable", "available": False},
+                        },
+                    },
+                },
+                "isError": False,
+            }
+        # Conformance must never execute Jaźń, modify MEMORY or start a turn.
         raise RuntimeError("conformance_fixture_has_no_private_runtime")
 
 
@@ -129,7 +148,7 @@ def register_fixture(mcp: MCPServer) -> None:
             max_tokens=50,
         ))
 
-    @mcp.tool(name="test_input_required_result_elicitation")
+    @mcp.tool(name="test_input_required_result_elicitation", description="Request one form elicitation and resume with the response")
     async def mrtr_elicitation(ctx: Context) -> str | InputRequiredResult:
         responses = ctx.input_responses or {}
         if "user_name" in responses:
@@ -138,7 +157,7 @@ def register_fixture(mcp: MCPServer) -> None:
             return f"Hello, {value}!"
         return InputRequiredResult(input_requests={"user_name": ask_name()})
 
-    @mcp.tool(name="test_input_required_result_sampling")
+    @mcp.tool(name="test_input_required_result_sampling", description="Request one client sampling response")
     async def mrtr_sampling(ctx: Context) -> str | InputRequiredResult:
         responses = ctx.input_responses or {}
         if "capital_question" in responses:
@@ -149,7 +168,7 @@ def register_fixture(mcp: MCPServer) -> None:
             "capital_question": sample_text("What is the capital of France?"),
         })
 
-    @mcp.tool(name="test_input_required_result_list_roots")
+    @mcp.tool(name="test_input_required_result_list_roots", description="Request client roots from the client")
     async def mrtr_roots(ctx: Context) -> str | InputRequiredResult:
         responses = ctx.input_responses or {}
         if "client_roots" in responses:
@@ -158,7 +177,7 @@ def register_fixture(mcp: MCPServer) -> None:
             return f"Client exposed {total} root(s)."
         return InputRequiredResult(input_requests={"client_roots": ListRootsRequest()})
 
-    @mcp.tool(name="test_input_required_result_request_state")
+    @mcp.tool(name="test_input_required_result_request_state", description="Exercise secure request-state round-trip")
     async def mrtr_state(ctx: Context) -> str | InputRequiredResult:
         responses = ctx.input_responses or {}
         if "confirm" in responses and ctx.request_state == "request-state-nonce":
@@ -170,7 +189,7 @@ def register_fixture(mcp: MCPServer) -> None:
         ))
         return InputRequiredResult(input_requests={"confirm": req}, request_state="request-state-nonce")
 
-    @mcp.tool(name="test_input_required_result_multiple_inputs")
+    @mcp.tool(name="test_input_required_result_multiple_inputs", description="Request multiple client inputs together")
     async def mrtr_multiple(ctx: Context) -> str | InputRequiredResult:
         responses = ctx.input_responses or {}
         if {"user_name", "greeting", "client_roots"} <= responses.keys():
@@ -181,7 +200,7 @@ def register_fixture(mcp: MCPServer) -> None:
             "client_roots": ListRootsRequest(),
         }, request_state="multiple-inputs")
 
-    @mcp.tool(name="test_input_required_result_multi_round")
+    @mcp.tool(name="test_input_required_result_multi_round", description="Exercise multiple rounds of client input")
     async def mrtr_multiround(ctx: Context) -> str | InputRequiredResult:
         try:
             state = json.loads(ctx.request_state) if ctx.request_state else {"round": 0}
@@ -206,14 +225,14 @@ def register_fixture(mcp: MCPServer) -> None:
             "step1": ask_name("Step 1: What is your name?")},
             request_state=json.dumps({"round": 1}))
 
-    @mcp.tool(name="test_input_required_result_tampered_state")
+    @mcp.tool(name="test_input_required_result_tampered_state", description="Reject tampered sealed request state")
     async def mrtr_tamper(ctx: Context) -> str | InputRequiredResult:
         if ctx.request_state is not None:
             return f"state-ok: {ctx.request_state}"
         return InputRequiredResult(input_requests={"confirm": ask_name()},
                                    request_state="round-1")
 
-    @mcp.tool(name="test_input_required_result_capabilities")
+    @mcp.tool(name="test_input_required_result_capabilities", description="Limit input requests by client capabilities")
     async def mrtr_capabilities(ctx: Context) -> InputRequiredResult:
         caps = ctx.client_capabilities
         requests: dict[str, InputRequest] = {}
@@ -223,7 +242,7 @@ def register_fixture(mcp: MCPServer) -> None:
             requests["ask"] = ask_name()
         return InputRequiredResult(input_requests=requests, request_state="capability-gated")
 
-    @mcp.tool(name="test_missing_capability")
+    @mcp.tool(name="test_missing_capability", description="Reject a call without required sampling capability")
     async def missing_capability(ctx: Context) -> str:
         caps = ctx.client_capabilities
         if caps is None or caps.sampling is None:
@@ -276,7 +295,7 @@ def register_fixture(mcp: MCPServer) -> None:
             }},
         ]
 
-    @mcp.prompt(name="test_input_required_result_prompt")
+    @mcp.prompt(name="test_input_required_result_prompt", description="Request user context from the client")
     async def input_required_prompt(ctx: Context) -> list[dict[str, Any]] | InputRequiredResult:
         responses = ctx.input_responses or {}
         if "user_context" in responses:

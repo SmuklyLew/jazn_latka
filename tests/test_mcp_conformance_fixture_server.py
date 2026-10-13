@@ -32,6 +32,10 @@ async def test_fixture_has_synthetic_protocol_tools_but_production_has_none(tmp_
     assert "test_missing_capability" in tools
     assert prod.config.json_response is True
     assert fixture.config.json_response is False
+    # A fixture status lookup must never be confused with a running daemon.
+    state = fixture._status_snapshot()
+    assert state["daemon_reachable"] is False
+    assert state["capability_matrix"]["conversation_ready"] is False
 
 
 @pytest.mark.anyio
