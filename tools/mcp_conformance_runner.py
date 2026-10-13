@@ -83,13 +83,15 @@ def main() -> int:
                         raw,
                     )
                     lines = raw.splitlines()
-                    keywords = ("FAILURE", "FAILED", "Error:", "errorMessage",
-                                "✗", "❌", "not passed", "fail:")
-                    failures = [line for line in lines if any(key in line for key in keywords)]
-                    print("=== MCP conformance failure evidence (bounded) ===", flush=True)
-                    for line in (failures[-110:] or lines[-70:]):
-                        print(line[:600], flush=True)
-                    print("=== End MCP conformance failure evidence ===", flush=True)
+                    # Upstream outputs the reason on a line *after* each
+                    # failed check. Do not drop that line when filtering by
+                    # a failure keyword; show a bounded complete report.
+                    print("=== MCP conformance detailed evidence (bounded) ===", flush=True)
+                    for line in lines[:350]:
+                        print(line[:700], flush=True)
+                    if len(lines) > 350:
+                        print(f"... {len(lines) - 350} further lines in artifact", flush=True)
+                    print("=== End MCP conformance detailed evidence ===", flush=True)
                 except OSError as exc:
                     print(f"Conformance report unreadable: {type(exc).__name__}", flush=True)
             return result.returncode
