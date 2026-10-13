@@ -1,14 +1,16 @@
 # Release timeline / decision index
 
-**Aktualizacja:** 2026-09-07  
-**Current master baseline:** `e828c2f4ab10a909d9d8b2324e69caf68f82c94d` / `16.3.25.5.38-ci-release-fixture-isolation`  
-**Current documentation branch target:** `16.3.25.5.39-memory-affect-docs-convergence`
+**Status:** `HISTORICAL_RELEASE_INDEX`  
+**Ostatni snapshot tej osi:** 2026-09-07  
+**Aktualna wersja:** zawsze `latka_jazn/version.py`; aktualny master wymaga zapytania GitHub.
+
+Poniższe stare statusy i SHA reprezentują WYŁĄCZNIE czas zapisania snapshotu.
 
 Ten dokument jest indeksem ewolucji. Historyczne raporty/patches/hotfixes pozostają w `docs/archive/`; bieżące wykonanie opisuje `docs/plans/`.
 
 ## Statusy
 
-- `CURRENT_MASTER` — faktyczny master snapshot z nagłówka.
+- `HISTORICAL_MASTER` — master w chwili wykonania archiwalnego snapshotu; nie aktualny HEAD.
 - `IN_PR_BRANCH` — zmiana przygotowywana na branchu, jeszcze nie master.
 - `MERGED` — dostarczone.
 - `SUPERSEDED` — zastąpione nowszym kontraktem.
@@ -35,7 +37,7 @@ Ten dokument jest indeksem ewolucji. Historyczne raporty/patches/hotfixes pozost
 | v16.3.25.5.35 | MERGED | Pylance optional contracts |
 | v16.3.25.5.36 | MERGED | CI archive scope / declared archive extras |
 | v16.3.25.5.37 | MERGED in branch ancestry/history | clean release fixture/related canonical release hardening predecessor |
-| **v16.3.25.5.38** | **CURRENT_MASTER** | install declared PowerShell-regression extras + isolate canonical release packaging tests from CI metadata materialization |
+| **v16.3.25.5.38** | **HISTORICAL_MASTER** | install declared PowerShell-regression extras + isolate canonical release packaging tests from CI metadata materialization |
 | **v16.3.25.5.39** | **IN_PR_BRANCH** | documentation-only Memory/Affect roadmap convergence; no runtime behavior change |
 
 ## PR #231
