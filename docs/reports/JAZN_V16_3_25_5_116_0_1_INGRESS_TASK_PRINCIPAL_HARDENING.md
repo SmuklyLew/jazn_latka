@@ -24,6 +24,21 @@ Scope: isolated changes on `update/v16.3.25.5.116-runtime-ingress-security-conve
 - No private MEMORY data was attached, modified or committed.
 - The Tasks `inputResponses` runtime gateway remains fail-closed: transport is not implemented and no successful ACK should be claimed.
 
+
+## Additional principal-provenance hardening
+
+The production Tasks bridge now passes verified identity using a Python
+`ContextVar` scoped to one call, rather than reading client-controlled JSON
+`params._meta`. A forged metadata marker cannot authorize a task. The
+trusted local JSON request path refuses access to tasks with a public owner.
+Public HTTP and Tasks OAuth authenticators require an explicit nonempty
+user `subject`: `client_id` and the constant `oauth-client` are no longer
+used as substitutes for user identity.
+
+A new regression test verifies that spoofed metadata does not authorize
+a caller. Test Studio uses stable purpose-based filenames and a canonical
+synchronized catalog of 2267 definitions.
+
 ## Mandatory remaining gates
 
 1. Complete official MCP 2026-07-28 conformance against a live isolated server in CI with reviewed pinned dependencies. Tasks extension tests are separate hard blockers when advertised.
