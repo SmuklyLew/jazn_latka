@@ -611,8 +611,18 @@ class McpTaskStore:
                 record, owner_subject=owner_subject, owner_transport=owner_transport,
             ):
                 raise KeyError("unknown_task")
-            if record.status != "input_required":
+            existing = conn.execute(
+                "SELECT accepted_keys_json FROM mcp_task_input_receipts "
+                "WHERE task_id=? AND input_sha256=?", (task_id, input_sha256),
+            ).fetchone()
+            if existing is not None:
+                if tuple(json.loads(existing[0])) != accepted_keys:
+                    raise RuntimeError("task_input_digest_key_conflict")
                 return record
+            if record.status != "input_required" or not set(accepted_keys).issubset(
+                record.input_requests or {}
+            ):
+                raise RuntimeError("task_input_outstanding_changed_before_commit")
             remaining = {
                 key: value for key, value in (record.input_requests or {}).items()
                 if key not in accepted_keys
@@ -626,7 +636,14 @@ class McpTaskStore:
                 else "Runtime confirmed task input delivery."
             )
             record.last_updated_at = datetime.now(timezone.utc).isoformat()
-            return self._upsert(conn, record)
+            persisted = self._upsert(conn, record)
+            conn.execute(
+                "INSERT INTO mcp_task_input_receipts "
+                "(task_id, input_sha256, accepted_keys_json, created_at) "
+                "VALUES (?, ?, ?, ?)",
+                (task_id, input_sha256, json.dumps(accepted_keys), record.last_updated_at),
+            )
+            return persisted
 
     def request_cancel(
         self, task_id: str, *, owner_subject: str | None = None,
@@ -810,6 +827,12 @@ class McpTaskResumeAdapter:
         record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record is None:
             raise KeyError("unknown_task")
+        fingerprint = TaskInputDelivery.from_responses(dict(input_responses or {}))
+        if self.store.confirmed_input_receipt(
+            record.task_id, fingerprint.digest, fingerprint.keys,
+            owner_subject=owner_subject, owner_transport=owner_transport,
+        ):
+            return {"resultType": "complete"}
         if record.status != "input_required":
             return {"resultType": "complete"}
 
@@ -841,6 +864,7 @@ class McpTaskResumeAdapter:
         self.store.accept_confirmed_input(
             record.task_id,
             prepared.keys,
+            input_sha256=prepared.digest,
             owner_subject=owner_subject,
             owner_transport=owner_transport,
         )
