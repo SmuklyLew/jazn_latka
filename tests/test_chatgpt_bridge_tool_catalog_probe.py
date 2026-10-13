@@ -3,7 +3,7 @@ from __future__ import annotations
 from email.message import Message
 from io import BytesIO
 import json
-from typing import Any
+from typing import Any, cast
 import urllib.error
 import urllib.request
 
@@ -58,7 +58,7 @@ def test_complete_catalog_is_not_chatgpt_host_exposure(monkeypatch: pytest.Monke
         assert request.get_method() == "POST"
         assert request.get_header("Mcp-method") == "tools/list"
         assert request.get_header("Mcp-protocol-version") == "2026-07-28"
-        body = json.loads(request.data or b"{}")
+        body = json.loads(cast(bytes, request.data))
         assert body["method"] == "tools/list"
         assert body["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"] == "2026-07-28"
         return reply([good_tool(name) for name in REQUIRED_CHATGPT_TURN_TOOLS])
@@ -76,7 +76,7 @@ def test_complete_catalog_is_not_chatgpt_host_exposure(monkeypatch: pytest.Monke
 
 def test_catalog_handles_cursor_pagination_without_turn_submission(monkeypatch: pytest.MonkeyPatch) -> None:
     def handler(request: urllib.request.Request) -> FakeResponse:
-        body = json.loads(request.data or b"{}")
+        body = json.loads(cast(bytes, request.data))
         if body["id"] == 1:
             assert "cursor" not in body["params"]
             return reply([good_tool(REQUIRED_CHATGPT_TURN_TOOLS[0])], cursor="more")
@@ -88,7 +88,7 @@ def test_catalog_handles_cursor_pagination_without_turn_submission(monkeypatch: 
     assert result["ok"] is True
     assert result["pages_checked"] == 2
     assert len(calls) == 2
-    assert all(json.loads(call.data or b"{}")["method"] == "tools/list" for call in calls)
+    assert all(json.loads(cast(bytes, call.data))["method"] == "tools/list" for call in calls)
 
 
 def test_missing_tool_rejected_and_no_fabricated_ready(monkeypatch: pytest.MonkeyPatch) -> None:
