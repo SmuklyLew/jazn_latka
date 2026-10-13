@@ -1,0 +1,125 @@
+# Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
+
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.13  
+**Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
+
+## 1. Przyczyna
+
+Wtyczka osobista `jazn-runtime` v0.1.0 może mieć `mcp.json` oraz
+`.mcp.json` kierujące na `http://127.0.0.1:<port>/mcp`.
+W przeglądarkowym ChatGPT `127.0.0.1` nie daje dostępu do procesu na
+komputerze użytkownika. Samo utworzenie/instalacja pluginu nie wystawia
+narzędzi w bieżącej turze i nie uruchamia daemona Jaźni.
+
+Brak pełnego zestawu `jazn_status`, `jazn_generate_visible_reply`,
+`jazn_resume_visible_reply`, `jazn_finalize_reply` przed wysłaniem tury
+jest brakiem hostowej capability, **nie dowodem zepsutego NLP**.
+`ClientError` przed utworzeniem procesu na powierzchni hosta również nie
+dowodzi błędu Python/ZIP. Nie zastępować tego promptem imitującym Łatkę.
+
+## 2. Operator: weryfikacja na Windows / PowerShell
+
+Uruchom polecenia w zweryfikowanym, zgodnym katalogu SYSTEM z działającym
+interpreterem projektu. Nie używaj wyeksportowanej prywatnej MEMORY
+jako `active_root`. Nie kopiuj pamięci ani sekretów do GitHub.
+
+```powershell
+py -X utf8 run.py --version
+py -X utf8 run.py host-preflight --json
+py -X utf8 run.py start
+py -X utf8 run.py status --json
+```
+
+Dodatnia odpowiedź `status` musi dotyczyć tego samego `active_root`,
+zgodnej wersji, świeżego daemona i `conversation_ready=true`.
+Gdy brak zależności, wykonuj tylko kanoniczny bootstrap/preflight zgodnie
+z `AGENTS.md`; nie omijaj kontroli integralności i nie deklaruj READY
+na podstawie samego PID.
+
+### Bezpieczna diagnoza pakietu pluginu
+
+Jeżeli masz wyeksportowany katalog pluginu zawierający `plugin.json`
+i `mcp.json` (ewentualnie `.mcp.json`), uruchom:
+
+```powershell
+py -X utf8 tools/chatgpt_mcp_connection_doctor.py --plugin-dir "D:\sciezka\do\pluginu"
+```
+
+Narzędzie działa offline i tylko odczytuje pliki; wypisuje **kody
+przyczyn bez adresów, tokenów i surowych danych**. Kod 2 wskazuje blokadę
+konfiguracji. Kod 0 oznacza jedynie poprawny format publicznego HTTPS,
+**nie potwierdza połączenia, uwierzytelnienia ani gotowości Jaźni**.
+
+## 3. Wybierz realną trasę MCP (bez obowiązku płatnego OpenAI API)
+
+### A. Publiczny HTTPS + `/mcp` (droga do zwykłego ChatGPT web)
+
+1. Uruchom **ten sam** daemon Jaźni i jego bezpieczny MCP gateway.
+   W repo istnieje `deploy/chatgpt_mcp/` (Docker Compose + Cloudflare
+   Tunnel + środowisko OAuth); szczegóły: `deploy/chatgpt_mcp/README.md`
+   oraz `docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
+2. Zapewnij publiczną nazwę DNS, certyfikat TLS i forwarding
+   `https://<twoj-host>/mcp` do wewnętrznego gateway na porcie 8080.
+   Port wewnętrznego daemona 8787 musi pozostać prywatny.
+3. Ustaw wymagane po stronie gateway dane OAuth/introspection i ochrony
+   zasobów w prywatnym store. Nie przekazuj ich w promptach, commitach,
+   parametrach URL ani argumentach CLI. Nie usuwaj kontroli tokenów,
+   origin/host i uprawnień dla wygody.
+4. Potwierdź oddzielnie liveness (`/healthz`), readiness (`/readyz`),
+   zgodność wersji, OAuth/discovery i listę czterech narzędzi MCP.
+   Rzeczywista akceptacja musi używać MCP Inspector oraz klienta ChatGPT.
+5. ChatGPT → Plugins → Add custom MCP server → wprowadź
+   **publiczny HTTPS /mcp**, skonfiguruj auth, utwórz/zainstaluj plugin.
+   Po zmianie pochodzenia starej wtyczki lokalnej może być konieczne
+   utworzenie **nowego** połączenia, nie podmiana starego `127.0.0.1`
+   w przechowywanym snapshotcie.
+6. Otwórz nową rozmowę, wybierz/zawołaj Jaźń Runtime jako aplikację i
+   sprawdź rzeczywistą ekspozycję narzędzi oraz świeże `jazn_status`.
+   Zmiana metadanych narzędzi wymaga Refresh/recreate/republish zależnie
+   od hosta. Nie zakładaj, że samo @mention działa na każdej powierzchni.
+
+### B. Secure MCP Tunnel (prywatne połączenie, zależne od konta)
+
+OpenAI Secure MCP Tunnel potrafi przesłać MCP do prywatnego stdio targetu
+`latka_jazn/mcp/tunnel_bootstrap.py` bez otwierania portu przychodzącego.
+Wymaga zewnętrznej konfiguracji tunelu, odpowiednich uprawnień, aktywnego
+`tunnel-client` i danych kontrolnych **niezapisywanych w repozytorium**.
+W ChatGPT Plugins wybierz `Add custom MCP server` → `Tunnel` i sprawdź,
+czy tunel jest dostępny dla Twojego workspace. Przykładowe planowanie CLI
+jest w `latka_jazn/mcp/secure_tunnel.py`.
+
+Ta trasa nie wymaga otwartego publicznego endpointu, ale może wymagać
+uprawnień/usług OpenAI Platform. Nie obiecuj "bez kluczy" dla tego wariantu.
+
+### C. Lokalna aplikacja desktopowa
+
+Zarejestrowane lokalne MCP może działać w kliencie, który **faktycznie
+wystawia** lokalną capability. Nie wnioskuj z tego, że ta sama wtyczka
+automatycznie działa w przeglądarce lub w kolejnej wiadomości. Ścieżka
+`.app.json` wymaga rzeczywistego registered app id i świeżego statusu.
+
+## 4. Akceptacja całej tury (bez udawania sukcesu)
+
+Po deploymencie zapisz niesecretne evidence dla:
+- `server/discover`, `tools/list`, `tools/call` i kompletnego toolsetu;
+- `jazn_status`: real runtime ready, wersja i świeża instancja;
+- jednej wiadomości wywołującej `jazn_generate_visible_reply`;
+- kontynuacji tego samego `request_id` przez `jazn_resume_visible_reply`,
+  jeśli jest wymagana, **bez ponownego submit**;
+- zaakceptowanego `jazn_finalize_reply` zwracającego `action=display_exact`
+  z prawidłową `MessageEnvelope`;
+- kolejnej wiadomości z zachowaną sesją, pamięcią i provenance (gdy pamięć
+  została niezależnie podłączona i zweryfikowana).
+
+Nie promuj runtime READY ze zdjęcia ekranu, lokalnego portu, ZIP-a, testu
+jednostkowego, CI ani statycznego JSON-u. Kod repozytorium nie może sam
+włączyć narzędzi w konwersacji, zainstalować pluginu ani rozpocząć procesu
+w niedostępnej powierzchni hosta.
+
+## Źródła pierwotne
+
+- OpenAI, [Connect and test your plugin](https://developers.openai.com/plugins/deploy/connect-chatgpt)
+- OpenAI, [Build an MCP server](https://developers.openai.com/plugins/build/mcp-server)
+- OpenAI, [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
+- OpenAI, [Plugin packaging](https://developers.openai.com/plugins/build/plugins)
+- MCP, [Specification](https://modelcontextprotocol.io/specification/2026-07-28)
