@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "0b518739b2f693ccc06fca7e6cfbfb2377c586cd",
-    "base_version": "16.3.25.5.115.21.11-local-bootstrap-mcp-gate-convergence",
+    "base_commit": "a42dbc1958f8c65e00e06f9e0852771dc3015788",
+    "base_version": "16.3.25.5.115.21.12-mcp-deployment-security-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "a42dbc1958f8c65e00e06f9e0852771dc3015788",
