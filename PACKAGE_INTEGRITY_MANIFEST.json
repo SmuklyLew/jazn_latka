@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T03:47:25+00:00",
-  "updated_at_utc": "2026-10-13T03:47:25+00:00",
+  "generated_at_utc": "2026-10-13T03:54:27+00:00",
+  "updated_at_utc": "2026-10-13T03:54:27+00:00",
   "start_file": "run.py",
   "file_count": 2379,
   "static_file_count": 2379,
@@ -327,7 +327,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2979,
-      "sha256": "8c31fa08788554e340f8e714a385c9e3f5a6456cd1e560cacf1aadcbd9681db8",
+      "sha256": "73d580c5bcb55a373794a64b1d542eea7fa0271abd06973e2092d4d19c722ca5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6230,8 +6230,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_tasks_bridge.py",
-      "size_bytes": 19746,
-      "sha256": "26e8811ff744f973f8e9e65abc5ae18c4e46a4b9e83c6d2d4d24d1bcd5a91f25",
+      "size_bytes": 20189,
+      "sha256": "534e139f2c796250d04f55c092f8d545026b41ff8e09d5796178459bf81bfae5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6275,8 +6275,8 @@
     },
     {
       "path": "latka_jazn/mcp/server.py",
-      "size_bytes": 35371,
-      "sha256": "5c562243180782c68538826be5ad3908907120724625641c180fd842c9a9d3ca",
+      "size_bytes": 36105,
+      "sha256": "14cda941ce0c1b0cc7b3fa6bd69c98fc36244b2adb65fdd4aa045da3ceb2c03f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18523,6 +18523,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_host_tool_research_intent_policy.py",
+      "size_bytes": 2067,
+      "sha256": "9a426709c23088a5c038d3d1e3efe05348c5854399a0739bf7f2e3ed110dc568",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_host_tool_turn_ownership.py",
       "size_bytes": 2961,
       "sha256": "b94aef103c630ea0ec23ba787056946a7d12890f48083d50a104925645fcac3c",
@@ -18904,6 +18913,24 @@
       "path": "tests/test_mcp_task_lifecycle_bounds.py",
       "size_bytes": 5404,
       "sha256": "edbdabbd3d00b0c3dd65ad1f765a02aad1c71f5db0b514a4a594b67fcf7d6214",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_mcp_task_principal_isolation.py",
+      "size_bytes": 3604,
+      "sha256": "2413489cff5786d26650f4fbd7a37ab73fa2ca44e5116f658bdd7957e46538da",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_mcp_task_protocol_authorization.py",
+      "size_bytes": 3205,
+      "sha256": "f9e7b0c73fbb23c90f6f7a926dd7f545d94abefeef51be7846e168dff4152086",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20719,33 +20746,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v116_research_tool_ingress_regression.py",
-      "size_bytes": 2067,
-      "sha256": "9a426709c23088a5c038d3d1e3efe05348c5854399a0739bf7f2e3ed110dc568",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v116_task_principal_boundary.py",
-      "size_bytes": 3602,
-      "sha256": "bae011d4a26d45060bfa96ae0ff2c65d48bc64fd24b229272d6174316241bd83",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v116_task_protocol_owner_boundary.py",
-      "size_bytes": 2472,
-      "sha256": "94efbf4bb13fad4623cb0e087e576b665969f53528b098896fd7e3bdfa8665c5",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -21251,8 +21251,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2107765,
-      "sha256": "0ea4d76207565c08819b99291adcdba42d0f26f44a0da3d8dca9e074b0d83d81",
+      "size_bytes": 2108655,
+      "sha256": "2d8fb91cb5b2e1cbccd5210a38397f95d4e037ce42a7539ab0c198986f0fd159",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
