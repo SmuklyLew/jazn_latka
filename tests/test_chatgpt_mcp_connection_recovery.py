@@ -105,3 +105,24 @@ def test_stdio_only_package_does_not_claim_browser_web_connectivity(tmp_path: Pa
         encoding="utf-8",
     )
     assert inspect_plugin_dir(tmp_path)["reason_code"] == "local_stdio_only"
+
+
+def test_conflicting_public_mcp_descriptors_fail_closed(tmp_path: Path) -> None:
+    _plugin_fixture(
+        tmp_path, "https://jazn-a.example.test/mcp",
+        secondary="https://jazn-b.example.test/mcp",
+    )
+    report = inspect_plugin_dir(tmp_path)
+    assert report["reason_code"] == "conflicting_mcp_endpoints"
+    assert report["endpoint_config_valid_for_remote_chatgpt"] is False
+
+
+def test_registered_app_binding_is_not_remote_web_endpoint_proof(tmp_path: Path) -> None:
+    (tmp_path / ".app.json").write_text(
+        '{"apps":{"jazn":{"id":"plugin_asdk_app_example","required":true}}}',
+        encoding="utf-8",
+    )
+    report = inspect_plugin_dir(tmp_path)
+    assert report["reason_code"] == "registered_app_binding_unverified"
+    assert report["host_toolset_verified"] is False
+    assert report["remote_runtime_verified"] is False
