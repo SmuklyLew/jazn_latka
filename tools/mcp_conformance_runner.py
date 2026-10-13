@@ -54,6 +54,7 @@ def main() -> int:
             conformance = [
                 "node", str(cli), "server",
                 "--url", f"http://127.0.0.1:{options.port}/mcp",
+                "--verbose",
             ]
             conformance.extend(
                 ["--scenario", options.scenario] if options.scenario
