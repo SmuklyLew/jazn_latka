@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "8822f2338d0d24da2d3532db7fa9f750ba0b8903",
-    "base_version": "16.3.25.5.116.0.11-runtime-ingress-security-convergence",
+    "base_commit": "7f22d3dcf00e3835f77b971b5f240a030c3af270",
+    "base_version": "16.3.25.5.116.0.12-runtime-ingress-security-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "7f22d3dcf00e3835f77b971b5f240a030c3af270",
