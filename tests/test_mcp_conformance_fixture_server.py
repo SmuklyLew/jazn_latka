@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from mcp.types import CallToolResult
 
 import pytest
 
@@ -26,6 +27,8 @@ async def test_fixture_has_synthetic_protocol_tools_but_production_has_none(tmp_
     prod_tools = {t.name for t in await prod.mcp.list_tools()}
     assert not any(x.startswith("test_") for x in prod_tools)
     assert "jazn_status" in prod_tools
+    assert prod.config.json_response is True
+    assert fixture.config.json_response is False
 
 
 @pytest.mark.anyio
@@ -48,7 +51,7 @@ async def test_synthetic_tools_return_real_mcp_content_types(tmp_path: Path) -> 
         ("test_embedded_resource", "resource"),
     ):
         value = await gateway.mcp.call_tool(name, {})
-        assert value.result_type == "complete" if hasattr(value, "result_type") else True
+        assert isinstance(value, CallToolResult)
         assert value.is_error is False
         assert value.content[0].type == content_type
 
