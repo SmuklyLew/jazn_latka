@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.14",
-  "active_definition_count": 2278,
+  "system_version": "16.3.25.5.116.0.15",
+  "active_definition_count": 2287,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3224,6 +3224,183 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 66
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_complete_catalog_is_not_chatgpt_host_exposure": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_complete_catalog_is_not_chatgpt_host_exposure",
+      "purpose": "Complete catalog is not chatgpt host exposure",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_catalog_handles_cursor_pagination_without_turn_submission": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_catalog_handles_cursor_pagination_without_turn_submission",
+      "purpose": "Catalog handles cursor pagination without turn submission",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_missing_tool_rejected_and_no_fabricated_ready": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_missing_tool_rejected_and_no_fabricated_ready",
+      "purpose": "Missing tool rejected and no fabricated ready",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_missing_metadata_rejected": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_missing_metadata_rejected",
+      "purpose": "Missing metadata rejected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_non_rpc_response_is_not_accepted": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_non_rpc_response_is_not_accepted",
+      "purpose": "Non rpc response is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_transport_errors_fail_closed": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_transport_errors_fail_closed",
+      "purpose": "Transport errors fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_token_is_sent_only_to_https_and_never_returned": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_token_is_sent_only_to_https_and_never_returned",
+      "purpose": "Token is sent only to https and never returned",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_bad_url_never_opens_connection": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_bad_url_never_opens_connection",
+      "purpose": "Bad url never opens connection",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_cli_uses_same_canonical_runpy_mcp_probe_dispatch": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_cli_uses_same_canonical_runpy_mcp_probe_dispatch",
+      "purpose": "Cli uses same canonical runpy mcp probe dispatch",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 164
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_is_pasteable_thin_loader_with_current_message_gate": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
