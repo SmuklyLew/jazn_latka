@@ -68,6 +68,15 @@ konfiguracji. Kod 0 oznacza jedynie poprawny format publicznego HTTPS,
 4. Potwierdź oddzielnie liveness (`/healthz`), readiness (`/readyz`),
    zgodność wersji, OAuth/discovery i listę czterech narzędzi MCP.
    Rzeczywista akceptacja musi używać MCP Inspector oraz klienta ChatGPT.
+   Jeżeli potrzebujesz przenośnego katalogu pluginu, wygeneruj go z prawdziwym
+   hostem (nie z `localhost` ani prywatnym IP):
+
+   ```powershell
+   py -X utf8 run.py chatgpt-plugin-package --endpoint "https://twoj-host.example/mcp" --output ".\\jazn-chatgpt-plugin"
+   ```
+
+   Powyższy adres jest przykładem do zastąpienia; samo wygenerowanie pakietu
+   nie deployuje serwera i nie instaluje ani nie rejestruje aplikacji.
 5. ChatGPT → Plugins → Add custom MCP server → wprowadź
    **publiczny HTTPS /mcp**, skonfiguruj auth, utwórz/zainstaluj plugin.
    Po zmianie pochodzenia starej wtyczki lokalnej może być konieczne
