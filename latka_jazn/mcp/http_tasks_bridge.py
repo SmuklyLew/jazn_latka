@@ -530,7 +530,15 @@ class ModernTasksHttpBridge:
         prepared["params"] = prepared_params
 
         try:
-            response_value = self.protocol_backend.handle(prepared)
+            verified = getattr(self.protocol_backend, "handle_public_authenticated", None)
+            if callable(verified):
+                response_value = verified(
+                    prepared, owner_subject=principal.subject, owner_transport="public_http"
+                )
+            elif self.allow_unauthenticated_loopback_dev:
+                response_value = self.protocol_backend.handle(prepared)
+            else:
+                raise RuntimeError("verified_task_principal_dispatch_unavailable")
         except Exception:
             response_value = _jsonrpc_error(
                 prepared.get("id"),
