@@ -99,6 +99,8 @@ async def test_http_gateway_task_resource_reads_same_durable_registry(tmp_path: 
         request_id="req-resource-durable",
         turn_id="turn-resource-durable",
         trace_id="trace-resource-durable",
+        owner_subject="loopback-development",
+        owner_transport="public_http",
     )
     gateway = _gateway(tmp_path)
     async with Client(gateway.mcp, raise_exceptions=True) as client:
