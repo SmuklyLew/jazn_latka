@@ -345,7 +345,9 @@ class PublicMcpGateway:
                     },
                 )
             return None
-        subject = str(token.subject or token.client_id or "oauth-client").strip() or "oauth-client"
+        subject = str(token.subject or "").strip()
+        if not subject:
+            return None  # A shared client_id cannot identify one user-owned task.
         return _Principal(subject=subject, scopes=frozenset(str(scope) for scope in token.scopes))
 
     def _invoke(
