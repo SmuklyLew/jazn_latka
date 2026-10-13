@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T03:39:23+00:00",
-  "updated_at_utc": "2026-10-13T03:39:23+00:00",
+  "generated_at_utc": "2026-10-13T03:42:44+00:00",
+  "updated_at_utc": "2026-10-13T03:42:44+00:00",
   "start_file": "run.py",
-  "file_count": 2377,
-  "static_file_count": 2377,
+  "file_count": 2378,
+  "static_file_count": 2378,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -327,7 +327,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2984,
-      "sha256": "af1d718de2044d5c853fb2a54214c62587e2d0c5324d9110e4500a460f1c3a81",
+      "sha256": "5db519fec99eefb80710b11ddc943c43d64de3781379f7f8e7ed5c2faf0896a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6212,8 +6212,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 33833,
-      "sha256": "4c9ac7cec336add4fa68e2adab8e27426d63885c0a42a0877bbb690244852ecb",
+      "size_bytes": 33932,
+      "sha256": "a4b78a80566997a37b3a21d0f0c66e6d8fe8bd7d2c81ecde1960bd3162432fd2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14626,6 +14626,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.115.21.14-task-public-resource/test_mcp_http_resources.py",
+      "size_bytes": 3923,
+      "sha256": "9ed5684be36cedc3c170786e8c9313fbfc1d6aafbd36851fc0bf50a3ed753eec",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.115.21.2-pre-provenance-p1/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2690,
       "sha256": "546f99d7d9a7a546ca0906b701d42b6865534083c8bd35cbc1b0e9a055ff1b8a",
@@ -18812,8 +18821,8 @@
     },
     {
       "path": "tests/test_mcp_http_resources.py",
-      "size_bytes": 3923,
-      "sha256": "9ed5684be36cedc3c170786e8c9313fbfc1d6aafbd36851fc0bf50a3ed753eec",
+      "size_bytes": 4008,
+      "sha256": "fed396e89478db2f49a312343bd757069d6e3bbf86e39083d296f0f4b6d94988",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
