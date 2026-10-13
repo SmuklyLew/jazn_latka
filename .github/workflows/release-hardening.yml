@@ -244,6 +244,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
+      - name: Audit active documentation and MCP release contracts
+        run: python -X utf8 tools/docs_truth_audit.py --root . --json
+
       - name: Compile all active Python
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 
