@@ -559,7 +559,10 @@ class McpTaskStore:
                 record.cancel_requested = bool(cancel_requested)
             return self._upsert(conn, record)
 
-    def request_cancel(self, task_id: str) -> McpTaskRecord:
+    def request_cancel(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord:
         value = str(task_id or "").strip()
         if not value or len(value) > 256:
             raise ValueError("invalid_task_id")
@@ -573,8 +576,9 @@ class McpTaskStore:
                 legacy = self._read_legacy_task(value)
                 if legacy is None:
                     raise KeyError("unknown_task")
-                self._upsert(conn, legacy)
                 record = legacy
+            if not self._owner_matches(record, owner_subject=owner_subject, owner_transport=owner_transport):
+                raise KeyError("unknown_task")
             if record.terminal:
                 return record
             record.status = "working"
@@ -616,7 +620,10 @@ class McpTaskResumeAdapter:
         ).strip()
         return value or None
 
-    def create_from_pending_result(self, tool_result: Mapping[str, Any]) -> dict[str, Any] | None:
+    def create_from_pending_result(
+        self, tool_result: Mapping[str, Any], *,
+        owner_subject: str | None = None, owner_transport: str | None = None,
+    ) -> dict[str, Any] | None:
         request_id = self.pending_daemon_request_id(tool_result)
         if not request_id:
             return None
@@ -624,6 +631,8 @@ class McpTaskResumeAdapter:
         structured_map = structured if isinstance(structured, Mapping) else {}
         record = self.store.create_or_get(
             daemon_request_id=request_id,
+            owner_subject=owner_subject,
+            owner_transport=owner_transport,
             ttl_ms=self.ttl_ms,
             poll_interval_ms=self.poll_interval_ms,
             request_id=str(structured_map.get("request_id") or request_id),
@@ -635,8 +644,11 @@ class McpTaskResumeAdapter:
         )
         return record.to_task_result(creation=True)
 
-    def get(self, task_id: str) -> dict[str, Any]:
-        record = self.store.get(task_id)
+    def get(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> dict[str, Any]:
+        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record is None:
             raise KeyError("unknown_task")
         if record.terminal:
@@ -711,8 +723,11 @@ class McpTaskResumeAdapter:
         )
         return completed.to_task_result()
 
-    def cancel(self, task_id: str) -> dict[str, Any]:
-        self.store.request_cancel(task_id)
+    def cancel(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> dict[str, Any]:
+        self.store.request_cancel(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         # Cancellation is cooperative.  We acknowledge receipt but do not lie
         # that the underlying runtime stopped before it confirms cancellation.
         return {"resultType": "complete"}
@@ -721,8 +736,9 @@ class McpTaskResumeAdapter:
         self,
         task_id: str,
         input_responses: Mapping[str, Any] | None = None,
+        *, owner_subject: str | None = None, owner_transport: str | None = None,
     ) -> dict[str, Any]:
-        record = self.store.get(task_id)
+        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record is None:
             raise KeyError("unknown_task")
         if record.status != "input_required":
