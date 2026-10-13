@@ -6,6 +6,7 @@ from typing import Any, cast
 import pytest
 
 pytest.importorskip("mcp")
+from mcp import CallToolResult
 from mcp.server.auth.provider import TokenVerifier
 
 from latka_jazn.mcp.http_gateway import (
@@ -39,6 +40,7 @@ async def test_missing_identity_triggers_bounded_login_challenge(
     gateway = _oauth_gateway(tmp_path)
     monkeypatch.setattr(gateway, "_principal", lambda: None)
     result = await gateway.mcp.call_tool("jazn_status", {})
+    assert isinstance(result, CallToolResult)
     assert result.is_error is True
     assert result.structured_content is not None
     assert result.structured_content["reason"] == "authenticated_principal_required"
@@ -59,6 +61,7 @@ async def test_insufficient_scope_includes_auth_challenge_but_no_memory_access(
         gateway, "_principal", lambda: _Principal(subject="test", scopes=frozenset({SCOPE_CONNECT})),
     )
     result = await gateway.mcp.call_tool("jazn_status", {})
+    assert isinstance(result, CallToolResult)
     assert result.is_error is True
     assert result.structured_content is not None
     assert result.structured_content["reason"] == "insufficient_scope"
@@ -75,6 +78,7 @@ async def test_developer_loopback_errors_never_advertise_remote_oauth(
     )
     monkeypatch.setattr(gateway, "_principal", lambda: None)
     result = await gateway.mcp.call_tool("jazn_status", {})
+    assert isinstance(result, CallToolResult)
     assert result.is_error is True
     assert result.meta is None or "mcp/www_authenticate" not in result.meta
 
