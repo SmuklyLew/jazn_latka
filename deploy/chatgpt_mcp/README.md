@@ -181,3 +181,13 @@ Następnie rejestruj, instaluj i wybieraj wtyczkę przez natywny klient MCP
 ChatGPT, przeprowadź test `jazn_status` i dwie zaakceptowane tury.
 Same metadane nie instalują wtyczki ani nie uruchamiają daemona.
 Oficjalne źródło: https://developers.openai.com/plugins/build/auth
+
+## OAuth tool-level challenges (v116.0.17)
+
+The gateway now emits `_meta["mcp/www_authenticate"]` for missing
+principal or insufficient scope with a bounded HTTPS resource-metadata
+origin. This does not replace HTTP 401, OAuth discovery, SDK TokenVerifier,
+token audience verification or the client connection. Non-auth failures
+must not trigger linking. Use MCP Inspector to verify tool results and
+the real ChatGPT OAuth flow; `127.0.0.1` remains local-only.
+See https://developers.openai.com/plugins/build/auth .

@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.16  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.17  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -201,3 +201,28 @@ oraz metadane nadal nie dowodzą bieżącej ekspozycji narzędzi,
 gotowości daemona, ani `action=display_exact`.
 Źródła: https://developers.openai.com/plugins/build/auth
 https://developers.openai.com/plugins/build/plugins
+
+## Poprawka OAuth challenge: rozróżnienie braku tokenu i scope (v116.0.17)
+
+Przy braku prawidłowej tożsamości serwer zwraca `authenticated_principal_required`,
+a przy niewystarczającym zakresie — `insufficient_scope`. Odpowiedź MCP
+`tools/call` zawiera teraz wyłącznie dla tych błędów
+`_meta["mcp/www_authenticate"]` z kontrolowanym `resource_metadata` HTTPS,
+`error` i `error_description`, zgodnie z dokumentacją OpenAI.
+Dla `rate_limit_exceeded`, niepoprawnych argumentów ani błędów runtime
+nie wystawiaj wyzwania OAuth. HTTP 401 i walidacja tokenu nadal należą
+do middleware SDK/TokenVerifier.
+
+To jest warunek konieczny, nie wystarczający: MCP SDK Python v2 w tej
+wersji rejestruje `_meta.securitySchemes`, ale może nie udostępniać
+kanonicznego pola `securitySchemes` na poziomie deskryptora. Do czasu
+potwierdzenia wsparcia upstream należy przetestować wykrywanie OAuth
+rzeczywistym klientem ChatGPT i MCP Inspector. Nie stosować niejawnego
+patchowania prywatnych struktur SDK i nie deklarować pełnej zgodności.
+Wtyczka `jazn-runtime` 0.1.0 wskazująca na `http://127.0.0.1`
+wymaga oddzielnego połączenia przez HTTPS lub Secure MCP Tunnel.
+
+Źródła:
+https://developers.openai.com/plugins/build/auth
+https://developers.openai.com/plugins/deploy/connect-chatgpt
+https://github.com/modelcontextprotocol/python-sdk

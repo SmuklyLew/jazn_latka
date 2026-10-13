@@ -24,6 +24,7 @@ import secrets
 import threading
 import time
 from typing import Annotated, Any, Callable, Mapping, Protocol
+from urllib.parse import urlsplit
 
 from pydantic import AnyHttpUrl, Field
 from starlette.requests import Request
@@ -234,7 +235,10 @@ def _call_tool_result(value: Mapping[str, Any]) -> CallToolResult:
     )
 
 
-def _public_error(reason: str, *, request_id: str | None = None) -> CallToolResult:
+def _public_error(
+    reason: str, *, request_id: str | None = None,
+    auth_challenge: str | None = None,
+) -> CallToolResult:
     structured: dict[str, Any] = {
         "ok": False,
         "action": "host_diagnostic",
@@ -246,6 +250,7 @@ def _public_error(reason: str, *, request_id: str | None = None) -> CallToolResu
     return CallToolResult(
         content=[TextContent(type="text", text=f"Jaźń MCP ingress rejected the request safely: {reason}.")],
         structured_content=structured,
+        _meta={"mcp/www_authenticate": [auth_challenge]} if auth_challenge else None,
         is_error=True,
     )
 
@@ -354,6 +359,28 @@ class PublicMcpGateway:
             return None  # A shared client_id cannot identify one user-owned task.
         return _Principal(subject=subject, scopes=frozenset(str(scope) for scope in token.scopes))
 
+    def _auth_challenge(self, *, error: str) -> str | None:
+        """Return a bounded OAuth challenge for an authentication failure.
+
+        Only the trusted, configured HTTPS resource origin is used.
+        No tokens, user-controlled errors, filesystem paths or credentials leak.
+        SDK middleware also handles the HTTP-level 401 boundary.
+        """
+        if self._token_verifier is None:
+            return None
+        resource = str(self.config.oauth_resource_server_url or "")
+        parsed = urlsplit(resource)
+        if parsed.scheme != "https" or not parsed.netloc or parsed.username is not None or parsed.password is not None:
+            return None
+        if error not in {"invalid_token", "insufficient_scope"}:
+            return None
+        resource_metadata = f"{parsed.scheme}://{parsed.netloc}/.well-known/oauth-protected-resource"
+        description = "Connect or reauthorize Jaźń Runtime to continue"
+        return (
+            f'Bearer resource_metadata="{resource_metadata}", '
+            f'error="{error}", error_description="{description}"'
+        )
+
     def _invoke(
         self,
         tool_name: str,
@@ -365,10 +392,10 @@ class PublicMcpGateway:
             return _public_error("tool_not_publicly_exposed", request_id=request_id)
         principal = self._principal()
         if principal is None:
-            return _public_error("authenticated_principal_required", request_id=request_id)
+            return _public_error("authenticated_principal_required", request_id=request_id, auth_challenge=self._auth_challenge(error="invalid_token"))
         required_scope = _TOOL_SCOPES[tool_name]
         if required_scope not in principal.scopes:
-            return _public_error("insufficient_scope", request_id=request_id)
+            return _public_error("insufficient_scope", request_id=request_id, auth_challenge=self._auth_challenge(error="insufficient_scope"))
         if not self._rate_limiter.allow(subject=principal.subject, operation_name=tool_name):
             return _public_error("rate_limit_exceeded", request_id=request_id)
 
@@ -537,9 +564,9 @@ class PublicMcpGateway:
         def jazn_status() -> CallToolResult:
             principal = self._principal()
             if principal is None:
-                return _public_error("authenticated_principal_required")
+                return _public_error("authenticated_principal_required", auth_challenge=self._auth_challenge(error="invalid_token"))
             if SCOPE_STATUS_READ not in principal.scopes:
-                return _public_error("insufficient_scope")
+                return _public_error("insufficient_scope", auth_challenge=self._auth_challenge(error="insufficient_scope"))
             if not self._rate_limiter.allow(subject=principal.subject, operation_name="jazn_status"):
                 return _public_error("rate_limit_exceeded")
             status = self._status_snapshot()

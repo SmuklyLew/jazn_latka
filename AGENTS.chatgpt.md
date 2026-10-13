@@ -9,6 +9,12 @@ Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjono
 ## ChatGPT OAuth transport discovery
 
 Dla publicznego MCP Jaźni wymagaj spójnych deklaracji:
+Wynik `authenticated_principal_required`/`insufficient_scope` powinien
+zawierać `_meta["mcp/www_authenticate"]` z opartym na zweryfikowanej
+konfiguracji HTTPS `resource_metadata`, `error` i `error_description`.
+Nie wymuszaj ponownego logowania dla innych błędów, np. rate limit,
+nie konstruuj challenge z danych użytkownika ani nie uznawaj challenge
+za dowód zalogowania. Middleware/SDK nadal odpowiada za kontrolę HTTP 401.
 `mcp.json -> mcpServers.jazn.extensions.com.openai.auth.type=oauth`,
 `_meta.securitySchemes` per narzędzie, OAuth resource metadata, scope,
 audience i prawidłowej odpowiedzi 401. `noauth` wolno wystawiać tylko
