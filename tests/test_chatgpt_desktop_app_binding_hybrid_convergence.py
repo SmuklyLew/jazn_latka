@@ -76,8 +76,8 @@ def test_startup_contract_separates_registered_app_binding_from_capability_evide
 
 
 def test_release_identity_tracks_desktop_app_binding_hybrid_convergence() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.115.21.14"
+    assert PACKAGE_VERSION == "16.3.25.5.116.0.1"
     assert (
         PACKAGE_RELEASE_NAME
-        == "code-first-runtime-documentation-convergence"
+        == "runtime-ingress-security-convergence"
     )
