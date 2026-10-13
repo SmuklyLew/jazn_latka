@@ -19569,8 +19569,10 @@
       "name": "test_imperative_research_requires_real_web_evidence",
       "purpose": "Imperative research requires real web evidence",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
       "markers": [
         "parametrize"
       ],
@@ -19589,7 +19591,7 @@
       "name": "test_explicit_research_without_host_web_reports_unavailable",
       "purpose": "Explicit research without host web reports unavailable",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
+      "category": "contract",
       "tags": [
         "host"
       ],
@@ -19609,8 +19611,10 @@
       "name": "test_unrelated_conversation_does_not_require_web",
       "purpose": "Unrelated conversation does not require web",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
@@ -23010,7 +23014,9 @@
       "purpose": "Task owner is persisted and isolation survives reopen",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 7,
       "expected_exceptions": [
@@ -23029,7 +23035,9 @@
       "purpose": "Legacy unowned task never adopted by remote caller",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [
@@ -23048,7 +23056,9 @@
       "purpose": "Existing legacy sqlite schema migrates additively",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -23065,7 +23075,9 @@
       "purpose": "Incomplete owner fail closed",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 0,
       "expected_exceptions": [
@@ -23122,7 +23134,9 @@
       "purpose": "Legacy unowned task cannot be read via public http",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
