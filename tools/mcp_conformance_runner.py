@@ -87,7 +87,7 @@ def main() -> int:
                         if not isinstance(check, dict) or check.get("status") != "FAILURE":
                             continue
                         detail = str(check.get("errorMessage") or "")[:900]
-                        detail = re.sub(r"(?i)(bearer\\s+)[A-Za-z0-9._~+/-]+", r"\\1[REDACTED]", detail)
+                        detail = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._~+/-]+", r"\1[REDACTED]", detail)
                         failed_checks.append({
                             "scenario": checks_path.parent.name[:128],
                             "check": str(check.get("id") or "")[:120],
@@ -99,7 +99,7 @@ def main() -> int:
                 bounded = failed_checks[:160]
                 (out / "failed-checks.json").write_text(
                     json.dumps({"total_failures": len(failed_checks), "checks": bounded},
-                               ensure_ascii=False, indent=2) + "\\n",
+                               ensure_ascii=False, indent=2) + "\n",
                     encoding="utf-8",
                 )
                 print(f"=== Official conformance failed checks: {len(failed_checks)} ===", flush=True)
@@ -117,8 +117,8 @@ def main() -> int:
 
                     # Do not disclose bearer tokens while surfacing check IDs.
                     raw = re.sub(
-                        r"(?i)(bearer\\s+)[A-Za-z0-9._~+/-]+",
-                        r"\\1[REDACTED]",
+                        r"(?i)(bearer\s+)[A-Za-z0-9._~+/-]+",
+                        r"\1[REDACTED]",
                         raw,
                     )
                     lines = raw.splitlines()
