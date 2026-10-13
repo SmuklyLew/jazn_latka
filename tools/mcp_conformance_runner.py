@@ -60,12 +60,51 @@ def main() -> int:
                 ["--scenario", options.scenario] if options.scenario
                 else ["--requirements", "2026-07-28"]
             )
+            started_at = time.time()
             with (out / "conformance.log").open("wb") as report:
                 result = subprocess.run(
                     conformance, cwd=project, env=env,
                     stdout=report, stderr=subprocess.STDOUT,
                     timeout=600, check=False,
                 )
+            # The upstream conformance framework stores per-assertion checks
+            # in results/server-*/checks.json, not in its stdout summary.
+            # Export bounded and redacted failure evidence without masking CI.
+            import json
+            import re
+            failed_checks: list[dict[str, str]] = []
+            for checks_path in sorted((project / "results").glob("server-*/checks.json"))[:80]:
+                try:
+                    if checks_path.stat().st_mtime < started_at - 2:
+                        continue
+                    if checks_path.stat().st_size > 4_000_000:
+                        raise ValueError("conformance_checks_oversize")
+                    decoded = json.loads(checks_path.read_text(encoding="utf-8"))
+                    checks = decoded if isinstance(decoded, list) else decoded.get("checks", [])
+                    if not isinstance(checks, list):
+                        continue
+                    for check in checks:
+                        if not isinstance(check, dict) or check.get("status") != "FAILURE":
+                            continue
+                        detail = str(check.get("errorMessage") or "")[:900]
+                        detail = re.sub(r"(?i)(bearer\\s+)[A-Za-z0-9._~+/-]+", r"\\1[REDACTED]", detail)
+                        failed_checks.append({
+                            "scenario": checks_path.parent.name[:128],
+                            "check": str(check.get("id") or "")[:120],
+                            "reason": detail,
+                        })
+                except (OSError, ValueError, TypeError) as exc:
+                    print(f"Conformance checks unreadable: {type(exc).__name__}", flush=True)
+            if failed_checks:
+                bounded = failed_checks[:160]
+                (out / "failed-checks.json").write_text(
+                    json.dumps({"total_failures": len(failed_checks), "checks": bounded},
+                               ensure_ascii=False, indent=2) + "\\n",
+                    encoding="utf-8",
+                )
+                print(f"=== Official conformance failed checks: {len(failed_checks)} ===", flush=True)
+                for item in bounded:
+                    print(f"{item['scenario']}/{item['check']}: {item['reason'][:350]}", flush=True)
             print(f"MCP conformance exit={result.returncode}", flush=True)
             # The upstream CLI writes diagnostics into an artifact. Preserve
             # that artifact, but also expose bounded failure evidence in job
