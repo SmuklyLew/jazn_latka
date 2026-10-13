@@ -37,7 +37,7 @@ The versioned machine-readable contract is
 ## Build
 
 ```bash
-docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.115.21.14 .
+docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.116.0.13 .
 ```
 
 The image runs as uid/gid 10001, never exposes the daemon port 8787, and uses
@@ -110,6 +110,25 @@ are never stored in this repository.
 A healthy endpoint is **not** proof that a specific ChatGPT message has the
 Jaźń app callable. A visible Jaźń reply still requires the per-message toolset,
 runtime turn lineage and accepted `display_exact` finalization.
+
+## ChatGPT web: do not reuse a local-only plugin endpoint
+
+A portable ChatGPT remote plugin must be connected to an authenticated public
+`https://<host>/mcp` endpoint (or through an explicitly configured Secure MCP
+Tunnel). `http://127.0.0.1:8080/mcp` works only for a client with access to
+**that same** machine and is not a remote browser-to-Windows route.
+
+Use the read-only offline validator on an exported plugin directory:
+
+```bash
+python -X utf8 tools/chatgpt_mcp_connection_doctor.py --plugin-dir /path/to/your/plugin
+```
+
+A zero exit code is **configuration-only**, not runtime/host readiness.
+After registering a reachable MCP endpoint in ChatGPT, install/select the
+app in the target conversation, refresh stale tools, and verify all four
+canonical tool calls and accepted finalization. See
+`docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.
 
 ## Troubleshooting
 
