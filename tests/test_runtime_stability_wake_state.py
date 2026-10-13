@@ -315,10 +315,10 @@ def _isolated_daemon_startup_diagnostic(
             with path.open("rb") as stream:
                 stream.seek(max(0, size - 2048))
                 tail = stream.read().decode("utf-8", errors="replace")
-            tail = re.sub(r"(?i)Bearer\\s+[^\\s,;]+", "Bearer [REDACTED]", tail)
+            tail = re.sub(r"(?i)Bearer\s+[^\s,;]+", "Bearer [REDACTED]", tail)
             tail = re.sub(
-                r'(?i)(["\\\']?(?:token|password|secret|api_key)["\\\']?\\s*[:=]\\s*)[^\\s,;]+',
-                r"\\1[REDACTED]", tail,
+                r"(?i)\b(?:token|password|secret|api_key)\s*[:=]\s*[^\s,;]+",
+                "[REDACTED]", tail,
             )
             report[key] = {"size_bytes": size, "tail": tail[-900:]}
         except OSError as exc:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-# v116.0.19 isolates bounded Windows daemon CI startup and emits redacted failure evidence.\n# v116.0.18 isolates protocol conformance fixtures over Jaźń HTTP SDK while preserving production tools.\n# v116.0.17 emits bounded MCP tool-auth challenges without weakening server token checks.
+# v116.0.19 isolates bounded Windows daemon CI startup and emits redacted failure evidence.
+# v116.0.18 isolates protocol conformance fixtures over Jaźń HTTP SDK while preserving production tools.
+# v116.0.17 emits bounded MCP tool-auth challenges without weakening server token checks.
 # v116.0.16 declares OAuth and least-privilege metadata for ChatGPT MCP tools.
 # v116.0.15 adds a bounded, authenticated tools/list bridge probe for ChatGPT integration.
 # v116.0.14 hardens Windows slow-Runner persistence evidence and MCP recovery acceptance.
