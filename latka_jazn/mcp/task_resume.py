@@ -560,6 +560,44 @@ class McpTaskStore:
                 record.cancel_requested = bool(cancel_requested)
             return self._upsert(conn, record)
 
+    def accept_confirmed_input(
+        self,
+        task_id: str,
+        accepted_keys: tuple[str, ...],
+        *,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord:
+        """Commit a verified runtime receipt without racing other MCP clients.
+
+        Input payloads never enter this registry. The canonical runtime owns
+        durable content and deduplication. This transaction only removes keys
+        already acknowledged by that runtime.
+        """
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            record = self._select_task(conn, str(task_id))
+            if record is None or not self._owner_matches(
+                record, owner_subject=owner_subject, owner_transport=owner_transport,
+            ):
+                raise KeyError("unknown_task")
+            if record.status != "input_required":
+                return record
+            remaining = {
+                key: value for key, value in (record.input_requests or {}).items()
+                if key not in accepted_keys
+            }
+            record.status = "input_required" if remaining else "working"
+            record.input_requests = remaining if remaining else None
+            if not remaining:
+                record.request_state = None
+            record.status_message = (
+                "Awaiting remaining input." if remaining
+                else "Runtime confirmed task input delivery."
+            )
+            record.last_updated_at = datetime.now(timezone.utc).isoformat()
+            return self._upsert(conn, record)
+
     def request_cancel(
         self, task_id: str, *, owner_subject: str | None = None,
         owner_transport: str | None = None,
@@ -770,14 +808,11 @@ class McpTaskResumeAdapter:
         prepared.require_runtime_receipt(
             receipt, request_id=record.daemon_request_id, task_id=record.task_id,
         )
-        remaining = {key: value for key, value in (record.input_requests or {}).items()
-                     if key not in prepared.keys}
-        self.store.update(
+        self.store.accept_confirmed_input(
             record.task_id,
-            status="input_required" if remaining else "working",
-            input_requests=remaining if remaining else None,
-            status_message=("Awaiting remaining input." if remaining else
-                            "Runtime confirmed task input delivery."),
+            prepared.keys,
+            owner_subject=owner_subject,
+            owner_transport=owner_transport,
         )
         return {"resultType": "complete"}
 
