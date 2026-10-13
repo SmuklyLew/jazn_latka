@@ -1,6 +1,6 @@
 # Jaźń — indeks kontraktów tury, narzędzi i finalizacji
 
-**Linia implementacji:** `16.3.25.5.115.13`
+**Linia implementacji:** dynamiczna — `latka_jazn/version.py`
 **Status:** indeks nawigacyjny dla kodu źródłowego; nie jest statusem żywego daemona ani źródłem tożsamości.
 **Główny router:** [AGENTS.md](../../AGENTS.md) · [runbook ChatGPT](../../AGENTS.chatgpt.md) · [runbook zmian kodu](../../AGENTS.codex.md)
 
