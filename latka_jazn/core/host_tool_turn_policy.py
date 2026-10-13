@@ -70,14 +70,30 @@ def build_host_tool_turn_policy(
     media_lookup_signal = detect_media_lookup(user_text)
     media_lookup = media_lookup_signal.get("media_lookup") is True
 
+    # Imperative Polish research requests (e.g. "poszukaj jak to programować")
+    # must not silently fall through to ordinary conversation. The presence of
+    # a tool name in the input is *not* proof of host availability.
+    explicit_research = bool(
+        re.search(
+            r"\b(?:poszukaj|wyszukaj|przeszukaj|zgoogluj|research|"
+            r"sprawdz\s+(?:w\s+)?(?:internecie|sieci|zrodla|zrodlo)|"
+            r"zweryfikuj\s+zrodla)\b",
+            _fold(str(user_text or "")),
+        )
+    )
+    research_route = detected_intent in {
+        "external_research_request", "external_research", "research_request",
+    } or route in {"external_research", "research"}
     if (
         source_policy == "requires_external_web"
         or user_has_url
         or media_lookup
+        or explicit_research
+        or research_route
         or any(token in folded for token in ("web", "sieci", "wyszuk", "research", "zrod"))
     ):
         requested.append("web.run")
-        if source_policy == "requires_external_web" or user_has_url:
+        if source_policy == "requires_external_web" or user_has_url or explicit_research:
             required_requested.append("web.run")
     github_update_route = detected_intent in {
         "system_update_execution_request",
