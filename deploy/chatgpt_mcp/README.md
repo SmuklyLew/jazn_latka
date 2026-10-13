@@ -149,3 +149,20 @@ and failure-injection checks.
 ## Code-first phase-2 integrity
 
 The HTTP adapter computes SHA-256 over the exact UTF-8 final text before calling the canonical runtime finalizer; an optional caller-supplied checksum must match. The continuation token, accepted turn lineage and persistence validation stay inside the runtime. Do not ask a language model to calculate a cryptographic digest.
+
+## Preflight for ChatGPT tools/list (read only)
+
+After starting Jaźń and the loopback MCP gateway, check the **actual**
+server catalog rather than inferring it from a ZIP or a plugin manifest:
+
+```bash
+python -X utf8 run.py mcp-probe --url http://127.0.0.1:8080/mcp --check-chatgpt-tool-catalog --json
+```
+
+The command checks all four chat turn tools through MCP 2026-07-28 `tools/list`;
+it does not call `tools/call` or submit any Jaźń message. For authenticated
+remote HTTPS, provide `--token-env JAZN_MCP_PROBE_TOKEN` with an operator-owned
+token in the environment. The program never prints the bearer token.
+**Server catalog PASS is not ChatGPT current-message tool exposure.**
+Follow `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md` to register a
+public HTTPS MCP or Secure MCP Tunnel and then prove two real accepted turns.

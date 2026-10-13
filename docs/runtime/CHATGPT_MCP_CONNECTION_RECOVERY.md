@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.14  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.15  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -155,3 +155,32 @@ w niedostępnej powierzchni hosta.
   wymagane scenariusze nie przejdą.
 
 Źródło: [MCP conformance --requirements](https://github.com/modelcontextprotocol/conformance#conformance-requirements), [Python sqlite3 transaction control](https://docs.python.org/3.13/library/sqlite3.html#transaction-control).
+
+
+## Sprawdzanie prawdziwego katalogu czterech narzędzi na serwerze
+
+Nowa komenda (MCP 2026-07-28 `tools/list`) działa tylko w trybie odczytu:
+nie wysyła wiadomości użytkownika, nie inicjuje nowej tury i nie zmienia pamięci.
+
+```powershell
+py -X utf8 run.py mcp-probe --url "http://127.0.0.1:8080/mcp" --check-chatgpt-tool-catalog --json
+```
+
+Dla publicznego serwera wymagającego OAuth użyj tokenu w zmiennej
+środowiskowej **tylko na zaufanym komputerze operatora i wyłącznie przez
+HTTPS**; nigdy nie umieszczaj wartości tokenu w komendzie, repozytorium,
+PR ani linku:
+
+```powershell
+py -X utf8 run.py mcp-probe --url "https://your-jazn.example/mcp" --check-chatgpt-tool-catalog --token-env JAZN_MCP_PROBE_TOKEN --json
+```
+
+Ten test sprawdza wszystkie strony wyników `tools/list`, cztery nazwy
+narzędzi oraz opisy i schematy argumentów. Zwraca kod 0 wyłącznie dla
+kompletnego katalogu MCP. **Nie dowodzi** rejestracji/wybrania aplikacji
+w ChatGPT, gotowości daemona ani zaakceptowanego `display_exact`.
+Dopiero następnie: ChatGPT Plugins → Add custom MCP server (HTTPS/Tunnel),
+Refresh, nowa rozmowa, wybór aplikacji i rzeczywista obserwacja `jazn_status`
+oraz dwóch kolejnych prawidłowo zakończonych tur.
+Źródła: https://developers.openai.com/plugins/deploy/connect-chatgpt
+oraz https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/server/tools.mdx
