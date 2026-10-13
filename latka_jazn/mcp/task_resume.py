@@ -238,6 +238,17 @@ class McpTaskStore:
                 "CREATE INDEX IF NOT EXISTS idx_mcp_tasks_status_updated "
                 "ON mcp_tasks(status, last_updated_at)"
             )
+            # Input payloads are not copied into this ledger; only receipt digests.
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS mcp_task_input_receipts (
+                    task_id TEXT NOT NULL,
+                    input_sha256 TEXT NOT NULL,
+                    accepted_keys_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(task_id, input_sha256),
+                    FOREIGN KEY(task_id) REFERENCES mcp_tasks(task_id)
+                )
+            """)
 
     @staticmethod
     def _dump_object(value: Mapping[str, Any] | None) -> str | None:
@@ -560,11 +571,30 @@ class McpTaskStore:
                 record.cancel_requested = bool(cancel_requested)
             return self._upsert(conn, record)
 
+    def confirmed_input_receipt(
+        self, task_id: str, digest: str, keys: tuple[str, ...], *,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> bool:
+        """Read durable input ACK history with task-owner authorization."""
+        with self._lock, self._connect() as conn:
+            record = self._select_task(conn, task_id)
+            if record is None or not self._owner_matches(
+                record, owner_subject=owner_subject, owner_transport=owner_transport,
+            ):
+                raise KeyError("unknown_task")
+            row = conn.execute(
+                "SELECT accepted_keys_json FROM mcp_task_input_receipts "
+                "WHERE task_id=? AND input_sha256=?", (task_id, digest),
+            ).fetchone()
+            return row is not None and tuple(json.loads(row[0])) == keys
+
     def accept_confirmed_input(
         self,
         task_id: str,
         accepted_keys: tuple[str, ...],
         *,
+        input_sha256: str,
         owner_subject: str | None = None,
         owner_transport: str | None = None,
     ) -> McpTaskRecord:
