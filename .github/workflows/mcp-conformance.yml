@@ -1,0 +1,65 @@
+name: MCP 2026-07-28 conformance diagnostic
+
+# Until the OAuth server fixture and complete Tasks extension work pass, this
+# runs on explicit operator demand. Do not mistake it for a release-ready gate.
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Optional individual scenario (blank = frozen 2026-07-28 server requirements)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-conformance:
+    name: Protocol fixture / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout Jaźń
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Node 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+      - name: Install MCP HTTP transport
+        run: python -m pip install -e ".[mcp-http]"
+      - name: Checkout frozen upstream conformance source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: modelcontextprotocol/conformance
+          ref: c37eec888e1c6ff140af79987a40008548b7cc5f
+          path: .ci-upstream-mcp-conformance
+      - name: Install/build conformance from the pinned lockfile
+        working-directory: .ci-upstream-mcp-conformance
+        run: |
+          npm ci
+          npm run build
+      - name: Exercise isolated MCP loopback fixture
+        shell: bash
+        env:
+          CONFORMANCE_SCENARIO: ${{ inputs.scenario }}
+        run: |
+          python tools/mcp_conformance_runner.py \
+            --conformance .ci-upstream-mcp-conformance/dist/index.js \
+            --output-dir .ci-mcp-conformance-results \
+            --scenario "$CONFORMANCE_SCENARIO"
+      - name: Upload protocol evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e5de6c4a875d1fc6a0a
+        with:
+          name: mcp-conformance-${{ matrix.os }}
+          path: .ci-mcp-conformance-results/
+          if-no-files-found: warn
