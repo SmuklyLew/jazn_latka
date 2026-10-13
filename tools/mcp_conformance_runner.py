@@ -55,6 +55,7 @@ def main() -> int:
                 "node", str(cli), "server",
                 "--url", f"http://127.0.0.1:{options.port}/mcp",
                 "--verbose",
+                "--output-dir", str(out),
             ]
             conformance.extend(
                 ["--scenario", options.scenario] if options.scenario
@@ -73,7 +74,7 @@ def main() -> int:
             import json
             import re
             failed_checks: list[dict[str, str]] = []
-            for checks_path in sorted((project / "results").glob("server-*/checks.json"))[:80]:
+            for checks_path in sorted(out.glob("server-*/checks.json"))[:80]:
                 try:
                     if checks_path.stat().st_mtime < started_at - 2:
                         continue
