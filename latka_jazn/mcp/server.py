@@ -353,8 +353,10 @@ class JaznMcpServer(_V76JaznMcpServer):
             payload = self._redacted_memory_resource()
         elif uri.startswith("jazn://task/"):
             task_id = uri.removeprefix("jazn://task/").strip()
-            record = self.task_resume.store.get(task_id)
-            if record is None:
+            record = self.task_resume.store.get(
+                task_id, **self._authenticated_task_owner(request_value)
+            )
+            if record is None or record.owner_subject is not None and not self._authenticated_task_owner(request_value).get("owner_subject"):
                 raise KeyError("unknown_task")
             payload = {"task": record.to_task_result()}
         else:
@@ -369,6 +371,16 @@ class JaznMcpServer(_V76JaznMcpServer):
             ]
         }
 
+    @classmethod
+    def _authenticated_task_owner(cls, request_value: Mapping[str, Any]) -> dict[str, str]:
+        metadata = cls._request_meta(request_value)
+        # The authenticated HTTP bridge overrides this marker and subject only
+        # after successful OAuth/scope verification. Do not trust user tool args.
+        if metadata.get("jazn/authenticated_transport") == "public_http":
+            subject = str(metadata.get("subject") or "").strip()
+            return {"owner_subject": subject, "owner_transport": "public_http"}
+        return {}
+
     def _modern_task_dispatch(self, request_value: Mapping[str, Any]) -> dict[str, Any]:
         request_id = request_value.get("id")
         if not self._client_supports_modern_tasks(request_value):
@@ -380,11 +392,12 @@ class JaznMcpServer(_V76JaznMcpServer):
         if not task_id:
             return self._jsonrpc_error(request_id, code=INVALID_PARAMS, message="taskId is required")
         method = str(request_value.get("method") or "")
+        owner = self._authenticated_task_owner(request_value)
         try:
             if method == "tasks/get":
-                result = self.task_resume.get(task_id)
+                result = self.task_resume.get(task_id, **owner)
             elif method == "tasks/cancel":
-                result = self.task_resume.cancel(task_id)
+                result = self.task_resume.cancel(task_id, **owner)
             elif method == "tasks/update":
                 raw_responses = params.get("inputResponses")
                 if not isinstance(raw_responses, Mapping):
@@ -393,7 +406,7 @@ class JaznMcpServer(_V76JaznMcpServer):
                         code=INVALID_PARAMS,
                         message="inputResponses must be an object",
                     )
-                result = self.task_resume.update_input(task_id, raw_responses)
+                result = self.task_resume.update_input(task_id, raw_responses, **owner)
             else:
                 return self._jsonrpc_error(request_id, code=METHOD_NOT_FOUND, message="Method not found")
         except KeyError:
@@ -786,7 +799,9 @@ class JaznMcpServer(_V76JaznMcpServer):
             raw_result = response.get("result")
             tool_name = str(params.get("name") or "") if isinstance(params, Mapping) else ""
             if tool_name == "jazn_generate_visible_reply" and isinstance(raw_result, Mapping):
-                task_result = self.task_resume.create_from_pending_result(raw_result)
+                task_result = self.task_resume.create_from_pending_result(
+                    raw_result, **self._authenticated_task_owner(request_value)
+                )
                 if task_result is not None:
                     response = dict(response)
                     response["result"] = task_result
