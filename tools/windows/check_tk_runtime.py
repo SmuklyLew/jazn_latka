@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-"""Fail-fast Windows CI check for a complete, usable Tcl/Tk distribution.
+"""Fail-fast Windows CI check for an actually usable Tcl/Tk interpreter.
 
-Execute real Tk windows rather than skipping UI tests or using a dummy display.
+Resolve asset paths from the live Tcl/Tk interpreter: Python 3.12 and 3.14
+may use different Tcl layouts. Never replace or skip real GUI tests with mocks.
 """
 
 import sys
@@ -12,20 +13,24 @@ from pathlib import Path
 def verify_tk_runtime() -> None:
     import tkinter as tk
 
-    prefix = Path(sys.base_prefix)
-    tcl_dir = prefix / "tcl"
-    required_globs = ("tcl*/init.tcl", "tk*/tk.tcl", "tk*/menu.tcl")
-    missing = [pattern for pattern in required_globs if not list(tcl_dir.glob(pattern))]
-    if missing:
-        raise RuntimeError(
-            f"Incomplete Tcl/Tk distribution under {tcl_dir}: missing " + ", ".join(missing)
-        )
     for index in range(2):
-        root = tk.Tk()
+        root = tk.Tk()  # Actual Tk load also validates all required assets.
         try:
             root.withdraw()
-            assert root.tk.call("package", "require", "Tk")
-            print(f"Tk initialization {index + 1}/2 succeeded: {sys.executable}", flush=True)
+            tk_version = str(root.tk.call("package", "require", "Tk"))
+            tcl_library = Path(str(root.tk.call("info", "library")))
+            tk_library = Path(str(root.tk.globalgetvar("tk_library")))
+            if not (tcl_library / "init.tcl").is_file():
+                raise RuntimeError(f"Tcl {tk_version} init.tcl unavailable at {tcl_library}")
+            if not (tk_library / "tk.tcl").is_file():
+                raise RuntimeError(f"Tk {tk_version} tk.tcl unavailable at {tk_library}")
+            if tk_version.startswith("8.6") and not (tk_library / "menu.tcl").is_file():
+                raise RuntimeError(f"Tk 8.6 menu.tcl unavailable at {tk_library}")
+            print(
+                f"Tk initialization {index + 1}/2 succeeded: "
+                f"Python {sys.version.split()[0]}, Tk {tk_version}, {sys.executable}",
+                flush=True,
+            )
         finally:
             root.destroy()
 
