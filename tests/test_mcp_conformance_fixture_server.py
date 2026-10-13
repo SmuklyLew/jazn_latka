@@ -28,6 +28,8 @@ async def test_fixture_has_synthetic_protocol_tools_but_production_has_none(tmp_
     prod_tools = {t.name for t in await prod.mcp.list_tools()}
     assert not any(x.startswith("test_") for x in prod_tools)
     assert "jazn_status" in prod_tools
+    assert "test_input_required_result_elicitation" in tools
+    assert "test_missing_capability" in tools
     assert prod.config.json_response is True
     assert fixture.config.json_response is False
 

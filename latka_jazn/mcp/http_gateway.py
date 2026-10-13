@@ -31,6 +31,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver import RequestStateSecurity
 from mcp.server.extension import Extension
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import TokenVerifier
@@ -151,6 +152,7 @@ class PublicMcpGatewayConfig:
     streamable_http_path: str = MCP_PATH
     max_request_body_size: int = DEFAULT_MAX_REQUEST_BYTES
     json_response: bool = True  # Production default; fixture uses SSE for protocol tests.
+    request_state_security: RequestStateSecurity | None = None
     allow_unauthenticated_loopback_dev: bool = False
     oauth_issuer_url: str | None = None
     oauth_resource_server_url: str | None = None
@@ -329,6 +331,7 @@ class PublicMcpGateway:
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
             auth=auth,
+            request_state_security=config.request_state_security,
             extensions=(
                 [_TasksCapabilityExtension()]
                 if self._protocol_backend is not None
@@ -876,6 +879,7 @@ def build_public_mcp_gateway(
     allowed_origins: tuple[str, ...] = (),
     allow_unauthenticated_loopback_dev: bool = False,
     json_response: bool = True,
+    request_state_security: RequestStateSecurity | None = None,
     backend: PublicIngressBackend | None = None,
     protocol_backend: ModernProtocolBackend | None = None,
 ) -> PublicMcpGateway:
@@ -887,6 +891,7 @@ def build_public_mcp_gateway(
         port=port,
         allow_unauthenticated_loopback_dev=allow_unauthenticated_loopback_dev,
         json_response=json_response,
+        request_state_security=request_state_security,
         oauth_issuer_url=oauth_issuer_url,
         oauth_resource_server_url=oauth_resource_server_url,
         oauth_required_scopes=oauth_required_scopes,

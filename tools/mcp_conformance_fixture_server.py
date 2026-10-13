@@ -10,12 +10,22 @@ daemon or Ollama is connected. Real Jaźń tool contracts are tested separately.
 
 import argparse
 import base64
+import json
+import secrets
 from io import BytesIO
 from pathlib import Path
 import wave
 from typing import Any
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver import RequestStateSecurity
+from mcp.types import (
+    CreateMessageRequest, CreateMessageRequestParams, CreateMessageResult,
+    ElicitRequest, ElicitRequestFormParams, ElicitResult, InputRequest,
+    InputRequiredResult, ListRootsRequest, ListRootsResult,
+    SamplingMessage, TextContent, MISSING_REQUIRED_CLIENT_CAPABILITY,
+)
+from mcp.shared.exceptions import MCPError
 from mcp.server.mcpserver.context import Context
 from mcp.types import CallToolResult
 
@@ -102,6 +112,128 @@ def register_fixture(mcp: MCPServer) -> None:
         await ctx.info("Tool execution completed")
         return "Tool with logging executed successfully"
 
+
+    # MCP 2026-07-28: required multi-round-trip input requests are
+    # exercised here, using the same SDK's actual stateless request context.
+    def ask_name(label: str = "What is your name?") -> ElicitRequest:
+        return ElicitRequest(params=ElicitRequestFormParams(
+            message=label,
+            requested_schema={"type": "object", "properties": {
+                "name": {"type": "string"}}, "required": ["name"]},
+        ))
+
+    def sample_text(label: str) -> CreateMessageRequest:
+        return CreateMessageRequest(params=CreateMessageRequestParams(
+            messages=[SamplingMessage(
+                role="user", content=TextContent(type="text", text=label))],
+            max_tokens=50,
+        ))
+
+    @mcp.tool(name="test_input_required_result_elicitation")
+    async def mrtr_elicitation(ctx: Context) -> str | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if "user_name" in responses:
+            ans = responses["user_name"]
+            value = ans.content.get("name", "stranger") if isinstance(ans, ElicitResult) and ans.content else "?"
+            return f"Hello, {value}!"
+        return InputRequiredResult(input_requests={"user_name": ask_name()})
+
+    @mcp.tool(name="test_input_required_result_sampling")
+    async def mrtr_sampling(ctx: Context) -> str | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if "capital_question" in responses:
+            ans = responses["capital_question"]
+            value = ans.content.text if isinstance(ans, CreateMessageResult) and ans.content.type == "text" else "?"
+            return f"Model said: {value}"
+        return InputRequiredResult(input_requests={
+            "capital_question": sample_text("What is the capital of France?"),
+        })
+
+    @mcp.tool(name="test_input_required_result_list_roots")
+    async def mrtr_roots(ctx: Context) -> str | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if "client_roots" in responses:
+            ans = responses["client_roots"]
+            total = len(ans.roots) if isinstance(ans, ListRootsResult) else 0
+            return f"Client exposed {total} root(s)."
+        return InputRequiredResult(input_requests={"client_roots": ListRootsRequest()})
+
+    @mcp.tool(name="test_input_required_result_request_state")
+    async def mrtr_state(ctx: Context) -> str | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if "confirm" in responses and ctx.request_state == "request-state-nonce":
+            return "state-ok: confirmation received"
+        req = ElicitRequest(params=ElicitRequestFormParams(
+            message="Please confirm",
+            requested_schema={"type": "object", "properties": {"ok": {"type": "boolean"}},
+                              "required": ["ok"]},
+        ))
+        return InputRequiredResult(input_requests={"confirm": req}, request_state="request-state-nonce")
+
+    @mcp.tool(name="test_input_required_result_multiple_inputs")
+    async def mrtr_multiple(ctx: Context) -> str | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if {"user_name", "greeting", "client_roots"} <= responses.keys():
+            return "All inputs received."
+        return InputRequiredResult(input_requests={
+            "user_name": ask_name(),
+            "greeting": sample_text("Generate a greeting"),
+            "client_roots": ListRootsRequest(),
+        }, request_state="multiple-inputs")
+
+    @mcp.tool(name="test_input_required_result_multi_round")
+    async def mrtr_multiround(ctx: Context) -> str | InputRequiredResult:
+        try:
+            state = json.loads(ctx.request_state) if ctx.request_state else {"round": 0}
+        except (TypeError, ValueError):
+            state = {"round": 0}
+        responses = ctx.input_responses or {}
+        if state.get("round") == 1 and "step1" in responses:
+            answer = responses["step1"]
+            name = answer.content.get("name", "") if isinstance(answer, ElicitResult) and answer.content else ""
+            req = ElicitRequest(params=ElicitRequestFormParams(
+                message="Step 2: What is your favorite color?",
+                requested_schema={"type": "object", "properties": {"color": {"type": "string"}},
+                                  "required": ["color"]},
+            ))
+            return InputRequiredResult(input_requests={"step2": req},
+                                       request_state=json.dumps({"round": 2, "name": name}))
+        if state.get("round") == 2 and "step2" in responses:
+            answer = responses["step2"]
+            color = answer.content.get("color", "") if isinstance(answer, ElicitResult) and answer.content else ""
+            return f"{state.get('name')} likes {color}."
+        return InputRequiredResult(input_requests={
+            "step1": ask_name("Step 1: What is your name?")},
+            request_state=json.dumps({"round": 1}))
+
+    @mcp.tool(name="test_input_required_result_tampered_state")
+    async def mrtr_tamper(ctx: Context) -> str | InputRequiredResult:
+        if ctx.request_state is not None:
+            return f"state-ok: {ctx.request_state}"
+        return InputRequiredResult(input_requests={"confirm": ask_name()},
+                                   request_state="round-1")
+
+    @mcp.tool(name="test_input_required_result_capabilities")
+    async def mrtr_capabilities(ctx: Context) -> InputRequiredResult:
+        caps = ctx.client_capabilities
+        requests: dict[str, InputRequest] = {}
+        if caps is None or caps.sampling is not None:
+            requests["sample"] = sample_text("Say hello")
+        if caps is None or caps.elicitation is not None:
+            requests["ask"] = ask_name()
+        return InputRequiredResult(input_requests=requests, request_state="capability-gated")
+
+    @mcp.tool(name="test_missing_capability")
+    async def missing_capability(ctx: Context) -> str:
+        caps = ctx.client_capabilities
+        if caps is None or caps.sampling is None:
+            raise MCPError(
+                code=MISSING_REQUIRED_CLIENT_CAPABILITY,
+                message="Client sampling capability required",
+                data={"requiredCapabilities": {"sampling": {}}},
+            )
+        return "Sampling was declared"
+
     @mcp.resource(
         "test://static-text", name="Static Text Resource", mime_type="text/plain",
         description="Static text for the conformance suite",
@@ -144,6 +276,21 @@ def register_fixture(mcp: MCPServer) -> None:
             }},
         ]
 
+    @mcp.prompt(name="test_input_required_result_prompt")
+    async def input_required_prompt(ctx: Context) -> list[dict[str, Any]] | InputRequiredResult:
+        responses = ctx.input_responses or {}
+        if "user_context" in responses:
+            ans = responses["user_context"]
+            value = ans.content.get("context", "?") if isinstance(ans, ElicitResult) and ans.content else "?"
+            return [{"role": "user", "content": {"type": "text",
+                     "text": f"Use the following context: {value}"}}]
+        req = ElicitRequest(params=ElicitRequestFormParams(
+            message="What context should the prompt use?",
+            requested_schema={"type": "object", "properties": {"context": {"type": "string"}},
+                              "required": ["context"]},
+        ))
+        return InputRequiredResult(input_requests={"user_context": req})
+
     @mcp.prompt(name="test_prompt_with_image", description="Image fixture prompt")
     def prompt_image() -> list[dict[str, Any]]:
         return [
@@ -165,6 +312,7 @@ def make_fixture(*, root: Path, port: int):
         backend=_NoPrivateRuntime(),
         allow_unauthenticated_loopback_dev=True,
         json_response=False,  # Required to transmit progress via SSE.
+        request_state_security=RequestStateSecurity(keys=[secrets.token_bytes(32)]),
     )
     register_fixture(gateway.mcp)
     return gateway
