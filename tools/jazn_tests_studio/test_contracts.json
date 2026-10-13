@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.18",
+  "system_version": "16.3.25.5.116.0.19",
   "active_definition_count": 2300,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -44210,6 +44210,7 @@
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44228,7 +44229,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 76
     },
     "tests/test_runtime_stability_wake_state.py::test_source_change_requires_new_run": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44237,6 +44238,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44255,7 +44257,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 91
     },
     "tests/test_runtime_stability_wake_state.py::test_snapshot_hash_mismatch_is_reported": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44264,6 +44266,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44282,7 +44285,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 107
     },
     "tests/test_runtime_stability_wake_state.py::test_legacy_multiple_active_rows_are_migrated_to_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44291,6 +44294,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44309,7 +44313,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 116
     },
     "tests/test_runtime_stability_wake_state.py::test_invalid_source_run_id_is_reported": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44318,6 +44322,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44336,7 +44341,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 134
     },
     "tests/test_runtime_stability_wake_state.py::test_source_foreign_key_error_blocks_all_writes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44345,6 +44350,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44363,7 +44369,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 144
     },
     "tests/test_runtime_stability_wake_state.py::test_unreadable_sqlite_reports_validation_failure": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44372,6 +44378,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44390,7 +44397,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 147
+      "line": 151
     },
     "tests/test_runtime_stability_wake_state.py::test_dry_run_does_not_create_sidecar": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44399,6 +44406,7 @@
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44417,7 +44425,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 162
     },
     "tests/test_runtime_stability_wake_state.py::test_sidecar_foreign_key_error_fails_deep_verify": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44426,6 +44434,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44444,7 +44453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 166
+      "line": 170
     },
     "tests/test_runtime_stability_wake_state.py::test_large_source_produces_bounded_snapshot": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44453,6 +44462,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44471,7 +44481,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 180
     },
     "tests/test_runtime_stability_wake_state.py::test_fast_status_observes_active_wal_without_writing": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44480,6 +44490,7 @@
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44498,7 +44509,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 188
+      "line": 192
     },
     "tests/test_runtime_stability_wake_state.py::test_technical_metadata_write_keeps_wake_state_ready": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44507,6 +44518,7 @@
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44525,7 +44537,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 203
+      "line": 207
     },
     "tests/test_runtime_stability_wake_state.py::test_wal_and_checkpoint_do_not_invalidate_logical_fingerprint": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44534,6 +44546,7 @@
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44552,7 +44565,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 223
+      "line": 227
     },
     "tests/test_runtime_stability_wake_state.py::test_vacuum_layout_change_keeps_wake_state_ready": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44561,6 +44574,7 @@
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44579,7 +44593,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 247
+      "line": 251
     },
     "tests/test_runtime_stability_wake_state.py::test_in_place_semantic_content_change_is_detected_by_deep_verify": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44588,6 +44602,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44606,7 +44621,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 263
+      "line": 267
     },
     "tests/test_runtime_stability_wake_state.py::test_relevant_schema_change_invalidates_wake_state": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44615,6 +44630,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44633,7 +44649,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 275
+      "line": 279
     },
     "tests/test_runtime_stability_wake_state.py::test_isolated_daemon_start_status_doctor_stop_preserves_wake_state": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44642,6 +44658,7 @@
       "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44660,7 +44677,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 287
+      "line": 329
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_dry_run_exit_codes_follow_data_status": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44670,6 +44687,7 @@
       "category": "integration",
       "tags": [
         "memory",
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44688,7 +44706,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 342
+      "line": 395
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44698,6 +44716,7 @@
       "category": "integration",
       "tags": [
         "memory",
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44716,7 +44735,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 362
+      "line": 415
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44726,6 +44745,7 @@
       "category": "integration",
       "tags": [
         "memory",
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44746,7 +44766,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 375
+      "line": 428
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44755,6 +44775,7 @@
       "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44773,7 +44794,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 381
+      "line": 434
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44782,6 +44803,7 @@
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44800,7 +44822,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 396
+      "line": 449
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44809,6 +44831,7 @@
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44827,7 +44850,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 407
+      "line": 460
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44836,6 +44859,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44854,7 +44878,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 421
+      "line": 474
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44863,6 +44887,7 @@
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44881,7 +44906,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 448
+      "line": 501
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44890,6 +44915,7 @@
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -44908,7 +44934,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 462
+      "line": 515
     },
     "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
       "path": "tests/test_runtime_supervisor.py",
