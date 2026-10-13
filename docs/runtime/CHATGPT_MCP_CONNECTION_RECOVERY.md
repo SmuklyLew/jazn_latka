@@ -1,6 +1,6 @@
 # Przywrócenie połączenia Jaźni ze zwykłą rozmową ChatGPT
 
-**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.17  
+**Wersja ścieżki naprawczej:** 16.3.25.5.116.0.18  
 **Status:** kod i diagnostyka w repozytorium; wdrożenie na komputerze/operatorze oraz akceptacja rzeczywistego hosta wymagają oddzielnego dowodu.
 
 ## 1. Przyczyna
@@ -226,3 +226,35 @@ wymaga oddzielnego połączenia przez HTTPS lub Secure MCP Tunnel.
 https://developers.openai.com/plugins/build/auth
 https://developers.openai.com/plugins/deploy/connect-chatgpt
 https://github.com/modelcontextprotocol/python-sdk
+
+## v116.0.18: trzy niezależne bramki (bez fałszywego PASS)
+
+1. **Conformance MCP HTTP**: `tools/mcp_conformance_runner.py` uruchamia teraz
+   izolowany serwer z tym samym `PublicMcpGateway.asgi_app()`, Python MCP SDK
+   i transportem stateless, ale z syntetycznymi `test_*`, `test://...` i
+   promptami koniecznymi do przetestowania protokołu. Wszystko wiązane
+   wyłącznie na 127.0.0.1, bez lokalnej MEMORY, Ollamy lub realnych tur Jaźni.
+   W conformance nadal obowiązuje `--requirements 2026-07-28`,
+   status procesu nie jest modyfikowany; żadnych expected-failures
+   suppressions. Wsparcie SSE umożliwia test powiadomień progress.
+   Każdy pozostały FAIL (np. wymagane InputRequiredResult MRTR, SEP-2575)
+   jest rzeczywistą blokadą wersji, nie błędem sztucznego braku
+   referencyjnego narzędzia.
+
+2. **Produkcyjna bramka HTTP**: testy `tests/test_mcp_http_gateway.py`,
+   `tests/test_chatgpt_oauth_tool_metadata.py`,
+   `tests/test_chatgpt_oauth_challenge_contract.py` i
+   `tests/test_chatgpt_bridge_tool_catalog_probe.py` testują wyłącznie
+   prawdziwy publiczny kontrakt `jazn_*`, bez `test_*` i zasobów
+   syntetycznych. Sukces fixture nie oznacza automatycznie sukcesu produkcji.
+
+3. **Bramka ChatGPT**: operator musi podłączyć zewnętrzny HTTPS
+   `/mcp` lub zatwierdzony Secure MCP Tunnel, skonfigurować OAuth,
+   odświeżyć/zainstalować wtyczkę i uzyskać cztery rzeczywiste callable
+   narzędzia w tej rozmowie. Dopiero status i dwie przyjęte tury
+   `action=display_exact` pozwalają uznać operację za gotową.
+   Żadne testy CI nie mogą wystawić narzędzi w hoście ChatGPT.
+
+Podejście bazuje na:
+https://github.com/modelcontextprotocol/conformance#conformance-requirements
+https://developers.openai.com/plugins/deploy/connect-chatgpt

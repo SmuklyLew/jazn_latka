@@ -191,3 +191,15 @@ token audience verification or the client connection. Non-auth failures
 must not trigger linking. Use MCP Inspector to verify tool results and
 the real ChatGPT OAuth flow; `127.0.0.1` remains local-only.
 See https://developers.openai.com/plugins/build/auth .
+
+## Distinct protocol, production HTTP and ChatGPT host acceptance gates (v116.0.18)
+
+The upstream official conformance suite tests synthetic test_* tools,
+test:// static resources and reference prompts. They are never exposed
+to production Jaźń or published in the ChatGPT plugin. CI launches an
+isolated test process using Jaźń's real PublicMcpGateway SDK HTTP transport,
+with test-only handlers and SSE enabled for progress notifications. The runner
+still uses `--requirements 2026-07-28` and preserves real failure exit codes.
+A fixture PASS cannot substitute for production OAuth, ChatGPT tool catalog,
+daemon readiness, or two accepted turn finalizations.
+See `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.

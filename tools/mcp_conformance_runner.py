@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-"""Exercise one isolated Jaźń MCP fixture with a pinned upstream conformance CLI.
+"""Exercise Jaźń's actual MCP SDK HTTP transport with isolated synthetic fixture handlers.
 
-Never connects to a public endpoint or private MEMORY. Exit status propagates
+Never connects to a public endpoint or private MEMORY.\nThe fixture provides upstream-required test_* tools/resources/prompts only in this\nseparate loopback process. Production toolset remains unchanged. Production\ncontract tests are separate and must not be replaced by fixture PASS. Exit status propagates
 unchanged; all server and test output is saved for review.
 """
 
@@ -32,9 +32,9 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, PYTHONUTF8="1")
     command = [
-        sys.executable, "-X", "utf8", str(project / "run.py"),
-        "mcp-http", "--root", str(project), "--loopback-dev",
-        "--host", "127.0.0.1", "--port", str(options.port),
+        sys.executable, "-X", "utf8",
+        str(project / "tools" / "mcp_conformance_fixture_server.py"),
+        "--port", str(options.port),
     ]
     with (out / "server.log").open("wb") as output:
         server = subprocess.Popen(

@@ -150,6 +150,7 @@ class PublicMcpGatewayConfig:
     port: int = 8080
     streamable_http_path: str = MCP_PATH
     max_request_body_size: int = DEFAULT_MAX_REQUEST_BYTES
+    json_response: bool = True  # Production default; fixture uses SSE for protocol tests.
     allow_unauthenticated_loopback_dev: bool = False
     oauth_issuer_url: str | None = None
     oauth_resource_server_url: str | None = None
@@ -815,7 +816,7 @@ class PublicMcpGateway:
         sdk_app = self.mcp.streamable_http_app(
             host=self.config.host,
             streamable_http_path=self.config.streamable_http_path,
-            json_response=True,
+            json_response=self.config.json_response,
             stateless_http=True,
             max_request_body_size=self.config.max_request_body_size,
             transport_security=self.transport_security(),
@@ -874,6 +875,7 @@ def build_public_mcp_gateway(
     allowed_hosts: tuple[str, ...] = (),
     allowed_origins: tuple[str, ...] = (),
     allow_unauthenticated_loopback_dev: bool = False,
+    json_response: bool = True,
     backend: PublicIngressBackend | None = None,
     protocol_backend: ModernProtocolBackend | None = None,
 ) -> PublicMcpGateway:
@@ -884,6 +886,7 @@ def build_public_mcp_gateway(
         host=host,
         port=port,
         allow_unauthenticated_loopback_dev=allow_unauthenticated_loopback_dev,
+        json_response=json_response,
         oauth_issuer_url=oauth_issuer_url,
         oauth_resource_server_url=oauth_resource_server_url,
         oauth_required_scopes=oauth_required_scopes,
