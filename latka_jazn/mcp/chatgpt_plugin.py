@@ -9,6 +9,7 @@ Mode. Packaging never claims that the ChatGPT host has installed the app.
 """
 
 from dataclasses import dataclass
+import ipaddress
 import hashlib
 import json
 from pathlib import Path
@@ -46,6 +47,25 @@ def validate_remote_mcp_endpoint(value: str) -> str:
     normalized_path = parsed.path.rstrip("/") or "/"
     if normalized_path != "/mcp":
         raise ValueError("chatgpt_plugin_endpoint_path_must_be_/mcp")
+    try:
+        host = (parsed.hostname or "").rstrip(".").lower()
+        _ = parsed.port
+    except ValueError as exc:
+        raise ValueError("chatgpt_plugin_endpoint_invalid_hostname_or_port") from exc
+    if not host:
+        raise ValueError("chatgpt_plugin_endpoint_hostname_required")
+    # A loopback/private address in a portable remote plugin resolves on the
+    # ChatGPT host, not on the user's Windows machine. Secure MCP Tunnel and
+    # registered local app bindings follow separate, explicitly selected paths.
+    if host in {"localhost", "localhost.localdomain"} or host.endswith((".localhost", ".local")):
+        raise ValueError("chatgpt_plugin_endpoint_not_publicly_routable")
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        pass
+    else:
+        if not ip.is_global:
+            raise ValueError("chatgpt_plugin_endpoint_not_publicly_routable")
     return candidate.rstrip("/")
 
 
