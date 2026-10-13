@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.17-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.17-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.17-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T21:55:01+00:00",
-  "updated_at_utc": "2026-10-13T21:55:01+00:00",
+  "generated_at_utc": "2026-10-13T22:00:42+00:00",
+  "updated_at_utc": "2026-10-13T22:00:42+00:00",
   "start_file": "run.py",
-  "file_count": 2482,
-  "static_file_count": 2482,
+  "file_count": 2484,
+  "static_file_count": 2484,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -345,7 +345,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "103a03bf1f739fce8ad9a2784aa83c9713c2983dcdce72ee81cb5598483eb70b",
+      "sha256": "c971f495dca121dca44ab4e4d2c304b5fc0406e8aae44973c0481dd584cff1c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16057,6 +16057,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.17-pre-pyright-mcp-types-fix/test_chatgpt_oauth_challenge_contract.py",
+      "size_bytes": 3429,
+      "sha256": "f2ceff5fbf46fd67f87b59a7389d5ba65652fedafbe30f9d4b1887ef3bc3c1e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.17-pre-pyright-union-narrowing/test_chatgpt_oauth_challenge_contract.py",
+      "size_bytes": 3260,
+      "sha256": "c5100e64608ea89fcc96f1c37b93adfe1d4ac608085fc9b3e9fc35234278dddb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.2-before-task-input/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "6e363dcbbe563fb856a5b05dd38598eb9b0a4327b07be5d4107f2ee88a2a3934",
@@ -18452,8 +18470,8 @@
     },
     {
       "path": "tests/test_chatgpt_oauth_challenge_contract.py",
-      "size_bytes": 3260,
-      "sha256": "c5100e64608ea89fcc96f1c37b93adfe1d4ac608085fc9b3e9fc35234278dddb",
+      "size_bytes": 3435,
+      "sha256": "4478f85cd23a5b346d5a1d92e6262fe6b5c3a1633e4d7021ffff8f7c688305dd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22161,7 +22179,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2129799,
-      "sha256": "1b3660821b518590b1b424be583268d8fbaf57d3ca2f2e8ef330bf69c07d1159",
+      "sha256": "7e9e33516b36ce8b04b562fb019eeb9ae1fcf58796156e7229a855b19b6e9b3c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
