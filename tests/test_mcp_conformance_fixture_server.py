@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from mcp.types import CallToolResult
 
 import pytest
 
 pytest.importorskip("mcp")
+
+from mcp.types import CallToolResult
 
 from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
 from tools.mcp_conformance_fixture_server import make_fixture, _NoPrivateRuntime
