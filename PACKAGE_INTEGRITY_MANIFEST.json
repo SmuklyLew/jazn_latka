@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
-  "runtime_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
-  "package_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T18:52:31+00:00",
-  "updated_at_utc": "2026-10-13T18:52:31+00:00",
+  "version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
+  "runtime_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
+  "package_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
+  "generated_at_utc": "2026-10-13T19:38:59+00:00",
+  "updated_at_utc": "2026-10-13T19:38:59+00:00",
   "start_file": "run.py",
-  "file_count": 2455,
-  "static_file_count": 2455,
+  "file_count": 2461,
+  "static_file_count": 2461,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -344,8 +344,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "a94499813e2f29e09b9575873eaacb6ae66cd109dea1796ac1b696c99b3935ff",
+      "size_bytes": 2976,
+      "sha256": "38ee4ae4d047a241856e56718ef6c876958492e30300af201ba1efc6fff58710",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -381,7 +381,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "96ee81860b4c78740083c1c23026f53f8fd481232d578a07556398502242103c",
+      "sha256": "51180dabaf4a3dea13312a7de1faf483267a36c6c4da72b45cdbad4b8f1177f7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2900,8 +2900,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md",
-      "size_bytes": 6847,
-      "sha256": "6333689d775077a74c0a8112139108dd6f9a70715f377da7edb5f5a28442cf43",
+      "size_bytes": 8403,
+      "sha256": "5dec5386c340890a7b71665fd22b09a14e72d5da3f37339ced8c5af252d9e0c7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8517,7 +8517,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7901,
-      "sha256": "f166c2e26060ae44a349d6078a0aa9189045b64252a5ddf6fada66c018b32991",
+      "sha256": "edcb29959514911fdb84f8f5245aaeeb0b9c33ca0ff0351ac2a1b3ff7e335901",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9947,8 +9947,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 8094,
-      "sha256": "fcfe8b116810bebadd0eb6e58809af2bfe31acf8c1b70b297d09bffede8630e5",
+      "size_bytes": 8184,
+      "sha256": "9b4072bb4408b7ce7eff7156606d2530a3b1e5687f7ef3c06a466d9c713206f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15841,6 +15841,60 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2611,
+      "sha256": "4656a7ff1622a5ebcc404bd0cce740b7e828c44b04beac8c2822182a5b092a43",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "size_bytes": 3046,
+      "sha256": "508aae7e29e9ba9b23871112fb87e7850577997f8063ac5d5aa4f1dc748b2be0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
+      "size_bytes": 10391,
+      "sha256": "7cd0aa28feb33e352049768a194bc8f670bdee3fcc09b8681b3c032ffdd34b92",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6959,
+      "sha256": "734c75333f0cc5e2236ff8860e507ff24dbb51f14c909f4cdd64d3b20b207c02",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8684,
+      "sha256": "3698641205bea9140a43e788f2c0c2a411ce10ba59d8a1586b6ac1cbc39bcf9d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.13-pre-windows-full-turn-diagnostic/test_runtime_full_turn.py",
+      "size_bytes": 4796,
+      "sha256": "d563fa5f077c151531693dae1c3582863bdcdd417bc4c71c3a8daf91219e30b6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.2-before-task-input/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "6e363dcbbe563fb856a5b05dd38598eb9b0a4327b07be5d4107f2ee88a2a3934",
@@ -17913,7 +17967,7 @@
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2611,
-      "sha256": "4656a7ff1622a5ebcc404bd0cce740b7e828c44b04beac8c2822182a5b092a43",
+      "sha256": "577256dafae108edacb6d2d7c8f39fc3f173b7f711025d4878b7d812091b06c1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17931,7 +17985,7 @@
     {
       "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
       "size_bytes": 3046,
-      "sha256": "508aae7e29e9ba9b23871112fb87e7850577997f8063ac5d5aa4f1dc748b2be0",
+      "sha256": "d65e4f37685dad38526e7d86e44c6498291c9a25670becf01f135175d426d21c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18147,7 +18201,7 @@
     {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
       "size_bytes": 10391,
-      "sha256": "7cd0aa28feb33e352049768a194bc8f670bdee3fcc09b8681b3c032ffdd34b92",
+      "sha256": "c209077248e0aefa100ee4800e79fff4928c976a60f03d8724fdbca007d38b34",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18381,7 +18435,7 @@
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "size_bytes": 6959,
-      "sha256": "734c75333f0cc5e2236ff8860e507ff24dbb51f14c909f4cdd64d3b20b207c02",
+      "sha256": "aaa610df9a51825d8b750492bc57360002d6eeab93661e0acd7965f29cb04607",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18849,7 +18903,7 @@
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
       "size_bytes": 8684,
-      "sha256": "3698641205bea9140a43e788f2c0c2a411ce10ba59d8a1586b6ac1cbc39bcf9d",
+      "sha256": "c37e1406c241d361e582fe214f2bf55e49d6de3ab0b916504d7f2066790750e1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20873,8 +20927,8 @@
     },
     {
       "path": "tests/test_runtime_full_turn.py",
-      "size_bytes": 4796,
-      "sha256": "d563fa5f077c151531693dae1c3582863bdcdd417bc4c71c3a8daf91219e30b6",
+      "size_bytes": 5124,
+      "sha256": "a26365e0d37b5cc9b68c5be304f179a0c35e599d544c13e55001fe44a608fc3f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21918,7 +21972,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2117363,
-      "sha256": "a4ba3868e12277e76a3020e7a7e3fcbb8bb61e4e16e878dcc422953e83e06ced",
+      "sha256": "1422d92c81cff8121b452f4e64b532ec0818c436b90bdbc19057027a4a34e7f8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22547,11 +22601,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
+  "release_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
-    "package_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence",
-    "release_version": "16.3.25.5.116.0.13-runtime-ingress-security-convergence"
+    "runtime_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
+    "package_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence",
+    "release_version": "16.3.25.5.116.0.14-runtime-ingress-security-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
