@@ -628,8 +628,10 @@ class PublicMcpGateway:
         return result
 
     def _public_task_status(self, task_id: str) -> dict[str, Any]:
-        self._require_public_scope(SCOPE_TASK_READ)
-        record = McpTaskStore(self.config.root).get(task_id)
+        principal = self._require_public_scope(SCOPE_TASK_READ)
+        record = McpTaskStore(self.config.root).get(
+            task_id, owner_subject=principal.subject, owner_transport="public_http",
+        )
         if record is None:
             raise KeyError("unknown_task")
         return {
