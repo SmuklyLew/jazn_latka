@@ -48,6 +48,15 @@ class TaskInputDelivery:
             raise ValueError("task_input_key_invalid")
         if not set(responses).issubset(outstanding):
             raise ValueError("task_input_key_not_outstanding")
+        return cls.from_responses(responses)
+
+    @classmethod
+    def from_responses(cls, responses: Mapping[str, Any]) -> TaskInputDelivery:
+        """Compute the digest for retries independently of settled pending keys."""
+        if not responses or len(responses) > MAX_RESPONSES:
+            raise ValueError("task_input_key_count_invalid")
+        if any(not isinstance(k, str) or not k or len(k) > 128 for k in responses):
+            raise ValueError("task_input_key_invalid")
         try:
             encoded = json.dumps(responses, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
         except (ValueError, TypeError) as exc:
