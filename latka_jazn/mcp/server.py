@@ -29,6 +29,9 @@ from latka_jazn.mcp.developer_mode_surface import (
     translate_developer_mode_tool_call,
 )
 from latka_jazn.mcp.host_guidance import MCP_HOST_TURN_INSTRUCTIONS
+from latka_jazn.mcp.operator_prompts import (
+    complete_runtime_prompt, get_runtime_prompt, list_runtime_prompts,
+)
 from latka_jazn.mcp.remote_runtime import REGISTERED_MCP_STATUS_SCHEMA
 from latka_jazn.mcp.server_legacy_v76 import (
     JaznMcpServer as _V76JaznMcpServer,
@@ -134,6 +137,9 @@ class JaznMcpServer(_V76JaznMcpServer):
                 TURN_RUNTIME_CAPABILITY: self.turn_runtime.capability_descriptor(),
             },
         }
+        if resolved == MCP_PROTOCOL_VERSION_MODERN:
+            capabilities["prompts"] = {"listChanged": False}
+            capabilities["completions"] = {}
         if resolved in {
             MCP_PROTOCOL_VERSION_MODERN,
             MCP_PROTOCOL_VERSION_LEGACY_TASK_EXTENSION,
@@ -632,6 +638,7 @@ class JaznMcpServer(_V76JaznMcpServer):
             "resources/list",
             "resources/read",
             "resources/templates/list",
+            "prompts/list",
         }:
             result.setdefault("ttlMs", MODERN_TOOL_LIST_TTL_MS)
             result.setdefault("cacheScope", "private" if method == "resources/read" else "public")
@@ -691,6 +698,33 @@ class JaznMcpServer(_V76JaznMcpServer):
                     "id": request_id,
                     "result": self._discover_result(),
                 }
+            if method == "prompts/list":
+                response = {
+                    "jsonrpc": "2.0", "id": request_id,
+                    "result": list_runtime_prompts(),
+                }
+                return self._stamp_modern_response(request_value, response)
+            if method in {"prompts/get", "completion/complete"}:
+                params = request_value.get("params")
+                if not isinstance(params, Mapping):
+                    return self._jsonrpc_error(
+                        request_id, code=INVALID_PARAMS, message="Invalid params"
+                    )
+                try:
+                    if method == "prompts/get":
+                        result = get_runtime_prompt(params)
+                    else:
+                        ref = params.get("ref")
+                        argument = params.get("argument")
+                        if not isinstance(ref, Mapping) or not isinstance(argument, Mapping):
+                            raise ValueError("mcp_completion_params_invalid")
+                        result = complete_runtime_prompt(ref, argument)
+                except ValueError as exc:
+                    return self._jsonrpc_error(
+                        request_id, code=INVALID_PARAMS, message=str(exc)
+                    )
+                response = {"jsonrpc": "2.0", "id": request_id, "result": result}
+                return self._stamp_modern_response(request_value, response)
             if method in _CURRENT_TASK_METHODS:
                 response = self._modern_task_dispatch(request_value)
                 return self._stamp_modern_response(request_value, response)
