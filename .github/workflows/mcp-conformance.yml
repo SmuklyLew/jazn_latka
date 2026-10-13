@@ -1,8 +1,17 @@
-name: MCP 2026-07-28 conformance diagnostic
+name: MCP 2026-07-28 conformance release gate
 
-# Until the OAuth server fixture and complete Tasks extension work pass, this
-# runs on explicit operator demand. Do not mistake it for a release-ready gate.
+# A release must pass frozen core requirements on both operating systems.
+# Tasks are an advertised extension: evaluate its acceptance separately.
 on:
+  push:
+    branches:
+      - master
+      - "release/**"
+      - "update/**"
+      - "fix/**"
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       scenario:
@@ -56,6 +65,16 @@ jobs:
             --conformance .ci-upstream-mcp-conformance/dist/index.js \
             --output-dir .ci-mcp-conformance-results \
             --scenario "$CONFORMANCE_SCENARIO"
+      - name: Verify advertised Tasks contract (independent release blocker)
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          tests/test_mcp_task_input_delivery_acceptance.py
+          tests/test_mcp_task_input_fail_closed.py
+          tests/test_mcp_task_lifecycle_bounds.py
+          tests/test_mcp_task_principal_isolation.py
+          tests/test_mcp_task_protocol_authorization.py
+
       - name: Upload protocol evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
