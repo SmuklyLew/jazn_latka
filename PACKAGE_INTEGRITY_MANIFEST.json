@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T22:17:47+00:00",
-  "updated_at_utc": "2026-10-13T22:17:47+00:00",
+  "generated_at_utc": "2026-10-13T22:25:49+00:00",
+  "updated_at_utc": "2026-10-13T22:25:49+00:00",
   "start_file": "run.py",
-  "file_count": 2495,
-  "static_file_count": 2495,
+  "file_count": 2497,
+  "static_file_count": 2497,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -155,8 +155,8 @@
     },
     {
       "path": ".github/workflows/mcp-conformance.yml",
-      "size_bytes": 2861,
-      "sha256": "8cc88c7c2e828d9ae61acd3e7463cda6d9c73f2165cb58862acd85657747b7ce",
+      "size_bytes": 2893,
+      "sha256": "a9cd470334288652a64908ce04a5d90d32a2cc267de07e45c275eae9897eb3eb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -345,7 +345,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "5b6b1deb4d33941974fcac49a2518f08bf4b6230a1d4b96216b0d5bede86c2da",
+      "sha256": "f6fedd2a45d60e41cd19b6a9aedb6a5859c194b07a6175edff75acafcb3d62c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19765,6 +19765,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_conformance_ci_contract.py",
+      "size_bytes": 629,
+      "sha256": "dc7dbe2264a32038324d3c8641a38b91abb096ed82b950dad4d1536b369d212a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_mcp_conformance_console_utf8.py",
+      "size_bytes": 622,
+      "sha256": "62017fe199bbf0be21577000c13bd3165a1d7d6805525cbf608860eb7ae818a0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_conformance_fixture_server.py",
       "size_bytes": 3027,
       "sha256": "5d5490576c7aff0428bec5b0663d92b41e8873e03dcef7d19f52a03acd0ecd5f",
@@ -22268,8 +22286,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2132902,
-      "sha256": "5474b6d82d45acb7e0fe601559816e4ccc035934da2eb20e7eb64fea0e76cc6a",
+      "size_bytes": 2134397,
+      "sha256": "91fd0f6b999b5a42f150648cdf3fa9a23be0aef8b1c959c517352e0c4adc89b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22367,8 +22385,8 @@
     },
     {
       "path": "tools/mcp_conformance_runner.py",
-      "size_bytes": 7160,
-      "sha256": "030dc8028a2ee9e1012fbebe89fcc1b1fcc703694045efedf42d5c0a08a2b5c0",
+      "size_bytes": 7666,
+      "sha256": "db6d062696e8d57c68ab853bb471849fa653d152bc3ac8cdf87106897d10a3ef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

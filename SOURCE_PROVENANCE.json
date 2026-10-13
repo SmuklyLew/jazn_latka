@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a93d6ba0db9c495d42dbd34c16330886ad1ca012",
+  "base_merge_commit": "ba787b08072c54dd0ea86a811d7b0868bd284576",
   "base_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
-  "commit_date": "2026-10-13T22:17:47Z",
+  "commit_date": "2026-10-13T22:25:49Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-13T22:17:47+00:00",
+  "generated_at_utc": "2026-10-13T22:25:49+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "527dd5368135aaa5ecef1202580255de7c0330d0",
+  "git_tree_sha": "30e00c0edc94aecd44c2eb8329cd9435403b40b9",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.12-runtime-ingress-security-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "a93d6ba0db9c495d42dbd34c16330886ad1ca012",
+    "source_commit": "ba787b08072c54dd0ea86a811d7b0868bd284576",
     "source_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "a93d6ba0db9c495d42dbd34c16330886ad1ca012",
+  "source_commit": "ba787b08072c54dd0ea86a811d7b0868bd284576",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
   "tag": null,
