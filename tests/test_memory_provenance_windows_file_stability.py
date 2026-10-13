@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import time
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -19,11 +20,11 @@ from latka_jazn.tools.memory_rebuild_app.p1_provenance_chain import (
 )
 
 
-def _metadata(*, ctime_ns: int = 123) -> SimpleNamespace:
-    return SimpleNamespace(
+def _metadata(*, ctime_ns: int = 123) -> os.stat_result:
+    return cast(os.stat_result, SimpleNamespace(
         st_dev=15, st_ino=41, st_size=7, st_mtime_ns=999,
         st_ctime_ns=ctime_ns, st_birthtime_ns=123,
-    )
+    ))
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows-only stat/fstat ctime semantics")
