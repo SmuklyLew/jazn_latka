@@ -395,16 +395,37 @@ class McpTaskStore:
         )
         return record
 
-    def get(self, task_id: str) -> McpTaskRecord | None:
+    @staticmethod
+    def _owner_matches(
+        record: McpTaskRecord, *, owner_subject: str | None, owner_transport: str | None,
+    ) -> bool:
+        if owner_subject is None and owner_transport is None:
+            return True  # Trusted local / internal operator path only.
+        if not owner_subject or not owner_transport:
+            return False
+        return (
+            record.owner_subject is not None
+            and secrets.compare_digest(record.owner_subject.encode("utf-8"), owner_subject.encode("utf-8"))
+            and record.owner_transport == owner_transport
+        )
+
+    def get(
+        self, task_id: str, *, owner_subject: str | None = None,
+        owner_transport: str | None = None,
+    ) -> McpTaskRecord | None:
         value = str(task_id or "").strip()
         if not value or len(value) > 256:
             raise ValueError("invalid_task_id")
         with self._lock, self._connect() as conn:
             record = self._select_task(conn, value)
             if record is not None:
-                return record
+                return record if self._owner_matches(
+                    record, owner_subject=owner_subject, owner_transport=owner_transport
+                ) else None
             legacy = self._read_legacy_task(value)
-            if legacy is None:
+            if legacy is None or not self._owner_matches(
+                legacy, owner_subject=owner_subject, owner_transport=owner_transport
+            ):
                 return None
             self._upsert(conn, legacy)
             return legacy
@@ -429,12 +450,18 @@ class McpTaskStore:
         turn_id: str | None = None,
         trace_id: str | None = None,
         host_request_contract_hash: str | None = None,
+        owner_subject: str | None = None,
+        owner_transport: str | None = None,
     ) -> McpTaskRecord:
         request_value = str(daemon_request_id or "").strip()
         if not request_value or len(request_value) > 256:
             raise ValueError("daemon_request_id_required")
         if ttl_ms is not None and int(ttl_ms) < 0:
             raise ValueError("task_ttl_must_be_non_negative_or_none")
+        if (owner_subject is None) != (owner_transport is None):
+            raise ValueError("task_owner_incomplete")
+        if owner_subject is not None and (not owner_subject.strip() or not owner_transport or not owner_transport.strip()):
+            raise ValueError("task_owner_invalid")
         with self._lock, self._connect() as conn:
             # Acquire the SQLite write reservation before the read/modify/write
             # sequence. RLock only serializes one Python object; BEGIN IMMEDIATE
@@ -442,9 +469,13 @@ class McpTaskStore:
             conn.execute("BEGIN IMMEDIATE")
             existing = self._select_request(conn, request_value)
             if existing is not None:
+                if not self._owner_matches(existing, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 return existing
             legacy = self._read_legacy_by_request(request_value)
             if legacy is not None:
+                if not self._owner_matches(legacy, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 self._upsert(conn, legacy)
                 return legacy
             now = datetime.now(timezone.utc).isoformat()
@@ -457,6 +488,8 @@ class McpTaskStore:
                 ttl_ms=ttl_ms,
                 poll_interval_ms=max(100, int(poll_interval_ms)),
                 status_message=status_message,
+                owner_subject=owner_subject,
+                owner_transport=owner_transport,
                 request_id=str(request_id or request_value),
                 turn_id=str(turn_id) if turn_id else None,
                 trace_id=str(trace_id) if trace_id else None,
@@ -472,6 +505,8 @@ class McpTaskStore:
                 winner = self._select_request(conn, request_value)
                 if winner is None:
                     raise
+                if not self._owner_matches(winner, owner_subject=owner_subject, owner_transport=owner_transport):
+                    raise KeyError("unknown_task")
                 return winner
             return record
 
