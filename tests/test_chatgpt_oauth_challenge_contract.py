@@ -6,7 +6,7 @@ from typing import Any, cast
 import pytest
 
 pytest.importorskip("mcp")
-from mcp import CallToolResult
+from mcp.types import CallToolResult
 from mcp.server.auth.provider import TokenVerifier
 
 from latka_jazn.mcp.http_gateway import (
