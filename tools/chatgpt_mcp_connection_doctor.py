@@ -69,6 +69,7 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
     source = Path(plugin_dir)
     found: list[str] = []
     classifications: list[str] = []
+    observed_urls: list[str] = []
     for filename in DESCRIPTOR_FILENAMES:
         path = source / filename
         if not path.is_file():
@@ -90,11 +91,13 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
                     raise ValueError("mcp_server_not_object")
                 if "url" in server:
                     classifications.append(classify_endpoint(server["url"]))
+                    if isinstance(server["url"], str):
+                        observed_urls.append(server["url"].strip().rstrip("/"))
                 elif "command" in server:
                     classifications.append("local_stdio_only")
                 else:
                     classifications.append("missing_mcp_endpoint")
-        except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeError, ValueError) as exc:
             reason = str(exc) if isinstance(exc, ValueError) else "mcp_descriptor_unreadable"
             classifications.append(reason if reason in {
                 "mcp_descriptor_too_large", "mcp_descriptor_not_object",
@@ -103,13 +106,21 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
             } else "mcp_descriptor_unreadable")
 
     if not classifications:
-        reason = "no_jazn_mcp_descriptor"
+        reason = (
+            "registered_app_binding_unverified"
+            if (source / ".app.json").is_file()
+            else "no_jazn_mcp_descriptor"
+        )
     elif any(item == "loopback_or_private_endpoint" for item in classifications):
         reason = "loopback_or_private_endpoint"
     elif any(item == "insecure_remote_endpoint" for item in classifications):
         reason = "insecure_remote_endpoint"
     elif all(item == "public_https_endpoint_configured_unverified" for item in classifications):
-        reason = "public_https_endpoint_configured_unverified"
+        reason = (
+            "conflicting_mcp_endpoints"
+            if len(set(observed_urls)) > 1
+            else "public_https_endpoint_configured_unverified"
+        )
     else:
         reason = next(
             item for item in classifications
@@ -134,6 +145,8 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
             }
             else "verify_endpoint_auth_health_then_register_refresh_and_select_chatgpt_app"
             if reason == "public_https_endpoint_configured_unverified"
+            else "select_registered_app_and_verify_fresh_current_message_toolset"
+            if reason == "registered_app_binding_unverified"
             else "repair_plugin_mcp_descriptor"
         ),
         "truth_boundary": (
