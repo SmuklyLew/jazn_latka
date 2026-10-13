@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
-  "runtime_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
-  "package_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
-  "generated_at_utc": "2026-10-13T02:02:22+00:00",
-  "updated_at_utc": "2026-10-13T02:02:22+00:00",
+  "version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
+  "runtime_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
+  "package_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
+  "generated_at_utc": "2026-10-13T03:29:36+00:00",
+  "updated_at_utc": "2026-10-13T03:29:36+00:00",
   "start_file": "run.py",
-  "file_count": 2369,
-  "static_file_count": 2369,
+  "file_count": 2370,
+  "static_file_count": 2370,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -326,8 +326,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3039,
-      "sha256": "dfee61e709ae53b35118381beb82f7f879cdacd6b722433625d915879cbc6129",
+      "size_bytes": 2979,
+      "sha256": "5f90933b97049cc01323cceeea9430d2ab41dd74ef8eea6751b60144916a12f4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4727,8 +4727,8 @@
     },
     {
       "path": "latka_jazn/core/host_tool_turn_policy.py",
-      "size_bytes": 7743,
-      "sha256": "d48ccc72624f87d056b5ec92096ed1130d8a9ceddb94dd8d42e3b9c9d6f7c3cd",
+      "size_bytes": 8501,
+      "sha256": "d80ad9344217302fcdc6c7c7849cd9fde3b3083552e0eac37c5dda584e1cc648",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9839,8 +9839,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 7236,
-      "sha256": "1712bdd228d06387ddd1a91dc9d0a008e5cfed066a1268fad3c25e57ff195898",
+      "size_bytes": 7304,
+      "sha256": "c90a641b59ee659d63cc60336f940e397dc4d54f12ef1e26b59bab3c69a892fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20656,6 +20656,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v116_research_tool_ingress_regression.py",
+      "size_bytes": 2067,
+      "sha256": "9a426709c23088a5c038d3d1e3efe05348c5854399a0739bf7f2e3ed110dc568",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -21161,8 +21170,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2099184,
-      "sha256": "64a2864165a2bdcbc6a6f7944f3998ab9142427d1dfa1cee2b964b52bd05ec97",
+      "size_bytes": 2101651,
+      "sha256": "bebe99416b4996c495504aa02661ef86bf371bf504546c37364a47992389ede5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21773,11 +21782,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
+  "release_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
-    "package_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence",
-    "release_version": "16.3.25.5.115.21.14-code-first-runtime-documentation-convergence"
+    "runtime_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
+    "package_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence",
+    "release_version": "16.3.25.5.116.0.1-runtime-ingress-security-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
