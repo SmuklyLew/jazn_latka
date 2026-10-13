@@ -1,10 +1,9 @@
 # Jaźń — kanoniczna mapa planów v16.3.25.4 → v17
 
 **Status:** `CANONICAL_PLANNING_INDEX`  
-**Aktualizacja:** 2026-10-06
-**Baza pierwotnej przebudowy dokumentacji:** `master @ 74bc67437702dd07488e4e7f07893d1a7fec1dd7`
-**Bieżąca baza:** `master @ 712a25db94c634ea47fbf265c0d907608a668f00`
-**Linia tej aktualizacji:** `16.3.25.5.108-engine-decomposition-turn-diagnostics-convergence` implementation candidate
+**Wersja bieżąca:** dynamiczna — `latka_jazn/version.py`  
+**Aktualizacja mapy:** 2026-10-13  
+**Uwaga:** stare SHA/branże i plany v108 są historią realizacji; nie ustalają aktualnego headu ani postępu wdrożenia. Stan GitHub/CI/live weryfikuje się narzędziami, nie deklaracją w tej mapie.
 
 Ten katalog jest jedyną aktywną powierzchnią planistyczną dla programu prowadzącego od dostarczonego `v16.3.25.4 Memory Rebuild v4` do warunkowego `v17`.
 
