@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.3",
-  "active_definition_count": 2267,
+  "active_definition_count": 2268,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23223,6 +23223,29 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 40
+    },
+    "tests/test_mcp_v116_acceptance.py::test_mcp_task_input_end_to_end_receipt_and_fail_closed": {
+      "path": "tests/test_mcp_v116_acceptance.py",
+      "name": "test_mcp_task_input_end_to_end_receipt_and_fail_closed",
+      "purpose": "Mcp task input end to end receipt and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "KeyError",
+        "RuntimeError",
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",
