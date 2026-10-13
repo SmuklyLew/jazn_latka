@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.115.21.13",
+  "system_version": "16.3.25.5.115.21.14",
   "active_definition_count": 2255,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -9783,7 +9783,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 17
+      "line": 18
     },
     "tests/test_codefirst_host_contracts.py::test_adapter_rejects_mismatched_or_malformed_sha_fail_closed": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9805,7 +9805,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
     },
     "tests/test_codefirst_host_contracts.py::test_adapter_rejects_empty_invalid_and_byte_oversize": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9827,7 +9827,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 34
     },
     "tests/test_codefirst_host_contracts.py::test_host_guidance_is_shared_and_not_a_runtime_claim": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9848,7 +9848,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 39
+      "line": 43
     },
     "tests/test_codefirst_host_contracts.py::test_public_adapter_validates_before_canonical_finalize_dispatch": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9868,7 +9868,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 52
     },
     "tests/test_codefirst_host_contracts.py::test_active_docs_metadata_and_deployment_are_consistent": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9888,7 +9888,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 59
     },
     "tests/test_codefirst_host_contracts.py::test_doc_audit_detects_both_stale_doc_and_runtime_identity": {
       "path": "tests/test_codefirst_host_contracts.py",
@@ -9909,7 +9909,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 64
     },
     "tests/test_cognitive_control.py::test_global_salience_is_deterministic_bounded_and_content_free": {
       "path": "tests/test_cognitive_control.py",
