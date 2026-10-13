@@ -7373,26 +7373,26 @@
       "path": "tests/test_chatgpt_oauth_challenge_contract.py",
       "name": "test_missing_identity_triggers_bounded_login_challenge",
       "purpose": "Missing identity triggers bounded login challenge",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [
         "anyio"
       ],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 37
     },
     "tests/test_chatgpt_oauth_challenge_contract.py::test_insufficient_scope_includes_auth_challenge_but_no_memory_access": {
       "path": "tests/test_chatgpt_oauth_challenge_contract.py",
       "name": "test_insufficient_scope_includes_auth_challenge_but_no_memory_access",
       "purpose": "Insufficient scope includes auth challenge but no memory access",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "memory"
@@ -7400,33 +7400,33 @@
       "markers": [
         "anyio"
       ],
-      "assertion_count": 5,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 56
     },
     "tests/test_chatgpt_oauth_challenge_contract.py::test_developer_loopback_errors_never_advertise_remote_oauth": {
       "path": "tests/test_chatgpt_oauth_challenge_contract.py",
       "name": "test_developer_loopback_errors_never_advertise_remote_oauth",
       "purpose": "Developer loopback errors never advertise remote oauth",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [
         "anyio"
       ],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.mcp.http_gateway"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 73
     },
     "tests/test_chatgpt_oauth_challenge_contract.py::test_non_auth_errors_never_create_oauth_challenge": {
       "path": "tests/test_chatgpt_oauth_challenge_contract.py",
@@ -7443,7 +7443,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 86
     },
     "tests/test_chatgpt_oauth_tool_metadata.py::test_explicit_local_development_advertises_noauth": {
       "path": "tests/test_chatgpt_oauth_tool_metadata.py",
