@@ -22853,13 +22853,13 @@
       "path": "tests/test_mcp_task_input_delivery_acceptance.py",
       "name": "test_mcp_task_input_end_to_end_receipt_and_fail_closed",
       "purpose": "Mcp task input end to end receipt and fail closed",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 9,
       "expected_exceptions": [
         "KeyError",
         "RuntimeError",
