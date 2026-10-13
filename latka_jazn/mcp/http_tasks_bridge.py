@@ -192,11 +192,9 @@ class ModernTasksHttpBridge:
         access_token = getattr(user, "access_token", None)
         if access_token is None:
             return None
-        subject = str(
-            getattr(access_token, "subject", None)
-            or getattr(access_token, "client_id", None)
-            or "oauth-client"
-        ).strip() or "oauth-client"
+        subject = str(getattr(access_token, "subject", None) or "").strip()
+        if not subject:
+            return None  # Reject shared client-id fallback for user-specific Tasks.
         return _Principal(
             subject=subject,
             scopes=frozenset(str(item) for item in credentials.scopes),
