@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.1",
-  "active_definition_count": 2258,
+  "active_definition_count": 2265,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -49001,6 +49001,135 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 44
+    },
+    "tests/test_v116_task_principal_boundary.py::test_task_owner_is_persisted_and_isolation_survives_reopen": {
+      "path": "tests/test_v116_task_principal_boundary.py",
+      "name": "test_task_owner_is_persisted_and_isolation_survives_reopen",
+      "purpose": "Task owner is persisted and isolation survives reopen",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "KeyError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_v116_task_principal_boundary.py::test_legacy_unowned_task_never_adopted_by_remote_caller": {
+      "path": "tests/test_v116_task_principal_boundary.py",
+      "name": "test_legacy_unowned_task_never_adopted_by_remote_caller",
+      "purpose": "Legacy unowned task never adopted by remote caller",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "KeyError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_v116_task_principal_boundary.py::test_existing_v115_sqlite_schema_migrates_additively": {
+      "path": "tests/test_v116_task_principal_boundary.py",
+      "name": "test_existing_v115_sqlite_schema_migrates_additively",
+      "purpose": "Existing v115 sqlite schema migrates additively",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_v116_task_principal_boundary.py::test_incomplete_owner_fail_closed": {
+      "path": "tests/test_v116_task_principal_boundary.py",
+      "name": "test_incomplete_owner_fail_closed",
+      "purpose": "Incomplete owner fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_v116_task_protocol_owner_boundary.py::test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject": {
+      "path": "tests/test_v116_task_protocol_owner_boundary.py",
+      "name": "test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject",
+      "purpose": "Mcp tasks get and cancel reject unrelated authenticated subject",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_v116_task_protocol_owner_boundary.py::test_mcp_tasks_get_accepts_matching_authenticated_subject": {
+      "path": "tests/test_v116_task_protocol_owner_boundary.py",
+      "name": "test_mcp_tasks_get_accepts_matching_authenticated_subject",
+      "purpose": "Mcp tasks get accepts matching authenticated subject",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_v116_task_protocol_owner_boundary.py::test_legacy_unowned_task_cannot_be_read_via_public_http": {
+      "path": "tests/test_v116_task_protocol_owner_boundary.py",
+      "name": "test_legacy_unowned_task_cannot_be_read_via_public_http",
+      "purpose": "Legacy unowned task cannot be read via public http",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
