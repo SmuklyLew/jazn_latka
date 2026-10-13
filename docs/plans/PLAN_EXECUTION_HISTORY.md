@@ -1,8 +1,9 @@
 # Jaźń — PLAN EXECUTION HISTORY v16.3.25.4 → v17
 
-**Status:** `CANONICAL_EXECUTION_HISTORY`  
-**Aktualizacja:** 2026-09-08  
-**Baza bieżącego overlayu:** `master @ 5a546f22444f954630207ba53e284de7e1af8a05` / `16.3.25.5.43-host-capability-materialization-hardening`
+**Status:** `HISTORICAL_EXECUTION_INDEX`  
+**Ostatni historyczny snapshot:** 2026-09-08  
+**Baza historyczna:** `master @ 5a546f22444f954630207ba53e284de7e1af8a05` / `16.3.25.5.43-host-capability-materialization-hardening`  
+**Aktualny release:** `latka_jazn/version.py`; nie interpretuj dawnych statusów jako bieżącego stanu.
 
 Ten dokument zapisuje historię decyzji bez przepisywania przeszłości. Historyczne plany/statusy pozostają w `only_to_check/`; tutaj utrzymujemy wyłącznie ich aktualną klasyfikację względem bieżącego mastera.
 
