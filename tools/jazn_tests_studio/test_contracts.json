@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.12",
-  "active_definition_count": 2269,
+  "system_version": "16.3.25.5.116.0.13",
+  "active_definition_count": 2278,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6477,6 +6477,184 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 95
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_private_plugin_remote_endpoints_are_refused": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_private_plugin_remote_endpoints_are_refused",
+      "purpose": "Private plugin remote endpoints are refused",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_offline_doctor_never_accepts_unsafe_or_invalid_url": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_offline_doctor_never_accepts_unsafe_or_invalid_url",
+      "purpose": "Offline doctor never accepts unsafe or invalid url",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_existing_desktop_loopback_descriptors_get_actionable_blocker": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_existing_desktop_loopback_descriptors_get_actionable_blocker",
+      "purpose": "Existing desktop loopback descriptors get actionable blocker",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_public_https_metadata_is_not_falsely_promoted_to_live_ready": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_public_https_metadata_is_not_falsely_promoted_to_live_ready",
+      "purpose": "Public https metadata is not falsely promoted to live ready",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_incorrect_plugin_descriptor_fails_closed": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_incorrect_plugin_descriptor_fails_closed",
+      "purpose": "Incorrect plugin descriptor fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_doctor_rejects_oversized_descriptor_without_reading_it": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_doctor_rejects_oversized_descriptor_without_reading_it",
+      "purpose": "Doctor rejects oversized descriptor without reading it",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_stdio_only_package_does_not_claim_browser_web_connectivity": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_stdio_only_package_does_not_claim_browser_web_connectivity",
+      "purpose": "Stdio only package does not claim browser web connectivity",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_conflicting_public_mcp_descriptors_fail_closed": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_conflicting_public_mcp_descriptors_fail_closed",
+      "purpose": "Conflicting public mcp descriptors fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
+    },
+    "tests/test_chatgpt_mcp_connection_recovery.py::test_registered_app_binding_is_not_remote_web_endpoint_proof": {
+      "path": "tests/test_chatgpt_mcp_connection_recovery.py",
+      "name": "test_registered_app_binding_is_not_remote_web_endpoint_proof",
+      "purpose": "Registered app binding is not remote web endpoint proof",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_plugin"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_daemon_presentation_and_private_mcp_complete_two_phase_reply": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
