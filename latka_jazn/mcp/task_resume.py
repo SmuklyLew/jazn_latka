@@ -25,6 +25,7 @@ import time
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
+from latka_jazn.mcp.task_input_delivery import TaskInputDelivery
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("mcp_task_resume")
@@ -744,13 +745,41 @@ class McpTaskResumeAdapter:
         if record.status != "input_required":
             return {"resultType": "complete"}
 
-        # The current Jaźń visible-turn runtime has no transport that can consume
-        # task inputResponses. Never delete/acknowledge even a partial set only
-        # in the adapter: that would make tasks/get claim progress the runtime
-        # never observed. Preserve the exact outstanding snapshot and fail
-        # closed until a real runtime-input channel exists.
-        _ = dict(input_responses or {})
-        raise RuntimeError("task_input_runtime_transport_not_implemented")
+        prepared = TaskInputDelivery.prepare(
+            outstanding=record.input_requests or {},
+            responses=dict(input_responses or {}),
+        )
+        deliver = getattr(self.gateway, "submit_task_input", None)
+        if not callable(deliver):
+            raise RuntimeError("task_input_runtime_transport_not_implemented")
+        # Never replay the original user text. The runtime is responsible for
+        # durably accepting and deduplicating input by SHA-256.
+        try:
+            receipt = deliver(
+                daemon_request_id=record.daemon_request_id,
+                task_id=record.task_id,
+                input_responses=prepared.responses,
+                request_state=record.request_state,
+                lineage=record.lineage(),
+                input_sha256=prepared.digest,
+            )
+        except Exception as exc:
+            raise RuntimeError("task_input_runtime_delivery_unconfirmed") from exc
+        if not isinstance(receipt, Mapping):
+            raise RuntimeError("task_input_runtime_ack_unverified")
+        prepared.require_runtime_receipt(
+            receipt, request_id=record.daemon_request_id, task_id=record.task_id,
+        )
+        remaining = {key: value for key, value in (record.input_requests or {}).items()
+                     if key not in prepared.keys}
+        self.store.update(
+            record.task_id,
+            status="input_required" if remaining else "working",
+            input_requests=remaining if remaining else None,
+            status_message=("Awaiting remaining input." if remaining else
+                            "Runtime confirmed task input delivery."),
+        )
+        return {"resultType": "complete"}
 
 
 __all__ = [
