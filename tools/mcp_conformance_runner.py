@@ -66,6 +66,31 @@ def main() -> int:
                     timeout=600, check=False,
                 )
             print(f"MCP conformance exit={result.returncode}", flush=True)
+            # The upstream CLI writes diagnostics into an artifact. Preserve
+            # that artifact, but also expose bounded failure evidence in job
+            # output: otherwise CI shows only exit=1 with no actionable cause.
+            if result.returncode != 0:
+                report_path = out / "conformance.log"
+                try:
+                    raw = report_path.read_text(encoding="utf-8", errors="replace")
+                    import re
+
+                    # Do not disclose bearer tokens while surfacing check IDs.
+                    raw = re.sub(
+                        r"(?i)(bearer\\s+)[A-Za-z0-9._~+/-]+",
+                        r"\\1[REDACTED]",
+                        raw,
+                    )
+                    lines = raw.splitlines()
+                    keywords = ("FAILURE", "FAILED", "Error:", "errorMessage",
+                                "✗", "❌", "not passed", "fail:")
+                    failures = [line for line in lines if any(key in line for key in keywords)]
+                    print("=== MCP conformance failure evidence (bounded) ===", flush=True)
+                    for line in (failures[-110:] or lines[-70:]):
+                        print(line[:600], flush=True)
+                    print("=== End MCP conformance failure evidence ===", flush=True)
+                except OSError as exc:
+                    print(f"Conformance report unreadable: {type(exc).__name__}", flush=True)
             return result.returncode
         finally:
             server.terminate()
