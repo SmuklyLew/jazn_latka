@@ -110,3 +110,12 @@ async def test_http_gateway_task_resource_reads_same_durable_registry(tmp_path: 
     assert payload["task"]["taskId"] == task.task_id
     assert payload["lineage"]["daemon_request_id"] == "req-resource-durable"
     assert payload["lineage"]["turn_id"] == "turn-resource-durable"
+
+@pytest.mark.anyio
+async def test_http_gateway_refuses_unowned_task_resource_to_public_client(tmp_path: Path) -> None:
+    legacy = McpTaskStore(tmp_path).create_or_get(daemon_request_id="legacy-unowned-resource")
+    gateway = _gateway(tmp_path)
+    async with Client(gateway.mcp, raise_exceptions=True) as client:
+        with pytest.raises(Exception):
+            await client.read_resource(f"jazn://task/{legacy.task_id}")
+    assert McpTaskStore(tmp_path).get(legacy.task_id).owner_subject is None
