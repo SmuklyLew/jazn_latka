@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.18-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T22:09:46+00:00",
-  "updated_at_utc": "2026-10-13T22:09:46+00:00",
+  "generated_at_utc": "2026-10-13T22:17:47+00:00",
+  "updated_at_utc": "2026-10-13T22:17:47+00:00",
   "start_file": "run.py",
-  "file_count": 2491,
-  "static_file_count": 2491,
+  "file_count": 2495,
+  "static_file_count": 2495,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -345,7 +345,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "f007952be32d0e9a35b6083bbd722898c65f3aee878972f17424e2209ec76b79",
+      "sha256": "5b6b1deb4d33941974fcac49a2518f08bf4b6230a1d4b96216b0d5bede86c2da",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6311,8 +6311,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 37859,
-      "sha256": "6dededa97c4ca9514c757f21d09f3146b569f851fe4ce4163385929ccdf739af",
+      "size_bytes": 38161,
+      "sha256": "e8613ee0bd612cf77d683e9b14624c2c70365acf850bcc71eff17c1b3b750d64",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16120,6 +16120,42 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.18-pre-fixture-pyright-narrowing/test_mcp_conformance_fixture_server.py",
+      "size_bytes": 2599,
+      "sha256": "1a0e410c86db8f08ff205ce9a1e6162ae09b224bd271a8479ab81a5728b99305",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.18-pre-mrtr-fixture/test_mcp_conformance_fixture_server.py",
+      "size_bytes": 2690,
+      "sha256": "0b469a86eabf3cbcf909622222eb22a9360506f670544453bad0bde29b4da66e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.18-pre-optional-dependency-import-fix/test_mcp_conformance_fixture_server.py",
+      "size_bytes": 2689,
+      "sha256": "832d6b5cb7c45d13dcffc1aacb086ec62e86a14f062fabc4a2805079d01babf7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.18-pre-required-check-cleanup/test_mcp_conformance_fixture_server.py",
+      "size_bytes": 2797,
+      "sha256": "87f3a0e2c0f8ddfeb552c12fa623d45a20247181921515de5125e6aa37711c1a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.2-before-task-input/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "6e363dcbbe563fb856a5b05dd38598eb9b0a4327b07be5d4107f2ee88a2a3934",
@@ -19730,8 +19766,8 @@
     },
     {
       "path": "tests/test_mcp_conformance_fixture_server.py",
-      "size_bytes": 2599,
-      "sha256": "1a0e410c86db8f08ff205ce9a1e6162ae09b224bd271a8479ab81a5728b99305",
+      "size_bytes": 3027,
+      "sha256": "5d5490576c7aff0428bec5b0663d92b41e8873e03dcef7d19f52a03acd0ecd5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22232,8 +22268,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2132900,
-      "sha256": "546200a50a1a7764e13717ce605cc80809119340d3b00aa79907f8ebe5da9604",
+      "size_bytes": 2132902,
+      "sha256": "5474b6d82d45acb7e0fe601559816e4ccc035934da2eb20e7eb64fea0e76cc6a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22322,8 +22358,8 @@
     },
     {
       "path": "tools/mcp_conformance_fixture_server.py",
-      "size_bytes": 7352,
-      "sha256": "563117b5bd69fd0f13b31611ff134f11677849b9d06711b9131fe5eaf14e20a2",
+      "size_bytes": 16609,
+      "sha256": "52151dd0269b449c25cec4bdb27e9c05d7ee05573712d85ed1ddece629f4787a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
