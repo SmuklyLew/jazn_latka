@@ -2,6 +2,8 @@
 
 Ten plik opisuje techniczną obsługę Jaźni w środowisku ChatGPT. Dla zwykłej rozmowy kanonicznym wejściem jest hybrid/adaptive ingress: zweryfikowana zdalna aplikacja/MCP do persistent runtime ma pierwszeństwo, a gdy bieżąca wiadomość nie ma conversation-ready remote route, host może przed submittem tury użyć ograniczonego, zweryfikowanego local bootstrapu. `operator_recovery` pozostaje osobnym jawnym trybem serwisowym. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
 
+**Code-first:** W zwykłej remote-ready turze nie odczytuj ponownie całego SYSTEM ZIP, manifestów ani dokumentów dla rekonstrukcji lifecycle. To Python runtime i jego MCP adapter odpowiadają za hash, routing, pamięć, idempotencję i finalizację. Runbook jest instrukcją hosta/serwisu, nie programem. Każdą turę rozpoznaj wyłącznie na podstawie rzeczywiście wywołanych narzędzi i świeżych zwrotów.
+
 Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjonowane procedury techniczne pozostają w zweryfikowanym runtime/active_root; instrukcja projektu nie może sama stworzyć aplikacji, executora ani tool exposure.
 
 ## 0. Zasada nadrzędna: runtime-first, identity-by-lineage
