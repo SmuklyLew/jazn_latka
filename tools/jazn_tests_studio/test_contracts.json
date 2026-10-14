@@ -17449,8 +17449,7 @@
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "host",
-        "memory"
+        "host"
       ],
       "markers": [],
       "assertion_count": 3,
@@ -17475,8 +17474,7 @@
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "host",
-        "memory"
+        "host"
       ],
       "markers": [],
       "assertion_count": 0,
@@ -17556,8 +17554,7 @@
       "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "host",
-        "memory"
+        "host"
       ],
       "markers": [],
       "assertion_count": 11,
@@ -17582,8 +17579,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "host",
-        "memory"
+        "host"
       ],
       "markers": [],
       "assertion_count": 4,
