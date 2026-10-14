@@ -338,7 +338,7 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
     # A bare runtime_write/normalization DB must not imply an attached MEMORY.
     legacy_source = runtime_root / "memory" / "raw" / "dziennik.json"
     legacy_source.parent.mkdir(parents=True, exist_ok=True)
-    legacy_source.write_text("[]\\n", encoding="utf-8")
+    legacy_source.write_text("[]", encoding="utf-8")
     assert cfg.memory_availability.persistent_memory_enabled is True
     tier_init = initialize_transactional_memory_store(
         runtime_root, configured=cfg.memory_tier_db_path
