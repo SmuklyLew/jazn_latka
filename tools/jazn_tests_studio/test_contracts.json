@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.19",
-  "active_definition_count": 2306,
+  "active_definition_count": 2307,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -49878,6 +49878,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -49903,6 +49904,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -49930,6 +49932,7 @@
         "HostStdoutDeliveryError"
       ],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -49953,6 +49956,7 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -49978,6 +49982,7 @@
         "HostRequestStoreError"
       ],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -50002,6 +50007,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli",
         "latka_jazn.core.chatgpt_host_pending_store",
         "latka_jazn.core.chatgpt_host_recovery",
         "latka_jazn.core.host_stdout_delivery",
@@ -50011,6 +50017,30 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 143
+    },
+    "tests/test_v11620_host_delivery_faults.py::test_local_host_recover_delivery_cli_reads_consumed_without_replay": {
+      "path": "tests/test_v11620_host_delivery_faults.py",
+      "name": "test_local_host_recover_delivery_cli_reads_consumed_without_replay",
+      "purpose": "Local host recover delivery cli reads consumed without replay",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 164
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
