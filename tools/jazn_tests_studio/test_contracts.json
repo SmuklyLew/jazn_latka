@@ -49170,11 +49170,11 @@
       "path": "tests/test_turn_atomicity.py",
       "name": "test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits",
       "purpose": "Input truth audit is pure and does not touch canonical truth audits",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.audit",
@@ -49212,7 +49212,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 85
     },
     "tests/test_turn_atomicity.py::test_turn_local_semantic_staging_is_rejected_on_failed_gate": {
       "path": "tests/test_turn_atomicity.py",
@@ -49238,7 +49238,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 119
     },
     "tests/test_turn_atomicity.py::test_late_commit_failure_is_reported_as_degraded_and_recorded": {
       "path": "tests/test_turn_atomicity.py",
@@ -49262,7 +49262,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 143
     },
     "tests/test_turn_atomicity.py::test_execution_timeout_cancels_late_commit_and_retires_worker": {
       "path": "tests/test_turn_atomicity.py",
@@ -49289,7 +49289,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 200
+      "line": 204
     },
     "tests/test_turn_atomicity.py::test_technical_audit_failure_is_fail_soft": {
       "path": "tests/test_turn_atomicity.py",
@@ -49313,7 +49313,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 233
+      "line": 237
     },
     "tests/test_turn_atomicity.py::test_timeout_is_not_masked_by_technical_audit_failure": {
       "path": "tests/test_turn_atomicity.py",
@@ -49339,7 +49339,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 259
+      "line": 263
     },
     "tests/test_turn_atomicity.py::test_health_presence_phrases_are_detected_before_expensive_cognitive_work": {
       "path": "tests/test_turn_atomicity.py",
@@ -49363,7 +49363,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 289
+      "line": 293
     },
     "tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write": {
       "path": "tests/test_turn_atomicity.py",
@@ -49387,7 +49387,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 304
+      "line": 308
     },
     "tests/test_turn_authority_receipt.py::test_turn_authority_receipt_binds_user_final_identity_and_source": {
       "path": "tests/test_turn_authority_receipt.py",
