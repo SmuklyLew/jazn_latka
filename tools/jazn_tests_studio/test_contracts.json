@@ -41242,13 +41242,13 @@
       "path": "tests/test_runtime_full_turn.py",
       "name": "test_full_runtime_turn_commits_transactionally_without_legacy_fanout",
       "purpose": "Full runtime turn commits transactionally without legacy fanout",
-      "expected": "Pytest completes this contract cleanly and all 30 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 32 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 30,
+      "assertion_count": 32,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
