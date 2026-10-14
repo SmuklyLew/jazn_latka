@@ -72,6 +72,24 @@ jobs:
           git diff --exit-code
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+  pyright_diagnostics:
+    name: Studio typed-code audit (display exact diagnostics)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Verify Pyright typed Studio
+        shell: bash
+        run: |
+          npm install --global pyright@1.1.411
+          pyright --version
+          pyright --project pyrightconfig.json
+
   package:
     needs: test
     runs-on: windows-latest
