@@ -259,9 +259,18 @@ def _public_error(
 
 
 def _runtime_ready(status: Mapping[str, Any]) -> bool:
+    """Validate the *public jazn_status* payload, not private gateway.status().
+
+    jazn_status publishes gateway_live instead of private gateway_ok; its
+    ready/ok flags also enforce the daemon identity, matching runtime version
+    and fresh heartbeat. Requiring those flags prevents false-positive HTTP
+    readiness when only the HTTP listener or private transport is alive.
+    """
     capability = status.get("capability_matrix")
     return bool(
-        status.get("gateway_ok") is True
+        status.get("ok") is True
+        and status.get("ready") is True
+        and status.get("gateway_live") is True
         and status.get("daemon_reachable") is True
         and isinstance(capability, Mapping)
         and capability.get("conversation_ready") is True
