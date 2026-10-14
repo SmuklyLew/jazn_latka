@@ -74,7 +74,7 @@ def test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits(tmp
 
     assert audit
     assert store.stats()["truth_audits"] == before
-    assert (tmp_path / "memory" / "layered" / "truth_audits.jsonl").read_text(encoding="utf-8") == ""
+    assert not (tmp_path / "memory" / "layered" / "truth_audits.jsonl").exists()
     store.close()
 
 
