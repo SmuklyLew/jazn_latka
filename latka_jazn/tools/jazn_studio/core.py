@@ -288,7 +288,7 @@ def update_plan(root: str | Path) -> dict[str, Any]:
     }
     rc, diff = _git(source, "rev-list", "--left-right", "--count", "HEAD...origin/master")
     try:
-        behind, ahead = map(int, diff.split())
+        ahead, behind = map(int, diff.split())
     except (ValueError, TypeError):
         behind = ahead = None
     remote_exists = rc == 0
