@@ -235,16 +235,16 @@ def run(
         runner = ConversationRunner.for_transport(gateway)
         envelope = runner.resume_turn(ResumeRequest(TurnHandle(request_id))).result
     except GatewayError as exc:
-        # Delivery can fail *after* durable acceptance. Recover that exact
-        # committed response before polling, never resubmit the original text.
-        committed = _recover_durable_accepted_reply(
-            root, request_id=request_id, turn_id=turn_id,
-            request_contract_hash=host_request_contract_hash,
-        )
-        if committed is not None:
-            return committed
         reason = str(exc)
         if reason.startswith("daemon_unavailable:"):
+            # Recover only from a transport outage, never bypass a gateway
+            # authentication/policy rejection with local durable content.
+            committed = _recover_durable_accepted_reply(
+                root, request_id=request_id, turn_id=turn_id,
+                request_contract_hash=host_request_contract_hash,
+            )
+            if committed is not None:
+                return committed
             return _poll_same_request(request_id, transport_error=reason)
         return _tool_error(f"runtime_poll_failed:{reason}")
 
