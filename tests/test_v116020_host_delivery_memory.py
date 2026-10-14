@@ -136,3 +136,19 @@ def test_resume_fails_closed_for_tampered_accepted_text(tmp_path: Path):
     assert result["isError"] is True
     assert result["structuredContent"]["action"] == "host_diagnostic"
     assert "capture_binding_mismatch" in result["structuredContent"]["reason"]
+
+
+def test_gateway_auth_failure_never_recovers_local_committed_capture(tmp_path: Path):
+    reply = _request(tmp_path)
+    finalized, errors = _finalize(tmp_path, reply)
+    assert finalized is not None and not errors
+    record = read_committed_host_request(tmp_path, turn_id=reply["turn_id"])
+    class AuthRejected:
+        def result(self, req):
+            raise GatewayError("gateway_auth_rejected")
+    result = jazn_resume_visible_reply.run(root=tmp_path, gateway=AuthRejected(),
+        daemon_request_id=str(record["binding"].get("daemon_request_id") or reply["turn_id"]),
+        turn_id=reply["turn_id"], host_request_contract_hash=record["request_contract_hash"])
+    assert result["isError"] is True
+    assert result["structuredContent"]["action"] == "host_diagnostic"
+    assert "gateway_auth_rejected" in result["structuredContent"]["reason"]
