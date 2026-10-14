@@ -32,8 +32,13 @@ def write_host_frame(stream: TextIO, frame: str, *, timeout_seconds: float = 10.
         stream.flush()
         return
 
-    # Ensure a preceding buffered frame cannot be reordered behind raw writes.
-    stream.flush()
+    # A pre-existing buffered frame must drain before any raw bytes are sent.
+    # On backpressure this may itself raise BlockingIOError: fail closed rather
+    # than interleave frames, and let the host recover an accepted durable turn.
+    try:
+        stream.flush()
+    except BlockingIOError as exc:
+        raise HostOutputBackpressureError("host_stdout_preframe_flush_blocked") from exc
     encoded = frame.encode("utf-8")
     cursor = 0
     deadline = time.monotonic() + max(0.0, timeout_seconds)
