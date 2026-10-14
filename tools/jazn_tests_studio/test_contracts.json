@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.20",
-  "active_definition_count": 2308,
+  "active_definition_count": 2309,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17621,6 +17621,34 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 142
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_preframe_flush_backpressure_fails_closed_before_any_new_bytes": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_preframe_flush_backpressure_fails_closed_before_any_new_bytes",
+      "purpose": "Preframe flush backpressure fails closed before any new bytes",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "BlockingIOError",
+        "HostOutputBackpressureError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
     },
     "tests/test_host_finalization_evidence_binding.py::test_meta_examples_and_code_do_not_become_epistemic_self_claims": {
       "path": "tests/test_host_finalization_evidence_binding.py",
