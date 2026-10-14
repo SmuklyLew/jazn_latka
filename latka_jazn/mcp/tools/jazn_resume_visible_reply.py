@@ -8,6 +8,7 @@ from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
 from latka_jazn.core.chatgpt_host_recovery import (
     recover_pending_host_request,
+    recover_committed_host_presentation,
     reissue_pending_continuation,
 )
 
@@ -183,6 +184,23 @@ def run(
     request_id = str(daemon_request_id or "").strip()
     if not request_id:
         return _tool_error("daemon_request_id_missing")
+
+    # Local, read-only recovery is independent of the daemon result transport.
+    # It requires the original phase-1 contract hash, and never calls finalize.
+    try:
+        committed = recover_committed_host_presentation(
+            Path(root), daemon_request_id=request_id,
+            turn_id=turn_id, request_contract_hash=host_request_contract_hash,
+        )
+    except HostRequestStoreError as exc:
+        return _tool_error(str(exc))
+    if committed is not None:
+        return {
+            "content": [{"type": "text", "text": committed["final_visible_text"]}],
+            "structuredContent": committed,
+            "_meta": {"recovery": "verified_committed_delivery_only", "transport": "local_committed_store"},
+            "isError": False,
+        }
 
     try:
         from latka_jazn.core.conversation_runner import ConversationRunner
