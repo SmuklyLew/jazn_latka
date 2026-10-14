@@ -229,17 +229,19 @@ class JaznStudioWindow:
         self.remote_var = tk.StringVar(value=self.settings.cloudflare_url)
         self.refresh_var = tk.StringVar(value=str(self.settings.refresh_seconds))
         self.timeout_var = tk.StringVar(value=str(self.settings.timeout_seconds))
+        self.python_var = tk.StringVar(value=self.settings.python_executable)
         self.details_var = tk.BooleanVar(value=self.settings.show_details)
         for index, (caption, variable) in enumerate([
             ("Adres Cloudflare HTTPS", self.remote_var),
             ("Odświeżanie pulpitu (sekundy)", self.refresh_var),
             ("Timeout żądań (sekundy)", self.timeout_var),
+            ("Python Jaźni (pełna ścieżka; opcjonalnie)", self.python_var),
         ]):
             ttk.Label(form, text=caption).grid(row=index, column=0, sticky="w", pady=9, padx=(0, 15))
             ttk.Entry(form, textvariable=variable, width=58 if index == 0 else 15).grid(
                 row=index, column=1, sticky="ew", pady=9)
         ttk.Checkbutton(form, text="Pokaż rozszerzone diagnostyki", variable=self.details_var).grid(
-            row=3, column=1, sticky="w", pady=8)
+            row=4, column=1, sticky="w", pady=8)
         form.columnconfigure(1, weight=1)
         buttons = ttk.Frame(area)
         buttons.pack(fill="x", pady=12)
@@ -257,6 +259,7 @@ class JaznStudioWindow:
                 "refresh_seconds": int(self.refresh_var.get()),
                 "timeout_seconds": int(self.timeout_var.get()),
                 "show_details": self.details_var.get(),
+                "python_executable": self.python_var.get().strip(),
             })
             path = write_settings(self.root, config, expected_sha256=self.known_sha)
             self.settings, self.known_sha = load_settings(self.root)
