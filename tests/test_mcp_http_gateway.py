@@ -17,6 +17,7 @@ from latka_jazn.mcp.http_gateway import (
     MCP_PATH,
     READINESS_PATH,
     PublicMcpGatewayConfig,
+    _runtime_ready,
     build_public_mcp_gateway,
 )
 
@@ -38,7 +39,9 @@ class _FakeBackend:
             return {
                 "content": [{"type": "text", "text": "private operator status"}],
                 "structuredContent": {
-                    "gateway_ok": True,
+                    "ok": True,
+                    "ready": True,
+                    "gateway_live": True,
                     "daemon_reachable": True,
                     "runtime_root": "PRIVATE/ROOT/MUST/NOT/LEAK",
                     "daemon": {
@@ -204,6 +207,43 @@ async def test_public_status_is_redacted_even_when_backend_status_is_private(tmp
     server_info = result.meta["io.modelcontextprotocol/serverInfo"]
     assert isinstance(server_info, dict)
     assert server_info["name"] == "jazn-runtime"
+
+
+
+@pytest.mark.parametrize("broken_field", [
+    "ok",
+    "ready",
+    "gateway_live",
+    "daemon_reachable",
+    "capability_matrix",
+])
+def test_readyz_respects_public_status_security_gates(broken_field: str) -> None:
+    """A green operator transport alone cannot authorize HTTP readiness."""
+    status: dict[str, Any] = {
+        "ok": True,
+        "ready": True,
+        "gateway_live": True,
+        "daemon_reachable": True,
+        "capability_matrix": {"conversation_ready": True},
+    }
+    assert _runtime_ready(status) is True
+    # Public MCP status intentionally DOES NOT expose private gateway_ok.
+    assert "gateway_ok" not in status
+    status[broken_field] = (
+        {"conversation_ready": False}
+        if broken_field == "capability_matrix" else False
+    )
+    assert _runtime_ready(status) is False
+
+
+def test_readyz_never_uses_private_gateway_ok_as_sole_evidence() -> None:
+    status: dict[str, Any] = {
+        "gateway_ok": True,  # old private field leaked into previous fixtures
+        "daemon_reachable": True,
+        "capability_matrix": {"conversation_ready": True},
+    }
+    assert _runtime_ready(status) is False
+    assert _runtime_ready({**status, "gateway_live": True}) is False
 
 
 def test_http_app_contains_mcp_liveness_and_readiness_routes(tmp_path: Path) -> None:
