@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-14T04:11:55+00:00",
-  "updated_at_utc": "2026-10-14T04:11:55+00:00",
+  "generated_at_utc": "2026-10-14T04:22:27+00:00",
+  "updated_at_utc": "2026-10-14T04:22:27+00:00",
   "start_file": "run.py",
-  "file_count": 2511,
-  "static_file_count": 2511,
+  "file_count": 2513,
+  "static_file_count": 2513,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -344,8 +344,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "0bf6e67d13ef65b73e32e4440d81d75750fcc047b96c7f7b4490087c9d07f13e",
+      "size_bytes": 2976,
+      "sha256": "33b8084a3b9f5ea29b5be3765dd26bbe1cbb631c789e42d3765ded93469fa2f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2344,6 +2344,15 @@
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_1_INGRESS_TASK_PRINCIPAL_HARDENING.md",
       "size_bytes": 4352,
       "sha256": "ce354c2a026eb0fa0e41c8ee6e981e1ffdfdc9fa8764167b87c2d1509700e597",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_20_HOST_DELIVERY_MEMORY_REPAIR.md",
+      "size_bytes": 5116,
+      "sha256": "09b9ee847597fcd45788357ab8f63c90960a30e60b84153dc89ef7d0af4ac12c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6455,8 +6464,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_resume_visible_reply.py",
-      "size_bytes": 14917,
-      "sha256": "04d2035d30c14e72da80376150e13c71cddb4fb6b5959f6681a729335e69f655",
+      "size_bytes": 14936,
+      "sha256": "5c892e442ea2ddf685f1c9a65db36f981be2f28730c733d2588e9c30bb4a44f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6518,8 +6527,8 @@
     },
     {
       "path": "latka_jazn/memory/availability.py",
-      "size_bytes": 7213,
-      "sha256": "3cdb38ce9f5cffc8b6acb25495bc8db6c0e40ad1ed296e480687debdb6c2cb3d",
+      "size_bytes": 7290,
+      "sha256": "5ddea5c65e3812781b08648d3448da43fd05273ac610245750d8843d62ec330b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6833,8 +6842,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_root.py",
-      "size_bytes": 8599,
-      "sha256": "e8dbecbdfaf1268f25cf55d6ea4f3ce9b07f8a60da32d962bccae554f58c55e5",
+      "size_bytes": 8681,
+      "sha256": "6b416f4552cc2a710f37bafd0aeddb5a775dd2dee4738741176ed401772d9e97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16318,6 +16327,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.20-failed-ci-test-name/test_v116020_host_delivery_memory.py",
+      "size_bytes": 7380,
+      "sha256": "a2c2026eede9f4b9bc68e1265983cf9ffc412b12978c0c6dbae73d7fb3ba87c9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.3-windows-gate-source/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "24c3651f5b2f05ea95f49672c09e2507fc21a4833d61eecc22326c8e53f921bd",
@@ -19432,6 +19450,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "size_bytes": 7500,
+      "sha256": "3b7edcd460c5e02d610730ee8d1616a768f98ef1c135c4aebdd867f604de3e3c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_host_finalization_evidence_binding.py",
       "size_bytes": 13851,
       "sha256": "2ca0bb7286172ba56edcf700bb092f25b6edf80ec3438701079709ba9c8200d8",
@@ -21889,15 +21916,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v116020_host_delivery_memory.py",
-      "size_bytes": 6520,
-      "sha256": "34a2333210fa8b55761e6863369736cee016d7e8568e02d8998df05e63dc2e88",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -22412,8 +22430,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2141403,
-      "sha256": "1340f93cdeafa24b80c43bbc47b39aabc92e849a68113a523010271ec712df7c",
+      "size_bytes": 2142699,
+      "sha256": "2d36916c80e172b12ca92aebec68f72f16b8d1e17bf9574869897812c8a8eb5e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
