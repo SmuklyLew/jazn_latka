@@ -21602,6 +21602,7 @@
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
@@ -21615,21 +21616,22 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 14
     },
     "tests/test_jazn_studio_gui_windows.py::test_studio_gui_script_smoke_from_checkout": {
       "path": "tests/test_jazn_studio_gui_windows.py",
       "name": "test_studio_gui_script_smoke_from_checkout",
       "purpose": "Studio gui script smoke from checkout",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
         "skipif"
       ],
-      "assertion_count": 1,
+      "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.jazn_studio",
@@ -21637,7 +21639,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 42
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
