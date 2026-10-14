@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 import pytest
@@ -39,5 +40,20 @@ def test_studio_window_navigation_and_configuration(tmp_path: Path, monkeypatch:
 
 @pytest.mark.skipif(sys.platform != "win32", reason="Windows-only real Tk packaging smoke")
 def test_studio_gui_script_smoke_from_checkout() -> None:
-    from tools.jazn_studio import main
-    assert main(["--gui-smoke"]) == 0
+    # The public operator launcher must initialize a fresh Tcl/Tk process.
+    # Reusing pytest's interpreter after a previous Tk() has been destroyed
+    # is not representative of a real Windows operator launch.
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, "-X", "utf8", "tools/jazn_studio.py", "--gui-smoke"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        timeout=45,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"Studio GUI subprocess exited {result.returncode}: "
+        f"stdout={result.stdout!r} stderr={result.stderr!r}"
+    )
+    assert "GUI smoke OK" in result.stdout
