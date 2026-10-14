@@ -338,6 +338,12 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--supplied-trace-id")
     child.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024)
 
+    child = sub.add_parser("host-recover-delivery", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--daemon-request-id", required=True)
+    child.add_argument("--request-contract-hash", required=True)
+    child.add_argument("--turn-id")
+
     child = sub.add_parser("audit-tail", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--limit", type=int, default=20)
@@ -449,7 +455,7 @@ def main(
 
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http", "mcp-probe", "chatgpt-plugin-package",
-        "host-finalize", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
+        "host-finalize", "host-recover-delivery", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
         "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-sentinel", "memory-recover", "memory-import-html",
@@ -852,6 +858,25 @@ def main(
         payload = host_commands.finalize_payload(ns)
         _emit(payload, as_json=True)
         return 0 if payload.get("accepted") else 2
+    if ns.command == "host-recover-delivery":
+        from latka_jazn.core.chatgpt_host_recovery import recover_committed_host_presentation
+        from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
+
+        try:
+            payload = recover_committed_host_presentation(
+                root, daemon_request_id=ns.daemon_request_id,
+                turn_id=ns.turn_id, request_contract_hash=ns.request_contract_hash,
+            )
+        except HostRequestStoreError as exc:
+            _emit({"ok": False, "action": "host_diagnostic", "reason": str(exc),
+                   "must_not_resubmit_user_message": True}, as_json=True)
+            return 2
+        if payload is None:
+            _emit({"ok": False, "action": "poll_runtime", "reason": "accepted_delivery_not_available",
+                   "must_not_resubmit_user_message": True}, as_json=True)
+            return 2
+        _emit(payload, as_json=True)
+        return 0
     from latka_jazn.config import JaznConfig
     audit_db = JaznConfig(root=root).audit_db_path_readonly
     if ns.command == "audit-tail":
