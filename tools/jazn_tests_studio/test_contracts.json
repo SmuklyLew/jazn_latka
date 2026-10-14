@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.20",
-  "active_definition_count": 2307,
+  "active_definition_count": 2309,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -22238,7 +22238,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 50
     },
     "tests/test_mcp_deployment_security.py::test_cloudflare_token_is_a_mounted_secret_not_an_argv_parameter": {
       "path": "tests/test_mcp_deployment_security.py",
@@ -22443,7 +22443,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 109
     },
     "tests/test_mcp_http_gateway.py::test_public_gateway_never_allows_non_loopback_daemon_target": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22465,7 +22465,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 124
     },
     "tests/test_mcp_http_gateway.py::test_official_sdk_exposes_only_minimal_public_tool_surface": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22487,7 +22487,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 132
+      "line": 135
     },
     "tests/test_mcp_http_gateway.py::test_canonical_turn_preserves_request_identity": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22509,7 +22509,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 165
+      "line": 168
     },
     "tests/test_mcp_http_gateway.py::test_public_status_is_redacted_even_when_backend_status_is_private": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22531,7 +22531,49 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 186
+      "line": 189
+    },
+    "tests/test_mcp_http_gateway.py::test_readyz_respects_public_status_security_gates": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_readyz_respects_public_status_security_gates",
+      "purpose": "A green operator transport alone cannot authorize HTTP readiness.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 220
+    },
+    "tests/test_mcp_http_gateway.py::test_readyz_never_uses_private_gateway_ok_as_sole_evidence": {
+      "path": "tests/test_mcp_http_gateway.py",
+      "name": "test_readyz_never_uses_private_gateway_ok_as_sole_evidence",
+      "purpose": "Readyz never uses private gateway ok as sole evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 239
     },
     "tests/test_mcp_http_gateway.py::test_http_app_contains_mcp_liveness_and_readiness_routes": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22551,7 +22593,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 209
+      "line": 249
     },
     "tests/test_mcp_http_gateway.py::test_generate_rate_limit_is_operation_specific_and_fail_closed": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22573,7 +22615,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 219
+      "line": 259
     },
     "tests/test_mcp_http_gateway.py::test_resume_turn_reuses_daemon_request_id_without_message_replay": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22595,7 +22637,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 239
+      "line": 279
     },
     "tests/test_mcp_http_gateway.py::test_health_and_memory_status_are_redacted_diagnostics": {
       "path": "tests/test_mcp_http_gateway.py",
@@ -22618,7 +22660,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 256
+      "line": 296
     },
     "tests/test_mcp_http_resources.py::test_http_gateway_exposes_redacted_runtime_and_memory_resources": {
       "path": "tests/test_mcp_http_resources.py",
