@@ -59,6 +59,15 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
     monkeypatch.setenv("JAZN_DICTIONARY_ALLOW_NETWORK", "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
     (tmp_path / "main.py").write_text("# isolated runtime root\n", encoding="utf-8")
+    # Full transactional-memory acceptance requires a synthetic explicit
+    # MEMORY attachment. Bare operational SQLite is never evidence of recall.
+    memory_root = tmp_path / "memory"
+    legacy_source = memory_root / "raw" / "dziennik.json"
+    legacy_source.parent.mkdir(parents=True, exist_ok=True)
+    legacy_source.write_text("[]", encoding="utf-8")
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory_root))
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    assert JaznConfig(root=tmp_path).memory_availability.persistent_memory_enabled
 
     session = JaznRuntimeSession(
         JaznConfig(root=tmp_path),

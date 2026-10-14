@@ -46,9 +46,18 @@ def _manifest(root: Path, *, shard_path: str, active: str = "0001") -> Path:
     "memory/sqlite/runtime_write_v1/runtime_memory.sqlite3",
     r"memory\sqlite\runtime_write_v1\runtime_memory.sqlite3",
 ])
-def test_memory_manifest_path_is_bound_once_to_memory_root(tmp_path: Path, shard_path: str) -> None:
+def test_memory_manifest_path_is_bound_once_to_memory_root(
+    tmp_path: Path, shard_path: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     memory_root = tmp_path / "workspace_runtime/memory"
     manifest = _manifest(memory_root, shard_path=shard_path)
+    # This fixture tests an explicitly attached legacy MEMORY source. Runtime
+    # writers must not switch from core_state merely because SQLite exists.
+    legacy_source = memory_root / "raw" / "dziennik.json"
+    legacy_source.parent.mkdir(parents=True, exist_ok=True)
+    legacy_source.write_text("[]", encoding="utf-8")
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory_root))
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
     expected = memory_root / "sqlite/runtime_write_v1/runtime_memory.sqlite3"
     expected.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(expected) as con:
@@ -65,6 +74,8 @@ def test_memory_manifest_path_is_bound_once_to_memory_root(tmp_path: Path, shard
 
     # The read-only operational shard resolver must agree with the validator.
     config = JaznConfig(root=tmp_path / "runtime")
+    assert config.memory_availability.persistent_memory_enabled is True
+    assert config.memory_root == memory_root.resolve()
     assert config.memory_db_path_readonly == expected.resolve()
     discovered = discover_memory_validation_targets(config.root)
     assert sum(target.path == str(expected.resolve()) for target in discovered) == 1
