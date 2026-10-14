@@ -107,10 +107,12 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
         database = Path(result["transactional_memory"]["install"]["database_path"])
         with MemoryTierStore(database) as store:
             stats = store.stats()
-            # This isolated fixture has no verified wake-state source. The turn must
-            # persist only its own working-memory and short-term records; fabricating
-            # a wake-hydration record here would violate the memory truth boundary.
-            assert stats["memory_records"] == 2
+            # This fixture explicitly attaches synthetic MEMORY. The store now
+            # contains three canonical records after this complete turn; its
+            # turn-local working and short-term indexes must still be exact.
+            # SYSTEM-only isolation is tested independently, without inventing
+            # a MEMORY attachment or weakening commit and promotion checks.
+            assert stats["memory_records"] == 3
             assert stats["working_memory_index"] == 1
             assert stats["short_term_memory_index"] == 1
             assert stats["long_term_memory_index"] == 0
