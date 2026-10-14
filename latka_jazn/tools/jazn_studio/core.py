@@ -90,6 +90,7 @@ class StudioSettings:
     refresh_seconds: int = 20
     timeout_seconds: int = 8
     show_details: bool = False
+    python_executable: str = ""
 
     @classmethod
     def validate(cls, value: Mapping[str, Any]) -> "StudioSettings":
@@ -105,12 +106,18 @@ class StudioSettings:
         details = value.get("show_details", False)
         if type(details) is not bool:
             raise StudioError("show_details must be boolean")
+        executable = value.get("python_executable", "")
+        if not isinstance(executable, str) or any(c in executable for c in "\r\n\0") or len(executable) > 1024:
+            raise StudioError("Invalid Python executable setting")
+        if executable and not Path(executable).is_absolute():
+            raise StudioError("Python executable must be an absolute path")
         return cls(
             cloudflare_url=_remote_url(value.get("cloudflare_url", DEFAULT_CLOUDFLARE_URL)),
             local_mcp_url=_local_http_url(value.get("local_mcp_url", LOCAL_MCP_URL)),
             refresh_seconds=refresh,
             timeout_seconds=timeout,
             show_details=details,
+            python_executable=executable,
         )
 
 
@@ -213,12 +220,30 @@ def _invoke(args: list[str], *, cwd: Path, timeout: int = 15) -> dict[str, Any]:
     }
 
 
+def operator_python(root: str | Path) -> Path:
+    """Honor operator choice in both .py launch and standalone Windows EXE.
+
+    PyInstaller sys.executable is the Studio binary, not a Python interpreter.
+    Refuse to pretend run.py executed when no real interpreter can be found.
+    """
+    settings, _ = load_settings(root)
+    explicit = settings.python_executable or os.environ.get("JAZN_STUDIO_PYTHON", "")
+    if not explicit:
+        if getattr(sys, "frozen", False):
+            raise StudioError("Set Python executable in Studio settings or JAZN_STUDIO_PYTHON")
+        explicit = sys.executable
+    path = Path(explicit).expanduser().resolve()
+    if not path.is_file() or "python" not in path.name.lower():
+        raise StudioError("Configured Python interpreter is not an executable Python path")
+    return path
+
+
 def run_diagnostic(root: str | Path, command: str, *, python_executable: str | Path | None = None,
                    timeout: int = 15) -> dict[str, Any]:
     source = verified_root(root)
     if command not in ALLOWED_COMMANDS:
         raise StudioError("Command not on read-only diagnostics allowlist")
-    interpreter = Path(python_executable or sys.executable).resolve()
+    interpreter = Path(python_executable).resolve() if python_executable else operator_python(source)
     if not interpreter.is_file():
         raise StudioError("Selected Python executable is missing")
     return _invoke(
@@ -357,7 +382,7 @@ def safe_launcher(root: str | Path, target: str) -> list[str]:
     script = tools.get(target)
     if script is None or not script.is_file():
         raise StudioError("Unknown or unavailable canonical Studio: " + str(target))
-    return [sys.executable, "-X", "utf8", str(script)]
+    return [str(operator_python(source)), "-X", "utf8", str(script)]
 
 
 def studio_snapshot(root: str | Path) -> dict[str, Any]:
