@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.20",
-  "active_definition_count": 2319,
+  "active_definition_count": 2321,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21417,6 +21417,50 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_jazn_studio_gui_windows.py::test_studio_window_navigation_and_configuration": {
+      "path": "tests/test_jazn_studio_gui_windows.py",
+      "name": "test_studio_window_navigation_and_configuration",
+      "purpose": "Studio window navigation and configuration",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.jazn_studio",
+        "latka_jazn.tools.jazn_studio.ui"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_jazn_studio_gui_windows.py::test_studio_gui_script_smoke_from_checkout": {
+      "path": "tests/test_jazn_studio_gui_windows.py",
+      "name": "test_studio_gui_script_smoke_from_checkout",
+      "purpose": "Studio gui script smoke from checkout",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.jazn_studio",
+        "latka_jazn.tools.jazn_studio.ui"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
