@@ -7,7 +7,7 @@ import sqlite3
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
-from latka_jazn.memory.memory_tiers import MemoryTier
+from latka_jazn.memory.memory_tiers import MemoryTier, WorkingMemoryRecord
 
 
 def _legacy_semantic_counts(path: Path) -> dict[str, int]:
@@ -125,6 +125,8 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
             assert len(wake_records) == 1
             assert len(turn_records) == 1
             wake_record, turn_record = wake_records[0], turn_records[0]
+            assert isinstance(wake_record, WorkingMemoryRecord)
+            assert isinstance(turn_record, WorkingMemoryRecord)
             assert wake_record.memory_id == wake_status.l1_memory_id
             assert wake_record.domain == "runtime_continuity"
             assert wake_record.session_id == session.state.session_id
