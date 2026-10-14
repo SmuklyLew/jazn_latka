@@ -172,6 +172,50 @@ def _validate_runtime_binding(
         raise HostRequestStoreError("host_request_contract_hash_mismatch")
 
 
+def _recover_durable_accepted_reply(
+    root: Path, *, request_id: str,
+    turn_id: str | None, request_contract_hash: str | None,
+) -> dict[str, Any] | None:
+    """Read back a proved accepted final, never regenerate or finalize a turn.
+
+    Explicit turn and contract lineage are required: an opaque daemon ID alone
+    must not authorize disclosure of old user-visible text.
+    """
+    if not turn_id or not request_contract_hash:
+        return None
+    from latka_jazn.core.chatgpt_host_pending_store import read_committed_host_request
+    try:
+        record = read_committed_host_request(Path(root), turn_id=turn_id)
+    except HostRequestStoreError as exc:
+        if str(exc) == "committed_host_request_missing":
+            return None
+        return _tool_error(str(exc))
+    binding = record["binding"]
+    expected_request = str(binding.get("daemon_request_id") or binding.get("turn_id") or "")
+    expected_contract_hash = str(record.get("request_contract_hash") or "")
+    if not (
+        hmac.compare_digest(request_id, expected_request)
+        and hmac.compare_digest(str(turn_id), str(binding.get("turn_id") or ""))
+        and hmac.compare_digest(str(request_contract_hash).lower(), expected_contract_hash.lower())
+    ):
+        return _tool_error("committed_host_request_recovery_lineage_mismatch")
+    capture = record["final_visible_capture"]
+    text = str(capture["final_visible_text"])
+    return {
+        "content": [{"type": "text", "text": text}],
+        "structuredContent": {
+            "ok": True, "action": "display_exact", "final_visible_text": text,
+            "final_text_sha256": capture["final_text_sha256"],
+            "turn_id": turn_id, "trace_id": binding.get("trace_id"),
+            "must_display_exactly": True, "recovered_existing_request": True,
+            "must_not_resubmit_user_message": True,
+            "durable_commit_verified": True,
+        },
+        "_meta": {"recovery": "existing_accepted_durable_commit", "transport": "durable_host_request_store"},
+        "isError": False,
+    }
+
+
 def run(
     *,
     root: Path,
@@ -191,6 +235,14 @@ def run(
         runner = ConversationRunner.for_transport(gateway)
         envelope = runner.resume_turn(ResumeRequest(TurnHandle(request_id))).result
     except GatewayError as exc:
+        # Delivery can fail *after* durable acceptance. Recover that exact
+        # committed response before polling, never resubmit the original text.
+        committed = _recover_durable_accepted_reply(
+            root, request_id=request_id, turn_id=turn_id,
+            request_contract_hash=host_request_contract_hash,
+        )
+        if committed is not None:
+            return committed
         reason = str(exc)
         if reason.startswith("daemon_unavailable:"):
             return _poll_same_request(request_id, transport_error=reason)
