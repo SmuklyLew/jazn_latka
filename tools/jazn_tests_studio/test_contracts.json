@@ -17442,6 +17442,183 @@
       "description_source": "source_identity",
       "line": 86
     },
+    "tests/test_host_delivery_faults.py::test_host_stdout_delivers_utf8_exactly_over_short_writes": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_host_stdout_delivers_utf8_exactly_over_short_writes",
+      "purpose": "Host stdout delivers utf8 exactly over short writes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_host_delivery_faults.py::test_host_stdout_nonblocking_pipe_slow_reader": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_host_stdout_nonblocking_pipe_slow_reader",
+      "purpose": "Host stdout nonblocking pipe slow reader",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_host_delivery_faults.py::test_host_stdout_timeout_preserves_descriptor_mode": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_host_stdout_timeout_preserves_descriptor_mode",
+      "purpose": "Host stdout timeout preserves descriptor mode",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "HostStdoutDeliveryError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_host_delivery_faults.py::test_committed_delivery_recovers_without_daemon_or_side_effects": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_committed_delivery_recovers_without_daemon_or_side_effects",
+      "purpose": "Committed delivery recovers without daemon or side effects",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_host_delivery_faults.py::test_committed_delivery_refuses_wrong_hash_or_tamper": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_committed_delivery_refuses_wrong_hash_or_tamper",
+      "purpose": "Committed delivery refuses wrong hash or tamper",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "HostRequestStoreError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
+    },
+    "tests/test_host_delivery_faults.py::test_core_generated_memory_directories_do_not_switch_sqlite_root": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_core_generated_memory_directories_do_not_switch_sqlite_root",
+      "purpose": "Core generated memory directories do not switch sqlite root",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 144
+    },
+    "tests/test_host_delivery_faults.py::test_local_host_recover_delivery_cli_reads_consumed_without_replay": {
+      "path": "tests/test_host_delivery_faults.py",
+      "name": "test_local_host_recover_delivery_cli_reads_consumed_without_replay",
+      "purpose": "Local host recover delivery cli reads consumed without replay",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.chatgpt_host_recovery",
+        "latka_jazn.core.host_stdout_delivery",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 165
+    },
     "tests/test_host_finalization_evidence_binding.py::test_meta_examples_and_code_do_not_become_epistemic_self_claims": {
       "path": "tests/test_host_finalization_evidence_binding.py",
       "name": "test_meta_examples_and_code_do_not_become_epistemic_self_claims",
@@ -50142,183 +50319,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_host_delivery_faults.py::test_host_stdout_delivers_utf8_exactly_over_short_writes": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_host_stdout_delivers_utf8_exactly_over_short_writes",
-      "purpose": "Host stdout delivers utf8 exactly over short writes",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 33
-    },
-    "tests/test_host_delivery_faults.py::test_host_stdout_nonblocking_pipe_slow_reader": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_host_stdout_nonblocking_pipe_slow_reader",
-      "purpose": "Host stdout nonblocking pipe slow reader",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [
-        "skipif"
-      ],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 40
-    },
-    "tests/test_host_delivery_faults.py::test_host_stdout_timeout_preserves_descriptor_mode": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_host_stdout_timeout_preserves_descriptor_mode",
-      "purpose": "Host stdout timeout preserves descriptor mode",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [
-        "skipif"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "HostStdoutDeliveryError"
-      ],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 67
-    },
-    "tests/test_host_delivery_faults.py::test_committed_delivery_recovers_without_daemon_or_side_effects": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_committed_delivery_recovers_without_daemon_or_side_effects",
-      "purpose": "Committed delivery recovers without daemon or side effects",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "host"
-      ],
-      "markers": [],
-      "assertion_count": 8,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 93
-    },
-    "tests/test_host_delivery_faults.py::test_committed_delivery_refuses_wrong_hash_or_tamper": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_committed_delivery_refuses_wrong_hash_or_tamper",
-      "purpose": "Committed delivery refuses wrong hash or tamper",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "HostRequestStoreError"
-      ],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 124
-    },
-    "tests/test_host_delivery_faults.py::test_core_generated_memory_directories_do_not_switch_sqlite_root": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_core_generated_memory_directories_do_not_switch_sqlite_root",
-      "purpose": "Core generated memory directories do not switch sqlite root",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host",
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 144
-    },
-    "tests/test_host_delivery_faults.py::test_local_host_recover_delivery_cli_reads_consumed_without_replay": {
-      "path": "tests/test_host_delivery_faults.py",
-      "name": "test_local_host_recover_delivery_cli_reads_consumed_without_replay",
-      "purpose": "Local host recover delivery cli reads consumed without replay",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "host"
-      ],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.cli",
-        "latka_jazn.core.chatgpt_host_pending_store",
-        "latka_jazn.core.chatgpt_host_recovery",
-        "latka_jazn.core.host_stdout_delivery",
-        "latka_jazn.mcp.tools",
-        "latka_jazn.memory.availability"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 165
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
