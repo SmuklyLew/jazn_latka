@@ -138,7 +138,7 @@ def test_git_update_readiness_requires_clean_fast_forward_master(system: Path,
             ("branch", "--show-current"): (0, "master"),
             ("rev-parse", "--short", "HEAD"): (0, "abc123"),
             ("status", "--porcelain", "--untracked-files=normal"): (0, ""),
-            ("rev-list", "--left-right", "--count", "HEAD...origin/master"): (0, "2\t0"),
+            ("rev-list", "--left-right", "--count", "HEAD...origin/master"): (0, "0\t2"),
             ("merge-base", "--is-ancestor", "HEAD", "origin/master"): (0, ""),
         }
         return values.get(args, (1, ""))
@@ -160,7 +160,7 @@ def test_no_automatic_merge_on_dirty_checkout(system: Path, monkeypatch: pytest.
             ("branch", "--show-current"): (0, "master"),
             ("rev-parse", "--short", "HEAD"): (0, "abc"),
             ("status", "--porcelain", "--untracked-files=normal"): (0, " M latka_jazn/mcp/http_gateway.py"),
-            ("rev-list", "--left-right", "--count", "HEAD...origin/master"): (0, "1\t0"),
+            ("rev-list", "--left-right", "--count", "HEAD...origin/master"): (0, "0\t1"),
             ("merge-base", "--is-ancestor", "HEAD", "origin/master"): (0, ""),
         }
         return known.get(args, (1, ""))
