@@ -121,7 +121,7 @@ class JaznStudioWindow:
 
     def _run(self, label: str, func: Callable[[], Any], output: tk.Text | None = None) -> None:
         if self.busy:
-            messagebox.showinfo("Jaźń Studio", "Poczekaj na zakończenie poprzedniej operacji.")
+            self.status_text.set("Operacja nadal trwa — nowe zadanie nie zostało uruchomione.")
             return
         self.busy = True
         self.status_text.set("Trwa: " + label)
