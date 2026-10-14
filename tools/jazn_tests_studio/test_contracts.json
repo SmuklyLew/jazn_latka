@@ -23097,7 +23097,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 77
     },
     "tests/test_mcp_http_resources.py::test_http_gateway_task_resource_reads_same_durable_registry": {
       "path": "tests/test_mcp_http_resources.py",
@@ -23119,7 +23119,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 98
     },
     "tests/test_mcp_http_resources.py::test_http_gateway_refuses_unowned_task_resource_to_public_client": {
       "path": "tests/test_mcp_http_resources.py",
@@ -23143,7 +23143,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 117
     },
     "tests/test_mcp_http_tasks_bridge.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
       "path": "tests/test_mcp_http_tasks_bridge.py",
@@ -46560,7 +46560,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 39
     },
     "tests/test_shard_manifest_fail_closed.py::test_existing_invalid_json_is_not_silently_replaced": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -46580,7 +46580,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 55
     },
     "tests/test_shard_manifest_fail_closed.py::test_path_escape_is_rejected_for_read_and_write": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -46600,7 +46600,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 65
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_active_shard_and_duplicate_ids_are_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -46620,7 +46620,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 67
+      "line": 76
     },
     "tests/test_shard_manifest_fail_closed.py::test_role_mismatch_is_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -46640,7 +46640,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 91
     },
     "tests/test_shard_manifest_fail_closed.py::test_manager_creates_valid_manifest_only_when_missing": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -46658,7 +46658,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 102
     },
     "tests/test_sidecar_migration_contract.py::test_legacy_mixed_audit_sidecar_is_copied_without_mutating_source": {
       "path": "tests/test_sidecar_migration_contract.py",
