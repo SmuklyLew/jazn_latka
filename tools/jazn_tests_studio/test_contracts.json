@@ -32046,7 +32046,7 @@
       "path": "tests/test_memory_shard_manifest_portable_paths.py",
       "name": "test_memory_manifest_path_is_bound_once_to_memory_root",
       "purpose": "Memory manifest path is bound once to memory root",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "memory"
@@ -32054,7 +32054,7 @@
       "markers": [
         "parametrize"
       ],
-      "assertion_count": 8,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -32084,7 +32084,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 90
     },
     "tests/test_memory_shard_manifest_portable_paths.py::test_broken_manifest_cannot_silently_look_healthy": {
       "path": "tests/test_memory_shard_manifest_portable_paths.py",
@@ -32104,7 +32104,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 100
     },
     "tests/test_memory_snapshot_runtime.py::test_online_backup_snapshot_restore_is_chunked_verified_and_exact": {
       "path": "tests/test_memory_snapshot_runtime.py",
@@ -41240,13 +41240,13 @@
       "path": "tests/test_runtime_full_turn.py",
       "name": "test_full_runtime_turn_commits_transactionally_without_legacy_fanout",
       "purpose": "Full runtime turn commits transactionally without legacy fanout",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 16,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
