@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-14T08:08:20+00:00",
-  "updated_at_utc": "2026-10-14T08:08:20+00:00",
+  "generated_at_utc": "2026-10-14T08:31:04+00:00",
+  "updated_at_utc": "2026-10-14T08:31:04+00:00",
   "start_file": "run.py",
-  "file_count": 2520,
-  "static_file_count": 2520,
+  "file_count": 2521,
+  "static_file_count": 2521,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -155,8 +155,8 @@
     },
     {
       "path": ".github/workflows/jazn-operations-studio-windows.yml",
-      "size_bytes": 4476,
-      "sha256": "4adb56f119419cd00fa885371e1fed55013e56c89fcfca24f8a91cc4f79749c6",
+      "size_bytes": 4886,
+      "sha256": "e0d14ff16876686e142d13fbf26b0c1dc7d30c6f2986bc864739ba2f228f04d3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -344,8 +344,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 9828,
-      "sha256": "c736d80ee9453cc678a7cbcbc032ce4e8829dc5d3376353c58a4e24a192dfa24",
+      "size_bytes": 10556,
+      "sha256": "bef7a9a7314a90e6baf7e9564a1e2d0e99dd982363d0d67e94be6dc23740d69e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -353,8 +353,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "1eea583e7440d80ba6e34fd1a6838e06bc43141655de01ea3079413bf65054aa",
+      "size_bytes": 2976,
+      "sha256": "129891a889bad459ce4f9250c1bd73b861651d48b4afcbf7e6c0660a8e9daf71",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -390,7 +390,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "3289e14666611d4cdc082f394661fdeb9717ade6df0f84e72b5e619ed8289d48",
+      "sha256": "4440f7f20a0908d049240ff4443e22ca2d8d3400343b3807a8ed0ad5c05085bb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8598,7 +8598,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7901,
-      "sha256": "1c7d9ff99f7d0c3241b941f2b49b89e3d3af4b0ec0bc4f31dc3d347dafa19eae",
+      "sha256": "b32a8252e7930c24d5337cf780e06d30247635422f5b0da5070a194243fb533c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9021,7 +9021,7 @@
     {
       "path": "latka_jazn/tools/jazn_studio/ui.py",
       "size_bytes": 17696,
-      "sha256": "b479c7d3a20e65470d5887c4644276ef2b054976eb824b688a11def6e5a4f554",
+      "sha256": "adf97188c9a879f14cea100ff4ec6ea86668f893afd662e67418eb1478e6d816",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16363,6 +16363,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.20-before-studio-pyright/test_v11620_host_delivery_faults.py",
+      "size_bytes": 7589,
+      "sha256": "136f00f0b5048a06846697f5d083bcd238292a55ba011648dae712e8295d3c3b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.3-windows-gate-source/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "24c3651f5b2f05ea95f49672c09e2507fc21a4833d61eecc22326c8e53f921bd",
@@ -21953,8 +21962,8 @@
     },
     {
       "path": "tests/test_v11620_host_delivery_faults.py",
-      "size_bytes": 7589,
-      "sha256": "136f00f0b5048a06846697f5d083bcd238292a55ba011648dae712e8295d3c3b",
+      "size_bytes": 7612,
+      "sha256": "f4207d89567714b5398853d084ec518e8af56a12d8e211f0af919ed0dcf68fc7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22485,7 +22494,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2152508,
-      "sha256": "74b4fcb11f92e84f2d8e8049e224672537ea7ae09b0a59b18e45195279d9c7e1",
+      "sha256": "62358b6ad2ccc75c72c49b7eaec23df8e9a0ea2ad3bf1864649876ca9ca09e0a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
