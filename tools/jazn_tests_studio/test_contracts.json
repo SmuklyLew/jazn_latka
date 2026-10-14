@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.21",
+  "system_version": "16.3.25.5.116.0.22",
   "active_definition_count": 2321,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -41242,22 +41242,23 @@
       "path": "tests/test_runtime_full_turn.py",
       "name": "test_full_runtime_turn_commits_transactionally_without_legacy_fanout",
       "purpose": "Full runtime turn commits transactionally without legacy fanout",
-      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 30 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 16,
+      "assertion_count": 30,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core.runtime_session",
-        "latka_jazn.memory.memory_tier_store"
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 52
     },
     "tests/test_runtime_health_recovery.py::test_health_classifier_recovers_stale_confirmed_daemon": {
       "path": "tests/test_runtime_health_recovery.py",
