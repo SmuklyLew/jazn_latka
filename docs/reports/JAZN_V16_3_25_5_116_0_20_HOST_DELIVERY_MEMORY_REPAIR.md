@@ -23,13 +23,13 @@
 
 ## Acceptance tests
 
-`tests/test_v116020_host_delivery_memory.py` verifies:
+`tests/test_host_delivery_backpressure_and_committed_recovery.py` verifies:
 - multi-megabyte Unicode JSON frame over a non-blocking pipe with a draining reader;
-- a bounded backpressure timeout when stdout cannot drain;
+- a bounded backpressure timeout when stdout cannot drain;\n- fail-closed handling when a nonblocking pipe rejects the preceding buffer during pre-frame `flush`;
 - unchanged in-memory JSONL behavior;
 - operational artifacts do not create fake persistent MEMORY;
 - a verified consumed capture is recovered after a mocked transport failure with exactly the prior text;
-- bad contract hash and tampered accepted text fail closed.
+- bad contract hash and tampered accepted text fail closed;\n- a gateway authorization rejection cannot be converted to an offline durable-capture bypass.\n\n`tests/test_runtime_full_turn.py` now separately verifies that an attached test MEMORY enables transactional L1/L2 while a SYSTEM-only turn proceeds without inventing persistent autobiographical memory. An explicit legacy shard manifest is still supported for host-memory compatibility.
 
 Existing host-finalization, memory-root and transport tests must remain green. Frozen historical tests are preserved byte-for-byte in `tests/archive/v16.3.25.5.116.0.19-host-delivery-memory-readiness/` prior to the version-assertion update.
 
