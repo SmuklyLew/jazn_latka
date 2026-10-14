@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-14T10:54:41+00:00",
-  "updated_at_utc": "2026-10-14T10:54:41+00:00",
+  "generated_at_utc": "2026-10-14T11:00:51+00:00",
+  "updated_at_utc": "2026-10-14T11:00:51+00:00",
   "start_file": "run.py",
-  "file_count": 2521,
-  "static_file_count": 2521,
+  "file_count": 2523,
+  "static_file_count": 2523,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "d279deeb2a4e1c35c8fd9fba7cdcceb87b8ee94cc75d5184e11aaed3f7ac21f8",
+      "sha256": "3fae620cd9be8cc41eb4bab1b23c27fdd9899842cd45d202875811a1650220a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16372,6 +16372,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.21-before-http-resource-status-convergence/test_mcp_http_resources.py",
+      "size_bytes": 4571,
+      "sha256": "3446a23883bbc0fd593aba51a2ba7ce4092e5a4b78f5b80cc360eca02c539eae",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.21-before-operational-shard-manifest-convergence/test_shard_manifest_fail_closed.py",
+      "size_bytes": 3893,
+      "sha256": "e13541013275848a6ece7c3663bb55780c37ff17076574c778170500ac1f5446",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.3-windows-gate-source/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2610,
       "sha256": "24c3651f5b2f05ea95f49672c09e2507fc21a4833d61eecc22326c8e53f921bd",
@@ -20045,8 +20063,8 @@
     },
     {
       "path": "tests/test_mcp_http_resources.py",
-      "size_bytes": 4571,
-      "sha256": "3446a23883bbc0fd593aba51a2ba7ce4092e5a4b78f5b80cc360eca02c539eae",
+      "size_bytes": 4632,
+      "sha256": "47cef64625a2443309b5523290065c2444bb72fb914b8915fba31d4eca47196d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21701,8 +21719,8 @@
     },
     {
       "path": "tests/test_shard_manifest_fail_closed.py",
-      "size_bytes": 3893,
-      "sha256": "e13541013275848a6ece7c3663bb55780c37ff17076574c778170500ac1f5446",
+      "size_bytes": 4186,
+      "sha256": "b9b3af45c7af0edd738385099c71825d91a44107dcc56a0a062b57402523edd2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22493,8 +22511,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2152410,
-      "sha256": "4fbec6a65a1f45c0fe916af468733f70430f3b30c8a7915df4ae1f22ae483dea",
+      "size_bytes": 2152411,
+      "sha256": "dea9bf196613aa68bb2f8d9dd79c7d2504a7fc88ab9b2338d06ae7acc7e39997",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
