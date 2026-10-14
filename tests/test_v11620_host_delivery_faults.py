@@ -159,3 +159,21 @@ def test_core_generated_memory_directories_do_not_switch_sqlite_root(
     assert not build_memory_availability_status(root).persistent_memory_enabled
     (memory_root / 'raw' / 'chat.html').write_text('authenticated legacy recall')
     assert build_memory_availability_status(root).persistent_memory_enabled
+
+
+def test_local_host_recover_delivery_cli_reads_consumed_without_replay(tmp_path: Path, capsys):
+    from latka_jazn.cli import main as operator_main
+
+    reply, result, record, daemon_id = _accepted(tmp_path)
+    code = operator_main([
+        'host-recover-delivery', '--root', str(tmp_path),
+        '--daemon-request-id', daemon_id,
+        '--turn-id', reply['turn_id'],
+        '--request-contract-hash', record['request_contract_hash'],
+    ])
+    assert code == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output['action'] == 'display_exact'
+    assert output['final_visible_text'] == result['final_visible_text']
+    assert output['recovered_committed_delivery_only'] is True
+    assert output['must_not_resubmit_user_message'] is True
