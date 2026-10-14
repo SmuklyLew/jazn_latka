@@ -5,6 +5,23 @@ To checkpoint weryfikacji; pełna gotowość wydania wymaga terminalnych wynikó
 
 Eksperymentalny lokalny system rozmowny budowany wokół **zweryfikowanego runtime, źródłowej pamięci, tożsamości, narzędzi, provenance i mierzalnych bramek prawdy**. Jaźń nie jest samym promptem ani pojedynczym modelem LLM.
 
+## Jaźń Studio — zintegrowany panel operatorski
+
+Nowe **Jaźń Studio 1.0** łączy status runtime, lokalne MCP,
+diagnostykę Cloudflare HTTPS, zarządzanie ustawieniami i bezpieczny podgląd
+przyszłych aktualizacji z istniejącymi Studiami Konfiguracji, Testów i Pamięci.
+
+Na Windows po zainstalowaniu/aktualizacji SYSTEM uruchom:
+
+~~~powershell
+& "D:\\.AI\\.venv\\Scripts\\python.exe" -X utf8 tools/jazn_studio.py --ui window
+~~~
+
+Dostępne są również tryby tekstowe, JSON, smoke oraz odrębny build EXE bez
+prywatnej MEMORY. Szczegóły i granice autoryzacji opisuje
+[Jaźń Studio — instrukcja](docs/tools/JAZN_SYSTEM_STUDIO.md).
+To narzędzie operatorskie i nie jest alternatywnym control plane wobec main.py.
+
 ## Najważniejsza zasada
 
 > Prawda runtime i źródeł ma pierwszeństwo przed stylem odpowiedzi.

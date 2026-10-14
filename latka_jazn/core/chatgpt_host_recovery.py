@@ -16,6 +16,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     cleanup_expired_host_requests,
     issue_continuation_token,
+    read_committed_host_request,
 )
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import schema_version
@@ -60,6 +61,7 @@ def _record_daemon_request_id(record: Mapping[str, Any]) -> str:
     return str(
         binding.get("daemon_request_id")
         or generation.get("daemon_request_id")
+        or binding.get("turn_id")
         or ""
     ).strip()
 
@@ -187,3 +189,62 @@ def reissue_pending_continuation(
         turn_id=turn_id,
         request_contract_hash=request_contract_hash,
     )
+
+
+def recover_committed_host_presentation(
+    root: Path,
+    *,
+    daemon_request_id: str,
+    turn_id: str | None = None,
+    request_contract_hash: str | None = None,
+) -> dict[str, Any] | None:
+    """Recover only delivery of an already-accepted reply (never execute a turn).
+
+    The contract hash is compulsory for this local-disk fallback: possessing a
+    possibly guessable daemon request id alone cannot expose private reply text.
+    Returns None when no committed record matches, so normal daemon polling can
+    still handle pending/claimed work. Malformed or ambiguous committed records
+    fail closed rather than regenerating or replaying side effects.
+    """
+    request_id = str(daemon_request_id or "").strip()
+    if not request_id or len(request_id) > 256:
+        raise HostRequestStoreError("daemon_request_id_invalid")
+    if request_contract_hash is None:
+        return None
+    expected_hash = str(request_contract_hash).strip().lower()
+    if len(expected_hash) != 64 or any(c not in "0123456789abcdef" for c in expected_hash):
+        raise HostRequestStoreError("host_request_contract_hash_invalid")
+    directory = _bridge_store_root(Path(root)) / "consumed"
+    if not directory.is_dir():
+        return None
+    matching: list[dict[str, Any]] = []
+    for path in sorted(directory.glob("*.json")):
+        record = _read_record(path)
+        if not hmac.compare_digest(_record_daemon_request_id(record), request_id):
+            continue
+        matching.append(record)
+    if not matching:
+        return None
+    if len(matching) != 1:
+        raise HostRequestStoreError("committed_host_recovery_ambiguous")
+    record = matching[0]
+    binding = _binding(record)
+    accepted_turn_id = str(binding.get("turn_id") or "")
+    if turn_id is not None and not hmac.compare_digest(accepted_turn_id, str(turn_id).strip()):
+        raise HostRequestStoreError("committed_host_recovery_turn_mismatch")
+    if not hmac.compare_digest(str(record.get("request_contract_hash") or "").lower(), expected_hash):
+        raise HostRequestStoreError("host_request_contract_hash_mismatch")
+    accepted = read_committed_host_request(Path(root), turn_id=accepted_turn_id)
+    capture = accepted["final_visible_capture"]
+    return {
+        "ok": True,
+        "action": "display_exact",
+        "final_visible_text": capture["final_visible_text"],
+        "final_text_sha256": capture["final_text_sha256"],
+        "turn_id": accepted_turn_id,
+        "trace_id": binding["trace_id"],
+        "must_display_exactly": True,
+        "recovered_existing_request": True,
+        "recovered_committed_delivery_only": True,
+        "must_not_resubmit_user_message": True,
+    }

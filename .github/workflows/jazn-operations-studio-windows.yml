@@ -1,0 +1,138 @@
+name: jazn-operations-studio-windows
+
+on:
+  push:
+    branches:
+      - "upgrade/v16.3.25.5.116.0.21-jazn-operations-studio"
+      - "upgrade/v16.3.25.5.116.0.21-master-pr370-pr371-convergence"
+  pull_request:
+    branches:
+      - master
+      - "fix/v16.3.25.5.116.0.20-chatgpt-delivery-recovery"
+    paths:
+      - "latka_jazn/tools/jazn_studio/**"
+      - "tools/jazn_studio.py"
+      - "tools/windows/build_jazn_studio.ps1"
+      - "tests/test_jazn_operator_studio.py"
+      - "tests/test_jazn_studio_gui_windows.py"
+      - ".github/workflows/jazn-operations-studio-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project and test tools
+        shell: pwsh
+        run: python -m pip install -e . pytest
+      - name: Verify Tcl/Tk
+        shell: pwsh
+        run: python -X utf8 tools/windows/check_tk_runtime.py
+      - name: Compile operator app
+        shell: pwsh
+        run: >-
+          python -X utf8 -m compileall -q
+          latka_jazn/tools/jazn_studio
+          tools/jazn_studio.py
+          tests/test_jazn_operator_studio.py
+          tests/test_jazn_studio_gui_windows.py
+      - name: Studio unit and Tk tests
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest -q --tb=short -ra
+          tests/test_jazn_operator_studio.py
+          tests/test_jazn_studio_gui_windows.py
+      - name: Read-only snapshot and release version
+        shell: pwsh
+        run: |
+          python -X utf8 tools/jazn_studio.py --smoke
+          if ($LASTEXITCODE -ne 0) { throw "Studio startup failed." }
+          python -X utf8 tools/jazn_studio.py --json | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Studio snapshot failed." }
+          python -X utf8 tools/jazn_studio.py --gui-smoke
+          if ($LASTEXITCODE -ne 0) { throw "Studio GUI failed." }
+      - name: Working tree hygiene
+        shell: pwsh
+        run: |
+          git diff --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  pyright_diagnostics:
+    name: Studio typed-code audit (display exact diagnostics)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Node 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+      - name: Set up Python for complete dependency resolution
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Install exact type-audit dependencies
+        shell: bash
+        run: |
+          python -m pip install -e ".[memory-rebuild-ui,archive,mcp-http]" pytest
+          npm install --global pyright@1.1.411
+          python -m pip check
+      - name: Verify full active-tree Pyright with detailed errors
+        shell: bash
+        run: |
+          pyright --version
+          pyright --project pyrightconfig.json
+
+  package:
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Install PyInstaller
+        shell: pwsh
+        run: python -m pip install -e . pyinstaller
+      - name: Verify Tk
+        shell: pwsh
+        run: python -X utf8 tools/windows/check_tk_runtime.py
+      - name: Build portable EXE
+        shell: pwsh
+        run: ./tools/windows/build_jazn_studio.ps1
+      - name: Smoke executable from another directory
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path "./dist/JaznStudio/JaznStudio.exe").Path
+          $env:JAZN_ROOT = (Resolve-Path ".").Path
+          $env:JAZN_STUDIO_PYTHON = (Get-Command python).Source
+          foreach ($argument in @("--smoke", "--gui-smoke")) {
+            $p = Start-Process -FilePath $exe -ArgumentList @($argument) -WorkingDirectory $env:RUNNER_TEMP -PassThru -Wait
+            if ($p.ExitCode -ne 0) { throw "Studio EXE $argument failed with $($p.ExitCode)" }
+          }
+      - name: Upload compiled GUI
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: JaznStudio-Windows-onedir
+          path: dist/JaznStudio/
+          retention-days: 7

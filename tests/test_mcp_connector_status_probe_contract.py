@@ -31,7 +31,9 @@ class _StatusBackend:
         return {
             "content": [{"type": "text", "text": "ready"}],
             "structuredContent": {
-                "gateway_ok": True,
+                "ok": True,
+                "ready": True,
+                "gateway_live": True,
                 "daemon_reachable": True,
                 "daemon": {
                     "daemon_instance_id": "daemon-status-contract-a",

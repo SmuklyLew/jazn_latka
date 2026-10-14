@@ -27,6 +27,15 @@ def _manifest(*, path: str = "memory/runtime.sqlite3", active: str = "0001") -> 
     }
 
 
+
+def _operational_manifest_path(cfg: JaznConfig) -> Path:
+    """Resolve the same operational shard root used by the SYSTEM-only runtime."""
+    relative = Path(cfg.conversation_shard_manifest_name)
+    if relative.parts and relative.parts[0] == "memory":
+        relative = Path(*relative.parts[1:])
+    return cfg.runtime_memory_storage_root / relative
+
+
 def test_missing_manifest_keeps_single_database_compatibility(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
     expected = (
@@ -45,7 +54,7 @@ def test_missing_manifest_keeps_single_database_compatibility(tmp_path: Path) ->
 
 def test_existing_invalid_json_is_not_silently_replaced(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    path = tmp_path / cfg.conversation_shard_manifest_name
+    path = _operational_manifest_path(cfg)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{broken", encoding="utf-8")
     with pytest.raises(ShardManifestError, match="cannot read shard manifest"):
@@ -55,7 +64,7 @@ def test_existing_invalid_json_is_not_silently_replaced(tmp_path: Path) -> None:
 
 def test_path_escape_is_rejected_for_read_and_write(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    path = tmp_path / cfg.conversation_shard_manifest_name
+    path = _operational_manifest_path(cfg)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(_manifest(path="../outside.sqlite3")), encoding="utf-8")
     with pytest.raises(ShardManifestError, match="unsafe shard path|escapes runtime root"):
@@ -66,7 +75,7 @@ def test_path_escape_is_rejected_for_read_and_write(tmp_path: Path) -> None:
 
 def test_missing_active_shard_and_duplicate_ids_are_rejected(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    path = tmp_path / cfg.conversation_shard_manifest_name
+    path = _operational_manifest_path(cfg)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(_manifest(active="9999")), encoding="utf-8")
     with pytest.raises(ShardManifestError, match="active shard not found exactly once"):
@@ -81,7 +90,7 @@ def test_missing_active_shard_and_duplicate_ids_are_rejected(tmp_path: Path) -> 
 
 def test_role_mismatch_is_rejected(tmp_path: Path) -> None:
     cfg = JaznConfig(root=tmp_path)
-    path = tmp_path / cfg.conversation_shard_manifest_name
+    path = _operational_manifest_path(cfg)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = _manifest()
     payload["role"] = "wrong-role"
