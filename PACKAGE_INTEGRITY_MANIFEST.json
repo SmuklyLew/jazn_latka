@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-14T07:02:47+00:00",
-  "updated_at_utc": "2026-10-14T07:02:47+00:00",
+  "generated_at_utc": "2026-10-14T07:58:40+00:00",
+  "updated_at_utc": "2026-10-14T07:58:40+00:00",
   "start_file": "run.py",
-  "file_count": 2511,
-  "static_file_count": 2511,
+  "file_count": 2516,
+  "static_file_count": 2516,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -345,7 +345,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2976,
-      "sha256": "703375e9b42dde2f4913b782ca88b47952a11c2d5e14ce60a748acb3b255d48e",
+      "sha256": "5508187c1c82e42c43cc645e432c7672805fd0894a2408ab93d0c7758163402c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8977,6 +8977,33 @@
       "path": "latka_jazn/tools/javascript_runtime.py",
       "size_bytes": 6039,
       "sha256": "cece930e9a8f4a880e927e1abef817013c7d2c66b65d14f10250b65a7c5dc5bb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/jazn_studio/__init__.py",
+      "size_bytes": 82,
+      "sha256": "9f0562cfae9bacb95172136f27325d3f026de2ba993edad4ea055bca0db946db",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/jazn_studio/core.py",
+      "size_bytes": 15346,
+      "sha256": "c2d473496ec016da8fe3ee32f6c512fbcaca0585e60f89bae1fb30b14b2840cd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/jazn_studio/ui.py",
+      "size_bytes": 17470,
+      "sha256": "203731e44e1dafce627920b446e567967cbdd1b189dce21762e4abe68976aac3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19675,6 +19702,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_operator_studio.py",
+      "size_bytes": 8906,
+      "sha256": "86e629adb3b35b62d365f7e2b0600a14978b3d08e7182989b7f089e3f74dc00d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_pack_generator_canonical_system_release.py",
       "size_bytes": 5887,
       "sha256": "9e442715b55dc77331095a88b604cb0d522fd8988e867cce017c25c52e4d5ecf",
@@ -22303,6 +22339,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_studio.py",
+      "size_bytes": 3687,
+      "sha256": "77c6a39b74f398e85cdf2d4be71ab02f5cb4434206d7fdf4a17063320996faf2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_tests_studio.py",
       "size_bytes": 510,
       "sha256": "993b758d4dfbdc7b4b1648ccd6e8455caf3bedc90dcb6f0fd460556a30834cec",
@@ -22412,8 +22457,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2143503,
-      "sha256": "6a4f463f5a27bb69539b17a614c2a8c7566429b996b01930ca661fbccba1dd61",
+      "size_bytes": 2150936,
+      "sha256": "c70aa1716d6c479c8cc1bdf32504909c9c99f6ff5a225c86d82f15a4c8d28467",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
