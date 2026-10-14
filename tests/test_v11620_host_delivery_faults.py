@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import threading
@@ -16,7 +17,7 @@ from latka_jazn.memory.availability import build_memory_availability_status, run
 from test_finalization_crash_atomicity import _request, _finalize
 
 
-class PartialTextStream:
+class PartialTextStream(io.StringIO):
     def __init__(self):
         self.chunks: list[str] = []
 
