@@ -44677,6 +44677,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44684,7 +44685,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 77
     },
     "tests/test_runtime_stability_wake_state.py::test_source_change_requires_new_run": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44705,6 +44706,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44712,7 +44714,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 91
+      "line": 92
     },
     "tests/test_runtime_stability_wake_state.py::test_snapshot_hash_mismatch_is_reported": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44733,6 +44735,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44740,7 +44743,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_runtime_stability_wake_state.py::test_legacy_multiple_active_rows_are_migrated_to_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44761,6 +44764,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44768,7 +44772,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 116
+      "line": 117
     },
     "tests/test_runtime_stability_wake_state.py::test_invalid_source_run_id_is_reported": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44789,6 +44793,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44796,7 +44801,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 134
+      "line": 135
     },
     "tests/test_runtime_stability_wake_state.py::test_source_foreign_key_error_blocks_all_writes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44817,6 +44822,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44824,7 +44830,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 144
+      "line": 145
     },
     "tests/test_runtime_stability_wake_state.py::test_unreadable_sqlite_reports_validation_failure": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44845,6 +44851,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44852,7 +44859,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 151
+      "line": 152
     },
     "tests/test_runtime_stability_wake_state.py::test_dry_run_does_not_create_sidecar": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44873,6 +44880,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44880,7 +44888,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 163
     },
     "tests/test_runtime_stability_wake_state.py::test_sidecar_foreign_key_error_fails_deep_verify": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44901,6 +44909,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44908,7 +44917,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 170
+      "line": 171
     },
     "tests/test_runtime_stability_wake_state.py::test_large_source_produces_bounded_snapshot": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44929,6 +44938,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44936,7 +44946,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 180
+      "line": 181
     },
     "tests/test_runtime_stability_wake_state.py::test_fast_status_observes_active_wal_without_writing": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44957,6 +44967,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44964,7 +44975,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 192
+      "line": 193
     },
     "tests/test_runtime_stability_wake_state.py::test_technical_metadata_write_keeps_wake_state_ready": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -44985,6 +44996,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -44992,7 +45004,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 207
+      "line": 208
     },
     "tests/test_runtime_stability_wake_state.py::test_wal_and_checkpoint_do_not_invalidate_logical_fingerprint": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45013,6 +45025,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45020,7 +45033,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 227
+      "line": 228
     },
     "tests/test_runtime_stability_wake_state.py::test_vacuum_layout_change_keeps_wake_state_ready": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45041,6 +45054,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45048,7 +45062,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 251
+      "line": 252
     },
     "tests/test_runtime_stability_wake_state.py::test_in_place_semantic_content_change_is_detected_by_deep_verify": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45069,6 +45083,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45076,7 +45091,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 267
+      "line": 268
     },
     "tests/test_runtime_stability_wake_state.py::test_relevant_schema_change_invalidates_wake_state": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45097,6 +45112,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45104,20 +45120,20 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 279
+      "line": 280
     },
     "tests/test_runtime_stability_wake_state.py::test_isolated_daemon_start_status_doctor_stop_preserves_wake_state": {
       "path": "tests/test_runtime_stability_wake_state.py",
       "name": "test_isolated_daemon_start_status_doctor_stop_preserves_wake_state",
       "purpose": "Isolated daemon start status doctor stop preserves wake state",
-      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "repository",
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 17,
+      "assertion_count": 19,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn",
@@ -45125,6 +45141,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45132,7 +45149,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 329
+      "line": 330
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_dry_run_exit_codes_follow_data_status": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45154,6 +45171,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45161,7 +45179,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 395
+      "line": 406
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45183,6 +45201,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45190,7 +45209,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 415
+      "line": 426
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45214,6 +45233,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45221,7 +45241,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 428
+      "line": 439
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45242,6 +45262,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45249,7 +45270,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 434
+      "line": 445
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45270,6 +45291,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45277,7 +45299,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 449
+      "line": 460
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45298,6 +45320,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45305,7 +45328,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 460
+      "line": 471
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45326,6 +45349,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45333,7 +45357,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 474
+      "line": 485
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45354,6 +45378,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45361,7 +45386,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 501
+      "line": 512
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -45382,6 +45407,7 @@
         "latka_jazn.config",
         "latka_jazn.core.runtime_daemon",
         "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.runtime_memory_install",
         "latka_jazn.memory.runtime_write_access_contract",
         "latka_jazn.memory.wake_state_runtime",
         "latka_jazn.tools.release_staging",
@@ -45389,7 +45415,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 515
+      "line": 526
     },
     "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
       "path": "tests/test_runtime_supervisor.py",
