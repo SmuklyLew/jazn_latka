@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
-  "runtime_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
-  "package_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-13T23:23:03+00:00",
-  "updated_at_utc": "2026-10-13T23:23:03+00:00",
+  "version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
+  "runtime_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
+  "package_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
+  "generated_at_utc": "2026-10-14T04:07:12+00:00",
+  "updated_at_utc": "2026-10-14T04:07:12+00:00",
   "start_file": "run.py",
-  "file_count": 2504,
-  "static_file_count": 2504,
+  "file_count": 2506,
+  "static_file_count": 2506,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -344,8 +344,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "8611c108e31f129b08a83a4ba84e115a3a4c4ca7a067298d1a4f4fa1757ea7b5",
+      "size_bytes": 2976,
+      "sha256": "d1fb39818bf69c3f8297c45307dea8e45a12f19be705e6f9e3f1f65d167df448",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3539,8 +3539,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 48837,
-      "sha256": "4cdc2c8b9b4356505a9e21501dee851c4b34f641fba43f8ddce624ef2a46c3be",
+      "size_bytes": 48016,
+      "sha256": "27adc89bfdbcf9da5f46f99207a5d69213724513442fd0ac1ee67a4ee5b2c27c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3881,8 +3881,8 @@
     },
     {
       "path": "latka_jazn/core/chat_command_contract.py",
-      "size_bytes": 73756,
-      "sha256": "c2152dbaf808a1aeb9aab41afab083e175fe076c82ef37df9683008b3fcc12ba",
+      "size_bytes": 73827,
+      "sha256": "6defaa1b2fb73e2812f9746f27838c6f9dda34a6ed74b71cb10f4080a1bd82b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4801,6 +4801,15 @@
       "path": "latka_jazn/core/host_spawn_diagnostics.py",
       "size_bytes": 3749,
       "sha256": "7b858c84daeb30a747ba3c97ad0547cbd1c4f9d99570e12dedb04010dce6a257",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/host_stdout_transport.py",
+      "size_bytes": 1729,
+      "sha256": "c739f9060fd72e51eb7832de6f08521f301ca0f260136ca38962c262b7e840cb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6446,8 +6455,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_resume_visible_reply.py",
-      "size_bytes": 12462,
-      "sha256": "39e6445961ced161067eed922384365f1a1dd485a56438dba126f8aeff948de5",
+      "size_bytes": 14917,
+      "sha256": "04d2035d30c14e72da80376150e13c71cddb4fb6b5959f6681a729335e69f655",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6509,8 +6518,8 @@
     },
     {
       "path": "latka_jazn/memory/availability.py",
-      "size_bytes": 7563,
-      "sha256": "db2b38524bdcd37ea813a6fe4af9453a574dd5aa2206e66dff41fbb2054e2f4d",
+      "size_bytes": 7213,
+      "sha256": "3cdb38ce9f5cffc8b6acb25495bc8db6c0e40ad1ed296e480687debdb6c2cb3d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6824,8 +6833,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_root.py",
-      "size_bytes": 8954,
-      "sha256": "4f9fe83bdae156c8ecb0104964d06100694eb65016994e51018c1b2cd134fe04",
+      "size_bytes": 8599,
+      "sha256": "e8dbecbdfaf1268f25cf55d6ea4f3ce9b07f8a60da32d962bccae554f58c55e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9956,8 +9965,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 8643,
-      "sha256": "92278d92d986de6f25454086d18f31d3ee314da4eb5cbcdb26a67d06bf269d88",
+      "size_bytes": 8742,
+      "sha256": "b42cd0f670799a5633321bb2f0dba5836da97ed82d011142905c5f07c10e3195",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21835,6 +21844,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v116020_host_delivery_memory.py",
+      "size_bytes": 6520,
+      "sha256": "34a2333210fa8b55761e6863369736cee016d7e8568e02d8998df05e63dc2e88",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -22349,8 +22367,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2134969,
-      "sha256": "ce5fdc4c57f77969b1d8493de2ff726f8355b5438df538ef1beaa3728c58ee18",
+      "size_bytes": 2141403,
+      "sha256": "1340f93cdeafa24b80c43bbc47b39aabc92e849a68113a523010271ec712df7c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22988,11 +23006,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
+  "release_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
-    "package_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence",
-    "release_version": "16.3.25.5.116.0.19-runtime-ingress-security-convergence"
+    "runtime_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
+    "package_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence",
+    "release_version": "16.3.25.5.116.0.20-runtime-ingress-security-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
