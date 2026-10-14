@@ -50165,7 +50165,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 33
     },
     "tests/test_v11620_host_delivery_faults.py::test_host_stdout_nonblocking_pipe_slow_reader": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50191,7 +50191,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 39
+      "line": 40
     },
     "tests/test_v11620_host_delivery_faults.py::test_host_stdout_timeout_preserves_descriptor_mode": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50219,7 +50219,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 67
     },
     "tests/test_v11620_host_delivery_faults.py::test_committed_delivery_recovers_without_daemon_or_side_effects": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50243,7 +50243,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 93
     },
     "tests/test_v11620_host_delivery_faults.py::test_committed_delivery_refuses_wrong_hash_or_tamper": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50269,7 +50269,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 124
     },
     "tests/test_v11620_host_delivery_faults.py::test_core_generated_memory_directories_do_not_switch_sqlite_root": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50294,7 +50294,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 143
+      "line": 144
     },
     "tests/test_v11620_host_delivery_faults.py::test_local_host_recover_delivery_cli_reads_consumed_without_replay": {
       "path": "tests/test_v11620_host_delivery_faults.py",
@@ -50318,7 +50318,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 164
+      "line": 165
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
