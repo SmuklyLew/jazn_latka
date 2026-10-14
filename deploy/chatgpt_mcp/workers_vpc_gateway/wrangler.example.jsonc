@@ -1,0 +1,13 @@
+{
+  // Operator must replace the VPC service ID with the ID returned by their
+  // account's Connectivity Directory. Do not commit tunnel tokens or OAuth secrets.
+  "name": "jazn-runtime",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-14",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vpc_services": [{
+    "binding": "JAZN_PRIVATE_MCP",
+    "service_id": "REPLACE_WITH_PRIVATE_VPC_SERVICE_ID"
+  }]
+}
