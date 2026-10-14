@@ -153,3 +153,21 @@ def test_gateway_auth_failure_never_recovers_local_committed_capture(tmp_path: P
     assert result["isError"] is True
     assert result["structuredContent"]["action"] == "host_diagnostic"
     assert "gateway_auth_rejected" in result["structuredContent"]["reason"]
+
+
+def test_preframe_flush_backpressure_fails_closed_before_any_new_bytes():
+    read_fd, write_fd = _nonblocking_pipe()
+    class BlockedFlush:
+        def fileno(self):
+            return write_fd
+        def flush(self):
+            raise BlockingIOError("host write buffer full")
+    try:
+        with pytest.raises(HostOutputBackpressureError, match="host_stdout_preframe_flush_blocked"):
+            write_host_frame(BlockedFlush(), "A new frame", timeout_seconds=0.02)
+        os.set_blocking(read_fd, False)
+        with pytest.raises(BlockingIOError):
+            os.read(read_fd, 1024)
+    finally:
+        os.close(read_fd)
+        os.close(write_fd)
