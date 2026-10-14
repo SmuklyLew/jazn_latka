@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.19",
-  "active_definition_count": 2300,
+  "system_version": "16.3.25.5.116.0.20",
+  "active_definition_count": 2309,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17441,6 +17441,214 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 86
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_stdout_nonblocking_pipe_writes_one_complete_utf8_frame": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_stdout_nonblocking_pipe_writes_one_complete_utf8_frame",
+      "purpose": "Stdout nonblocking pipe writes one complete utf8 frame",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_host_pipe_backpressure_timeout_is_explicit_and_bounded": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_host_pipe_backpressure_timeout_is_explicit_and_bounded",
+      "purpose": "Host pipe backpressure timeout is explicit and bounded",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "HostOutputBackpressureError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_in_memory_chatgpt_frame_remains_one_json_line": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_in_memory_chatgpt_frame_remains_one_json_line",
+      "purpose": "In memory chatgpt frame remains one json line",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_runtime_artifacts_cannot_forge_persistent_memory": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_runtime_artifacts_cannot_forge_persistent_memory",
+      "purpose": "Runtime artifacts cannot forge persistent memory",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_resume_reads_durable_final_only_with_matching_lineage": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_resume_reads_durable_final_only_with_matching_lineage",
+      "purpose": "Resume reads durable final only with matching lineage",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_resume_fails_closed_for_tampered_accepted_text": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_resume_fails_closed_for_tampered_accepted_text",
+      "purpose": "Resume fails closed for tampered accepted text",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_gateway_auth_failure_never_recovers_local_committed_capture": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_gateway_auth_failure_never_recovers_local_committed_capture",
+      "purpose": "Gateway auth failure never recovers local committed capture",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
+    },
+    "tests/test_host_delivery_backpressure_and_committed_recovery.py::test_preframe_flush_backpressure_fails_closed_before_any_new_bytes": {
+      "path": "tests/test_host_delivery_backpressure_and_committed_recovery.py",
+      "name": "test_preframe_flush_backpressure_fails_closed_before_any_new_bytes",
+      "purpose": "Preframe flush backpressure fails closed before any new bytes",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "BlockingIOError",
+        "HostOutputBackpressureError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.host_stdout_transport",
+        "latka_jazn.mcp.tools",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
     },
     "tests/test_host_finalization_evidence_binding.py::test_meta_examples_and_code_do_not_become_epistemic_self_claims": {
       "path": "tests/test_host_finalization_evidence_binding.py",
@@ -40785,13 +40993,13 @@
       "path": "tests/test_runtime_full_turn.py",
       "name": "test_full_runtime_turn_commits_transactionally_without_legacy_fanout",
       "purpose": "Full runtime turn commits transactionally without legacy fanout",
-      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 15,
+      "assertion_count": 17,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -40801,6 +41009,28 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_runtime_full_turn.py::test_system_only_full_turn_keeps_core_operational_without_false_autobiographical_memory": {
+      "path": "tests/test_runtime_full_turn.py",
+      "name": "test_system_only_full_turn_keeps_core_operational_without_false_autobiographical_memory",
+      "purpose": "System only full turn keeps core operational without false autobiographical memory",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.memory.memory_tier_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 125
     },
     "tests/test_runtime_health_recovery.py::test_health_classifier_recovers_stale_confirmed_daemon": {
       "path": "tests/test_runtime_health_recovery.py",

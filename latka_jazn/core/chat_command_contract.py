@@ -1231,18 +1231,20 @@ def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
 def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output_mode: BridgeOutputMode = "jsonl") -> None:
     presentation = build_chatgpt_host_presentation_packet(payload)
     action = str(presentation.get("action") or "host_diagnostic")
+    from latka_jazn.core.host_stdout_transport import write_host_frame
+
     if output_mode == "final_visible_text" and action == "display_exact":
         # Dosłowny tryb nie może nawet dopisać końcowego LF.
-        stdout.write(str(presentation.get("final_visible_text") or ""))
+        frame = str(presentation.get("final_visible_text") or "")
     elif output_mode == "host_packet" or output_mode == "final_visible_text":
         if output_mode == "final_visible_text" and action != "display_exact":
             presentation["requested_mode"] = "final_visible_text"
             presentation["effective_mode"] = "host_packet"
             presentation["reason"] = "plain_text_blocked_by_host_presentation_gate"
-        stdout.write(json.dumps(presentation, ensure_ascii=False, sort_keys=True) + "\n")
+        frame = json.dumps(presentation, ensure_ascii=False, sort_keys=True) + "\n"
     else:
-        stdout.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
-    stdout.flush()
+        frame = json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n"
+    write_host_frame(stdout, frame)
 
 
 def _mark_verified_one_shot_transport(turn_transport: dict[str, Any]) -> None:

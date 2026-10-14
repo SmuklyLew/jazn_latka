@@ -59,20 +59,13 @@ def _root_has_memory_payload(root: Path) -> bool:
         root / "raw" / "dziennik.json",
         root / "raw" / "chat.html",
         root / "sqlite" / "memory_jazn.sqlite3",
-        root / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3",
-        root / "sqlite" / "runtime_write_v2" / "runtime_memory.sqlite3",
+        root / "sqlite" / "recovery_current" / "runtime_memory_recovered.sqlite3",
+        root / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json",
+        root / "layered" / "semantic.jsonl",
+        root / "layered" / "episodic.jsonl",
         root / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
     )
     if any(path.is_file() for path in known_files):
-        return True
-    for dirname in ("sqlite", "raw", "layered", "versioned_sources"):
-        directory = root / dirname
-        if not directory.is_dir():
-            continue
-        try:
-            next(directory.iterdir())
-        except (StopIteration, OSError):
-            continue
         return True
     return False
 
