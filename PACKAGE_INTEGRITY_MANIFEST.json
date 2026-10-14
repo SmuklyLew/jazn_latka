@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "runtime_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
   "package_version": "16.3.25.5.116.0.21-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-14T11:41:22+00:00",
-  "updated_at_utc": "2026-10-14T11:41:22+00:00",
+  "generated_at_utc": "2026-10-14T11:51:45+00:00",
+  "updated_at_utc": "2026-10-14T11:51:45+00:00",
   "start_file": "run.py",
-  "file_count": 2532,
-  "static_file_count": 2532,
+  "file_count": 2533,
+  "static_file_count": 2533,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -353,8 +353,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2976,
-      "sha256": "f36da1b0b4aee6b4d0c789c3544dd81acfd45aa6313691c6f052189c78c3d082",
+      "size_bytes": 2981,
+      "sha256": "1226cfba1e8875d91c10235aa700ab5bbe16c1f897aa24e41ea21c77db791c1e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16372,6 +16372,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.21-before-attached-memory-record-count/test_runtime_full_turn.py",
+      "size_bytes": 5683,
+      "sha256": "18e181482858de7696978ffca32f91fb6f96568282935bf59394445579bcf2d5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.21-before-explicit-memory-provenance-fixture/test_runtime_stability_wake_state.py",
       "size_bytes": 24095,
       "sha256": "520d784847209d8a5e232c565555fc8d29b9d4338d22d0b5996f659d89b8e35e",
@@ -21539,8 +21548,8 @@
     },
     {
       "path": "tests/test_runtime_full_turn.py",
-      "size_bytes": 5683,
-      "sha256": "18e181482858de7696978ffca32f91fb6f96568282935bf59394445579bcf2d5",
+      "size_bytes": 5816,
+      "sha256": "7cb4e27b02314cf87f91a1eae84c7fe8548fde6ac5e5ef0d27e8f4f369457e45",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
