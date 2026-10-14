@@ -59,6 +59,7 @@ def _root_has_memory_payload(root: Path) -> bool:
         root / "raw" / "dziennik.json",
         root / "raw" / "chat.html",
         root / "sqlite" / "memory_jazn.sqlite3",
+        root / "sqlite" / "recovery_current" / "runtime_memory_recovered.sqlite3",
         root / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json",
         root / "layered" / "semantic.jsonl",
         root / "layered" / "episodic.jsonl",
