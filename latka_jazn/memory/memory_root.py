@@ -35,6 +35,7 @@ def memory_root_has_payload(root: str | Path) -> bool:
         candidate / "raw" / "dziennik.json",
         candidate / "raw" / "chat.html",
         candidate / "sqlite" / "memory_jazn.sqlite3",
+        candidate / "sqlite" / "recovery_current" / "runtime_memory_recovered.sqlite3",
         candidate / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json",
         candidate / "layered" / "semantic.jsonl",
         candidate / "layered" / "episodic.jsonl",
