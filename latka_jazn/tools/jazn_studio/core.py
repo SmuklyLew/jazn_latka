@@ -230,8 +230,20 @@ def operator_python(root: str | Path) -> Path:
     explicit = settings.python_executable or os.environ.get("JAZN_STUDIO_PYTHON", "")
     if not explicit:
         if getattr(sys, "frozen", False):
-            raise StudioError("Set Python executable in Studio settings or JAZN_STUDIO_PYTHON")
-        explicit = sys.executable
+            system = verified_root(root)
+            for candidate in (
+                system / ".venv" / "Scripts" / "python.exe",
+                system.parent / ".venv" / "Scripts" / "python.exe",
+                system / ".venv" / "bin" / "python",
+                system.parent / ".venv" / "bin" / "python",
+            ):
+                if candidate.is_file():
+                    explicit = str(candidate)
+                    break
+            if not explicit:
+                raise StudioError("Set Python executable in Studio settings or JAZN_STUDIO_PYTHON")
+        else:
+            explicit = sys.executable
     path = Path(explicit).expanduser().resolve()
     if not path.is_file() or "python" not in path.name.lower():
         raise StudioError("Configured Python interpreter is not an executable Python path")
