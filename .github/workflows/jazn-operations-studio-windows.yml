@@ -83,10 +83,19 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: "24"
-      - name: Verify Pyright typed Studio
+      - name: Set up Python for complete dependency resolution
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Install exact type-audit dependencies
         shell: bash
         run: |
+          python -m pip install -e ".[memory-rebuild-ui,archive,mcp-http]" pytest
           npm install --global pyright@1.1.411
+          python -m pip check
+      - name: Verify full active-tree Pyright with detailed errors
+        shell: bash
+        run: |
           pyright --version
           pyright --project pyrightconfig.json
 
