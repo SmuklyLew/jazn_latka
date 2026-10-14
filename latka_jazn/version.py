@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# v116.0.20: host stdout/committed delivery recovery and fail-closed Cloudflare Workers VPC staging.
+
 # v116.0.19 isolates bounded Windows daemon CI startup and emits redacted failure evidence.
 # v116.0.18 isolates protocol conformance fixtures over Jaźń HTTP SDK while preserving production tools.
 # v116.0.17 emits bounded MCP tool-auth challenges without weakening server token checks.
@@ -46,8 +48,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.19"
-PACKAGE_VERSION = "16.3.25.5.116.0.19"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.20"
+PACKAGE_VERSION = "16.3.25.5.116.0.20"
 PACKAGE_RELEASE_NAME = "runtime-ingress-security-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
