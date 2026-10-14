@@ -143,7 +143,10 @@ def settings_snapshot(root: str | Path) -> tuple[StudioSettings, str | None]:
     raw = path.read_bytes()
     if len(raw) > 16_384:
         raise StudioError("Settings too large")
-    return StudioSettings.validate(_parse_json(raw.decode("utf-8-sig"))), sha256(raw).hexdigest()
+    payload = _parse_json(raw.decode("utf-8-sig"))
+    if payload.pop("schema", None) != SCHEMA:
+        raise StudioError("Unsupported Jaźń Studio settings schema")
+    return StudioSettings.validate(payload), sha256(raw).hexdigest()
 
 
 def write_settings(root: str | Path, settings: StudioSettings, *, expected_sha256: str | None) -> Path:
