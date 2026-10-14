@@ -49,32 +49,28 @@ def memory_mode(value: str | None = None) -> str:
 
 
 def _root_has_memory_payload(root: Path) -> bool:
-    """Detect an existing memory payload without creating or recursively scanning it."""
+    """Detect provenance-bearing memory, not incidental runtime output.
 
+    SYSTEM-only helpers can create sqlite/raw/layered directories and even
+    operational runtime_write databases. Those are NOT evidence that a MEMORY
+    package was attached. Only a package manifest or explicit legacy recall
+    data files can establish an attachment candidate; full recall readiness
+    remains subject to the separate verifier.
+    """
     if not root.is_dir():
         return False
-    if (root / "MEMORY_PACKAGE_MANIFEST.json").is_file():
+    manifest = root / "MEMORY_PACKAGE_MANIFEST.json"
+    if manifest.is_file() and manifest.stat().st_size > 0:
         return True
-    known_files = (
+    # Retain legacy, explicit user-provided memory layouts. In particular,
+    # runtime_write_v1/v2 and bare directories must not switch storage roots.
+    recall_files = (
         root / "raw" / "dziennik.json",
         root / "raw" / "chat.html",
         root / "sqlite" / "memory_jazn.sqlite3",
-        root / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3",
-        root / "sqlite" / "runtime_write_v2" / "runtime_memory.sqlite3",
         root / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
     )
-    if any(path.is_file() for path in known_files):
-        return True
-    for dirname in ("sqlite", "raw", "layered", "versioned_sources"):
-        directory = root / dirname
-        if not directory.is_dir():
-            continue
-        try:
-            next(directory.iterdir())
-        except (StopIteration, OSError):
-            continue
-        return True
-    return False
+    return any(path.is_file() and path.stat().st_size > 0 for path in recall_files)
 
 
 @dataclass(frozen=True, slots=True)
