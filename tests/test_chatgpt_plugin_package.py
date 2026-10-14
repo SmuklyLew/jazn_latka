@@ -26,6 +26,7 @@ def test_plugin_documents_use_published_agent_plugin_schemas() -> None:
             "jazn": {
                 "type": "streamable-http",
                 "url": "https://jazn.example.test/mcp",
+                "extensions": {"com.openai": {"auth": {"type": "oauth"}}},
             }
         },
     }
@@ -221,3 +222,10 @@ def test_cli_parser_accepts_production_oauth_and_plugin_package_modes() -> None:
     )
     assert local_binding.endpoint is None
     assert local_binding.registered_app_id.startswith("plugin_asdk_app_")
+
+
+def test_remote_package_declares_server_oauth_without_secrets() -> None:
+    documents = build_portable_plugin_documents("https://jazn.example.test/mcp")
+    assert documents["mcp.json"]["mcpServers"]["jazn"]["extensions"]["com.openai"]["auth"] == {"type": "oauth"}
+    assert "auth" not in documents["plugin.json"]["extensions"]["com.openai"]
+    assert "clientSecret" not in json.dumps(documents)

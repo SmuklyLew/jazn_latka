@@ -4,8 +4,12 @@ from latka_jazn.version import PACKAGE_VERSION
 from pathlib import Path
 import hashlib
 import json
+import os
+import re
 import socket
 import sqlite3
+import time
+from typing import Any
 
 import pytest
 
@@ -284,6 +288,44 @@ def test_relevant_schema_change_invalidates_wake_state(tmp_path: Path) -> None:
     assert status["freshness"]["relevant_schema_changed"] is True
 
 
+def _isolated_daemon_startup_diagnostic(
+    started: dict[str, Any], *, waited_seconds: float, budget_seconds: float,
+) -> dict[str, Any]:
+    """Bounded and redacted evidence for isolated daemon startup failures.
+
+    Logs are written by the temporary *synthetic* staging daemon. Do not print
+    the entire log, private environment, bearer token, or command.
+    """
+    report: dict[str, Any] = {
+        "error_code": started.get("error_code"),
+        "reason": started.get("error"),
+        "pid": started.get("pid"),
+        "waited_seconds": round(waited_seconds, 2),
+        "budget_seconds": budget_seconds,
+        "process_cleanup": started.get("process_cleanup"),
+        "pid_file_cleanup": started.get("pid_file_cleanup"),
+    }
+    for key in ("stderr_log", "stdout_log", "process_event_log"):
+        raw_path = started.get(key)
+        if not isinstance(raw_path, str):
+            continue
+        try:
+            path = Path(raw_path)
+            size = path.stat().st_size
+            with path.open("rb") as stream:
+                stream.seek(max(0, size - 2048))
+                tail = stream.read().decode("utf-8", errors="replace")
+            tail = re.sub(r"(?i)Bearer\s+[^\s,;]+", "Bearer [REDACTED]", tail)
+            tail = re.sub(
+                r"(?i)\b(?:token|password|secret|api_key)\s*[:=]\s*[^\s,;]+",
+                "[REDACTED]", tail,
+            )
+            report[key] = {"size_bytes": size, "tail": tail[-900:]}
+        except OSError as exc:
+            report[key] = {"read_error_type": type(exc).__name__}
+    return report
+
+
 def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path: Path) -> None:
     runtime_root = tmp_path / "isolated-runtime"
     create_system_smoke_staging(ROOT, runtime_root)
@@ -308,11 +350,22 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
         port = int(probe.getsockname()[1])
     assert port != 8787
     marker = runtime_root / "workspace_runtime" / "isolated" / "JAZN_ACTIVE_RUNTIME.json"
+    # This full-suite integration test stages and starts an isolated Windows
+    # subprocess under contended GitHub Actions runners. Keep an explicit
+    # bounded test-only startup allowance, without touching production defaults
+    # or treating an unverified PID/endpoint as READY.
+    startup_budget = 90.0 if os.name == "nt" else 30.0
+    startup_started = time.monotonic()
     started = start_daemon(
         cfg, host="127.0.0.1", port=port, marker_output=marker,
-        heartbeat_interval=0.2, startup_timeout=20.0,
+        heartbeat_interval=0.2, startup_timeout=startup_budget,
     )
-    assert started["ok"] is True, started
+    elapsed = time.monotonic() - startup_started
+    assert started["ok"] is True, json.dumps(
+        _isolated_daemon_startup_diagnostic(
+            started, waited_seconds=elapsed, budget_seconds=startup_budget,
+        ), ensure_ascii=False, default=str,
+    )
     try:
         current_status = status_payload(
             runtime_root, daemon_host="127.0.0.1", daemon_port=port, marker_output=marker

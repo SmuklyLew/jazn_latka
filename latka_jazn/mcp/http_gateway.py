@@ -24,12 +24,14 @@ import secrets
 import threading
 import time
 from typing import Annotated, Any, Callable, Mapping, Protocol
+from urllib.parse import urlsplit
 
 from pydantic import AnyHttpUrl, Field
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver import RequestStateSecurity
 from mcp.server.extension import Extension
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.provider import TokenVerifier
@@ -149,6 +151,8 @@ class PublicMcpGatewayConfig:
     port: int = 8080
     streamable_http_path: str = MCP_PATH
     max_request_body_size: int = DEFAULT_MAX_REQUEST_BYTES
+    json_response: bool = True  # Production default; fixture uses SSE for protocol tests.
+    request_state_security: RequestStateSecurity | None = None
     allow_unauthenticated_loopback_dev: bool = False
     oauth_issuer_url: str | None = None
     oauth_resource_server_url: str | None = None
@@ -234,7 +238,10 @@ def _call_tool_result(value: Mapping[str, Any]) -> CallToolResult:
     )
 
 
-def _public_error(reason: str, *, request_id: str | None = None) -> CallToolResult:
+def _public_error(
+    reason: str, *, request_id: str | None = None,
+    auth_challenge: str | None = None,
+) -> CallToolResult:
     structured: dict[str, Any] = {
         "ok": False,
         "action": "host_diagnostic",
@@ -246,6 +253,7 @@ def _public_error(reason: str, *, request_id: str | None = None) -> CallToolResu
     return CallToolResult(
         content=[TextContent(type="text", text=f"Jaźń MCP ingress rejected the request safely: {reason}.")],
         structured_content=structured,
+        _meta={"mcp/www_authenticate": [auth_challenge]} if auth_challenge else None,
         is_error=True,
     )
 
@@ -323,6 +331,7 @@ class PublicMcpGateway:
             version=PACKAGE_VERSION_FULL,
             token_verifier=token_verifier,
             auth=auth,
+            request_state_security=config.request_state_security,
             extensions=(
                 [_TasksCapabilityExtension()]
                 if self._protocol_backend is not None
@@ -354,6 +363,28 @@ class PublicMcpGateway:
             return None  # A shared client_id cannot identify one user-owned task.
         return _Principal(subject=subject, scopes=frozenset(str(scope) for scope in token.scopes))
 
+    def _auth_challenge(self, *, error: str) -> str | None:
+        """Return a bounded OAuth challenge for an authentication failure.
+
+        Only the trusted, configured HTTPS resource origin is used.
+        No tokens, user-controlled errors, filesystem paths or credentials leak.
+        SDK middleware also handles the HTTP-level 401 boundary.
+        """
+        if self._token_verifier is None:
+            return None
+        resource = str(self.config.oauth_resource_server_url or "")
+        parsed = urlsplit(resource)
+        if parsed.scheme != "https" or not parsed.netloc or parsed.username is not None or parsed.password is not None:
+            return None
+        if error not in {"invalid_token", "insufficient_scope"}:
+            return None
+        resource_metadata = f"{parsed.scheme}://{parsed.netloc}/.well-known/oauth-protected-resource"
+        description = "Connect or reauthorize Jaźń Runtime to continue"
+        return (
+            f'Bearer resource_metadata="{resource_metadata}", '
+            f'error="{error}", error_description="{description}"'
+        )
+
     def _invoke(
         self,
         tool_name: str,
@@ -365,10 +396,10 @@ class PublicMcpGateway:
             return _public_error("tool_not_publicly_exposed", request_id=request_id)
         principal = self._principal()
         if principal is None:
-            return _public_error("authenticated_principal_required", request_id=request_id)
+            return _public_error("authenticated_principal_required", request_id=request_id, auth_challenge=self._auth_challenge(error="invalid_token"))
         required_scope = _TOOL_SCOPES[tool_name]
         if required_scope not in principal.scopes:
-            return _public_error("insufficient_scope", request_id=request_id)
+            return _public_error("insufficient_scope", request_id=request_id, auth_challenge=self._auth_challenge(error="insufficient_scope"))
         if not self._rate_limiter.allow(subject=principal.subject, operation_name=tool_name):
             return _public_error("rate_limit_exceeded", request_id=request_id)
 
@@ -423,6 +454,14 @@ class PublicMcpGateway:
         structured = value.get("structuredContent") if isinstance(value, Mapping) else None
         return dict(structured) if isinstance(structured, Mapping) else {}
 
+    def _tool_security_meta(self, required_scope: str) -> dict[str, Any]:
+        """Advertise actual enforced scopes to ChatGPT without granting access."""
+        if self._token_verifier is None:
+            # Only a validated explicit loopback development server can be noauth.
+            return {"securitySchemes": [{"type": "noauth"}]}
+        scopes = list(dict.fromkeys((*self.config.oauth_required_scopes, required_scope)))
+        return {"securitySchemes": [{"type": "oauth2", "scopes": scopes}]}
+
     def _register_tools(self) -> None:
         mutating_idempotent = ToolAnnotations(
             read_only_hint=False,
@@ -446,6 +485,7 @@ class PublicMcpGateway:
                 "if the result says poll_runtime, call jazn_resume_visible_reply and do not resubmit the message."
             ),
             annotations=mutating_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_SUBMIT),
         )
         def jazn_generate_visible_reply(
             request_id: RequestId,
@@ -472,6 +512,7 @@ class PublicMcpGateway:
                 "Poll the same daemon_request_id; never replay the original user message."
             ),
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_READ),
         )
         def jazn_resume_visible_reply(
             daemon_request_id: RequestId,
@@ -497,6 +538,7 @@ class PublicMcpGateway:
                 "returned by the same Jaźń turn."
             ),
             annotations=mutating_idempotent,
+            meta=self._tool_security_meta(SCOPE_TURN_FINALIZE),
         )
         def jazn_finalize_reply(
             continuation_token: ContinuationToken,
@@ -521,13 +563,14 @@ class PublicMcpGateway:
             title="Read Jaźń readiness",
             description="Read a redacted runtime readiness view. Private operator/audit details are not exposed.",
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_status() -> CallToolResult:
             principal = self._principal()
             if principal is None:
-                return _public_error("authenticated_principal_required")
+                return _public_error("authenticated_principal_required", auth_challenge=self._auth_challenge(error="invalid_token"))
             if SCOPE_STATUS_READ not in principal.scopes:
-                return _public_error("insufficient_scope")
+                return _public_error("insufficient_scope", auth_challenge=self._auth_challenge(error="insufficient_scope"))
             if not self._rate_limiter.allow(subject=principal.subject, operation_name="jazn_status"):
                 return _public_error("rate_limit_exceeded")
             status = self._status_snapshot()
@@ -568,6 +611,7 @@ class PublicMcpGateway:
             title="Read Jaźń gateway health",
             description="Read redacted transport liveness. Do not use this tool to submit a user message.",
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_health() -> CallToolResult:
             return self._invoke(JAZN_HEALTH_TOOL, {})
@@ -579,6 +623,7 @@ class PublicMcpGateway:
                 "Read redacted persistent-memory and recall readiness without returning raw memory content or local paths."
             ),
             annotations=read_only_idempotent,
+            meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
         def jazn_memory_status() -> CallToolResult:
             return self._invoke(JAZN_MEMORY_STATUS_TOOL, {})
@@ -774,7 +819,7 @@ class PublicMcpGateway:
         sdk_app = self.mcp.streamable_http_app(
             host=self.config.host,
             streamable_http_path=self.config.streamable_http_path,
-            json_response=True,
+            json_response=self.config.json_response,
             stateless_http=True,
             max_request_body_size=self.config.max_request_body_size,
             transport_security=self.transport_security(),
@@ -833,6 +878,8 @@ def build_public_mcp_gateway(
     allowed_hosts: tuple[str, ...] = (),
     allowed_origins: tuple[str, ...] = (),
     allow_unauthenticated_loopback_dev: bool = False,
+    json_response: bool = True,
+    request_state_security: RequestStateSecurity | None = None,
     backend: PublicIngressBackend | None = None,
     protocol_backend: ModernProtocolBackend | None = None,
 ) -> PublicMcpGateway:
@@ -843,6 +890,8 @@ def build_public_mcp_gateway(
         host=host,
         port=port,
         allow_unauthenticated_loopback_dev=allow_unauthenticated_loopback_dev,
+        json_response=json_response,
+        request_state_security=request_state_security,
         oauth_issuer_url=oauth_issuer_url,
         oauth_resource_server_url=oauth_resource_server_url,
         oauth_required_scopes=oauth_required_scopes,

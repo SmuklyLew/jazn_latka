@@ -49,6 +49,10 @@ def _safe_failure_diagnostic(result: dict) -> str:
 
 
 def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_path: Path, monkeypatch) -> None:
+    # Isolated integration is CPU/CI-speed sensitive (Windows runner can take
+    # longer than the 45s production default while validating memory).
+    # Bound this test explicitly; do not disable or change runtime deadlines.
+    monkeypatch.setenv("JAZN_RUNTIME_TURN_TIMEOUT_SECONDS", "180")
     monkeypatch.setenv("JAZN_NETWORK_TIME_FIRST", "0")
     monkeypatch.setenv("JAZN_NETWORK_TIME_IN_TURN", "0")
     monkeypatch.setenv("JAZN_ALLOW_NETWORK", "0")
@@ -85,7 +89,7 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
 
         after_legacy = _legacy_semantic_counts(legacy_path)
         assert result["ok"] is True, _safe_failure_diagnostic(result)
-        assert result["canonical_persistence"]["committed"] is True
+        assert result["canonical_persistence"]["committed"] is True, _safe_failure_diagnostic(result)
         assert result["transactional_memory"]["available"] is True
         assert result["transactional_memory"]["store"]["ready"] is True
         assert result["session_provenance"]["transactional_memory_ready"] is True

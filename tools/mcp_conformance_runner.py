@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-"""Exercise one isolated Jaźń MCP fixture with a pinned upstream conformance CLI.
+"""Exercise Jaźń's actual MCP SDK HTTP transport with isolated synthetic fixture handlers.
 
-Never connects to a public endpoint or private MEMORY. Exit status propagates
+Never connects to a public endpoint or private MEMORY.\nThe fixture provides upstream-required test_* tools/resources/prompts only in this\nseparate loopback process. Production toolset remains unchanged. Production\ncontract tests are separate and must not be replaced by fixture PASS. Exit status propagates
 unchanged; all server and test output is saved for review.
 """
 
@@ -15,7 +15,20 @@ import sys
 import time
 
 
+def _configure_unicode_console() -> None:
+    """CI on Windows may attach cp1252 stdout despite PYTHONUTF8 for children.
+
+    The upstream suite prints arbitrary Unicode in failure explanations.
+    Keep exact artifacts and do not lose exit status to a logging exception.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        adjust = getattr(stream, "reconfigure", None)
+        if callable(adjust):
+            adjust(encoding="utf-8", errors="backslashreplace")
+
+
 def main() -> int:
+    _configure_unicode_console()
     parser = argparse.ArgumentParser()
     parser.add_argument("--conformance", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
@@ -32,9 +45,9 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, PYTHONUTF8="1")
     command = [
-        sys.executable, "-X", "utf8", str(project / "run.py"),
-        "mcp-http", "--root", str(project), "--loopback-dev",
-        "--host", "127.0.0.1", "--port", str(options.port),
+        sys.executable, "-X", "utf8",
+        str(project / "tools" / "mcp_conformance_fixture_server.py"),
+        "--port", str(options.port),
     ]
     with (out / "server.log").open("wb") as output:
         server = subprocess.Popen(

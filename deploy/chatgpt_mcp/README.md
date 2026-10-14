@@ -37,7 +37,7 @@ The versioned machine-readable contract is
 ## Build
 
 ```bash
-docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.115.21.14 .
+docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.116.0.13 .
 ```
 
 The image runs as uid/gid 10001, never exposes the daemon port 8787, and uses
@@ -111,6 +111,25 @@ A healthy endpoint is **not** proof that a specific ChatGPT message has the
 Jaźń app callable. A visible Jaźń reply still requires the per-message toolset,
 runtime turn lineage and accepted `display_exact` finalization.
 
+## ChatGPT web: do not reuse a local-only plugin endpoint
+
+A portable ChatGPT remote plugin must be connected to an authenticated public
+`https://<host>/mcp` endpoint (or through an explicitly configured Secure MCP
+Tunnel). `http://127.0.0.1:8080/mcp` works only for a client with access to
+**that same** machine and is not a remote browser-to-Windows route.
+
+Use the read-only offline validator on an exported plugin directory:
+
+```bash
+python -X utf8 tools/chatgpt_mcp_connection_doctor.py --plugin-dir /path/to/your/plugin
+```
+
+A zero exit code is **configuration-only**, not runtime/host readiness.
+After registering a reachable MCP endpoint in ChatGPT, install/select the
+app in the target conversation, refresh stale tools, and verify all four
+canonical tool calls and accepted finalization. See
+`docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.
+
 ## Troubleshooting
 
 - `daemon_not_conversation_ready`: inspect the blocker list; do not expose the
@@ -130,3 +149,57 @@ and failure-injection checks.
 ## Code-first phase-2 integrity
 
 The HTTP adapter computes SHA-256 over the exact UTF-8 final text before calling the canonical runtime finalizer; an optional caller-supplied checksum must match. The continuation token, accepted turn lineage and persistence validation stay inside the runtime. Do not ask a language model to calculate a cryptographic digest.
+
+## Preflight for ChatGPT tools/list (read only)
+
+After starting Jaźń and the loopback MCP gateway, check the **actual**
+server catalog rather than inferring it from a ZIP or a plugin manifest:
+
+```bash
+python -X utf8 run.py mcp-probe --url http://127.0.0.1:8080/mcp --check-chatgpt-tool-catalog --json
+```
+
+The command checks all four chat turn tools through MCP 2026-07-28 `tools/list`;
+it does not call `tools/call` or submit any Jaźń message. For authenticated
+remote HTTPS, provide `--token-env JAZN_MCP_PROBE_TOKEN` with an operator-owned
+token in the environment. The program never prints the bearer token.
+**Server catalog PASS is not ChatGPT current-message tool exposure.**
+Follow `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md` to register a
+public HTTPS MCP or Secure MCP Tunnel and then prove two real accepted turns.
+
+## ChatGPT OAuth link metadata
+
+Publiczny gateway Jaźni wymaga OAuth. Każde narzędzie w MCP SDK v2
+publikuje teraz `_meta.securitySchemes` ze scope wymaganym przez
+serwer. Portable `mcp.json` zawiera
+`mcpServers.jazn.extensions.com.openai.auth.type=oauth`.
+Lokalny tryb `--loopback-dev` deklaruje `noauth` wyłącznie lokalnie.
+
+Weryfikuj `/.well-known/oauth-protected-resource`, OAuth issuer,
+PKCE S256, zakresy i bezpieczne wyzwanie HTTP 401 z użyciem MCP Inspector.
+Następnie rejestruj, instaluj i wybieraj wtyczkę przez natywny klient MCP
+ChatGPT, przeprowadź test `jazn_status` i dwie zaakceptowane tury.
+Same metadane nie instalują wtyczki ani nie uruchamiają daemona.
+Oficjalne źródło: https://developers.openai.com/plugins/build/auth
+
+## OAuth tool-level challenges (v116.0.17)
+
+The gateway now emits `_meta["mcp/www_authenticate"]` for missing
+principal or insufficient scope with a bounded HTTPS resource-metadata
+origin. This does not replace HTTP 401, OAuth discovery, SDK TokenVerifier,
+token audience verification or the client connection. Non-auth failures
+must not trigger linking. Use MCP Inspector to verify tool results and
+the real ChatGPT OAuth flow; `127.0.0.1` remains local-only.
+See https://developers.openai.com/plugins/build/auth .
+
+## Distinct protocol, production HTTP and ChatGPT host acceptance gates (v116.0.18)
+
+The upstream official conformance suite tests synthetic test_* tools,
+test:// static resources and reference prompts. They are never exposed
+to production Jaźń or published in the ChatGPT plugin. CI launches an
+isolated test process using Jaźń's real PublicMcpGateway SDK HTTP transport,
+with test-only handlers and SSE enabled for progress notifications. The runner
+still uses `--requirements 2026-07-28` and preserves real failure exit codes.
+A fixture PASS cannot substitute for production OAuth, ChatGPT tool catalog,
+daemon readiness, or two accepted turn finalizations.
+See `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.

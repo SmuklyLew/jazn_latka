@@ -61,6 +61,14 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common(child)
     child.add_argument("--url", default="http://127.0.0.1:8080/mcp")
     child.add_argument("--timeout", type=float, default=3.0)
+    child.add_argument(
+        "--check-chatgpt-tool-catalog", action="store_true",
+        help="Read-only tools/list check of four Jaźń tools; not ChatGPT host readiness.",
+    )
+    child.add_argument(
+        "--token-env", default=None,
+        help="Optional environment variable holding an HTTPS OAuth bearer token (never printed).",
+    )
 
     child = sub.add_parser("mcp-http", allow_abbrev=False)
     _add_common(child)
@@ -704,7 +712,19 @@ def main(
     if ns.command == "mcp-probe":
         from latka_jazn.mcp.ingress_diagnostics import probe_mcp_endpoint
 
-        payload = probe_mcp_endpoint(ns.url, timeout=ns.timeout)
+        if ns.check_chatgpt_tool_catalog:
+            from latka_jazn.mcp.chatgpt_bridge_probe import probe_chatgpt_mcp_tool_catalog
+
+            payload = probe_chatgpt_mcp_tool_catalog(
+                ns.url, timeout=ns.timeout, token_env=ns.token_env,
+            )
+        elif ns.token_env:
+            payload = {
+                "ok": False,
+                "reason": "mcp_probe_token_env_requires_tool_catalog_check",
+            }
+        else:
+            payload = probe_mcp_endpoint(ns.url, timeout=ns.timeout)
         _emit(payload, as_json=ns.as_json)
         return 0 if payload.get("ok") else 1
     if ns.command == "mcp-http":
