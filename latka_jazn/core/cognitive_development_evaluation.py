@@ -27,6 +27,46 @@ class IntentCase:
     previous_text: str | None = None
 
 
+def summarize_label_pairs(pairs: Sequence[tuple[str, str]]) -> dict[str, Any]:
+    """Deterministic confusion, wrong-route counts and macro F1 on labeled data.
+
+    Metric values describe this caller-supplied set, not calibrated probabilities,
+    subjective understanding or generalization to unseen conversations.
+    """
+    if not pairs:
+        raise ValueError("At least one labeled prediction is required")
+    if any(not expected or not predicted for expected, predicted in pairs):
+        raise ValueError("Labels must be nonempty")
+    labels = sorted({label for pair in pairs for label in pair})
+    matrix = {label: {other: 0 for other in labels} for label in labels}
+    for expected, predicted in pairs:
+        matrix[expected][predicted] += 1
+    per_label: dict[str, dict[str, float | int]] = {}
+    for label in labels:
+        true_positive = matrix[label][label]
+        support = sum(matrix[label].values())
+        predicted_count = sum(row[label] for row in matrix.values())
+        precision = true_positive / predicted_count if predicted_count else 0.0
+        recall = true_positive / support if support else 0.0
+        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+        per_label[label] = {
+            "support": support,
+            "predicted": predicted_count,
+            "precision": round(precision, 6),
+            "recall": round(recall, 6),
+            "f1": round(f1, 6),
+        }
+    misrouted = sum(matrix[x][y] for x in labels for y in labels if x != y)
+    return {
+        "confusion_matrix": matrix,
+        "per_intent": per_label,
+        "macro_f1": round(sum(float(v["f1"]) for v in per_label.values()) / len(labels), 6),
+        "wrong_route_count": misrouted,
+        "wrong_route_rate": round(misrouted / len(pairs), 6),
+        "label_count": len(labels),
+    }
+
+
 def evaluate_intents(cases: Sequence[IntentCase]) -> dict[str, Any]:
     """Return real classifier outputs; keep an incorrect result visible."""
     if not cases:
@@ -44,10 +84,14 @@ def evaluate_intents(cases: Sequence[IntentCase]) -> dict[str, Any]:
             "internal_support_score": report.confidence,
         })
     correct = sum(bool(row["matched"]) for row in observations)
+    summary = summarize_label_pairs([
+        (str(row["expected"]), str(row["predicted"])) for row in observations
+    ])
     return {
         "evaluated": len(cases),
         "correct": correct,
         "accuracy": round(correct / len(cases), 4),
+        **summary,
         "observations": observations,
         "is_external_holdout": False,
         "claim_of_generalization_allowed": False,
