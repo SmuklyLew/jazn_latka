@@ -80,6 +80,18 @@ jobs:
           tests/test_runtime_stability_wake_state.py
           tests/test_offline_provenance_readiness.py
 
+      # The performance SLA is checked once in a fresh Python process.
+      # A fixed wall-clock bound in the last 3% of a 2500+ test process
+      # also measures prior test/plugin/GIL/Windows runner contention.
+      # This does NOT relax the <5 s assertion or drop the test.
+      - name: Verify isolated health-check latency and no semantic write
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=5
+          -m "not live_model and not live_mcp"
+          tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write
+
       - name: Full deterministic suite in PowerShell
         shell: pwsh
         run: >-
@@ -87,6 +99,7 @@ jobs:
           -q -ra --tb=short --durations=25
           -m "not live_model and not live_mcp"
           --ignore=tests/test_configuration_studio_gui_windows.py
+          --deselect=tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write
 
       - name: Capture system package smoke report
         shell: pwsh
