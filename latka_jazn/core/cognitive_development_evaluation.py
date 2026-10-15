@@ -188,6 +188,11 @@ def synthetic_operator_report() -> dict[str, Any]:
         IntentCase("write_authority", "Napraw teraz kod systemu Jaźni na nowym branchu.",
                    "system_update_execution_request"),
         IntentCase("feedback", "To jest źle.", "negative_feedback_without_update_request"),
+        IntentCase(
+            "new_chat_reply_correction",
+            "Heh. Coś Ci nie poszło. Nowy czat, a Ty mówisz o jego otwieraniu.",
+            "negative_feedback_current_turn",
+        ),
         IntentCase("package_health", "Czy jaźń działa?", "runtime_health_check"),
     ]
     # Synthetic source is not a real user's memory.

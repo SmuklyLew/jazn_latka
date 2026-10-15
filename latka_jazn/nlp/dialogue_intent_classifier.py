@@ -597,6 +597,26 @@ class DialogueIntentClassifier:
                 question_object="runtime" if guarded_intent == "system_diagnostic_question" else "report_material",
             )
 
+        # A correction of the immediately preceding answer must not be
+        # interpreted as a ZIP/status request or an invitation to restart chat.
+        # This narrow route is read-only, uses masked control text, and never
+        # overrides an explicit request to modify source code.
+        reply_context_mismatch = bool(
+            any(marker in folded for marker in (
+                "cos ci nie poszlo",
+                "cos ci nie wyszlo",
+                "zle zrozumialas",
+            ))
+            or ("nowy czat" in folded and "otwier" in folded)
+        )
+        if reply_context_mismatch and not explicit_update_directive:
+            return report(
+                norm, folded, "negative_feedback_current_turn",
+                ["user_corrects_previous_answer_context_not_runtime_health"],
+                0.94, speech_act=speech.speech_act,
+                question_object="current_turn_feedback",
+            )
+
         task_has_memory_anchor = bool(
             isinstance(previous_task_state, dict)
             and (
