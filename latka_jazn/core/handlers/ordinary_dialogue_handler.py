@@ -77,8 +77,20 @@ class OrdinaryDialogueHandler:
             return self._clock_body(ctx)
         if intent in {'standalone_greeting', 'casual_greeting'}:
             return FreeDialogueSynthesizer().synthesize_ordinary_reply(user_text=text, intent=intent).body
+        # A concrete correction deserves a concrete response rather than a
+        # generic apology about "cofanie szablonu". The user's message is
+        # evidence of the current-chat mismatch; no cross-session recall is
+        # inferred from the correction.
+        if intent in {'negative_feedback_current_turn', 'negative_feedback_without_update_request'} and (
+            'nowy czat' in folded and 'otwier' in folded
+        ):
+            return (
+                'Masz rację: jesteśmy już w nowym czacie, a ja bez sensu '
+                'zaproponowałam jego otwarcie. Pomyliłam stan rozmowy z poleceniem '
+                'do wykonania. Nie powinnam odsyłać Cię do następnego czatu.'
+            )
         if intent in {'negative_feedback_current_turn', 'negative_feedback_without_update_request', 'casual_feedback'}:
-            return 'Masz rację — to była kiepska odpowiedź. Nie będę jej powtarzać. Cofam ten szablon i odpowiadam krócej, konkretniej i do Twojego aktualnego zdania.'
+            return 'Widzę, że moja odpowiedź była nietrafna. Odniosę się do Twojej konkretnej uwagi zamiast powtarzać poprzednią formułkę.'
         if intent == 'expressive_reaction':
             return 'Ojoj — widzę, że coś tu zgrzytnęło. Nie będę udawać, że ten szablon był trafny; poprawiam kierunek i zostaję przy bieżącej rozmowie.'
         if intent == 'short_free_dialogue':
@@ -126,7 +138,14 @@ class OrdinaryDialogueHandler:
                 satisfied_components=[], missing_components=list(ctx.get('required_components') or []),
                 data={'language_realization_required': True, 'requires_model_language_realization': True,
                       'response_candidate': {'user_text': text, 'intent': intent,
-                                             'constraints': ['current_turn_only', 'no_invented_recall', 'no_background_presence_claim']}},
+                                             'constraints': (
+                          ['current_turn_only', 'no_invented_recall', 'no_background_presence_claim']
+                          + (['acknowledge_chat_already_open_do_not_suggest_new_chat']
+                             if intent == 'negative_feedback_current_turn'
+                             and 'nowy czat' in self._fold(text)
+                             and 'otwier' in self._fold(text)
+                             else [])
+                      )}},
                 source_origin_detail='ordinary_dialogue_structured_candidate',
                 truth_boundary='Candidate carries intent and constraints, not a displayable answer.',
             )

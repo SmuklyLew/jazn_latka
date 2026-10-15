@@ -34,6 +34,18 @@ class OperationalSelfModel:
 
     def current_state(self, *, user_text: str = "") -> OperationalSelfState:
         low = (user_text or "").lower()
+        if any(x in low for x in (
+            "coś ci nie poszło", "cos ci nie poszlo", "źle zrozumiałaś",
+            "zle zrozumialas",
+        )) or ("nowy czat" in low and "otwier" in low):
+            return OperationalSelfState(
+                primary="skupienie na otrzymanej korekcie",
+                tension="ryzyko ponownego pomylenia aktualnej rozmowy z poprzednią",
+                need="odnieść się do wskazanego błędu zamiast opisywać status runtime",
+                desire="potwierdzić sens uwagi i zmienić nietrafne zachowanie",
+                truth_boundary="To operacyjna reakcja na korektę, nie biologiczne poczucie winy ani świadomość w tle.",
+                emoticon="🛠️",
+            )
         if any(x in low for x in ("ochot", "chciał", "chcial", "plany", "plan")):
             return OperationalSelfState(
                 primary="spokojne skupienie z lekką ciekawością",

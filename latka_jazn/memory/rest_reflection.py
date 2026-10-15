@@ -36,10 +36,21 @@ class RestReflectionEvaluator:
         *,
         created_at_utc: str | None = None,
     ) -> DreamEvaluation:
-        source_tokens = set().union(*(_tokens(item.content) for item in replay_items)) if replay_items else set()
+        # A derived or unlinked Replay record must not increase source grounding.
+        # The scene must explicitly cite an original verified source memory ID.
+        cited_source_ids = set(scene.source_memory_ids)
+        verified_sources = [
+            item for item in replay_items
+            if item.source_memory_id in cited_source_ids
+            and RestReplayEngine.is_real_source_anchor(item)
+        ]
+        source_tokens = (
+            set().union(*(_tokens(item.content) for item in verified_sources))
+            if verified_sources else set()
+        )
         scene_tokens = _tokens(scene.content)
         overlap = len(scene_tokens & source_tokens) / max(1, len(scene_tokens))
-        anchor_count = sum(1 for item in replay_items if RestReplayEngine.is_real_source_anchor(item))
+        anchor_count = len(verified_sources)
         source_consistency = min(1.0, overlap * 1.35 + min(anchor_count, 3) * 0.08)
         groundedness = min(1.0, overlap + min(anchor_count, 3) * 0.12)
         novelty = max(0.0, min(1.0, 1.0 - overlap))
@@ -53,6 +64,7 @@ class RestReflectionEvaluator:
         reasons: list[str] = [
             f"source_overlap={overlap:.3f}",
             f"real_source_anchor_count={anchor_count}",
+            f"ignored_unverified_or_unlinked_replay_count={len(replay_items) - anchor_count}",
             f"simulation_kind={scene.simulation_kind.value}",
             "synthetic_scene_is_not_factual_evidence",
         ]

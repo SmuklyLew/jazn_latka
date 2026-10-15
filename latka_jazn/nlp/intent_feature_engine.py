@@ -10,6 +10,7 @@ from latka_jazn.nlp.domain_context import (
     has_conversation_archive_context,
     has_conversation_archive_recall_context,
     has_explicit_package_context,
+    has_architecture_analysis_context,
     has_runtime_status_operation_context,
 )
 
@@ -220,6 +221,12 @@ class IntentFeatureEngine:
         if creative_hits and not package_hits:
             package_score -= 0.40
             package_negative.append("creative_domain_without_package_context")
+        # A ZIP mentioned as source material does not make a code audit a
+        # package health query, even when the previous turn discussed a ZIP.
+        if has_architecture_analysis_context(folded) and not update_action_hits:
+            package_score -= 0.95
+            package_negative.append("explicit_cognitive_architecture_audit")
+
 
         creative_positive: list[str] = []
         creative_negative: list[str] = []

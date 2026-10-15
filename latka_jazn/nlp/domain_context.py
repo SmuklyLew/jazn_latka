@@ -44,6 +44,30 @@ def fold_text(text: str) -> str:
     return (text or "").translate(DIACRITIC_MAP).lower()
 
 
+def has_architecture_analysis_context(text: str) -> bool:
+    """Recognize a source-code/cognitive architecture AUDIT, not ZIP health.
+
+    This guard uses the masked control utterance supplied by the classifier.
+    Explicit writes are checked separately: an architecture audit must never
+    turn a request to change code into a read-only answer.
+    """
+    folded = fold_text(text)
+    action = re.search(
+        r"\b(?:przeanalizuj|przeanalizowac|analizuj|zbadaj|audytuj|ocen|opisz)\w*\b",
+        folded,
+    )
+    subject = re.search(
+        r"\b(?:kod(?:u|em)?\s+zrodlow\w*|architektur\w*|tozsamosc\w*|"
+        r"poznawcz\w*|neurolog\w*|neuroinspir\w*|model(?:u|em)?\s+llm)\b",
+        folded,
+    )
+    system = re.search(
+        r"\b(?:jazn\w*|latk\w*|runtime|system\w*|llm|master|repozytorium)\b",
+        folded,
+    )
+    return bool(action and subject and system)
+
+
 def has_explicit_package_context(text: str) -> bool:
     """Return True only for explicit package/archive-runtime vocabulary.
 

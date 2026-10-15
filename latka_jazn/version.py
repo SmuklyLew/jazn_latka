@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+# v116.0.31 runs Windows health-check <5s atomicity gate in a clean subprocess, then full deterministic suite without duplicate timing.
+# v116.0.30 routes new-chat corrections into specific fallback and host-language candidate constraints.
+# v116.0.29 adds bounded read-only operator intent benchmarks to Jaźń Studio.
+# v116.0.28 improves intent macro-F1 evidence and prevents unlinked/derived Rest grounding.
+# v116.0.27 preserves new-chat user correction semantics in dialogue/self-state.
+# v116.0.26 fixes cognitive diagnostic typing without weakening Pyright.
+# v116.0.25 restores stable test naming and syncs catalog governance.
+# v116.0.24 adds measured source-free intent, provenance, homeostasis, calibration and Rest safety probes to Jaźń Studio.
+# v116.0.23 gives explicit source-code/cognitive architecture audits priority over incidental ZIP status and preserves read-only authority.
 # v116.0.22 fixes full-turn L1 acceptance to explicitly verify separate wake-state and turn records.
 # v116.0.21 integrates Jaźń Studio desktop runtime/MCP/Cloudflare controls and safe operator updates.
 
@@ -51,8 +60,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.22"
-PACKAGE_VERSION = "16.3.25.5.116.0.22"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.31"
+PACKAGE_VERSION = "16.3.25.5.116.0.31"
 PACKAGE_RELEASE_NAME = "runtime-ingress-security-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

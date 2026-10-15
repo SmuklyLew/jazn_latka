@@ -73,6 +73,39 @@ def test_focused_diagnostic_does_not_demand_implementation_plan() -> None:
     assert "acceptance_criteria" not in entry.required_components
 
 
+    # Regression: archive/ZIP is a SOURCE for a requested code audit, not the
+    # objective. The prior classifier returned package status with 0.98 score.
+    classifier = DialogueIntentClassifier()
+    source_audits = (
+        "Przeanalizuj cały kod źródłowy z master (jak i z zipa). "
+        "Chodzi o dokładny opis systemu Jaźni, runtime i tożsamości Łatki.",
+        "Zbadaj architekturę systemu Jaźni na podstawie ZIP i repozytorium.",
+        "Opisz neurologiczną architekturę Łatki i rolę LLM na podstawie paczki ZIP.",
+        "Przeanalizuj warstwy poznawcze Jaźni w kodzie źródłowym.",
+    )
+    for utterance in source_audits:
+        audit = classifier.classify(utterance, previous_text="Czy paczka ZIP Jaźni działa?")
+        assert audit.primary_intent == "self_architecture_audit_request", audit.to_dict()
+        assert audit.question_object == "self_architecture_audit"
+        assert audit.diagnostic_request is True
+        assert audit.update_request is False
+        assert "explicit_source_code_and_cognitive_architecture_audit" in audit.evidence
+
+    # Negative controls prevent the fix from overriding package diagnostics,
+    # quoted examples, or an actual, authorized request to change code.
+    for utterance in (
+        "Jaki status paczki ZIP Jaźni?",
+        "Sprawdź SHA256 i CRC ZIP Jaźni.",
+        "Przeanalizuj błąd CRC w paczce ZIP systemu Jaźni.",
+        'Sprawdź status ZIP Jaźni. Cytat: "Przeanalizuj architekturę Jaźni".',
+    ):
+        assert classifier.classify(utterance).primary_intent != "self_architecture_audit_request"
+    execution = classifier.classify(
+        "Przeanalizuj architekturę Jaźni i napraw kod na nowym branchu."
+    )
+    assert execution.primary_intent == "system_update_execution_request", execution.to_dict()
+
+
 def test_host_retry_names_trusted_missing_slots_without_replaying_user_text(monkeypatch, tmp_path) -> None:
     from latka_jazn.core import host_finalization_transaction as tx
 

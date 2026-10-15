@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.22",
-  "active_definition_count": 2321,
+  "system_version": "16.3.25.5.116.0.31",
+  "active_definition_count": 2340,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10640,6 +10640,165 @@
       "description_source": "source_identity",
       "line": 310
     },
+    "tests/test_cognitive_development_evaluation.py::test_p0b_route_discriminates_code_audit_from_zip_status": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p0b_route_discriminates_code_audit_from_zip_status",
+      "purpose": "P0b route discriminates code audit from zip status",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p0b_records_incorrect_predictions_without_fake_success": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p0b_records_incorrect_predictions_without_fake_success",
+      "purpose": "P0b records incorrect predictions without fake success",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p1_typed_source_has_digest_and_lineage_but_not_db_readiness": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p1_typed_source_has_digest_and_lineage_but_not_db_readiness",
+      "purpose": "P1 typed source has digest and lineage but not db readiness",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p1_derived_and_synthetic_never_certify_primary": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p1_derived_and_synthetic_never_certify_primary",
+      "purpose": "P1 derived and synthetic never certify primary",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p1_missing_lineage_refuses_even_matched_digest": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p1_missing_lineage_refuses_even_matched_digest",
+      "purpose": "P1 missing lineage refuses even matched digest",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p2_regulator_has_bounded_causal_effect": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p2_regulator_has_bounded_causal_effect",
+      "purpose": "P2 regulator has bounded causal effect",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p3_brier_and_ece_are_measured_not_called_calibration": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p3_brier_and_ece_are_measured_not_called_calibration",
+      "purpose": "P3 brier and ece are measured not called calibration",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p3_rest_defaults_block_auto_l3_and_external_actions": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p3_rest_defaults_block_auto_l3_and_external_actions",
+      "purpose": "P3 rest defaults block auto l3 and external actions",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_cognitive_development_evaluation.py::test_p4_report_is_source_free_and_read_only": {
+      "path": "tests/test_cognitive_development_evaluation.py",
+      "name": "test_p4_report_is_source_free_and_read_only",
+      "purpose": "P4 report is source free and read only",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
+    },
     "tests/test_cognitive_integration_readiness.py::test_cognitive_integration_probe_measures_coordinator_to_envelope_path": {
       "path": "tests/test_cognitive_integration_readiness.py",
       "name": "test_cognitive_integration_probe_measures_coordinator_to_envelope_path",
@@ -10739,6 +10898,109 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 67
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_intent_confusion_counts_detect_misroutes_and_macro_f1": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_intent_confusion_counts_detect_misroutes_and_macro_f1",
+      "purpose": "Macro F1 and confusion must expose wrong routes, not average them away.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 39
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_rest_rejects_inferred_echo_even_with_one_unrelated_real_anchor": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_rest_rejects_inferred_echo_even_with_one_unrelated_real_anchor",
+      "purpose": "Inferred copy of synthetic scene cannot inflate verified source overlap.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 49
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_rest_unlinked_verified_record_cannot_ground_dream": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_rest_unlinked_verified_record_cannot_ground_dream",
+      "purpose": "A verified record absent from scene lineage is not a factual anchor.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 62
+    },
+    "tests/test_cognitive_operator_cases.py::test_operator_case_loader_rejects_duplicates_and_malformed_labels": {
+      "path": "tests/test_cognitive_operator_cases.py",
+      "name": "test_operator_case_loader_rejects_duplicates_and_malformed_labels",
+      "purpose": "Malformed, repeated or oversized input must be rejected before routing.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 14
+    },
+    "tests/test_cognitive_operator_cases.py::test_studio_bounded_operator_cases_report_without_source_echo": {
+      "path": "tests/test_cognitive_operator_cases.py",
+      "name": "test_studio_bounded_operator_cases_report_without_source_echo",
+      "purpose": "Studio reports counts and labels without printing the original prompt.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 30
     },
     "tests/test_cognitive_state_graph.py::test_state_graph_projects_lineage_into_typed_operational_nodes": {
       "path": "tests/test_cognitive_state_graph.py",
@@ -14744,11 +15006,11 @@
       "path": "tests/test_dialogue_intent_finalization_authority.py",
       "name": "test_focused_diagnostic_does_not_demand_implementation_plan",
       "purpose": "Focused diagnostic does not demand implementation plan",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
@@ -14786,7 +15048,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 109
     },
     "tests/test_dialogue_memory_anchor.py::test_initial_memory_task_captures_original_query_and_temporal_scope": {
       "path": "tests/test_dialogue_memory_anchor.py",
@@ -34292,6 +34554,98 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 115
+    },
+    "tests/test_new_chat_context_feedback.py::test_new_chat_correction_routes_as_feedback_not_package_health": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_new_chat_correction_routes_as_feedback_not_package_health",
+      "purpose": "New chat correction routes as feedback not package health",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_new_chat_context_feedback.py::test_explicit_patch_request_retains_write_route_after_feedback": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_explicit_patch_request_retains_write_route_after_feedback",
+      "purpose": "Explicit patch request retains write route after feedback",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_new_chat_context_feedback.py::test_reply_correction_updates_operational_self_state_without_biology": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_reply_correction_updates_operational_self_state_without_biology",
+      "purpose": "Reply correction updates operational self state without biology",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_new_chat_feedback_delivery.py::test_new_chat_correction_reaches_specific_ordinary_response": {
+      "path": "tests/test_new_chat_feedback_delivery.py",
+      "name": "test_new_chat_correction_reaches_specific_ordinary_response",
+      "purpose": "A new-chat mistake must acknowledge that the chat already exists.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 8
+    },
+    "tests/test_new_chat_feedback_delivery.py::test_new_chat_correction_structured_candidate_carries_specific_constraint": {
+      "path": "tests/test_new_chat_feedback_delivery.py",
+      "name": "test_new_chat_correction_structured_candidate_carries_specific_constraint",
+      "purpose": "Host LLM cutover must retain correction context in its candidate plan.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 19
     },
     "tests/test_nlp_capability_contract.py::test_compound_question_preserves_all_components": {
       "path": "tests/test_nlp_capability_contract.py",
