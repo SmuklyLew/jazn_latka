@@ -13,6 +13,7 @@ from latka_jazn.nlp.question_object_detector import QuestionObjectDetector
 from latka_jazn.nlp.creative_material_detector import CreativeMaterialDetector
 from latka_jazn.nlp.source_preservation_detector import SourcePreservationDetector
 from latka_jazn.nlp.intent_feature_engine import IntentFeatureEngine
+from latka_jazn.nlp.domain_context import has_architecture_analysis_context
 from latka_jazn.nlp.utterance_components import analyse_utterance
 from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
@@ -638,6 +639,24 @@ class DialogueIntentClassifier:
                 norm, folded, 'system_update_execution_request', execution_evidence,
                 0.97, secondary_intents, update=True, diag=has_diag,
                 speech_act=speech.speech_act, question_object='system_update',
+            )
+        # Read-only architectural analysis outranks incidental references to
+        # SYSTEM ZIP, LLM, or memory. Keep mutating execution and explicit
+        # negations under their existing independent authority gates.
+        if (
+            has_architecture_analysis_context(control_text)
+            and not explicit_update_directive
+            and not component_report.negated_actions
+        ):
+            return report(
+                norm, folded, 'self_architecture_audit_request',
+                [
+                    'explicit_source_code_and_cognitive_architecture_audit',
+                    'package_reference_is_evidence_source_not_status_query',
+                ], 0.95,
+                ['external_research_request'] if has_research else [],
+                diag=True, speech_act=speech.speech_act,
+                question_object='self_architecture_audit',
             )
         # Multi-intent planning must run before single-purpose memory/capability
         # routes. Otherwise a content-recall marker in the later sentence can
