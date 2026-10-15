@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.23",
-  "active_definition_count": 2321,
+  "system_version": "16.3.25.5.116.0.24",
+  "active_definition_count": 2330,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -50348,6 +50348,165 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p0b_route_discriminates_code_audit_from_zip_status": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p0b_route_discriminates_code_audit_from_zip_status",
+      "purpose": "P0b route discriminates code audit from zip status",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p0b_records_incorrect_predictions_without_fake_success": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p0b_records_incorrect_predictions_without_fake_success",
+      "purpose": "P0b records incorrect predictions without fake success",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p1_typed_source_has_digest_and_lineage_but_not_db_readiness": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p1_typed_source_has_digest_and_lineage_but_not_db_readiness",
+      "purpose": "P1 typed source has digest and lineage but not db readiness",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p1_derived_and_synthetic_never_certify_primary": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p1_derived_and_synthetic_never_certify_primary",
+      "purpose": "P1 derived and synthetic never certify primary",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p1_missing_lineage_refuses_even_matched_digest": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p1_missing_lineage_refuses_even_matched_digest",
+      "purpose": "P1 missing lineage refuses even matched digest",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p2_regulator_has_bounded_causal_effect": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p2_regulator_has_bounded_causal_effect",
+      "purpose": "P2 regulator has bounded causal effect",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p3_brier_and_ece_are_measured_not_called_calibration": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p3_brier_and_ece_are_measured_not_called_calibration",
+      "purpose": "P3 brier and ece are measured not called calibration",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p3_rest_defaults_block_auto_l3_and_external_actions": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p3_rest_defaults_block_auto_l3_and_external_actions",
+      "purpose": "P3 rest defaults block auto l3 and external actions",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_v116024_cognitive_development_evaluation.py::test_p4_report_is_source_free_and_read_only": {
+      "path": "tests/test_v116024_cognitive_development_evaluation.py",
+      "name": "test_p4_report_is_source_free_and_read_only",
+      "purpose": "P4 report is source free and read only",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
