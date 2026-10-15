@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.26",
-  "active_definition_count": 2330,
+  "system_version": "16.3.25.5.116.0.27",
+  "active_definition_count": 2333,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -34451,6 +34451,62 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 115
+    },
+    "tests/test_new_chat_context_feedback.py::test_new_chat_correction_routes_as_feedback_not_package_health": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_new_chat_correction_routes_as_feedback_not_package_health",
+      "purpose": "New chat correction routes as feedback not package health",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_new_chat_context_feedback.py::test_explicit_patch_request_retains_write_route_after_feedback": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_explicit_patch_request_retains_write_route_after_feedback",
+      "purpose": "Explicit patch request retains write route after feedback",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_new_chat_context_feedback.py::test_reply_correction_updates_operational_self_state_without_biology": {
+      "path": "tests/test_new_chat_context_feedback.py",
+      "name": "test_reply_correction_updates_operational_self_state_without_biology",
+      "purpose": "Reply correction updates operational self state without biology",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operational_self_model",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
     },
     "tests/test_nlp_capability_contract.py::test_compound_question_preserves_all_components": {
       "path": "tests/test_nlp_capability_contract.py",
