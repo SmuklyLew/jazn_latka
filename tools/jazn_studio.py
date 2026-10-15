@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     modes.add_argument("--smoke", action="store_true")
     modes.add_argument("--gui-smoke", action="store_true")
     modes.add_argument("--json", action="store_true", help="Snapshot tylko do odczytu")
+    modes.add_argument("--cognitive-audit", action="store_true",
+                       help="Read-only synthetic evaluation of P0B/P1/P2/P3/P4")
     modes.add_argument("--plan-update", action="store_true", help="Bez zmian w Git")
     modes.add_argument("--diagnose", choices=["status", "doctor", "model", "memory", "mcp_catalog"])
     args = parser.parse_args(argv)
@@ -53,6 +55,10 @@ def main(argv: list[str] | None = None) -> int:
             return result
         if args.json:
             print(json.dumps(studio_snapshot(root), ensure_ascii=False, indent=2))
+            return 0
+        if args.cognitive_audit:
+            from latka_jazn.core.cognitive_development_evaluation import synthetic_operator_report
+            print(json.dumps(synthetic_operator_report(), ensure_ascii=False, indent=2))
             return 0
         if args.plan_update:
             print(json.dumps(update_plan(root), ensure_ascii=False, indent=2))
