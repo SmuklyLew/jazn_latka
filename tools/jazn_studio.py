@@ -33,6 +33,8 @@ def main(argv: list[str] | None = None) -> int:
     modes.add_argument("--json", action="store_true", help="Snapshot tylko do odczytu")
     modes.add_argument("--cognitive-audit", action="store_true",
                        help="Read-only synthetic evaluation of P0B/P1/P2/P3/P4")
+    modes.add_argument("--cognitive-cases", metavar="JSON_FILE",
+                       help="Read-only evaluation of a bounded operator-labeled intent set")
     modes.add_argument("--plan-update", action="store_true", help="Bez zmian w Git")
     modes.add_argument("--diagnose", choices=["status", "doctor", "model", "memory", "mcp_catalog"])
     args = parser.parse_args(argv)
@@ -59,6 +61,30 @@ def main(argv: list[str] | None = None) -> int:
         if args.cognitive_audit:
             from latka_jazn.core.cognitive_development_evaluation import synthetic_operator_report
             print(json.dumps(synthetic_operator_report(), ensure_ascii=False, indent=2))
+            return 0
+        if args.cognitive_cases:
+            from latka_jazn.core.cognitive_development_evaluation import (
+                evaluate_intents, parse_labeled_cases,
+            )
+            case_path = Path(args.cognitive_cases).expanduser()
+            if case_path.is_symlink() or not case_path.is_file():
+                raise ValueError("Benchmark must be a regular local JSON file (not symlink)")
+            if case_path.stat().st_size > 262144:
+                raise ValueError("Benchmark exceeds 256 KiB read limit")
+            def no_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
+                result: dict[str, object] = {}
+                for key, value in pairs:
+                    if key in result:
+                        raise ValueError("Duplicate JSON field: " + key)
+                    result[key] = value
+                return result
+            payload = json.loads(case_path.read_text(encoding="utf-8"),
+                                 object_pairs_hook=no_duplicates)
+            evaluation = evaluate_intents(parse_labeled_cases(payload))
+            evaluation["origin"] = "operator_supplied_unverified"
+            evaluation["source_data_saved"] = False
+            evaluation["live_runtime_verified"] = False
+            print(json.dumps(evaluation, ensure_ascii=False, indent=2))
             return 0
         if args.plan_update:
             print(json.dumps(update_plan(root), ensure_ascii=False, indent=2))

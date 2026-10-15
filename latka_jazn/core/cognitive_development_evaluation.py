@@ -27,6 +27,43 @@ class IntentCase:
     previous_text: str | None = None
 
 
+def parse_labeled_cases(payload: Any) -> list[IntentCase]:
+    """Validate an operator-supplied, source-free local intent benchmark.
+
+    Neither contents nor provenance are stored; unreviewed data MUST NOT
+    claim independent holdout validation or a capability's live readiness.
+    """
+    if not isinstance(payload, dict) or set(payload) != {"cases"}:
+        raise ValueError("Expected one JSON object containing only 'cases'")
+    raw = payload["cases"]
+    if not isinstance(raw, list) or not 1 <= len(raw) <= 500:
+        raise ValueError("cases must be a list with 1..500 entries")
+    cases: list[IntentCase] = []
+    used: set[str] = set()
+    for index, item in enumerate(raw):
+        if not isinstance(item, dict):
+            raise ValueError(f"case {index} must be an object")
+        if set(item) - {"name", "utterance", "expected", "previous_text"}:
+            raise ValueError(f"case {index} has unsupported fields")
+        name = item.get("name")
+        utterance = item.get("utterance")
+        expected = item.get("expected")
+        previous = item.get("previous_text")
+        if not isinstance(name, str) or not 1 <= len(name) <= 80 or not name.strip():
+            raise ValueError(f"case {index} requires nonempty name")
+        if name in used:
+            raise ValueError(f"duplicate case name: {name}")
+        if not isinstance(utterance, str) or not 1 <= len(utterance.strip()) <= 3000:
+            raise ValueError(f"case {index} requires nonempty utterance up to 3000 characters")
+        if not isinstance(expected, str) or not 1 <= len(expected.strip()) <= 128:
+            raise ValueError(f"case {index} requires nonempty expected intent")
+        if previous is not None and (not isinstance(previous, str) or len(previous) > 3000):
+            raise ValueError(f"case {index} previous_text must be null or at most 3000 characters")
+        cases.append(IntentCase(name, utterance, expected, previous))
+        used.add(name)
+    return cases
+
+
 def summarize_label_pairs(pairs: Sequence[tuple[str, str]]) -> dict[str, Any]:
     """Deterministic confusion, wrong-route counts and macro F1 on labeled data.
 
