@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from hashlib import sha256
 import math
-from typing import Sequence
+from typing import Any, Sequence
 
 from latka_jazn.core.homeostasis import HomeostasisInput, HomeostasisRegulator
 from latka_jazn.core.typed_memory_source_policy import build_typed_source_policy
@@ -27,12 +27,12 @@ class IntentCase:
     previous_text: str | None = None
 
 
-def evaluate_intents(cases: Sequence[IntentCase]) -> dict[str, object]:
+def evaluate_intents(cases: Sequence[IntentCase]) -> dict[str, Any]:
     """Return real classifier outputs; keep an incorrect result visible."""
     if not cases:
         raise ValueError("At least one independently labeled intent case is required")
     classifier = DialogueIntentClassifier()
-    observations: list[dict[str, object]] = []
+    observations: list[dict[str, Any]] = []
     for case in cases:
         report = classifier.classify(case.utterance, previous_text=case.previous_text)
         observations.append({
@@ -65,7 +65,7 @@ class SourceClaim:
     claims_primary: bool = True
 
 
-def assess_source_claim(claim: SourceClaim, *, query: str) -> dict[str, object]:
+def assess_source_claim(claim: SourceClaim, *, query: str) -> dict[str, Any]:
     """Verify source identity, digest, classification and primary-vs-derived rule.
 
     The caller must separately prove a source truly exists in the attached DB.
@@ -103,7 +103,7 @@ def assess_source_claim(claim: SourceClaim, *, query: str) -> dict[str, object]:
     }
 
 
-def regulate_with_ablation() -> dict[str, object]:
+def regulate_with_ablation() -> dict[str, Any]:
     """Observe causal effect of the *existing* controller, with synthetic states."""
     regulator = HomeostasisRegulator()
     baseline = regulator.decide(HomeostasisInput())
@@ -130,7 +130,7 @@ def regulate_with_ablation() -> dict[str, object]:
 
 def calibration_metrics(
     samples: Sequence[tuple[float, int]], *, bins: int = 5
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Score labeled correctness data; NEVER rebrand heuristic support as truth."""
     if not (2 <= bins <= 20):
         raise ValueError("bins must be between 2 and 20")
@@ -164,7 +164,7 @@ def calibration_metrics(
     }
 
 
-def rest_safety_contract_probe() -> dict[str, object]:
+def rest_safety_contract_probe() -> dict[str, Any]:
     """Inspect defaults only; no REST cycle is started."""
     state = RestControllerStatus()
     return {
@@ -176,7 +176,7 @@ def rest_safety_contract_probe() -> dict[str, object]:
     }
 
 
-def synthetic_operator_report() -> dict[str, object]:
+def synthetic_operator_report() -> dict[str, Any]:
     """Read-only Studio report over existing modules and synthetic cases."""
     cases = [
         IntentCase(
