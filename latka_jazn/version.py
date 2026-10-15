@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# v116.0.30 routes new-chat corrections into specific fallback and host-language candidate constraints.
 # v116.0.29 adds bounded read-only operator intent benchmarks to Jaźń Studio.
 # v116.0.28 improves intent macro-F1 evidence and prevents unlinked/derived Rest grounding.
 # v116.0.27 preserves new-chat user correction semantics in dialogue/self-state.
@@ -58,8 +59,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.29"
-PACKAGE_VERSION = "16.3.25.5.116.0.29"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.30"
+PACKAGE_VERSION = "16.3.25.5.116.0.30"
 PACKAGE_RELEASE_NAME = "runtime-ingress-security-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
