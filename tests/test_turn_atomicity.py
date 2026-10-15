@@ -70,11 +70,15 @@ def test_input_truth_audit_is_pure_and_does_not_touch_canonical_truth_audits(tmp
     layered = LayeredMemory(store, tmp_path)
     before = store.stats()["truth_audits"]
 
+    truth_audit_file = tmp_path / "memory" / "layered" / "truth_audits.jsonl"
+    assert not truth_audit_file.exists()
+
     audit = layered.evaluate_truth("Działasz?", source_count=0)
 
     assert audit
     assert store.stats()["truth_audits"] == before
-    assert (tmp_path / "memory" / "layered" / "truth_audits.jsonl").read_text(encoding="utf-8") == ""
+    # Read-only auditing must neither mutate SQLite nor materialize private MEMORY.
+    assert not truth_audit_file.exists()
     store.close()
 
 

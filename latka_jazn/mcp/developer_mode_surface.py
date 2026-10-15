@@ -280,7 +280,7 @@ def adapt_developer_mode_tool_result(
         dict(structured_value) if isinstance(structured_value, Mapping) else {}
     )
     if name == JAZN_HEALTH_TOOL:
-        gateway_live = private_status.get("gateway_ok") is True
+        gateway_live = private_status.get("gateway_live") is True
         structured: dict[str, Any] = {
             "ok": gateway_live,
             "gateway_live": gateway_live,

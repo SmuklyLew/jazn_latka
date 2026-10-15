@@ -28,7 +28,9 @@ class _Backend:
         return {
             "content": [{"type": "text", "text": "private"}],
             "structuredContent": {
-                "gateway_ok": True,
+                "ok": True,
+                "ready": True,
+                "gateway_live": True,
                 "daemon_reachable": True,
                 "runtime_root": "MUST-NOT-LEAK",
                 "capability_matrix": {

@@ -10,6 +10,7 @@ import subprocess
 import sys
 from typing import Any, Callable, NoReturn
 
+from latka_jazn.core.host_stdout_delivery import write_complete_stdout
 from latka_jazn.core.json_types import json_object
 from latka_jazn.model_adapters.base import AdapterStatusSnapshot
 from latka_jazn.cli_commands import audit as audit_commands
@@ -337,6 +338,12 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--supplied-trace-id")
     child.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024)
 
+    child = sub.add_parser("host-recover-delivery", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--daemon-request-id", required=True)
+    child.add_argument("--request-contract-hash", required=True)
+    child.add_argument("--turn-id")
+
     child = sub.add_parser("audit-tail", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--limit", type=int, default=20)
@@ -363,40 +370,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _emit(payload: Any, *, as_json: bool) -> None:
-    """Emit complete CLI output when an embedding host supplies non-blocking stdout.
-
-    ChatGPT hosts may mark the child stdout pipe O_NONBLOCK. A single large
-    print() can then fail with BlockingIOError after emitting only a JSON
-    prefix. Restore normal pipe backpressure for this one synchronous output,
-    without changing stdout behavior for the rest of the process.
-    """
+    """Deliver one complete CLI frame, even over a host nonblocking pipe."""
     rendered = (
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str)
         if as_json or not isinstance(payload, str)
         else payload
     )
-    try:
-        fd = sys.stdout.fileno()
-        was_blocking = os.get_blocking(fd)
-    except (AttributeError, OSError, io.UnsupportedOperation, ValueError):
-        # In-memory/redirected test streams have no OS-level descriptor.
-        print(rendered)
-        return
-
-    if was_blocking:
-        print(rendered)
-        return
-
-    try:
-        os.set_blocking(fd, True)
-    except (AttributeError, OSError, ValueError):
-        print(rendered)
-        return
-    try:
-        print(rendered, flush=True)
-    finally:
-        # Preserve the host's original descriptor mode for later operations.
-        os.set_blocking(fd, False)
+    write_complete_stdout(sys.stdout, rendered + "\n")
 
 
 def _progress(namespace: argparse.Namespace, task: str, *, style: str) -> TerminalProgress:
@@ -475,7 +455,7 @@ def main(
 
     known = {
         "status", "doctor", "start", "stop", "restart", "chat", "chat-gpt", "mcp-http", "mcp-probe", "chatgpt-plugin-package",
-        "host-finalize", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
+        "host-finalize", "host-recover-delivery", "bridge-discovery", "host-diagnose", "audit-tail", "explain-turn",
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
         "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-sentinel", "memory-recover", "memory-import-html",
@@ -878,6 +858,25 @@ def main(
         payload = host_commands.finalize_payload(ns)
         _emit(payload, as_json=True)
         return 0 if payload.get("accepted") else 2
+    if ns.command == "host-recover-delivery":
+        from latka_jazn.core.chatgpt_host_recovery import recover_committed_host_presentation
+        from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
+
+        try:
+            payload = recover_committed_host_presentation(
+                root, daemon_request_id=ns.daemon_request_id,
+                turn_id=ns.turn_id, request_contract_hash=ns.request_contract_hash,
+            )
+        except HostRequestStoreError as exc:
+            _emit({"ok": False, "action": "host_diagnostic", "reason": str(exc),
+                   "must_not_resubmit_user_message": True}, as_json=True)
+            return 2
+        if payload is None:
+            _emit({"ok": False, "action": "poll_runtime", "reason": "accepted_delivery_not_available",
+                   "must_not_resubmit_user_message": True}, as_json=True)
+            return 2
+        _emit(payload, as_json=True)
+        return 0
     from latka_jazn.config import JaznConfig
     audit_db = JaznConfig(root=root).audit_db_path_readonly
     if ns.command == "audit-tail":

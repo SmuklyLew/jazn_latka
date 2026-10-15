@@ -7,6 +7,7 @@ import sqlite3
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.memory.memory_tier_store import MemoryTierStore
+from latka_jazn.memory.memory_tiers import MemoryTier, WorkingMemoryRecord
 
 
 def _legacy_semantic_counts(path: Path) -> dict[str, int]:
@@ -59,6 +60,15 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
     monkeypatch.setenv("JAZN_DICTIONARY_ALLOW_NETWORK", "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
     (tmp_path / "main.py").write_text("# isolated runtime root\n", encoding="utf-8")
+    # Full transactional-memory acceptance requires a synthetic explicit
+    # MEMORY attachment. Bare operational SQLite is never evidence of recall.
+    memory_root = tmp_path / "memory"
+    legacy_source = memory_root / "raw" / "dziennik.json"
+    legacy_source.parent.mkdir(parents=True, exist_ok=True)
+    legacy_source.write_text("[]", encoding="utf-8")
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory_root))
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    assert JaznConfig(root=tmp_path).memory_availability.persistent_memory_enabled
 
     session = JaznRuntimeSession(
         JaznConfig(root=tmp_path),
@@ -98,12 +108,34 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
         database = Path(result["transactional_memory"]["install"]["database_path"])
         with MemoryTierStore(database) as store:
             stats = store.stats()
-            # This isolated fixture has no verified wake-state source. The turn must
-            # persist only its own working-memory and short-term records; fabricating
-            # a wake-hydration record here would violate the memory truth boundary.
-            assert stats["memory_records"] == 2
-            assert stats["working_memory_index"] == 1
+            # Three records: a provenance-verified wake-state L1, a turn L1
+            # and one turn L2. The wake record is intentionally retained by
+            # ConversationRunner; do not disguise it as a duplicate turn write.
+            assert stats["memory_records"] == 3
+            assert stats["working_memory_index"] == 2
             assert stats["short_term_memory_index"] == 1
+
+            wake_status = session.wake_state_runtime_status
+            assert wake_status.status == "hydrated"
+            assert wake_status.l1_memory_id is not None
+            working_records = store.list_records(tier=MemoryTier.WORKING)
+            assert len(working_records) == 2
+            wake_records = [record for record in working_records if record.mode == "wake_state"]
+            turn_records = [record for record in working_records if record.mode != "wake_state"]
+            assert len(wake_records) == 1
+            assert len(turn_records) == 1
+            wake_record, turn_record = wake_records[0], turn_records[0]
+            assert isinstance(wake_record, WorkingMemoryRecord)
+            assert isinstance(turn_record, WorkingMemoryRecord)
+            assert wake_record.memory_id == wake_status.l1_memory_id
+            assert wake_record.domain == "runtime_continuity"
+            assert wake_record.session_id == session.state.session_id
+            assert wake_record.turn_id is None
+            assert any(e.source_type == "wake_state_snapshot" for e in wake_record.evidence)
+            assert turn_record.session_id == session.state.session_id
+            assert turn_record.turn_id is not None
+            assert turn_record.memory_id != wake_record.memory_id
+            assert all(e.source_type != "wake_state_snapshot" for e in turn_record.evidence)
             assert stats["long_term_memory_index"] == 0
             assert stats["promotion_requests"] == 0
             assert stats["promotion_decisions"] == 0

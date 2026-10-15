@@ -19,6 +19,7 @@ from latka_jazn.cli_commands.diagnostics import doctor_payload, status_payload
 from latka_jazn.core.runtime_daemon import start_daemon, stop_daemon
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar
 from latka_jazn.memory.runtime_write_access_contract import build_runtime_write_access_status
+from latka_jazn.memory.runtime_memory_install import initialize_transactional_memory_store
 from latka_jazn.tools.release_staging import create_system_smoke_staging
 
 
@@ -333,6 +334,16 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
     memory_source = cfg.normalization_source_db_path
     memory_source.parent.mkdir(parents=True, exist_ok=True)
     _source(memory_source)
+    # This test requires an explicitly attached (synthetic) MEMORY source.
+    # A bare runtime_write/normalization DB must not imply an attached MEMORY.
+    legacy_source = runtime_root / "memory" / "raw" / "dziennik.json"
+    legacy_source.parent.mkdir(parents=True, exist_ok=True)
+    legacy_source.write_text("[]", encoding="utf-8")
+    assert cfg.memory_availability.persistent_memory_enabled is True
+    tier_init = initialize_transactional_memory_store(
+        runtime_root, configured=cfg.memory_tier_db_path
+    )
+    assert tier_init["ok"] is True, tier_init
     initialized = build_runtime_write_access_status(cfg, initialize=True, writes_enabled=True).to_dict()
     assert initialized["ok"] is True
     sidecar = MemoryNormalizationSidecar(
