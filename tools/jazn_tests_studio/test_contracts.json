@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.28",
-  "active_definition_count": 2336,
+  "system_version": "16.3.25.5.116.0.30",
+  "active_definition_count": 2340,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10961,6 +10961,46 @@
       "status": "current",
       "description_source": "native_docstring",
       "line": 62
+    },
+    "tests/test_cognitive_operator_cases.py::test_operator_case_loader_rejects_duplicates_and_malformed_labels": {
+      "path": "tests/test_cognitive_operator_cases.py",
+      "name": "test_operator_case_loader_rejects_duplicates_and_malformed_labels",
+      "purpose": "Malformed, repeated or oversized input must be rejected before routing.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 14
+    },
+    "tests/test_cognitive_operator_cases.py::test_studio_bounded_operator_cases_report_without_source_echo": {
+      "path": "tests/test_cognitive_operator_cases.py",
+      "name": "test_studio_bounded_operator_cases_report_without_source_echo",
+      "purpose": "Studio reports counts and labels without printing the original prompt.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 30
     },
     "tests/test_cognitive_state_graph.py::test_state_graph_projects_lineage_into_typed_operational_nodes": {
       "path": "tests/test_cognitive_state_graph.py",
@@ -34570,6 +34610,42 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_new_chat_feedback_delivery.py::test_new_chat_correction_reaches_specific_ordinary_response": {
+      "path": "tests/test_new_chat_feedback_delivery.py",
+      "name": "test_new_chat_correction_reaches_specific_ordinary_response",
+      "purpose": "A new-chat mistake must acknowledge that the chat already exists.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 8
+    },
+    "tests/test_new_chat_feedback_delivery.py::test_new_chat_correction_structured_candidate_carries_specific_constraint": {
+      "path": "tests/test_new_chat_feedback_delivery.py",
+      "name": "test_new_chat_correction_structured_candidate_carries_specific_constraint",
+      "purpose": "Host LLM cutover must retain correction context in its candidate plan.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 19
     },
     "tests/test_nlp_capability_contract.py::test_compound_question_preserves_all_components": {
       "path": "tests/test_nlp_capability_contract.py",
