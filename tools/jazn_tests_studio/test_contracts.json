@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.27",
-  "active_definition_count": 2333,
+  "system_version": "16.3.25.5.116.0.28",
+  "active_definition_count": 2336,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10898,6 +10898,69 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 67
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_intent_confusion_counts_detect_misroutes_and_macro_f1": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_intent_confusion_counts_detect_misroutes_and_macro_f1",
+      "purpose": "Macro F1 and confusion must expose wrong routes, not average them away.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 39
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_rest_rejects_inferred_echo_even_with_one_unrelated_real_anchor": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_rest_rejects_inferred_echo_even_with_one_unrelated_real_anchor",
+      "purpose": "Inferred copy of synthetic scene cannot inflate verified source overlap.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 49
+    },
+    "tests/test_cognitive_memory_grounding_regressions.py::test_rest_unlinked_verified_record_cannot_ground_dream": {
+      "path": "tests/test_cognitive_memory_grounding_regressions.py",
+      "name": "test_rest_unlinked_verified_record_cannot_ground_dream",
+      "purpose": "A verified record absent from scene lineage is not a factual anchor.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_development_evaluation",
+        "latka_jazn.memory.rest_contracts",
+        "latka_jazn.memory.rest_reflection"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 62
     },
     "tests/test_cognitive_state_graph.py::test_state_graph_projects_lineage_into_typed_operational_nodes": {
       "path": "tests/test_cognitive_state_graph.py",
