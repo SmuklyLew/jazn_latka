@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.22",
+  "system_version": "16.3.25.5.116.0.23",
   "active_definition_count": 2321,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -14744,11 +14744,11 @@
       "path": "tests/test_dialogue_intent_finalization_authority.py",
       "name": "test_focused_diagnostic_does_not_demand_implementation_plan",
       "purpose": "Focused diagnostic does not demand implementation plan",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
@@ -14786,7 +14786,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 109
     },
     "tests/test_dialogue_memory_anchor.py::test_initial_memory_task_captures_original_query_and_temporal_scope": {
       "path": "tests/test_dialogue_memory_anchor.py",
