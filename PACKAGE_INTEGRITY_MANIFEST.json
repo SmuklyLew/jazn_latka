@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "runtime_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "package_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
-  "generated_at_utc": "2026-10-16T02:55:05+00:00",
-  "updated_at_utc": "2026-10-16T02:55:05+00:00",
+  "generated_at_utc": "2026-10-16T03:02:06+00:00",
+  "updated_at_utc": "2026-10-16T03:02:06+00:00",
   "start_file": "run.py",
-  "file_count": 2599,
-  "static_file_count": 2599,
+  "file_count": 2600,
+  "static_file_count": 2600,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2952,
-      "sha256": "fa79e7946a45b36b0750f9c8a870f3d15a134bc5f014577e1637a81247cfb5b8",
+      "sha256": "3d646be2de273c40c7f312c88f562f931a61176eaa1284e92a99dd45bd069f85",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2189,8 +2189,8 @@
     },
     {
       "path": "docs/reports/JAZN_V116_0_32_CHATGPT_TURN_RECOVERY_INTEGRITY.md",
-      "size_bytes": 5255,
-      "sha256": "29e8e0f5a027d225de7e516865b406ce8bd41d94222a46c77b437fec5487c3fe",
+      "size_bytes": 6333,
+      "sha256": "6779641314ec1e137008e0afe50009a6435d820fa5e675c32e9b05f7becd9de6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3737,8 +3737,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/host.py",
-      "size_bytes": 14500,
-      "sha256": "c898fc82150b337bbc47d0215c14109fd26605629d2739f01fc9ad16645ff52c",
+      "size_bytes": 15750,
+      "sha256": "8c562fe223f75a09731d101159013cc8dca116f8f2b480da3fd012284d188083",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20215,6 +20215,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_host_finalize_stdout_backpressure.py",
+      "size_bytes": 1321,
+      "sha256": "393d515b3ff9722a6dae2fe1ac08954986376e76d3619a176b29cd892a4b4f58",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_host_finalized_conversation_state.py",
       "size_bytes": 2962,
       "sha256": "9932c58b7ea81baf675bcf225f1aaf211eadd204fa60d596cab5c7a3e09a3e88",
@@ -23195,8 +23204,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2176023,
-      "sha256": "caa86899c7088adaaf20f441cecf64fb58238c9bb49bcdb4a7d81be2a7d511a7",
+      "size_bytes": 2177551,
+      "sha256": "8ef8b5af6b19b11611233c5b2f5cf928fd26632ee456d5f353dce4362f6bb604",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
