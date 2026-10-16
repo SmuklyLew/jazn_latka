@@ -299,6 +299,7 @@ jobs:
           tests/test_mcp_http_dependency_profile.py
           tests/test_mcp_remote_runtime.py
           tests/test_mcp_http_tasks_bridge.py
+          tests/test_mcp_http_tasks_nonblocking_dispatch.py
           tests/test_mcp_http_resources.py
           tests/test_mcp_http_cli.py
           tests/test_mcp_oauth_introspection.py
