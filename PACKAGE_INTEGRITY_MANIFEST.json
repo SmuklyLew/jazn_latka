@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "runtime_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "package_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
-  "generated_at_utc": "2026-10-16T07:21:28+00:00",
-  "updated_at_utc": "2026-10-16T07:21:28+00:00",
+  "generated_at_utc": "2026-10-16T07:51:11+00:00",
+  "updated_at_utc": "2026-10-16T07:51:11+00:00",
   "start_file": "run.py",
-  "file_count": 2620,
-  "static_file_count": 2620,
+  "file_count": 2621,
+  "static_file_count": 2621,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2918,
-      "sha256": "b8c9df7fee35a5bf34888f8df1be9824065c51649bc84963ac964aff417bb63c",
+      "sha256": "f8343de1b522bd4c136cfc8e0afef47dbdcb70efe54a865e9a5eed8d31a1dd56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3610,6 +3610,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/bootstrap/chatgpt_ingress_capability.py",
+      "size_bytes": 5790,
+      "sha256": "be2e86f631202e6107704788118dc2aa6bdb03bfd8beb1e7fb3072b97e301e10",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/bootstrap/chatgpt_ingress_policy.py",
       "size_bytes": 3913,
       "sha256": "66bc99089d908cfc5445ad4ccfc36e215f3ad37e20ae1eba32378c6271869e79",
@@ -6680,8 +6689,8 @@
     },
     {
       "path": "latka_jazn/memory/availability.py",
-      "size_bytes": 7668,
-      "sha256": "6a7dffe30e859c747cae26af8d3e28dceca5599a6a64e8765b59e9c6106ccb21",
+      "size_bytes": 8035,
+      "sha256": "a937b84df453f94e123b2d5f42fb66044663ac77a3fd085be5e59096a2c0a08f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
