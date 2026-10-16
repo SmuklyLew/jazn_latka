@@ -6134,8 +6134,8 @@
       "description_source": "source_identity",
       "line": 83
     },
-    "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py::test_pre_spawn_error_keeps_package_unknown": {
-      "path": "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py",
+    "tests/test_chatgpt_host_pre_spawn_evidence.py::test_pre_spawn_error_keeps_package_unknown": {
+      "path": "tests/test_chatgpt_host_pre_spawn_evidence.py",
       "name": "test_pre_spawn_error_keeps_package_unknown",
       "purpose": "Pre spawn error keeps package unknown",
       "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
@@ -6156,8 +6156,8 @@
       "description_source": "source_identity",
       "line": 21
     },
-    "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py::test_independent_executor_can_recover_after_primary_pre_spawn_error": {
-      "path": "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py",
+    "tests/test_chatgpt_host_pre_spawn_evidence.py::test_independent_executor_can_recover_after_primary_pre_spawn_error": {
+      "path": "tests/test_chatgpt_host_pre_spawn_evidence.py",
       "name": "test_independent_executor_can_recover_after_primary_pre_spawn_error",
       "purpose": "Independent executor can recover after primary pre spawn error",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -6175,8 +6175,8 @@
       "description_source": "source_identity",
       "line": 40
     },
-    "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py::test_no_error_evidence_does_not_fabricate_failure": {
-      "path": "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py",
+    "tests/test_chatgpt_host_pre_spawn_evidence.py::test_no_error_evidence_does_not_fabricate_failure": {
+      "path": "tests/test_chatgpt_host_pre_spawn_evidence.py",
       "name": "test_no_error_evidence_does_not_fabricate_failure",
       "purpose": "No error evidence does not fabricate failure",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -6194,8 +6194,8 @@
       "description_source": "source_identity",
       "line": 56
     },
-    "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py::test_unrecognized_exception_is_rejected_without_echoing_private_text": {
-      "path": "tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py",
+    "tests/test_chatgpt_host_pre_spawn_evidence.py::test_unrecognized_exception_is_rejected_without_echoing_private_text": {
+      "path": "tests/test_chatgpt_host_pre_spawn_evidence.py",
       "name": "test_unrecognized_exception_is_rejected_without_echoing_private_text",
       "purpose": "Unrecognized exception is rejected without echoing private text",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
