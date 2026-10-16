@@ -82,5 +82,37 @@
     "system_zip_integrity_before_execution": true,
     "project_loader_can_guarantee_host_probe_wallclock_timeout": false,
     "on_pre_spawn_client_error": "surface_generation_unavailable_do_not_replay_or_imply_python_executed"
+  },
+  "pre_post_materialization_capabilities": {
+    "before_unpack": [
+      "observe_full_callable_remote_turn_toolset",
+      "bounded_primary_executor_process_creation",
+      "bounded_single_independent_executor_alternative",
+      "discover_conversation_project_library_files"
+    ],
+    "after_unpack": [
+      "verify_materialized_operator_ready",
+      "run_canonical_preflight_start_live_status",
+      "record_new_host_surface_capabilities_separately",
+      "bind_once_and_finalize_exactly_one_turn"
+    ],
+    "prohibited_inferences": [
+      "zip_or_github_repo_grants_executor",
+      "materialized_python_grants_mcp_tools",
+      "cloudflare_503_is_runtime_ready",
+      "clienterror_prespawn_means_filesystem_missing"
+    ]
+  },
+  "memory_continuity_policy": {
+    "memory_mode_for_nonblocking_core": "optional",
+    "readiness_policy_for_latka_autobiography": "native_unified_required",
+    "autobiographical_continuity_requires_verified_memory": true,
+    "missing_memory_blocks_core_reasoning": false,
+    "claims_require": [
+      "full_autobiographical_recall_ready",
+      "continuity_ready",
+      "local_memory_provenance"
+    ],
+    "explicit_required_mode_may_override_core_readiness": true
   }
 }
