@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# v116.0.34.6 adds opt-in SIWC Responses stream transport with strict preview gates and no host/MCP route substitution.
+
 # v116.0.34.5 validates ChatGPT MCP model visibility, safety metadata and OAuth catalog parity.
 # v116.0.34.4 distinguishes host pre-spawn failure from SYSTEM/package state with actionable recovery evidence.
 # v116.0.34.3 keeps synchronous MCP Tasks/SQLite dispatch off the ASGI event loop;
@@ -70,9 +72,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.5"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.5"
-PACKAGE_RELEASE_NAME = "chatgpt-tool-catalog-parity"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.6"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.6"
+PACKAGE_RELEASE_NAME = "siwc-optional-host-model-channel"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
