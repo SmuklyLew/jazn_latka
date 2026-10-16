@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3dd508a85657e9769f122f81813fc66abf6fdc41",
-    "base_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
+    "base_commit": "318c20bdbef159a0969777538f94982fbbc92570",
+    "base_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "318c20bdbef159a0969777538f94982fbbc92570",
