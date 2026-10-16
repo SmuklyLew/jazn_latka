@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -328,8 +331,42 @@ def build_host_finalize_parser(*, default_root: Path) -> argparse.ArgumentParser
     return parser
 
 
+def _emit_json_stdout(payload: dict[str, Any]) -> None:
+    """Deliver large finalization receipts without losing a committed turn to pipe backpressure.
+
+    Host stdout may be a nonblocking pipe. A single TextIOWrapper.print() may
+    raise BlockingIOError after writing some bytes, although phase-2 is already
+    durably accepted. Use bounded binary writes and never retry finalization.
+    """
+    data = (
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str)
+        + "\n"
+    )
+    try:
+        descriptor = sys.stdout.fileno()
+    except (AttributeError, OSError, ValueError):
+        # IDE/test capture streams need not expose a file descriptor.
+        sys.stdout.write(data)
+        sys.stdout.flush()
+        return
+    encoded = data.encode(sys.stdout.encoding or "utf-8")
+    remaining = memoryview(encoded)
+    deadline = time.monotonic() + 10.0
+    while remaining:
+        try:
+            written = os.write(descriptor, remaining[:16384])
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.01)
+            continue
+        if written <= 0:
+            raise BrokenPipeError("host_finalization_stdout_closed")
+        remaining = remaining[written:]
+
+
 def run_host_finalize_cli(argv: list[str], *, default_root: Path) -> int:
     args = build_host_finalize_parser(default_root=Path(default_root).resolve()).parse_args(argv)
     payload = finalize_payload(args)
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str))
+    _emit_json_stdout(payload)
     return 0 if payload.get("accepted") else 2
