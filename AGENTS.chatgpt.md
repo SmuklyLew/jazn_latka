@@ -352,12 +352,12 @@ Nie zastępuj lifecycle ręcznym `kill`, własnym `subprocess.Popen`, edycją ma
 
 ### Jedno okno maintenance dla dołączanej MEMORY
 
-Niskopoziomowy `memory-attach` wymaga nieaktywnego daemona. Dla MEMORY dostarczanej po SYSTEM używaj preferencyjnie wysokopoziomowego `memory-converge`, który scala discovery/adapter/repack/attach/recovery/readiness w **jedną transakcję maintenance**:
+Niskopoziomowy `memory-attach` wymaga nieaktywnego daemona. Dla MEMORY dostarczanej po SYSTEM preferuj wysokopoziomowy `memory-converge`, który obejmuje discovery/verified-streaming/attach/recovery/readiness w **jedną transakcję maintenance**, bez obowiązkowego repacku lub joinu ZIP:
 
 1. jeżeli to możliwe, domknij bieżącą visible turn przed maintenance; jeżeli phase-1 została już trwale zapisana i restart jest konieczny, zachowaj dokładnie ten sam `request_id`, `turn_id`, `trace_id` i `host_request_contract_hash` do resume/finalizacji po restarcie — bez replayu tekstu użytkownika;
 2. zatrzymaj daemon najwyżej raz;
 3. w stabilnym lokalnym hoście wykonaj `python -X utf8 run.py memory-converge --parts-dir <LOCAL_MEMORY_PACKAGE_DIR> --json`; w hoście z krótkim/niestabilnym budżetem prealokuj `host-op-id --kind memory-converge`, wykonaj jeden `host-op-submit ... --kind memory-converge -- --parts-dir <LOCAL_MEMORY_PACKAGE_DIR>` i polluj ten sam operation ID;
-4. pozostaw daemon nieaktywny przez cały adapter/repack/attach/recovery/normalizację/budowę wake-state; wysokopoziomowy `memory-converge` używa kanonicznego `memory-recover` jako etapu recovery, a recovery ma rozwiązywać źródła przez kanoniczny `JaznConfig.memory_root` / `JAZN_MEMORY_ROOT`, nigdy przez zahardkodowane `<active_root>/memory`;
+4. pozostaw daemon nieaktywny przez cały verified-streaming/attach/recovery/normalizację/budowę wake-state; wysokopoziomowy `memory-converge` używa kanonicznego `memory-recover` jako etapu recovery, a recovery ma rozwiązywać źródła przez kanoniczny `JaznConfig.memory_root` / `JAZN_MEMORY_ROOT`, nigdy przez zahardkodowane `<active_root>/memory`;
 5. wymagaj zakończenia `memory-converge` zgodnie z `JAZN_MEMORY_READINESS_POLICY`; dla Łatki `native_unified_required` nie może przejść na samym `ready_transactional_tier_only`;
 6. uruchom daemon dopiero po zakończeniu całej operacji pamięciowej;
 7. zweryfikuj live `status`, `full_autobiographical_recall_ready`, continuity i lokalne provenance, a następnie resume/finalize zachowanego requestu, jeżeli taki request istniał.
