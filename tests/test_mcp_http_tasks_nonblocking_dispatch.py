@@ -21,6 +21,20 @@ import anyio
 from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
 
 
+class _NoopPublicBackend:
+    """Keep the production-like gateway public tool adapter independent.
+
+    Supplying a public backend is required so the gateway actually uses the
+    injected synthetic protocol backend, rather than its real private server.
+    """
+
+    def call_tool(
+        self, name: str, arguments: dict[str, Any],
+        *, meta: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        raise AssertionError("a Tasks-only HTTP test must not invoke public tools")
+
+
 class _BlockingProtocolBackend:
     def __init__(self) -> None:
         self.entered = Event()
@@ -77,6 +91,7 @@ async def test_tasks_backend_does_not_block_unrelated_healthz(tmp_path: Path) ->
     backend = _BlockingProtocolBackend()
     gateway = build_public_mcp_gateway(
         root=tmp_path,
+        backend=_NoopPublicBackend(),
         protocol_backend=backend,
         allow_unauthenticated_loopback_dev=True,
     )
@@ -132,6 +147,7 @@ async def test_task_backend_exception_remains_fail_closed_without_replay(tmp_pat
     backend = _FailingBackend()
     gateway = build_public_mcp_gateway(
         root=tmp_path,
+        backend=_NoopPublicBackend(),
         protocol_backend=backend,
         allow_unauthenticated_loopback_dev=True,
     )
