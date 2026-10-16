@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34",
-  "active_definition_count": 2360,
+  "system_version": "16.3.25.5.116.0.34.2",
+  "active_definition_count": 2370,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6710,6 +6710,230 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 224
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_before_unpack_uses_verified_current_message_remote_runtime": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_before_unpack_uses_verified_current_message_remote_runtime",
+      "purpose": "Before unpack uses verified current message remote runtime",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_plugin_only_or_copied_status_never_makes_remote_ready": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_plugin_only_or_copied_status_never_makes_remote_ready",
+      "purpose": "Plugin only or copied status never makes remote ready",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_stale_status_can_fall_back_to_real_local_process": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_stale_status_can_fall_back_to_real_local_process",
+      "purpose": "Stale status can fall back to real local process",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_after_unpack_does_not_create_host_tools_or_grant_finalization": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_after_unpack_does_not_create_host_tools_or_grant_finalization",
+      "purpose": "After unpack does not create host tools or grant finalization",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_after_unpack_verified_operator_requires_live_runtime_preflight": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_after_unpack_verified_operator_requires_live_runtime_preflight",
+      "purpose": "After unpack verified operator requires live runtime preflight",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_wrong_status_version_does_not_promote_remote_route": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_wrong_status_version_does_not_promote_remote_route",
+      "purpose": "Wrong status version does not promote remote route",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_unknown_phase_is_rejected": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_unknown_phase_is_rejected",
+      "purpose": "Unknown phase is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_unreadable_optional_memory_file_never_blocks_core": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_unreadable_optional_memory_file_never_blocks_core",
+      "purpose": "Unreadable optional memory file never blocks core",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_operator_cli_can_classify_local_bootstrap_without_private_memory": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_operator_cli_can_classify_local_bootstrap_without_private_memory",
+      "purpose": "Operator cli can classify local bootstrap without private memory",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
+    },
+    "tests/test_chatgpt_ingress_capability.py::test_operator_cli_redacts_untrusted_host_payload": {
+      "path": "tests/test_chatgpt_ingress_capability.py",
+      "name": "test_operator_cli_redacts_untrusted_host_payload",
+      "purpose": "Operator cli redacts untrusted host payload",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bootstrap.chatgpt_ingress_capability",
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.remote_runtime",
+        "latka_jazn.memory.availability",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 171
     },
     "tests/test_chatgpt_library_discovery.py::test_project_loader_searches_library_before_declaring_system_zip_absent": {
       "path": "tests/test_chatgpt_library_discovery.py",
