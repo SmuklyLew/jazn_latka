@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
-  "runtime_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
-  "package_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
-  "generated_at_utc": "2026-10-15T21:25:56+00:00",
-  "updated_at_utc": "2026-10-15T21:25:56+00:00",
+  "version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+  "runtime_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+  "package_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+  "generated_at_utc": "2026-10-16T02:49:25+00:00",
+  "updated_at_utc": "2026-10-16T02:49:25+00:00",
   "start_file": "run.py",
-  "file_count": 2595,
-  "static_file_count": 2595,
+  "file_count": 2596,
+  "static_file_count": 2596,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -353,8 +353,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2976,
-      "sha256": "b3144d96c0aef8185951f5996405bef738a55b16b9b2dc79a0f8a69d5a5f587a",
+      "size_bytes": 2952,
+      "sha256": "a12573e3a346534bcca506f1cd8e27895413ff80eedbc3b6940b49b3421dec49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6149,8 +6149,8 @@
     },
     {
       "path": "latka_jazn/core/turn_settlement.py",
-      "size_bytes": 4641,
-      "sha256": "7d96b4608c5d7dcf17f6e31905a0d53224e31832344afa55e193d8ff5661861f",
+      "size_bytes": 6331,
+      "sha256": "736b33a35493c7a2d17f0d0e14bcf04dfc7cbb6dc97d1d80d3e30995990fbf67",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10127,8 +10127,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 9851,
-      "sha256": "b87e4c94b6899f05813074e309d59ba3bd9479bf29d7dd389b48107472b36d10",
+      "size_bytes": 9998,
+      "sha256": "89f75bd16a56c6ca33ff390eb2b2c142112ca2b2bbf5fba18c059771b8e08616",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22609,6 +22609,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "size_bytes": 4549,
+      "sha256": "fcea73fc25b09f6c7600f7f252cabbc9c67cc428e18e6ecb61fb23dc203edfa7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_turn_timeout_audit_nonblocking.py",
       "size_bytes": 2732,
       "sha256": "0a27e2379991990ed8b3b14661bdb7c399222bf266da9c2007415453389efbf4",
@@ -23159,8 +23168,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2169360,
-      "sha256": "26cf7b74476c2c53399f88b9ff0d9497d6b918dcfcd1d4e519e37971a31ed64d",
+      "size_bytes": 2174238,
+      "sha256": "7ec55d44b8aacc330d41d179f332712d66b145fc5c1f5ceba88b758393a7c1b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23807,11 +23816,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
+  "release_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
-    "package_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
-    "release_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence"
+    "runtime_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+    "package_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+    "release_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity"
   },
   "legacy_aliases": {
     "version": "release_version"
