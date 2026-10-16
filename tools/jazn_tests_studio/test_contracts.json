@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.5",
-  "active_definition_count": 2378,
+  "active_definition_count": 2379,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -7388,6 +7388,29 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 120
+    },
+    "tests/test_chatgpt_mcp_descriptor_visibility.py::test_official_fastmcp_descriptor_visibility_and_scopes": {
+      "path": "tests/test_chatgpt_mcp_descriptor_visibility.py",
+      "name": "test_official_fastmcp_descriptor_visibility_and_scopes",
+      "purpose": "Official fastmcp descriptor visibility and scopes",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio",
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.chatgpt_toolset",
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
     },
     "tests/test_chatgpt_mcp_end_to_end.py::test_daemon_presentation_and_private_mcp_complete_two_phase_reply": {
       "path": "tests/test_chatgpt_mcp_end_to_end.py",
