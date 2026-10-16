@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -39,7 +40,7 @@ def _resolve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *,
              state: str = "pending", bound_text: str = TEXT,
              expected_text: str | None = None,
              supplied_hash: str | None = None,
-             notification: str = "pending") -> dict[str, object]:
+             notification: str = "pending") -> dict[str, Any]:
     monkeypatch.setattr(
         subject, "host_request_lifecycle_by_daemon_request_id",
         lambda *_args, **_kwargs: _fake_lifecycle(
