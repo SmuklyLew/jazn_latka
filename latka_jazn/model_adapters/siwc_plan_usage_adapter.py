@@ -12,7 +12,7 @@ import re
 from collections.abc import Callable, Iterable, Iterator
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
@@ -24,6 +24,14 @@ _MAX_EVENT_COUNT = 100_000
 _MAX_STREAM_BYTES = 8 * 1024 * 1024
 _MAX_TEXT_CHARS = 256 * 1024
 StreamTransport = Callable[[dict[str, Any], str, float], Iterable[dict[str, Any]]]
+
+
+class _DenyRedirect(HTTPRedirectHandler):
+    """Never forward an OAuth bearer credential on a 3xx redirect."""
+
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str,
+                         headers: Any, newurl: str) -> None:
+        return None
 
 
 def _sse_events(lines: Iterable[bytes]) -> Iterator[dict[str, Any]]:
@@ -69,7 +77,7 @@ def _https_stream(payload: dict[str, Any], token: str, timeout: float) -> Iterat
         method="POST",
     )
     # Exact official HTTPS endpoint; no configurable destination for an OAuth token.
-    with urlopen(req, timeout=timeout) as response:
+    with build_opener(_DenyRedirect()).open(req, timeout=timeout) as response:
         yield from _sse_events(response)
 
 
@@ -233,6 +241,7 @@ class SiwcPlanUsageAdapter:
         }
 
     def generate(self, request: ModelAdapterRequest) -> ModelAdapterResponse:
+        self._completed = False
         reason = self._failure_reason()
         if reason:
             return self._response(status=reason)
@@ -243,11 +252,12 @@ class SiwcPlanUsageAdapter:
 
         chunks: list[str] = []
         text_size = 0
-        self._completed = False
         try:
             for index, event in enumerate(self._transport(payload, self._access_token, self.timeout_seconds)):
                 if index >= _MAX_EVENT_COUNT:
                     raise ValueError("siwc_event_limit")
+                if not isinstance(event, dict):
+                    raise ValueError("siwc_event_must_be_object")
                 kind = event.get("type")
                 if kind == "response.output_text.delta":
                     delta = event.get("delta")
