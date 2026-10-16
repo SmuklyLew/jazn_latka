@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "40a189d42687de957bf975be2fa8d9d27fa89683",
-    "base_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
+    "base_commit": "ef3ffce944f65e64b9fbc50b2c6ccd4274458271",
+    "base_version": "16.3.25.5.116.0.34.2-chatgpt-host-memory-ingress",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ef3ffce944f65e64b9fbc50b2c6ccd4274458271",
