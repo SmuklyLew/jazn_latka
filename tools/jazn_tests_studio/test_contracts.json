@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.33",
-  "active_definition_count": 2354,
+  "active_definition_count": 2355,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -50911,8 +50911,10 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.runtime_answer_validator"
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.runtime_session_state"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -50932,8 +50934,10 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.runtime_answer_validator"
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.runtime_session_state"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -50952,8 +50956,10 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.runtime_answer_validator"
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.runtime_session_state"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -50972,12 +50978,36 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
-        "latka_jazn.core.runtime_answer_validator"
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.runtime_session_state"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 35
+    },
+    "tests/test_v116_0_33_chatgpt_host_continuity.py::test_phase_one_binds_verified_checkpoint_not_stale_daemon_session": {
+      "path": "tests/test_v116_0_33_chatgpt_host_continuity.py",
+      "name": "test_phase_one_binds_verified_checkpoint_not_stale_daemon_session",
+      "purpose": "Phase one binds verified checkpoint not stale daemon session",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.runtime_session_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
