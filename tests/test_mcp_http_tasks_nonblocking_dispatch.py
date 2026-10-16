@@ -61,7 +61,12 @@ def _task_request() -> tuple[dict[str, str], dict[str, Any]]:
             "method": "tasks/get",
             "params": {
                 "taskId": "opaque-task-1",
-                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"},
+                "_meta": {
+                    "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                    "io.modelcontextprotocol/clientCapabilities": {
+                        "extensions": {"io.modelcontextprotocol/tasks": {}},
+                    },
+                },
             },
         },
     )
@@ -90,7 +95,7 @@ async def test_tasks_backend_does_not_block_unrelated_healthz(tmp_path: Path) ->
                 group.start_soon(task_call)
                 with anyio.fail_after(2):
                     started = await anyio.to_thread.run_sync(backend.entered.wait, 1)
-                    assert started, "task backend did not start"
+                    assert started, f"task backend did not start; early HTTP responses: {[str(response.text) for response in responses]}"
                 # The worker has not been released, yet the event loop must
                 # remain responsive to this independent HTTP request.
                 with anyio.fail_after(1.5):
@@ -139,6 +144,6 @@ async def test_task_backend_exception_remains_fail_closed_without_replay(tmp_pat
     assert response.status_code == 200
     result = response.json()
     assert result["id"] == 7
-    assert result["error"]["code"] == -32603
+    assert result["error"]["code"] == -32603, result["error"]
     assert result["error"]["message"] == "Internal MCP task bridge error"
     assert backend.calls == 1
