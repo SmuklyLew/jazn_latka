@@ -18,6 +18,14 @@ The observed consumed records had \`daemon_finalization_notification_state=pendi
 4. Normal daemon finalization reconciliation also validates the committed capture before terminalizing a host-pending job as \`completed\`. Invalid capture becomes a \`host_finalization_rejected\` diagnostic instead of a manufactured success.
 5. New regression tests reject invalid/conflicting hashes, corrupted final capture, and false completion of pending host requests.
 
+## Additional directly reproduced failure: nonblocking host stdout
+
+During this update the canonical `run.py host-finalize --json` call durably accepted the current turn but returned code 1, raising `BlockingIOError: [Errno 11] write could not complete without blocking` while printing a large finalization response. The host could thus miss an accepted `display_exact` even when the daemon received the notification.
+
+`latka_jazn/cli_commands/host.py` now writes serialized JSON in bounded 16 KiB binary chunks, tolerates transient EAGAIN/nonblocking pipe backpressure for up to 10 seconds, and preserves the no-replay rule. Streams without file descriptors (e.g. IDE/test capture) use a text fallback. Neither path repeats `finalize_payload`; a failed write must be recovered by polling the original request, never re-finalized blindly.
+
+Regression includes >100 KiB JSON, simulated intermittent `BlockingIOError`/short writes, and text-only capture. This closes a concrete host output transport failure; it does not guarantee delivery if the host permanently closes stdout.
+
 ## Boundaries — what this change does **not** solve
 
 - It does not make ChatGPT's local executor reliable, extend its process lifetime, create an MCP plugin, or register an externally accessible service.
