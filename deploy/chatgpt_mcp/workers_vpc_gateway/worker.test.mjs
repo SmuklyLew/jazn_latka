@@ -14,7 +14,7 @@ function backend(bad={}){
     if(path==="/.well-known/oauth-protected-resource")
       return reply({resource:bad.resource?PUBLIC+"/wrong":RESOURCE,
         authorization_servers:[bad.issuer?"https://wrong.example":ISSUER],
-        scopes_supported:bad.scope?SCOPES.slice(0,1):SCOPES});
+        scopes_supported:bad.scope?[]:SCOPES});
     if(path==="/mcp"&&init.method==="GET"&&!headers.has("authorization"))
       return reply({},bad.challenge?200:401,{"www-authenticate":'Bearer resource_metadata="'+PUBLIC+'/.well-known/oauth-protected-resource"'});
     if(bad.redirect)return reply({},302,{location:"https://evil.example"});
