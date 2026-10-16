@@ -235,10 +235,43 @@ def test_pending_host_job_recovers_after_daemon_restart_and_reconciles_consumpti
             request_contract_hash=binding["request_contract_hash"],
         )
         assert claimed["state"] == "claimed"
+        # Simulate a real phase-2 commit with a verifiable accepted envelope,
+        # not a bare consumed marker that cannot prove accepted speech.
+        recorded_binding = claimed["binding"]
+        final_visible_text = (
+            f'{recorded_binding["timestamp_header"]}\n'
+            f'{recorded_binding["state_emoticon"]} {recorded_binding["author_label"]}\n\n'
+            "Odpowiedź zaakceptowana po wznowieniu."
+        )
+        capture = {
+            "turn_id": binding["turn_id"],
+            "trace_id": binding["trace_id"],
+            "final_visible_text": final_visible_text,
+            "final_text_sha256": sha256_host_visible_text(final_visible_text),
+            "envelope_present_in_final": True,
+            "prepared_projection": {
+                "source": "runtime_finalized",
+                "timestamp_header": recorded_binding["timestamp_header"],
+                "client_context": {},
+                "envelope": {
+                    "trace": {
+                        "turn_id": binding["turn_id"],
+                        "trace_id": binding["trace_id"],
+                        "timestamp_header": recorded_binding["timestamp_header"],
+                    },
+                    "final_response_contract": {
+                        "turn_id": binding["turn_id"],
+                        "trace_id": binding["trace_id"],
+                        "final_visible_text": final_visible_text,
+                    },
+                },
+            },
+        }
         consume_claimed_host_request(
             tmp_path,
             turn_id=binding["turn_id"],
             request_contract_hash=binding["request_contract_hash"],
+            final_visible_capture=capture,
         )
         reconciled = second.get_chat_job(job.request_id)
         assert reconciled is not None and reconciled.status == "completed"

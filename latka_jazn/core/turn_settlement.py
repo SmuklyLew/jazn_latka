@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     host_request_lifecycle_by_daemon_request_id,
+    read_committed_host_request,
 )
 from latka_jazn.version import schema_version
 
@@ -87,12 +88,40 @@ def resolve_durable_turn_settlement(
     ):
         violations.append("daemon_request_id_binding_mismatch")
 
-    expected_hash = str(expected_user_text_sha256 or "").strip().lower()
-    if not _SHA256_RE.fullmatch(expected_hash) and expected_user_text is not None:
-        expected_hash = _sha_text(expected_user_text)
+    # Evidence is not optional once supplied: a malformed digest must never
+    # silently turn an explicit binding check into an unchecked recovery.
+    supplied_hash = (
+        str(expected_user_text_sha256).strip().lower()
+        if expected_user_text_sha256 is not None
+        else ""
+    )
+    valid_supplied_hash = bool(_SHA256_RE.fullmatch(supplied_hash))
+    if expected_user_text_sha256 is not None and not valid_supplied_hash:
+        violations.append("invalid_expected_user_text_sha256")
+    calculated_hash = (
+        _sha_text(expected_user_text) if expected_user_text is not None else ""
+    )
+    if valid_supplied_hash and calculated_hash and not hmac.compare_digest(
+        supplied_hash, calculated_hash
+    ):
+        violations.append("expected_user_text_evidence_conflict")
+    expected_hash = supplied_hash if valid_supplied_hash else calculated_hash
     bound_user_hash = str(binding.get("user_text_sha256") or "").strip().lower()
+    if not _SHA256_RE.fullmatch(bound_user_hash):
+        violations.append("invalid_bound_user_text_sha256")
     if expected_hash and not hmac.compare_digest(bound_user_hash, expected_hash):
         violations.append("user_text_binding_mismatch")
+
+    # A consumed directory is a durable lifecycle state, but alone it is not
+    # proof of accepted speech.  Check the immutable final capture and envelope
+    # before exposing ``accepted_final_committed`` to reconnecting clients.
+    if state == "consumed":
+        try:
+            read_committed_host_request(
+                Path(root), turn_id=str(binding.get("turn_id") or "")
+            )
+        except HostRequestStoreError as exc:
+            violations.append(f"committed_final_invalid:{exc}")
 
     settlement_state = {
         "pending": "awaiting_host_finalization",
@@ -116,6 +145,15 @@ def resolve_durable_turn_settlement(
         "generation_context": _mapping(lifecycle.get("generation_context")),
         "daemon_finalization_notification_state": lifecycle.get(
             "daemon_finalization_notification_state"
+        ),
+        "daemon_projection_confirmed": (
+            state == "consumed"
+            and lifecycle.get("daemon_finalization_notification_state") == "delivered"
+        ),
+        "daemon_projection_pending": (
+            state == "consumed"
+            and lifecycle.get("daemon_finalization_notification_state")
+            in ("pending", "pending_retry")
         ),
         "violations": violations,
     }

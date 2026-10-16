@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.31",
-  "active_definition_count": 2340,
+  "system_version": "16.3.25.5.116.0.32",
+  "active_definition_count": 2350,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -18332,7 +18332,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 251
+      "line": 284
     },
     "tests/test_host_finalization_lifecycle.py::test_host_generation_context_is_bounded_sanitized_and_hash_bound": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18360,7 +18360,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 276
+      "line": 309
     },
     "tests/test_host_finalization_lifecycle.py::test_host_candidate_rejects_undeclared_memory_claim_and_runtime_template": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18390,7 +18390,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 303
+      "line": 336
     },
     "tests/test_host_finalization_lifecycle.py::test_chatgpt_synthesizer_produces_host_context_without_runtime_draft": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18419,7 +18419,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 340
+      "line": 373
     },
     "tests/test_host_finalization_lifecycle.py::test_mcp_phase_two_completes_the_same_daemon_job": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18448,7 +18448,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 356
+      "line": 389
     },
     "tests/test_host_finalization_notification_idempotency.py::test_regeneration_then_acceptance_are_distinct_operations": {
       "path": "tests/test_host_finalization_notification_idempotency.py",
@@ -18824,6 +18824,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 243
+    },
+    "tests/test_host_finalize_stdout_backpressure.py::test_host_finalize_json_survives_transient_nonblocking_stdout": {
+      "path": "tests/test_host_finalize_stdout_backpressure.py",
+      "name": "test_host_finalize_json_survives_transient_nonblocking_stdout",
+      "purpose": "Host finalize json survives transient nonblocking stdout",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_host_finalize_stdout_backpressure.py::test_host_finalize_json_supports_text_only_capture": {
+      "path": "tests/test_host_finalize_stdout_backpressure.py",
+      "name": "test_host_finalize_json_supports_text_only_capture",
+      "purpose": "Host finalize json supports text only capture",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
     },
     "tests/test_host_finalized_conversation_state.py::test_host_phase_two_commits_full_turn_idempotently": {
       "path": "tests/test_host_finalized_conversation_state.py",
@@ -41269,6 +41307,50 @@
       "description_source": "source_identity",
       "line": 121
     },
+    "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_recovered_consumed_requires_verified_capture": {
+      "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
+      "name": "test_recovered_consumed_requires_verified_capture",
+      "purpose": "Recovered consumed requires verified capture",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_pending_durable_turn_never_marked_completed": {
+      "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
+      "name": "test_pending_durable_turn_never_marked_completed",
+      "purpose": "Pending durable turn never marked completed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
     "tests/test_runtime_daemon_native_lifecycle.py::test_native_daemon_lifecycle_disables_monkeypatch_install": {
       "path": "tests/test_runtime_daemon_native_lifecycle.py",
       "name": "test_native_daemon_lifecycle_disables_monkeypatch_install",
@@ -50287,17 +50369,17 @@
       "description_source": "source_identity",
       "line": 26
     },
-    "tests/test_turn_settlement_authority_convergence.py::test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job": {
+    "tests/test_turn_settlement_authority_convergence.py::test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
-      "name": "test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job",
-      "purpose": "Consumed durable settlement recovers runtime turn not accepted job",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job",
+      "purpose": "Unverified consumed record cannot recover runtime turn not accepted job",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -50327,7 +50409,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 128
     },
     "tests/test_turn_settlement_authority_convergence.py::test_nonrecoverable_worker_failure_cannot_adopt_host_settlement": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50349,7 +50431,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 157
+      "line": 158
     },
     "tests/test_turn_settlement_authority_convergence.py::test_reconstructed_phase1_uses_same_runtime_answer_validator_gate": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50371,7 +50453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 194
+      "line": 195
     },
     "tests/test_turn_settlement_authority_convergence.py::test_daemon_request_reverse_lookup_fails_closed_on_ambiguous_binding": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50393,7 +50475,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 216
+      "line": 217
     },
     "tests/test_turn_settlement_authority_convergence.py::test_recoverable_failed_job_survives_daemon_restart_and_rebinds": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50413,7 +50495,119 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 235
+      "line": 236
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_matching_user_text_and_sha_allow_pending_recovery": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_matching_user_text_and_sha_allow_pending_recovery",
+      "purpose": "Matching user text and sha allow pending recovery",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_explicit_invalid_expected_digest_fails_closed_without_replay": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_explicit_invalid_expected_digest_fails_closed_without_replay",
+      "purpose": "Explicit invalid expected digest fails closed without replay",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_conflicting_expected_text_and_hash_cannot_bypass_binding": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_conflicting_expected_text_and_hash_cannot_bypass_binding",
+      "purpose": "Conflicting expected text and hash cannot bypass binding",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_missing_or_wrong_bound_message_digest_is_rejected": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_missing_or_wrong_bound_message_digest_is_rejected",
+      "purpose": "Missing or wrong bound message digest is rejected",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_consumed_without_verified_final_capture_never_claims_accepted": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_consumed_without_verified_final_capture_never_claims_accepted",
+      "purpose": "Consumed without verified final capture never claims accepted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_turn_settlement_strict_recovery.py::test_accepted_capture_and_daemon_notification_have_distinct_evidence": {
+      "path": "tests/test_turn_settlement_strict_recovery.py",
+      "name": "test_accepted_capture_and_daemon_notification_have_distinct_evidence",
+      "purpose": "Accepted capture and daemon notification have distinct evidence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
     },
     "tests/test_turn_timeout_audit_nonblocking.py::test_execution_timeout_does_not_wait_for_slow_technical_audit": {
       "path": "tests/test_turn_timeout_audit_nonblocking.py",

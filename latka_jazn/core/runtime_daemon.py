@@ -2461,6 +2461,25 @@ class JaznDaemonServer(ThreadingHTTPServer):
             return True
         state = str(lifecycle.get("state") or "")
         if state == "consumed":
+            # A directory rename proves settlement persistence, not the
+            # accepted envelope.  Never mark a daemon job complete when a
+            # recovered consumed record lacks an intact final capture.
+            from latka_jazn.core.chatgpt_host_pending_store import (
+                HostRequestStoreError,
+                read_committed_host_request,
+            )
+
+            try:
+                read_committed_host_request(
+                    self.config.root, turn_id=job.host_turn_id
+                )
+            except HostRequestStoreError:
+                self._terminalize_host_finalization_locked(
+                    job,
+                    status="host_finalization_rejected",
+                    reason="committed_host_request_capture_invalid_during_recovery",
+                )
+                return True
             self._terminalize_host_finalization_locked(
                 job,
                 status="completed",

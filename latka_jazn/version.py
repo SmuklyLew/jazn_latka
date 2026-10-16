@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# v116.0.32 closes malformed evidence bypass and validates durable accepted turn captures before reconnect, with separate daemon projection reporting.
 # v116.0.31 runs Windows health-check <5s atomicity gate in a clean subprocess, then full deterministic suite without duplicate timing.
 # v116.0.30 routes new-chat corrections into specific fallback and host-language candidate constraints.
 # v116.0.29 adds bounded read-only operator intent benchmarks to Jaźń Studio.
@@ -60,9 +61,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.31"
-PACKAGE_VERSION = "16.3.25.5.116.0.31"
-PACKAGE_RELEASE_NAME = "runtime-ingress-security-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.32"
+PACKAGE_VERSION = "16.3.25.5.116.0.32"
+PACKAGE_RELEASE_NAME = "chatgpt-turn-recovery-continuity"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
