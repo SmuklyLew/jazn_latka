@@ -79,5 +79,5 @@ def test_release_identity_tracks_desktop_app_binding_hybrid_convergence() -> Non
     assert PACKAGE_VERSION == "16.3.25.5.116.0.32"
     assert (
         PACKAGE_RELEASE_NAME
-        == "runtime-ingress-security-convergence"
+        == "chatgpt-turn-recovery-continuity"
     )
