@@ -2,7 +2,7 @@
 // The private MCP resource server owns OAuth token, audience and scope checks.
 // The edge requires public resource metadata and a genuine 401 challenge first.
 const COMMON={"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
-const SCOPES=["jazn:status:read","jazn:turn:submit","jazn:turn:read","jazn:turn:finalize"];
+const SCOPES=["jazn:mcp:connect"];
 const COPY=new Set(["authorization","accept","content-type","mcp-protocol-version","mcp-session-id","last-event-id","mcp-method","mcp-name","idempotency-key"]);
 function json(value,status=200,more={}){return new Response(JSON.stringify(value),{status,headers:{...COMMON,...more}});}
 function unavailable(reason){return json({error:"mcp_unavailable",reason,must_not_resubmit_user_message:true},503,{"retry-after":"60"});}
