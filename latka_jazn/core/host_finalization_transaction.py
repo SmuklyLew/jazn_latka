@@ -413,5 +413,14 @@ def finalize_host_candidate(
         "finalization_history": [stage.value for stage in service.history],
         "conversation_state_persistence": conversation_state,
         "session_continuity_persistence": session_continuity,
+        # A committed visible turn is not equivalent to durable session carryover.
+        # Project continuity explicitly without weakening the display_exact gate.
+        "continuity_readiness": (
+            "ready" if session_continuity.get("saved") is True
+            else "degraded_continuity"
+        ),
+        "visible_reply_accepted": True,
+        "session_checkpoint_saved": session_continuity.get("saved") is True,
+        "replay_allowed": False,
     }
     return result, []

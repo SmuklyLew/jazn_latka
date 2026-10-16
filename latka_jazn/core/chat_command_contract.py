@@ -652,6 +652,7 @@ def _build_session_continuity_commit(
     user_text: str,
     detected_intent: str,
     runtime_route: str,
+    config: JaznConfig | None = None,
 ) -> dict[str, Any]:
     """Bind the accepted phase-2 reply back to the phase-1 conversation state.
 
@@ -666,6 +667,22 @@ def _build_session_continuity_commit(
     decision = json_object(result.get("conversation_decision"))
     task_state = json_object(decision.get("dialogue_task_state"))
     provenance = json_object(result.get("session_provenance"))
+    # A persistent daemon can keep a stale in-memory session projection after
+    # the ChatGPT host independently finalized an earlier accepted turn. Bind
+    # this phase-1 CAS to the verified durable checkpoint, never to that stale
+    # daemon projection, without changing the daemon's memory ownership.
+    if config is not None:
+        store = RuntimeSessionStateStore(config.root)
+        persisted = store.load_or_create(
+            session_id=session_id,
+            source_client=str(session_snapshot.get("source_client") or "chatgpt_host"),
+            no_carryover=False,
+        )
+        if store.last_load_metadata.get("session_resurrected_from_disk") is True:
+            session_snapshot = persisted.to_dict()
+            provenance["continuity_turn_count"] = store.last_load_metadata.get(
+                "continuity_turn_count", 0
+            )
     try:
         turn_count_before = max(0, int(provenance.get("continuity_turn_count") or 0))
     except (TypeError, ValueError):
@@ -744,6 +761,8 @@ def _commit_host_finalized_session_continuity(
         return {
             "saved": False,
             "status": "session_advanced_or_phase_one_checkpoint_missing",
+            "continuity_readiness": "degraded_continuity",
+            "replay_allowed": False,
             "current_state_sha256": current_hash,
             "expected_state_sha256": expected_before or None,
             "truth_boundary": (
@@ -837,6 +856,7 @@ def build_chatgpt_host_bridge_turn_contract(
     *,
     user_text: str,
     chat_bridge_meta: dict[str, Any],
+    config: JaznConfig | None = None,
 ) -> dict[str, Any]:
     """Attach one authoritative presentation action to --chat-gpt output."""
     trace = json_object(result.get("trace"))
@@ -901,6 +921,7 @@ def build_chatgpt_host_bridge_turn_contract(
         user_text=user_text,
         detected_intent=detected_intent,
         runtime_route=runtime_route,
+        config=config,
     )
     session_continuity_commit_sha256 = (
         _canonical_mapping_sha256(session_continuity_commit) if session_continuity_commit else ""
@@ -1100,6 +1121,14 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "required_visible_prefix": bridge.get("required_visible_prefix"),
         "final_visible_text": final_text,
         "final_text_sha256": sha256_host_visible_text(final_text) if final_text else None,
+        # Preserve the accepted visible reply while independently reporting
+        # whether its durable dialogue checkpoint was persisted.
+        "continuity_readiness": (
+            str(payload.get("continuity_readiness"))
+            if action == "display_exact" and bridge.get("phase") == "host_visible_reply_recorded"
+            and payload.get("continuity_readiness") in ("ready", "degraded_continuity")
+            else "not_verified"
+        ),
         "chatgpt_host_bridge": bridge,
         "daemon_request_id": bridge.get("daemon_request_id"),
         "poll_command": bridge.get("poll_command"),
@@ -1164,6 +1193,7 @@ def attach_chatgpt_host_contract(
             result,
             user_text=user_text,
             chat_bridge_meta=chat_bridge_meta,
+            config=config,
         )
         result["chatgpt_host_bridge"] = bridge
     if (

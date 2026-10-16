@@ -242,7 +242,22 @@ class RuntimeAnswerValidator:
     def _contains_random_memory_excerpt(self, user_text: str, body: str, detected_intent: str) -> bool:
         user_low = (user_text or "").lower()
         body_low = (body or "").lower()
-        self_intent = detected_intent in {"affective_self_state_reality_check", "self_state_question", "reciprocal_self_state_question", "self_preference_question", "sleep_closure_statement"} or any(x in user_low for x in ("a tobie", "a ty", "jak się czujesz", "jak sie czujesz", "ochot", "idę spać", "ide spac"))
+        # Whole-word boundaries are essential: "a ty" must not trigger on
+        # technical requests containing "na tym" or "na tych".
+        explicit_self_question = re.search(
+            r"(?<!\w)(?:a\s+ty|a\s+tobie|jak\s+się\s+czujesz|jak\s+sie\s+czujesz|"
+            r"idę\s+spać|ide\s+spac)(?!\w)",
+            user_low,
+        ) is not None
+        self_intent = (
+            detected_intent in {
+                "affective_self_state_reality_check", "self_state_question",
+                "reciprocal_self_state_question", "self_preference_question",
+                "sleep_closure_statement",
+            }
+            or explicit_self_question
+            or bool(re.search(r"(?<!\w)ochot(?:a|ę|y|e|ą)?(?!\w)", user_low))
+        )
         if not self_intent:
             return False
         memory_phrases = ("najbliższy trop", "najblizszy trop", "na tej podstawie", "w pamięci widzę", "w pamieci widze")
