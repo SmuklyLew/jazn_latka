@@ -26,6 +26,9 @@ class _BlockingProtocolBackend:
         self.calls = 0
         self.observed_subject: str | None = None
 
+    def handle(self, request_value: dict[str, Any]) -> dict[str, Any]:
+        raise AssertionError("authenticated HTTP Tasks must use verified dispatch")
+
     def handle_public_authenticated(
         self, request_value: dict[str, Any], *,
         owner_subject: str, owner_transport: str,
@@ -108,6 +111,9 @@ async def test_tasks_backend_does_not_block_unrelated_healthz(tmp_path: Path) ->
 async def test_task_backend_exception_remains_fail_closed_without_replay(tmp_path: Path) -> None:
     class _FailingBackend:
         calls = 0
+
+        def handle(self, request_value: dict[str, Any]) -> dict[str, Any]:
+            raise AssertionError("authenticated HTTP Tasks must use verified dispatch")
 
         def handle_public_authenticated(
             self, request_value: dict[str, Any], *,
