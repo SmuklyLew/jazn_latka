@@ -8,6 +8,7 @@ from .null_model_adapter import NullModelAdapter
 from .chatgpt_runtime_adapter import ChatgptRuntimeAdapter
 from .terminal_runtime_adapter import TerminalRuntimeAdapter
 from .openai_responses_adapter import OpenaiResponsesAdapter
+from .siwc_plan_usage_adapter import SiwcPlanUsageAdapter
 from .local_llm_adapter import LocalLlmAdapter
 from .adapter_contract import ContractOnlyModelAdapter, backend_config_skeletons
 from .openai_compatible_local_adapter import OpenAICompatibleLocalAdapter
@@ -77,6 +78,17 @@ def build_model_adapter(config: Any):
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
             max_output_tokens=int(getattr(config, "model_max_output_tokens", 800)),
             root=getattr(config, "root", None),
+        )
+    # A user-authorized ChatGPT plan is a distinct, explicit programmatic backend.
+    # It never replaces the host ChatGPT bridge or silently falls back to paid API.
+    if name in {"siwc", "chatgpt_plan_usage", "siwc_plan_usage_adapter"}:
+        return SiwcPlanUsageAdapter(
+            model=os.environ.get("JAZN_SIWC_MODEL", ""),
+            access_token=os.environ.get("JAZN_SIWC_ACCESS_TOKEN", ""),
+            granted_scopes=os.environ.get("JAZN_SIWC_GRANTED_SCOPES", ""),
+            operator_opt_in=_truthy(os.environ.get("JAZN_SIWC_OPERATOR_OPT_IN")),
+            network_permitted=bool(getattr(config, "allow_network", True)),
+            timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
         )
     if name in {"local", "ollama", "local_llm_adapter"}:
         return LocalLlmAdapter(
