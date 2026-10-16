@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-  "runtime_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-  "package_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-  "generated_at_utc": "2026-10-16T19:48:02+00:00",
-  "updated_at_utc": "2026-10-16T19:48:02+00:00",
+  "version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+  "runtime_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+  "package_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+  "generated_at_utc": "2026-10-16T19:54:15+00:00",
+  "updated_at_utc": "2026-10-16T19:54:15+00:00",
   "start_file": "run.py",
-  "file_count": 2659,
-  "static_file_count": 2659,
+  "file_count": 2662,
+  "static_file_count": 2662,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -253,6 +253,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/siwc-optional-model-channel.yml",
+      "size_bytes": 1629,
+      "sha256": "bf7507c304f7cf334a0a3f15ca22b96038f559409466385b81fc3568705d8f7c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/stable-test-contracts.yml",
       "size_bytes": 2228,
       "sha256": "171d0a55b5590b11bb7cbf0bcee3422bd46b1f2fc833fe0fa0891fb4c2811316",
@@ -353,8 +362,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "1838b78c353bb8a9364702abea9fb2b106b168e47850e82cfc494345493e4a3f",
+      "size_bytes": 2957,
+      "sha256": "80f51d29c8156de52d75dc3a74e588d04e16504cb47bd0678e077ada42c39816",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3136,6 +3145,15 @@
       "path": "docs/runtime/CHATGPT_REMOTE_ONLY_INGRESS.md",
       "size_bytes": 3665,
       "sha256": "891354d65d15e306d5ec69a35dad5a9bf4f0edc670ca9ae5d820f01b9c021d57",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/CHATGPT_SIWC_OPTIONAL_MODEL_CHANNEL.md",
+      "size_bytes": 6115,
+      "sha256": "5a188ceeebc0fc94eec02a11286ef577f63b9d2abc657816798ce49710cc0065",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7481,8 +7499,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/__init__.py",
-      "size_bytes": 469,
-      "sha256": "5618f800b889ad85c746d517155c8136523d49c69bb492fb69816e43bffa3137",
+      "size_bytes": 527,
+      "sha256": "d614daa54aa179e91d4eecf5945e05e101e9320320a622a2b23176bb231b731c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7526,8 +7544,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/factory.py",
-      "size_bytes": 11561,
-      "sha256": "62395c94525191799d2c1c424892bb4b25e91ffceba6f4bcfcaf1bfe30b8dea1",
+      "size_bytes": 12351,
+      "sha256": "09108e5b910416390f540349cba388aa40925025f0409163f6a4d5e6bc08cc86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7580,8 +7598,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/siwc_plan_usage_adapter.py",
-      "size_bytes": 13023,
-      "sha256": "4d183de0e2ab3667a28f1d6264e383502e031e65776cf23d9ee167ee70dd95b2",
+      "size_bytes": 13457,
+      "sha256": "092f991ffe1ce53e2b2da1fdcc8f0ed194074b38b309bb77a585ebd94e579429",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10226,8 +10244,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 10780,
-      "sha256": "df4c56dc7b832178458e7a6fbc960763ad9e0cd33d8363c32cff7e6f816e41bf",
+      "size_bytes": 10906,
+      "sha256": "337519b84f6e863ce5836268e5ce9ed2acf4b41245d0463daf5a0e4c1d8a067b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22978,6 +22996,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_siwc_plan_usage_adapter.py",
+      "size_bytes": 7492,
+      "sha256": "fdb58edf656800ea2b8a07bd905ad52115d88b608412801768566595de095ce9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_source_archive_gateway.py",
       "size_bytes": 5376,
       "sha256": "f81b710af559811ce8032decfa57608a26b79fa10f50fee5d85a4ef5babdc14d",
@@ -23735,8 +23762,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2202634,
-      "sha256": "4b60a2c676590d631f449bd6fb76181d7345a947d47f419fe2838da624c12c01",
+      "size_bytes": 2210918,
+      "sha256": "1be2c256b9c9adf3700f6f24dd8a2a286987f117e124823bf4a39d3a2bfcb9bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24383,11 +24410,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+  "release_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-    "package_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-    "release_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity"
+    "runtime_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+    "package_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+    "release_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel"
   },
   "legacy_aliases": {
     "version": "release_version"
