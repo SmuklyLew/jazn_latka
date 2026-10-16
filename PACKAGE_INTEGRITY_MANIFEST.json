@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
-  "runtime_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
-  "package_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
-  "generated_at_utc": "2026-10-16T10:38:50+00:00",
-  "updated_at_utc": "2026-10-16T10:38:50+00:00",
+  "version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+  "runtime_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+  "package_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+  "generated_at_utc": "2026-10-16T16:32:59+00:00",
+  "updated_at_utc": "2026-10-16T16:32:59+00:00",
   "start_file": "run.py",
-  "file_count": 2648,
-  "static_file_count": 2648,
+  "file_count": 2658,
+  "static_file_count": 2658,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -353,8 +353,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "1df92fe17a1e8d39021efb91a91fb0945c057e1f6973ddef1a49ecec65a46d1d",
+      "size_bytes": 2932,
+      "sha256": "b2c3730c28e8dd0e3fa72aadef67b0921e2a0286102e33b6b3f2fa69b5952cf3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -371,8 +371,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/README.md",
-      "size_bytes": 10390,
-      "sha256": "ceb93f0c2b731129081cb54f78fda698f8c83b0b5d48e1149da039a7c51deb11",
+      "size_bytes": 10392,
+      "sha256": "ba6fc7d9e1cb6f3508aeff8eafbb0269da466830b312cc9d6ab8bede5c70408c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -390,7 +390,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1941,
-      "sha256": "de0455e51eda759e3382dbabedf9de6897e2f03361b029a6a29d1bc16c2252f4",
+      "sha256": "4db379fec4a0b4f974eec07c401eeedb79d267ab967acbd7375fd63de85f82e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1342,6 +1342,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/plans/CHATGPT_RUNTIME_RELIABILITY_ACCEPTANCE_V1160345.md",
+      "size_bytes": 7103,
+      "sha256": "d7c58a5832cda4c2d3b3911d5633f0da347182fe58520b27e44fea69fceac56b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/plans/CHATGPT_TURN_INGRESS_GATE_CONVERGENCE_PLAN.md",
       "size_bytes": 7801,
       "sha256": "627502a1d36a94d6eb1a8bfd8e43ecc7675121911cb2b9317c36110c798e700a",
@@ -2236,6 +2245,15 @@
       "path": "docs/reports/JAZN_V116_0_34_4_HOST_EXECUTOR_EVIDENCE_AND_REMOTE_RECOVERY.md",
       "size_bytes": 3666,
       "sha256": "97f7535d6b808d79dd972b7fc3b28c661a7734efd7ab9d6fa84f3dd4d36f8735",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_5_CHATGPT_TOOL_CATALOG_PARITY.md",
+      "size_bytes": 3817,
+      "sha256": "54c723712245cf996760758c44df2101858eb01469af6a400768c111a50e7f97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6464,8 +6482,8 @@
     },
     {
       "path": "latka_jazn/mcp/chatgpt_bridge_probe.py",
-      "size_bytes": 8755,
-      "sha256": "8d5b53e81972afb850da436326a329dfdef0e74078069c99a7c49c4b8cbcd69b",
+      "size_bytes": 11318,
+      "sha256": "3a1380cbc3e17cd10bfa6815cd182ee83762845978ddf99f8193c8681f674add",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6527,8 +6545,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 38630,
-      "sha256": "d4d79144d33f9dcffc7634e5e277d1737f8421ee7b76915710d90d5be2712dfc",
+      "size_bytes": 39007,
+      "sha256": "737d389a5123836d19a8e32fe3418060b3eea2f8b7a17d53a76207baa1ecc272",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8742,7 +8760,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7903,
-      "sha256": "7ffc5f808f11353fd3f4b4ed73e0f6c4ba1d611ed6a45f3d09377eabb70739bd",
+      "sha256": "19d87e3429f1e7aaaffb0ded8002b1446b89810aab88d124d3e034049376c33a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10199,8 +10217,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 10684,
-      "sha256": "f334b537f62d6038ccd6d496f5fb4f2a06d1064147fa83e3a62da5f8a97ad25d",
+      "size_bytes": 10780,
+      "sha256": "df4c56dc7b832178458e7a6fbc960763ad9e0cd33d8363c32cff7e6f816e41bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17398,6 +17416,69 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.4/chatgpt_bridge_tool_catalog_probe.py",
+      "size_bytes": 7488,
+      "sha256": "280717e28072b9d1f5b39172ceefe00e4279bb1042aa531afb2f289e7debdd33",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_chatgpt_bridge_tool_catalog_probe.py",
+      "size_bytes": 9318,
+      "sha256": "5187c6c1a8d5af53033af581b80a99188e749b9b633f0b3f15c1740f2e9996c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_chatgpt_capability_loader_convergence.py",
+      "size_bytes": 2604,
+      "sha256": "8c90716723e526af6de5c8bb55b7e637b77e0dedad1e7a96710b33cc9dee04fc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
+      "size_bytes": 3039,
+      "sha256": "55229e0c44fd3ec877c0179676fb544831e0e87a5d2b0205ef243acd0a026f00",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
+      "size_bytes": 10384,
+      "sha256": "ae1f349ea2eb327b5f3a8431bbb618df29e3fe46a4493fbcac07d86de99a67e1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_chatgpt_zip_bootstrap_runtime_convergence.py",
+      "size_bytes": 6952,
+      "sha256": "59ededbe00e0735bd2a486609e0b5b83ae0869545df7b65982bd805e7c44eae2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/test_fast_bootstrap_persistent_runtime.py",
+      "size_bytes": 8677,
+      "sha256": "61dbfa9054f05824b2b3075da545be1b7ba335b279ee457734a0e191c3f70006",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -19424,8 +19505,8 @@
     },
     {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
-      "size_bytes": 7488,
-      "sha256": "280717e28072b9d1f5b39172ceefe00e4279bb1042aa531afb2f289e7debdd33",
+      "size_bytes": 9319,
+      "sha256": "2f8773d05e22223f13fa688d4c6d07f69e58db6ecda118ee0cc1ffee5b24264b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19434,7 +19515,7 @@
     {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2604,
-      "sha256": "8c90716723e526af6de5c8bb55b7e637b77e0dedad1e7a96710b33cc9dee04fc",
+      "sha256": "179e93af4180c7655b40e7fba0a776745afefbd0f88b6736807681d3f8360d54",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19452,7 +19533,7 @@
     {
       "path": "tests/test_chatgpt_desktop_app_binding_hybrid_convergence.py",
       "size_bytes": 3039,
-      "sha256": "55229e0c44fd3ec877c0179676fb544831e0e87a5d2b0205ef243acd0a026f00",
+      "sha256": "23a72fca81a715db280829f2d035b58ab0ec7367938fed4005fae8ffa12777e9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19695,7 +19776,7 @@
     {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
       "size_bytes": 10384,
-      "sha256": "ae1f349ea2eb327b5f3a8431bbb618df29e3fe46a4493fbcac07d86de99a67e1",
+      "sha256": "70da18bacd3da316ffe9bb594f39ecd491e5810904ec66182e186d61707967ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19741,6 +19822,15 @@
       "path": "tests/test_chatgpt_mcp_connection_recovery.py",
       "size_bytes": 4889,
       "sha256": "70bcbbe90806ac8581b1055212febcaba9db062edb4781365ec4f11ace16b95d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_mcp_descriptor_visibility.py",
+      "size_bytes": 2913,
+      "sha256": "94e643be33070c4afb75005da8f1a59bc28f64dea632053e1b2cc9eb5b22e2bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19956,7 +20046,7 @@
     {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
       "size_bytes": 6952,
-      "sha256": "59ededbe00e0735bd2a486609e0b5b83ae0869545df7b65982bd805e7c44eae2",
+      "sha256": "9bc052978190099814e30883b04a80cc2287118d03780045b65957214727324a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20451,7 +20541,7 @@
     {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
       "size_bytes": 8677,
-      "sha256": "61dbfa9054f05824b2b3075da545be1b7ba335b279ee457734a0e191c3f70006",
+      "sha256": "af5bf501d41607ed585765c1c28468032c03104a26be9db29017c6c29079d210",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23636,8 +23726,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2200181,
-      "sha256": "224412fe1c652241c66bcfee68795a81bea177dac3e7980ef7672192fa6a6bca",
+      "size_bytes": 2202634,
+      "sha256": "4b60a2c676590d631f449bd6fb76181d7345a947d47f419fe2838da624c12c01",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24284,11 +24374,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
+  "release_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
-    "package_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
-    "release_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress"
+    "runtime_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+    "package_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+    "release_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity"
   },
   "legacy_aliases": {
     "version": "release_version"

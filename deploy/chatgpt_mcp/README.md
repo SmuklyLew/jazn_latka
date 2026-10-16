@@ -37,7 +37,7 @@ The versioned machine-readable contract is
 ## Build
 
 ```bash
-docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.116.0.13 .
+docker build -f deploy/chatgpt_mcp/Dockerfile -t jazn-mcp:16.3.25.5.116.0.34.5 .
 ```
 
 The image runs as uid/gid 10001, never exposes the daemon port 8787, and uses

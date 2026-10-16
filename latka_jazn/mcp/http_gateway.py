@@ -463,13 +463,22 @@ class PublicMcpGateway:
         structured = value.get("structuredContent") if isinstance(value, Mapping) else None
         return dict(structured) if isinstance(structured, Mapping) else {}
 
-    def _tool_security_meta(self, required_scope: str) -> dict[str, Any]:
-        """Advertise actual enforced scopes to ChatGPT without granting access."""
+    def _tool_security_meta(
+        self, required_scope: str, *, model_visible: bool = True,
+    ) -> dict[str, Any]:
+        """Advertise enforced auth and explicit MCP Apps tool visibility.
+
+        Visibility is discovery metadata, never an authorization grant. The
+        server still checks the authenticated principal and operation scope.
+        """
+        visibility = ["model", "app"] if model_visible else ["app"]
         if self._token_verifier is None:
             # Only a validated explicit loopback development server can be noauth.
-            return {"securitySchemes": [{"type": "noauth"}]}
-        scopes = list(dict.fromkeys((*self.config.oauth_required_scopes, required_scope)))
-        return {"securitySchemes": [{"type": "oauth2", "scopes": scopes}]}
+            schemes = [{"type": "noauth"}]
+        else:
+            scopes = list(dict.fromkeys((*self.config.oauth_required_scopes, required_scope)))
+            schemes = [{"type": "oauth2", "scopes": scopes}]
+        return {"securitySchemes": schemes, "ui": {"visibility": visibility}}
 
     def _register_tools(self) -> None:
         mutating_idempotent = ToolAnnotations(
@@ -620,7 +629,7 @@ class PublicMcpGateway:
             title="Read Jaźń gateway health",
             description="Read redacted transport liveness. Do not use this tool to submit a user message.",
             annotations=read_only_idempotent,
-            meta=self._tool_security_meta(SCOPE_STATUS_READ),
+            meta=self._tool_security_meta(SCOPE_STATUS_READ, model_visible=False),
         )
         def jazn_health() -> CallToolResult:
             return self._invoke(JAZN_HEALTH_TOOL, {})
@@ -632,7 +641,7 @@ class PublicMcpGateway:
                 "Read redacted persistent-memory and recall readiness without returning raw memory content or local paths."
             ),
             annotations=read_only_idempotent,
-            meta=self._tool_security_meta(SCOPE_STATUS_READ),
+            meta=self._tool_security_meta(SCOPE_STATUS_READ, model_visible=False),
         )
         def jazn_memory_status() -> CallToolResult:
             return self._invoke(JAZN_MEMORY_STATUS_TOOL, {})

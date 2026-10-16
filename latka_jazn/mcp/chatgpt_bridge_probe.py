@@ -52,6 +52,71 @@ def _report(
     }
 
 
+def _required_tool_metadata_problem(
+    tool: Mapping[str, Any], *, require_oauth: bool,
+) -> str | None:
+    """Check the model-callable MCP descriptor, not just its name.
+
+    Fail closed on hidden tools, missing safety annotations or a remote
+    endpoint that advertises no authenticated access. None of this is
+    current-message ChatGPT tool exposure or proof of a live daemon.
+    """
+    description = tool.get("description")
+    input_schema = tool.get("inputSchema")
+    if (
+        not isinstance(description, str) or not description.strip()
+        or not isinstance(input_schema, dict)
+        or input_schema.get("type") != "object"
+    ):
+        return "mcp_chatgpt_tool_metadata_invalid"
+
+    meta = tool.get("_meta")
+    ui = meta.get("ui") if isinstance(meta, dict) else None
+    visibility = ui.get("visibility") if isinstance(ui, dict) else None
+    if (
+        not isinstance(visibility, list)
+        or len(visibility) != 2
+        or set(map(str, visibility)) != {"model", "app"}
+    ):
+        return "mcp_chatgpt_tool_visibility_invalid"
+
+    annotations = tool.get("annotations")
+    read_only = tool["name"] in {"jazn_status", "jazn_resume_visible_reply"}
+    if (
+        not isinstance(annotations, dict)
+        or annotations.get("readOnlyHint") is not read_only
+        or annotations.get("destructiveHint") is not False
+        or annotations.get("openWorldHint") is not False
+        or annotations.get("idempotentHint") is not True
+    ):
+        return "mcp_chatgpt_tool_annotations_invalid"
+
+    schemes = tool.get("securitySchemes")
+    if schemes is None and isinstance(meta, dict):
+        schemes = meta.get("securitySchemes")
+    if not isinstance(schemes, list) or not schemes:
+        return "mcp_chatgpt_tool_security_invalid"
+    supported = False
+    for scheme in schemes:
+        if not isinstance(scheme, dict):
+            return "mcp_chatgpt_tool_security_invalid"
+        scheme_type = scheme.get("type")
+        if scheme_type == "oauth2":
+            scopes = scheme.get("scopes")
+            if not isinstance(scopes, list) or not scopes or not all(
+                isinstance(scope, str) and scope.strip() for scope in scopes
+            ):
+                return "mcp_chatgpt_tool_security_invalid"
+            supported = True
+        elif scheme_type == "noauth" and not require_oauth:
+            supported = True
+        else:
+            return "mcp_chatgpt_tool_security_invalid"
+    if not supported:
+        return "mcp_chatgpt_tool_security_invalid"
+    return None
+
+
 def probe_chatgpt_mcp_tool_catalog(
     url: str, *, timeout: float = 3.0,
     token_env: str | None = None,
@@ -83,7 +148,8 @@ def probe_chatgpt_mcp_tool_catalog(
 
     opener = urllib.request.build_opener(_RejectRedirects())
     names: set[str] = set()
-    schemas: dict[str, bool] = {}
+    checks: dict[str, str | None] = {}
+    require_oauth = urlsplit(endpoint).scheme == "https"
     cursor: str | None = None
     seen_cursors: set[str] = set()
     for page in range(_MAX_PAGES):
@@ -161,20 +227,21 @@ def probe_chatgpt_mcp_tool_catalog(
                 return _report("mcp_catalog_duplicate_tool_name", observed=names, pages=page + 1)
             names.add(name)
             if name in REQUIRED_CHATGPT_TURN_TOOLS:
-                input_schema = tool.get("inputSchema")
-                schemas[name] = bool(
-                    isinstance(tool.get("description"), str)
-                    and tool["description"].strip()
-                    and isinstance(input_schema, dict)
-                    and input_schema.get("type") == "object"
+                checks[name] = _required_tool_metadata_problem(
+                    tool, require_oauth=require_oauth,
                 )
         next_cursor = result.get("nextCursor")
         if next_cursor is None:
             missing = any(name not in names for name in REQUIRED_CHATGPT_TURN_TOOLS)
-            metadata_ok = all(schemas.get(name, False) for name in REQUIRED_CHATGPT_TURN_TOOLS)
+            metadata_problem = next(
+                (checks.get(name) for name in REQUIRED_CHATGPT_TURN_TOOLS
+                 if checks.get(name) is not None),
+                None,
+            )
+            metadata_ok = not missing and metadata_problem is None
             reason = (
                 "mcp_chatgpt_required_tools_missing" if missing
-                else "mcp_chatgpt_tool_metadata_invalid" if not metadata_ok
+                else metadata_problem if metadata_problem is not None
                 else "mcp_chatgpt_tool_catalog_verified"
             )
             return _report(reason, observed=names, metadata_ok=metadata_ok, pages=page + 1)
