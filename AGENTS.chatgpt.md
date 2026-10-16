@@ -47,6 +47,7 @@ Po zweryfikowaniu subject `active_root` nie wykonuj automatycznie ponownego boot
 - **cold path** — pełna weryfikacja SHA/CRC i materializacja SYSTEM ZIP jest potrzebna dopiero wtedy, gdy nie ma zaufanej materializacji. Jeżeli standalone bootstrap dostaje `--reuse-existing-verified`, wolno ominąć ponowne CRC/dekompresję wyłącznie po zgodnym materialization stamp i pełnej weryfikacji statycznego `PACKAGE_INTEGRITY_MANIFEST.json`;
 - aktywny supervisor jest osobnym właścicielem recovery daemona. Jego żywy PID nie wystarcza: wymagaj process fingerprint/root identity oraz świeżego heartbeat lease; nie startuj duplikatu supervisora;
 - MEMORY optional nie należy do krytycznej ścieżki core wake. Nie uruchamiaj `memory-converge` w każdej turze i nie zatrzymuj conversation-ready tylko dlatego, że opcjonalny attach jest w toku lub niedostępny.
+- W publicznym MCP Tasks synchroniczne wywołanie SQLite/daemona jest wykonywane poza pętlą ASGI (worker thread). Krótkie `/healthz` i `/readyz` nie powinny stać w kolejce za blokującą turą; utrata połączenia nie jest dowodem przerwania wątku. Po timeout najpierw odczytaj stan trwałego `taskId`/`request_id`, nigdy nie uruchamiaj ponownie tej samej wiadomości jako nowej tury. Ta izolacja nie naprawia `ClientError` hosta przed utworzeniem procesu.
 
 Każda wiadomość nadal tworzy świeżą lineage tury i osobny request/finalization envelope; stabilna sesja i persistent daemon nie oznaczają ponownego użycia starego `turn_id`.
 
