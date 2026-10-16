@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.2",
-  "active_definition_count": 2370,
+  "system_version": "16.3.25.5.116.0.34.3",
+  "active_definition_count": 2372,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24023,6 +24023,48 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 267
+    },
+    "tests/test_mcp_http_tasks_nonblocking_dispatch.py::test_tasks_backend_does_not_block_unrelated_healthz": {
+      "path": "tests/test_mcp_http_tasks_nonblocking_dispatch.py",
+      "name": "test_tasks_backend_does_not_block_unrelated_healthz",
+      "purpose": "Tasks backend does not block unrelated healthz",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_mcp_http_tasks_nonblocking_dispatch.py::test_task_backend_exception_remains_fail_closed_without_replay": {
+      "path": "tests/test_mcp_http_tasks_nonblocking_dispatch.py",
+      "name": "test_task_backend_exception_remains_fail_closed_without_replay",
+      "purpose": "Task backend exception remains fail closed without replay",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
     },
     "tests/test_mcp_ingress_diagnostics.py::test_probe_rejects_public_plain_http_without_network": {
       "path": "tests/test_mcp_ingress_diagnostics.py",
