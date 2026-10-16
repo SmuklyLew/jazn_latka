@@ -11,6 +11,7 @@ from latka_jazn.model_adapters.siwc_plan_usage_adapter import (
     SIWC_REQUIRED_SCOPE,
     SIWC_RESPONSES_URL,
     SiwcPlanUsageAdapter,
+    _DenyRedirect,
     _sse_events,
 )
 
@@ -162,3 +163,27 @@ def test_siwc_factory_does_not_auto_enable(monkeypatch):
     cfg.model_adapter = "null"
     monkeypatch.delenv("JAZN_MODEL_ADAPTER", raising=False)
     assert not isinstance(build_model_adapter(cfg), SiwcPlanUsageAdapter)
+
+
+def test_siwc_http_redirect_is_rejected_to_protect_bearer():
+    assert _DenyRedirect().redirect_request(
+        None, None, 302, "redirect", {}, "https://other.example/capture"
+    ) is None
+
+
+def test_siwc_invalid_event_does_not_count_as_completion():
+    adapter, called = _adapter(["invalid-frame", _complete()])
+    result = adapter.generate(ModelAdapterRequest(prompt="Hi"))
+    assert called
+    assert result.status == "siwc_stream_transport_error"
+    assert result.text == ""
+    assert adapter.describe()["can_generate_model_guided_speech"] is False
+
+
+def test_siwc_previous_success_cannot_leak_into_failed_request():
+    adapter, _ = _adapter([_complete()])
+    assert adapter.generate(ModelAdapterRequest(prompt="Hi")).status == "completed"
+    result = adapter.generate(ModelAdapterRequest(prompt="Hi", previous_response_id="resp_123"))
+    assert result.status == "siwc_request_unsupported"
+    assert result.status_snapshot is not None
+    assert result.status_snapshot.can_generate_model_guided_speech is False
