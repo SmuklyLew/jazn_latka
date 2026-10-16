@@ -96,7 +96,7 @@ The VPC Service binding JAZN_PRIVATE_MCP must point to the private OAuth-enabled
 Jaźń MCP server via its verified Tunnel route (the HTTP VPC Service chooses
 the fixed private target, never the request URL). The Worker verifies, on EACH
 request, the private protected-resource metadata, the public resource identity,
-the expected issuer and all four turn-tool scopes, plus an unauthenticated 401
+the expected issuer and the MCP connect scope, plus an unauthenticated 401
 Bearer resource_metadata challenge. It then proxies only the exact public MCP
 and OAuth protected-resource discovery paths, preserving MCP stream/session
 headers and upstream bearer authorization. The private server MUST validate
