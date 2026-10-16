@@ -10,11 +10,13 @@ from pathlib import Path
 from threading import Event
 from typing import Any
 
-import anyio
 import pytest
 
+# The base Jaźń test profile intentionally has no HTTP/MCP extras. Skip
+# before importing their transitive dependencies such as AnyIO.
 pytest.importorskip("mcp")
 httpx = pytest.importorskip("httpx")
+import anyio
 
 from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
 
