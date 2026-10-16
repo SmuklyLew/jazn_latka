@@ -3,7 +3,7 @@ import { test } from "node:test";
 import worker from "./worker.mjs";
 
 const PUBLIC="https://jazn-runtime.example.workers.dev",ISSUER="https://accounts.example.test",RESOURCE=PUBLIC+"/mcp";
-const SCOPES=["jazn:status:read","jazn:turn:submit","jazn:turn:read","jazn:turn:finalize"];
+const SCOPES=["jazn:mcp:connect"];
 const unsafe={JAZN_PRIVATE_MCP:{fetch(){throw Error("MCP reached without OAuth");}}};
 const reply=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json",...headers}});
 function enabled(fetch){return {JAZN_INGRESS_MODE:"verified_oauth_proxy",JAZN_PUBLIC_MCP_URL:RESOURCE,JAZN_OAUTH_ISSUER_URL:ISSUER,JAZN_PRIVATE_MCP:{fetch}};}
