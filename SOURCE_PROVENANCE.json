@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "439438b800446a0a9a459ae026106e56687779ae",
+  "base_merge_commit": "cd7cb357ba05155ae01d703383c19c11f4e00368",
   "base_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
-  "commit_date": "2026-10-16T02:49:25Z",
+  "commit_date": "2026-10-16T02:52:31Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-16T02:49:25+00:00",
+  "generated_at_utc": "2026-10-16T02:52:31+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f79eb1c16fc9f0113427ac811e72fa538c91d3ab",
+  "git_tree_sha": "902ab591e748bc383c9e17348708421b08a544f0",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.31-runtime-ingress-security-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "439438b800446a0a9a459ae026106e56687779ae",
+    "source_commit": "cd7cb357ba05155ae01d703383c19c11f4e00368",
     "source_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "439438b800446a0a9a459ae026106e56687779ae",
+  "source_commit": "cd7cb357ba05155ae01d703383c19c11f4e00368",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "tag": null,

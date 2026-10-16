@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "runtime_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
   "package_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
-  "generated_at_utc": "2026-10-16T02:49:25+00:00",
-  "updated_at_utc": "2026-10-16T02:49:25+00:00",
+  "generated_at_utc": "2026-10-16T02:52:31+00:00",
+  "updated_at_utc": "2026-10-16T02:52:31+00:00",
   "start_file": "run.py",
-  "file_count": 2596,
-  "static_file_count": 2596,
+  "file_count": 2598,
+  "static_file_count": 2598,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2952,
-      "sha256": "a12573e3a346534bcca506f1cd8e27895413ff80eedbc3b6940b49b3421dec49",
+      "sha256": "c40bd4e04ca0f1dc946f6d6166b253119437e45ed91d9724169c5e94aad75f86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2182,6 +2182,15 @@
       "path": "docs/reports/JAZN_V116_0_31_WINDOWS_HEALTH_CHECK_LATENCY_ISOLATION.md",
       "size_bytes": 2305,
       "sha256": "915407fd95d5fc0d6e57a0fee570ed282df58b9939534e55f43e28ac70293cfa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_32_CHATGPT_TURN_RECOVERY_INTEGRITY.md",
+      "size_bytes": 5255,
+      "sha256": "29e8e0f5a027d225de7e516865b406ce8bd41d94222a46c77b437fec5487c3fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5636,8 +5645,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 242446,
-      "sha256": "d577e2e064a87fb921dfc4005b2a8934d5795232bd4d2cc5ef0d4f72969d8b22",
+      "size_bytes": 243289,
+      "sha256": "c1662fe72eba020b8c0d3c2b4cb915df9b1ae1e7d8da197e95cb1ca0f35fe584",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22078,6 +22087,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
+      "size_bytes": 2869,
+      "sha256": "51414a91bdaeb96b6c5f5c0ecee1022f73acef146ee81994147aba9562433050",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_daemon_native_lifecycle.py",
       "size_bytes": 4444,
       "sha256": "07ff4994c8baa65a69fd609c5e8a24a0555ca363e457457efea6d85f88dffe1a",
@@ -23168,8 +23186,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2174238,
-      "sha256": "7ec55d44b8aacc330d41d179f332712d66b145fc5c1f5ceba88b758393a7c1b3",
+      "size_bytes": 2176006,
+      "sha256": "ae44e474d75300f001478e622a20f09e10b19a0c6e46e0ea2e0d0db5c9fbbf33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
