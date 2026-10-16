@@ -25,6 +25,13 @@ from latka_jazn.mcp.remote_runtime import (
 PHASES = frozenset({"before_unpack", "after_unpack"})
 SCHEMA_VERSION = "jazn_chatgpt_ingress_capability/v1"
 
+# Only a host-observed *error type* is accepted here, never raw exception text.
+# A failed primary probe can coexist with a successful independent executor.
+HOST_PRE_SPAWN_ERRORS = frozenset({
+    "ClientError", "InvalidArgumentError", "TransportTimeoutError",
+    "StreamingExecNotEnabledContainerError",
+})
+
 
 def negotiate_chatgpt_ingress(
     *,
@@ -35,6 +42,7 @@ def negotiate_chatgpt_ingress(
     status_payload: Mapping[str, Any] | None = None,
     local_process_created: bool | None = None,
     system_operator_verified: bool | None = None,
+    host_executor_pre_spawn_error: str | None = None,
     now_utc: datetime | None = None,
 ) -> dict[str, Any]:
     """Choose one *candidate* execution route without inferring finalization.
@@ -47,6 +55,9 @@ def negotiate_chatgpt_ingress(
 
     if phase not in PHASES:
         raise ValueError("unsupported_chatgpt_ingress_phase")
+    if host_executor_pre_spawn_error is not None and host_executor_pre_spawn_error not in HOST_PRE_SPAWN_ERRORS:
+        raise ValueError("unsupported_host_pre_spawn_error_type")
+    failed_surface = host_executor_pre_spawn_error is not None
 
     toolset = classify_current_message_toolset(
         callable_tool_names,
@@ -104,6 +115,15 @@ def negotiate_chatgpt_ingress(
         remote_reason = str(toolset["reason_code"])
         remote_blockers = ["full_turn_toolset_callable"]
 
+    if remote_ready:
+        recovery_hint = "continue_using_verified_remote_runtime"
+    elif process_confirmed:
+        recovery_hint = "continue_canonical_local_bootstrap_after_process_proof"
+    elif failed_surface:
+        recovery_hint = "do_not_retry_failed_host_surface; connect_or_select_verified_remote_jazn_mcp"
+    else:
+        recovery_hint = "probe_primary_and_at_most_one_independent_executor_then_report_evidence"
+
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": phase,
@@ -118,6 +138,11 @@ def negotiate_chatgpt_ingress(
         "current_message_toolset_observed": toolset["current_message_toolset_observed"],
         "full_turn_toolset_callable": toolset["full_turn_toolset_callable"],
         "local_executor_process_created": process_confirmed if local_process_created is not None else None,
+        "host_executor_pre_spawn_failure_type": host_executor_pre_spawn_error,
+        "host_executor_pre_spawn_failure_kind": "host_executor_unavailable" if failed_surface else None,
+        "failed_executor_filesystem_state": "unknown" if failed_surface else None,
+        "failed_executor_package_state": "unknown" if failed_surface else None,
+        "host_recovery_hint": recovery_hint,
         "materialized_operator_verified": operator_confirmed if phase == "after_unpack" else None,
         "local_runtime_ready": False,
         "accepted_visible_turn": False,
@@ -177,6 +202,7 @@ def main(argv: list[str] | None = None) -> int:
             status_payload=status,
             local_process_created=_optional_report_boolean(evidence, "local_process_created"),
             system_operator_verified=_optional_report_boolean(evidence, "system_operator_verified"),
+            host_executor_pre_spawn_error=evidence.get("host_executor_pre_spawn_error"),
         )
     except (OSError, UnicodeError, ValueError, TypeError):
         print(json.dumps({"ok": False, "reason_code": "invalid_host_capability_evidence"}))
