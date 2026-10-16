@@ -47,3 +47,26 @@ def test_accepted_final_continuity_projected_independently() -> None:
     packet = build_chatgpt_host_presentation_packet(payload)
     assert packet["continuity_readiness"] in {"not_verified", "degraded_continuity"}
     assert packet["continuity_readiness"] != "ready"
+
+
+def test_phase_one_binds_verified_checkpoint_not_stale_daemon_session(tmp_path) -> None:
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.core.chat_command_contract import _build_session_continuity_commit, _canonical_mapping_sha256
+    from latka_jazn.core.runtime_session_state import RuntimeSessionState, RuntimeSessionStateStore
+
+    stored = RuntimeSessionState.create(session_id="daemon-session", source_client="chatgpt")
+    stored.update(user_text="Already finalized", visible_text="Accepted answer", intent="greeting", route="greeting")
+    assert RuntimeSessionStateStore(tmp_path).save(stored, turn_count=7)["session_state_saved"]
+
+    daemon_stale = RuntimeSessionState.create(session_id="daemon-session", source_client="chatgpt")
+    result = {"session": daemon_stale.to_dict(), "session_provenance": {"continuity_turn_count": 0}}
+    commit = _build_session_continuity_commit(
+        result,
+        user_text="Next user message",
+        detected_intent="system_update_execution_request",
+        runtime_route="runtime_diagnostic",
+        config=JaznConfig(root=tmp_path),
+    )
+    assert commit["session_state_before_sha256"] == _canonical_mapping_sha256(stored.to_dict())
+    assert commit["turn_count_before"] == 7
+    assert RuntimeSessionStateStore(tmp_path).load_or_create(session_id="daemon-session").last_visible_text == "Accepted answer"
