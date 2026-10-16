@@ -79,6 +79,41 @@ Operator acceptance order:
 7. Run fault-injection: expire OAuth tokens, break tunnel, restart client,
    fail stdout after commit; verify no duplicate finalizations or leakage.
 
+
+## v16.3.25.5.116.0.34.2: explicit authenticated VPC forwarding
+
+The Worker now has a production-capable implementation that is OFF by default.
+Existing deployed staging and every unconfigured installation still reject
+/mcp and /.well-known discovery with 503; /healthz is not runtime readiness.
+
+After independent, real OAuth validation, the operator may set these non-secret
+Worker variables:
+- JAZN_INGRESS_MODE=verified_oauth_proxy
+- JAZN_PUBLIC_MCP_URL=https://YOUR-PUBLIC-HOST/mcp
+- JAZN_OAUTH_ISSUER_URL=https://YOUR-REAL-AUTHORIZATION-SERVER
+
+The VPC Service binding JAZN_PRIVATE_MCP must point to the private OAuth-enabled
+Jaźń MCP server via its verified Tunnel route (the HTTP VPC Service chooses
+the fixed private target, never the request URL). The Worker verifies, on EACH
+request, the private protected-resource metadata, the public resource identity,
+the expected issuer and the MCP connect scope, plus an unauthenticated 401
+Bearer resource_metadata challenge. It then proxies only the exact public MCP
+and OAuth protected-resource discovery paths, preserving MCP stream/session
+headers and upstream bearer authorization. The private server MUST validate
+all bearer credentials, issuer, audience, token expiration and tool scopes
+on each request. The Worker does not consider presence of a token sufficient.
+
+Never deploy the opt-in mode until the OAuth authorization server has verified
+S256 PKCE, resource binding, introspection and the actual client registration
+flow; verify public HTTPS tools/list plus two accepted finalized ChatGPT turns.
+No Cloudflare deployment, OAuth setup, plugin update, or private MEMORY mutation
+is performed by committing this code. Missing MEMORY remains nonblocking for
+the dialogue core in optional mode.
+
+Cloudflare VPC API: https://developers.cloudflare.com/workers-vpc/api/
+OpenAI OAuth: https://developers.openai.com/plugins/build/auth
+OpenAI ChatGPT acceptance: https://developers.openai.com/plugins/deploy/connect-chatgpt
+
 ## Test commands
 
 ```bash
