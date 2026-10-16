@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c28726d0cb8b212710b3f5bb13d17024a355e52f",
+  "base_merge_commit": "f5354eae622ff4630c2723992216e7bcb4b61a8d",
   "base_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
-  "commit_date": "2026-10-16T16:01:05Z",
+  "commit_date": "2026-10-16T18:02:29+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-16T16:01:05+00:00",
+  "generated_at_utc": "2026-10-16T16:02:29+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ad8ab183d449c6a12a19f4ea10e394f34c76b14b",
+  "git_tree_sha": "27e9a4ee9f98522ea6e4e99b9eaa2f6493a00da8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.4-chatgpt-host-memory-ingress",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c28726d0cb8b212710b3f5bb13d17024a355e52f",
+    "source_commit": "f5354eae622ff4630c2723992216e7bcb4b61a8d",
     "source_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c28726d0cb8b212710b3f5bb13d17024a355e52f",
+  "source_commit": "f5354eae622ff4630c2723992216e7bcb4b61a8d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
   "tag": null,
