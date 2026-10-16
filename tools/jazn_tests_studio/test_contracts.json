@@ -41328,7 +41328,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 46
     },
     "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_pending_durable_turn_never_marked_completed": {
       "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
@@ -41349,7 +41349,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 78
     },
     "tests/test_runtime_daemon_native_lifecycle.py::test_native_daemon_lifecycle_disables_monkeypatch_install": {
       "path": "tests/test_runtime_daemon_native_lifecycle.py",
@@ -50513,7 +50513,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 57
     },
     "tests/test_turn_settlement_strict_recovery.py::test_explicit_invalid_expected_digest_fails_closed_without_replay": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
@@ -50533,7 +50533,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 66
     },
     "tests/test_turn_settlement_strict_recovery.py::test_conflicting_expected_text_and_hash_cannot_bypass_binding": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
@@ -50551,7 +50551,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 74
     },
     "tests/test_turn_settlement_strict_recovery.py::test_missing_or_wrong_bound_message_digest_is_rejected": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
@@ -50569,7 +50569,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 82
     },
     "tests/test_turn_settlement_strict_recovery.py::test_consumed_without_verified_final_capture_never_claims_accepted": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
@@ -50587,7 +50587,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 90
     },
     "tests/test_turn_settlement_strict_recovery.py::test_accepted_capture_and_daemon_notification_have_distinct_evidence": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
@@ -50607,7 +50607,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 110
     },
     "tests/test_turn_timeout_audit_nonblocking.py::test_execution_timeout_does_not_wait_for_slow_technical_audit": {
       "path": "tests/test_turn_timeout_audit_nonblocking.py",
