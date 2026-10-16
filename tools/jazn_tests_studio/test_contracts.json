@@ -50331,17 +50331,17 @@
       "description_source": "source_identity",
       "line": 26
     },
-    "tests/test_turn_settlement_authority_convergence.py::test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job": {
+    "tests/test_turn_settlement_authority_convergence.py::test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
-      "name": "test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job",
-      "purpose": "Consumed durable settlement recovers runtime turn not accepted job",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job",
+      "purpose": "Unverified consumed record cannot recover runtime turn not accepted job",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -50371,7 +50371,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 128
     },
     "tests/test_turn_settlement_authority_convergence.py::test_nonrecoverable_worker_failure_cannot_adopt_host_settlement": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50393,7 +50393,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 157
+      "line": 158
     },
     "tests/test_turn_settlement_authority_convergence.py::test_reconstructed_phase1_uses_same_runtime_answer_validator_gate": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50415,7 +50415,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 194
+      "line": 195
     },
     "tests/test_turn_settlement_authority_convergence.py::test_daemon_request_reverse_lookup_fails_closed_on_ambiguous_binding": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50437,7 +50437,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 216
+      "line": 217
     },
     "tests/test_turn_settlement_authority_convergence.py::test_recoverable_failed_job_survives_daemon_restart_and_rebinds": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
@@ -50457,7 +50457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 235
+      "line": 236
     },
     "tests/test_turn_settlement_strict_recovery.py::test_matching_user_text_and_sha_allow_pending_recovery": {
       "path": "tests/test_turn_settlement_strict_recovery.py",
