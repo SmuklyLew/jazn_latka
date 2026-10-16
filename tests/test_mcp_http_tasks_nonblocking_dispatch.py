@@ -80,7 +80,7 @@ async def test_tasks_backend_does_not_block_unrelated_healthz(tmp_path: Path) ->
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=gateway.asgi_app()),
-        base_url="http://127.0.0.1",
+        base_url="http://127.0.0.1:8080",
     ) as client:
         async def task_call() -> None:
             responses.append(await client.post("/mcp", headers=headers, json=payload))
@@ -133,7 +133,7 @@ async def test_task_backend_exception_remains_fail_closed_without_replay(tmp_pat
     headers, payload = _task_request()
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=gateway.asgi_app()),
-        base_url="http://127.0.0.1",
+        base_url="http://127.0.0.1:8080",
     ) as client:
         response = await client.post("/mcp", headers=headers, json=payload)
     assert response.status_code == 200
