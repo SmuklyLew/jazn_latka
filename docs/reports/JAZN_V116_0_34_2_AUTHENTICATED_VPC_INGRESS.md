@@ -7,7 +7,7 @@ capability implementation on the requested branch.
 v116.0.34 and .34.1 supply validated remote/local tool negotiation before
 and after SYSTEM extraction; optional MEMORY degrades autobiographical recall
 without blocking core dialogue. This patch adds the missing opt-in Cloudflare
-Workers VPC MCP forwarding implementation, private OAuth proof probes and
+Workers VPC MCP forwarding implementation, private OAuth metadata and connect-scope proof probes and
 strict no-redirect/no-cookie routing. Tests assert fail-closed staging and
 a tested OAuth boundary.
 
