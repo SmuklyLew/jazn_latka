@@ -16,12 +16,12 @@ Version 116.0.34 already corrected the ChatGPT Project loader, pre/post packagin
 
 After source materialization (or in an operator checkout), a host with a real Python executor can evaluate its own structured observations:
 
-\`\`\`bash
+```bash
 python -X utf8 -m latka_jazn.bootstrap.chatgpt_ingress_capability --phase before_unpack --evidence-file ./host-evidence.json
 python -X utf8 -m latka_jazn.bootstrap.chatgpt_ingress_capability --phase after_unpack --evidence-file ./host-evidence.json
-\`\`\`
+```
 
-The input is a <=64 KiB JSON object with optional \`callable_tool_names\`, \`current_message_toolset_observed\`, \`status_invoked_in_current_message\`, \`status_payload\`, \`local_process_created\`, and \`system_operator_verified\`. The response includes only a redacted decision, not credentials, the raw status or memory. An actual ChatGPT host must *separately* supply real tool invocation evidence; a manually written JSON declaration is not an authentication mechanism. When Python is unavailable **before** unpacking, use native host discovery/probes, not this file as a magic bootstrap.
+The input is a <=64 KiB JSON object with optional `callable_tool_names`, `current_message_toolset_observed`, `status_invoked_in_current_message`, `status_payload`, `local_process_created`, and `system_operator_verified`. The response includes only a redacted decision, not credentials, the raw status or memory. An actual ChatGPT host must *separately* supply real tool invocation evidence; a manually written JSON declaration is not an authentication mechanism. When Python is unavailable **before** unpacking, use native host discovery/probes, not this file as a magic bootstrap.
 
 ## Secure ChatGPT route — separate deployment requirement
 
