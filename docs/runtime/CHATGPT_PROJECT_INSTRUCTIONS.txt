@@ -12,7 +12,7 @@ Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową, jeśli remote ni
 
 ## 2. Minimalny bootstrap
 
-Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj bieżących `file_id`/`version_id`; puste `artifacts[]` to błąd. Sprzeczne kopie kończ fail-closed; materializacja to nie ekstrakcja. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
+Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj bieżących `file_id`/`version_id`; puste `artifacts[]` to błąd. Sprzeczne kopie kończ fail-closed. Materializacja nie oznacza ekstrakcji. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
 
 Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, ścieżki i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku; surowe `extractall()` bez walidacji jest zabronione. Wymagaj `materialized_operator_ready`; po `active_root` wczytaj `AGENTS.md` i runbook. Sprawdź osobno live daemon i narzędzia hosta; ZIP nie włącza `jazn_*`. Warm/resume.
 
