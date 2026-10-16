@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -63,7 +64,7 @@ def test_recovered_consumed_requires_verified_capture(
                         "read_committed_host_request", capture)
     daemon = _FakeDaemon(tmp_path)
     reconciled = JaznDaemonServer._reconcile_host_finalization_job_locked(
-        daemon, _job()
+        cast(JaznDaemonServer, daemon), _job()
     )
     assert reconciled is True
     assert daemon.events == (
@@ -87,6 +88,6 @@ def test_pending_durable_turn_never_marked_completed(
     )
     daemon = _FakeDaemon(tmp_path)
     assert JaznDaemonServer._reconcile_host_finalization_job_locked(
-        daemon, _job()
+        cast(JaznDaemonServer, daemon), _job()
     ) is False
     assert daemon.events == []
