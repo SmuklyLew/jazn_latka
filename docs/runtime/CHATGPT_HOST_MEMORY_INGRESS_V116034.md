@@ -45,7 +45,7 @@ Nie można bezpiecznie wymusić udostępnienia narzędzi hosta instrukcją. Gdy 
 
 ## Walidacja wydania
 
-Przed merge: `python -X utf8 -m compileall -q latka_jazn tests main.py run.py`, `python -X utf8 -m pytest -q -m "not live_model and not live_mcp"`, Pyright, doctor, package-smoke, synchronizacja metadanych i CI. Dodatkowy test nowego kontraktu uruchom jako `python -X utf8 -m pytest -q tests/test_chatgpt_host_memory_ingress_v116034.py`. Po synchronizacji RELEASE manifest/provenance ponownie sprawdź ich idempotencję. **Żaden zielony test na GitHub Actions nie oznacza sam w sobie, że ChatGPT dostał 4 narzędzia.**
+Przed merge: `python -X utf8 -m compileall -q latka_jazn tests main.py run.py`, `python -X utf8 -m pytest -q -m "not live_model and not live_mcp"`, Pyright, doctor, package-smoke, synchronizacja metadanych i CI. Dodatkowy test nowego kontraktu uruchom jako `python -X utf8 -m pytest -q tests/test_chatgpt_host_memory_ingress.py`. Po synchronizacji RELEASE manifest/provenance ponownie sprawdź ich idempotencję. **Żaden zielony test na GitHub Actions nie oznacza sam w sobie, że ChatGPT dostał 4 narzędzia.**
 
 ## Zweryfikowane źródła zewnętrzne
 
