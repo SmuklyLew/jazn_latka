@@ -24,7 +24,7 @@ Repozytorium ani ZIP nie może nadać narzędziu hosta uprawnień do uruchamiani
 
 ## Weryfikacja wymagana przed merge
 
-`python -X utf8 -m pytest -q tests/test_chatgpt_host_pre_spawn_evidence_v1160344.py tests/test_chatgpt_ingress_capability.py`
+`python -X utf8 -m pytest -q tests/test_chatgpt_host_pre_spawn_evidence.py tests/test_chatgpt_ingress_capability.py`
 
 `python -X utf8 -m compileall -q latka_jazn tests main.py run.py`
 
