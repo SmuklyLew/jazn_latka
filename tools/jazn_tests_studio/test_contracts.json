@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.32",
-  "active_definition_count": 2346,
+  "active_definition_count": 2348,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -41268,6 +41268,50 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 121
+    },
+    "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_recovered_consumed_requires_verified_capture": {
+      "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
+      "name": "test_recovered_consumed_requires_verified_capture",
+      "purpose": "Recovered consumed requires verified capture",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_pending_durable_turn_never_marked_completed": {
+      "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
+      "name": "test_pending_durable_turn_never_marked_completed",
+      "purpose": "Pending durable turn never marked completed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
     },
     "tests/test_runtime_daemon_native_lifecycle.py::test_native_daemon_lifecycle_disables_monkeypatch_install": {
       "path": "tests/test_runtime_daemon_native_lifecycle.py",
