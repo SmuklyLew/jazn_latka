@@ -24043,7 +24043,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 90
     },
     "tests/test_mcp_http_tasks_nonblocking_dispatch.py::test_task_backend_exception_remains_fail_closed_without_replay": {
       "path": "tests/test_mcp_http_tasks_nonblocking_dispatch.py",
@@ -24064,7 +24064,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 113
+      "line": 133
     },
     "tests/test_mcp_ingress_diagnostics.py::test_probe_rejects_public_plain_http_without_network": {
       "path": "tests/test_mcp_ingress_diagnostics.py",
