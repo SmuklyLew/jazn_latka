@@ -744,6 +744,8 @@ def _commit_host_finalized_session_continuity(
         return {
             "saved": False,
             "status": "session_advanced_or_phase_one_checkpoint_missing",
+            "continuity_readiness": "degraded_continuity",
+            "replay_allowed": False,
             "current_state_sha256": current_hash,
             "expected_state_sha256": expected_before or None,
             "truth_boundary": (
@@ -1100,6 +1102,14 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "required_visible_prefix": bridge.get("required_visible_prefix"),
         "final_visible_text": final_text,
         "final_text_sha256": sha256_host_visible_text(final_text) if final_text else None,
+        # Preserve the accepted visible reply while independently reporting
+        # whether its durable dialogue checkpoint was persisted.
+        "continuity_readiness": (
+            str(payload.get("continuity_readiness"))
+            if action == "display_exact" and bridge.get("phase") == "host_visible_reply_recorded"
+            and payload.get("continuity_readiness") in ("ready", "degraded_continuity")
+            else "not_verified"
+        ),
         "chatgpt_host_bridge": bridge,
         "daemon_request_id": bridge.get("daemon_request_id"),
         "poll_command": bridge.get("poll_command"),
