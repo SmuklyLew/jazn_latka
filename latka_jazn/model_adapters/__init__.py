@@ -1,6 +1,7 @@
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse, ModelAdapter
 from .null_model_adapter import NullModelAdapter
 from .openai_responses_adapter import OpenaiResponsesAdapter
+from .siwc_plan_usage_adapter import SiwcPlanUsageAdapter
 from .local_llm_adapter import LocalLlmAdapter
 from .adapter_contract import AdapterContract, ContractOnlyModelAdapter
 from .openai_compatible_local_adapter import OpenAICompatibleLocalAdapter

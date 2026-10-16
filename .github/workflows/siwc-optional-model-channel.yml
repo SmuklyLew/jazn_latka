@@ -1,0 +1,43 @@
+name: SIWC optional model channel
+
+on:
+  push:
+    branches: ["upgrade/**"]
+    paths:
+      - "latka_jazn/model_adapters/siwc_plan_usage_adapter.py"
+      - "latka_jazn/model_adapters/factory.py"
+      - "latka_jazn/model_adapters/__init__.py"
+      - "tests/test_siwc_plan_usage_adapter.py"
+      - ".github/workflows/siwc-optional-model-channel.yml"
+  pull_request:
+    paths:
+      - "latka_jazn/model_adapters/siwc_plan_usage_adapter.py"
+      - "latka_jazn/model_adapters/factory.py"
+      - "latka_jazn/model_adapters/__init__.py"
+      - "tests/test_siwc_plan_usage_adapter.py"
+      - ".github/workflows/siwc-optional-model-channel.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  siwc-contract:
+    name: Strict opt-in / SSE contract (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install tests
+        run: python -m pip install -e . pytest
+      - name: Compile affected Python
+        run: python -X utf8 -m py_compile latka_jazn/model_adapters/siwc_plan_usage_adapter.py latka_jazn/model_adapters/factory.py tests/test_siwc_plan_usage_adapter.py
+      - name: Test explicit-only OAuth plan adapter without live tokens
+        run: python -X utf8 -m pytest -q tests/test_siwc_plan_usage_adapter.py
