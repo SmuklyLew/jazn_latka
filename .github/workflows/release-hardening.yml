@@ -394,12 +394,24 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
+      # Keep the original strict 5-second health check, run once in a fresh
+      # Python process so earlier Windows test/plugin load is not included
+      # in the measurement. Do not skip or relax the production-path check.
+      - name: Verify isolated health-check latency and no semantic write
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short --durations=5
+          --junitxml="${{ runner.temp }}/pytest-windows-health-check.xml"
+          tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write
+
       - name: Turn atomicity and timeout regressions
         shell: pwsh
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=20
           --junitxml="${{ runner.temp }}/pytest-windows-turn-atomicity.xml"
+          --deselect=tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write
           tests/test_turn_atomicity.py
           tests/test_turn_timeout_audit_nonblocking.py
           tests/test_runtime_stability_daemon_status.py
@@ -409,7 +421,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pytest-windows-turn-atomicity-failure
-          path: ${{ runner.temp }}/pytest-windows-turn-atomicity.xml
+          path: |
+            ${{ runner.temp }}/pytest-windows-health-check.xml
+            ${{ runner.temp }}/pytest-windows-turn-atomicity.xml
           if-no-files-found: ignore
           retention-days: 3
 
