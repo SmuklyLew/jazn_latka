@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "runtime_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "package_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
-  "generated_at_utc": "2026-10-16T06:53:32+00:00",
-  "updated_at_utc": "2026-10-16T06:53:32+00:00",
+  "generated_at_utc": "2026-10-16T06:57:07+00:00",
+  "updated_at_utc": "2026-10-16T06:57:07+00:00",
   "start_file": "run.py",
-  "file_count": 2613,
-  "static_file_count": 2613,
+  "file_count": 2615,
+  "static_file_count": 2615,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -281,8 +281,8 @@
     },
     {
       "path": "AGENTS.chatgpt.md",
-      "size_bytes": 56819,
-      "sha256": "060d0aa83e9b30bd5587d81c610a8addc123ba041593ad72af7d0e92b558aa40",
+      "size_bytes": 56856,
+      "sha256": "8cde4db15ce559cb9883022aab411c5a3cba97652a77b42b64b11919e62ae04f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2909,
-      "sha256": "fbbb7abf0ffe79705c7d90d6b8456c56b09cd2daaa8c2db198c8b7b2862b2b28",
+      "sha256": "d38e3d97e437a6d187a06564c61a959679edf44ea0818280d57b8d0e90e14ee2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3025,6 +3025,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/runtime/CHATGPT_HOST_MEMORY_INGRESS_V116034.md",
+      "size_bytes": 8068,
+      "sha256": "43fd813f29cc7f3e379955c52c2275c32e81f6e7495ed1d34ea3c00284722fcd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/runtime/CHATGPT_HYBRID_ADAPTIVE_INGRESS.md",
       "size_bytes": 9490,
       "sha256": "2cc3c133fa5b0b66c2eb69fa26331f9902f59cd4452d87a507566d888c6f0f02",
@@ -3062,8 +3071,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt",
-      "size_bytes": 5162,
-      "sha256": "8e8e17a57fb9fc3183e190f5c45979740b01dc272f5ca6836acf613ec5cf43b1",
+      "size_bytes": 5108,
+      "sha256": "3eb0dd3ea9024957b601c70b241259d896362108cf0f318a5909346d7ef6e90e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19369,6 +19378,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_host_memory_ingress_v116034.py",
+      "size_bytes": 4337,
+      "sha256": "47583db2b4bbd00d705090ff98138b556792a8a7bd6a5d6301287970619d8f73",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_host_preflight.py",
       "size_bytes": 4367,
       "sha256": "a2bd2e3d03f384cd237804435300d7c3d9f3ee9fda1b091185ec6fc6d59424e9",
@@ -23321,8 +23339,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2182190,
-      "sha256": "e74b54cc47688d992f1cc718fdf777880ca0ee347b6c58556604b3da78cb3a4a",
+      "size_bytes": 2186174,
+      "sha256": "38a8b31b9508fbbb936445590a9ef870520de2820f80521c766305c6a0fb2602",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
