@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.33",
-  "active_definition_count": 2355,
+  "system_version": "16.3.25.5.116.0.34",
+  "active_definition_count": 2360,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -6032,6 +6032,107 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 66
+    },
+    "tests/test_chatgpt_host_memory_ingress.py::test_core_dialogue_survives_missing_autobiographical_memory": {
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
+      "name": "test_core_dialogue_survives_missing_autobiographical_memory",
+      "purpose": "Core dialogue survives missing autobiographical memory",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_chatgpt_host_memory_ingress.py::test_memory_continuity_contract_matches_package_generator": {
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
+      "name": "test_memory_continuity_contract_matches_package_generator",
+      "purpose": "Memory continuity contract matches package generator",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host",
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_chatgpt_host_memory_ingress.py::test_host_contract_uses_distinct_capability_gates": {
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
+      "name": "test_host_contract_uses_distinct_capability_gates",
+      "purpose": "Host contract uses distinct capability gates",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_chatgpt_host_memory_ingress.py::test_plugin_loopback_is_not_web_remote_ready": {
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
+      "name": "test_plugin_loopback_is_not_web_remote_ready",
+      "purpose": "Plugin loopback is not web remote ready",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_chatgpt_host_memory_ingress.py::test_runbook_no_longer_requires_default_memory_zip_join_or_repack": {
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
+      "name": "test_runbook_no_longer_requires_default_memory_zip_join_or_repack",
+      "purpose": "Runbook no longer requires default memory zip join or repack",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
     },
     "tests/test_chatgpt_host_preflight.py::test_degraded_host_with_verified_package_can_resume_bootstrap": {
       "path": "tests/test_chatgpt_host_preflight.py",
