@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from latka_jazn.config import JaznConfig
+
 """Install turn-authority invariants at the canonical operator boundary.
 
 The overlay deliberately wraps stable public contracts instead of forking the
@@ -201,8 +203,9 @@ def install_turn_authority_runtime_overlay() -> dict[str, Any]:
         *,
         user_text: str,
         chat_bridge_meta: dict[str, Any],
+        config: JaznConfig | None = None,
     ) -> dict[str, Any]:
-        value = original_build_bridge(result, user_text=user_text, chat_bridge_meta=chat_bridge_meta)
+        value = original_build_bridge(result, user_text=user_text, chat_bridge_meta=chat_bridge_meta, config=config)
         host_context = _mapping(value.get("host_generation_context"))
         identity_hash = _identity_hash_from_context(host_context)
         value["identity_canon_sha256"] = identity_hash
