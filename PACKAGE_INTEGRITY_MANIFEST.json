@@ -362,8 +362,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "6c6277e43de7e5eae324394a2de26e3eac5dc0ef4a1bc39396fac7940847bffd",
+      "size_bytes": 2967,
+      "sha256": "c45367381873f74ce5e6c0802ecb918030a62870e54599b6e595b55bc52105bb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

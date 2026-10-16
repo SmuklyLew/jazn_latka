@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "276393bf2dda5fd1765cc928a3cda996401716aa",
-    "base_version": "16.3.25.5.116.0.34.5-chatgpt-tool-catalog-parity",
+    "base_commit": "56125caef34784ed089012e1510f065b565ad9e5",
+    "base_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "56125caef34784ed089012e1510f065b565ad9e5",
