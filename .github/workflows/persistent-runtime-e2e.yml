@@ -270,7 +270,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[mcp-http]" pytest
+          python -m pip install -e ".[mcp-http]" pytest "httpx==0.28.1"
 
       - name: Compile runtime, gate, and regression paths
         run: python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
@@ -299,6 +299,7 @@ jobs:
           tests/test_mcp_http_dependency_profile.py
           tests/test_mcp_remote_runtime.py
           tests/test_mcp_http_tasks_bridge.py
+          tests/test_mcp_http_tasks_nonblocking_dispatch.py
           tests/test_mcp_http_resources.py
           tests/test_mcp_http_cli.py
           tests/test_mcp_oauth_introspection.py

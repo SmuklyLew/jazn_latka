@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Protocol
 
 from pydantic import AnyHttpUrl
+from starlette.concurrency import run_in_threadpool
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -530,11 +531,20 @@ class ModernTasksHttpBridge:
         try:
             verified = getattr(self.protocol_backend, "handle_public_authenticated", None)
             if callable(verified):
-                response_value = verified(
-                    prepared, owner_subject=principal.subject, owner_transport="public_http"
+                # The backend uses synchronous SQLite/daemon I/O. Running it
+                # on the ASGI event loop can stall unrelated MCP/health requests
+                # until the backend finishes. Offload one call, never retry it:
+                # task/request identity is owned by the durable backend.
+                response_value = await run_in_threadpool(
+                    verified,
+                    prepared,
+                    owner_subject=principal.subject,
+                    owner_transport="public_http",
                 )
             elif self.allow_unauthenticated_loopback_dev:
-                response_value = self.protocol_backend.handle(prepared)
+                response_value = await run_in_threadpool(
+                    self.protocol_backend.handle, prepared
+                )
             else:
                 raise RuntimeError("verified_task_principal_dispatch_unavailable")
         except Exception:

@@ -114,5 +114,13 @@
       "local_memory_provenance"
     ],
     "explicit_required_mode_may_override_core_readiness": true
+  },
+  "http_tasks_dispatch": {
+    "sync_backend_off_asgi_event_loop": true,
+    "offload_method": "starlette.concurrency.run_in_threadpool",
+    "runtime_request_retries_by_transport": 0,
+    "host_prespawn_error_fixed_by_offload": false,
+    "worker_cancel_is_not_backend_cancellation": true,
+    "truth_boundary": "Thread offload keeps the gateway responsive but does not cancel already started work or guarantee ChatGPT host execution; durable request_id and explicit resume/finalize remain authoritative."
   }
 }

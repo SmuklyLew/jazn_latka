@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# v116.0.34.3 keeps synchronous MCP Tasks/SQLite dispatch off the ASGI event loop;
+# slow tasks must not stall unrelated health requests. Host pre-spawn ClientError is separate.
+
 # v116.0.34.2 adds opt-in OAuth-probed Cloudflare VPC MCP forwarding.
 # v116.0.34.1 adds source-level host capability negotiation and safe optional MEMORY probing.
 # v116.0.34 documents pre/post-unpack host capability and memory-for-continuity semantics.
@@ -65,8 +68,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.2"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.2"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.3"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.3"
 PACKAGE_RELEASE_NAME = "chatgpt-host-memory-ingress"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
