@@ -3,11 +3,12 @@ from __future__ import annotations
 """Executable host evidence gates; no live MCP service or private MEMORY needed."""
 
 from datetime import datetime, timedelta, timezone
+import json
 from pathlib import Path
 
 import pytest
 
-from latka_jazn.bootstrap.chatgpt_ingress_capability import negotiate_chatgpt_ingress
+from latka_jazn.bootstrap.chatgpt_ingress_capability import main, negotiate_chatgpt_ingress
 from latka_jazn.mcp.chatgpt_toolset import REQUIRED_CHATGPT_TURN_TOOLS
 from latka_jazn.mcp.remote_runtime import REGISTERED_MCP_STATUS_SCHEMA
 from latka_jazn.memory.availability import build_memory_availability_status
@@ -148,3 +149,35 @@ def test_unreadable_optional_memory_file_never_blocks_core(
     assert status.core_runtime_allowed is True
     assert status.recall_candidate_present is False
     assert status.ordinary_dialogue_allowed is True
+
+
+def test_operator_cli_can_classify_local_bootstrap_without_private_memory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    evidence = tmp_path / "host-evidence.json"
+    evidence.write_text(json.dumps({
+        "callable_tool_names": [],
+        "current_message_toolset_observed": True,
+        "local_process_created": True,
+        "system_operator_verified": True,
+    }), encoding="utf-8")
+    assert main(["--phase", "after_unpack", "--evidence-file", str(evidence)]) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output["execution_route"] == "local_bootstrap"
+    assert output["next_action"] == "run_canonical_preflight_start_and_live_status"
+    assert output["accepted_visible_turn"] is False
+
+
+def test_operator_cli_redacts_untrusted_host_payload(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    evidence = tmp_path / "host-evidence.json"
+    evidence.write_text(json.dumps({
+        "callable_tool_names": ["jazn_status"],
+        "current_message_toolset_observed": True,
+        "status_payload": {"evidence_schema": "made-up", "secret": "DO_NOT_LEAK"},
+    }), encoding="utf-8")
+    assert main(["--phase", "before_unpack", "--evidence-file", str(evidence)]) == 2
+    output = capsys.readouterr().out
+    assert "DO_NOT_LEAK" not in output
+    assert json.loads(output)["remote_reason_code"] == "unsupported_status_schema"
