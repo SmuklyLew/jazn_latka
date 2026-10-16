@@ -8,15 +8,15 @@ Dla każdej wiadomości sprawdź bez zbędnych wywołań, czy host JUŻ wystawi�
 
 Przed pierwszą zwykłą odpowiedzią lub akcją narzędziową, jeśli remote nie jest gotowy, rozpocznij bounded local fallback. Brak `jazn_*` NIE blokuje lokalnego SYSTEM ZIP. Nie wolno zakończyć diagnozy tylko na discovery. Wykonaj realną, najwyżej jedną minimalną próbę utworzenia procesu i najwyżej jedną na niezależnej alternatywie. Gdy proces powstał, ustaw `executor_available=true` i obowiązkowo przejdź do SYSTEM discovery/bootstrapu, następnie kanonicznych komend preflight/start/status/chat-gpt.
 
-`ClientError`, `InvalidArgumentError`, `TransportTimeoutError`, `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu to tylko `host_executor_unavailable` bieżącej generacji powierzchni wykonawczej — nie błąd Pythona ani Jaźni; nie cache'uj go jako trwałego stanu rozmowy i nie twórz pętli retry. Czas oczekiwania hosta nie dowodzi startu procesu. Bez obserwacji filesystem i paczka pozostają `unknown`; nie zakładaj braku `/mnt/data`. Nie deklaruj modelu, Łatki ani pamięci bez evidence.
+`ClientError`, `InvalidArgumentError`, `TransportTimeoutError`, `StreamingExecNotEnabledContainerError` przed wykonaniem jakiejkolwiek komendy lub utworzeniem procesu to tylko `host_executor_unavailable` bieżącej generacji powierzchni wykonawczej — nie błąd Pythona ani Jaźni; nie cache'uj go jako trwałego stanu rozmowy i nie twórz pętli retry. Długi czas oczekiwania hosta nie dowodzi startu procesu; kod ZIP nie kontroluje timeoutu narzędzia hosta. Bez niezależnej obserwacji filesystem/paczka pozostają `unknown`; stan filesystemu i paczki pozostaje wtedy `unknown`, nie traktuj tego jako dowodu braku `/mnt/data`. Nie deklaruj modelu, Łatki ani pamięci bez evidence.
 
 ## 2. Minimalny bootstrap
 
-Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj bieżących `file_id`/`version_id`; puste `artifacts[]` to błąd. Sprzeczne kopie kończ fail-closed. Materializacja nie oznacza ekstrakcji. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
+Po probe sprawdź uploady i Bibliotekę ChatGPT; sprawdź ją przed stwierdzeniem braku SYSTEM ZIP. Dla SYSTEM zmaterializuj dokładne bajty; `file_id` nie jest ścieżką OS. Użyj bieżących `file_id`/`version_id`; puste `artifacts[]` to błąd. Sprzeczne kopie/metadane kończ fail-closed. Materializacja nie oznacza ekstrakcji. Zweryfikuj ZIP z zaufanym SHA-256 i rozmiarem gdy jest znany; po materializacji ponownie zweryfikuj rozmiar i zaufany SHA-256.
 
-Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, ścieżki i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku; surowe `extractall()` bez walidacji jest zabronione. Wymagaj `materialized_operator_ready`; po `active_root` wczytaj `AGENTS.md` i runbook. Sprawdź osobno live daemon i narzędzia hosta; ZIP nie włącza `jazn_*`. Warm/resume.
+Host bootstrap primitive jest niezależny od rozpakowanego SYSTEM-u: otwórz ZIP tylko do odczytu, sprawdź katalog bez pełnego rozpakowania, ścieżki i CRC. Użyj `ZipFile.read("CHATGPT_BOOTSTRAP.py")` do świeżego pliku; surowe `extractall()` bez walidacji jest zabronione. Wymagaj `materialized_operator_ready`; po `active_root` wczytaj `AGENTS.md` i właściwy runbook hosta. Warm/resume.
 
-MEMORY: weryfikuj i dołączaj osobno przez converge; nie jest `active_root`. Jest wymagana dla ciągłości autobiograficznej, ale jej brak przy `JAZN_MEMORY_MODE=optional` nie blokuje rozmowy ani rozumowania.
+MEMORY: osobno wyszukaj zgodny profil `memory`; sam SYSTEM nie materializuje MEMORY. Weryfikuj i dołączaj przez kanoniczny attach/converge. MEMORY nie jest `active_root`.
 
 ## 3. Granice uprawnień loadera
 
