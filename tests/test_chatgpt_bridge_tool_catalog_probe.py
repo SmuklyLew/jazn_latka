@@ -132,7 +132,7 @@ def test_catalog_rejects_unusable_chatgpt_tool_metadata(
     if field == "visibility":
         tools[0]["_meta"]["ui"]["visibility"] = ["app"]
     elif field == "annotations":
-        tools[0]["annotations"]["readOnlyHint"] = True
+        tools[0]["annotations"]["readOnlyHint"] = False
     else:
         tools[0]["_meta"]["securitySchemes"] = [{"type": "noauth"}]
     setup(monkeypatch, lambda _: reply(tools))

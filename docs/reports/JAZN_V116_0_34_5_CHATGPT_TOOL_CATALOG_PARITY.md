@@ -54,3 +54,17 @@ Primary sources:
 - Does not start the user's Windows daemon, configure OAuth,
   make an app callable in this session, bypass pre-spawn ClientError,
   or restore MEMORY. No user data are read or modified.
+
+## PR #381 CI regression repair
+
+On release-hardening/Ubuntu full pytest, 12 failures were observed: 11
+release-identity checks left on v116.0.34.3 and one test whose forged
+readOnlyHint was accidentally identical to the valid value. This PR aligns
+the startup contract with PACKAGE_VERSION, updates the exact version/release
+assertions without weakening them, and makes the annotations negative test
+actually inject an invalid value. Prior active test bytes are archived under
+`tests/archive/v16.3.25.5.116.0.34.5-pr381-pre-release-repair/`.
+
+Release acceptance still requires green checks on the **latest** final SHA;
+previously failed or passed runs do not certify a newer commit. No runtime
+activation, ChatGPT tool exposure, or optional MEMORY attach is asserted.
