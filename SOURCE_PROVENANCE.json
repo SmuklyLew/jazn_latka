@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "606f22c616f5908e73ee5cdea0b290bc4dd7b286",
-    "base_version": "16.3.25.5.116.0.32-chatgpt-turn-recovery-continuity",
+    "base_commit": "969c5797e49edc7bc0849c0df3d705901ca5a0f1",
+    "base_version": "16.3.25.5.116.0.33-chatgpt-host-continuity",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "969c5797e49edc7bc0849c0df3d705901ca5a0f1",
