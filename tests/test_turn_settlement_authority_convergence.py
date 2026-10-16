@@ -84,7 +84,7 @@ def _failed_job(*, request_id: str, session_id: str, user_text: str, error_code:
     return job
 
 
-def test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job(tmp_path: Path) -> None:
+def test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job(tmp_path: Path) -> None:
     request_id = "request-v62-consumed"
     turn_id = "turn-v62-consumed"
     trace_id = "trace-v62-consumed"
@@ -110,15 +110,16 @@ def test_consumed_durable_settlement_recovers_runtime_turn_not_accepted_job(tmp_
             terminal=True,
         )
 
-        assert error is None
         assert target is job
-        assert job.status == "completed"
-        assert job.recovery_disposition == "durable_host_settlement_rebound_after_runtime_rejection"
-        assert job.host_turn_id == turn_id
-        assert job.host_trace_id == trace_id
-        assert job.host_request_contract_hash == pending["request_contract_hash"]
-        assert server.state.chat_job_failed_count == 0
-        assert server.state.chat_job_completed_count == 1
+        assert error is not None
+        assert error["error_code"] == "host_finalization_job_binding_mismatch"
+        assert job.status == "failed"
+        assert job.recovery_disposition is None
+        assert job.host_turn_id is None
+        assert job.host_trace_id is None
+        assert job.host_request_contract_hash is None
+        assert server.state.chat_job_failed_count == 1
+        assert server.state.chat_job_completed_count == 0
     finally:
         server.close_sessions()
         server.server_close()
