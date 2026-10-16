@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "runtime_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "package_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
-  "generated_at_utc": "2026-10-16T06:57:07+00:00",
-  "updated_at_utc": "2026-10-16T06:57:07+00:00",
+  "generated_at_utc": "2026-10-16T06:59:49+00:00",
+  "updated_at_utc": "2026-10-16T06:59:49+00:00",
   "start_file": "run.py",
   "file_count": 2615,
   "static_file_count": 2615,
@@ -354,7 +354,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2909,
-      "sha256": "d38e3d97e437a6d187a06564c61a959679edf44ea0818280d57b8d0e90e14ee2",
+      "sha256": "ccd9ae206ce629288d0d6a0186dc98551615437092d68a952945a21799bc2bce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3026,8 +3026,8 @@
     },
     {
       "path": "docs/runtime/CHATGPT_HOST_MEMORY_INGRESS_V116034.md",
-      "size_bytes": 8068,
-      "sha256": "43fd813f29cc7f3e379955c52c2275c32e81f6e7495ed1d34ea3c00284722fcd",
+      "size_bytes": 8060,
+      "sha256": "6a185cf56268e155a97efaaffe6bb703de3397d47cb46abfc4eba04973a585af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19378,7 +19378,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_chatgpt_host_memory_ingress_v116034.py",
+      "path": "tests/test_chatgpt_host_memory_ingress.py",
       "size_bytes": 4337,
       "sha256": "47583db2b4bbd00d705090ff98138b556792a8a7bd6a5d6301287970619d8f73",
       "mutable_runtime": false,
@@ -23339,8 +23339,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2186174,
-      "sha256": "38a8b31b9508fbbb936445590a9ef870520de2820f80521c766305c6a0fb2602",
+      "size_bytes": 2186094,
+      "sha256": "60514545eb74b42e6d88e3f9ce526c87731ae334afeaebf27c395cdf737142ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

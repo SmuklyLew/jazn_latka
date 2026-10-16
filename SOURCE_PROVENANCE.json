@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "851222c2c78cd7e6785ff61a2b7b67763ea61715",
+  "base_merge_commit": "c32fad330acf412f6557877a648b88e42623d275",
   "base_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
-  "commit_date": "2026-10-16T06:57:07Z",
+  "commit_date": "2026-10-16T06:59:49Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-16T06:57:07+00:00",
+  "generated_at_utc": "2026-10-16T06:59:49+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b763765ba448f797e10eebc3810e6ef40e2c96e8",
+  "git_tree_sha": "2a5009dfff173eeb6dc598ed5bf0240ac6736995",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.33-chatgpt-host-continuity",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "851222c2c78cd7e6785ff61a2b7b67763ea61715",
+    "source_commit": "c32fad330acf412f6557877a648b88e42623d275",
     "source_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "851222c2c78cd7e6785ff61a2b7b67763ea61715",
+  "source_commit": "c32fad330acf412f6557877a648b88e42623d275",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34-chatgpt-host-memory-ingress",
   "tag": null,
