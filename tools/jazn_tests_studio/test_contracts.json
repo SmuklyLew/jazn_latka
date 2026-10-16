@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.4",
-  "active_definition_count": 2376,
+  "system_version": "16.3.25.5.116.0.34.5",
+  "active_definition_count": 2378,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3244,7 +3244,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 67
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_catalog_handles_cursor_pagination_without_turn_submission": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3263,7 +3263,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 88
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_missing_tool_rejected_and_no_fabricated_ready": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3282,7 +3282,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 94
+      "line": 105
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_missing_metadata_rejected": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3301,7 +3301,47 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 113
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_catalog_rejects_unusable_chatgpt_tool_metadata": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_catalog_rejects_unusable_chatgpt_tool_metadata",
+      "purpose": "Catalog rejects unusable chatgpt tool metadata",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_loopback_dev_can_advertise_explicit_noauth": {
+      "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
+      "name": "test_loopback_dev_can_advertise_explicit_noauth",
+      "purpose": "Loopback dev can advertise explicit noauth",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_non_rpc_response_is_not_accepted": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3320,7 +3360,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 154
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_transport_errors_fail_closed": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3341,7 +3381,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 166
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_token_is_sent_only_to_https_and_never_returned": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3360,7 +3400,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 176
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_bad_url_never_opens_connection": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3379,7 +3419,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 199
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_cli_uses_same_canonical_runpy_mcp_probe_dispatch": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3400,7 +3440,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 164
+      "line": 209
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_is_pasteable_thin_loader_with_current_message_gate": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
