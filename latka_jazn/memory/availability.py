@@ -48,6 +48,18 @@ def memory_mode(value: str | None = None) -> str:
     return normalized
 
 
+def _readable_nonempty_file(path: Path) -> bool:
+    """A missing/inaccessible external MEMORY file never blocks optional core.
+
+    Do not follow a failed stat with a fabricated recall candidate. Invalid
+    user-supplied MEMORY root paths still raise in resolve_memory_root().
+    """
+    try:
+        return path.is_file() and path.stat().st_size > 0
+    except OSError:
+        return False
+
+
 def _root_has_memory_payload(root: Path) -> bool:
     """Detect provenance-bearing memory, not incidental runtime output.
 
@@ -60,7 +72,7 @@ def _root_has_memory_payload(root: Path) -> bool:
     if not root.is_dir():
         return False
     manifest = root / "MEMORY_PACKAGE_MANIFEST.json"
-    if manifest.is_file() and manifest.stat().st_size > 0:
+    if _readable_nonempty_file(manifest):
         return True
     # Retain legacy, explicit user-provided memory layouts. In particular,
     # runtime_write_v1/v2 and bare directories must not switch storage roots.
@@ -70,7 +82,7 @@ def _root_has_memory_payload(root: Path) -> bool:
         root / "sqlite" / "memory_jazn.sqlite3",
         root / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
     )
-    return any(path.is_file() and path.stat().st_size > 0 for path in recall_files)
+    return any(_readable_nonempty_file(path) for path in recall_files)
 
 
 @dataclass(frozen=True, slots=True)
