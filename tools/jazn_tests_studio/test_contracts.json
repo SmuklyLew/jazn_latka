@@ -18332,7 +18332,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 251
+      "line": 284
     },
     "tests/test_host_finalization_lifecycle.py::test_host_generation_context_is_bounded_sanitized_and_hash_bound": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18360,7 +18360,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 276
+      "line": 309
     },
     "tests/test_host_finalization_lifecycle.py::test_host_candidate_rejects_undeclared_memory_claim_and_runtime_template": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18390,7 +18390,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 303
+      "line": 336
     },
     "tests/test_host_finalization_lifecycle.py::test_chatgpt_synthesizer_produces_host_context_without_runtime_draft": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18419,7 +18419,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 340
+      "line": 373
     },
     "tests/test_host_finalization_lifecycle.py::test_mcp_phase_two_completes_the_same_daemon_job": {
       "path": "tests/test_host_finalization_lifecycle.py",
@@ -18448,7 +18448,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 356
+      "line": 389
     },
     "tests/test_host_finalization_notification_idempotency.py::test_regeneration_then_acceptance_are_distinct_operations": {
       "path": "tests/test_host_finalization_notification_idempotency.py",
