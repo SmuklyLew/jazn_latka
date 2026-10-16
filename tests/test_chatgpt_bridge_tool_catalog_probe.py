@@ -23,9 +23,20 @@ class FakeResponse(BytesIO):
 
 
 def good_tool(name: str) -> dict[str, Any]:
+    read_only = name in {"jazn_status", "jazn_resume_visible_reply"}
     return {
         "name": name, "description": "Read or process a Jaźń runtime turn",
         "inputSchema": {"type": "object", "properties": {}},
+        "annotations": {
+            "readOnlyHint": read_only,
+            "destructiveHint": False,
+            "openWorldHint": False,
+            "idempotentHint": True,
+        },
+        "_meta": {
+            "ui": {"visibility": ["model", "app"]},
+            "securitySchemes": [{"type": "oauth2", "scopes": ["jazn:mcp:connect"]}],
+        },
     }
 
 
@@ -104,6 +115,40 @@ def test_missing_metadata_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     del tools[0]["inputSchema"]
     setup(monkeypatch, lambda _: reply(tools))
     assert module.probe_chatgpt_mcp_tool_catalog("https://mcp.example.org/mcp")["reason"] == "mcp_chatgpt_tool_metadata_invalid"
+
+
+@pytest.mark.parametrize(
+    ("field", "reason"),
+    [
+        ("visibility", "mcp_chatgpt_tool_visibility_invalid"),
+        ("annotations", "mcp_chatgpt_tool_annotations_invalid"),
+        ("security", "mcp_chatgpt_tool_security_invalid"),
+    ],
+)
+def test_catalog_rejects_unusable_chatgpt_tool_metadata(
+    monkeypatch: pytest.MonkeyPatch, field: str, reason: str,
+) -> None:
+    tools = [good_tool(name) for name in REQUIRED_CHATGPT_TURN_TOOLS]
+    if field == "visibility":
+        tools[0]["_meta"]["ui"]["visibility"] = ["app"]
+    elif field == "annotations":
+        tools[0]["annotations"]["readOnlyHint"] = True
+    else:
+        tools[0]["_meta"]["securitySchemes"] = [{"type": "noauth"}]
+    setup(monkeypatch, lambda _: reply(tools))
+    result = module.probe_chatgpt_mcp_tool_catalog("https://mcp.example.org/mcp")
+    assert result["reason"] == reason
+    assert result["tool_catalog_verified"] is False
+    assert result["chatgpt_current_message_toolset_verified"] is False
+
+
+def test_loopback_dev_can_advertise_explicit_noauth(monkeypatch: pytest.MonkeyPatch) -> None:
+    tools = [good_tool(name) for name in REQUIRED_CHATGPT_TURN_TOOLS]
+    for tool in tools:
+        tool["_meta"]["securitySchemes"] = [{"type": "noauth"}]
+    setup(monkeypatch, lambda _: reply(tools))
+    result = module.probe_chatgpt_mcp_tool_catalog("http://localhost:8080/mcp")
+    assert result["ok"] is True
 
 
 def test_non_rpc_response_is_not_accepted(monkeypatch: pytest.MonkeyPatch) -> None:
