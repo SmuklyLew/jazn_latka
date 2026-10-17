@@ -7211,6 +7211,88 @@
       "description_source": "source_identity",
       "line": 95
     },
+    "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_valid_sse_returns_verified_catalog_only": {
+      "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
+      "name": "test_valid_sse_returns_verified_catalog_only",
+      "purpose": "Valid sse returns verified catalog only",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_sse_multipage_and_notification": {
+      "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
+      "name": "test_sse_multipage_and_notification",
+      "purpose": "Sse multipage and notification",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_sse_rejects_malformed_or_unbounded_replies": {
+      "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
+      "name": "test_sse_rejects_malformed_or_unbounded_replies",
+      "purpose": "Sse rejects malformed or unbounded replies",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_sse_does_not_use_unrelated_id_as_result": {
+      "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
+      "name": "test_sse_does_not_use_unrelated_id_as_result",
+      "purpose": "Sse does not use unrelated id as result",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.chatgpt_toolset"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
     "tests/test_chatgpt_mcp_connection_recovery.py::test_private_plugin_remote_endpoints_are_refused": {
       "path": "tests/test_chatgpt_mcp_connection_recovery.py",
       "name": "test_private_plugin_remote_endpoints_are_refused",
@@ -25272,6 +25354,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_memory_candidate_root_parity.py::test_shallow_candidate_and_availability_agree_on_placeholders": {
+      "path": "tests/test_memory_candidate_root_parity.py",
+      "name": "test_shallow_candidate_and_availability_agree_on_placeholders",
+      "purpose": "Shallow candidate and availability agree on placeholders",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_memory_candidate_root_parity.py::test_real_legacy_candidate_survives_canonical_placeholder": {
+      "path": "tests/test_memory_candidate_root_parity.py",
+      "name": "test_real_legacy_candidate_survives_canonical_placeholder",
+      "purpose": "Real legacy candidate survives canonical placeholder",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_memory_candidate_root_parity.py::test_zero_byte_manifest_and_explicit_empty_path_fail_closed": {
+      "path": "tests/test_memory_candidate_root_parity.py",
+      "name": "test_zero_byte_manifest_and_explicit_empty_path_fail_closed",
+      "purpose": "Zero byte manifest and explicit empty path fail closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
     },
     "tests/test_memory_cloud_gateway.py::test_http_gateway_round_trips_encrypted_events_and_status": {
       "path": "tests/test_memory_cloud_gateway.py",
@@ -51715,148 +51857,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_valid_sse_returns_verified_catalog_only": {
-      "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
-      "name": "test_valid_sse_returns_verified_catalog_only",
-      "purpose": "Valid sse returns verified catalog only",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "mcp"
-      ],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp",
-        "latka_jazn.mcp.chatgpt_toolset"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 67
-    },
-    "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_multipage_and_notification": {
-      "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
-      "name": "test_sse_multipage_and_notification",
-      "purpose": "Sse multipage and notification",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "mcp"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp",
-        "latka_jazn.mcp.chatgpt_toolset"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 79
-    },
-    "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_rejects_malformed_or_unbounded_replies": {
-      "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
-      "name": "test_sse_rejects_malformed_or_unbounded_replies",
-      "purpose": "Sse rejects malformed or unbounded replies",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "mcp"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp",
-        "latka_jazn.mcp.chatgpt_toolset"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 99
-    },
-    "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_does_not_use_unrelated_id_as_result": {
-      "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
-      "name": "test_sse_does_not_use_unrelated_id_as_result",
-      "purpose": "Sse does not use unrelated id as result",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "mcp"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.mcp",
-        "latka_jazn.mcp.chatgpt_toolset"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 108
-    },
-    "tests/test_v1160347_memory_candidate_root_parity.py::test_shallow_candidate_and_availability_agree_on_placeholders": {
-      "path": "tests/test_v1160347_memory_candidate_root_parity.py",
-      "name": "test_shallow_candidate_and_availability_agree_on_placeholders",
-      "purpose": "Shallow candidate and availability agree on placeholders",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.memory.availability",
-        "latka_jazn.memory.memory_root"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 14
-    },
-    "tests/test_v1160347_memory_candidate_root_parity.py::test_real_legacy_candidate_survives_canonical_placeholder": {
-      "path": "tests/test_v1160347_memory_candidate_root_parity.py",
-      "name": "test_real_legacy_candidate_survives_canonical_placeholder",
-      "purpose": "Real legacy candidate survives canonical placeholder",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.memory.availability",
-        "latka_jazn.memory.memory_root"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 34
-    },
-    "tests/test_v1160347_memory_candidate_root_parity.py::test_zero_byte_manifest_and_explicit_empty_path_fail_closed": {
-      "path": "tests/test_v1160347_memory_candidate_root_parity.py",
-      "name": "test_zero_byte_manifest_and_explicit_empty_path_fail_closed",
-      "purpose": "Zero byte manifest and explicit empty path fail closed",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.memory.availability",
-        "latka_jazn.memory.memory_root"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 54
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
