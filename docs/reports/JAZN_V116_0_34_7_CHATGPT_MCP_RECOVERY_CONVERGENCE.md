@@ -16,7 +16,7 @@ Branch: upgrade/v16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence. Neither 
 
 ## Verification
 
-Focused, locally executed: tests/test_chatgpt_bridge_tool_catalog_probe.py, tests/test_v1160347_chatgpt_mcp_catalog_sse.py, tests/test_optional_memory_attach_convergence.py, tests/test_v1160347_memory_candidate_root_parity.py — **39 passed** on the extracted portable SYSTEM. Syntax compile for the changed Python files passed.
+Focused, locally executed: tests/test_chatgpt_bridge_tool_catalog_probe.py, tests/test_chatgpt_mcp_catalog_sse_transport.py, tests/test_optional_memory_attach_convergence.py, tests/test_memory_candidate_root_parity.py — **39 passed** on the extracted portable SYSTEM. Syntax compile for the changed Python files passed.
 
 The broader deterministic suite did not complete within the single host execution limit; early failures require investigating on final branch / CI and may involve release-version fixtures or missing optional dependencies. **Do not report a full-suite PASS.** Required gates: full deterministic pytest, compileall, Pyright 0 errors, doctor, package-smoke, Windows/Linux CI, canonical manifest/provenance sync, plugin/MCP live acceptance, final SHA and release package.
 
