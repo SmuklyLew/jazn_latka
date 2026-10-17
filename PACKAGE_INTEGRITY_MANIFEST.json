@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
   "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
   "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "generated_at_utc": "2026-10-17T21:13:59+00:00",
-  "updated_at_utc": "2026-10-17T21:13:59+00:00",
+  "generated_at_utc": "2026-10-17T21:18:46+00:00",
+  "updated_at_utc": "2026-10-17T21:18:46+00:00",
   "start_file": "run.py",
-  "file_count": 2665,
-  "static_file_count": 2665,
+  "file_count": 2666,
+  "static_file_count": 2666,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -363,7 +363,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2962,
-      "sha256": "e64ef68c42023a28d73f3616ce91025aee7ef8dd0e6d6c5c87192d2b7c34408a",
+      "sha256": "2b55285c75a788e21c56e25a3e8a293165d4965948b0d063f11fa7ce3b445017",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17515,6 +17515,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.7-before-pyright-fix/test_v1160347_chatgpt_mcp_catalog_sse.py",
+      "size_bytes": 4599,
+      "sha256": "6158010028405709f7528730684b83382fef64047248b0ab20a42c72abe797e7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -23249,8 +23258,8 @@
     },
     {
       "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
-      "size_bytes": 4599,
-      "sha256": "6158010028405709f7528730684b83382fef64047248b0ab20a42c72abe797e7",
+      "size_bytes": 4641,
+      "sha256": "a98dd063b3851caad354251abeabe850c946da0e0e0ff9c3a84422da98adefaf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23790,7 +23799,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2216473,
-      "sha256": "c321e960e85750475353366e67b03be3e8579096c6929cced13fd473cfa402d9",
+      "sha256": "d26da926a60354fcfedc31e9c250466ac81959d750f532c60ce022eac8399e56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
