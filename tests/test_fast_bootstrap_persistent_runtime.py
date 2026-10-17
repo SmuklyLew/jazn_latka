@@ -261,4 +261,4 @@ jeszcze jeden krok.
 
 def test_release_identity_tracks_current_distribution() -> None:
     assert PACKAGE_VERSION == "16.3.25.5.116.0.34.7"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-tool-catalog-parity"
+    assert PACKAGE_RELEASE_NAME == "chatgpt-mcp-recovery-convergence"
