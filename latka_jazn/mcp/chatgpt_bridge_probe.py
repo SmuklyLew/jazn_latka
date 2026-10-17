@@ -22,6 +22,74 @@ from latka_jazn.mcp.ingress_diagnostics import (
 
 _MAX_BYTES = 262144
 _MAX_PAGES = 8
+_MAX_SSE_EVENTS = 64
+
+
+def _read_sse_rpc_reply(response: Any, *, request_id: int) -> tuple[bytes | None, str | None]:
+    """Read one bounded SSE JSON-RPC response without waiting for stream EOF.
+
+    MCP Streamable HTTP may return text/event-stream for POST tools/list.
+    Consume only the matching JSON-RPC reply, never replay a request, and do
+    not accept an unrelated event, redirect, incomplete frame or unbounded
+    stream as catalog evidence.
+    """
+
+    used = 0
+    event_count = 0
+    event_type = "message"
+    data_lines: list[bytes] = []
+    while used <= _MAX_BYTES:
+        # +1 ensures an oversized line cannot evade the byte ceiling.
+        line = response.readline(_MAX_BYTES - used + 1)
+        if not line:
+            return None, "mcp_catalog_sse_incomplete"
+        used += len(line)
+        if used > _MAX_BYTES:
+            return None, "mcp_catalog_response_too_large"
+        if line not in (b"\n", b"\r\n"):
+            if line.startswith(b":"):
+                continue  # SSE keepalive comment
+            name, sep, value = line.rstrip(b"\r\n").partition(b":")
+            if not sep:
+                return None, "mcp_catalog_sse_invalid_frame"
+            if value.startswith(b" "):
+                value = value[1:]
+            if name == b"data":
+                data_lines.append(value)
+            elif name == b"event":
+                try:
+                    event_type = value.decode("ascii")
+                except UnicodeDecodeError:
+                    return None, "mcp_catalog_sse_invalid_frame"
+            elif name not in (b"id", b"retry"):
+                return None, "mcp_catalog_sse_invalid_frame"
+            continue
+
+        if not data_lines:
+            event_type = "message"
+            continue
+        event_count += 1
+        if event_count > _MAX_SSE_EVENTS:
+            return None, "mcp_catalog_sse_event_limit"
+        raw = b"\n".join(data_lines)
+        data_lines = []
+        if event_type not in ("message", ""):
+            return None, "mcp_catalog_sse_unexpected_event"
+        event_type = "message"
+        try:
+            decoded = json.loads(raw)
+        except (ValueError, UnicodeDecodeError):
+            return None, "mcp_catalog_sse_invalid_json"
+        if not isinstance(decoded, dict) or decoded.get("jsonrpc") != "2.0":
+            return None, "mcp_catalog_sse_invalid_rpc"
+        if decoded.get("id") == request_id:
+            return raw, None
+        # Unsolicited notifications may precede the tools/list result, but
+        # a different response id must not be mistaken for a notification.
+        if "id" in decoded or not isinstance(decoded.get("method"), str):
+            return None, "mcp_catalog_sse_wrong_request_id"
+    return None, "mcp_catalog_response_too_large"
+
 
 
 def _report(
@@ -188,12 +256,15 @@ def probe_chatgpt_mcp_tool_catalog(
                     return _report("mcp_catalog_redirect_rejected", observed=names, pages=page + 1)
                 media = str(response.headers.get("Content-Type", "")).lower()
                 if "text/event-stream" in media:
-                    return _report("mcp_catalog_sse_requires_inspector", observed=names, pages=page + 1)
-                if "application/json" not in media:
+                    raw, error = _read_sse_rpc_reply(response, request_id=page + 1)
+                    if error is not None or raw is None:
+                        return _report(error or "mcp_catalog_sse_incomplete", observed=names, pages=page + 1)
+                elif "application/json" in media:
+                    raw = response.read(_MAX_BYTES + 1)
+                    if len(raw) > _MAX_BYTES:
+                        return _report("mcp_catalog_response_too_large", observed=names, pages=page + 1)
+                else:
                     return _report("mcp_catalog_not_json", observed=names, pages=page + 1)
-                raw = response.read(_MAX_BYTES + 1)
-                if len(raw) > _MAX_BYTES:
-                    return _report("mcp_catalog_response_too_large", observed=names, pages=page + 1)
         except urllib.error.HTTPError as exc:
             if 300 <= exc.code < 400:
                 reason = "mcp_catalog_redirect_rejected"
