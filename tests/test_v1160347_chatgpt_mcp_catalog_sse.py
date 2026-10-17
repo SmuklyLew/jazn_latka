@@ -55,7 +55,8 @@ def install(monkeypatch: pytest.MonkeyPatch, pages: list[bytes]) -> list[urllib.
         def open(self, request: urllib.request.Request, *, timeout: float) -> Response:
             assert 0.1 <= timeout <= 30.0
             assert request.get_header("Mcp-method") == "tools/list"
-            assert json.loads(request.data or b"{}")["method"] == "tools/list"
+            assert isinstance(request.data, bytes)
+            assert json.loads(request.data)["method"] == "tools/list"
             calls.append(request)
             return Response(pages[len(calls) - 1])
 
