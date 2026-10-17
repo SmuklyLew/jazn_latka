@@ -7271,7 +7271,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 99
+      "line": 107
     },
     "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_sse_does_not_use_unrelated_id_as_result": {
       "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
@@ -7291,7 +7291,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 116
     },
     "tests/test_chatgpt_mcp_connection_recovery.py::test_private_plugin_remote_endpoints_are_refused": {
       "path": "tests/test_chatgpt_mcp_connection_recovery.py",
