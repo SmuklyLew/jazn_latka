@@ -51734,7 +51734,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 67
     },
     "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_multipage_and_notification": {
       "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
@@ -51754,7 +51754,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 79
     },
     "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_rejects_malformed_or_unbounded_replies": {
       "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
@@ -51776,7 +51776,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 99
     },
     "tests/test_v1160347_chatgpt_mcp_catalog_sse.py::test_sse_does_not_use_unrelated_id_as_result": {
       "path": "tests/test_v1160347_chatgpt_mcp_catalog_sse.py",
@@ -51796,7 +51796,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_v1160347_memory_candidate_root_parity.py::test_shallow_candidate_and_availability_agree_on_placeholders": {
       "path": "tests/test_v1160347_memory_candidate_root_parity.py",
