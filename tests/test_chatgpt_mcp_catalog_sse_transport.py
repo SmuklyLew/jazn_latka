@@ -95,6 +95,14 @@ def test_sse_multipage_and_notification(monkeypatch: pytest.MonkeyPatch) -> None
     (b"data: partial\n", "mcp_catalog_sse_incomplete"),
     (b"data: " + b"x" * (probe._MAX_BYTES + 1) + b"\n\n", "mcp_catalog_response_too_large"),
     (b"x-invalid\n\n", "mcp_catalog_sse_invalid_frame"),
+], ids=[
+    "sse-keepalive-only",
+    "sse-invalid-json",
+    "sse-wrong-rpc-id",
+    "sse-unexpected-event-type",
+    "sse-incomplete-frame",
+    "sse-oversized-line",
+    "sse-invalid-frame",
 ])
 def test_sse_rejects_malformed_or_unbounded_replies(
     monkeypatch: pytest.MonkeyPatch, stream: bytes, reason: str,
