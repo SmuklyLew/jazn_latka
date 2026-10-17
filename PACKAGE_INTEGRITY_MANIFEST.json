@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
-  "runtime_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
-  "package_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
-  "generated_at_utc": "2026-10-16T19:56:16+00:00",
-  "updated_at_utc": "2026-10-16T19:56:16+00:00",
+  "version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+  "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+  "generated_at_utc": "2026-10-17T21:11:37+00:00",
+  "updated_at_utc": "2026-10-17T21:11:37+00:00",
   "start_file": "run.py",
   "file_count": 2662,
   "static_file_count": 2662,
@@ -362,8 +362,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2967,
-      "sha256": "c45367381873f74ce5e6c0802ecb918030a62870e54599b6e595b55bc52105bb",
+      "size_bytes": 2962,
+      "sha256": "03a27c9bc564456c58484dc5c798de9bf8e6c3a770d569955be816617e6c251f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6500,8 +6500,8 @@
     },
     {
       "path": "latka_jazn/mcp/chatgpt_bridge_probe.py",
-      "size_bytes": 11318,
-      "sha256": "3a1380cbc3e17cd10bfa6815cd182ee83762845978ddf99f8193c8681f674add",
+      "size_bytes": 14275,
+      "sha256": "06456773dcbf6a88d750fa300fb61d1931d6d8308208400d39e380031f1992bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6761,8 +6761,8 @@
     },
     {
       "path": "latka_jazn/memory/availability.py",
-      "size_bytes": 8035,
-      "sha256": "a937b84df453f94e123b2d5f42fb66044663ac77a3fd085be5e59096a2c0a08f",
+      "size_bytes": 6718,
+      "sha256": "4dc92ae020581878e45ee93bb4f6dbb981f3c12f49a81c22bb0a1e6408fea843",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7076,8 +7076,8 @@
     },
     {
       "path": "latka_jazn/memory/memory_root.py",
-      "size_bytes": 8954,
-      "sha256": "4f9fe83bdae156c8ecb0104964d06100694eb65016994e51018c1b2cd134fe04",
+      "size_bytes": 8607,
+      "sha256": "956d35c545229fc331793e7f2db971eee47852165e8f0742fb6d57b71ff365ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10244,8 +10244,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 10906,
-      "sha256": "337519b84f6e863ce5836268e5ce9ed2acf4b41245d0463daf5a0e4c1d8a067b",
+      "size_bytes": 10998,
+      "sha256": "ea4f6d61fd5e550084b78b1d2bad1af41449cdaddce8d3a79ac2112ea04dd59f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23763,7 +23763,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2210918,
-      "sha256": "1be2c256b9c9adf3700f6f24dd8a2a286987f117e124823bf4a39d3a2bfcb9bc",
+      "sha256": "fc02a1ed8b3d6c93cf6a02b353cf45010fbcc216b03500cc56be41c383074d3c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24410,11 +24410,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
+  "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
-    "package_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel",
-    "release_version": "16.3.25.5.116.0.34.6-siwc-optional-host-model-channel"
+    "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+    "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+    "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
