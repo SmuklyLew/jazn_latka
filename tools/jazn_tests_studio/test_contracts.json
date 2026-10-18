@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.7",
-  "active_definition_count": 2396,
+  "system_version": "16.3.25.5.116.0.34.9",
+  "active_definition_count": 2397,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11060,6 +11060,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 64
+    },
+    "tests/test_codespaces_runtime_bootstrap_contract.py::test_codespaces_devcontainer_is_manual_and_fail_closed": {
+      "path": "tests/test_codespaces_runtime_bootstrap_contract.py",
+      "name": "test_codespaces_devcontainer_is_manual_and_fail_closed",
+      "purpose": "Codespaces devcontainer is manual and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_cognitive_control.py::test_global_salience_is_deterministic_bounded_and_content_free": {
       "path": "tests/test_cognitive_control.py",
