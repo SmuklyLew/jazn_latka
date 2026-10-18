@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.7",
-  "active_definition_count": 2396,
+  "system_version": "16.3.25.5.116.0.34.9",
+  "active_definition_count": 2401,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11060,6 +11060,93 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 64
+    },
+    "tests/test_codespaces_github_oauth_integrated_release.py::test_converged_release_metadata_and_startup_contract": {
+      "path": "tests/test_codespaces_github_oauth_integrated_release.py",
+      "name": "test_converged_release_metadata_and_startup_contract",
+      "purpose": "Converged release metadata and startup contract",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_codespaces_github_oauth_integrated_release.py::test_codespaces_does_not_publish_anonymous_mcp": {
+      "path": "tests/test_codespaces_github_oauth_integrated_release.py",
+      "name": "test_codespaces_does_not_publish_anonymous_mcp",
+      "purpose": "Codespaces does not publish anonymous mcp",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_codespaces_github_oauth_integrated_release.py::test_oauth_worker_staging_has_no_credentials_or_production_deploy": {
+      "path": "tests/test_codespaces_github_oauth_integrated_release.py",
+      "name": "test_oauth_worker_staging_has_no_credentials_or_production_deploy",
+      "purpose": "Oauth worker staging has no credentials or production deploy",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_codespaces_github_oauth_integrated_release.py::test_oauth_uses_dependency_lock_and_local_regression_tests": {
+      "path": "tests/test_codespaces_github_oauth_integrated_release.py",
+      "name": "test_oauth_uses_dependency_lock_and_local_regression_tests",
+      "purpose": "Oauth uses dependency lock and local regression tests",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_codespaces_runtime_bootstrap_contract.py::test_codespaces_devcontainer_is_manual_and_fail_closed": {
+      "path": "tests/test_codespaces_runtime_bootstrap_contract.py",
+      "name": "test_codespaces_devcontainer_is_manual_and_fail_closed",
+      "purpose": "Codespaces devcontainer is manual and fail closed",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_cognitive_control.py::test_global_salience_is_deterministic_bounded_and_content_free": {
       "path": "tests/test_cognitive_control.py",
