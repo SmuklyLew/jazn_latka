@@ -21,6 +21,7 @@ from latka_jazn.memory.memory_root import (
     previous_host_memory_root,
     normalize_memory_relative_path,
     resolve_memory_root,
+    memory_root_has_payload,
 )
 from latka_jazn.version import schema_version
 
@@ -48,42 +49,9 @@ def memory_mode(value: str | None = None) -> str:
     return normalized
 
 
-def _readable_nonempty_file(path: Path) -> bool:
-    """A missing/inaccessible external MEMORY file never blocks optional core.
-
-    Do not follow a failed stat with a fabricated recall candidate. Invalid
-    user-supplied MEMORY root paths still raise in resolve_memory_root().
-    """
-    try:
-        return path.is_file() and path.stat().st_size > 0
-    except OSError:
-        return False
-
-
 def _root_has_memory_payload(root: Path) -> bool:
-    """Detect provenance-bearing memory, not incidental runtime output.
-
-    SYSTEM-only helpers can create sqlite/raw/layered directories and even
-    operational runtime_write databases. Those are NOT evidence that a MEMORY
-    package was attached. Only a package manifest or explicit legacy recall
-    data files can establish an attachment candidate; full recall readiness
-    remains subject to the separate verifier.
-    """
-    if not root.is_dir():
-        return False
-    manifest = root / "MEMORY_PACKAGE_MANIFEST.json"
-    if _readable_nonempty_file(manifest):
-        return True
-    # Retain legacy, explicit user-provided memory layouts. In particular,
-    # runtime_write_v1/v2 and bare directories must not switch storage roots.
-    recall_files = (
-        root / "raw" / "dziennik.json",
-        root / "raw" / "chat.html",
-        root / "sqlite" / "memory_jazn.sqlite3",
-        root / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
-    )
-    return any(_readable_nonempty_file(path) for path in recall_files)
-
+    """Share the non-operational candidate contract with root selection."""
+    return memory_root_has_payload(root)
 
 @dataclass(frozen=True, slots=True)
 class MemoryAvailabilityStatus:

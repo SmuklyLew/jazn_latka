@@ -19,39 +19,31 @@ MEMORY_ROOT_ENV = "JAZN_MEMORY_ROOT"
 
 
 def memory_root_has_payload(root: str | Path) -> bool:
-    """Return whether root contains a plausible persistent MEMORY payload.
+    """Select a MEMORY root only from explicit recall/attachment candidates.
 
-    The check is intentionally shallow: root resolution must not recursively
-    scan large private archives merely to decide between canonical and legacy
-    locations. Explicit JAZN_MEMORY_ROOT remains authoritative even when
-    empty; this helper is only used for automatic fallback selection.
+    Operational runtime_write databases, incidental directories, and an empty
+    placeholder must not shadow an older real MEMORY root. This shallow check
+    is a *candidate* selector, never proof of native unified recall readiness.
+    Keep it shared with memory availability to prevent resolver divergence.
     """
 
     candidate = Path(root).expanduser()
     if not candidate.is_dir():
         return False
-    known_files = (
+    markers = (
         candidate / "MEMORY_PACKAGE_MANIFEST.json",
         candidate / "raw" / "dziennik.json",
         candidate / "raw" / "chat.html",
         candidate / "sqlite" / "memory_jazn.sqlite3",
-        candidate / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3",
-        candidate / "sqlite" / "runtime_write_v2" / "runtime_memory.sqlite3",
         candidate / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
     )
-    if any(path.is_file() for path in known_files):
-        return True
-    for dirname in ("sqlite", "raw", "layered", "versioned_sources"):
-        directory = candidate / dirname
-        if not directory.is_dir():
-            continue
+    for path in markers:
         try:
-            next(directory.iterdir())
-        except (StopIteration, OSError):
+            if path.is_file() and path.stat().st_size > 0:
+                return True
+        except OSError:
             continue
-        return True
     return False
-
 
 def legacy_memory_root(runtime_root: str | Path) -> Path:
     """Return the historical per-version memory directory."""
