@@ -1,0 +1,15 @@
+{
+  "name": "jazn-github-mcp-oauth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Jaźń Cloudflare GitHub OAuth for protected MCP ingress (opt-in, fail closed)",
+  "scripts": {
+    "check": "node --check src/index.mjs && node --check src/security.mjs && node --test test/security.test.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^1.0.0"
+  },
+  "devDependencies": {"wrangler": "^4.0.0"}
+}
