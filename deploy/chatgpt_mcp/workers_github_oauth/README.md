@@ -52,11 +52,12 @@ Before any real auth deployment, add these NEW variables/secrets:
 
 `wrangler.jsonc` binds the account's existing KV namespace and public client ID.
 Review resource identifiers and permissions before using it on another account.
-Do not commit or print either secret. Deploy `jazn-auth` only after performing
-`npm install` on a Node 24 host, reviewing and committing a generated
-`package-lock.json`, then running `npm ci` and `npm run check`. Use a pinned
-reviewed version of the OAuth provider when finalizing the lockfile; never
-silently upgrade it in production.
+Do not commit or print either secret. The tracked `package-lock.json` was
+created by the isolated GitHub Actions Node 24 staging build and fixes the
+resolved OAuth provider version at `1.2.3` (93 package records). Run `npm ci`
+and `npm run check` to use these exact resolved dependencies. Do not silently
+upgrade them in production. The staging build also runs Wrangler `deploy --dry-run`
+and does **not** publish to Cloudflare.
 
 **Warning:** `wrangler deploy` replaces Worker code and can affect bindings.
 Save a rollback deployment/version, record all binding *names and types* and
