@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "generated_at_utc": "2026-10-18T21:54:50+00:00",
-  "updated_at_utc": "2026-10-18T21:54:50+00:00",
+  "version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
+  "package_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
+  "generated_at_utc": "2026-10-18T22:00:48+00:00",
+  "updated_at_utc": "2026-10-18T22:00:48+00:00",
   "start_file": "run.py",
-  "file_count": 2681,
-  "static_file_count": 2681,
+  "file_count": 2686,
+  "static_file_count": 2686,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -362,8 +362,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2967,
-      "sha256": "1ef097a8570ec159afe2e407b9b78d6998412b94e7d6812890cd99321d1effdd",
+      "size_bytes": 2962,
+      "sha256": "52897387e116fe822f57b0d33fb76ba050101bdb6c76c887df26f74321f3e9d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -427,6 +427,51 @@
       "path": "deploy/chatgpt_mcp/workers_github_oauth/README.md",
       "size_bytes": 7417,
       "sha256": "b79880eaa79e932da36ba1163e81d8c9da1e86fb868d8ac39563d7808f7df8aa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/package.json",
+      "size_bytes": 485,
+      "sha256": "d7a3773aa69bef0a531b6f6b097cb88dfe35f94ec4d285411ea592c3409afa02",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/src/index.mjs",
+      "size_bytes": 7679,
+      "sha256": "6e2dce176a2f57ca82b4b31e0d71b61e85278f414a1d074f7c58d66fa65c7709",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/src/security.mjs",
+      "size_bytes": 4544,
+      "sha256": "805328163dd9d2577a6b3834122e17d29fc8fb73d27b2e608be402b22d618526",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/test/security.test.mjs",
+      "size_bytes": 3586,
+      "sha256": "becb8f123731e6695f6941d0ceb9a64a23dc87da1927ce6e40b58826d96a87f1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/wrangler.jsonc",
+      "size_bytes": 428,
+      "sha256": "021c3869742dd7de292a293ebd8a71aba7a6158aca8aa3cba8b91aeb6ab515d8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10271,8 +10316,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 10998,
-      "sha256": "ea4f6d61fd5e550084b78b1d2bad1af41449cdaddce8d3a79ac2112ea04dd59f",
+      "size_bytes": 11158,
+      "sha256": "e9a7578b6a65699a4296326efb1cae1cf897a1215f6ffa921e2b2a8b463cd789",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23934,7 +23979,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2216428,
-      "sha256": "f21600b90ca775974df7988f942f4321acb25161376cff2bbbbb62de069b7ca2",
+      "sha256": "5e786da7922bed44b7ff613b78d0902d418122e5578cc764e510e8d53840fc75",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24581,11 +24626,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+  "release_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-    "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-    "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
+    "package_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence",
+    "release_version": "16.3.25.5.116.0.34.8-chatgpt-mcp-recovery-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
