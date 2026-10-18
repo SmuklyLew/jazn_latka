@@ -31,10 +31,7 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
-      - name: Generate a candidate npm lockfile for review
-        working-directory: deploy/chatgpt_mcp/workers_github_oauth
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Install exact candidate dependencies from lockfile
+      - name: Install exact tracked dependencies with npm ci
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Run OAuth helper tests
@@ -43,16 +40,6 @@ jobs:
       - name: Compile and check Worker bundle without deploying
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npx --no-install wrangler deploy --dry-run --outdir build-preview
-      - name: Print base64 of public-only candidate lock for audited source handoff
-        working-directory: deploy/chatgpt_mcp/workers_github_oauth
-        shell: bash
-        run: python -c 'import base64,pathlib; print("JAZN_OAUTH_LOCK_B64="+base64.b64encode(pathlib.Path("package-lock.json").read_bytes()).decode())'
-      - name: Upload candidate lockfile for review (no credentials)
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: jazn-auth-candidate-package-lock
-          path: deploy/chatgpt_mcp/workers_github_oauth/package-lock.json
-          if-no-files-found: error
       - name: Assert no tracked source changed
         run: |
           git diff --check
