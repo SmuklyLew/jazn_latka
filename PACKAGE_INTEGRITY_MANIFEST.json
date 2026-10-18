@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-  "generated_at_utc": "2026-10-17T23:08:28+00:00",
-  "updated_at_utc": "2026-10-17T23:08:28+00:00",
+  "version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+  "package_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+  "generated_at_utc": "2026-10-18T22:26:28+00:00",
+  "updated_at_utc": "2026-10-18T22:26:28+00:00",
   "start_file": "run.py",
-  "file_count": 2680,
-  "static_file_count": 2680,
+  "file_count": 2683,
+  "static_file_count": 2683,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -63,6 +63,24 @@
   },
   "truth_boundary": "The manifest hashes the exact static package plan including SOURCE_PROVENANCE.json. It excludes itself, Git history, memory, runtime state, SQLite, archives, secrets, logs, backups, generator state and temporary files.",
   "files": [
+    {
+      "path": ".devcontainer/README.md",
+      "size_bytes": 3169,
+      "sha256": "64e2bfa84d96b8cacc5209ef3d1a704b726b6041509997530afb96df6c61a07f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "size_bytes": 829,
+      "sha256": "0b32cbe8cde74a470e14efad4af8b082be2cfbc7cfa14d7f13f9fc8a6c01367a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
     {
       "path": ".dockerignore",
       "size_bytes": 342,
@@ -362,8 +380,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "8a3fba542d67d3cd7b2320d6f5ed3ce38336454707b2fbc71cc2c966b5fcb2a1",
+      "size_bytes": 2980,
+      "sha256": "f7a845bfbc3bc7c44ee20b2006454425b16ae924ff42ad02417820a74c503007",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +416,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1946,
-      "sha256": "d962864af30e7cf98d8c5f729bb6db434ee2534f97cb1f1a6eea3943dd30d70c",
+      "size_bytes": 1949,
+      "sha256": "29dbca11affe3e941cb46f59535f9206118aa0146e75272a56005020ff19275e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8805,7 +8823,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7903,
-      "sha256": "da04841a527295ae3b1d398686fc5dd5d539f03264ce376a69c189234e1d6f2b",
+      "sha256": "6d842d0ba95cce389ab220939753662fabbfa1d0983c7e4c9d31d12d954e4c38",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10262,8 +10280,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 10998,
-      "sha256": "ea4f6d61fd5e550084b78b1d2bad1af41449cdaddce8d3a79ac2112ea04dd59f",
+      "size_bytes": 11099,
+      "sha256": "94ff530873021cb27d2bc49921e57904161e7d9428f8df7b40c1989bdeb73354",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20287,6 +20305,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_codespaces_runtime_bootstrap_contract.py",
+      "size_bytes": 1118,
+      "sha256": "24c7984a405c56e9320421f0b06c2ca902a0b72c04ca46d8f88ddbc2162e4135",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_cognitive_control.py",
       "size_bytes": 13190,
       "sha256": "4e2208c5c48c48ce11dbd4728a57298bc5918ee5a8c390815dac6b8ab1e78bfc",
@@ -23924,8 +23951,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2216428,
-      "sha256": "f21600b90ca775974df7988f942f4321acb25161376cff2bbbbb62de069b7ca2",
+      "size_bytes": 2217158,
+      "sha256": "79d40036ce463eddb2115bf0e32eac3d9bac69f24cdf12d3e71c92486a294a6f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24572,11 +24599,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
+  "release_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-    "package_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence",
-    "release_version": "16.3.25.5.116.0.34.7-chatgpt-mcp-recovery-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+    "package_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+    "release_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
