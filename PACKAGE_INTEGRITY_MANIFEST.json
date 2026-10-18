@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
   "runtime_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
   "package_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
-  "generated_at_utc": "2026-10-18T22:30:49+00:00",
-  "updated_at_utc": "2026-10-18T22:30:49+00:00",
+  "generated_at_utc": "2026-10-18T22:37:04+00:00",
+  "updated_at_utc": "2026-10-18T22:37:04+00:00",
   "start_file": "run.py",
-  "file_count": 2696,
-  "static_file_count": 2696,
+  "file_count": 2697,
+  "static_file_count": 2697,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2985,
-      "sha256": "0b84ebf88398612c00d665b12d4f8ef638756248ed3db882a50345a77e187bb7",
+      "size_bytes": 2980,
+      "sha256": "d16abe51f2d7364c80c24f456635193a768ab83dddf0605918173372426861b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20422,6 +20422,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_codespaces_github_oauth_integrated_release.py",
+      "size_bytes": 2820,
+      "sha256": "8229489568248983f036549928ceadc8e8f3c87e5afeeffb7bdd2dd9bcd872ff",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_codespaces_runtime_bootstrap_contract.py",
       "size_bytes": 1118,
       "sha256": "24c7984a405c56e9320421f0b06c2ca902a0b72c04ca46d8f88ddbc2162e4135",
@@ -24068,8 +24077,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2217158,
-      "sha256": "79d40036ce463eddb2115bf0e32eac3d9bac69f24cdf12d3e71c92486a294a6f",
+      "size_bytes": 2220204,
+      "sha256": "1a82ced3a69a107edbbf277f9a7d5dd3a7301df9d262ae7e6884ba5f9f79e77b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
