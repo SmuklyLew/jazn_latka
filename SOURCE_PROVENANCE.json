@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "59cb9de7a5d4bdb7877d1bcb24eed479dfafa737",
+  "base_merge_commit": "1b58c0386293b20d519bfe7ba91da317d3e78b87",
   "base_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
-  "commit_date": "2026-10-19T00:56:35+02:00",
+  "commit_date": "2026-10-19T18:10:02+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-18T22:56:35+00:00",
+  "generated_at_utc": "2026-10-19T16:10:02+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "e14f02ccac5814eabaf35a0018380cec2f7dfb0c",
+  "git_tree_sha": "fb823efc31c972437015497945a2c316eea73196",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "59cb9de7a5d4bdb7877d1bcb24eed479dfafa737",
+    "base_commit": "b0919e00d37ab2ac41868f8a971a3d280609acf0",
     "base_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "59cb9de7a5d4bdb7877d1bcb24eed479dfafa737",
+    "source_commit": "1b58c0386293b20d519bfe7ba91da317d3e78b87",
     "source_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "59cb9de7a5d4bdb7877d1bcb24eed479dfafa737",
+  "source_commit": "1b58c0386293b20d519bfe7ba91da317d3e78b87",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
   "tag": null,
