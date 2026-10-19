@@ -191,6 +191,7 @@ class ProjectStartupIndexer:
                 return {
                     "schema_version": "project_startup_index_status/v1",
                     "present": True,
+                    "compatible": self.compatible_cache(data),
                     "path": self.output_rel,
                     "file_count": data.get("file_count"),
                     "python_module_count": data.get("python_module_count"),
