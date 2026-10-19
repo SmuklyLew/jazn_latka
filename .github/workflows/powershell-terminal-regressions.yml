@@ -52,13 +52,13 @@ jobs:
           python -X utf8 -m pytest -q -ra --tb=short tests/test_configuration_studio_gui_windows.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      # A PR may race the push-side Test Studio catalog generator. Restore the
-      # canonical active-test inventory in this checkout before hashing release
-      # metadata or collecting tests; this is a local validation step only.
-      - name: Materialize Test Studio catalog locally for PR validation
+      # Catalog generation is handled on the source branch by the canonical
+      # Test Studio sync workflow. Check instead of modifying the PR checkout:
+      # release_metadata_sync intentionally requires a clean working tree.
+      - name: Verify committed Test Studio catalog in PR checkout
         if: github.event_name == 'pull_request'
         shell: pwsh
-        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
 
       - name: Materialize canonical PR metadata locally
         if: github.event_name == 'pull_request'
