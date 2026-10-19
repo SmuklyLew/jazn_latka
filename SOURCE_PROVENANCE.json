@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b0919e00d37ab2ac41868f8a971a3d280609acf0",
-    "base_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
+    "base_commit": "8a4e0c4e59f2657a6e7964237a064491d7a25188",
+    "base_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "8a4e0c4e59f2657a6e7964237a064491d7a25188",
