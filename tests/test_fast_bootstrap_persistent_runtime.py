@@ -16,6 +16,8 @@ import latka_jazn.core.runtime_supervisor as runtime_supervisor
 from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION, PACKAGE_VERSION_FULL
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 def _digest_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
@@ -260,5 +262,11 @@ jeszcze jeden krok.
 
 
 def test_release_identity_tracks_current_distribution() -> None:
-    assert PACKAGE_VERSION == "16.3.25.5.116.0.34.11"
-    assert PACKAGE_RELEASE_NAME == "chatgpt-session-continuity"
+    startup = json.loads(
+        (ROOT / "latka_jazn/resources/startup_contract.json").read_text(encoding="utf-8")
+    )
+    deployment = json.loads(
+        (ROOT / "deploy/chatgpt_mcp/deployment.contract.json").read_text(encoding="utf-8")
+    )
+    assert startup["version"] == PACKAGE_VERSION
+    assert deployment["runtime_version"] == f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}"

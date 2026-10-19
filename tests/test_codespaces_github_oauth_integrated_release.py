@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL
+from latka_jazn.version import PACKAGE_RELEASE_NAME, PACKAGE_VERSION, PACKAGE_VERSION_FULL
 
 ROOT = Path(__file__).resolve().parents[1]
 OAUTH = ROOT / "deploy" / "chatgpt_mcp" / "workers_github_oauth"
@@ -14,10 +14,10 @@ OAUTH = ROOT / "deploy" / "chatgpt_mcp" / "workers_github_oauth"
 def test_converged_release_metadata_and_startup_contract() -> None:
     startup = json.loads((ROOT / "latka_jazn" / "resources" / "startup_contract.json").read_text(encoding="utf-8"))
     deployment = json.loads((ROOT / "deploy" / "chatgpt_mcp" / "deployment.contract.json").read_text(encoding="utf-8"))
-    assert PACKAGE_VERSION == "16.3.25.5.116.0.34.11"
     assert startup["version"] == PACKAGE_VERSION
+    assert startup["version_source"] == "latka_jazn.version.PACKAGE_VERSION"
     assert deployment["runtime_version"] == PACKAGE_VERSION_FULL
-    assert "chatgpt-session-continuity" in PACKAGE_VERSION_FULL
+    assert PACKAGE_VERSION_FULL == f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}"
 
 
 def test_codespaces_does_not_publish_anonymous_mcp() -> None:
