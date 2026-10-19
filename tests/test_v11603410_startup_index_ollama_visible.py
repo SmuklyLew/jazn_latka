@@ -73,7 +73,10 @@ def test_host_writer_does_not_inherit_local_authority() -> None:
     assert packet["final_visible_text"] == ""
 
 
-def test_explicit_index_prunes_private_and_volatile_trees(tmp_path: Path) -> None:
+def test_explicit_index_prunes_private_and_volatile_trees(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
     allowed = tmp_path / "latka_jazn" / "core"
     allowed.mkdir(parents=True)
     (allowed / "sample.py").write_text("def hello():\n    return 'ok'\n", encoding="utf-8")
@@ -91,7 +94,10 @@ def test_explicit_index_prunes_private_and_volatile_trees(tmp_path: Path) -> Non
     assert not list(idx.output_path.parent.glob(".project_startup_index_*.tmp"))
 
 
-def test_explicit_index_readonly_never_creates_cache(tmp_path: Path) -> None:
+def test_explicit_index_readonly_never_creates_cache(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
     (tmp_path / "sample.py").write_text("x = 1\n", encoding="utf-8")
     index = ProjectStartupIndexer(tmp_path)
     data = index.build(write=False)
@@ -135,7 +141,10 @@ def test_cli_one_shot_uses_local_renderer_not_chatgpt_gate(
                      ("close", None)]
 
 
-def test_index_cache_requires_same_release_scope_and_hash(tmp_path: Path) -> None:
+def test_index_cache_requires_same_release_scope_and_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
     (tmp_path / "sample.py").write_text("x = 1\n", encoding="utf-8")
     index = ProjectStartupIndexer(tmp_path)
     built = index.build(write=True)
@@ -160,6 +169,7 @@ def test_engine_ignores_old_index_without_full_rescan(
 ) -> None:
     from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
     path = ProjectStartupIndexer(tmp_path).output_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({
