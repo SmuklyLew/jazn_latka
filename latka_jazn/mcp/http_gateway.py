@@ -27,6 +27,7 @@ from typing import Annotated, Any, Callable, Mapping, Protocol
 from urllib.parse import urlsplit
 
 from pydantic import AnyHttpUrl, Field
+from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -797,7 +798,9 @@ class PublicMcpGateway:
                 "runtime_heartbeat_at_utc": None,
             }
             try:
-                status = self._status_snapshot()
+                # Synchronous daemon/SQLite status I/O must not stall the
+                # ASGI loop or prevent independent liveness checks.
+                status = await run_in_threadpool(self._status_snapshot)
                 ready = _runtime_ready(status)
                 binding = _runtime_binding(status)
             except Exception:

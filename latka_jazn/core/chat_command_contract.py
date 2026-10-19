@@ -678,11 +678,21 @@ def _build_session_continuity_commit(
             source_client=str(session_snapshot.get("source_client") or "chatgpt_host"),
             no_carryover=False,
         )
-        if store.last_load_metadata.get("session_resurrected_from_disk") is True:
-            session_snapshot = persisted.to_dict()
-            provenance["continuity_turn_count"] = store.last_load_metadata.get(
-                "continuity_turn_count", 0
-            )
+        # On the first host-finalized turn, load_or_create() only constructs
+        # an ephemeral state. Phase-2 would independently construct a different
+        # created_at/expires_at pair, so its compare-and-swap hash would fail.
+        # Seal the baseline before binding phase-1 to it. Existing checkpoints
+        # are never overwritten by this initialization path.
+        if store.last_load_metadata.get("session_resurrected_from_disk") is not True:
+            baseline_status = store.save(persisted, turn_count=0)
+            if baseline_status.get("continuity_checkpoint_written") is not True:
+                # Never bind a successful continuity claim to an unpersisted
+                # snapshot. Conversation finalization remains separately gated.
+                return {}
+        session_snapshot = persisted.to_dict()
+        provenance["continuity_turn_count"] = store.last_load_metadata.get(
+            "continuity_turn_count", 0
+        )
     try:
         turn_count_before = max(0, int(provenance.get("continuity_turn_count") or 0))
     except (TypeError, ValueError):

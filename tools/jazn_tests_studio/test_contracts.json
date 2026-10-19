@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.10",
-  "active_definition_count": 2409,
+  "system_version": "16.3.25.5.116.0.34.11",
+  "active_definition_count": 2412,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3934,6 +3934,46 @@
       "description_source": "source_identity",
       "line": 99
     },
+    "tests/test_chatgpt_fresh_session_continuity.py::test_first_host_turn_persists_phase_one_baseline_before_cas": {
+      "path": "tests/test_chatgpt_fresh_session_continuity.py",
+      "name": "test_first_host_turn_persists_phase_one_baseline_before_cas",
+      "purpose": "First host turn persists phase one baseline before cas",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.runtime_session_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_chatgpt_fresh_session_continuity.py::test_phase_one_binds_disk_checkpoint_not_stale_daemon_projection": {
+      "path": "tests/test_chatgpt_fresh_session_continuity.py",
+      "name": "test_phase_one_binds_disk_checkpoint_not_stale_daemon_projection",
+      "purpose": "Phase one binds disk checkpoint not stale daemon projection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.runtime_session_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
     "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py::test_toolset_requires_current_message_observation": {
       "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
       "name": "test_toolset_requires_current_message_observation",
@@ -7600,6 +7640,28 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 250
+    },
+    "tests/test_chatgpt_mcp_readyz_nonblocking.py::test_readyz_status_io_does_not_block_healthz": {
+      "path": "tests/test_chatgpt_mcp_readyz_nonblocking.py",
+      "name": "test_readyz_status_io_does_not_block_healthz",
+      "purpose": "Readyz status io does not block healthz",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_continuation_token_is_opaque_expiring_and_one_shot": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
