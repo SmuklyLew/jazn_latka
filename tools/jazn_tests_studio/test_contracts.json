@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.11",
-  "active_definition_count": 2412,
+  "system_version": "16.3.25.5.116.0.34.12",
+  "active_definition_count": 2416,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8205,6 +8205,80 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 35
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py::test_ollama_never_promotes_malformed_or_incomplete_response": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "name": "test_ollama_never_promotes_malformed_or_incomplete_response",
+      "purpose": "Ollama never promotes malformed or incomplete response",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py::test_ollama_probe_does_not_accept_a_different_size_tag": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "name": "test_ollama_probe_does_not_accept_a_different_size_tag",
+      "purpose": "Ollama probe does not accept a different size tag",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py::test_ollama_probe_allows_explicit_default_latest": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "name": "test_ollama_probe_allows_explicit_default_latest",
+      "purpose": "Ollama probe allows explicit default latest",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py::test_plugin_doctor_distinguishes_oauth_declaration_from_live_auth": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "name": "test_plugin_doctor_distinguishes_oauth_declaration_from_live_auth",
+      "purpose": "Plugin doctor distinguishes oauth declaration from live auth",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
     },
     "tests/test_chatgpt_package_discovery_bootstrap.py::test_runtime_discovery_ignores_memory_profile_and_finds_checksum_only_system_zip": {
       "path": "tests/test_chatgpt_package_discovery_bootstrap.py",
