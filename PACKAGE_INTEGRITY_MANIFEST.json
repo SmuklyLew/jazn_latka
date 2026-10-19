@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "package_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "generated_at_utc": "2026-10-19T21:09:20+00:00",
-  "updated_at_utc": "2026-10-19T21:09:20+00:00",
+  "version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+  "runtime_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+  "package_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+  "generated_at_utc": "2026-10-19T21:41:04+00:00",
+  "updated_at_utc": "2026-10-19T21:41:04+00:00",
   "start_file": "run.py",
-  "file_count": 3173,
-  "static_file_count": 3173,
+  "file_count": 3176,
+  "static_file_count": 3176,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3017,
-      "sha256": "ed232c44d0c78716541fb3c9426da2bccb2fdc92ba306b50a21aaec5146dc2b5",
+      "sha256": "cda225aaf26f5a823a218d5d3a372881a79a6ca7216f22adb691ee815919c4c9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2324,8 +2324,17 @@
     },
     {
       "path": "docs/reports/JAZN_V116_0_34_12_CHATGPT_OPENAI_OLLAMA_CONNECTION_RECOVERY.md",
-      "size_bytes": 4150,
-      "sha256": "e337e1f75d46937ee15b88bdcc831cbaede50278524ae5539d60c3cc1f040d80",
+      "size_bytes": 4273,
+      "sha256": "b9d7c1d8d344eb884fdaac4544a763e128a2e35ab2fa913d3381d957c171afe0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_13_CHATGPT_OLLAMA_ENDPOINT_HARDENING.md",
+      "size_bytes": 2108,
+      "sha256": "c675f56cdbf520a90bbb07cb4155819204b8a8e28460a3d1743b68dd118d3c70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3343,6 +3352,15 @@
       "path": "docs/runtime/JAZN_PACK_GENERATOR_V89_CROSS_PLATFORM_STUDIO.md",
       "size_bytes": 2864,
       "sha256": "e07d29d6b4755d625f079bb35ceca7ca59af1ca48c73499df789392747934017",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/LOCAL_ACCEPTANCE_CHATGPT_OLLAMA_34_13.md",
+      "size_bytes": 3809,
+      "sha256": "1f2115f6e505b22871eea7f4624f82734b4ab8ba0f9f3707be7ba59bb247932d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7679,8 +7697,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/local_llm_adapter.py",
-      "size_bytes": 24043,
-      "sha256": "ba633c0e94820325ef6a8965349dd172c3d1130183a6cd016e4f052646f192bc",
+      "size_bytes": 25008,
+      "sha256": "e7a01bf303bb95b965aa1081005bfc2def2b201fda1973b90d6b2c4f25a89b2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10370,8 +10388,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 11432,
-      "sha256": "cf14d73d6052cdc49de285aabdbea84d24ada69655eec7c82e3c2757dc5183a8",
+      "size_bytes": 11519,
+      "sha256": "add6673caff39025b9fab093d16cc3e7a223e918f65d7190aa474f3159da1d99",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26659,6 +26677,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "size_bytes": 3512,
+      "sha256": "2a91371ef25c68025c01ca255cb00d9c4a5187164fdfa41080e0283fcadaf792",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_ollama_only_hotfix.py",
       "size_bytes": 11114,
       "sha256": "1df57575080bb050996a61404238f5a008d90b7b0a654a7deb2a525570c0d1e8",
@@ -28361,8 +28388,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2233377,
-      "sha256": "9a5ad60c4d2ff16a0e8a030e4f89361e8e48823742bb59e090c8ac8282c30a8e",
+      "size_bytes": 2238169,
+      "sha256": "0a2ff7c52c9661c37db15a71fac59c5e9263bc04d7c3954f135032052da02797",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29009,11 +29036,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "release_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-    "package_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-    "release_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery"
+    "runtime_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+    "package_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+    "release_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"

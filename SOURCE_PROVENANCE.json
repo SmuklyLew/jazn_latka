@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "523894442f383f4bd9c138b89b8b34b7c86b9381",
-  "base_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "commit_date": "2026-10-19T21:09:20Z",
+  "base_merge_commit": "a35ab8896b01974bde374c986d6d71b183697f8f",
+  "base_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+  "commit_date": "2026-10-19T21:41:04Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-19T21:09:20+00:00",
+  "generated_at_utc": "2026-10-19T21:41:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "efaccde5dcd06f6817ecdc094531a1241ba98441",
+  "git_tree_sha": "549b27530816e8b250f264864458c380273769fd",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "523894442f383f4bd9c138b89b8b34b7c86b9381",
-    "source_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery"
+    "source_commit": "a35ab8896b01974bde374c986d6d71b183697f8f",
+    "source_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "release_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "runtime_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "523894442f383f4bd9c138b89b8b34b7c86b9381",
+  "source_commit": "a35ab8896b01974bde374c986d6d71b183697f8f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "source_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "update_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
   "version_source": "latka_jazn/version.py"
 }
