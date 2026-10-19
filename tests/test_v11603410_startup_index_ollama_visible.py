@@ -158,7 +158,7 @@ def test_index_cache_requires_same_release_scope_and_hash(tmp_path: Path) -> Non
 def test_engine_ignores_old_index_without_full_rescan(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from latka_jazn.core.engine_construction import EngineRuntimeServices
+    from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 
     path = ProjectStartupIndexer(tmp_path).output_path
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -173,13 +173,15 @@ def test_engine_ignores_old_index_without_full_rescan(
         raise AssertionError("full project scan entered runtime startup")
 
     monkeypatch.setattr(ProjectStartupIndexer, "build", no_full_scan)
-    services = EngineRuntimeServices(JaznConfig(root=tmp_path))
-    services.build_dependencies()
+    runtime = RuntimeCompositionRoot(JaznConfig(root=tmp_path))
+    runtime.build()
     try:
-        services.hydrate()
-        services.start()
+        runtime.validate()
+        runtime.hydrate()
+        runtime.start()
+        services = runtime.services
         assert services.project_index_startup_report["ready"] is False
         assert services.project_index_startup_report["reason"] == "cache_incompatible_or_stale_deferred"
         assert services.project_startup_index == {}
     finally:
-        services.close()
+        runtime.close()
