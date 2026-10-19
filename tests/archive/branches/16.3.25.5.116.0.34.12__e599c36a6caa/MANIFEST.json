@@ -1,0 +1,10 @@
+{
+  "schema": "jazn_test_branch_snapshot/v4",
+  "base_version": "16.3.25.5.116.0.34.12",
+  "base_commit": "e599c36a6caa7af9908f0e301a5a39aa65ae4fa4",
+  "base_active_tests_tree_sha": "dc92b61af85341fab5a49005e9b6fa5000915e64",
+  "active_test_file_count": 462,
+  "snapshot_source": "source",
+  "active_scope": "conftest.py + top-level test_*.py from base tests/",
+  "evidence": "Every archived source entry reuses the exact Git blob of the before-edit active test at base_commit. No private memory or runtime data is included."
+}

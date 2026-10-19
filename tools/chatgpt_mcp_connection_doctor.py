@@ -70,6 +70,7 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
     found: list[str] = []
     classifications: list[str] = []
     observed_urls: list[str] = []
+    remote_auth_declarations: list[str] = []
     for filename in DESCRIPTOR_FILENAMES:
         path = source / filename
         if not path.is_file():
@@ -90,6 +91,16 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
                 if not isinstance(server, dict):
                     raise ValueError("mcp_server_not_object")
                 if "url" in server:
+                    extensions = server.get("extensions")
+                    openai = (
+                        extensions.get("com.openai", {})
+                        if isinstance(extensions, dict) else {}
+                    )
+                    auth = openai.get("auth") if isinstance(openai, dict) else {}
+                    auth_type = auth.get("type") if isinstance(auth, dict) else None
+                    remote_auth_declarations.append(
+                        auth_type if auth_type in {"oauth", "mixed"} else "missing_or_unsupported"
+                    )
                     classifications.append(classify_endpoint(server["url"]))
                     if isinstance(server["url"], str):
                         observed_urls.append(server["url"].strip().rstrip("/"))
@@ -134,6 +145,11 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
         "endpoint_config_valid_for_remote_chatgpt": (
             reason == "public_https_endpoint_configured_unverified"
         ),
+        "remote_oauth_declared": (
+            bool(remote_auth_declarations)
+            and all(value in {"oauth", "mixed"} for value in remote_auth_declarations)
+        ),
+        "remote_oauth_verified": False,
         "remote_runtime_verified": False,
         "host_toolset_verified": False,
         "accepted_visible_reply_verified": False,
@@ -144,6 +160,10 @@ def inspect_plugin_dir(plugin_dir: Path) -> dict[str, Any]:
                 "insecure_remote_endpoint", "no_jazn_mcp_descriptor",
             }
             else "verify_endpoint_auth_health_then_register_refresh_and_select_chatgpt_app"
+            if reason == "public_https_endpoint_configured_unverified"
+            and remote_auth_declarations
+            and all(value in {"oauth", "mixed"} for value in remote_auth_declarations)
+            else "add_oauth_declaration_and_verify_protected_resource_metadata"
             if reason == "public_https_endpoint_configured_unverified"
             else "select_registered_app_and_verify_fresh_current_message_toolset"
             if reason == "registered_app_binding_unverified"

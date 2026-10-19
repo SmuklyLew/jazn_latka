@@ -1,0 +1,284 @@
+from __future__ import annotations
+
+from pathlib import Path
+import subprocess
+from latka_jazn.version import PACKAGE_VERSION
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+import copy
+import hashlib
+import pytest
+
+from latka_jazn.core.final_response_contract import FinalResponseContract
+from latka_jazn.core.host_visible_finalization import finalize_host_visible_text
+from latka_jazn.core.runtime_session import JaznRuntimeSession
+from latka_jazn.tools import package_integrity
+
+SAMPLE_DT = datetime.now(timezone.utc).replace(microsecond=0)
+SAMPLE_ISO = SAMPLE_DT.isoformat()
+HEADER = f"🕒 {SAMPLE_DT.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
+BODY = "Działam uczciwie."
+VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
+
+
+@pytest.fixture(autouse=True)
+def _fresh_timestamp_contract() -> None:
+    """Keep freshness tests independent from total suite collection time."""
+
+    global SAMPLE_DT, SAMPLE_ISO, HEADER, VISIBLE
+    SAMPLE_DT = datetime.now(timezone.utc).replace(microsecond=0)
+    SAMPLE_ISO = SAMPLE_DT.isoformat()
+    HEADER = f"🕒 {SAMPLE_DT.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}"
+    VISIBLE = f"{HEADER}\n🌿 Łatka\n\n{BODY}"
+
+
+def _sha(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _decision() -> dict:
+    return {
+        "fallback_classification": "rule_handler_response",
+        "route": "presence",
+        "handler_name": "presence_handler",
+        "handler_result": {
+            "handler_name": "presence_handler",
+            "body": BODY,
+            "required_components": ["presence"],
+            "satisfied_components": ["presence"],
+            "missing_components": [],
+        },
+        "final_answer_validation": {"accepted": True, "must_regenerate": False},
+        "template_origin": {},
+        "runtime_provenance": {
+            "handler_name": "presence_handler",
+            "source_origin_detail": "presence_handler",
+            "response_generation_mode": "runtime_dynamic",
+            "exact_runtime_text": BODY,
+            "runtime_text_hash": _sha(BODY),
+            "visible_answer_text": VISIBLE,
+            "visible_answer_hash": _sha(VISIBLE),
+        },
+        "visible_answer_hash": _sha(VISIBLE),
+        "runtime_text_hash": _sha(BODY),
+        "author_id": "latka_runtime",
+        "author_label": "Łatka",
+        "author_source": "jazn_runtime",
+        "voice_source_contract": {
+            "speaking_identity": "Łatka",
+            "active_source": "jazn_runtime",
+        },
+        "timestamp_contract": {
+            "trusted": True,
+            "source": "network_time",
+            "sample_iso": SAMPLE_ISO,
+            "require_trusted_in_final_visible": False,
+            "allow_degraded_local_visible": True,
+        },
+    }
+
+
+def _envelope(*, final_text: str | None = None, mutate_contract: bool = False) -> dict:
+    if final_text is None:
+        final_text = VISIBLE
+    decision = _decision()
+    contract = FinalResponseContract.build(
+        turn_id="turn-1",
+        trace_id="trace-1",
+        runtime_version=PACKAGE_VERSION,
+        timestamp_header=HEADER,
+        timezone="Europe/Warsaw",
+        state_emoticon="🌿",
+        body=BODY,
+        conversation_decision=decision,
+    ).to_dict()
+    if mutate_contract:
+        contract["final_visible_text"] = final_text
+    return {
+        "trace": {"timestamp_header": HEADER, "turn_id": "turn-1", "trace_id": "trace-1"},
+        "cognitive_frame": {"conversation_decision": decision},
+        "runtime_turn_contract": {
+            "turn_id": "turn-1", "trace_id": "trace-1",
+            "validation": {"accepted": True, "must_regenerate": False},
+            "requires_host_model": False,
+        },
+        "final_response_contract": contract,
+        "final_visible_text": final_text,
+    }
+
+
+class _Envelope:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def to_dict(self) -> dict:
+        return copy.deepcopy(self.payload)
+
+
+class _Engine:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def process_turn(self, _text: str, *, client_context: dict) -> _Envelope:
+        assert client_context["session_id"] == "session-1"
+        return _Envelope(self.payload)
+
+
+class _State:
+    session_id = "session-1"
+    last_user_text = ""
+    last_intent = ""
+    last_route = ""
+
+    def update(self, *, user_text: str, intent: str, route: str) -> None:
+        self.last_user_text = user_text
+        self.last_intent = intent
+        self.last_route = route
+
+    def to_dict(self) -> dict:
+        return {"session_id": self.session_id}
+
+
+class _StateStore:
+    last_load_metadata: dict = {}
+
+    def save(self, _state: _State) -> dict:
+        return {"session_state_saved": True}
+
+
+def _session(payload: dict) -> JaznRuntimeSession:
+    session = object.__new__(JaznRuntimeSession)
+    setattr(session, "engine", _Engine(payload))
+    setattr(session, "state_store", _StateStore())
+    setattr(session, "state", _State())
+    session.no_carryover = True
+    session._turn_count = 0
+    return session
+
+
+def test_process_user_text_restores_only_missing_timestamp_from_verified_contract() -> None:
+    result = _session(_envelope(final_text=BODY)).process_user_text("test")
+    assert result["final_visible_text"] == VISIBLE
+    assert result["runtime_provenance"]["visible_answer_hash"] == _sha(VISIBLE)
+    audit = result["final_visible_integrity_repair_audit"][0]
+    assert audit["applied"] is True
+    assert audit["body_unchanged"] is True
+    assert audit["provenance_hash_preserved"] is True
+    assert audit["original_visible_text_sha256"] == _sha(BODY)
+    assert audit["repaired_visible_text_sha256"] == _sha(VISIBLE)
+    assert result["final_visible_integrity"]["valid"] is True
+
+
+def test_process_user_text_rejects_changed_text_without_laundering_hash() -> None:
+    changed = f"{HEADER}\n🌿 Łatka\n\nTekst zmieniony po obliczeniu hasha."
+    result = _session(_envelope(final_text=changed)).process_user_text("test")
+    assert result["final_visible_text"] != changed
+    assert result["normal_response_blocked"] is True
+    assert result["runtime_provenance"]["visible_answer_hash"] == _sha(VISIBLE)
+    assert result["final_visible_integrity"]["valid"] is False
+    assert result["final_visible_integrity_consensus"]["mismatch"] is True
+    assert result["final_visible_integrity_consensus"]["values"]["pre_repair_contract"] is True
+    assert result["error_code"] == "integrity_consensus_mismatch"
+    assert "visible_text_hash_mismatch" in result["final_visible_integrity"]["errors"]
+    assert result["runtime_truth_gate"]["normal_response_allowed"] is False
+
+
+def test_process_user_text_rejects_body_change_disguised_as_timestamp_repair() -> None:
+    result = _session(_envelope(final_text="Niedozwolona zmiana body.")).process_user_text("test")
+    audit = result["final_visible_integrity_repair_audit"][0]
+    assert audit["applied"] is False
+    assert audit["body_unchanged"] is False
+    assert audit["provenance_hash_preserved"] is True
+    assert result["final_visible_integrity"]["valid"] is False
+
+
+def test_process_user_text_does_not_ignore_changed_first_body_line() -> None:
+    changed = f"Niedozwolona pierwsza linia body.\n{BODY}"
+    result = _session(_envelope(final_text=changed)).process_user_text("test")
+    audit = result["final_visible_integrity_repair_audit"][0]
+    assert audit["applied"] is False
+    assert audit["body_unchanged"] is False
+    assert result["runtime_provenance"]["visible_answer_hash"] == _sha(VISIBLE)
+    assert result["final_visible_integrity"]["valid"] is False
+
+
+def test_process_user_text_rejects_changed_contract_after_provenance_hash() -> None:
+    changed = f"{HEADER}\n🌿 Łatka\n\nZmieniony kontrakt."
+    result = _session(_envelope(final_text=changed, mutate_contract=True)).process_user_text("test")
+    audit = result["final_visible_integrity_repair_audit"][0] if result.get("final_visible_integrity_repair_audit") else None
+    assert audit is None or audit["applied"] is False
+    assert result["runtime_provenance"]["visible_answer_hash"] == _sha(VISIBLE)
+    assert result["final_visible_integrity"]["valid"] is False
+
+
+def test_valid_process_user_text_has_consensus_across_public_layers() -> None:
+    result = _session(_envelope()).process_user_text("test")
+    assert result["final_visible_integrity_consensus"]["valid"] is True
+    assert result["final_visible_integrity_consensus"]["mismatch"] is False
+    assert result["final_visible_integrity"]["valid"] is True
+    assert result["final_response_contract"]["final_visible_integrity"]["valid"] is True
+    assert result["runtime_truth_gate"]["final_visible_integrity_valid"] is True
+    assert result["session_provenance"]["final_visible_integrity_valid"] is True
+
+
+def test_host_finalize_has_separate_hash_approval_stage() -> None:
+    accepted = finalize_host_visible_text(
+        required_timestamp_header=HEADER,
+        timezone="Europe/Warsaw",
+        timestamp_sample_iso=SAMPLE_ISO,
+        timestamp_source="network_time",
+        timestamp_trusted=True,
+        author_id="latka_runtime",
+        author_label="Łatka",
+        author_source="jazn_runtime",
+        state_emoticon="🌿",
+        turn_id="turn-1",
+        trace_id="trace-1",
+        text=BODY,
+        supplied_turn_id="turn-1",
+        supplied_trace_id="trace-1",
+        supplied_text_sha256=_sha(BODY),
+    )
+    assert accepted.accepted is True
+    assert accepted.approval_stage == "host_finalize_hash_approval"
+    assert accepted.state == "approved_envelope_completion"
+    assert accepted.hash_valid is True
+    assert accepted.repaired is True
+
+    rejected = finalize_host_visible_text(
+        required_timestamp_header=HEADER,
+        timezone="Europe/Warsaw",
+        timestamp_sample_iso=SAMPLE_ISO,
+        timestamp_source="network_time",
+        timestamp_trusted=True,
+        author_id="latka_runtime",
+        author_label="Łatka",
+        author_source="jazn_runtime",
+        state_emoticon="🌿",
+        turn_id="turn-1",
+        trace_id="trace-1",
+        text=BODY,
+        supplied_text_sha256="0" * 64,
+    )
+    assert rejected.accepted is False
+    assert rejected.hash_valid is False
+    assert any(item.code == "text_hash_mismatch" for item in rejected.violations)
+
+
+def test_git_path_selection_excludes_only_explicit_worktree_deletions(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+    (root / "keep.txt").write_text("keep", encoding="utf-8")
+    (root / "remove.txt").write_text("remove", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "keep.txt", "remove.txt"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "baseline"], check=True)
+
+    (root / "remove.txt").unlink()
+    candidates, missing = package_integrity._git_paths(root)
+
+    assert "keep.txt" in candidates
+    assert "remove.txt" not in candidates
+    assert missing == []

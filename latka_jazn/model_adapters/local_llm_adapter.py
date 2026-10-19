@@ -23,6 +23,11 @@ LOCAL_MODEL_REQUEST_MAX_BYTES_DEFAULT = 65_536
 LOCAL_MODEL_TELEMETRY_MAX_SAMPLES = 256
 
 
+class OllamaResponseContractError(ValueError):
+    """An incomplete or malformed /api/chat response is not a generated turn."""
+
+
+
 def _as_dict(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
@@ -154,13 +159,15 @@ class LocalLlmAdapter:
             req = Request(f"{self.api_base}/api/tags", method="GET")
             with urlopen(req, timeout=min(self.timeout_seconds, 8.0)) as response:
                 data = json.loads(response.read().decode("utf-8"))
-            models = data.get("models") if isinstance(data, dict) else []
+            if not isinstance(data, dict) or not isinstance(data.get("models"), list):
+                raise OllamaResponseContractError("ollama_tags_response_invalid")
+            models = data["models"]
             names = sorted({
                 str(item.get("name") or item.get("model") or "").strip()
                 for item in (models if isinstance(models, list) else [])
                 if isinstance(item, dict)
             } - {""})
-            installed = self.model in names or any(name.split(":", 1)[0] == self.model.split(":", 1)[0] for name in names)
+            installed = self.model in names or (":" not in self.model and f"{self.model}:latest" in names)
             self._endpoint_reachable = True
             self._probe_state = "probed_ok" if installed else "model_missing"
             self._last_probe_error = None if installed else "configured_model_not_installed"
@@ -173,13 +180,19 @@ class LocalLlmAdapter:
             })
             return payload
         except HTTPError as exc:
-            self._endpoint_reachable = False
+            # An HTTP response proves transport reachability, not Ollama readiness.
+            self._endpoint_reachable = True
             self._probe_state = "probed_fail"
             self._last_probe_error = f"http_error_{exc.code}"
         except (URLError, TimeoutError, OSError, ValueError) as exc:
-            self._endpoint_reachable = False
+            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError))
+            self._endpoint_reachable = True if invalid_response else False
             self._probe_state = "probed_fail"
-            self._last_probe_error = f"{type(exc).__name__}: local_provider_unavailable"
+            self._last_probe_error = (
+                str(exc) if isinstance(exc, OllamaResponseContractError)
+                else "ollama_tags_response_invalid" if invalid_response
+                else "local_provider_unavailable"
+            )
         payload = self.describe()
         payload.update({
             "probe_ok": False,
@@ -336,8 +349,17 @@ class LocalLlmAdapter:
         try:
             with urlopen(req, timeout=self.timeout_seconds) as response:
                 data = json.loads(response.read().decode("utf-8"))
-            message = data.get("message") if isinstance(data.get("message"), dict) else {}
-            text = str(message.get("content") or data.get("response") or "").strip()
+            if not isinstance(data, dict):
+                raise OllamaResponseContractError("ollama_chat_response_not_object")
+            if data.get("done") is not True:
+                raise OllamaResponseContractError("ollama_chat_response_not_complete")
+            message = data.get("message")
+            if not isinstance(message, dict):
+                raise OllamaResponseContractError("ollama_chat_message_invalid")
+            content = message.get("content")
+            if not isinstance(content, str):
+                raise OllamaResponseContractError("ollama_chat_content_invalid")
+            text = content.strip()
             metadata.update(
                 {
                     "status": "completed",
@@ -360,27 +382,30 @@ class LocalLlmAdapter:
                     "status": f"http_error_{exc.code}",
                     "error_code": f"http_error_{exc.code}",
                     "error_type": type(exc).__name__,
-                    "error": str(exc),
+                    "error": f"http_error_{exc.code}",
                     "timed_out": False,
                 }
             )
             return "", metadata, exc
         except (URLError, TimeoutError, OSError, ValueError) as exc:
             timed_out = self._timed_out(exc)
+            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError))
+            error_code = (
+                str(exc) if isinstance(exc, OllamaResponseContractError) else
+                "ollama_chat_json_invalid" if invalid_response else
+                "model_request_timeout" if timed_out else
+                "local_provider_unavailable"
+            )
             metadata.update(
                 {
                     "status": (
-                        "timeout"
-                        if timed_out
-                        else "local_provider_unavailable"
+                        "invalid_provider_response"
+                        if invalid_response
+                        else "timeout" if timed_out else "local_provider_unavailable"
                     ),
-                    "error_code": (
-                        "model_request_timeout"
-                        if timed_out
-                        else "local_provider_unavailable"
-                    ),
+                    "error_code": error_code,
                     "error_type": type(exc).__name__,
-                    "error": str(exc),
+                    "error": error_code,
                     "timed_out": timed_out,
                 }
             )
@@ -418,7 +443,12 @@ class LocalLlmAdapter:
                 last.get("error_code") or "local_provider_unavailable"
             )
         if not context_rejected:
-            self._endpoint_reachable = False
+            # The request received HTTP or response bytes; only connection/timeout
+            # failures imply that the configured endpoint was unreachable.
+            if isinstance(error, HTTPError) or status == "invalid_provider_response":
+                self._endpoint_reachable = True
+            else:
+                self._endpoint_reachable = False
             self._probe_state = "probed_fail"
         self._last_generation_succeeded = False
         self._last_generation = {

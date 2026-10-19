@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.11",
-  "active_definition_count": 2412,
+  "system_version": "16.3.25.5.116.0.34.13",
+  "active_definition_count": 2422,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3457,7 +3457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 15
+      "line": 17
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_declares_bounded_local_fallback_without_automatic_handoff": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3474,7 +3474,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 37
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_complete_current_message_turn_toolset": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3491,7 +3491,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 46
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3508,7 +3508,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 61
     },
     "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py::test_missing_all_four_mcp_tools_does_not_block_local_zip_probe": {
       "path": "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py",
@@ -8206,6 +8206,80 @@
       "description_source": "source_identity",
       "line": 35
     },
+    "tests/test_chatgpt_openai_ollama_connection_recovery.py::test_ollama_never_promotes_malformed_or_incomplete_response": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery.py",
+      "name": "test_ollama_never_promotes_malformed_or_incomplete_response",
+      "purpose": "Ollama never promotes malformed or incomplete response",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery.py::test_ollama_probe_does_not_accept_a_different_size_tag": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery.py",
+      "name": "test_ollama_probe_does_not_accept_a_different_size_tag",
+      "purpose": "Ollama probe does not accept a different size tag",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery.py::test_ollama_probe_allows_explicit_default_latest": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery.py",
+      "name": "test_ollama_probe_allows_explicit_default_latest",
+      "purpose": "Ollama probe allows explicit default latest",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_chatgpt_openai_ollama_connection_recovery.py::test_plugin_doctor_distinguishes_oauth_declaration_from_live_auth": {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery.py",
+      "name": "test_plugin_doctor_distinguishes_oauth_declaration_from_live_auth",
+      "purpose": "Plugin doctor distinguishes oauth declaration from live auth",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
     "tests/test_chatgpt_package_discovery_bootstrap.py::test_runtime_discovery_ignores_memory_profile_and_finds_checksum_only_system_zip": {
       "path": "tests/test_chatgpt_package_discovery_bootstrap.py",
       "name": "test_runtime_discovery_ignores_memory_profile_and_finds_checksum_only_system_zip",
@@ -10441,7 +10515,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 73
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_same_interpreter_preflight_reuses_current_python_without_subprocess": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10461,7 +10535,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 115
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_pack_manifest_advertises_activation_without_claiming_host_capability": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10482,7 +10556,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 135
+      "line": 138
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10502,7 +10576,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 162
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
@@ -16757,7 +16831,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 58
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_fails_closed_after_static_tamper": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16782,7 +16856,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 90
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_warm_daemon_reuse_does_not_pay_cold_integrity_gate": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16805,7 +16879,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 111
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16828,7 +16902,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 164
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_quoted_loader_material_does_not_promote_creative_intent": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16851,7 +16925,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 205
+      "line": 207
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_explicit_edit_instruction_outside_fence_still_routes_creative": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16874,7 +16948,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 233
+      "line": 235
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_structured_lyrics_still_promote_creative_material": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16897,7 +16971,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 246
+      "line": 248
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16920,7 +16994,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 262
+      "line": 264
     },
     "tests/test_final_hardening.py::test_canonical_route_lexicon_covers_new_dialogue_families": {
       "path": "tests/test_final_hardening.py",
@@ -36039,6 +36113,116 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 85
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_malformed_chat_json_preserves_responding_http_endpoint": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_malformed_chat_json_preserves_responding_http_endpoint",
+      "purpose": "Malformed chat json preserves responding http endpoint",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_incomplete_chat_payload_preserves_responding_http_endpoint": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_incomplete_chat_payload_preserves_responding_http_endpoint",
+      "purpose": "Incomplete chat payload preserves responding http endpoint",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_http_error_means_endpoint_responded_not_model_success": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_http_error_means_endpoint_responded_not_model_success",
+      "purpose": "Http error means endpoint responded not model success",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_network_failure_is_not_promoted_to_endpoint_reachable": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_network_failure_is_not_promoted_to_endpoint_reachable",
+      "purpose": "Network failure is not promoted to endpoint reachable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "network"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_invalid_tags_response_is_not_mislabeled_missing_model": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_invalid_tags_response_is_not_mislabeled_missing_model",
+      "purpose": "Invalid tags response is not mislabeled missing model",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_ollama_endpoint_evidence.py::test_http_tags_error_is_reachable_but_not_probe_ready": {
+      "path": "tests/test_ollama_endpoint_evidence.py",
+      "name": "test_http_tags_error_is_reachable_but_not_probe_ready",
+      "purpose": "Http tags error is reachable but not probe ready",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_selects_native_adapter": {
       "path": "tests/test_ollama_only_hotfix.py",
