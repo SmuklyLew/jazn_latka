@@ -18,6 +18,8 @@ from tools.jazn_pack_generator_app.manifest import (
 )
 from tools.jazn_pack_generator_app.models import ContentMode, PackPlan, PackRequest, SourceEntry
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 _REQUIRED_BOOTSTRAP_MEMBERS = {
     "run.py": "print('ok')\n",
