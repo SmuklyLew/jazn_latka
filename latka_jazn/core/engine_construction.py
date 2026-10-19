@@ -221,19 +221,28 @@ class EngineRuntimeServices:
         if self.project_startup_indexer.output_path.exists():
             try:
                 cached = json.loads(self.project_startup_indexer.output_path.read_text(encoding="utf-8"))
-                if isinstance(cached, dict) and cached.get("active_root") == str(self.config.root.resolve()):
+                if isinstance(cached, dict) and self.project_startup_indexer.compatible_cache(cached):
                     self.project_startup_index = cached
                     reason = "cache_reused_same_root"
                 else:
-                    reason = "cache_root_mismatch"
+                    reason = "cache_incompatible_or_stale"
             except (OSError, UnicodeError, json.JSONDecodeError):
                 reason = "cache_unreadable"
         if reason != "cache_reused_same_root":
-            try:
-                self.project_startup_index = self.project_startup_indexer.build(write=True)
-            except (OSError, ValueError) as exc:
-                raise RuntimeError("DEPENDENCY_NOT_READY:project_startup_index:" + reason) from exc
-        self.project_index_startup_report = {"reason": reason, "ready": True}
+            # A cold index once hashed 15+ GiB of source, archives and SQLite
+            # during the isolated session's 30s startup budget. An index is
+            # optional diagnostic metadata, not a runtime readiness gate.
+            # Full builds remain explicit via project-startup-index.
+            self.project_startup_index = {}
+            self.project_index_startup_report = {
+                "reason": reason + "_deferred",
+                "ready": False,
+                "build_policy": "explicit_operator_build_outside_session_start",
+            }
+        else:
+            self.project_index_startup_report = {
+                "reason": reason, "ready": True, "build_policy": "reuse_existing",
+            }
         self.store.add_event(
             "engine_started",
             {

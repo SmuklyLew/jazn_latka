@@ -1259,6 +1259,51 @@ def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
     return str(final or "")
 
 
+
+def write_local_ollama_visible_reply(stdout: TextIO, payload: dict[str, Any]) -> bool:
+    """Render a validated local daemon final without assuming ChatGPT ingress.
+
+    This is deliberately separate from write_chat_bridge_payload(): a
+    --chat-gpt reply still requires the remote host's turn/trace binding,
+    presentation action and phase-2 finalization when applicable.
+    """
+    text = str(payload.get("final_visible_text") or "")
+    integrity = json_object(payload.get("final_visible_integrity"))
+    truth_gate = json_object(payload.get("runtime_truth_gate"))
+    contract = json_object(payload.get("final_response_contract"))
+    expected_sha256 = str(integrity.get("text_sha256") or "").strip()
+    verified = bool(
+        payload.get("ok") is True
+        and payload.get("answer_ok") is True
+        and payload.get("execution_state") == "final_visible_answer"
+        and payload.get("host_finalization_pending") is False
+        and integrity.get("valid") is True
+        and integrity.get("consensus") is True
+        and truth_gate.get("ok") is True
+        and truth_gate.get("normal_response_allowed") is True
+        and contract.get("author_source") == "jazn_runtime"
+        and text
+        and expected_sha256
+        and expected_sha256 == sha256_host_visible_text(text)
+    )
+    if verified:
+        write_complete_stdout(stdout, text)
+        return True
+
+    # Never expose an unaccepted candidate (or its user content) as Łatka.
+    diagnostic = {
+        "ok": False,
+        "error_code": "local_runtime_final_not_accepted",
+        "job_error_code": str(payload.get("error_code") or "") or None,
+        "execution_state": payload.get("execution_state"),
+        "host_finalization_pending": payload.get("host_finalization_pending"),
+        "request_id": payload.get("request_id"),
+        "truth_boundary": "Local display requires a validated runtime-owned final; ChatGPT host gating is separate.",
+    }
+    write_complete_stdout(stdout, json.dumps(diagnostic, ensure_ascii=False, sort_keys=True) + "\n")
+    return False
+
+
 def write_chat_bridge_payload(stdout: TextIO, payload: dict[str, Any], *, output_mode: BridgeOutputMode = "jsonl") -> None:
     presentation = build_chatgpt_host_presentation_packet(payload)
     action = str(presentation.get("action") or "host_diagnostic")

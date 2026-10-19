@@ -35,7 +35,10 @@ def test_engine_binding_is_side_effect_free_after_explicit_lifecycle(tmp_path: P
     root.validate()
     root.hydrate()
     root.start()
-    assert services.project_startup_indexer.output_path.exists()
+    # A fresh session must not construct a potentially huge project map.
+    assert not services.project_startup_indexer.output_path.exists()
+    assert services.project_index_startup_report["ready"] is False
+    assert services.project_index_startup_report["reason"] == "cache_absent_deferred"
     before = _files(tmp_path)
     engine = JaznEngine(services)
     assert _files(tmp_path) == before

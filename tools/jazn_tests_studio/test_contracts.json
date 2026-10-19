@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.9",
-  "active_definition_count": 2401,
+  "system_version": "16.3.25.5.116.0.34.10",
+  "active_definition_count": 2409,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -41992,13 +41992,13 @@
       "path": "tests/test_runtime_composition_lifecycle.py",
       "name": "test_engine_binding_is_side_effect_free_after_explicit_lifecycle",
       "purpose": "Engine binding is side effect free after explicit lifecycle",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -42034,7 +42034,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 50
     },
     "tests/test_runtime_composition_lifecycle.py::test_lifecycle_rejects_out_of_order_and_duplicate_start": {
       "path": "tests/test_runtime_composition_lifecycle.py",
@@ -42059,7 +42059,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 57
     },
     "tests/test_runtime_composition_lifecycle.py::test_partial_build_failure_closes_acquired_stores": {
       "path": "tests/test_runtime_composition_lifecycle.py",
@@ -42084,7 +42084,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 71
     },
     "tests/test_runtime_composition_lifecycle.py::test_procedural_seed_identity_survives_release_revision": {
       "path": "tests/test_runtime_composition_lifecycle.py",
@@ -42107,7 +42107,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 96
     },
     "tests/test_runtime_composition_lifecycle.py::test_dependencies_cannot_bind_two_engines": {
       "path": "tests/test_runtime_composition_lifecycle.py",
@@ -42132,7 +42132,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 113
     },
     "tests/test_runtime_composition_lifecycle.py::test_seed_preserves_legacy_uuid_and_bytes": {
       "path": "tests/test_runtime_composition_lifecycle.py",
@@ -42155,7 +42155,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 124
     },
     "tests/test_runtime_daemon_committed_capture_reconciliation.py::test_recovered_consumed_requires_verified_capture": {
       "path": "tests/test_runtime_daemon_committed_capture_reconciliation.py",
@@ -49135,6 +49135,180 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 105
+    },
+    "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_local_renderer_preserves_polish_emoji_and_exact_bytes",
+      "purpose": "Local renderer preserves polish emoji and exact bytes",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "windows"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_startup_index_ollama_visible.py::test_local_renderer_rejects_unverified_or_tampered_final": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_local_renderer_rejects_unverified_or_tampered_final",
+      "purpose": "Local renderer rejects unverified or tampered final",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_startup_index_ollama_visible.py::test_host_writer_does_not_inherit_local_authority": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_host_writer_does_not_inherit_local_authority",
+      "purpose": "Host writer does not inherit local authority",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_startup_index_ollama_visible.py::test_explicit_index_prunes_private_and_volatile_trees": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_explicit_index_prunes_private_and_volatile_trees",
+      "purpose": "Explicit index prunes private and volatile trees",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_startup_index_ollama_visible.py::test_explicit_index_readonly_never_creates_cache": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_explicit_index_readonly_never_creates_cache",
+      "purpose": "Explicit index readonly never creates cache",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_startup_index_ollama_visible.py::test_cli_one_shot_uses_local_renderer_not_chatgpt_gate": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_cli_one_shot_uses_local_renderer_not_chatgpt_gate",
+      "purpose": "Cli one shot uses local renderer not chatgpt gate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
+    "tests/test_startup_index_ollama_visible.py::test_index_cache_requires_same_release_scope_and_hash": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_index_cache_requires_same_release_scope_and_hash",
+      "purpose": "Index cache requires same release scope and hash",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 144
+    },
+    "tests/test_startup_index_ollama_visible.py::test_engine_ignores_old_index_without_full_rescan": {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "name": "test_engine_ignores_old_index_without_full_rescan",
+      "purpose": "Engine ignores old index without full rescan",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 167
     },
     "tests/test_startup_stability.py::test_cli_flags_are_case_insensitive_but_message_and_values_are_preserved": {
       "path": "tests/test_startup_stability.py",

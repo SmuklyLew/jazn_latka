@@ -189,7 +189,7 @@ from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
 from latka_jazn.core.chat_command_contract import BridgeOutputMode
 from latka_jazn.core.conversation_entrypoint_contract import auto_route_priority_text
-from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload
+from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload, write_local_ollama_visible_reply
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
@@ -1034,6 +1034,8 @@ def _run_chat_command_one_shot(
                 "one_shot_shared_runtime_pipeline": True,
                 "truth_boundary": "Ta komenda jest jednorazowym klientem transportowym tej samej daemon-owned sesji Jaźni; adapter zmienia kanał modelu/widoczności, nie pamięć, tożsamość ani lifecycle runtime.",
             })
+        if command == "--chat-ollama" and output_mode == "final_visible_text":
+            return 0 if write_local_ollama_visible_reply(sys.stdout, result) else 1
         write_chat_bridge_payload(sys.stdout, result, output_mode=output_mode)
         return 0
     finally:

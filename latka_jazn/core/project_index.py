@@ -7,9 +7,12 @@ import ast
 import hashlib
 import json
 import mimetypes
+import os
+import tempfile
 import time
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.version import PACKAGE_VERSION
 
 SCHEMA_VERSION = "project_startup_index/v1"
 DEFAULT_OUTPUT = "workspace_runtime/project_startup_index_current_line.json"
@@ -19,7 +22,14 @@ TEXT_SUFFIXES = {
     ".ini", ".cfg", ".csv", ".html", ".xml", ".patch", ".rst",
 }
 BINARY_SUFFIXES = {".sqlite", ".sqlite3", ".db", ".7z", ".zip", ".png", ".jpg", ".jpeg", ".webp", ".pdf"}
-VOLATILE_PARTS = {"__pycache__", ".pytest_cache", ".mypy_cache"}
+# Only explicitly indexed source should appear in an operator-built project
+# map. Private memories, generated state, VCS history and vendored trees
+# are never hashed for orientation; SYSTEM integrity has its own gate.
+VOLATILE_PARTS = {
+    "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+    ".git", ".archives", ".venv", "venv", "node_modules",
+    "workspace_runtime", "memory", "archive", ".tox", ".nox",
+}
 MAX_FULL_TEXT_READ_BYTES = 5 * 1024 * 1024
 
 
@@ -74,13 +84,13 @@ class ModuleIndexEntry:
 class ProjectStartupIndexer:
     """Buduje własną mapę orientacyjną Jaźni przy starcie runtime.
 
-    Ten indeks nie streszcza zawartości plików. Dla każdego pliku czyta bajty,
+    Ten indeks nie streszcza zawartości plików. Dla każdego kwalifikującego się pliku czyta bajty,
     liczy SHA-256 i zapisuje metadane. Dla plików tekstowych zapisuje status
     pełnego odczytu tekstu oraz liczbę linii. Dla modułów Pythona tworzy mapę
     klas/funkcji/metod przez AST, z numerami linii, żeby runtime wiedział, gdzie
     znajduje się funkcja bez przeszukiwania całego drzewa w każdej turze.
 
-    Duże/binarne archiwa i bazy są indeksowane przez pełny hash i rozmiar, ale
+    Duże/binarne archiwa i bazy poza wyłączonymi katalogami są indeksowane przez pełny hash i rozmiar, ale
     nie są trzymane jako tekst w pamięci. To jest granica prawdy: plik został
     odczytany do hasha, a nie rozpakowany ani semantycznie zrozumiany, jeśli jest
     binarny albo archiwalny.
@@ -114,6 +124,7 @@ class ProjectStartupIndexer:
         payload = {
             "schema_version": SCHEMA_VERSION,
             "active_root": str(self.root),
+            "runtime_version": PACKAGE_VERSION,
             "generated_at_unix": round(time.time(), 6),
             "duration_seconds": round(time.time() - started, 6),
             "file_count": len(files),
@@ -138,9 +149,40 @@ class ProjectStartupIndexer:
         }
         payload["index_sha256"] = self._stable_payload_hash(payload)
         if write:
+            # Same-directory staging plus os.replace prevents a killed index
+            # builder from leaving a truncated cache visible to a new session.
             self.output_path.parent.mkdir(parents=True, exist_ok=True)
-            self.output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+            temp_path: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", newline="\n",
+                    dir=self.output_path.parent,
+                    prefix=".project_startup_index_", suffix=".tmp",
+                    delete=False,
+                ) as staged:
+                    temp_path = Path(staged.name)
+                    json.dump(payload, staged, ensure_ascii=False, indent=2, sort_keys=True)
+                    staged.flush()
+                    os.fsync(staged.fileno())
+                os.replace(temp_path, self.output_path)
+            finally:
+                if temp_path is not None:
+                    temp_path.unlink(missing_ok=True)
         return payload
+
+    def compatible_cache(self, payload: dict[str, Any]) -> bool:
+        """Accept only the exact release/scope/hash of an explicit index.
+
+        In particular, the legacy full-tree cache must not quietly regain
+        authority after private/generated directories were excluded.
+        """
+        return bool(
+            payload.get("schema_version") == SCHEMA_VERSION
+            and payload.get("active_root") == str(self.root)
+            and payload.get("runtime_version") == PACKAGE_VERSION
+            and payload.get("excluded_dynamic_parts") == sorted(VOLATILE_PARTS)
+            and payload.get("index_sha256") == self._stable_payload_hash(payload)
+        )
 
     def status(self) -> dict[str, Any]:
         if self.output_path.exists():
@@ -149,6 +191,7 @@ class ProjectStartupIndexer:
                 return {
                     "schema_version": "project_startup_index_status/v1",
                     "present": True,
+                    "compatible": self.compatible_cache(data),
                     "path": self.output_rel,
                     "file_count": data.get("file_count"),
                     "python_module_count": data.get("python_module_count"),
@@ -166,13 +209,19 @@ class ProjectStartupIndexer:
         if not self.root.exists():
             return []
         paths: list[Path] = []
-        for path in self.root.rglob("*"):
-            if not path.is_file():
-                continue
-            parts = set(path.relative_to(self.root).parts)
-            if parts & VOLATILE_PARTS:
-                continue
-            paths.append(path)
+        # Prune before descending: post-filtering Path.rglob("*") still walks
+        # private/huge trees, even when their contents would be ignored.
+        for directory, names, filenames in os.walk(self.root, followlinks=False):
+            base = Path(directory)
+            names[:] = [
+                name for name in names
+                if name.casefold() not in VOLATILE_PARTS
+                and not (base / name).is_symlink()
+            ]
+            for name in filenames:
+                path = base / name
+                if not path.is_symlink() and path.is_file():
+                    paths.append(path)
         return sorted(paths, key=lambda item: self._rel(item))
 
     def _index_file(self, path: Path, rel: str) -> FileIndexEntry:
