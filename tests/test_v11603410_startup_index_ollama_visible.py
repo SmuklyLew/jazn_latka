@@ -133,3 +133,53 @@ def test_cli_one_shot_uses_local_renderer_not_chatgpt_gate(
     assert calls == [("init", "index-smoke"),
                      ("turn", "Odpowiedz jednym slowem: GOTOWE."),
                      ("close", None)]
+
+
+def test_index_cache_requires_same_release_scope_and_hash(tmp_path: Path) -> None:
+    (tmp_path / "sample.py").write_text("x = 1\n", encoding="utf-8")
+    index = ProjectStartupIndexer(tmp_path)
+    built = index.build(write=True)
+    assert index.compatible_cache(built) is True
+    assert index.status()["compatible"] is True
+
+    old_release = dict(built)
+    old_release.pop("runtime_version")
+    assert index.compatible_cache(old_release) is False
+
+    old_scope = dict(built)
+    old_scope["excluded_dynamic_parts"] = ["__pycache__"]
+    assert index.compatible_cache(old_scope) is False
+
+    modified = dict(built)
+    modified["file_count"] += 1
+    assert index.compatible_cache(modified) is False
+
+
+def test_engine_ignores_old_index_without_full_rescan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from latka_jazn.core.engine_construction import EngineRuntimeServices
+
+    path = ProjectStartupIndexer(tmp_path).output_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({
+        "schema_version": "project_startup_index/v1",
+        "active_root": str(tmp_path.resolve()),
+        "file_count": 11081,
+        "excluded_dynamic_parts": ["__pycache__"],
+    }), encoding="utf-8")
+
+    def no_full_scan(*args: object, **kwargs: object) -> None:
+        raise AssertionError("full project scan entered runtime startup")
+
+    monkeypatch.setattr(ProjectStartupIndexer, "build", no_full_scan)
+    services = EngineRuntimeServices(JaznConfig(root=tmp_path))
+    services.build_dependencies()
+    try:
+        services.hydrate()
+        services.start()
+        assert services.project_index_startup_report["ready"] is False
+        assert services.project_index_startup_report["reason"] == "cache_incompatible_or_stale_deferred"
+        assert services.project_startup_index == {}
+    finally:
+        services.close()
