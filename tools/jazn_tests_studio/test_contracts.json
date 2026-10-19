@@ -52054,7 +52054,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 94
+      "line": 97
     },
     "tests/test_v11603410_startup_index_ollama_visible.py::test_cli_one_shot_uses_local_renderer_not_chatgpt_gate": {
       "path": "tests/test_v11603410_startup_index_ollama_visible.py",
@@ -52075,7 +52075,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 108
     },
     "tests/test_v11603410_startup_index_ollama_visible.py::test_index_cache_requires_same_release_scope_and_hash": {
       "path": "tests/test_v11603410_startup_index_ollama_visible.py",
@@ -52096,7 +52096,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 144
     },
     "tests/test_v11603410_startup_index_ollama_visible.py::test_engine_ignores_old_index_without_full_rescan": {
       "path": "tests/test_v11603410_startup_index_ollama_visible.py",
@@ -52117,7 +52117,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 167
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
