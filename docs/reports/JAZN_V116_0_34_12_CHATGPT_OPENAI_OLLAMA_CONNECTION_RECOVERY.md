@@ -14,7 +14,7 @@ Status: implementation candidate on `fix/v16.3.25.5.116.0.34.12-chatgpt-openai-o
 1. **Ollama response gate:** require JSON object, explicit `done=true`, an object `message` and string `message.content` before returning candidate text. Malformed/partial replies produce `invalid_provider_response` with typed, redacted error codes and no automatic replay.
 2. **Ollama model tags:** probe matches the exact named tag; an untagged configured name may match only the explicit `:latest` alias, not an arbitrary other size/tag. Endpoint reachability remains independent of model installation.
 3. **MCP doctor:** emit `remote_oauth_declared` and `remote_oauth_verified=false`; for public HTTPS without OAuth declaration suggest fixing authentication configuration before ChatGPT registration. Preserve legacy classification/return codes; a valid URL still does not mean connected/authorized.
-4. **Regression tests:** add isolated tests for partial/malformed responses, model-name false positives and OAuth declaration/verification separation. Existing active tests are not edited.
+4. **Regression tests:** isolated tests cover partial/malformed responses, model-name false positives and OAuth declaration/verification separation. Existing active test files were subsequently updated to keep release-identity assertions aligned; their prior sources are retained in the immutable test snapshot.
 
 ## Canonical deployment acceptance (not performed by this commit)
 

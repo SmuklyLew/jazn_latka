@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# v116.0.34.13 separates Ollama endpoint reachability from invalid provider responses.
 # v116.0.34.12 validates completed Ollama chat responses and improves MCP auth diagnostics.
 # v116.0.34.11 seals fresh host-session checkpoints before phase-1 binding.
 
@@ -77,9 +78,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.12"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.12"
-PACKAGE_RELEASE_NAME = "chatgpt-openai-ollama-connection-recovery"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.13"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.13"
+PACKAGE_RELEASE_NAME = "chatgpt-ollama-final-connection-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
