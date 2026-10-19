@@ -23,6 +23,11 @@ LOCAL_MODEL_REQUEST_MAX_BYTES_DEFAULT = 65_536
 LOCAL_MODEL_TELEMETRY_MAX_SAMPLES = 256
 
 
+class OllamaResponseContractError(ValueError):
+    """An incomplete or malformed /api/chat response is not a generated turn."""
+
+
+
 def _as_dict(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
@@ -160,7 +165,7 @@ class LocalLlmAdapter:
                 for item in (models if isinstance(models, list) else [])
                 if isinstance(item, dict)
             } - {""})
-            installed = self.model in names or any(name.split(":", 1)[0] == self.model.split(":", 1)[0] for name in names)
+            installed = self.model in names or (":" not in self.model and f"{self.model}:latest" in names)
             self._endpoint_reachable = True
             self._probe_state = "probed_ok" if installed else "model_missing"
             self._last_probe_error = None if installed else "configured_model_not_installed"
@@ -336,8 +341,17 @@ class LocalLlmAdapter:
         try:
             with urlopen(req, timeout=self.timeout_seconds) as response:
                 data = json.loads(response.read().decode("utf-8"))
-            message = data.get("message") if isinstance(data.get("message"), dict) else {}
-            text = str(message.get("content") or data.get("response") or "").strip()
+            if not isinstance(data, dict):
+                raise OllamaResponseContractError("ollama_chat_response_not_object")
+            if data.get("done") is not True:
+                raise OllamaResponseContractError("ollama_chat_response_not_complete")
+            message = data.get("message")
+            if not isinstance(message, dict):
+                raise OllamaResponseContractError("ollama_chat_message_invalid")
+            content = message.get("content")
+            if not isinstance(content, str):
+                raise OllamaResponseContractError("ollama_chat_content_invalid")
+            text = content.strip()
             metadata.update(
                 {
                     "status": "completed",
@@ -360,27 +374,29 @@ class LocalLlmAdapter:
                     "status": f"http_error_{exc.code}",
                     "error_code": f"http_error_{exc.code}",
                     "error_type": type(exc).__name__,
-                    "error": str(exc),
+                    "error": f"http_error_{exc.code}",
                     "timed_out": False,
                 }
             )
             return "", metadata, exc
         except (URLError, TimeoutError, OSError, ValueError) as exc:
             timed_out = self._timed_out(exc)
+            invalid_response = isinstance(exc, OllamaResponseContractError)
+            error_code = (
+                str(exc) if invalid_response else
+                "model_request_timeout" if timed_out else
+                "local_provider_unavailable"
+            )
             metadata.update(
                 {
                     "status": (
-                        "timeout"
-                        if timed_out
-                        else "local_provider_unavailable"
+                        "invalid_provider_response"
+                        if invalid_response
+                        else "timeout" if timed_out else "local_provider_unavailable"
                     ),
-                    "error_code": (
-                        "model_request_timeout"
-                        if timed_out
-                        else "local_provider_unavailable"
-                    ),
+                    "error_code": error_code,
                     "error_type": type(exc).__name__,
-                    "error": str(exc),
+                    "error": error_code,
                     "timed_out": timed_out,
                 }
             )
