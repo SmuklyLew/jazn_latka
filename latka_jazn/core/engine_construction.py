@@ -229,11 +229,20 @@ class EngineRuntimeServices:
             except (OSError, UnicodeError, json.JSONDecodeError):
                 reason = "cache_unreadable"
         if reason != "cache_reused_same_root":
-            try:
-                self.project_startup_index = self.project_startup_indexer.build(write=True)
-            except (OSError, ValueError) as exc:
-                raise RuntimeError("DEPENDENCY_NOT_READY:project_startup_index:" + reason) from exc
-        self.project_index_startup_report = {"reason": reason, "ready": True}
+            # A cold index once hashed 15+ GiB of source, archives and SQLite
+            # during the isolated session's 30s startup budget. An index is
+            # optional diagnostic metadata, not a runtime readiness gate.
+            # Full builds remain explicit via project-startup-index.
+            self.project_startup_index = {}
+            self.project_index_startup_report = {
+                "reason": reason + "_deferred",
+                "ready": False,
+                "build_policy": "explicit_operator_build_outside_session_start",
+            }
+        else:
+            self.project_index_startup_report = {
+                "reason": reason, "ready": True, "build_policy": "reuse_existing",
+            }
         self.store.add_event(
             "engine_started",
             {
