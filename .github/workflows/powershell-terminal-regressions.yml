@@ -52,6 +52,17 @@ jobs:
           python -X utf8 -m pytest -q -ra --tb=short tests/test_configuration_studio_gui_windows.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      # Tcl/Tk has interpreter/thread-lifetime constraints. The 2700-test
+      # omnibus session polluted native Tk startup (tcl_findLibrary) even
+      # though the GUI test passed in a fresh Python process. Keep these
+      # acceptance tests mandatory, but execute them before the omnibus suite
+      # in their own Python interpreter; do not silently skip GUI coverage.
+      - name: Run native Memory Studio GUI tests in isolated Python process
+        shell: pwsh
+        run: |
+          python -X utf8 -m pytest -q -ra --tb=short tests/test_memory_desktop_actions_windows.py tests/test_memory_desktop_gui_smoke.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       # Catalog generation is handled on the source branch by the canonical
       # Test Studio sync workflow. Check instead of modifying the PR checkout:
       # release_metadata_sync intentionally requires a clean working tree.
@@ -107,6 +118,8 @@ jobs:
           -q -ra --tb=short --durations=25
           -m "not live_model and not live_mcp"
           --ignore=tests/test_configuration_studio_gui_windows.py
+          --ignore=tests/test_memory_desktop_actions_windows.py
+          --ignore=tests/test_memory_desktop_gui_smoke.py
           --deselect=tests/test_turn_atomicity.py::test_isolated_health_check_is_fast_valid_and_has_no_semantic_write
 
       - name: Capture system package smoke report
