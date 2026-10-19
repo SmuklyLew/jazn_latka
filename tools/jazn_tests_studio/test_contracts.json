@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.10",
-  "active_definition_count": 2407,
+  "active_definition_count": 2409,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51961,7 +51961,8 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -51983,7 +51984,8 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -52005,7 +52007,8 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -52025,7 +52028,8 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -52045,7 +52049,8 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -52065,11 +52070,54 @@
         "latka_jazn.config",
         "latka_jazn.core.chat_command_contract",
         "latka_jazn.core.host_visible_finalization",
-        "latka_jazn.core.project_index"
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 102
+    },
+    "tests/test_v11603410_startup_index_ollama_visible.py::test_index_cache_requires_same_release_scope_and_hash": {
+      "path": "tests/test_v11603410_startup_index_ollama_visible.py",
+      "name": "test_index_cache_requires_same_release_scope_and_hash",
+      "purpose": "Index cache requires same release scope and hash",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
+    },
+    "tests/test_v11603410_startup_index_ollama_visible.py::test_engine_ignores_old_index_without_full_rescan": {
+      "path": "tests/test_v11603410_startup_index_ollama_visible.py",
+      "name": "test_engine_ignores_old_index_without_full_rescan",
+      "purpose": "Engine ignores old index without full rescan",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.project_index",
+        "latka_jazn.core.runtime_composition"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
