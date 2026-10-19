@@ -12,6 +12,7 @@ import tempfile
 import time
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.version import PACKAGE_VERSION
 
 SCHEMA_VERSION = "project_startup_index/v1"
 DEFAULT_OUTPUT = "workspace_runtime/project_startup_index_current_line.json"
@@ -123,6 +124,7 @@ class ProjectStartupIndexer:
         payload = {
             "schema_version": SCHEMA_VERSION,
             "active_root": str(self.root),
+            "runtime_version": PACKAGE_VERSION,
             "generated_at_unix": round(time.time(), 6),
             "duration_seconds": round(time.time() - started, 6),
             "file_count": len(files),
@@ -167,6 +169,20 @@ class ProjectStartupIndexer:
                 if temp_path is not None:
                     temp_path.unlink(missing_ok=True)
         return payload
+
+    def compatible_cache(self, payload: dict[str, Any]) -> bool:
+        """Accept only the exact release/scope/hash of an explicit index.
+
+        In particular, the legacy full-tree cache must not quietly regain
+        authority after private/generated directories were excluded.
+        """
+        return bool(
+            payload.get("schema_version") == SCHEMA_VERSION
+            and payload.get("active_root") == str(self.root)
+            and payload.get("runtime_version") == PACKAGE_VERSION
+            and payload.get("excluded_dynamic_parts") == sorted(VOLATILE_PARTS)
+            and payload.get("index_sha256") == self._stable_payload_hash(payload)
+        )
 
     def status(self) -> dict[str, Any]:
         if self.output_path.exists():
