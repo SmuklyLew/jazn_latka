@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
   "runtime_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
   "package_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-  "generated_at_utc": "2026-10-19T16:27:24+00:00",
-  "updated_at_utc": "2026-10-19T16:27:24+00:00",
+  "generated_at_utc": "2026-10-19T16:43:23+00:00",
+  "updated_at_utc": "2026-10-19T16:43:23+00:00",
   "start_file": "run.py",
   "file_count": 2699,
   "static_file_count": 2699,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2947,
-      "sha256": "b803c29e1cfd1ec4811f928bca3c16d41b700e387452def4d328b48dd84c0b0e",
+      "sha256": "c72de5c2acb910fca4f6486edf3b8b4ff91804f05ddd5aecd82569faeb891642",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1949,
-      "sha256": "29dbca11affe3e941cb46f59535f9206118aa0146e75272a56005020ff19275e",
+      "size_bytes": 1943,
+      "sha256": "c586e2b0df7fa69ffdde1c168619d919d319bb31223c7d2b3fab92a5116e5263",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23338,6 +23338,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_startup_index_ollama_visible.py",
+      "size_bytes": 7503,
+      "sha256": "c1793bc1938dfe563b252d208b445faa88ae517b8c4e918c6e16d39e83ddb96c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_startup_stability.py",
       "size_bytes": 7069,
       "sha256": "ad993f594752fe0e40e5db7bc26eccce91fbc0b328b002d5d7f7e5b36490f633",
@@ -23557,15 +23566,6 @@
       "path": "tests/test_unified_conversation_runtime_authority.py",
       "size_bytes": 12113,
       "sha256": "f25f29e48c2402e32b8e996662dbd9b5ed2d116d32299c974f9ff13a1f200767",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v11603410_startup_index_ollama_visible.py",
-      "size_bytes": 7503,
-      "sha256": "c1793bc1938dfe563b252d208b445faa88ae517b8c4e918c6e16d39e83ddb96c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24095,8 +24095,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2227704,
-      "sha256": "a5b75813db66ea2a5ee8aae52ae6013690428cd2354b6a6e5a4040b2b2d8aecb",
+      "size_bytes": 2227544,
+      "sha256": "d35794d4334f7b7bac7ecdd7719ce24514d9869b0fa93b175d5d828d4ef4b94b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
