@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
-  "runtime_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
-  "package_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
-  "generated_at_utc": "2026-10-19T19:10:21+00:00",
-  "updated_at_utc": "2026-10-19T19:10:21+00:00",
+  "version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "package_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+  "generated_at_utc": "2026-10-19T20:50:06+00:00",
+  "updated_at_utc": "2026-10-19T20:50:06+00:00",
   "start_file": "run.py",
-  "file_count": 2708,
-  "static_file_count": 2708,
+  "file_count": 2710,
+  "static_file_count": 2710,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "1feb81e481bd120882b8406d941ddb006b564902d0c179e5f8f4aa4544e8a35e",
+      "size_bytes": 3017,
+      "sha256": "d4f1182d1400b678f8daa53208540beeb69ce29dd903a6533f44d184e987093d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2317,6 +2317,15 @@
       "path": "docs/reports/JAZN_V116_0_34_11_CHATGPT_FRESH_SESSION_CONTINUITY.md",
       "size_bytes": 2175,
       "sha256": "7cfb9d99381c655a481d298c320a558c8f27b9c7d96dc9d611245d3f5466ea8c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_12_CHATGPT_OPENAI_OLLAMA_CONNECTION_RECOVERY.md",
+      "size_bytes": 4150,
+      "sha256": "e337e1f75d46937ee15b88bdcc831cbaede50278524ae5539d60c3cc1f040d80",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7670,8 +7679,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/local_llm_adapter.py",
-      "size_bytes": 23284,
-      "sha256": "a54aebd6e35dc505813f2561d1773bb9409d23d1c2d99d7a9cf2e6660cbefa02",
+      "size_bytes": 24043,
+      "sha256": "ba633c0e94820325ef6a8965349dd172c3d1130183a6cd016e4f052646f192bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10361,8 +10370,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 11325,
-      "sha256": "9ddcf90b5b2f7e6a86bcfe94123cf44f0ec2ac53fc906fd18bc2c23e4e4045ff",
+      "size_bytes": 11432,
+      "sha256": "cf14d73d6052cdc49de285aabdbea84d24ada69655eec7c82e3c2757dc5183a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20296,6 +20305,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "size_bytes": 3503,
+      "sha256": "a6bddd35a2ee15ef2b3d9de53953fae8c51656bbf2094da1eb5692f3ce1c011a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_package_discovery_bootstrap.py",
       "size_bytes": 5149,
       "sha256": "04064cbebd05be9dcfd4d071ffdc4851ccdde5623f03c5f0f6d0210007b09a7b",
@@ -23816,8 +23834,8 @@
     },
     {
       "path": "tools/chatgpt_mcp_connection_doctor.py",
-      "size_bytes": 6546,
-      "sha256": "3bd0a53a8ad28a94de75202cf8362d65f37134057effd74d65c593da4951d335",
+      "size_bytes": 7659,
+      "sha256": "5563bc1f252b930a1fb62efb5c9e2d6c9dd85e677a4e0eef225c8a30b327f9bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24176,8 +24194,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2230054,
-      "sha256": "1edb0b5f197604aa11b2d3f9973ca91a43ea4ce2bbed8aa5dcfa809a0cee0d6a",
+      "size_bytes": 2233457,
+      "sha256": "16eea8e69d727f3fe6af4b19105125b49a96047e687250671873c363842c9115",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24824,11 +24842,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+  "release_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
-    "package_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
-    "release_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity"
+    "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+    "package_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
+    "release_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
