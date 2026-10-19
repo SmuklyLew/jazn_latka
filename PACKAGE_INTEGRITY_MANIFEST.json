@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-  "runtime_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-  "package_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-  "generated_at_utc": "2026-10-19T17:37:14+00:00",
-  "updated_at_utc": "2026-10-19T17:37:14+00:00",
+  "version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+  "runtime_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+  "package_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+  "generated_at_utc": "2026-10-19T18:58:31+00:00",
+  "updated_at_utc": "2026-10-19T18:58:31+00:00",
   "start_file": "run.py",
-  "file_count": 2699,
-  "static_file_count": 2699,
+  "file_count": 2701,
+  "static_file_count": 2701,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2946,
-      "sha256": "5aef680a1fd4086340f0778b181b27b94240e23b732ab99dfa8bcedf42454000",
+      "size_bytes": 2929,
+      "sha256": "423954eb47ae482ea349381131e4c988c3c245503d13cf30d7e8e0fbae9c79e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2314,6 +2314,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V116_0_34_11_CHATGPT_FRESH_SESSION_CONTINUITY.md",
+      "size_bytes": 2175,
+      "sha256": "7cfb9d99381c655a481d298c320a558c8f27b9c7d96dc9d611245d3f5466ea8c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V116_0_34_1_HOST_INGRESS_CAPABILITY.md",
       "size_bytes": 4054,
       "sha256": "4df74eb28f1d3e7abae5e2ede6dbde84aadf7393ff0e3bf30763869badb959e8",
@@ -4223,8 +4232,8 @@
     },
     {
       "path": "latka_jazn/core/chat_command_contract.py",
-      "size_bytes": 77435,
-      "sha256": "92203bedc0912aba4240b70a39b34b782e0967288fd09d1e4a8894f141f73127",
+      "size_bytes": 78129,
+      "sha256": "e37022d403b29796d0a390100012a652f819e58ceb806b6d7578647113bec9e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10352,8 +10361,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 11250,
-      "sha256": "6f9b96c26c15c4eb3f7eee8a78cb4d56ebb9ea73f4430a645459f05911193aef",
+      "size_bytes": 11325,
+      "sha256": "9ddcf90b5b2f7e6a86bcfe94123cf44f0ec2ac53fc906fd18bc2c23e4e4045ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19882,6 +19891,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_fresh_session_continuity.py",
+      "size_bytes": 3436,
+      "sha256": "137b122bc98cea43e4c5f8f40f4f053e641b8edea992fd973aa652400c1d2d05",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_fresh_session_plugin_exposure_convergence.py",
       "size_bytes": 2421,
       "sha256": "44f802f078c04bdd663c3c27eb0a827e9d477ffd8301f6923dd9ee032c90bb01",
@@ -24095,8 +24113,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2227544,
-      "sha256": "d35794d4334f7b7bac7ecdd7719ce24514d9869b0fa93b175d5d828d4ef4b94b",
+      "size_bytes": 2229274,
+      "sha256": "56379131e3d74842a2b6b708c160baeb618be1f48559dcdb59d995fdf31bacba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24743,11 +24761,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
+  "release_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-    "package_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-    "release_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible"
+    "runtime_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+    "package_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
+    "release_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity"
   },
   "legacy_aliases": {
     "version": "release_version"
