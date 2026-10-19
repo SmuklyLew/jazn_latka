@@ -3457,7 +3457,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 15
+      "line": 17
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_declares_bounded_local_fallback_without_automatic_handoff": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3474,7 +3474,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 37
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_chatgpt_runbook_requires_complete_current_message_turn_toolset": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3491,7 +3491,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 46
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -3508,7 +3508,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 61
     },
     "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py::test_missing_all_four_mcp_tools_does_not_block_local_zip_probe": {
       "path": "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py",
@@ -16831,7 +16831,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 58
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_fails_closed_after_static_tamper": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16856,7 +16856,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 90
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_warm_daemon_reuse_does_not_pay_cold_integrity_gate": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16879,7 +16879,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 111
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16902,7 +16902,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 164
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_quoted_loader_material_does_not_promote_creative_intent": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16925,7 +16925,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 205
+      "line": 207
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_explicit_edit_instruction_outside_fence_still_routes_creative": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16948,7 +16948,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 233
+      "line": 235
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_structured_lyrics_still_promote_creative_material": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16971,7 +16971,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 246
+      "line": 248
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -16994,7 +16994,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 262
+      "line": 264
     },
     "tests/test_final_hardening.py::test_canonical_route_lexicon_covers_new_dialogue_families": {
       "path": "tests/test_final_hardening.py",
