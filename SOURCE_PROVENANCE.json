@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "bcdf4cdb0a5b2caf28cff5d26d89424ccbbf39b4",
+  "base_merge_commit": "58b1dde2f44c79b6f2e18dc010522cb44d24c0da",
   "base_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
-  "commit_date": "2026-10-19T16:21:07Z",
+  "commit_date": "2026-10-19T16:27:24Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-19T16:21:07+00:00",
+  "generated_at_utc": "2026-10-19T16:27:24+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "1c2567ed61ab0cd823a730fb425b7f26f6d914f9",
+  "git_tree_sha": "20fa4deaee6518dfb857f6e89af97c57714cf3c8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.9-codespaces-github-oauth-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "bcdf4cdb0a5b2caf28cff5d26d89424ccbbf39b4",
+    "source_commit": "58b1dde2f44c79b6f2e18dc010522cb44d24c0da",
     "source_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "bcdf4cdb0a5b2caf28cff5d26d89424ccbbf39b4",
+  "source_commit": "58b1dde2f44c79b6f2e18dc010522cb44d24c0da",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.10-startup-index-ollama-visible",
   "tag": null,
