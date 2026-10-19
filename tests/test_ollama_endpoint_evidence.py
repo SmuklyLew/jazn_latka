@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from email.message import Message
 from urllib.error import HTTPError, URLError
 
 from latka_jazn.model_adapters.base import ModelAdapterRequest
@@ -42,7 +43,7 @@ def test_incomplete_chat_payload_preserves_responding_http_endpoint(monkeypatch)
 
 def test_http_error_means_endpoint_responded_not_model_success(monkeypatch) -> None:
     def fail(*_args, **_kwargs):
-        raise HTTPError("http://127.0.0.1:11434/api/chat", 503, "unavailable", {}, None)
+        raise HTTPError("http://127.0.0.1:11434/api/chat", 503, "unavailable", Message(), None)
 
     monkeypatch.setattr("latka_jazn.model_adapters.local_llm_adapter.urlopen", fail)
     adapter = LocalLlmAdapter(model="gemma3:4b")
@@ -74,7 +75,7 @@ def test_invalid_tags_response_is_not_mislabeled_missing_model(monkeypatch) -> N
 
 def test_http_tags_error_is_reachable_but_not_probe_ready(monkeypatch) -> None:
     def fail(*_args, **_kwargs):
-        raise HTTPError("http://127.0.0.1:11434/api/tags", 401, "unauthorized", {}, None)
+        raise HTTPError("http://127.0.0.1:11434/api/tags", 401, "unauthorized", Message(), None)
 
     monkeypatch.setattr("latka_jazn.model_adapters.local_llm_adapter.urlopen", fail)
     probe = LocalLlmAdapter(model="gemma3:4b").probe()

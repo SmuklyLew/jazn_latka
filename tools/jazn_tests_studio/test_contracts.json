@@ -36130,7 +36130,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
     },
     "tests/test_ollama_endpoint_evidence.py::test_incomplete_chat_payload_preserves_responding_http_endpoint": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -36148,7 +36148,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 35
     },
     "tests/test_ollama_endpoint_evidence.py::test_http_error_means_endpoint_responded_not_model_success": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -36166,7 +36166,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 44
     },
     "tests/test_ollama_endpoint_evidence.py::test_network_failure_is_not_promoted_to_endpoint_reachable": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -36186,7 +36186,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 56
     },
     "tests/test_ollama_endpoint_evidence.py::test_invalid_tags_response_is_not_mislabeled_missing_model": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -36204,7 +36204,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 67
     },
     "tests/test_ollama_endpoint_evidence.py::test_http_tags_error_is_reachable_but_not_probe_ready": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -36222,7 +36222,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 76
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_selects_native_adapter": {
       "path": "tests/test_ollama_only_hotfix.py",
