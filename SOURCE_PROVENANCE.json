@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "6978372d03d01e58cdc3a280afa2403417d8aea8",
+  "base_merge_commit": "3c0a021f4638e75d112ff37cc6d9c8cefb3e496b",
   "base_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "commit_date": "2026-10-19T20:50:06Z",
+  "commit_date": "2026-10-19T20:52:55Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-19T20:50:06+00:00",
+  "generated_at_utc": "2026-10-19T20:52:55+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "644f5c5fe4ca29af738e0686d86e4ce39324e41f",
+  "git_tree_sha": "edca2030f6dc1cdf3fea92fcdeefc2b91bada209",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.11-chatgpt-session-continuity",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "6978372d03d01e58cdc3a280afa2403417d8aea8",
+    "source_commit": "3c0a021f4638e75d112ff37cc6d9c8cefb3e496b",
     "source_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "6978372d03d01e58cdc3a280afa2403417d8aea8",
+  "source_commit": "3c0a021f4638e75d112ff37cc6d9c8cefb3e496b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
   "tag": null,

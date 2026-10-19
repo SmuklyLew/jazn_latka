@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
   "runtime_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
   "package_version": "16.3.25.5.116.0.34.12-chatgpt-openai-ollama-connection-recovery",
-  "generated_at_utc": "2026-10-19T20:50:06+00:00",
-  "updated_at_utc": "2026-10-19T20:50:06+00:00",
+  "generated_at_utc": "2026-10-19T20:52:55+00:00",
+  "updated_at_utc": "2026-10-19T20:52:55+00:00",
   "start_file": "run.py",
   "file_count": 2710,
   "static_file_count": 2710,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3017,
-      "sha256": "d4f1182d1400b678f8daa53208540beeb69ce29dd903a6533f44d184e987093d",
+      "sha256": "463e9f5345181241c06651504e3315b32e1c62cd404a6c301132620a205e7875",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1941,
-      "sha256": "4abf2d0f09712cdb805a6544ee2314da4a4707c0d589c4106b35b4a01de99be5",
+      "size_bytes": 1956,
+      "sha256": "11ab46cbd677c3df29e5acca587d5c664f9800d49ef7ddff98c8d2e3cdbbf88f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20305,7 +20305,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_chatgpt_openai_ollama_connection_recovery_v11603412.py",
+      "path": "tests/test_chatgpt_openai_ollama_connection_recovery.py",
       "size_bytes": 3503,
       "sha256": "a6bddd35a2ee15ef2b3d9de53953fae8c51656bbf2094da1eb5692f3ce1c011a",
       "mutable_runtime": false,
@@ -24194,8 +24194,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2233457,
-      "sha256": "16eea8e69d727f3fe6af4b19105125b49a96047e687250671873c363842c9115",
+      "size_bytes": 2233377,
+      "sha256": "05e5c8d24221fefc63577883561b5728a4123184392ddb5c1f9bd2a3198bc0aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
