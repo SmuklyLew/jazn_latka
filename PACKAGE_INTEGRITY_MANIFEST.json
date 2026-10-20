@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
   "runtime_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
   "package_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-  "generated_at_utc": "2026-10-20T22:39:55+00:00",
-  "updated_at_utc": "2026-10-20T22:39:55+00:00",
+  "generated_at_utc": "2026-10-20T22:44:29+00:00",
+  "updated_at_utc": "2026-10-20T22:44:29+00:00",
   "start_file": "run.py",
-  "file_count": 3227,
-  "static_file_count": 3227,
+  "file_count": 3228,
+  "static_file_count": 3228,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2923,
-      "sha256": "e72d297f7372cf8ec4d2d5c5f794e35c0cb660f3667e9c135d874173478a8a00",
+      "sha256": "92d98167ed340e5af9a55d6420b777b9b4221decf551ec8f0301d38c6b0a691d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7904,8 +7904,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/siwc_oauth_flow.py",
-      "size_bytes": 8879,
-      "sha256": "a162b7708ee48b2a86572bb078f6ce2698eea7615c13434625cd7e735c2ff98f",
+      "size_bytes": 9010,
+      "sha256": "494953f0ce9e08924b6e8868782ec3804577b3e350eced3f924fde04851fbfbc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8957,8 +8957,8 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/profiles.json",
-      "size_bytes": 2039,
-      "sha256": "624bd7e84c76e56e47e2ac27d6112509a24eac83b750b8915e23d7070d364fe9",
+      "size_bytes": 2059,
+      "sha256": "fd259647dc51663b62b207443d3bd5e7c8a56c9072f6fe5407a81c5199e3c78b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9102,7 +9102,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "9b52f9c341e2f7507299922b24ffd0981a0657f612bb811bb695255502e1eb62",
+      "sha256": "18b086d1b0c445925e7faef1a6c6a9caac22ed089c8d7347364695b7f9b132b7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10685,8 +10685,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2242,
-      "sha256": "544a8fa070b1a04c78c0c7fb2ce338bd7777d7cc4df82a46522e02d062d8cfa1",
+      "size_bytes": 2287,
+      "sha256": "b9433e496d1eac92610d86636e64207100124b3dab5f0513053b62f3588f59d2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22105,6 +22105,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.26-pre-nonce-readiness-fixture/test_chatgpt_status_nonce_host_evidence.py",
+      "size_bytes": 2496,
+      "sha256": "463f17dd061534d2bd25d7cd50c53547ac7993e67f15f213d3194f605979dab1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.3-before-release-name-alignment/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2600,
       "sha256": "00aa41353853c029399575a3792417ef223c0e77d65c3b090b42e39548a07093",
@@ -25040,8 +25049,8 @@
     },
     {
       "path": "tests/test_chatgpt_status_nonce_host_evidence.py",
-      "size_bytes": 2496,
-      "sha256": "463f17dd061534d2bd25d7cd50c53547ac7993e67f15f213d3194f605979dab1",
+      "size_bytes": 2565,
+      "sha256": "01e7e6165ad02d8d9af8a626cbaaa3607846a01c8c2445bdff54559f684d6872",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28848,7 +28857,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2287135,
-      "sha256": "08560703c5e7834db9ab0b0681d78a2b02b70c07a25ca0b24cfa47b0198ce89a",
+      "sha256": "79159b7a9aace882346bb139f2f10c0345cd5808cea9b863b05823da0ed2c023",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
