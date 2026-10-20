@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.15",
-  "active_definition_count": 2449,
+  "system_version": "16.3.25.5.116.0.34.16",
+  "active_definition_count": 2451,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3988,6 +3988,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 93
+    },
+    "tests/test_chatgpt_executable_ingress_bootstrap.py::test_process_launches_require_verified_environment_but_diagnostics_do_not": {
+      "path": "tests/test_chatgpt_executable_ingress_bootstrap.py",
+      "name": "test_process_launches_require_verified_environment_but_diagnostics_do_not",
+      "purpose": "Process launches require verified environment but diagnostics do not",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_chatgpt_executable_ingress_bootstrap.py::test_no_unapproved_dependency_install_when_explicitly_disabled": {
+      "path": "tests/test_chatgpt_executable_ingress_bootstrap.py",
+      "name": "test_no_unapproved_dependency_install_when_explicitly_disabled",
+      "purpose": "No unapproved dependency install when explicitly disabled",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
