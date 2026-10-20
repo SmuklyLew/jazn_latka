@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.14",
-  "active_definition_count": 2435,
+  "active_definition_count": 2443,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3839,6 +3839,155 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 120
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_mcp_direct_display_exact_does_not_require_host_phase_two": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_mcp_direct_display_exact_does_not_require_host_phase_two",
+      "purpose": "Mcp direct display exact does not require host phase two",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_without_echoed_ingress_gate_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_without_echoed_ingress_gate_is_not_accepted",
+      "purpose": "Direct final without echoed ingress gate is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_without_matching_trace_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_without_matching_trace_is_not_accepted",
+      "purpose": "Direct final without matching trace is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_from_other_message_digest_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_from_other_message_digest_is_not_accepted",
+      "purpose": "Direct final from other message digest is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_with_altered_text_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_with_altered_text_is_not_accepted",
+      "purpose": "Direct final with altered text is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_with_false_readiness_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_with_false_readiness_is_not_accepted",
+      "purpose": "Direct final with false readiness is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_final_with_error_wrapper_is_not_accepted": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_final_with_error_wrapper_is_not_accepted",
+      "purpose": "Direct final with error wrapper is not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_chatgpt_direct_exact_coverage.py::test_direct_mcp_receipt_may_redact_reply_body_after_hash_capture": {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "name": "test_direct_mcp_receipt_may_redact_reply_body_after_hash_capture",
+      "purpose": "Direct mcp receipt may redact reply body after hash capture",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.mcp.turn_coverage"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
