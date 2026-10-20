@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
-  "runtime_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
-  "package_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
-  "generated_at_utc": "2026-10-19T21:44:18+00:00",
-  "updated_at_utc": "2026-10-19T21:44:18+00:00",
+  "version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
+  "runtime_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
+  "package_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
+  "generated_at_utc": "2026-10-20T11:07:29+00:00",
+  "updated_at_utc": "2026-10-20T11:07:29+00:00",
   "start_file": "run.py",
-  "file_count": 3176,
-  "static_file_count": 3176,
+  "file_count": 3182,
+  "static_file_count": 3182,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3037,
-      "sha256": "08cb76d4eaca76174560e09fae9eefc681ce28e06c90669c12a4521d0776c763",
+      "size_bytes": 2942,
+      "sha256": "734ac8285f2bb3ba7767921bcbd14a839c45defeb1187d77b0be72e9a1d96c44",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1956,
-      "sha256": "c9c93a7cab54b9c78fa601f6919d11c7cc0e61b497d40fb48e729f5fc3feeaf1",
+      "size_bytes": 1941,
+      "sha256": "50f2aef2f1980e1c232442c53d9cbaaaf73cf691417193b69535c6fe4aeccbce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2335,6 +2335,15 @@
       "path": "docs/reports/JAZN_V116_0_34_13_CHATGPT_OLLAMA_ENDPOINT_HARDENING.md",
       "size_bytes": 2108,
       "sha256": "c675f56cdbf520a90bbb07cb4155819204b8a8e28460a3d1743b68dd118d3c70",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_14_CHATGPT_HOST_TURN_COVERAGE.md",
+      "size_bytes": 5415,
+      "sha256": "eb6b7a1b724359f6f5292f2643d47fcb1db683ab6864a4fd01c69706dd92d96b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6707,8 +6716,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 39224,
-      "sha256": "91d782ded45c6e089b3733cc06429b37cb0fb85e21dad74ab84bc717b7f43208",
+      "size_bytes": 39659,
+      "sha256": "6db7907d7ef8b32445a3647ea15ebc786545615f41d983365005b7807398bd2c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6833,8 +6842,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_generate_visible_reply.py",
-      "size_bytes": 13768,
-      "sha256": "c3a6d619cdafa0554c060fff9e01bd43ca4c76ce387065f732e065df2987f75b",
+      "size_bytes": 13846,
+      "sha256": "b53eada6d10da6cffce754f4280ce3b9ae77744993c708edcc4c4c40d8e62027",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6862,6 +6871,15 @@
       "path": "latka_jazn/mcp/tunnel_bootstrap.py",
       "size_bytes": 5150,
       "sha256": "d940d85b93e8be766ea7b504e8c78c8f42750c5289693954a534c902660cff07",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/mcp/turn_coverage.py",
+      "size_bytes": 8754,
+      "sha256": "79506863076b296ed309b25257d3e64dac37f0870f46016bf244305bdc7f471d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8931,7 +8949,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "5066a7c95d8afd19c11a9f111068f16fc6f0e5729cbd17f99b44912ad891b0ba",
+      "sha256": "39e5715382cb167a68565336c06ffd104fd98663a50e11a7d322854f6347948d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10388,8 +10406,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 11519,
-      "sha256": "add6673caff39025b9fab093d16cc3e7a223e918f65d7190aa474f3159da1d99",
+      "size_bytes": 11593,
+      "sha256": "9d45418e22989a156eb99b99811941c1b830eaf19f1c9fd69ab9ff60c1103602",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -21673,6 +21691,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.14-pre-pyright/test_chatgpt_status_backend_boundary.py",
+      "size_bytes": 1947,
+      "sha256": "2bcc3a3f9db6ddedc64a34da8fcbe588cf86898e51f18e8043a3cbce830598bf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.1_pre_vpc_proxy/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2600,
       "sha256": "c2265555501f8f6be54afcd30b4de106e1d6e4ca4d5f793c8666c61f40b1eeb7",
@@ -24130,6 +24157,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_direct_exact_coverage.py",
+      "size_bytes": 3263,
+      "sha256": "3786fd25febfe1751f1a8263a207bdb6cacc4a32e2fe6b4e4fcc05d418126f41",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_execution_route_contract.py",
       "size_bytes": 4500,
       "sha256": "898829a69927a234983f03521e5d3ad394ad41c166b41558c49e461aab9d4f5f",
@@ -24349,6 +24385,15 @@
       "path": "tests/test_chatgpt_host_runtime_observability.py",
       "size_bytes": 9089,
       "sha256": "2146ca24f89867a71a5e1c069e64754dd54ed5314476efa34baaa838cb6474b2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_host_turn_coverage.py",
+      "size_bytes": 6386,
+      "sha256": "58a98f06a04534f934e195ee094d51dcc6909de24e095cef2c1bd4c6e5f18f78",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24619,6 +24664,15 @@
       "path": "tests/test_chatgpt_startup_evidence_hardening.py",
       "size_bytes": 5776,
       "sha256": "f5772d5ebcb309df418faa0eb515cecaac29630f49c1ef65af1b787598f13507",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_chatgpt_status_backend_boundary.py",
+      "size_bytes": 2063,
+      "sha256": "5e330d01c51c37ac58b71b1a2fd3cb11dc165affded6051742fe8cd1ce0f1fe8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28388,8 +28442,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2238169,
-      "sha256": "73c1d7ce19926d065cee86d7cbf946b007d0bc0a82c45035215641a25c3987c2",
+      "size_bytes": 2254428,
+      "sha256": "fcf28a5e4e6bd22dbc082b0d1ae108535fe963b88fbd70dd9c2396988d6884d9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29036,11 +29090,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+  "release_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
-    "package_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
-    "release_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening"
+    "runtime_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
+    "package_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
+    "release_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -612,13 +612,19 @@ class PublicMcpGateway:
                 "fresh_conversation_reverification_required": True,
                 "current_message_toolset_observation_required": True,
                 "catalog_or_installed_state_sufficient": False,
+                # Backend readiness is not proof that this ChatGPT message
+                # actually exposes tools, nor that earlier messages reached us.
+                "host_message_toolset_verified": False,
+                "conversation_wide_auto_routing_verified": False,
+                "accepted_visible_turn_verified": False,
+                "readiness_scope": "backend_only_not_current_chatgpt_turn",
                 **_runtime_binding(status),
             }
             return CallToolResult(
                 content=[
                     TextContent(
                         type="text",
-                        text="Jaźń persistent runtime is ready." if ready else "Jaźń persistent runtime is not ready.",
+                        text="Jaźń backend is ready; current ChatGPT message routing is unverified." if ready else "Jaźń backend is not ready.",
                     )
                 ],
                 structured_content=public_status,

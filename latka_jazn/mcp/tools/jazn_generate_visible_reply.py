@@ -8,6 +8,7 @@ from latka_jazn.core.chatgpt_host_pre_response_gate import (
     run_host_pre_response_gate,
 )
 from latka_jazn.core.memory_recall_observability import correlate_memory_recall_transport
+from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 
 
 class HostRuntimeGateway(Protocol):
@@ -197,7 +198,7 @@ def run(
                 "ok": True,
                 "action": "display_exact",
                 "final_visible_text": final_text,
-                "final_text_sha256": presentation.get("final_text_sha256"),
+                "final_text_sha256": sha256_host_visible_text(final_text),
                 "turn_id": turn_id,
                 "trace_id": trace_id,
                 "must_display_exactly": True,
