@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.14",
-  "active_definition_count": 2443,
+  "system_version": "16.3.25.5.116.0.34.23",
+  "active_definition_count": 2456,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -3098,7 +3098,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 37
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_optional_memory_never_holds_ready_core_below_100": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3117,7 +3117,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 52
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_required_memory_is_separate_readiness_dimension": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3136,7 +3136,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_bootstrap_emits_evidence_backed_progress_events": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3153,7 +3153,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 107
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_activation_contract_uses_live_status_as_readiness_authority": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3170,7 +3170,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 129
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_defaults_match_canonical_zip_policy": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3187,7 +3187,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 42
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_rejects_excessive_compression_ratio": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3206,7 +3206,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 49
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_cli_exposes_compression_ratio_limit": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3223,7 +3223,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 68
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_complete_catalog_is_not_chatgpt_host_exposure": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
@@ -3988,6 +3988,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 93
+    },
+    "tests/test_chatgpt_executable_ingress_bootstrap.py::test_process_launches_require_verified_environment_but_diagnostics_do_not": {
+      "path": "tests/test_chatgpt_executable_ingress_bootstrap.py",
+      "name": "test_process_launches_require_verified_environment_but_diagnostics_do_not",
+      "purpose": "Process launches require verified environment but diagnostics do not",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_chatgpt_executable_ingress_bootstrap.py::test_no_unapproved_dependency_install_when_explicitly_disabled": {
+      "path": "tests/test_chatgpt_executable_ingress_bootstrap.py",
+      "name": "test_no_unapproved_dependency_install_when_explicitly_disabled",
+      "purpose": "No unapproved dependency install when explicitly disabled",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_chatgpt_execution_route_contract.py::test_local_executor_failure_can_select_explicit_remote_runtime_route": {
       "path": "tests/test_chatgpt_execution_route_contract.py",
@@ -7641,6 +7675,145 @@
       "description_source": "source_identity",
       "line": 95
     },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_operator_zip_requires_main_and_chatgpt_runbook": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_operator_zip_requires_main_and_chatgpt_runbook",
+      "purpose": "Operator zip requires main and chatgpt runbook",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_nonactivation_dependency_probe_cannot_autoinstall": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_nonactivation_dependency_probe_cannot_autoinstall",
+      "purpose": "Nonactivation dependency probe cannot autoinstall",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_system_only_runtime_storage_is_not_private_memory": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_system_only_runtime_storage_is_not_private_memory",
+      "purpose": "System only runtime storage is not private memory",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_previous_workspace_payload_is_read_compatible_not_migrated": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_previous_workspace_payload_is_read_compatible_not_migrated",
+      "purpose": "Previous workspace payload is read compatible not migrated",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_unverified_unified_db_marker_cannot_assert_autobiography": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_unverified_unified_db_marker_cannot_assert_autobiography",
+      "purpose": "Unverified unified db marker cannot assert autobiography",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_chatgpt_main_first_memory_contract.py::test_documented_memory_roles_and_ci_path_filters": {
+      "path": "tests/test_chatgpt_main_first_memory_contract.py",
+      "name": "test_documented_memory_roles_and_ci_path_filters",
+      "purpose": "Documented memory roles and ci path filters",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.unified_memory_runtime",
+        "latka_jazn.tools.memory_rebuild_app.unified_schema"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
     "tests/test_chatgpt_mcp_catalog_sse_transport.py::test_valid_sse_returns_verified_catalog_only": {
       "path": "tests/test_chatgpt_mcp_catalog_sse_transport.py",
       "name": "test_valid_sse_returns_verified_catalog_only",
@@ -9045,6 +9218,23 @@
       "description_source": "source_identity",
       "line": 114
     },
+    "tests/test_chatgpt_powershell_ci_catalog_order.py::test_powershell_pr_materializes_then_checks_catalog_before_release_metadata": {
+      "path": "tests/test_chatgpt_powershell_ci_catalog_order.py",
+      "name": "test_powershell_pr_materializes_then_checks_catalog_before_release_metadata",
+      "purpose": "Powershell pr materializes then checks catalog before release metadata",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
     "tests/test_chatgpt_project_bootstrap_primitive_convergence.py::test_project_loader_defines_non_circular_host_bootstrap_primitive": {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
       "name": "test_project_loader_defines_non_circular_host_bootstrap_primitive",
@@ -10245,7 +10435,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 40
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_expected_size_mismatch_fails_before_materialization": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10262,7 +10452,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 61
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_path_traversal_member_is_rejected": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10279,7 +10469,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 78
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_unix_symlink_member_is_rejected": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10296,7 +10486,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 98
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_duplicate_member_is_rejected": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10313,7 +10503,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 121
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_standalone_bootstrap_does_not_call_extractall": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10328,7 +10518,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 143
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_chatgpt_loader_supports_transport_truth_and_single_zip_recovery": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10343,7 +10533,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 146
+      "line": 148
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_chatgpt_runbook_does_not_blame_zip_for_host_transport_failure": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -10360,7 +10550,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 163
+      "line": 165
     },
     "tests/test_chatgpt_startup_evidence_hardening.py::test_startup_instructions_and_manifests_have_one_exact_file_identity_policy": {
       "path": "tests/test_chatgpt_startup_evidence_hardening.py",
@@ -10484,7 +10674,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 37
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_accepts_one_top_level_wrapper": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10499,7 +10689,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 56
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_rejects_sha_mismatch_before_extraction": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10516,7 +10706,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 73
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_rejects_path_traversal": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10533,7 +10723,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 89
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_rejects_symlink": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10550,7 +10740,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 108
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_rejects_duplicate_member": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10567,7 +10757,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 127
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_refuses_existing_destination": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10584,7 +10774,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 144
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_enforces_uncompressed_size_budget": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -10601,7 +10791,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 161
+      "line": 163
     },
     "tests/test_chatgpt_transport_timeout_mcp_idempotency.py::test_daemon_submit_transport_timeout_preserves_preallocated_request_id": {
       "path": "tests/test_chatgpt_transport_timeout_mcp_idempotency.py",
@@ -10925,7 +11115,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_same_interpreter_preflight_reuses_current_python_without_subprocess": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10945,7 +11135,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 117
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_pack_manifest_advertises_activation_without_claiming_host_capability": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10966,7 +11156,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 140
     },
     "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_chatgpt_zip_bootstrap_runtime_convergence.py",
@@ -10986,7 +11176,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 164
     },
     "tests/test_cli_canonical_root.py::test_legacy_flag_route_injects_repository_root": {
       "path": "tests/test_cli_canonical_root.py",
@@ -15837,6 +16027,50 @@
       "description_source": "source_identity",
       "line": 448
     },
+    "tests/test_dependency_studio.py::test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape",
+      "purpose": "Managed environment accepts canonical python symlink but rejects path escape",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 488
+    },
+    "tests/test_dependency_studio.py::test_managed_environment_rejects_missing_venv_configuration": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_managed_environment_rejects_missing_venv_configuration",
+      "purpose": "Managed environment rejects missing venv configuration",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 549
+    },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
       "name": "test_repeated_profile_flags_preserve_core_and_archive",
@@ -17241,7 +17475,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 60
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_fails_closed_after_static_tamper": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17266,7 +17500,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 92
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_warm_daemon_reuse_does_not_pay_cold_integrity_gate": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17289,7 +17523,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 111
+      "line": 113
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_supervisor_requires_fresh_heartbeat_lease_even_for_confirmed_pid": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17312,7 +17546,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 164
+      "line": 166
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_quoted_loader_material_does_not_promote_creative_intent": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17335,7 +17569,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 207
+      "line": 209
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_explicit_edit_instruction_outside_fence_still_routes_creative": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17358,7 +17592,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 235
+      "line": 237
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_structured_lyrics_still_promote_creative_material": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17381,7 +17615,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 248
+      "line": 250
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_release_identity_tracks_current_distribution": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
@@ -17404,7 +17638,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 264
+      "line": 266
     },
     "tests/test_final_hardening.py::test_canonical_route_lexicon_covers_new_dialogue_families": {
       "path": "tests/test_final_hardening.py",
@@ -37980,17 +38214,34 @@
       "description_source": "source_identity",
       "line": 31
     },
-    "tests/test_package_distribution_cleanroom_doctor_semantics.py::test_cleanroom_accepts_release_ready_doctor_before_live_daemon": {
-      "path": "tests/test_package_distribution_cleanroom_doctor_semantics.py",
-      "name": "test_cleanroom_accepts_release_ready_doctor_before_live_daemon",
-      "purpose": "Cleanroom accepts release ready doctor before live daemon",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+    "tests/test_package_distribution_cleanroom_activation_observability.py::test_cleanroom_uses_dependency_free_preflight_before_managed_activation": {
+      "path": "tests/test_package_distribution_cleanroom_activation_observability.py",
+      "name": "test_cleanroom_uses_dependency_free_preflight_before_managed_activation",
+      "purpose": "Cleanroom uses dependency free preflight before managed activation",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_package_distribution_cleanroom_doctor_semantics.py::test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start": {
+      "path": "tests/test_package_distribution_cleanroom_doctor_semantics.py",
+      "name": "test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start",
+      "purpose": "Cleanroom accepts release ready doctor after offline bootstrap start",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -38033,17 +38284,17 @@
       "description_source": "source_identity",
       "line": 26
     },
-    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_prestart_status_is_inactive_while_doctor_reports_release_readiness": {
+    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_dependency_empty_preflight_and_poststart_doctor_reports_release_readiness": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "name": "test_prestart_status_is_inactive_while_doctor_reports_release_readiness",
-      "purpose": "Prestart status is inactive while doctor reports release readiness",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_dependency_empty_preflight_and_poststart_doctor_reports_release_readiness",
+      "purpose": "Dependency empty preflight and poststart doctor reports release readiness",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 15,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -38065,7 +38316,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 36
     },
     "tests/test_package_distribution_cleanroom_prestart_contract.py::test_cleanroom_uses_isolated_bootstrap_python_without_site_packages": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
@@ -38082,7 +38333,25 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 51
+    },
+    "tests/test_package_distribution_cleanroom_verified_managed_python.py::test_cleanroom_uses_verified_managed_python_for_poststart_diagnostics": {
+      "path": "tests/test_package_distribution_cleanroom_verified_managed_python.py",
+      "name": "test_cleanroom_uses_verified_managed_python_for_poststart_diagnostics",
+      "purpose": "Cleanroom uses verified managed python for poststart diagnostics",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
     },
     "tests/test_package_generator_release_version.py::test_release_version_is_read_from_canonical_version_file": {
       "path": "tests/test_package_generator_release_version.py",
@@ -47124,7 +47393,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 406
+      "line": 424
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47154,7 +47423,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 426
+      "line": 444
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47186,7 +47455,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 439
+      "line": 457
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47215,7 +47484,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 445
+      "line": 463
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47244,7 +47513,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 460
+      "line": 478
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47273,7 +47542,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 471
+      "line": 489
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47302,7 +47571,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 485
+      "line": 503
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47331,7 +47600,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 512
+      "line": 530
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47360,7 +47629,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 526
+      "line": 544
     },
     "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
       "path": "tests/test_runtime_supervisor.py",

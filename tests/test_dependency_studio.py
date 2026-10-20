@@ -482,3 +482,98 @@ def test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_dr
     assert status["ready"] is False
     assert "environment_python_target_changed_reinstall_required" in status["errors"]
     assert not any("runtime_version" in error for error in status["errors"])
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX venv interpreter symlink semantics")
+def test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape(tmp_path: Path) -> None:
+    # On POSIX, venv/bin/python commonly points to /usr/bin/python or /usr/local/bin/python.
+    # Rejecting Path.resolve() outside the venv is therefore not a valid security check.
+    root = _project(tmp_path)
+    bundle = _bundle(root, tmp_path / "bundle-venv-symlink")
+    environments_root = default_environments_root(root)
+    environment_root = environments_root / "venv-symlink-fixture"
+    python_path = environment_root / "bin" / "python"
+    python_path.parent.mkdir(parents=True)
+    python_path.symlink_to(Path(sys.executable).resolve())
+    (environment_root / "pyvenv.cfg").write_text(
+        f"home = {Path(sys.executable).resolve().parent}\ninclude-system-site-packages = false\n",
+        encoding="utf-8",
+    )
+    marker = {
+        "schema_version": ENVIRONMENT_SCHEMA,
+        "ready": True,
+        "environment_root": str(environment_root),
+        "managed_environments_root": str(environments_root),
+        "python_executable": str(python_path),
+        "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "platform": current_platform_alias(),
+        "implementation": current_implementation_tag(),
+        "abi": current_abi_tag(),
+        "libc_family": current_libc_family(),
+        "profiles": ["core", "archive"],
+        "resolved_profiles": ["core", "archive"],
+        "wheelhouse_bundle": str(bundle),
+        "wheelhouse_manifest_sha256": sha256_file(bundle / MANIFEST_NAME),
+        "hash_lock_sha256": sha256_file(bundle / LOCK_NAME),
+        "dependency_contract_fingerprint": dependency_contract_fingerprint(root, ["core", "archive"]),
+        "import_smoke": {"tzdata": True, "packaging": True},
+    }
+    marker_path = environment_marker_path(root)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+    good = managed_environment_status(root)
+    assert good["ready"] is True, good
+    assert good["python_executable"] == str(python_path)
+
+    # A forged marker pointing outside the managed environment must still fail.
+    marker["python_executable"] = str(tmp_path / "arbitrary-python")
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+    escaped = managed_environment_status(root)
+    assert escaped["ready"] is False
+    assert "python_outside_environment" in escaped["errors"]
+
+    # The exact path cannot become valid if the whole bin directory is redirected.
+    marker["python_executable"] = str(python_path)
+    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+    python_path.unlink()
+    python_path.parent.rmdir()
+    outside_bin = tmp_path / "external-bin"
+    outside_bin.mkdir()
+    (outside_bin / "python").symlink_to(Path(sys.executable).resolve())
+    (environment_root / "bin").symlink_to(outside_bin, target_is_directory=True)
+    redirected = managed_environment_status(root)
+    assert redirected["ready"] is False
+    assert "python_outside_environment" in redirected["errors"]
+
+
+def test_managed_environment_rejects_missing_venv_configuration(tmp_path: Path) -> None:
+    root = _project(tmp_path)
+    bundle = _bundle(root, tmp_path / "bundle-venv-config")
+    env_root = default_environments_root(root) / "venv-config-fixture"
+    python_path = env_root / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    python_path.parent.mkdir(parents=True)
+    python_path.write_bytes(b"fixture")
+    marker_path = environment_marker_path(root)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(json.dumps({
+        "schema_version": ENVIRONMENT_SCHEMA,
+        "ready": True,
+        "environment_root": str(env_root),
+        "managed_environments_root": str(default_environments_root(root)),
+        "python_executable": str(python_path),
+        "python_version": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "platform": current_platform_alias(),
+        "implementation": current_implementation_tag(),
+        "abi": current_abi_tag(),
+        "libc_family": current_libc_family(),
+        "profiles": ["core", "archive"],
+        "resolved_profiles": ["core", "archive"],
+        "wheelhouse_bundle": str(bundle),
+        "wheelhouse_manifest_sha256": sha256_file(bundle / MANIFEST_NAME),
+        "hash_lock_sha256": sha256_file(bundle / LOCK_NAME),
+        "dependency_contract_fingerprint": dependency_contract_fingerprint(root, ["core", "archive"]),
+        "import_smoke": {},
+    }), encoding="utf-8")
+    status = managed_environment_status(root)
+    assert status["ready"] is False
+    assert "venv_configuration_missing" in status["errors"]

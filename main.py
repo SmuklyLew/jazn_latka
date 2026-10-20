@@ -34,6 +34,9 @@ _ACTIVATION_COMMANDS = {
     "chat-gpt",
     "chat-ollama",
     "runtime-bootstrap",
+    "mcp-http",        # explicit MCP HTTP listener: a process-start command
+    "supervisor-run",  # persistent supervisor: a process-start command
+    "host-op-submit", # may submit daemon/supervisor start operations
     "__daemon-run-hotfix",
 }
 
@@ -56,7 +59,9 @@ def _bootstrap_entrypoint_environment(argv: list[str]) -> None:
     root = Path(__file__).resolve().parent
     command = _requested_command(argv)
     try:
-        result = prepare_entrypoint_environment(root, auto_install=True)
+        result = prepare_entrypoint_environment(
+            root, auto_install=command in _ACTIVATION_COMMANDS
+        )
     except DependencyStudioError as exc:
         result = {
             "ok": False,

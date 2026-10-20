@@ -2,6 +2,8 @@
 
 Ten plik opisuje techniczną obsługę Jaźni w środowisku ChatGPT. Dla zwykłej rozmowy kanonicznym wejściem jest hybrid/adaptive ingress: zweryfikowana zdalna aplikacja/MCP do persistent runtime ma pierwszeństwo, a gdy bieżąca wiadomość nie ma conversation-ready remote route, host może przed submittem tury użyć ograniczonego, zweryfikowanego local bootstrapu. `operator_recovery` pozostaje osobnym jawnym trybem serwisowym. Nie jest instrukcją stylu odpowiedzi, personą ani źródłem danych runtime.
 
+**Główna zasada:** Host czyta tylko cienki loader przed SYSTEM-em, po jego zweryfikowaniu `AGENTS.md` i ten runbook. Nie rekonstruuj lifecycle, modelu pamięci ani finalizacji przez skanowanie setek plików jako prompt; te funkcje wykonuje `run.py -> main.py`. Rozdział architektury baz i procedury read-only: `docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md`. Plik ten jest dokumentacją operatora, nie dodatkową instrukcją odczytywaną przed każdą turą.
+
 **Code-first:** W zwykłej remote-ready turze nie odczytuj ponownie całego SYSTEM ZIP, manifestów ani dokumentów dla rekonstrukcji lifecycle. To Python runtime i jego MCP adapter odpowiadają za hash, routing, pamięć, idempotencję i finalizację. Runbook jest instrukcją hosta/serwisu, nie programem. Każdą turę rozpoznaj wyłącznie na podstawie rzeczywiście wywołanych narzędzi i świeżych zwrotów.
 
 Instrukcje Projektu ChatGPT powinny być cienkim loaderem remote-first. Wersjonowane procedury techniczne pozostają w zweryfikowanym runtime/active_root; instrukcja projektu nie może sama stworzyć aplikacji, executora ani tool exposure.
@@ -286,6 +288,8 @@ python -X utf8 run.py host-op-status --operation-id <ten-sam-bootstrap-id> --jso
 Jeżeli odpowiedź submit zginęła po utworzeniu procesu, nie twórz nowego `operation_id`. Polluj ten sam identyfikator; ponowny submit z tym samym ID i tym samym fingerprintem jest idempotentny, a inna treść pod tym samym ID ma zostać odrzucona jako konflikt.
 
 Nie pobieraj repozytorium lub release z GitHuba jako automatycznego substytutu brakującego lokalnego runtime.
+
+**Instalacja zależności:** przy braku osobnej autoryzacji do instalowania oprogramowania ustaw w środowisku wywołania hosta `JAZN_DEPENDENCY_AUTOBOOTSTRAP=0`. Diagnostyka musi pozostać bez auto-install niezależnie od tej zmiennej. `required_python_dependencies_not_ready` to błąd gotowości, nie zgoda na instalację. Właściwa instalacja pozostaje zadaniem autoryzowanego operatora.
 
 ## 4. Preflight, bounded host operations i persistent daemon
 

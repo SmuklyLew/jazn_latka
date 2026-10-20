@@ -14,6 +14,8 @@ from latka_jazn.bootstrap.chatgpt_bootstrap_progress import (
 
 _REQUIRED_MEMBERS = {
     "run.py": "print('ok')\n",
+    "main.py": "# test control plane\n",
+    "AGENTS.chatgpt.md": "# test host runbook\n",
     "AGENTS.md": "# test\n",
     "latka_jazn/version.py": "PACKAGE_VERSION='test'\n",
     "PACKAGE_INTEGRITY_MANIFEST.json": "{}\n",

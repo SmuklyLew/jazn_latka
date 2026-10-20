@@ -63,13 +63,44 @@ jobs:
           python -X utf8 -m pytest -q -ra --tb=short tests/test_memory_desktop_actions_windows.py tests/test_memory_desktop_gui_smoke.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      # Catalog generation is handled on the source branch by the canonical
-      # Test Studio sync workflow. Check instead of modifying the PR checkout:
-      # release_metadata_sync intentionally requires a clean working tree.
-      - name: Verify committed Test Studio catalog in PR checkout
+      # PR events may race with source-branch catalog sync or check out a test
+      # merge commit. Materialize the exact catalog in this ephemeral checkout
+      # before verifying it; the clean-tree guard restores it after validation.
+      # Never push generated files from this PR job.
+      - name: Materialize Test Studio catalog locally for PR verification
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
+
+      - name: Verify locally synchronized Test Studio catalog
         if: github.event_name == 'pull_request'
         shell: pwsh
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
+
+
+      # The canonical release metadata generator intentionally refuses a dirty
+      # working tree. Commit ONLY this generated catalog in the ephemeral PR
+      # checkout, with no push; this gives the metadata generator a clean source
+      # tree and mirrors the source branch's manifest_sync ordering.
+      - name: Record synchronized PR catalog in a local-only Git commit
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: |
+          $allowed = "tools/jazn_tests_studio/test_contracts.json"
+          $unexpected = @(git diff --name-only | Where-Object { $_ -and $_ -ne $allowed })
+          if ($unexpected.Count -gt 0) { throw "Unexpected dirty PR paths before local catalog commit: $unexpected" }
+          git add -- $allowed
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $stagedUnexpected = @(git diff --cached --name-only | Where-Object { $_ -and $_ -ne $allowed })
+          if ($stagedUnexpected.Count -gt 0) { throw "Unexpected staged paths before local catalog commit: $stagedUnexpected" }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 1) {
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "test: synchronize Test Studio catalog in ephemeral PR checkout"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } elseif ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          # No git push: this commit is a CI-only test fixture, never a repo update.
 
       - name: Materialize canonical PR metadata locally
         if: github.event_name == 'pull_request'

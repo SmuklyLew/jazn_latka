@@ -47,7 +47,9 @@ _REQUIRED_CHATGPT_TURN_TOOLS = (
 _REQUIRED_ROOT_FILES = frozenset(
     {
         "run.py",
+        "main.py",
         "AGENTS.md",
+        "AGENTS.chatgpt.md",
         "latka_jazn/version.py",
         "PACKAGE_INTEGRITY_MANIFEST.json",
         "SOURCE_PROVENANCE.json",

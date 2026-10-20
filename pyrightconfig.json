@@ -6,6 +6,7 @@
     "tests",
     "tools",
     "CHATGPT_BOOTSTRAP.py",
+    "jazn_runtime_bootstrap.py",
     "main.py",
     "run.py"
   ],
