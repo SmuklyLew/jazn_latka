@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "1d09701e28fa86b0436ce4ef897ae1aa700da1b3",
+  "base_merge_commit": "dbbe5c5327337e037b95b0d052d5475676b0f525",
   "base_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
-  "commit_date": "2026-10-20T12:58:33+02:00",
+  "commit_date": "2026-10-20T11:07:29Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-20T10:58:33+00:00",
+  "generated_at_utc": "2026-10-20T11:07:29+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "79a025b16e3049662f6099813fe78b97efe58b10",
+  "git_tree_sha": "358613fbffa0802c6a620037ca2cacaaf4e14a66",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "1d09701e28fa86b0436ce4ef897ae1aa700da1b3",
+    "source_commit": "dbbe5c5327337e037b95b0d052d5475676b0f525",
     "source_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "1d09701e28fa86b0436ce4ef897ae1aa700da1b3",
+  "source_commit": "dbbe5c5327337e037b95b0d052d5475676b0f525",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
   "tag": null,
