@@ -10,6 +10,7 @@ import pytest
 
 pytest.importorskip("mcp")
 from mcp import Client
+from mcp.types import TextContent
 
 from latka_jazn.mcp.http_gateway import build_public_mcp_gateway
 from latka_jazn.version import PACKAGE_VERSION_FULL
@@ -47,4 +48,8 @@ async def test_backend_ready_status_cannot_promote_current_chatgpt_message(tmp_p
     assert s["host_message_toolset_verified"] is False
     assert s["conversation_wide_auto_routing_verified"] is False
     assert s["accepted_visible_turn_verified"] is False
-    assert "current ChatGPT message routing is unverified" in result.content[0].text
+    assert any(
+        "current ChatGPT message routing is unverified" in item.text
+        for item in result.content
+        if isinstance(item, TextContent)
+    )
