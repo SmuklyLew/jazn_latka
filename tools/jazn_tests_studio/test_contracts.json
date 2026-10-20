@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.25",
-  "active_definition_count": 2474,
+  "active_definition_count": 2475,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8221,7 +8221,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 57
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_rejects_localhost_without_network": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8242,7 +8242,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 72
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_rejects_wrong_resource_audience": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8261,7 +8261,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 83
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_rejects_oauth_without_pkce_s256": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8280,7 +8280,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 90
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_rejects_missing_bearer_auth_challenge": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8299,7 +8299,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 97
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_rejects_unprotected_mcp_endpoint": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8318,7 +8318,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 104
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_pre_registered_client_must_be_provisioned_separately": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8337,7 +8337,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_root_metadata_fallback_is_supported": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8356,7 +8356,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 118
     },
     "tests/test_chatgpt_mcp_oauth_connection_preflight.py::test_network_errors_are_redacted_and_fail_closed": {
       "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
@@ -8376,7 +8376,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 133
+      "line": 134
     },
     "tests/test_chatgpt_mcp_readyz_nonblocking.py::test_readyz_status_io_does_not_block_healthz": {
       "path": "tests/test_chatgpt_mcp_readyz_nonblocking.py",
@@ -10834,6 +10834,28 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_chatgpt_status_nonce_host_evidence.py::test_status_nonce_echo_requires_actual_tool_call": {
+      "path": "tests/test_chatgpt_status_nonce_host_evidence.py",
+      "name": "test_status_nonce_echo_requires_actual_tool_call",
+      "purpose": "Status nonce echo requires actual tool call",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
