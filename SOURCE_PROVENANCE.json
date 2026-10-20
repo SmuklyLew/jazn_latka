@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "1483156288a04bed058f8f4ec17c9f2291520dff",
-    "base_version": "16.3.25.5.116.0.34.13-chatgpt-ollama-final-connection-hardening",
+    "base_commit": "dbbe5c5327337e037b95b0d052d5475676b0f525",
+    "base_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "dbbe5c5327337e037b95b0d052d5475676b0f525",
