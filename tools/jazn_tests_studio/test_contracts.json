@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.23",
-  "active_definition_count": 2456,
+  "system_version": "16.3.25.5.116.0.34.24",
+  "active_definition_count": 2465,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -37289,6 +37289,182 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_operator_executor_cross_platform.py::test_allowlist_rejects_shell_and_unknown_action": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_allowlist_rejects_shell_and_unknown_action",
+      "purpose": "Allowlist rejects shell and unknown action",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_operator_executor_cross_platform.py::test_timeout_bounds_fail_closed": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_timeout_bounds_fail_closed",
+      "purpose": "Timeout bounds fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_operator_executor_cross_platform.py::test_missing_launcher_is_not_spawned": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_missing_launcher_is_not_spawned",
+      "purpose": "Missing launcher is not spawned",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_operator_executor_cross_platform.py::test_canonical_version_executes_on_current_host": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_canonical_version_executes_on_current_host",
+      "purpose": "Canonical version executes on current host",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_operator_executor_cross_platform.py::test_main_first_public_dispatch_with_fixed_action": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_main_first_public_dispatch_with_fixed_action",
+      "purpose": "Main first public dispatch with fixed action",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_operator_executor_cross_platform.py::test_spawn_failure_does_not_promote_executor_readiness": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_spawn_failure_does_not_promote_executor_readiness",
+      "purpose": "Spawn failure does not promote executor readiness",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_operator_executor_cross_platform.py::test_failed_subprocess_is_spawned_but_not_success": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_failed_subprocess_is_spawned_but_not_success",
+      "purpose": "Failed subprocess is spawned but not success",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_operator_executor_cross_platform.py::test_timed_out_subprocess_is_killed": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_timed_out_subprocess_is_killed",
+      "purpose": "Timed out subprocess is killed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_operator_executor_cross_platform.py::test_capture_is_bounded_and_hashes_full_data": {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "name": "test_capture_is_bounded_and_hashes_full_data",
+      "purpose": "Capture is bounded and hashes full data",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
     },
     "tests/test_optional_memory_attach_convergence.py::test_system_only_runtime_uses_core_state_without_materializing_private_memory": {
       "path": "tests/test_optional_memory_attach_convergence.py",
