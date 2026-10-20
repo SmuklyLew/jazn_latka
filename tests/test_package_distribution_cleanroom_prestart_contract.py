@@ -14,10 +14,11 @@ def _handoff_step() -> str:
     return text[start:end]
 
 
-def test_prestart_status_is_inactive_while_doctor_reports_release_readiness() -> None:
+def test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness() -> None:
     step = _handoff_step()
     assert 'status_rc=$?' in step
     assert 'test "$status_rc" -eq 1' in step
+    assert step.index('"$BARE_PYTHON" run.py start --json') < step.index('"$BARE_PYTHON" run.py doctor --json')
     assert 'doctor_rc=$?' in step
     assert 'test "$doctor_rc" -eq 0' in step
     assert 'assert p.get("ok") is False' in step
@@ -27,7 +28,7 @@ def test_prestart_status_is_inactive_while_doctor_reports_release_readiness() ->
     assert 'assert p.get("installation_ok") is True' in step
     assert 'assert p.get("activation_ready") is True' in step
     assert 'assert p.get("release_ready") is True' in step
-    assert 'assert p.get("live_runtime_ready") is False' in step
+    assert 'assert p.get("live_runtime_ready") is True' in step
     assert 'assert checks.get("verification_ok") is True' in step
 
 

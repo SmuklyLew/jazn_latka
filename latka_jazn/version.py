@@ -1,3 +1,4 @@
+# v116.0.34.19 reconciles cleanroom offline dependency handoff with diagnostic no-install policy.
 # v116.0.34.18 records locally generated PR catalog before clean-tree release metadata.
 # v116.0.34.17 eliminates Windows PR test-catalog synchronization race.
 # v116.0.34.16 gates MCP/supervisor process entrypoints and records ChatGPT acceptance limits.
@@ -83,9 +84,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.18"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.18"
-PACKAGE_RELEASE_NAME = "chatgpt-ci-clean-checkout-convergence"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.19"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.19"
+PACKAGE_RELEASE_NAME = "offline-cleanroom-handoff-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

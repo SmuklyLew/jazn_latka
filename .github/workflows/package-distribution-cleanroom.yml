@@ -256,24 +256,27 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; assert p.get("ok") is False, p; assert d.get("active_state") == "inactive", d; assert d.get("package_integrity_verified") is True, d' "$RUNNER_TEMP/status.json"
 
           set +e
-          "$BARE_PYTHON" run.py doctor --json > "$RUNNER_TEMP/doctor.json"
-          doctor_rc=$?
-          set -e
-          cat "$RUNNER_TEMP/doctor.json"
-          test "$doctor_rc" -eq 0
-          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is True, p; assert p.get("installation_ok") is True, p; assert p.get("activation_ready") is True, p; assert p.get("release_ready") is True, p; assert p.get("live_runtime_ready") is False, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
-
-          "$BARE_PYTHON" run.py host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
-          cat "$RUNNER_TEMP/host-diagnose.json"
-          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); m=p.get("memory") or {}; assert p.get("ok") is True, p; assert p.get("process_created") is True, p; assert isinstance(p.get("pid"), int) and p["pid"] > 0, p; assert m.get("private_content_read") is False, m' "$RUNNER_TEMP/host-diagnose.json"
-
-          set +e
           "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start.json"
           start_rc=$?
           set -e
           cat "$RUNNER_TEMP/start.json"
           test "$start_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
+
+          # Activation (not a read-only diagnostic) installs the verified offline
+          # dependency set and starts the daemon. Only then can the bare Python
+          # re-exec an already-provisioned interpreter for full doctor diagnostics.
+          set +e
+          "$BARE_PYTHON" run.py doctor --json > "$RUNNER_TEMP/doctor.json"
+          doctor_rc=$?
+          set -e
+          cat "$RUNNER_TEMP/doctor.json"
+          test "$doctor_rc" -eq 0
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is True, p; assert p.get("installation_ok") is True, p; assert p.get("activation_ready") is True, p; assert p.get("release_ready") is True, p; assert p.get("live_runtime_ready") is True, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
+
+          "$BARE_PYTHON" run.py host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
+          cat "$RUNNER_TEMP/host-diagnose.json"
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); m=p.get("memory") or {}; assert p.get("ok") is True, p; assert p.get("process_created") is True, p; assert isinstance(p.get("pid"), int) and p["pid"] > 0, p; assert m.get("private_content_read") is False, m' "$RUNNER_TEMP/host-diagnose.json"
 
           set +e
           "$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status-after-start.json"
