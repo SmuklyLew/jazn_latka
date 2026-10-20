@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
 from latka_jazn.mcp.oauth_preflight import HttpObservation, inspect_chatgpt_oauth_mcp
 
@@ -56,7 +57,7 @@ def _request(
 def test_complete_oauth_metadata_is_discovery_only() -> None:
     request, seen = _request()
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=request)
-    assert result["ok"] is True, result["blockers"]
+    assert result["ok"] is True, cast(list[str], result["blockers"])
     assert result["registration_mode"] == "cimd"
     assert result["oauth_login_verified"] is False
     assert result["chatgpt_connection_verified"] is False
@@ -76,35 +77,35 @@ def test_rejects_localhost_without_network() -> None:
     )
     assert result["ok"] is False
     assert not calls
-    assert result["checks"]["public_https_mcp_url"] is False
+    assert cast(dict[str, bool], result["checks"])["public_https_mcp_url"] is False
 
 
 def test_rejects_wrong_resource_audience() -> None:
     request, _ = _request(scope_mismatch=True)
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=request)
     assert not result["ok"]
-    assert "resource_audience_mismatch" in result["blockers"]
+    assert "resource_audience_mismatch" in cast(list[str], result["blockers"])
 
 
 def test_rejects_oauth_without_pkce_s256() -> None:
     request, _ = _request(no_pkce=True)
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=request)
     assert not result["ok"]
-    assert "oauth_pkce_s256_missing" in result["blockers"]
+    assert "oauth_pkce_s256_missing" in cast(list[str], result["blockers"])
 
 
 def test_rejects_missing_bearer_auth_challenge() -> None:
     request, _ = _request(missing_challenge=True)
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=request)
     assert not result["ok"]
-    assert "bearer_resource_metadata_challenge_missing" in result["blockers"]
+    assert "bearer_resource_metadata_challenge_missing" in cast(list[str], result["blockers"])
 
 
 def test_rejects_unprotected_mcp_endpoint() -> None:
     request, _ = _request(no_401=True)
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=request)
     assert not result["ok"]
-    assert "mcp_did_not_require_oauth" in result["blockers"]
+    assert "mcp_did_not_require_oauth" in cast(list[str], result["blockers"])
 
 
 def test_pre_registered_client_must_be_provisioned_separately() -> None:
@@ -126,7 +127,7 @@ def test_root_metadata_fallback_is_supported() -> None:
         return request(url, method, data)
 
     result = inspect_chatgpt_oauth_mcp(ENDPOINT, request=fallback)
-    assert result["ok"] is True, result["blockers"]
+    assert result["ok"] is True, cast(list[str], result["blockers"])
     assert seen and seen[0][0] == ENDPOINT
 
 
@@ -137,4 +138,4 @@ def test_network_errors_are_redacted_and_fail_closed() -> None:
     serialized = json.dumps(result)
     assert "sensitive-secret" not in serialized
     assert result["ok"] is False
-    assert "unauthenticated_mcp_request_failed" in result["blockers"]
+    assert "unauthenticated_mcp_request_failed" in cast(list[str], result["blockers"])
