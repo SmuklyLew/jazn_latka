@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
-  "runtime_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
-  "package_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
-  "generated_at_utc": "2026-10-20T15:28:49+00:00",
-  "updated_at_utc": "2026-10-20T15:28:49+00:00",
+  "version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+  "runtime_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+  "package_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+  "generated_at_utc": "2026-10-20T16:32:24+00:00",
+  "updated_at_utc": "2026-10-20T16:32:24+00:00",
   "start_file": "run.py",
-  "file_count": 3213,
-  "static_file_count": 3213,
+  "file_count": 3216,
+  "static_file_count": 3216,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2969,
-      "sha256": "0ad834346a9db3e33ef1a388709826a4408c99eb8d9747fb621bd176f6e94c48",
+      "size_bytes": 2993,
+      "sha256": "a8572909a60261bee8a48a100a6841e8eb39041d9f53882a9cacccecb84c4f35",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1947,
-      "sha256": "605b5af29c436e7b9f0d938fab5ecb18b0e0ea36bada004ae526449ad0201d9b",
+      "size_bytes": 1951,
+      "sha256": "74776e7e402ccf5a34cfff68e7869fc1ca1c83d5b4b979c3dd5f70cf44187bc1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3298,6 +3298,15 @@
       "path": "docs/reports/PYRIGHT_ACTIVE_TREE_BASELINE_2026-09-04.md",
       "size_bytes": 4103,
       "sha256": "1e30d5482712a6cd64273bac2c5abaec6013299f9c3c401978ac420c35270a3e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/BOUNDED_OPERATOR_EXECUTOR.md",
+      "size_bytes": 2741,
+      "sha256": "958e89065d8e8a698ef672d595a3d8f5f575dd7708e05ca7392a6080e121d8c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9039,7 +9048,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "3607fa2df2dd2f40a7da4c4fb160cda0fc5cd8ac72a9aa46f62305b13315e23f",
+      "sha256": "5ba91df09761ba37703f6ace8ec12865c83ef8c0b7fb0fe48452a917c2470d39",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9130,6 +9139,15 @@
       "path": "latka_jazn/runtime/operation_registry.py",
       "size_bytes": 7764,
       "sha256": "8fbf89be4e91b38a57b52611bc7f4647f0ab2f262e13a03d57e29fbb528e07f7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/runtime/operator_executor.py",
+      "size_bytes": 5736,
+      "sha256": "2ddc096dd6dc7a4d7d0ecb947cb50fcbea02e19daadf379764ecafc4bed48ad1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10496,8 +10514,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12443,
-      "sha256": "db89f376e02adda9b398c71f3a284c8a1304999ce976baecfef2e8806afd29a2",
+      "size_bytes": 12535,
+      "sha256": "223b9fd2fa326e3083fcc079271c71c7cd4086322660783e44e9c014b2323baa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10604,8 +10622,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 135796,
-      "sha256": "ef168f0336d3e5c69d0952b2bbabbe01818bd6596760623824efb9365665785a",
+      "size_bytes": 136138,
+      "sha256": "697b962b3d63a04caa19353c854ca6b278877ce74536ecea0bc8dd69aa92613e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27055,6 +27073,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_operator_executor_cross_platform.py",
+      "size_bytes": 4398,
+      "sha256": "754d1915aaace144c479f161a49b0edb3d4ac33467b0765089054832422e8169",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_optional_memory_attach_convergence.py",
       "size_bytes": 9607,
       "sha256": "67b42def9b6acf7d991fe819164e9599cb251684a632c2fcac25542a3db74ac9",
@@ -28721,8 +28748,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2266208,
-      "sha256": "e1706b51e48299d4d9ac3d54c0c832d5cb1084eb993094d23b471823610f1a61",
+      "size_bytes": 2272834,
+      "sha256": "8162dc27bbfc35a9b9b5912a59d8a9abe341789503c6c8f0a33d8d3ff9c99b06",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29369,11 +29396,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+  "release_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
-    "package_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
-    "release_version": "16.3.25.5.116.0.34.23-preflight-observability-contract"
+    "runtime_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+    "package_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+    "release_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor"
   },
   "legacy_aliases": {
     "version": "release_version"
