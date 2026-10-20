@@ -112,6 +112,13 @@ if __name__ == "__main__" and _version_fast_path_requested(sys.argv[1:]):
     print(PACKAGE_VERSION_FULL)
     raise SystemExit(0)
 
+if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "operator-exec":
+    # Dependency-free, allowlisted diagnostics; cannot activate Jaźń or expose shell.
+    from latka_jazn.runtime.operator_executor import run_operator_executor_cli
+
+    _configure_stdio_utf8()
+    raise SystemExit(run_operator_executor_cli(sys.argv[2:]))
+
 if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-preflight":
     from latka_jazn.bootstrap.chatgpt_host_preflight import run_host_preflight_cli
 

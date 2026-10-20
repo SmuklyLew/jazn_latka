@@ -1,3 +1,4 @@
+# v116.0.34.24 adds dependency-free, local-only, bounded operator subprocess execution.
 # v116.0.34.23 aligns cleanroom observability assertions with dependency-free preflight.
 # v116.0.34.22 uses stdlib preflight for dependency-empty cleanroom and instruments Windows daemon teardown.
 # v116.0.34.21 validates canonical venv symlink entry paths without dereferencing Python executable targets.
@@ -88,9 +89,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.23"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.23"
-PACKAGE_RELEASE_NAME = "preflight-observability-contract"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.24"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.24"
+PACKAGE_RELEASE_NAME = "bounded-cross-host-operator-executor"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
