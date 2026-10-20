@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.14",
-  "active_definition_count": 2434,
+  "active_definition_count": 2435,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10301,6 +10301,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 86
+    },
+    "tests/test_chatgpt_status_backend_boundary.py::test_backend_ready_status_cannot_promote_current_chatgpt_message": {
+      "path": "tests/test_chatgpt_status_backend_boundary.py",
+      "name": "test_backend_ready_status_cannot_promote_current_chatgpt_message",
+      "purpose": "Backend ready status cannot promote current chatgpt message",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "anyio"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_gateway",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
