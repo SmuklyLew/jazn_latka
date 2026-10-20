@@ -14,6 +14,8 @@ import CHATGPT_BOOTSTRAP as bootstrap
 ROOT = Path(__file__).resolve().parents[1]
 _REQUIRED_FILES = {
     "run.py": "print('run')\n",
+    "main.py": "# test control plane\n",
+    "AGENTS.chatgpt.md": "# test host runbook\n",
     "AGENTS.md": "# test router\n",
     "latka_jazn/version.py": "PACKAGE_VERSION = 'test'\n",
     "PACKAGE_INTEGRITY_MANIFEST.json": "{}\n",

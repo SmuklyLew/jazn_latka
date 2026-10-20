@@ -26,7 +26,9 @@ def _digest_bytes(value: bytes) -> str:
 def _write_reusable_system_zip(path: Path) -> str:
     static_members = {
         "run.py": b"print('ok')\n",
-        "AGENTS.md": b"# test\n",
+        "main.py": b"# test control plane\n",
+    "AGENTS.chatgpt.md": b"# test host runbook\n",
+    "AGENTS.md": b"# test\n",
         "latka_jazn/version.py": b"PACKAGE_VERSION='test'\n",
         "SOURCE_PROVENANCE.json": b"{}\n",
     }
