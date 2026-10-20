@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
-  "runtime_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
-  "package_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
-  "generated_at_utc": "2026-10-20T16:32:24+00:00",
-  "updated_at_utc": "2026-10-20T16:32:24+00:00",
+  "version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+  "runtime_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+  "package_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+  "generated_at_utc": "2026-10-20T21:35:49+00:00",
+  "updated_at_utc": "2026-10-20T21:35:49+00:00",
   "start_file": "run.py",
-  "file_count": 3216,
-  "static_file_count": 3216,
+  "file_count": 3219,
+  "static_file_count": 3219,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2997,
-      "sha256": "72885d2b966f6930af28593d224828faffac6fcb8f12fe49dc704638aea63b76",
+      "size_bytes": 2949,
+      "sha256": "e78dda3b0396dc8583ae6572431ccade2aa9c46264249ab4608bae727e843c10",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1951,
-      "sha256": "74776e7e402ccf5a34cfff68e7869fc1ca1c83d5b4b979c3dd5f70cf44187bc1",
+      "size_bytes": 1943,
+      "sha256": "4bc73475df7cfa289a8ea9db93c78f698a978c9715e0efd37e4841518c7c7439",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3361,6 +3361,15 @@
       "path": "docs/runtime/CHATGPT_MCP_EXPOSURE_RECOVERY.md",
       "size_bytes": 3965,
       "sha256": "8edf5f02b858c7022b0cbc033b238b599e5cea40b71852f9257bfce4f2a22f06",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/CHATGPT_OAUTH_CONNECTION_ACCEPTANCE.md",
+      "size_bytes": 4677,
+      "sha256": "4035522c24278dc6eca8a9de19ca7ffdbebe8e7a728438e5722ebafdbfd1e9f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6815,8 +6824,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_gateway.py",
-      "size_bytes": 39659,
-      "sha256": "6db7907d7ef8b32445a3647ea15ebc786545615f41d983365005b7807398bd2c",
+      "size_bytes": 39826,
+      "sha256": "3274b536cc1acfc0330ee9b3dca99a69f891ee07d4a121e6e5600ca73f3d077c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6844,6 +6853,15 @@
       "path": "latka_jazn/mcp/oauth_introspection.py",
       "size_bytes": 7026,
       "sha256": "65382b8f0d8666826d925cd472277699ff6b168d1b815a66d7e47f8b7bcb10d0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/mcp/oauth_preflight.py",
+      "size_bytes": 11198,
+      "sha256": "9b0e94805ff318f911be1e3aa6d0637c18112b8b2f3e78542a305b8230228a2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9048,7 +9066,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "5ba91df09761ba37703f6ace8ec12865c83ef8c0b7fb0fe48452a917c2470d39",
+      "sha256": "9b52f9c341e2f7507299922b24ffd0981a0657f612bb811bb695255502e1eb62",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10514,8 +10532,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12535,
-      "sha256": "223b9fd2fa326e3083fcc079271c71c7cd4086322660783e44e9c014b2323baa",
+      "size_bytes": 12643,
+      "sha256": "cdf251043c348e4f27f440e7f9b69200950ecfbadb618bd080413793a049f112",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10622,8 +10640,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 136138,
-      "sha256": "697b962b3d63a04caa19353c854ca6b278877ce74536ecea0bc8dd69aa92613e",
+      "size_bytes": 136387,
+      "sha256": "675e9b49cd65fdcb7cbe3bf78b10bd5a39ab4cc02e05d622afdbbdd2b46180d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24760,6 +24778,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_mcp_oauth_connection_preflight.py",
+      "size_bytes": 5433,
+      "sha256": "b8bac2ea74f12d2286a970600c58def14c73ef75c4beb7857c053bad436b0e78",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_mcp_readyz_nonblocking.py",
       "size_bytes": 3023,
       "sha256": "52145d3a322f5c48995eb1153c0407deaa6542a9d8569e4b7f7041c09dc214da",
@@ -28748,8 +28775,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2272834,
-      "sha256": "8162dc27bbfc35a9b9b5912a59d8a9abe341789503c6c8f0a33d8d3ff9c99b06",
+      "size_bytes": 2279560,
+      "sha256": "1742d62fdaf94a058de66501766862137debbacec5eb61c5e29071e726fb9cf7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29396,11 +29423,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
+  "release_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
-    "package_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor",
-    "release_version": "16.3.25.5.116.0.34.24-bounded-cross-host-operator-executor"
+    "runtime_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+    "package_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+    "release_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance"
   },
   "legacy_aliases": {
     "version": "release_version"
