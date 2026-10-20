@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "39a9db31a1047cdcd9a6f940cae3e1b07bf72b02",
-  "base_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-  "commit_date": "2026-10-20T14:10:59Z",
+  "base_merge_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
+  "base_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "commit_date": "2026-10-20T14:21:32Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-20T14:10:59+00:00",
+  "generated_at_utc": "2026-10-20T14:21:32+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "4abfa025656556523d487083b3eeb412b68dee8e",
+  "git_tree_sha": "f1ed20922137eb17dec9e66e3cbe00ee603be5dd",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "39a9db31a1047cdcd9a6f940cae3e1b07bf72b02",
-    "source_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom"
+    "source_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
+    "source_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "39a9db31a1047cdcd9a6f940cae3e1b07bf72b02",
+  "source_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "source_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "update_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
   "version_source": "latka_jazn/version.py"
 }

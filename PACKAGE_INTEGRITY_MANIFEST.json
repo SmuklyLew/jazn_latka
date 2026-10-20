@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-  "runtime_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-  "package_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-  "generated_at_utc": "2026-10-20T14:10:59+00:00",
-  "updated_at_utc": "2026-10-20T14:10:59+00:00",
+  "version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "package_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "generated_at_utc": "2026-10-20T14:21:32+00:00",
+  "updated_at_utc": "2026-10-20T14:21:32+00:00",
   "start_file": "run.py",
-  "file_count": 3205,
-  "static_file_count": 3205,
+  "file_count": 3207,
+  "static_file_count": 3207,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2969,
-      "sha256": "220164962f9f5d368c8b0b3d047770bbe1f952b336f09ffb3ae880329dba57ec",
+      "size_bytes": 2957,
+      "sha256": "6d24a110e63bc48092fb89b2aa359d0a2fc6ed81ec2bd5e8b26445f44f7ee50f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "d876357f0ba1baa37af539d023b083399781e4191444db61625ea82f2c47e329",
+      "size_bytes": 1946,
+      "sha256": "8ea7d32252cf0e2f120feeaf2d4df67b84f7e8db879163a855964dc77ed38389",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2755,6 +2755,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_34_21_MANAGED_VENV_SYMLINK_VALIDATION.md",
+      "size_bytes": 2144,
+      "sha256": "221d54f6f0cb2f6e5e4e249a266fd132595345c1e2b0d35d2fc43c86c266f24f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_4_WINDOWS_TK_PYRIGHT_CI_REPAIR.md",
       "size_bytes": 3300,
       "sha256": "dd4ed4fea015bb058fea6a320e328ec855c5b3dd3c50bb98402a38c44e487b2c",
@@ -3306,7 +3315,7 @@
     {
       "path": "docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md",
       "size_bytes": 7765,
-      "sha256": "ee57550f9ffaad10880df0ac546d5af6750b900b22fb27c7061a50e2c7092056",
+      "sha256": "16b6d97acc22dc5c7a4fb8c34a3628a380b1e5981f479dcf0a1b227727f8e011",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6635,8 +6644,8 @@
     },
     {
       "path": "latka_jazn/dependencies/environment.py",
-      "size_bytes": 23203,
-      "sha256": "0d6894fcb467120330c2d464f24fba99def53048f275c63faa0f3d371f0b2737",
+      "size_bytes": 23980,
+      "sha256": "22b30e8323493ceefbd84dc1dcc0ab492e4bde0463e2b5bf958f37d5141fe118",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9012,7 +9021,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "c7b3a1d4c7e0926effbd236d88879233de4910c5366e8968eb39efaaf47834dc",
+      "sha256": "be7c4b3a8a7245391c94127b6edd1f7e92e07d8161fa2af3211ae7e6b141b541",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10469,8 +10478,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12137,
-      "sha256": "907f64e61e828990ca13695e1197a6e76ec6ec15fb7f4e6b564853986d9f9ba6",
+      "size_bytes": 12244,
+      "sha256": "b3dab934a3c33aac53c416daae0e0f49ee43f0c76ad594367aef5da0be8c89e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17536,6 +17545,15 @@
       "path": "tests/archive/test_codefirst_host_contracts_v16_3_25_5_115_21_13.py",
       "size_bytes": 3348,
       "sha256": "5efe58a2782eceeb9ccb6b6b585f4291fd7e25cf5c720874b586e2528813a5fc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_dependency_studio__pre_venv_symlink_fix_v16_3_25_5_116_0_34_20.py",
+      "size_bytes": 19053,
+      "sha256": "53f778956a1bc64526768e3814aad1dc0b7ddc016698e7b6d77b3d7a20e93315",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -25274,8 +25292,8 @@
     },
     {
       "path": "tests/test_dependency_studio.py",
-      "size_bytes": 19053,
-      "sha256": "53f778956a1bc64526768e3814aad1dc0b7ddc016698e7b6d77b3d7a20e93315",
+      "size_bytes": 23882,
+      "sha256": "123485bc1471a89be65fe47214882b4cea79da9597801217da888b5a5f77f46f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28649,8 +28667,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2263620,
-      "sha256": "b08f2f2124109ac8093f33307b2c770586f9cdd9bd044ce12ebaa68f94a13df5",
+      "size_bytes": 2265392,
+      "sha256": "e04f7fe77c037ff894c898c6e7d27dcd549df8969bbbef6236e59f81611d27e9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29297,11 +29315,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-    "package_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
-    "release_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom"
+    "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+    "package_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+    "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation"
   },
   "legacy_aliases": {
     "version": "release_version"
