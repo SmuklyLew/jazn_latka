@@ -34,6 +34,9 @@ _ACTIVATION_COMMANDS = {
     "chat-gpt",
     "chat-ollama",
     "runtime-bootstrap",
+    "mcp-http",        # explicit MCP HTTP listener: a process-start command
+    "supervisor-run",  # persistent supervisor: a process-start command
+    "host-op-submit", # may submit daemon/supervisor start operations
     "__daemon-run-hotfix",
 }
 
