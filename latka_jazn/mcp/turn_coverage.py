@@ -16,6 +16,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _MAX_RECORDS = 10_000
 _MAX_JSON_BYTES = 2_097_152
@@ -111,30 +113,60 @@ def audit_turn_coverage(expected: object, observed: object) -> dict[str, Any]:
         request_hash = _digest(final.get("host_request_contract_hash"))
         text_digest = _digest(gate.get("user_text_sha256"))
         finalized_digest = _digest(final.get("final_text_sha256"))
+        final_outer = _object(row.get("final"))
+        source_gate = _object(final.get("host_pre_response_gate"))
+        final_text = final.get("final_visible_text")
+        text_integrity = (
+            not isinstance(final_text, str)
+            or (
+                bool(final_text)
+                and hmac.compare_digest(finalized_digest, sha256_host_visible_text(final_text))
+            )
+        )
+        two_phase_accepted = (
+            gate.get("presentation_action") == "generate_then_finalize"
+            and final.get("accepted") is True
+            and bool(request_hash)
+        )
+        # A self-finalized runtime reply uses display_exact immediately:
+        # there is no host continuation token or phase-2 accepted flag.
+        direct_exact_accepted = (
+            gate.get("presentation_action") == "display_exact"
+            and gate.get("visible_output_source") == "runtime_exact"
+            and final.get("visible_output_source") == "runtime_exact"
+            and final.get("host_route_bound") is True
+            and source_gate.get("host_route_bound") is True
+            and source_gate.get("presentation_action") == "display_exact"
+            and hmac.compare_digest(_digest(source_gate.get("user_text_sha256")), digest)
+            and _id(source_gate.get("runtime_turn_id")) == turn_id
+            and _id(source_gate.get("trace_id")) == trace_id
+        )
         valid = (
             gate.get("host_pre_response_gate") is True
             and gate.get("runtime_turn_invoked") is True
             and gate.get("turn_ingress_gate_enforced") is True
             and gate.get("host_route_bound") is True
             and gate.get("host_routing_bypass_detected") is not True
-            and gate.get("presentation_action") in ("generate_then_finalize", "display_exact")
             and hmac.compare_digest(text_digest, digest)
             and bool(turn_id and trace_id)
+            and final_outer.get("isError") is not True
             and final.get("ok") is True
-            and final.get("accepted") is True
             and final.get("action") == "display_exact"
             and final.get("must_display_exactly") is True
-            and bool(finalized_digest and request_hash)
+            and bool(finalized_digest)
+            and text_integrity
             and hmac.compare_digest(turn_id, final_turn_id)
             and hmac.compare_digest(trace_id, final_trace_id)
             and turn_id not in used_turn_ids
-            and request_hash not in used_request_hashes
+            and (not request_hash or request_hash not in used_request_hashes)
+            and (two_phase_accepted or direct_exact_accepted)
         )
         if not valid:
             rejected.append(message_id)
             continue
         used_turn_ids.add(turn_id)
-        used_request_hashes.add(request_hash)
+        if request_hash:
+            used_request_hashes.add(request_hash)
         accepted_count += 1
 
     complete = not (missing or unexpected or rejected)
