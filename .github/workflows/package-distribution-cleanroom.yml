@@ -247,13 +247,17 @@ jobs:
           set -euo pipefail
           cd "${{ steps.extract.outputs.runtime_dir }}"
 
+          # Before offline activation, the deliberately dependency-empty Python
+          # may run ONLY the stdlib-capable host preflight. Full status/doctor
+          # can import zoneinfo and therefore require the verified managed venv
+          # (Windows has no guaranteed system IANA tz database).
           set +e
-          "$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status.json"
-          status_rc=$?
+          "$BARE_PYTHON" run.py host-preflight --json > "$RUNNER_TEMP/preflight.json"
+          preflight_rc=$?
           set -e
-          cat "$RUNNER_TEMP/status.json"
-          test "$status_rc" -eq 1
-          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; assert p.get("ok") is False, p; assert d.get("active_state") == "inactive", d; assert d.get("package_integrity_verified") is True, d' "$RUNNER_TEMP/status.json"
+          cat "$RUNNER_TEMP/preflight.json"
+          test "$preflight_rc" -eq 0
+          python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("gate_passed") is True, p; assert p.get("bootstrap_allowed") is True, p' "$RUNNER_TEMP/preflight.json"
 
           set +e
           "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start.json"

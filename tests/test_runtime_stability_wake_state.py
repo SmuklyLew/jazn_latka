@@ -397,10 +397,28 @@ def test_isolated_daemon_start_status_doctor_stop_preserves_wake_state(tmp_path:
         assert wake["active_snapshot"]["validation_status"] == "valid"
         assert wake["freshness"]["logical_fingerprint_changed"] is False
     finally:
+        # Keep the production stop gate unchanged: BOTH endpoint and owned
+        # process must disappear. The isolated Windows runner can have heavy
+        # teardown contention; use an explicit bounded test-only allowance.
+        stop_budget = 30.0 if os.name == "nt" else 10.0
+        stop_started = time.monotonic()
         stopped = stop_daemon(
-            cfg, host="127.0.0.1", port=port, marker_output=marker, timeout=10.0
+            cfg, host="127.0.0.1", port=port, marker_output=marker, timeout=stop_budget
         )
-        assert stopped["stopped"] is True, stopped
+        assert stopped["stopped"] is True, json.dumps({
+            "error_code": stopped.get("error_code"),
+            "shutdown_response": stopped.get("shutdown_response"),
+            "shutdown_error": stopped.get("shutdown_error"),
+            "endpoint_down_observed": stopped.get("endpoint_down_observed"),
+            "process_exit_observed": stopped.get("process_exit_observed"),
+            "expected_pid": stopped.get("expected_pid"),
+            "after": {key: (stopped.get("after") or {}).get(key) for key in (
+                "active_state", "pid", "pid_alive", "endpoint_reachable",
+                "heartbeat_state", "active_state_reason", "identity_state",
+            )},
+            "stop_elapsed_seconds": round(time.monotonic() - stop_started, 3),
+            "stop_budget_seconds": stop_budget,
+        }, ensure_ascii=False, sort_keys=True, default=str)
 
 
 def test_memory_prepare_cli_dry_run_exit_codes_follow_data_status(capsys, tmp_path: Path) -> None:

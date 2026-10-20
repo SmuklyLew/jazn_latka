@@ -14,16 +14,17 @@ def _handoff_step() -> str:
     return text[start:end]
 
 
-def test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness() -> None:
+def test_dependency_empty_preflight_and_poststart_doctor_reports_release_readiness() -> None:
     step = _handoff_step()
-    assert 'status_rc=$?' in step
-    assert 'test "$status_rc" -eq 1' in step
+    assert '"$BARE_PYTHON" run.py host-preflight --json' in step
+    assert 'preflight_rc=$?' in step
+    assert 'test "$preflight_rc" -eq 0' in step
     assert step.index('"$BARE_PYTHON" run.py start --json') < step.index('"$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" doctor --json')
     assert 'doctor_rc=$?' in step
     assert 'test "$doctor_rc" -eq 0' in step
-    assert 'assert p.get("ok") is False' in step
-    assert 'assert d.get("active_state") == "inactive"' in step
-    assert 'assert d.get("package_integrity_verified") is True' in step
+    assert 'assert p.get("gate_passed") is True' in step
+    assert 'assert p.get("bootstrap_allowed") is True' in step
+    assert step.index('"$BARE_PYTHON" run.py host-preflight --json') < step.index('"$BARE_PYTHON" run.py start --json')
     assert 'assert p.get("ok") is True' in step
     assert 'assert p.get("installation_ok") is True' in step
     assert 'assert p.get("activation_ready") is True' in step

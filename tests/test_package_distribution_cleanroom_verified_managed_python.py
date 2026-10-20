@@ -25,5 +25,5 @@ def test_cleanroom_uses_verified_managed_python_for_poststart_diagnostics() -> N
                  'start --json > "$RUNNER_TEMP/start-again.json"',
                  'stop --json > "$RUNNER_TEMP/stop.json"'):
         assert f'"$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" {args}' in workflow
-    assert '"$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status.json"' in workflow
+    assert '"$BARE_PYTHON" run.py host-preflight --json > "$RUNNER_TEMP/preflight.json"' in workflow
     assert '"$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start.json"' in workflow
