@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-  "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-  "package_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-  "generated_at_utc": "2026-10-20T14:21:32+00:00",
-  "updated_at_utc": "2026-10-20T14:21:32+00:00",
+  "version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+  "runtime_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+  "package_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+  "generated_at_utc": "2026-10-20T14:54:04+00:00",
+  "updated_at_utc": "2026-10-20T14:54:04+00:00",
   "start_file": "run.py",
-  "file_count": 3207,
-  "static_file_count": 3207,
+  "file_count": 3211,
+  "static_file_count": 3211,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -227,8 +227,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 21103,
-      "sha256": "23f6bdc33301517026da4cece38e79b254b5541330e2ce873fb767000c4b2cb3",
+      "size_bytes": 21388,
+      "sha256": "9d5b2e8dd86df2a44677cfbe3cafdcadf413ebed5bcebf4d97acee038c5a689b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2957,
-      "sha256": "6d24a110e63bc48092fb89b2aa359d0a2fc6ed81ec2bd5e8b26445f44f7ee50f",
+      "size_bytes": 3011,
+      "sha256": "fa3ab4c135527c4716b08c7fb0204dd559c63d5a8a8b262528292affd9d0574e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1946,
-      "sha256": "8ea7d32252cf0e2f120feeaf2d4df67b84f7e8db879163a855964dc77ed38389",
+      "size_bytes": 1955,
+      "sha256": "d896cbc779efede956b231a4a2f20d9ba37352dc577b2de0cb4ffec1ac6dd9cc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2764,6 +2764,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_34_22_WINDOWS_CLEANROOM_PREFLIGHT_DAEMON_STOP.md",
+      "size_bytes": 3140,
+      "sha256": "a61aefda8f8e4bb9b721c5e01de7e4b0337b515d524f3f27cb075b3770d91ffa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_4_WINDOWS_TK_PYRIGHT_CI_REPAIR.md",
       "size_bytes": 3300,
       "sha256": "dd4ed4fea015bb058fea6a320e328ec855c5b3dd3c50bb98402a38c44e487b2c",
@@ -3315,7 +3324,7 @@
     {
       "path": "docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md",
       "size_bytes": 7765,
-      "sha256": "16b6d97acc22dc5c7a4fb8c34a3628a380b1e5981f479dcf0a1b227727f8e011",
+      "sha256": "362ab92a2a34e11a7ffcb2e3241e5daae2646c5860583201a4e40308a94be7f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9021,7 +9030,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "be7c4b3a8a7245391c94127b6edd1f7e92e07d8161fa2af3211ae7e6b141b541",
+      "sha256": "6e4e0d0149262098b69fa2a99c5198b56b343cc92c39262272df6ea2387379e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10478,8 +10487,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12244,
-      "sha256": "b3dab934a3c33aac53c416daae0e0f49ee43f0c76ad594367aef5da0be8c89e3",
+      "size_bytes": 12362,
+      "sha256": "e430b1252770c5e5fe2f5c3a5b55f7b9ad66a516ba69f4e556d101ce0ad4bc68",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17812,6 +17821,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_package_distribution_cleanroom_prestart_contract__pre_v16_3_25_5_116_0_34_22.py",
+      "size_bytes": 2653,
+      "sha256": "3359ea863bda1ef82a0638f4119adbb39fa7ee9dea07e9283b2ec58e55091170",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_package_distribution_cleanroom_prestart_contract__source_v16_3_25_5_116_0_34_18.py",
       "size_bytes": 2470,
       "sha256": "52c4b18f5bfa24e853ae3c76d34475773252535cd7554a30bc3b2773186a7fa6",
@@ -17824,6 +17842,15 @@
       "path": "tests/archive/test_package_distribution_cleanroom_prestart_contract__source_v16_3_25_5_116_0_34_19.py",
       "size_bytes": 2589,
       "sha256": "6286b4a9efb05bd9e5eecaaf081d8fae750c727d92779218db8a36f76ff085aa",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_package_distribution_cleanroom_verified_managed_python__pre_v16_3_25_5_116_0_34_22.py",
+      "size_bytes": 1645,
+      "sha256": "42d47fc8caae497affcafcb61e4f84eacb3ee38f52d2a44c0d3ee656573fbaa8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17860,6 +17887,15 @@
       "path": "tests/archive/test_release_workflow_hardening_v16_3_25_5_29.py",
       "size_bytes": 5739,
       "sha256": "1cf814d3aeefe2d98c7f755d26304cce692692c42c5f57e378a1ea8997125a85",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_stability_wake_state__pre_v16_3_25_5_116_0_34_22.py",
+      "size_bytes": 24756,
+      "sha256": "b00d7b4f13589fd978c7284a649f8234577ddec653fba1be00918e0bdf66595f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27083,8 +27119,8 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "size_bytes": 2653,
-      "sha256": "3359ea863bda1ef82a0638f4119adbb39fa7ee9dea07e9283b2ec58e55091170",
+      "size_bytes": 2778,
+      "sha256": "0c5ea525d5925282381637fdb2e3e14cb5c90d9edfc69c0d1589b87ae7b1b08f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27092,8 +27128,8 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_verified_managed_python.py",
-      "size_bytes": 1645,
-      "sha256": "42d47fc8caae497affcafcb61e4f84eacb3ee38f52d2a44c0d3ee656573fbaa8",
+      "size_bytes": 1656,
+      "sha256": "b0ad0110140d0454e0cff77fedf3442568f7847f05279b5f4063998f94b8824a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27749,8 +27785,8 @@
     },
     {
       "path": "tests/test_runtime_stability_wake_state.py",
-      "size_bytes": 24756,
-      "sha256": "b00d7b4f13589fd978c7284a649f8234577ddec653fba1be00918e0bdf66595f",
+      "size_bytes": 25913,
+      "sha256": "aeb48bd31c1c5544451fe92d49329d9be499ccd0b55cf9b1ce371ff9197eab60",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28667,8 +28703,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2265392,
-      "sha256": "e04f7fe77c037ff894c898c6e7d27dcd549df8969bbbef6236e59f81611d27e9",
+      "size_bytes": 2265389,
+      "sha256": "214699c742aec42e0a8b28dee1fc60224d912deec9dd282bc4e26d1a7b8767ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29315,11 +29351,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "release_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-    "package_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-    "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation"
+    "runtime_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+    "package_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+    "release_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown"
   },
   "legacy_aliases": {
     "version": "release_version"

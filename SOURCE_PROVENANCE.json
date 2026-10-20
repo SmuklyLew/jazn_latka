@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
-  "base_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
-  "commit_date": "2026-10-20T14:21:32Z",
+  "base_merge_commit": "c1430c97461a5b5ce57938df8f5bfe9977c8a4cf",
+  "base_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+  "commit_date": "2026-10-20T14:54:04Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-20T14:21:32+00:00",
+  "generated_at_utc": "2026-10-20T14:54:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f1ed20922137eb17dec9e66e3cbe00ee603be5dd",
+  "git_tree_sha": "98a1741284989d59306c7335fe5d5ff3bf444292",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.14-chatgpt-turn-coverage-gate",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
-    "source_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation"
+    "source_commit": "c1430c97461a5b5ce57938df8f5bfe9977c8a4cf",
+    "source_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "release_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "runtime_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "ab741162e4c8e5d41d38cc3979c81c0253162d90",
+  "source_commit": "c1430c97461a5b5ce57938df8f5bfe9977c8a4cf",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "source_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.21-managed-venv-symlink-validation",
+  "update_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
   "version_source": "latka_jazn/version.py"
 }
