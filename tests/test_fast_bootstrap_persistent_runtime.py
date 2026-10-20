@@ -86,7 +86,7 @@ def test_verified_materialization_reuse_skips_zip_rehash_and_extraction(tmp_path
     assert reused["materialization_mode"] == "verified_reuse"
     assert reused["reused_existing"] is True
     assert reused["source_zip_rehashed"] is False
-    assert reused["verified_static_file_count"] == 4
+    assert reused["verified_static_file_count"] == 6
 
 
 def test_verified_materialization_reuse_fails_closed_after_static_tamper(tmp_path: Path) -> None:
