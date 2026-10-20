@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
-  "runtime_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
-  "package_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
-  "generated_at_utc": "2026-10-20T13:36:23+00:00",
-  "updated_at_utc": "2026-10-20T13:36:23+00:00",
+  "version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
+  "package_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
+  "generated_at_utc": "2026-10-20T13:44:19+00:00",
+  "updated_at_utc": "2026-10-20T13:44:19+00:00",
   "start_file": "run.py",
-  "file_count": 3194,
-  "static_file_count": 3194,
+  "file_count": 3196,
+  "static_file_count": 3196,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -245,8 +245,8 @@
     },
     {
       "path": ".github/workflows/powershell-terminal-regressions.yml",
-      "size_bytes": 6457,
-      "sha256": "e5fe2d526826d933fba76041391e56f878dfb1c325d1f55704a37b3f6d477f87",
+      "size_bytes": 6742,
+      "sha256": "3bc49171e5820cd2a6bca547beac9dbd4e2f83fec08dc397a29b4a2fd77b67bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2993,
-      "sha256": "8e177fc606160427e0bcb18f6918f508d288d187fcd9d0eaa25849e23a28d756",
+      "size_bytes": 2981,
+      "sha256": "93c8ab3f010e50a8a64e4d440b5f9344a4215d9faf677a48f5303273ac9e3183",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1952,
-      "sha256": "01bec184e421f836ad736825a0771f5df71707c3b27c2fdb10d87c15de85d327",
+      "size_bytes": 1950,
+      "sha256": "23ab20708337e722329845b1a53b69f8839686ee039ee90a71e2c3100bd6a399",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2719,6 +2719,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_34_17_PR392_POWERSHELL_CATALOG_RACE.md",
+      "size_bytes": 2014,
+      "sha256": "5a9b7529f29900aba031316fd92c760f323e23a7316124495e04281d0d0141e2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_4_WINDOWS_TK_PYRIGHT_CI_REPAIR.md",
       "size_bytes": 3300,
       "sha256": "dd4ed4fea015bb058fea6a320e328ec855c5b3dd3c50bb98402a38c44e487b2c",
@@ -3270,7 +3279,7 @@
     {
       "path": "docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md",
       "size_bytes": 7765,
-      "sha256": "eedf7e3e9e2ca13ba21c2d088dee115f681d48ff14521547146ef1199eea9f62",
+      "sha256": "9bdc864994ac8107bb5c860e4757c89fb20b66b3acdecfee462f2fe0d933ff1a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8976,7 +8985,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "14704f0d916a358e369d755f0d27a96fdb6567f8de383a2efb24e700cd7fe6b4",
+      "sha256": "67a3c0b6b8d4f185a71fb0749d1e51ee6c4ec86fc1991f17742cb7d2e2794e2c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10433,8 +10442,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 11787,
-      "sha256": "7996d48e083cda1e179c6b0908ed9871a9238deb59bf906f45e223436d05be4c",
+      "size_bytes": 11857,
+      "sha256": "1909a3d8dfb2e58fcc355bf2485af46ac7cc5ca3d033dcca5ad41820658b187c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24679,6 +24688,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_powershell_ci_catalog_order.py",
+      "size_bytes": 1070,
+      "sha256": "5c8dc9674ee10ce87ee024caa439d22ef874ca8095789a9a2ffb2ef844a0bf59",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_project_bootstrap_primitive_convergence.py",
       "size_bytes": 2074,
       "sha256": "6462071bf6b559209b20c20d49f73048e1786408cae180e768e1584b3e55132d",
@@ -28550,8 +28568,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2261946,
-      "sha256": "6910ae19e2ca8653721decf18d4990b655045b313d39b3271ddec741c8df2135",
+      "size_bytes": 2262738,
+      "sha256": "49af14a9c932ca79cf8e56b6cc94cbc2d087b38d93b2a62abd74b6a46ea52202",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29198,11 +29216,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
+  "release_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
-    "package_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance",
-    "release_version": "16.3.25.5.116.0.34.16-chatgpt-executable-ingress-acceptance"
+    "runtime_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
+    "package_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence",
+    "release_version": "16.3.25.5.116.0.34.17-chatgpt-ci-catalog-race-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
