@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
-  "package_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
-  "generated_at_utc": "2026-10-20T13:57:28+00:00",
-  "updated_at_utc": "2026-10-20T13:57:28+00:00",
+  "version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "runtime_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "package_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+  "generated_at_utc": "2026-10-20T14:10:59+00:00",
+  "updated_at_utc": "2026-10-20T14:10:59+00:00",
   "start_file": "run.py",
-  "file_count": 3201,
-  "static_file_count": 3201,
+  "file_count": 3205,
+  "static_file_count": 3205,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -227,8 +227,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 19276,
-      "sha256": "4d9592740354e48ccc87f67fe925a9b21bc56746f0b27a182bbb958ade4baba8",
+      "size_bytes": 21103,
+      "sha256": "23f6bdc33301517026da4cece38e79b254b5541330e2ce873fb767000c4b2cb3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2993,
-      "sha256": "c68da4c85a6fd13b87f2a3921145557b2cb2e2dde915870d078c904dfdc8b593",
+      "size_bytes": 2969,
+      "sha256": "220164962f9f5d368c8b0b3d047770bbe1f952b336f09ffb3ae880329dba57ec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1952,
-      "sha256": "28dda14b929f09a49155d35de7ddc36ce973f8f566a481f00ee675a8e32c37ab",
+      "size_bytes": 1948,
+      "sha256": "d876357f0ba1baa37af539d023b083399781e4191444db61625ea82f2c47e329",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2746,6 +2746,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_34_20_VERIFIED_MANAGED_PYTHON_CLEANROOM.md",
+      "size_bytes": 2267,
+      "sha256": "07f43b983856ffe2137950a895b37fee1969c404a35c71b6a8ade5d845548402",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_4_WINDOWS_TK_PYRIGHT_CI_REPAIR.md",
       "size_bytes": 3300,
       "sha256": "dd4ed4fea015bb058fea6a320e328ec855c5b3dd3c50bb98402a38c44e487b2c",
@@ -3297,7 +3306,7 @@
     {
       "path": "docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md",
       "size_bytes": 7765,
-      "sha256": "c876bbda57295fc5ad2e3eccecefb9476a435b090ac8b36341d7d3f162b2a413",
+      "sha256": "ee57550f9ffaad10880df0ac546d5af6750b900b22fb27c7061a50e2c7092056",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9003,7 +9012,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "528f6c9a34e8e9953341a4218009d1e179213946674bb0471683430b44296c69",
+      "sha256": "c7b3a1d4c7e0926effbd236d88879233de4910c5366e8968eb39efaaf47834dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10460,8 +10469,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12045,
-      "sha256": "e4b86e6c9604dfe74b1b2cea717f412de13a9b441cef6f5d5b5c2d17f61a047a",
+      "size_bytes": 12137,
+      "sha256": "907f64e61e828990ca13695e1197a6e76ec6ec15fb7f4e6b564853986d9f9ba6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17776,9 +17785,27 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_package_distribution_cleanroom_doctor_semantics__source_v16_3_25_5_116_0_34_19.py",
+      "size_bytes": 755,
+      "sha256": "e03acc646426551da00e48704241d810d397af96c46353f735e36b8c282f356c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_package_distribution_cleanroom_prestart_contract__source_v16_3_25_5_116_0_34_18.py",
       "size_bytes": 2470,
       "sha256": "52c4b18f5bfa24e853ae3c76d34475773252535cd7554a30bc3b2773186a7fa6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_package_distribution_cleanroom_prestart_contract__source_v16_3_25_5_116_0_34_19.py",
+      "size_bytes": 2589,
+      "sha256": "6286b4a9efb05bd9e5eecaaf081d8fae750c727d92779218db8a36f76ff085aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27020,8 +27047,8 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_doctor_semantics.py",
-      "size_bytes": 755,
-      "sha256": "e03acc646426551da00e48704241d810d397af96c46353f735e36b8c282f356c",
+      "size_bytes": 787,
+      "sha256": "b2bf6a3a461b79686c247cc57105a6c1bdd85a939ce35354781faab98d95aaa2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27038,8 +27065,17 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "size_bytes": 2589,
-      "sha256": "6286b4a9efb05bd9e5eecaaf081d8fae750c727d92779218db8a36f76ff085aa",
+      "size_bytes": 2653,
+      "sha256": "3359ea863bda1ef82a0638f4119adbb39fa7ee9dea07e9283b2ec58e55091170",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_package_distribution_cleanroom_verified_managed_python.py",
+      "size_bytes": 1645,
+      "sha256": "42d47fc8caae497affcafcb61e4f84eacb3ee38f52d2a44c0d3ee656573fbaa8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28613,8 +28649,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2262787,
-      "sha256": "bfae340ce876c943e1c9bc27fbacc34a2b32b77760932affd1b67b564553b50d",
+      "size_bytes": 2263620,
+      "sha256": "b08f2f2124109ac8093f33307b2c770586f9cdd9bd044ce12ebaa68f94a13df5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29261,11 +29297,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
+  "release_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
-    "package_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence",
-    "release_version": "16.3.25.5.116.0.34.19-offline-cleanroom-handoff-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+    "package_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom",
+    "release_version": "16.3.25.5.116.0.34.20-verified-managed-python-cleanroom"
   },
   "legacy_aliases": {
     "version": "release_version"
