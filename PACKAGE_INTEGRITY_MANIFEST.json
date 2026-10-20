@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
-  "runtime_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
-  "package_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
-  "generated_at_utc": "2026-10-20T14:54:04+00:00",
-  "updated_at_utc": "2026-10-20T14:54:04+00:00",
+  "version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+  "runtime_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+  "package_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+  "generated_at_utc": "2026-10-20T15:28:49+00:00",
+  "updated_at_utc": "2026-10-20T15:28:49+00:00",
   "start_file": "run.py",
-  "file_count": 3211,
-  "static_file_count": 3211,
+  "file_count": 3213,
+  "static_file_count": 3213,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3011,
-      "sha256": "fa3ab4c135527c4716b08c7fb0204dd559c63d5a8a8b262528292affd9d0574e",
+      "size_bytes": 2963,
+      "sha256": "457053e06ba1877e6b11bf10525440c7c9aa536dd6ce94334204f690ac2c894f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1955,
-      "sha256": "d896cbc779efede956b231a4a2f20d9ba37352dc577b2de0cb4ffec1ac6dd9cc",
+      "size_bytes": 1947,
+      "sha256": "605b5af29c436e7b9f0d938fab5ecb18b0e0ea36bada004ae526449ad0201d9b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2773,6 +2773,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V16_3_25_5_116_0_34_23_CLEANROOM_OBSERVABILITY.md",
+      "size_bytes": 2680,
+      "sha256": "0e9b3e64ffeeb58430db52c2e77c7d048035e825ae30284cfb1b9b5f854b8c26",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V16_3_25_5_116_0_4_WINDOWS_TK_PYRIGHT_CI_REPAIR.md",
       "size_bytes": 3300,
       "sha256": "dd4ed4fea015bb058fea6a320e328ec855c5b3dd3c50bb98402a38c44e487b2c",
@@ -3324,7 +3333,7 @@
     {
       "path": "docs/runtime/CHATGPT_MAIN_FIRST_MEMORY_OPERATIONS.md",
       "size_bytes": 7765,
-      "sha256": "362ab92a2a34e11a7ffcb2e3241e5daae2646c5860583201a4e40308a94be7f1",
+      "sha256": "3ec407ba284f3979bc9f569931f6c022969128cb2ce6aab0b66fa61d41d627d3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9030,7 +9039,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "6e4e0d0149262098b69fa2a99c5198b56b343cc92c39262272df6ea2387379e0",
+      "sha256": "3607fa2df2dd2f40a7da4c4fb160cda0fc5cd8ac72a9aa46f62305b13315e23f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10487,8 +10496,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12362,
-      "sha256": "e430b1252770c5e5fe2f5c3a5b55f7b9ad66a516ba69f4e556d101ce0ad4bc68",
+      "size_bytes": 12443,
+      "sha256": "db89f376e02adda9b398c71f3a284c8a1304999ce976baecfef2e8806afd29a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17797,6 +17806,15 @@
       "path": "tests/archive/test_memory_rebuild_v24_unified_v16_3_25_3_1.py",
       "size_bytes": 11737,
       "sha256": "803b6d3731cac4f87ab822a1ff946a41e22ec2abb3164f641307aecb9b0f1e58",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_package_distribution_cleanroom_activation_observability__source_v16_3_25_5_116_0_34_22.py",
+      "size_bytes": 1192,
+      "sha256": "4bf17d0ecdd43ef3fffa4aeb4c80ee25b76baf7eb42edf9eb902dc511a4f7715",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27092,8 +27110,8 @@
     },
     {
       "path": "tests/test_package_distribution_cleanroom_activation_observability.py",
-      "size_bytes": 1192,
-      "sha256": "4bf17d0ecdd43ef3fffa4aeb4c80ee25b76baf7eb42edf9eb902dc511a4f7715",
+      "size_bytes": 2126,
+      "sha256": "1445b306d15604c5042aa08f390acccdc8f6d9a60fd85e22309d25262ee05421",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28703,8 +28721,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2265389,
-      "sha256": "214699c742aec42e0a8b28dee1fc60224d912deec9dd282bc4e26d1a7b8767ed",
+      "size_bytes": 2266208,
+      "sha256": "e1706b51e48299d4d9ac3d54c0c832d5cb1084eb993094d23b471823610f1a61",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29351,11 +29369,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
+  "release_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
-    "package_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown",
-    "release_version": "16.3.25.5.116.0.34.22-preactivation-preflight-windows-teardown"
+    "runtime_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+    "package_version": "16.3.25.5.116.0.34.23-preflight-observability-contract",
+    "release_version": "16.3.25.5.116.0.34.23-preflight-observability-contract"
   },
   "legacy_aliases": {
     "version": "release_version"
