@@ -122,6 +122,7 @@ MessageText = Annotated[str, Field(min_length=1, max_length=262_144)]
 ContinuationToken = Annotated[str, Field(min_length=1, max_length=4096)]
 FinalText = Annotated[str, Field(max_length=524_288)]
 Sha256Hex = Annotated[str, Field(pattern=r"^[0-9a-fA-F]{64}$")]
+ProbeNonce = Annotated[str | None, Field(pattern=r"^[0-9a-f]{32}$", max_length=32)]
 
 
 class PublicIngressBackend(Protocol):
@@ -584,7 +585,7 @@ class PublicMcpGateway:
             annotations=read_only_idempotent,
             meta=self._tool_security_meta(SCOPE_STATUS_READ),
         )
-        def jazn_status() -> CallToolResult:
+        def jazn_status(probe_nonce: ProbeNonce = None) -> CallToolResult:
             principal = self._principal()
             if principal is None:
                 return _public_error("authenticated_principal_required", auth_challenge=self._auth_challenge(error="invalid_token"))
@@ -617,6 +618,7 @@ class PublicMcpGateway:
                 "host_message_toolset_verified": False,
                 "conversation_wide_auto_routing_verified": False,
                 "accepted_visible_turn_verified": False,
+                "challenge_nonce_echo": probe_nonce,
                 "readiness_scope": "backend_only_not_current_chatgpt_turn",
                 **_runtime_binding(status),
             }
