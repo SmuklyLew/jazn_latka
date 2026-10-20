@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "b5b38d8ec94c78a97fff00a75e829baf51b4154f",
-    "base_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+    "base_commit": "80e66e67413535f647b557512cd48439d75519c0",
+    "base_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "80e66e67413535f647b557512cd48439d75519c0",
