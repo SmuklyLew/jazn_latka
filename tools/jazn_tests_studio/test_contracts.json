@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.20",
-  "active_definition_count": 2453,
+  "system_version": "16.3.25.5.116.0.34.21",
+  "active_definition_count": 2455,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16026,6 +16026,50 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 448
+    },
+    "tests/test_dependency_studio.py::test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape",
+      "purpose": "Managed environment accepts canonical python symlink but rejects path escape",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 488
+    },
+    "tests/test_dependency_studio.py::test_managed_environment_rejects_missing_venv_configuration": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_managed_environment_rejects_missing_venv_configuration",
+      "purpose": "Managed environment rejects missing venv configuration",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 549
     },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
