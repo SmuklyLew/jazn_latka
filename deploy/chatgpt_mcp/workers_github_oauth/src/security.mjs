@@ -38,9 +38,20 @@ export function consentHtml(d, handle) {
   <p><button name="decision" value="approve">Allow</button><button name="decision" value="deny">Deny</button></p></form></html>`;
 }
 export function requiresSafeAuthSettings(env) {
-  return Boolean(env?.GITHUB_CLIENT_ID && env?.GITHUB_CLIENT_SECRET && env?.JAZN_ALLOWED_GITHUB_LOGIN &&
-    env?.JAZN_ALLOWED_GITHUB_USER_ID && env?.JAZN_INTROSPECTION_CLIENT_ID &&
-    env?.JAZN_INTROSPECTION_CLIENT_SECRET && env?.OAUTH_KV);
+  // Missing credentials are never supplied by MCP, SIWC, or a package manifest.
+  const numericUser = String(env?.JAZN_ALLOWED_GITHUB_USER_ID || '');
+  const githubSecret = env?.GITHUB_CLIENT_SECRET;
+  const introspectionSecret = env?.JAZN_INTROSPECTION_CLIENT_SECRET;
+  return Boolean(
+    typeof env?.GITHUB_CLIENT_ID === 'string' && env.GITHUB_CLIENT_ID.trim() &&
+    typeof githubSecret === 'string' && githubSecret &&
+    typeof env?.JAZN_ALLOWED_GITHUB_LOGIN === 'string' && env.JAZN_ALLOWED_GITHUB_LOGIN.trim() &&
+    /^[1-9][0-9]*$/.test(numericUser) &&
+    typeof env?.JAZN_INTROSPECTION_CLIENT_ID === 'string' && env.JAZN_INTROSPECTION_CLIENT_ID.trim() &&
+    typeof introspectionSecret === 'string' && introspectionSecret &&
+    githubSecret !== introspectionSecret &&
+    env?.OAUTH_KV
+  );
 }
 export function randomVerifier() {
   const bytes = new Uint8Array(32);
