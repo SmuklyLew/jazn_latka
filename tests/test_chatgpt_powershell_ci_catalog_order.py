@@ -14,7 +14,11 @@ def test_powershell_pr_materializes_then_checks_catalog_before_release_metadata(
     release = "python -X utf8 -m latka_jazn.tools.release_metadata_sync"
     assert workflow.count(create) == 1
     assert workflow.count(check) == 1
-    assert workflow.index(create) < workflow.index(check) < workflow.index(release)
+    local_commit = "Record synchronized PR catalog in a local-only Git commit"
+    assert workflow.index(create) < workflow.index(check) < workflow.index(local_commit) < workflow.index(release)
     assert workflow.index(check) < workflow.index("Compile active Python")
     assert "git checkout -- SOURCE_PROVENANCE.json PACKAGE_INTEGRITY_MANIFEST.json tools/jazn_tests_studio/test_contracts.json" in workflow
     assert "Never push generated files from this PR job." in workflow
+    assert "git -c user.name=" in workflow
+    assert "# No git push:" in workflow
+    assert "git push origin" not in workflow
