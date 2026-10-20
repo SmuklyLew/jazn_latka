@@ -121,12 +121,21 @@ async function introspect(request, env) {
   });
 }
 async function serve(request, env, ctx) {
-  if (!requiresSafeAuthSettings(env)) return textError('OAuth deployment incomplete', 503);
   const url = new URL(request.url);
   if (url.origin !== ISSUER) return textError('Unexpected host', 403);
-  if (url.pathname === '/healthz') return new Response(JSON.stringify({ service: 'jazn-auth', credentials_present: true, end_to_end_verified: false }), {
-    headers: { ...noStore, 'content-type': 'application/json; charset=utf-8' },
-  });
+  // A public /healthz reports deployment configuration, NOT OAuth or MCP readiness.
+  // This endpoint must never return tokens, binding values or a synthetic ready=true.
+  if (request.method === 'GET' && url.pathname === '/healthz') {
+    const configured = requiresSafeAuthSettings(env);
+    return new Response(JSON.stringify({
+      service: 'jazn-auth', deployment_configured: configured,
+      end_to_end_verified: false,
+    }), {
+      status: configured ? 200 : 503,
+      headers: { ...noStore, 'content-type': 'application/json; charset=utf-8' },
+    });
+  }
+  if (!requiresSafeAuthSettings(env)) return textError('OAuth deployment incomplete', 503);
   if (url.pathname === '/authorize') return authorize(request, env);
   if (url.pathname === '/callback') return callback(request, env);
   if (url.pathname === '/oauth/introspect') return introspect(request, env);

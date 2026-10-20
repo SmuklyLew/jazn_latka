@@ -20,6 +20,8 @@ class _StatusBackend:
             "structuredContent": {
                 "ok": True,
                 "daemon_reachable": True,
+                "ready": True,
+                "gateway_live": True,
                 "daemon": {
                     "daemon_instance_id": "gateway-nonce-daemon",
                     "runtime_version": PACKAGE_VERSION_FULL,

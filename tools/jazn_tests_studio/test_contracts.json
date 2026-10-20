@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.25",
-  "active_definition_count": 2475,
+  "system_version": "16.3.25.5.116.0.34.26",
+  "active_definition_count": 2484,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8905,6 +8905,53 @@
       "description_source": "source_identity",
       "line": 86
     },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_external_mcp_preflight_never_promotes_live_turn_readiness": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_external_mcp_preflight_never_promotes_live_turn_readiness",
+      "purpose": "External mcp preflight never promotes live turn readiness",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_preflight_fails_closed_for_unconfigured_auth_and_missing_pkce": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_preflight_fails_closed_for_unconfigured_auth_and_missing_pkce",
+      "purpose": "Preflight fails closed for unconfigured auth and missing pkce",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_preflight_transport_error_is_not_mistaken_for_authorization": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_preflight_transport_error_is_not_mistaken_for_authorization",
+      "purpose": "Preflight transport error is not mistaken for authorization",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
     "tests/test_chatgpt_oauth_tool_metadata.py::test_explicit_local_development_advertises_noauth": {
       "path": "tests/test_chatgpt_oauth_tool_metadata.py",
       "name": "test_explicit_local_development_advertises_noauth",
@@ -10855,7 +10902,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 36
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
@@ -50152,6 +50199,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 161
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_browser_flow_uses_separate_openai_resource_and_real_pkce": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_browser_flow_uses_separate_openai_resource_and_real_pkce",
+      "purpose": "Siwc browser flow uses separate openai resource and real pkce",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_callback_accepts_only_one_time_exact_local_redirect_and_issued_id": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_callback_accepts_only_one_time_exact_local_redirect_and_issued_id",
+      "purpose": "Siwc callback accepts only one time exact local redirect and issued id",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_invalid_callback_fails_closed": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_invalid_callback_fails_closed",
+      "purpose": "Siwc invalid callback fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_returning_client_omits_registration_hint_and_refuses_switch": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_returning_client_omits_registration_hint_and_refuses_switch",
+      "purpose": "Siwc returning client omits registration hint and refuses switch",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_unsigned_or_incomplete_tokens_are_never_authorized": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_unsigned_or_incomplete_tokens_are_never_authorized",
+      "purpose": "Siwc unsigned or incomplete tokens are never authorized",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_siwc_oauth_flow.py::test_siwc_invalid_host_and_port_are_rejected": {
+      "path": "tests/test_siwc_oauth_flow.py",
+      "name": "test_siwc_invalid_host_and_port_are_rejected",
+      "purpose": "Siwc invalid host and port are rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters.siwc_oauth_flow"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
     },
     "tests/test_siwc_plan_usage_adapter.py::test_siwc_never_sends_preview_forbidden_fields": {
       "path": "tests/test_siwc_plan_usage_adapter.py",
