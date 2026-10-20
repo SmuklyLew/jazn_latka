@@ -32,7 +32,7 @@ _ISSUED_CLIENT = re.compile(r"^oaiapp_[A-Za-z0-9._-]{1,120}$")
 
 def _host_id_valid(value: str) -> bool:
     try:
-        prefix, raw = value.split(":", 2)[0:2], value.removeprefix("urn:uuid:")
+        raw = value.removeprefix("urn:uuid:")
         return value.startswith("urn:uuid:") and uuid.UUID(raw).version == 4
     except (ValueError, AttributeError):
         return False
@@ -170,10 +170,14 @@ def verify_token_response(grant: AuthorizationGrant, token_response: dict[str, A
         token_response.get("refresh_token"),
         token_response.get("id_token"),
     )
-    if not all(isinstance(x, str) and x for x in (access, refresh, identity)):
+    if (not isinstance(access, str) or not access or
+            not isinstance(refresh, str) or not refresh or
+            not isinstance(identity, str) or not identity):
         raise ValueError("siwc_token_set_incomplete")
     expires = token_response.get("expires_in")
-    if type(expires) not in (int, float) or not 0 < expires <= 86400:
+    if not isinstance(expires, (int, float)) or isinstance(expires, bool):
+        raise ValueError("siwc_token_lifetime_invalid")
+    if not 0 < expires <= 86400:
         raise ValueError("siwc_token_lifetime_invalid")
     try:
         import jwt  # type: ignore[import-not-found]  # optional, install PyJWT[crypto]
@@ -183,7 +187,7 @@ def verify_token_response(grant: AuthorizationGrant, token_response: dict[str, A
             audience=grant.client_id, issuer=ISSUER,
             options={"require": ["exp", "iat", "sub", "nonce"]}, leeway=5,
         )
-    except (ImportError, Exception) as exc:
+    except Exception:
         # Errors must not reveal the supplied token, claims, transport URL or JWKS.
         raise ValueError("siwc_id_token_verification_failed") from None
     if (not isinstance(claims.get("sub"), str) or not claims["sub"] or

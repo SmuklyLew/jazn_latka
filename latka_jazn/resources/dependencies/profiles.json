@@ -51,6 +51,7 @@
     }
   },
   "import_name_overrides": {
+    "pyjwt": "jwt",
     "pypdf": "pypdf",
     "tzdata": "tzdata",
     "py7zr": "py7zr",
