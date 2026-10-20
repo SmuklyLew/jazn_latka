@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.22",
-  "active_definition_count": 2455,
+  "system_version": "16.3.25.5.116.0.34.23",
+  "active_definition_count": 2456,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38213,6 +38213,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 31
+    },
+    "tests/test_package_distribution_cleanroom_activation_observability.py::test_cleanroom_uses_dependency_free_preflight_before_managed_activation": {
+      "path": "tests/test_package_distribution_cleanroom_activation_observability.py",
+      "name": "test_cleanroom_uses_dependency_free_preflight_before_managed_activation",
+      "purpose": "Cleanroom uses dependency free preflight before managed activation",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
     },
     "tests/test_package_distribution_cleanroom_doctor_semantics.py::test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start": {
       "path": "tests/test_package_distribution_cleanroom_doctor_semantics.py",
