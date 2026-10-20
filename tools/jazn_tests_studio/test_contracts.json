@@ -3098,7 +3098,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 37
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_optional_memory_never_holds_ready_core_below_100": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3117,7 +3117,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 52
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_required_memory_is_separate_readiness_dimension": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3136,7 +3136,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_bootstrap_emits_evidence_backed_progress_events": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3153,7 +3153,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 107
     },
     "tests/test_chatgpt_bootstrap_progress_convergence.py::test_activation_contract_uses_live_status_as_readiness_authority": {
       "path": "tests/test_chatgpt_bootstrap_progress_convergence.py",
@@ -3170,7 +3170,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 129
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_defaults_match_canonical_zip_policy": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3187,7 +3187,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 42
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_rejects_excessive_compression_ratio": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3206,7 +3206,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 49
     },
     "tests/test_chatgpt_bootstrap_resource_policy.py::test_standalone_bootstrap_cli_exposes_compression_ratio_limit": {
       "path": "tests/test_chatgpt_bootstrap_resource_policy.py",
@@ -3223,7 +3223,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 68
     },
     "tests/test_chatgpt_bridge_tool_catalog_probe.py::test_complete_catalog_is_not_chatgpt_host_exposure": {
       "path": "tests/test_chatgpt_bridge_tool_catalog_probe.py",
