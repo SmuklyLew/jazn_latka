@@ -1,6 +1,6 @@
 # ChatGPT main-first bootstrap and MEMORY storage operations
 
-Version: 16.3.25.5.116.0.34.20. Scope: code, paths, lifecycle and database contracts. Never import private MEMORY from a test archive during SYSTEM activation without an explicit, separate verified attach.
+Version: 16.3.25.5.116.0.34.21. Scope: code, paths, lifecycle and database contracts. Never import private MEMORY from a test archive during SYSTEM activation without an explicit, separate verified attach.
 
 ## Host-owned work vs Python-owned work
 

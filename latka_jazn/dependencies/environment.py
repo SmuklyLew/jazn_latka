@@ -297,12 +297,23 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
     except (OSError, RuntimeError, ValueError):
         resolved_env = env_root
         errors.append("environment_root_outside_managed_root")
+    # A POSIX venv/bin/python is commonly a symlink to the base interpreter.
+    # Resolving that final symlink and requiring its target inside the venv
+    # incorrectly rejects legitimate hash-locked, offline-installed venvs.
+    # Instead enforce the exact canonical *entry* path, and independently
+    # resolve the parent directory to reject a relocated Scripts/bin directory.
     try:
-        resolved_python = python_path.resolve()
-        resolved_python.relative_to(resolved_env)
+        expected_python = _env_python(resolved_env)
+        recorded_python = python_path.absolute()  # do not dereference final python symlink
+        parent_inside = python_path.parent.resolve() == expected_python.parent
+        if recorded_python != expected_python or not parent_inside:
+            errors.append("python_outside_environment")
+        resolved_python = recorded_python
     except (OSError, RuntimeError, ValueError):
         resolved_python = python_path
         errors.append("python_outside_environment")
+    if not (resolved_env / "pyvenv.cfg").is_file():
+        errors.append("venv_configuration_missing")
     if not resolved_python.is_file():
         errors.append("python_missing")
     current_python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
