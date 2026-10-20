@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.25",
-  "active_definition_count": 2475,
+  "system_version": "16.3.25.5.116.0.34.26",
+  "active_definition_count": 2478,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8904,6 +8904,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 86
+    },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_external_mcp_preflight_never_promotes_live_turn_readiness": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_external_mcp_preflight_never_promotes_live_turn_readiness",
+      "purpose": "External mcp preflight never promotes live turn readiness",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_preflight_fails_closed_for_unconfigured_auth_and_missing_pkce": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_preflight_fails_closed_for_unconfigured_auth_and_missing_pkce",
+      "purpose": "Preflight fails closed for unconfigured auth and missing pkce",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_chatgpt_oauth_live_preflight.py::test_preflight_transport_error_is_not_mistaken_for_authorization": {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "name": "test_preflight_transport_error_is_not_mistaken_for_authorization",
+      "purpose": "Preflight transport error is not mistaken for authorization",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
     },
     "tests/test_chatgpt_oauth_tool_metadata.py::test_explicit_local_development_advertises_noauth": {
       "path": "tests/test_chatgpt_oauth_tool_metadata.py",
