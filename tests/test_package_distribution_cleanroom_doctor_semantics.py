@@ -8,7 +8,7 @@ WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "package-distri
 
 def test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert text.index('"$BARE_PYTHON" run.py start --json') < text.index('"$BARE_PYTHON" run.py doctor --json')
+    assert text.index('"$BARE_PYTHON" run.py start --json') < text.index('"$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" doctor --json')
     assert 'test "$doctor_rc" -eq 0' in text
     assert 'assert p.get("ok") is True' in text
     assert 'assert p.get("installation_ok") is True' in text

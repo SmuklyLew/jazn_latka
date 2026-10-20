@@ -18,7 +18,7 @@ def test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readin
     step = _handoff_step()
     assert 'status_rc=$?' in step
     assert 'test "$status_rc" -eq 1' in step
-    assert step.index('"$BARE_PYTHON" run.py start --json') < step.index('"$BARE_PYTHON" run.py doctor --json')
+    assert step.index('"$BARE_PYTHON" run.py start --json') < step.index('"$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" doctor --json')
     assert 'doctor_rc=$?' in step
     assert 'test "$doctor_rc" -eq 0' in step
     assert 'assert p.get("ok") is False' in step
@@ -52,5 +52,5 @@ def test_cleanroom_uses_isolated_bootstrap_python_without_site_packages() -> Non
     assert "python -m venv --without-pip" in text
     assert 'BARE_PYTHON: ${{ steps.bare_python.outputs.path }}' in text
     assert 'for name in ("packaging", "tzdata", "pypdf", "py7zr", "pyzipper"):' in text
-    assert '"$BARE_PYTHON" run.py doctor --json' in text
+    assert '"$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" doctor --json' in text
     assert '"$BARE_PYTHON" run.py start --json' in text

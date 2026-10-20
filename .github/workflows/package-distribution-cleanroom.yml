@@ -263,23 +263,57 @@ jobs:
           test "$start_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("daemon_instance_id") or (p.get("daemon") or {}).get("daemon_instance_id"), p' "$RUNNER_TEMP/start.json"
 
+          # Resolve the already-installed interpreter from canonical, hashed
+          # Dependency Studio evidence. Do NOT silently bootstrap again for
+          # read-only doctor/status or bypass an invalid managed marker.
+          cat > "$RUNNER_TEMP/verified_managed_cli.py" <<'PY'
+          from pathlib import Path
+          import json
+          import subprocess
+          import sys
+
+          root = Path.cwd().resolve()
+          sys.path.insert(0, str(root))
+          from latka_jazn.dependencies.environment import dependency_activation_status
+
+          status = dependency_activation_status(root)
+          managed = status.get("managed_environment") or {}
+          if not (
+              status.get("required_ready") is True
+              and status.get("managed_environment_covers_required_profiles") is True
+              and managed.get("ready") is True
+              and Path(str(managed.get("python_executable") or "")).is_file()
+          ):
+              print(json.dumps({
+                  "error": "verified_managed_python_not_ready",
+                  "managed_environment": managed,
+                  "required_ready": status.get("required_ready"),
+                  "activation_profiles": status.get("activation_profiles"),
+                  "managed_environment_covers_required_profiles": status.get("managed_environment_covers_required_profiles"),
+              }, sort_keys=True, default=str), file=sys.stderr)
+              raise SystemExit(78)
+
+          command = [str(managed["python_executable"]), "-X", "utf8", str(root / "run.py"), *sys.argv[1:]]
+          raise SystemExit(subprocess.call(command, cwd=root))
+          PY
+
           # Activation (not a read-only diagnostic) installs the verified offline
           # dependency set and starts the daemon. Only then can the bare Python
           # re-exec an already-provisioned interpreter for full doctor diagnostics.
           set +e
-          "$BARE_PYTHON" run.py doctor --json > "$RUNNER_TEMP/doctor.json"
+          "$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" doctor --json > "$RUNNER_TEMP/doctor.json"
           doctor_rc=$?
           set -e
           cat "$RUNNER_TEMP/doctor.json"
           test "$doctor_rc" -eq 0
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); checks=p.get("package_integrity_checks") or {}; assert p.get("ok") is True, p; assert p.get("installation_ok") is True, p; assert p.get("activation_ready") is True, p; assert p.get("release_ready") is True, p; assert p.get("live_runtime_ready") is True, p; assert checks.get("verification_ok") is True, checks' "$RUNNER_TEMP/doctor.json"
 
-          "$BARE_PYTHON" run.py host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
+          "$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" host-diagnose --root . --json > "$RUNNER_TEMP/host-diagnose.json"
           cat "$RUNNER_TEMP/host-diagnose.json"
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); m=p.get("memory") or {}; assert p.get("ok") is True, p; assert p.get("process_created") is True, p; assert isinstance(p.get("pid"), int) and p["pid"] > 0, p; assert m.get("private_content_read") is False, m' "$RUNNER_TEMP/host-diagnose.json"
 
           set +e
-          "$BARE_PYTHON" run.py status --json > "$RUNNER_TEMP/status-after-start.json"
+          "$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" status --json > "$RUNNER_TEMP/status-after-start.json"
           status_after_rc=$?
           set -e
           cat "$RUNNER_TEMP/status-after-start.json"
@@ -287,7 +321,7 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); d=p.get("daemon") or {}; r=d.get("readiness") or {}; st=p.get("startup") or {}; assert p.get("ok") is True, p; assert p.get("runtime_core_ready") is True, p; assert p.get("runtime_write_ready") is True, p; assert d.get("active_state") == "active_trusted", d; assert d.get("endpoint_reachable") is True, d; assert d.get("heartbeat_fresh") is True, d; assert r.get("ok") is True, r; assert st.get("voice_live_ready") is True, st' "$RUNNER_TEMP/status-after-start.json"
 
           set +e
-          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/start-again.json"
+          "$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" start --json > "$RUNNER_TEMP/start-again.json"
           start_again_rc=$?
           set -e
           cat "$RUNNER_TEMP/start-again.json"
@@ -295,7 +329,7 @@ jobs:
           python -c 'import json,sys; p=json.load(open(sys.argv[1], encoding="utf-8")); assert p.get("ok") is True, p; assert p.get("already_running") is True or (p.get("daemon") or {}).get("already_running") is True, p' "$RUNNER_TEMP/start-again.json"
 
           set +e
-          "$BARE_PYTHON" run.py stop --json > "$RUNNER_TEMP/stop.json"
+          "$BARE_PYTHON" "$RUNNER_TEMP/verified_managed_cli.py" stop --json > "$RUNNER_TEMP/stop.json"
           stop_rc=$?
           set -e
           cat "$RUNNER_TEMP/stop.json"
