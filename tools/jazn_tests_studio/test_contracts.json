@@ -10320,7 +10320,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_chatgpt_system_zip_bootstrap.py::test_bootstrap_materializes_verified_root": {
       "path": "tests/test_chatgpt_system_zip_bootstrap.py",
