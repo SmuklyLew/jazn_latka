@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.18",
+  "system_version": "16.3.25.5.116.0.34.19",
   "active_definition_count": 2452,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -38170,17 +38170,17 @@
       "description_source": "source_identity",
       "line": 31
     },
-    "tests/test_package_distribution_cleanroom_doctor_semantics.py::test_cleanroom_accepts_release_ready_doctor_before_live_daemon": {
+    "tests/test_package_distribution_cleanroom_doctor_semantics.py::test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start": {
       "path": "tests/test_package_distribution_cleanroom_doctor_semantics.py",
-      "name": "test_cleanroom_accepts_release_ready_doctor_before_live_daemon",
-      "purpose": "Cleanroom accepts release ready doctor before live daemon",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
+      "name": "test_cleanroom_accepts_release_ready_doctor_after_offline_bootstrap_start",
+      "purpose": "Cleanroom accepts release ready doctor after offline bootstrap start",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -38223,17 +38223,17 @@
       "description_source": "source_identity",
       "line": 26
     },
-    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_prestart_status_is_inactive_while_doctor_reports_release_readiness": {
+    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "name": "test_prestart_status_is_inactive_while_doctor_reports_release_readiness",
-      "purpose": "Prestart status is inactive while doctor reports release readiness",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness",
+      "purpose": "Prestart status is inactive and poststart doctor reports release readiness",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -38255,7 +38255,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 35
     },
     "tests/test_package_distribution_cleanroom_prestart_contract.py::test_cleanroom_uses_isolated_bootstrap_python_without_site_packages": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
@@ -38272,7 +38272,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 50
     },
     "tests/test_package_generator_release_version.py::test_release_version_is_read_from_canonical_version_file": {
       "path": "tests/test_package_generator_release_version.py",
