@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
-  "runtime_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
-  "package_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
-  "generated_at_utc": "2026-10-20T21:41:14+00:00",
-  "updated_at_utc": "2026-10-20T21:41:14+00:00",
+  "version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+  "runtime_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+  "package_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+  "generated_at_utc": "2026-10-20T22:31:57+00:00",
+  "updated_at_utc": "2026-10-20T22:31:57+00:00",
   "start_file": "run.py",
-  "file_count": 3220,
-  "static_file_count": 3220,
+  "file_count": 3224,
+  "static_file_count": 3224,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2946,
-      "sha256": "48c605a7b42511389ce8552c71a563b06b6fcbad84b068d5eddbb7b7a88bfc34",
+      "size_bytes": 2923,
+      "sha256": "a119a49fe65e6d38fedcc85be528bce217c29bb2bb2f7e329420b7c6f5ac6f27",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -470,8 +470,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/package.json",
-      "size_bytes": 485,
-      "sha256": "d7a3773aa69bef0a531b6f6b097cb88dfe35f94ec4d285411ea592c3409afa02",
+      "size_bytes": 519,
+      "sha256": "d2041ad6043a97cdfbe1f1bcc4522af79f4590597a6de1e8feb6fb70c0a8c748",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -479,8 +479,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/src/index.mjs",
-      "size_bytes": 7679,
-      "sha256": "6e2dce176a2f57ca82b4b31e0d71b61e85278f414a1d074f7c58d66fa65c7709",
+      "size_bytes": 8010,
+      "sha256": "3d429fa41927cfb98f405a8bb464f3cdbdd6b577ae9d7768fe3047a083675b74",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -488,8 +488,17 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/src/security.mjs",
-      "size_bytes": 4544,
-      "sha256": "805328163dd9d2577a6b3834122e17d29fc8fb73d27b2e608be402b22d618526",
+      "size_bytes": 5105,
+      "sha256": "49ab838f89e2a14b1c2d15b59a29be626e7da24aae758d6ba57819b603d9ef51",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/test/deployment-boundary.test.mjs",
+      "size_bytes": 1494,
+      "sha256": "09094fb809c13afe6d3ba4be1824045db3a6cf2a4259fc10cda19d1346c2f646",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3496,6 +3505,15 @@
       "path": "docs/runtime/MCP_INGRESS_RECOVERY_v11518_2.md",
       "size_bytes": 3371,
       "sha256": "77097cb9b32b5dbd43c4732daf31b0d7d69e9a304c52dbd7e144c7e4e572402e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/MCP_OAUTH_AND_SIWC_SEPARATION_11603426.md",
+      "size_bytes": 4889,
+      "sha256": "30276f0145302cf062f960fa7bc643aed51484513a9d06d7f17186b3dd3c49ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10532,8 +10550,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12643,
-      "sha256": "cdf251043c348e4f27f440e7f9b69200950ecfbadb618bd080413793a049f112",
+      "size_bytes": 12761,
+      "sha256": "9c91969d893e0cdda85bc122445cb203c4a09e6fc01f63c65019abf7f91d7893",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24832,6 +24850,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_chatgpt_oauth_live_preflight.py",
+      "size_bytes": 2120,
+      "sha256": "019bfb6938073f25a31c4f78d36f94a07ef2b4dd122753e3fb351446c53e47cd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_chatgpt_oauth_tool_metadata.py",
       "size_bytes": 2118,
       "sha256": "44bcb08b75c937c0b219730b23d4e3993f9a6eb62543d101acfa2efb1c12fba9",
@@ -28432,6 +28459,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/chatgpt_oauth_live_preflight.py",
+      "size_bytes": 4457,
+      "sha256": "d856df83ee59aa5c32eeda0abf2b1972ec9fb199b7d3fc2c063f8cd895ee3158",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/docs_truth_audit.py",
       "size_bytes": 4071,
       "sha256": "1503af44f61cfed8908ffc95996004f6f094b36196dfdbaa69c743d8dd767d4a",
@@ -28784,8 +28820,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2280363,
-      "sha256": "5112c78b5ff2b938e7eee73020e537cc4e59d8cf9e8499b75b86125fca01f220",
+      "size_bytes": 2282535,
+      "sha256": "2a27ed193e15addd76d0bb4a92da26e0479b3991e97a90f3889c03375da8fae2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29432,11 +29468,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
+  "release_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
-    "package_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance",
-    "release_version": "16.3.25.5.116.0.34.25-chatgpt-mcp-oauth-acceptance"
+    "runtime_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+    "package_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+    "release_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation"
   },
   "legacy_aliases": {
     "version": "release_version"
