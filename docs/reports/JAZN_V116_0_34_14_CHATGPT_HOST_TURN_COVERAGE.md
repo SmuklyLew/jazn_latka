@@ -75,3 +75,10 @@ conversation entrypoint or an explicit host-provided invocation hook.
 Without it, source-level changes can ensure fail-closed behavior after ingress
 and offline detection of omissions in an independently supplied transcript,
 but cannot intercept platform messages before ingress.
+
+## GitHub Actions Windows regression triage (2026-10-20)
+
+- Release-hardening run [39409300101](https://github.com/SmuklyLew/jazn_latka/actions/runs/39409300101), Windows job 118585889751 originally failed the **unchanged** health-check SLA: `5.06998980000003 < 5.0` was false. The excess was about 70 ms.
+- A targeted re-run of the same Windows job and code [succeeded](https://github.com/SmuklyLew/jazn_latka/actions/runs/39409300101): the isolated strict health-check and other targeted Windows tests passed. No assertion, limit, production timeout, or coverage was weakened. This supports transient timing variation, not a proven root cause.
+- The separate PowerShell regression run [39409303595](https://github.com/SmuklyLew/jazn_latka/actions/runs/39409303595) failed because its older checked-out test contract catalog was stale. The branch subsequently received automatic Studio Testów contract catalog and release manifest/provenance sync commits; the failing run predates these generated updates.
+- Acceptance still requires CI on the synchronized head, particularly PowerShell, Pyright, Ubuntu, Windows and full release-hardening. A previous-run PASS does not attest a later commit. If strict Windows health latency fails repeatedly, investigate stage timings and optimize the runtime instead of relaxing the bound.
