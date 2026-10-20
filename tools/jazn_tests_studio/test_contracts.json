@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.21",
+  "system_version": "16.3.25.5.116.0.34.22",
   "active_definition_count": 2455,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -38267,17 +38267,17 @@
       "description_source": "source_identity",
       "line": 26
     },
-    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness": {
+    "tests/test_package_distribution_cleanroom_prestart_contract.py::test_dependency_empty_preflight_and_poststart_doctor_reports_release_readiness": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
-      "name": "test_prestart_status_is_inactive_and_poststart_doctor_reports_release_readiness",
-      "purpose": "Prestart status is inactive and poststart doctor reports release readiness",
-      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_dependency_empty_preflight_and_poststart_doctor_reports_release_readiness",
+      "purpose": "Dependency empty preflight and poststart doctor reports release readiness",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "package"
       ],
       "markers": [],
-      "assertion_count": 14,
+      "assertion_count": 15,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -38299,7 +38299,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 36
     },
     "tests/test_package_distribution_cleanroom_prestart_contract.py::test_cleanroom_uses_isolated_bootstrap_python_without_site_packages": {
       "path": "tests/test_package_distribution_cleanroom_prestart_contract.py",
@@ -38316,7 +38316,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 51
     },
     "tests/test_package_distribution_cleanroom_verified_managed_python.py::test_cleanroom_uses_verified_managed_python_for_poststart_diagnostics": {
       "path": "tests/test_package_distribution_cleanroom_verified_managed_python.py",
@@ -47376,7 +47376,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 406
+      "line": 424
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_validation_failure_is_exit_one": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47406,7 +47406,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 426
+      "line": 444
     },
     "tests/test_runtime_stability_wake_state.py::test_memory_prepare_cli_usage_error_is_exit_two": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47438,7 +47438,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 439
+      "line": 457
     },
     "tests/test_runtime_stability_wake_state.py::test_limited_normalization_is_explicitly_partial_and_cannot_build_wake": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47467,7 +47467,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 445
+      "line": 463
     },
     "tests/test_runtime_stability_wake_state.py::test_zero_limit_normalization_emits_zero_items_and_is_partial": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47496,7 +47496,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 460
+      "line": 478
     },
     "tests/test_runtime_stability_wake_state.py::test_full_prepare_after_partial_run_recovers_complete_coverage": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47525,7 +47525,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 471
+      "line": 489
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_when_source_run_coverage_is_tampered": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47554,7 +47554,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 485
+      "line": 503
     },
     "tests/test_runtime_stability_wake_state.py::test_unbounded_normalization_exceeds_legacy_12000_ceiling": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47583,7 +47583,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 512
+      "line": 530
     },
     "tests/test_runtime_stability_wake_state.py::test_runtime_bridge_rejects_snapshot_after_canonical_source_changes": {
       "path": "tests/test_runtime_stability_wake_state.py",
@@ -47612,7 +47612,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 526
+      "line": 544
     },
     "tests/test_runtime_supervisor.py::test_supervisor_backoff_is_bounded_and_increases_before_cap": {
       "path": "tests/test_runtime_supervisor.py",
