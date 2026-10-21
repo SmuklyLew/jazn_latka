@@ -26,9 +26,12 @@ For **explicit live-daemon diagnostic field requests only**:
    A restart between reads never licenses a cross-instance readiness claim.
 4. Apply `apply_status_convergence` (the canonical optional-MEMORY policy
    reconciliation). Read `conversation_ready` from
-   `capability_matrix.conversation_ready`, `runtime_ready` from
+   `capability_matrix.conversation_ready` **AND**
+   `/ready.readiness_ok`, `runtime_ready` from
    `runtime_core_ready`, and `daemon_ready` from explicit
-   `/ready.readiness_ok`. Do not conflate these independently scoped flags.
+   `/ready.readiness_ok`. A core-ready process with an unready chat worker
+   must report `conversation_ready=False`; do not conflate independently
+   scoped readiness flags.
 5. If any mandatory evidence is missing, mismatched, or malformed,
    return `not_verified` for readiness. A verified false is shown as
    `False`, not silently converted to `not_verified`.
@@ -49,6 +52,7 @@ before editing the active test.
 Acceptance cases:
 - valid status + `/ready` + canonical capability matrix => explicit True
 - verified unready runtime => explicit False
+- core policy ready but `/ready` worker unready => conversation_ready=False
 - no `/ready` evidence, missing readiness fields => not_verified
 - daemon changed instance between probes => not_verified
 - broken readiness endpoint => not_verified
