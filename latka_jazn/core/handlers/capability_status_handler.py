@@ -254,6 +254,54 @@ class CapabilityStatusHandler:
                 f"- Heartbeat: {heartbeat_label}",
             ]
 
+            # Explicit daemon-process diagnostics require a live read.
+            # The fast health path's os.getpid() is the current CLI process,
+            # not evidence for the long-lived daemon PID.
+            live_daemon_requested = any(marker in low_text for marker in (
+                "daemon_instance_id", "conversation_ready", "heartbeat_fresh",
+                "runtime_ready", "daemon_ready", "pid demona", "pid ",
+            ))
+            if live_daemon_requested:
+                live: dict[str, Any] = {}
+                if cfg is not None:
+                    try:
+                        from latka_jazn.core.runtime_daemon import status_daemon
+
+                        live = status_daemon(cfg)
+                    except (OSError, ValueError, RuntimeError):
+                        live = {}
+                verified = bool(
+                    live.get("active_state") in {"active_trusted", "active_degraded"}
+                    and live.get("endpoint_identity_matches") is True
+                    and live.get("process_identity_confirmed") is True
+                    and live.get("endpoint_reachable") is True
+                    and live.get("heartbeat_fresh") is True
+                    and live.get("package_integrity_verified") is True
+                    and live.get("source_provenance_verified") is True
+                    and live.get("daemon_instance_id")
+                )
+                ping = json_object(live.get("ping")) if verified else {}
+                capabilities = json_object(ping.get("capability_matrix"))
+                conversation_ready = ping.get(
+                    "conversation_ready", capabilities.get("conversation_ready")
+                )
+                lines[0] = "Odczyt diagnostyczny istniejącego daemona Jaźni:"
+                lines.extend([
+                    f"- daemon_identity_verified={verified}",
+                    f"- daemon_pid={live.get('pid') if verified else 'not_verified'}",
+                    f"- daemon_instance_id={live.get('daemon_instance_id') if verified else 'not_verified'}",
+                    f"- heartbeat_fresh={live.get('heartbeat_fresh') if verified else 'not_verified'}",
+                    f"- conversation_ready={conversation_ready if verified and isinstance(conversation_ready, bool) else 'not_verified'}",
+                    f"- daemon_endpoint={live.get('ping_endpoint') if verified else 'not_verified'}",
+                    f"- daemon_active_state={live.get('active_state') if verified else 'not_verified'}",
+                    "- source_origin=live_status_daemon_read_only",
+                ])
+                if not verified:
+                    lines.append(
+                        "- Granica prawdy: brak pełnego potwierdzenia tożsamości, "
+                        "endpointu i heartbeat; nie deklaruję działającego demona."
+                    )
+
             if wake_details_requested or detailed_health:
                 lines.extend([
                     f"- Snapshot wake-state: snapshot_id={wake_snapshot.get('snapshot_id')}, snapshot_sha256={wake_snapshot.get('snapshot_sha256')}",
