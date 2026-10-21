@@ -15,7 +15,7 @@ def test_pypdf_is_optional_pdf_capability_not_activation_core() -> None:
     base = list(pyproject["project"]["dependencies"])
     optional = pyproject["project"]["optional-dependencies"]
     assert not any(str(item).startswith("pypdf") for item in base)
-    assert optional["pdf"] == ["pypdf>=6.19.0,<7"]
+    assert optional["pdf"] == ["pypdf>=6.21.1,<7"]
 
     registry = json.loads(
         (ROOT / "latka_jazn/resources/dependencies/profiles.json").read_text(encoding="utf-8")
@@ -30,8 +30,8 @@ def test_pypdf_is_optional_pdf_capability_not_activation_core() -> None:
 
     core = resolve_profile_requirements(ROOT, ["core"])
     release = resolve_profile_requirements(ROOT, registry["release_profiles"])
-    assert "pypdf>=6.19.0,<7" not in core
-    assert "pypdf>=6.19.0,<7" in release
+    assert "pypdf>=6.21.1,<7" not in core
+    assert "pypdf>=6.21.1,<7" in release
 
 
 def test_release_locks_follow_explicit_core_archive_pdf_profile() -> None:
