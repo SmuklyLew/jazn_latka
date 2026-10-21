@@ -10,6 +10,7 @@ on:
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
       - "tests/test_memory_desktop_*.py"
+      - "tests/test_memory_studio_step_workflows.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
       - "tests/test_memory_desktop_*.py"
+      - "tests/test_memory_studio_step_workflows.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
   workflow_dispatch:
 
@@ -72,6 +74,7 @@ jobs:
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
+          tests/test_memory_studio_step_workflows.py
           tests/test_memory_desktop_workspace.py
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
@@ -86,6 +89,7 @@ jobs:
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
+          tests/test_memory_studio_step_workflows.py
           tests/test_memory_desktop_workspace.py
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
