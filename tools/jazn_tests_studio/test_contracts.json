@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.27",
-  "active_definition_count": 2484,
+  "system_version": "16.3.25.5.116.0.34.28",
+  "active_definition_count": 2492,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15667,6 +15667,170 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 88
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_explicit_daemon_process_fields_precede_package_route": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_explicit_daemon_process_fields_precede_package_route",
+      "purpose": "Explicit daemon process fields precede package route",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_real_package_integrity_request_stays_package_route": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_real_package_integrity_request_stays_package_route",
+      "purpose": "Real package integrity request stays package route",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_report_daemon_pid_not_cli_pid": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_live_diagnostics_report_daemon_pid_not_cli_pid",
+      "purpose": "Live diagnostics report daemon pid not cli pid",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_fail_closed_on_identity_mismatch": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_live_diagnostics_fail_closed_on_identity_mismatch",
+      "purpose": "Live diagnostics fail closed on identity mismatch",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_reverified_with_clock_degraded_but_live_daemon": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_poll_transport_reverified_with_clock_degraded_but_live_daemon",
+      "purpose": "Poll transport reverified with clock degraded but live daemon",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_missing_or_mismatched_identity_not_promoted": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_poll_transport_missing_or_mismatched_identity_not_promoted",
+      "purpose": "Poll transport missing or mismatched identity not promoted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_attaches_only_reverified_retrieval_evidence": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_completed_result_attaches_only_reverified_retrieval_evidence",
+      "purpose": "Completed result attaches only reverified retrieval evidence",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_does_not_invent_transport_without_attestation": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_completed_result_does_not_invent_transport_without_attestation",
+      "purpose": "Completed result does not invent transport without attestation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
