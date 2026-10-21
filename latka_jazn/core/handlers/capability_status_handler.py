@@ -280,18 +280,59 @@ class CapabilityStatusHandler:
                     and live.get("source_provenance_verified") is True
                     and live.get("daemon_instance_id")
                 )
-                ping = json_object(live.get("ping")) if verified else {}
-                capabilities = json_object(ping.get("capability_matrix"))
-                conversation_ready = ping.get(
-                    "conversation_ready", capabilities.get("conversation_ready")
-                )
+                # /live proves identity and heartbeat only. The canonical
+                # diagnostic status also probes /ready and converges the
+                # capability matrix, including the optional MEMORY policy.
+                # Never promote a liveness-only response to conversation-ready.
+                conversation_ready: bool | str = "not_verified"
+                runtime_ready: bool | str = "not_verified"
+                daemon_ready: bool | str = "not_verified"
+                readiness_source = "not_verified"
+                if verified and cfg is not None:
+                    try:
+                        from latka_jazn.cli_commands.diagnostics import status_payload
+                        from latka_jazn.cli_commands.diagnostics_convergence import (
+                            apply_status_convergence,
+                        )
+
+                        observed = status_payload(cfg.root, probe_endpoint=True)
+                        observed_daemon = json_object(observed.get("daemon"))
+                        observed_ready = json_object(observed_daemon.get("readiness"))
+                        same_instance = bool(
+                            observed_daemon.get("daemon_instance_id") == live.get("daemon_instance_id")
+                            and observed_daemon.get("pid") == live.get("pid")
+                            and observed_daemon.get("endpoint_identity_matches") is True
+                            and observed_daemon.get("process_identity_confirmed") is True
+                            and observed_daemon.get("endpoint_reachable") is True
+                            and observed_daemon.get("heartbeat_fresh") is True
+                            and observed_daemon.get("package_integrity_verified") is True
+                            and observed_daemon.get("source_provenance_verified") is True
+                            and observed_daemon.get("active_state") in {"active_trusted", "active_degraded"}
+                        )
+                        if same_instance and observed_ready.get("endpoint") == "/ready":
+                            converged = apply_status_convergence(observed, root=cfg.root)
+                            capability_matrix = json_object(converged.get("capability_matrix"))
+                            matrix_value = capability_matrix.get("conversation_ready")
+                            runtime_value = converged.get("runtime_core_ready")
+                            daemon_value = observed_ready.get("readiness_ok")
+                            if isinstance(matrix_value, bool) and isinstance(runtime_value, bool) and isinstance(daemon_value, bool):
+                                conversation_ready = matrix_value
+                                runtime_ready = runtime_value
+                                daemon_ready = daemon_value
+                                readiness_source = "canonical_status_ready_and_capability_matrix"
+                    except (OSError, ValueError, TypeError, RuntimeError):
+                        # Explicitly unresolved; do not infer from /live.
+                        pass
                 lines[0] = "Odczyt diagnostyczny istniejącego daemona Jaźni:"
                 lines.extend([
                     f"- daemon_identity_verified={verified}",
                     f"- daemon_pid={live.get('pid') if verified else 'not_verified'}",
                     f"- daemon_instance_id={live.get('daemon_instance_id') if verified else 'not_verified'}",
                     f"- heartbeat_fresh={live.get('heartbeat_fresh') if verified else 'not_verified'}",
-                    f"- conversation_ready={conversation_ready if verified and isinstance(conversation_ready, bool) else 'not_verified'}",
+                    f"- conversation_ready={conversation_ready}",
+                    f"- runtime_ready={runtime_ready}",
+                    f"- daemon_ready={daemon_ready}",
+                    f"- readiness_source={readiness_source}",
                     f"- daemon_endpoint={live.get('ping_endpoint') if verified else 'not_verified'}",
                     f"- daemon_active_state={live.get('active_state') if verified else 'not_verified'}",
                     "- source_origin=live_status_daemon_read_only",
