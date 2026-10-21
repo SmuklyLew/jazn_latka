@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-  "runtime_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-  "package_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-  "generated_at_utc": "2026-10-20T22:44:29+00:00",
-  "updated_at_utc": "2026-10-20T22:44:29+00:00",
+  "version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-21T00:46:47+00:00",
+  "updated_at_utc": "2026-10-21T00:46:47+00:00",
   "start_file": "run.py",
-  "file_count": 3228,
-  "static_file_count": 3228,
+  "file_count": 3231,
+  "static_file_count": 3231,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -299,8 +299,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2469,
-      "sha256": "dbb31d54fc5c5fc9d813d7ad01f8775b80c7b36007ff110719ecbf4f26c34c78",
+      "size_bytes": 2626,
+      "sha256": "509ab3e8d584a4f824ab0dda0c6cd67bcf2c633af4c0b4b887f6247074d899bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2920,
-      "sha256": "9b9e333e089b01392cb2c3a04910650b6e147645f001cd31c04d411d23c7927b",
+      "size_bytes": 2926,
+      "sha256": "dbeec2efe21a6f0f9f43b3893c681a9250e94d74f41bba03db938e7cfda1630a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1940,
-      "sha256": "d1d9d5cc5f0dd9cf68cfd28a565ee1a2f684bcc79d76cb5b45626beb9725cb2c",
+      "size_bytes": 1941,
+      "sha256": "46e4615993dc4059449670f10350dae0a67b3c50cfec590f8dba122e70f258b0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -452,8 +452,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/README.md",
-      "size_bytes": 7510,
-      "sha256": "2dcb8b31d459b539546b1cb22ae4f521b75674644ed3afec8b085be398c78355",
+      "size_bytes": 10047,
+      "sha256": "bfe5dc31488f35523f22a2cbccb3fe1d3190ec0f64b3444e6cf133799e53985f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -470,8 +470,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/package.json",
-      "size_bytes": 519,
-      "sha256": "d2041ad6043a97cdfbe1f1bcc4522af79f4590597a6de1e8feb6fb70c0a8c748",
+      "size_bytes": 551,
+      "sha256": "b4ad4c6e57f4eff6ac9c71be7aa853e52efed132e56533788765de361c929dab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -479,8 +479,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/src/index.mjs",
-      "size_bytes": 8010,
-      "sha256": "3d429fa41927cfb98f405a8bb464f3cdbdd6b577ae9d7768fe3047a083675b74",
+      "size_bytes": 8684,
+      "sha256": "6398dfbccf7bd8677768350196b85415f8bba9e95e881677b3163bc8899955cf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -488,8 +488,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/src/security.mjs",
-      "size_bytes": 5105,
-      "sha256": "49ab838f89e2a14b1c2d15b59a29be626e7da24aae758d6ba57819b603d9ef51",
+      "size_bytes": 6463,
+      "sha256": "ef89ccf28fa6181eba1330d8fa07cc38617183ffc9e81e8c94f5697316b135a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -514,9 +514,27 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/test/staging-isolation.test.mjs",
+      "size_bytes": 2535,
+      "sha256": "dedcf22039913f6c46722b6c852dd8bbf7c969305a27e0e66633b69d02992e4f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/wrangler.jsonc",
       "size_bytes": 428,
       "sha256": "021c3869742dd7de292a293ebd8a71aba7a6158aca8aa3cba8b91aeb6ab515d8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/wrangler.staging.example.jsonc",
+      "size_bytes": 689,
+      "sha256": "2f1711bcf0308956551a46385513041d8e7da57c3b67519965cae10be7ceb545",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3316,6 +3334,15 @@
       "path": "docs/runtime/BOUNDED_OPERATOR_EXECUTOR.md",
       "size_bytes": 2741,
       "sha256": "958e89065d8e8a698ef672d595a3d8f5f575dd7708e05ca7392a6080e121d8c6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/CHATGPT_CLOUDFLARE_OAUTH_STAGING_11603427.md",
+      "size_bytes": 3425,
+      "sha256": "a30695c370e4e697656fe80b95981fc29c557b5632c27925750ca1ef15e7963d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9102,7 +9129,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "18b086d1b0c445925e7faef1a6c6a9caac22ed089c8d7347364695b7f9b132b7",
+      "sha256": "bd7ed709373294c4eb24350cc189fc2310e702ea9ae91c2ad92e5db0d40a6654",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10568,8 +10595,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 12761,
-      "sha256": "9c91969d893e0cdda85bc122445cb203c4a09e6fc01f63c65019abf7f91d7893",
+      "size_bytes": 12876,
+      "sha256": "4645246cae3f837604e33715c0352149b6bcbdefc9d58a0c6565da44441f5106",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28857,7 +28884,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2287135,
-      "sha256": "79159b7a9aace882346bb139f2f10c0345cd5808cea9b863b05823da0ed2c023",
+      "sha256": "26bc5b45e0e371f25967fa7ef53e664106440e1a71c9be02bb39f2fd484fcd84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29504,11 +29531,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
+  "release_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-    "package_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation",
-    "release_version": "16.3.25.5.116.0.34.26-mcp-oauth-siwc-separation"
+    "runtime_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"
