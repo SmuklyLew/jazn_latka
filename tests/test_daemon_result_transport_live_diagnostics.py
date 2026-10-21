@@ -5,6 +5,7 @@ No daemon is started; all live status calls are isolated test doubles.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import main as main_module
 from latka_jazn.config import JaznConfig
@@ -14,7 +15,7 @@ from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
 
-def _live_status(root: Path) -> dict:
+def _live_status(root: Path) -> dict[str, Any]:
     return {
         "active_state": "active_degraded",  # clock trust may be degraded
         "runtime_version_full": PACKAGE_VERSION_FULL,
@@ -70,7 +71,7 @@ def _stub_canonical_readiness(
 
     def _converge(_observed, *, root):
         assert root == tmp_path
-        result = {"capability_matrix": {}}
+        result: dict[str, Any] = {"capability_matrix": {}}
         if conversation_ready is not None:
             result["capability_matrix"]["conversation_ready"] = conversation_ready
         if runtime_ready is not None:
