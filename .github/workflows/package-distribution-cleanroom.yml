@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [master]
   push:
-    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite', 'fix/v16.3.25.5.116.0.34.36-pr400-pypdf-security-recovery'
+    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite', 'fix/v16.3.25.5.116.0.34.36-pr400-pypdf-security-recovery']
   workflow_dispatch:
 
 permissions:
