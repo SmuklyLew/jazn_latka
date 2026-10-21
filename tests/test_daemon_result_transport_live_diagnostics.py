@@ -17,7 +17,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL
 def _live_status(root: Path) -> dict:
     return {
         "active_state": "active_degraded",  # clock trust may be degraded
-        "runtime_version_full": PACKAGE_VERSION_FULL
+        "runtime_version_full": PACKAGE_VERSION_FULL,
         "endpoint_reachable": True,
         "endpoint_identity_matches": True,
         "process_identity_confirmed": True,
