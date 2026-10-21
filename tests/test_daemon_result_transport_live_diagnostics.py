@@ -60,9 +60,10 @@ def _stub_canonical_readiness(
 
     checked_daemon = _live_status(tmp_path)
     checked_daemon["daemon_instance_id"] = daemon_instance_id
-    checked_daemon["readiness"] = {"endpoint": "/ready"}
+    readiness: dict[str, Any] = {"endpoint": "/ready"}
     if daemon_ready is not None:
-        checked_daemon["readiness"]["readiness_ok"] = daemon_ready
+        readiness["readiness_ok"] = daemon_ready
+    checked_daemon["readiness"] = readiness
 
     monkeypatch.setattr(
         diagnostics, "status_payload",
