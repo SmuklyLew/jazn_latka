@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.30",
-  "active_definition_count": 2505,
+  "active_definition_count": 2507,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -35735,6 +35735,7 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
@@ -35759,6 +35760,7 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
@@ -35783,6 +35785,7 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
@@ -35807,12 +35810,63 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 56
+    },
+    "tests/test_memory_studio_step_workflows.py::test_late_broken_chatgpt_json_is_not_accepted_after_first_record": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_late_broken_chatgpt_json_is_not_accepted_after_first_record",
+      "purpose": "Late broken chatgpt json is not accepted after first record",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_memory_studio_step_workflows.py::test_analysis_songs_is_a_music_rebuild_source": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_analysis_songs_is_a_music_rebuild_source",
+      "purpose": "Analysis songs is a music rebuild source",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
     },
     "tests/test_memory_studio_step_workflows.py::test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff": {
       "path": "tests/test_memory_studio_step_workflows.py",
@@ -35831,12 +35885,13 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 86
     },
     "tests/test_memory_studio_step_workflows.py::test_odt_is_checked_as_package_not_imported_into_memory": {
       "path": "tests/test_memory_studio_step_workflows.py",
@@ -35856,12 +35911,13 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 95
     },
     "tests/test_memory_studio_step_workflows.py::test_sanitization_redacts_arbitrary_private_text_and_keys": {
       "path": "tests/test_memory_studio_step_workflows.py",
@@ -35880,12 +35936,13 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 107
     },
     "tests/test_memory_studio_step_workflows.py::test_invalid_resume_run_id_is_rejected_before_filesystem_access": {
       "path": "tests/test_memory_studio_step_workflows.py",
@@ -35906,12 +35963,13 @@
         "latka_jazn.tools.memory_rebuild_app.file_checks",
         "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
         "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
         "latka_jazn.tools.memory_rebuild_app.steps",
         "latka_jazn.tools.memory_rebuild_app.studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 124
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
