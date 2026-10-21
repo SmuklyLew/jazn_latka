@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.31",
-  "active_definition_count": 2507,
+  "system_version": "16.3.25.5.116.0.34.32",
+  "active_definition_count": 2508,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -27524,6 +27524,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 12
+    },
+    "tests/test_memory_desktop_source_picker_windows.py::test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle": {
+      "path": "tests/test_memory_desktop_source_picker_windows.py",
+      "name": "test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle",
+      "purpose": "Picker keeps buttons visible for 113 files and supports click toggle",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_memory_desktop_workspace.py::test_window_routes_to_native_canonical_workspace": {
       "path": "tests/test_memory_desktop_workspace.py",
