@@ -51,7 +51,7 @@ def test_release_locks_follow_explicit_core_archive_pdf_profile() -> None:
     assert not legacy.exists()
     for path in current.glob("*.txt"):
         text = path.read_text(encoding="utf-8")
-        assert "pypdf==6.19.0 --hash=sha256:7e5d6e730e7dae87d560a2cee218b852f6498c8be61966f3cd02ead971e48d14" in text
+        assert "pypdf==6.21.2 --hash=sha256:1d44d1a3a200f25062adff0085b02040e4646431ac2ccac22e42679e91466084" in text
 
 
 def test_dependency_block_message_names_only_activation_required_core() -> None:
