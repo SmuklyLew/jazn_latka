@@ -25,6 +25,7 @@ from .studio import STUDIO_VERSION, StudioState, _run_test
 from .studio_workflows import StudioWorkflows
 from .studio_write_safety import require_isolated_database
 from .steps import STEP_SPECS
+from .file_checks import check_memory_source_files
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 from .p1_memory_inspection import inspect_memory_layout
 from .p1_memory_provenance import compare_memory_provenance
@@ -47,7 +48,8 @@ PAGES: tuple[tuple[str, str, str], ...] = (
     ("import", "Import i migracja", "Kontrolowany import źródeł i legacy SQLite"),
     ("affect", "Ślady afektywne", "Źródłowe deklaracje i modelowane stany z lineage"),
     ("candidates", "Kandydaci L1", "Ręczny przegląd bez automatycznego L2/L3"),
-    ("tests", "Kroki odbudowy", "Kroki 00–05 z osobnymi kontrolami poprawności"),
+    ("tests", "Kroki odbudowy", "Kroki 00–05, budowa i finalny eksport"),
+    ("validation", "Testy plików", "Niezależne sprawdzanie plików, formatów i integralności"),
     ("rebuild", "Odbudowa", "Preflight, plan, jawnie potwierdzony zapis"),
     ("export", "Finalny eksport", "Eksport ze sprawdzeniem wymaganych dowodów"),
     ("settings", "Ustawienia", "Zasady walidacji, retrieval i bezpieczeństwa"),
@@ -629,6 +631,33 @@ class DesktopWorkspace:
         self._card("Kandydaci doświadczeń L1",
                    "Generowanie kandydatów i ich ręczny przegląd; żadne automatyczne przejście do L2/L3.")
         self._action_row(("Otwórz kandydatów pamięci", self.workflows.candidates_hub, True),)
+
+    def _page_validation(self) -> None:
+        self._card(
+            "Testy plików i formatów — bez odbudowy",
+            "Tylko odczyt źródeł. Sprawdza SHA-256, parsowanie i struktury formatów, "
+            "pełny JSONL, CRC ZIP i dokumenty ODF. Status REVIEW wymaga decyzji "
+            "operatora; żaden plik nie jest automatycznie odrzucany ani importowany.",
+        )
+        self._action_row(
+            ("Sprawdź włączone pliki projektu", self._verify_source_files, True),
+        )
+
+    def _verify_source_files(self) -> None:
+        project = self._require_project()
+        sources = [Path(item.path) for item in project.enabled_sources()]
+        report = check_memory_source_files(
+            sources,
+            report_dir=self.tool_root / "memory" / "rebuild_tests" / "file_checks",
+        )
+        summary = {
+            "status": report["status"],
+            "file_count": report["file_count"],
+            "counts": report["counts"],
+            "total_size_bytes": report["total_size_bytes"],
+            "report_paths": report.get("report_paths"),
+        }
+        self.dialogs.message("WERYFIKACJA FORMATÓW", _pretty(summary))
 
     def _page_tests(self) -> None:
         self._label(self.content, "Krok 00 → Krok 01 → Krok 02 → Krok 03 → Krok 04 → Final")
