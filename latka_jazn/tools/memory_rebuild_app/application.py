@@ -11,6 +11,7 @@ from latka_jazn.version import PACKAGE_VERSION_FULL
 from .protocol_engine import ProtocolEngine
 from .settings import MemoryRebuildSettings
 from .test_spec import TEST_PROTOCOL_ORDER
+from .steps import legacy_profile_for_step, step_for_legacy_profile
 
 
 def resolve_base_commit(root: str | Path) -> str:
@@ -87,6 +88,30 @@ class MemoryRebuildApplicationService:
         else:
             result["run_manifest"] = self.engine.checkpoint_manifest()
         return result
+
+    def run_step(self, step: str, **kwargs: Any) -> dict[str, Any]:
+        """Execute one rebuild step and attach its operator-facing identity.
+
+        The underlying v4 protocol keys stay stable for existing manifests and
+        older entrypoints. The step does the work; its validator checks results.
+        """
+        profile = legacy_profile_for_step(step)
+        result = self.run_protocol(profile, **kwargs)
+        return {
+            **result,
+            "step_id": step_for_legacy_profile(profile).step_id,
+            "step_label": step_for_legacy_profile(profile).label,
+            "kind": "rebuild_step",
+        }
+
+    def validate_step(
+        self,
+        step: str,
+        artifact: str | Path | Mapping[str, Any],
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Run the independent validation contract for a completed step."""
+        return self.validate_protocol(legacy_profile_for_step(step), artifact, **kwargs)
 
     def validate_protocol(
         self,
