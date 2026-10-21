@@ -19,6 +19,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
+from .canonical_rebuild import canonical_database_path
 from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore, default_project_root
 from .studio import STUDIO_VERSION, StudioState, _run_test
@@ -58,7 +59,7 @@ PAGES: tuple[tuple[str, str, str], ...] = (
 PAGE_BY_ID = {key: (label, hint) for key, label, hint in PAGES}
 
 PATH_FIELDS = (
-    ("source_directory", "Katalog źródeł", "directory", "project"),
+    ("source_directory", "Folder startowy skanowania (opcjonalny)", "directory", "project"),
     ("target_root", "Katalog odbudowy / staging", "directory", "project"),
     ("database", "Kanoniczna baza memory_jazn.sqlite3", "savefile", "database"),
     ("test04_benchmark", "Prywatny benchmark Test04", "file", "setting"),
@@ -99,6 +100,23 @@ def proposed_path_changes(values: dict[str, str]) -> dict[str, str]:
         if source == target or source in target.parents or target in source.parents:
             raise ValueError("Folder źródeł i katalog odbudowy muszą być rozdzielone.")
     return normalized
+
+
+def suggested_database_after_target_change(
+    old_target: str | Path,
+    new_target: str | Path,
+    database: str | Path,
+) -> Path:
+    """Move only an untouched *default* database path when changing staging.
+
+    Never silently relocate an existing SQLite file or a manually configured
+    database. The caller must explicitly confirm any custom destination.
+    """
+    current = Path(database).expanduser().resolve()
+    original = canonical_database_path(old_target)
+    if current == original and not current.exists():
+        return canonical_database_path(new_target)
+    return current
 
 
 class TkStudioDialogs:
@@ -550,6 +568,16 @@ class DesktopWorkspace:
             self._label(self.content, "Utwórz lub wybierz projekt, aby konfigurować ścieżki.", note=True)
             return
         values = project_path_values(project, self.state.database)
+        self._card(
+            "Źródła projektu — lista plików, nie jedna ścieżka",
+            f"Zarejestrowano: {len(project.sources)} plików. "
+            "Dodawaj wiele folderów, folderów z podfolderami i pojedynczych plików "
+            "przez „Projekt i źródła”. Pole folderu startowego poniżej jest "
+            "wyłącznie ułatwieniem przy następnym skanowaniu.",
+        )
+        self._action_row(
+            ("Dodaj foldery lub pliki", self.workflows.sources_hub, True),
+        )
         self._fields = {}
         grid = ttk.Frame(self.content)
         grid.pack(fill="x", pady=10)
@@ -580,11 +608,24 @@ class DesktopWorkspace:
         else:
             selected = filedialog.askopenfilename(parent=self.root, title="Wybierz plik")
         if selected:
+            if key == "target_root":
+                old_target = self._fields["target_root"].get()
+                old_db = self._fields["database"].get()
+                new_db = suggested_database_after_target_change(
+                    old_target, selected, old_db,
+                )
+                self._fields["database"].set(str(new_db))
             self._fields[key].set(selected)
 
     def _save_paths(self) -> None:
         project = self._require_project()
         changes = proposed_path_changes({key: var.get() for key, var in self._fields.items()})
+        if changes["target_root"] != str(Path(project.target_root).resolve()):
+            chosen = suggested_database_after_target_change(
+                project.target_root, changes["target_root"], changes["database"],
+            )
+            changes["database"] = str(chosen)
+            self._fields["database"].set(str(chosen))
         if changes["database"] != str(self.state.database):
             db = Path(changes["database"])
             if db.is_file() and db.name != CANONICAL_DATABASE_NAME:
@@ -592,7 +633,12 @@ class DesktopWorkspace:
         if project.mode == "developer":
             target = Path(changes["target_root"])
             if target == self.tool_root or self.tool_root in target.parents:
-                raise ValueError("Katalog developer staging musi leżeć poza repozytorium.")
+                raise ValueError(
+                    "Katalog odbudowy leży wewnątrz repozytorium Jaźni. "
+                    "Wybierz osobny katalog obok repozytorium, np. "
+                    f"{self.tool_root.parent / 'jazn_memory_projects' / 'nowy_projekt'}. "
+                    "Oryginalne źródła pozostają w swoich folderach."
+                )
         project.source_directory = changes["source_directory"]
         project.target_root = changes["target_root"]
         for key in ("test04_benchmark", "test04_acceptance_report",
