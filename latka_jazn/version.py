@@ -1,3 +1,4 @@
+# v116.0.34.27 requires dedicated staging OAuth issuer, audience, KV and GitHub app before public MCP activation.
 # v116.0.34.26 separates MCP OAuth deployment readiness from optional SIWC OAuth and keeps external ingress fail closed.
 # v116.0.34.25 verifies ChatGPT OAuth discovery and adds a status-call nonce echo without promoting host readiness.
 # v116.0.34.24 adds dependency-free, local-only, bounded operator subprocess execution.
@@ -91,9 +92,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.26"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.26"
-PACKAGE_RELEASE_NAME = "mcp-oauth-siwc-separation"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.27"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.27"
+PACKAGE_RELEASE_NAME = "isolated-mcp-oauth-staging"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

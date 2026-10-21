@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Jaźń Cloudflare GitHub OAuth for protected MCP ingress (opt-in, fail closed)",
   "scripts": {
-    "check": "node --check src/index.mjs && node --check src/security.mjs && node --test test/security.test.mjs test/deployment-boundary.test.mjs",
+    "check": "node --check src/index.mjs && node --check src/security.mjs && node --test test/security.test.mjs test/deployment-boundary.test.mjs test/staging-isolation.test.mjs",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
