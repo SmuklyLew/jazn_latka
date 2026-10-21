@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Canonical Jaźń Memory Rebuild Studio.
 
-One state machine owns TESTY, PROJEKTOWANIE and USTAWIENIA. Actions open
+One state machine owns KROKI, PROJEKTOWANIE and USTAWIENIA. Actions open
 theme-aware modal dialogs and call the engine directly; the application never
 starts another Memory Rebuild UI.
 """
@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Sequence
 import json
 import os
+import re
 
 from latka_jazn.version import PACKAGE_VERSION
 
@@ -30,14 +31,15 @@ from .settings import (
 )
 from .studio_dialogs import DialogBackend, TextDialogs, make_dialogs
 from .studio_workflows import StudioWorkflows
-from .test_spec import TEST_PROTOCOL_ORDER, TEST_SPECS, get_test_spec
+from .test_spec import TEST_PROTOCOL_ORDER, get_test_spec
+from .steps import STEP_SPECS, step_for_legacy_profile
 from .themes import THEMES, get_theme, prompt_toolkit_style
 
 
 STUDIO_VERSION = "memory-rebuild-studio/v16.3.20"
 PAGE_IDS = ("tests", "design", "settings")
 PAGE_LABELS = {
-    "tests": "TESTY",
+    "tests": "KROKI",
     "design": "PROJEKTOWANIE",
     "settings": "USTAWIENIA",
 }
@@ -66,7 +68,7 @@ DESIGN_ITEMS: tuple[PageItem, ...] = (
     ),
     PageItem("plan", "Plan bez zapisu", "Preflight i dokładny plan bez uruchamiania odbudowy."),
     PageItem("rebuild", "Wykonaj odbudowę", "Jawnie potwierdzony zapis zgodnie z aktualnym planem."),
-    PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi Testami 01–04."),
+    PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi wynikami kroków 01–04."),
     PageItem("export", "Finalny eksport", "Staging, pełna walidacja i atomowa publikacja."),
     PageItem("recall", "Recall / benchmark", "FTS5 baseline i mierzalny benchmark przed eksperymentami A/B."),
 )
@@ -249,6 +251,25 @@ class StudioState:
         except Exception as exc:
             self.project_error = f"project: {type(exc).__name__}: {exc}"
 
+    def resume_step_run(self, run_id: str) -> None:
+        """Reopen an explicitly chosen persisted step chain after a GUI restart."""
+        identifier = run_id.strip()
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", identifier) or identifier in {".", ".."}:
+            raise ValueError("Run ID must be a simple identifier without paths.")
+        if not self.project:
+            raise ValueError("Choose a memory project before resuming steps.")
+        service = MemoryRebuildApplicationService(
+            self.tool_root / "memory" / "rebuild_tests" / "protocols",
+            tool_root=self.tool_root,
+            settings=self.runtime_settings,
+            run_id=identifier,
+            resume=True,
+        )
+        self.protocol_service = service
+        self.test_results = {key: dict(value) for key, value in service.engine.results.items()}
+        self.status = f"Wznowiono kroki: {identifier}; gotowych: {len(self.test_results)}"
+        self.status_kind = "ok"
+
     def select_project(self, identifier: str | None) -> None:
         if identifier is None:
             self.project = None
@@ -319,7 +340,7 @@ class StudioState:
 
     def items(self) -> Sequence[PageItem]:
         if self.active_page == "tests":
-            return tuple(PageItem(item.profile, item.label, item.goal) for item in TEST_SPECS)
+            return tuple(PageItem(item.legacy_profile, item.label, item.goal) for item in STEP_SPECS)
         if self.active_page == "design":
             return DESIGN_ITEMS
         return SETTINGS_ITEMS
@@ -391,7 +412,8 @@ class StudioState:
             else "NOT RUN"
         )
         lines = [
-            spec.label,
+            step_for_legacy_profile(profile).label,
+            f"  Kontrakt protokołu: {spec.label}",
             "",
             "CEL",
             f"  {spec.goal}",
@@ -434,7 +456,7 @@ class StudioState:
         lines.extend(f"  • {value}" for value in spec.outputs)
         lines.extend(("", "GRANICA PRAWDY"))
         lines.extend(f"  • {value}" for value in spec.truth_boundary)
-        lines.extend(("", "R/Enter uruchamia protokół lub jego aktualny validator."))
+        lines.extend(("", "R/Enter uruchamia krok wraz z niezależną walidacją wyniku."))
         return lines
 
     def _design_detail(self, key: str) -> list[str]:
@@ -466,7 +488,7 @@ class StudioState:
             return [
                 "Recall / benchmark",
                 "",
-                "R0  Source Fidelity (Test00)",
+                "R0  Wierność źródeł (Krok 00)",
                 "R1  Prywatny, wersjonowany benchmark Recall",
                 "R2  FTS5/BM25 baseline — AKTYWNY ETAP",
                 "R3  Query rewrite A/B — NIEIMPLEMENTOWANE",
@@ -587,7 +609,7 @@ class StudioState:
 
     def footer_fragments(self):
         return [
-            ("class:footer-key", " 1 "), ("class:footer", "Testy  "),
+            ("class:footer-key", " 1 "), ("class:footer", "Kroki  "),
             ("class:footer-key", " 2 "), ("class:footer", "Projektowanie  "),
             ("class:footer-key", " 3 "), ("class:footer", "Ustawienia  "),
             ("class:footer-key", " ↑↓ "), ("class:footer", "Wybór  "),
@@ -696,7 +718,7 @@ def _run_shell(state: StudioState) -> StudioAction:
         if state.active_page == "tests":
             event.app.exit(result=StudioAction("run-test", state.current_item().key))
         else:
-            state.status = "R uruchamia profil tylko na stronie TESTY."
+            state.status = "R uruchamia krok tylko na stronie KROKI."
             state.status_kind = "error"
             invalidate(event)
 
@@ -744,7 +766,7 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
             settings=state.runtime_settings,
         )
     elif state.protocol_service is None:
-        raise ValueError(f"{profile.upper()} wymaga rozpoczęcia runu od Test00 w tej sesji Studio.")
+        raise ValueError(f"{profile.upper()} wymaga kroku 00 albo jawnego wznowienia zapisanego przebiegu.")
     service = state.protocol_service
     assert service is not None
     state.test_results[profile] = {"outcome": "RUNNING", "ok": False}
@@ -793,7 +815,7 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
             "test04_result": prerequisite,
             "sources": [Path(item.path) for item in project.enabled_sources()] if project else [],
         }
-    report = service.run_protocol(profile, **kwargs)
+    report = service.run_step(profile, **kwargs)
     state.test_results[profile] = dict(report)
     state.status = f"{profile.upper()}: {report['outcome']}"
     state.status_kind = "ok" if report.get("ok") else "error"
@@ -1133,7 +1155,7 @@ def _run_text_studio(
     workflows: StudioWorkflows,
 ) -> int:
     pages = [
-        ("tests", "TESTY"),
+        ("tests", "KROKI"),
         ("design", "PROJEKTOWANIE"),
         ("settings", "USTAWIENIA"),
         ("quit", "Zakończ"),

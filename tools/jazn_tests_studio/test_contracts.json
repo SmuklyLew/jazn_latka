@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.29",
-  "active_definition_count": 2497,
+  "system_version": "16.3.25.5.116.0.34.31",
+  "active_definition_count": 2507,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15690,7 +15690,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 35
+      "line": 36
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_real_package_integrity_request_stays_package_route": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15714,7 +15714,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 45
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_report_daemon_pid_not_cli_pid": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15736,7 +15736,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 85
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_fail_closed_on_identity_mismatch": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15758,7 +15758,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 102
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_reverified_with_clock_degraded_but_live_daemon": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15780,7 +15780,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 113
+      "line": 115
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_missing_or_mismatched_identity_not_promoted": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15802,7 +15802,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 128
+      "line": 130
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_attaches_only_reverified_retrieval_evidence": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15824,7 +15824,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 142
+      "line": 144
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_does_not_invent_transport_without_attestation": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15846,7 +15846,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 178
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_rejects_other_release_or_recorded_instance": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15868,7 +15868,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 193
+      "line": 195
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_report_independent_negative_readiness": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15890,7 +15890,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 212
+      "line": 214
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_does_not_promote_liveness_only_or_switched_instance": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15912,7 +15912,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 231
+      "line": 233
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_readiness_probe_failure_is_not_success": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15934,7 +15934,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 258
+      "line": 260
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_conversation_readiness_requires_ready_worker_even_if_core_policy_ready": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15956,7 +15956,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 278
+      "line": 280
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
@@ -35715,6 +35715,261 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 96
+    },
+    "tests/test_memory_studio_step_workflows.py::test_operator_step_names_preserve_legacy_lineage": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_operator_step_names_preserve_legacy_lineage",
+      "purpose": "Operator step names preserve legacy lineage",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_memory_studio_step_workflows.py::test_service_run_step_is_a_compatibility_facade": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_service_run_step_is_a_compatibility_facade",
+      "purpose": "Service run step is a compatibility facade",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_studio_step_workflows.py::test_dated_chatgpt_export_files_are_recognized": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_dated_chatgpt_export_files_are_recognized",
+      "purpose": "Dated chatgpt export files are recognized",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_memory_studio_step_workflows.py::test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged",
+      "purpose": "File check reads every jsonl line and keeps sources unchanged",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_memory_studio_step_workflows.py::test_late_broken_chatgpt_json_is_not_accepted_after_first_record": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_late_broken_chatgpt_json_is_not_accepted_after_first_record",
+      "purpose": "Late broken chatgpt json is not accepted after first record",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_memory_studio_step_workflows.py::test_analysis_songs_is_a_music_rebuild_source": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_analysis_songs_is_a_music_rebuild_source",
+      "purpose": "Analysis songs is a music rebuild source",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_memory_studio_step_workflows.py::test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff",
+      "purpose": "Jsonl failure on late line is not lost to sampled sniff",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_memory_studio_step_workflows.py::test_odt_is_checked_as_package_not_imported_into_memory": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_odt_is_checked_as_package_not_imported_into_memory",
+      "purpose": "Odt is checked as package not imported into memory",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_memory_studio_step_workflows.py::test_sanitization_redacts_arbitrary_private_text_and_keys": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_sanitization_redacts_arbitrary_private_text_and_keys",
+      "purpose": "Sanitization redacts arbitrary private text and keys",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_memory_studio_step_workflows.py::test_invalid_resume_run_id_is_rejected_before_filesystem_access": {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "name": "test_invalid_resume_run_id_is_rejected_before_filesystem_access",
+      "purpose": "Invalid resume run id is rejected before filesystem access",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.source_inventory",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",

@@ -134,6 +134,17 @@ jobs:
             -r "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
             --strict --format cyclonedx-json --output "$RUNNER_TEMP/dependencies.cdx.json"
 
+      - name: Preserve failed dependency audit evidence
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pip-audit-failure-${{ inputs.target }}-py${{ inputs.python-version }}
+          path: |
+            ${{ runner.temp }}/pip-audit.json
+            ${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Build target-specific portable package set
         id: package
         shell: bash

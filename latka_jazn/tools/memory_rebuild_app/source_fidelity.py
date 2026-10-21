@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Iterable
 import json
 import os
+import shutil
 import sqlite3
 import uuid
 import zipfile
@@ -572,6 +573,31 @@ def _sanitized_result(item: SourceFidelityResult) -> dict[str, Any]:
     }
 
 
+def _source_mirror_disk_preflight(paths: list[Path], output_root: Path) -> dict[str, int | str | bool]:
+    """Fail before creating the large source mirror if capacity is insufficient.
+
+    Full BLOB mirroring can keep both the main SQLite file and a large WAL
+    simultaneously. Reserve three times raw input plus a fixed emergency floor.
+    This is a conservative gate, not an exact prediction of peak usage.
+    """
+    probe = output_root
+    while not probe.exists() and probe != probe.parent:
+        probe = probe.parent
+    if not probe.is_dir():
+        raise ValueError("source_mirror_output_not_directory")
+    raw_bytes = sum(path.stat().st_size for path in paths)
+    required = raw_bytes * 3 + 512 * 1024 * 1024
+    available = shutil.disk_usage(probe).free
+    return {
+        "ok": available >= required,
+        "source_bytes": raw_bytes,
+        "required_free_bytes": required,
+        "available_free_bytes": available,
+        "shortfall_bytes": max(0, required - available),
+        "storage_mode": "full_source_mirror",
+    }
+
+
 def run_test00_source_fidelity(
     sources: Iterable[str | Path],
     *,
@@ -599,6 +625,13 @@ def run_test00_source_fidelity(
     }
 
     root = Path(output_root).expanduser().resolve()
+    disk_preflight = _source_mirror_disk_preflight(source_paths, root)
+    if not disk_preflight["ok"]:
+        raise RuntimeError(
+            "source_mirror_insufficient_disk_space:"
+            f"required={disk_preflight['required_free_bytes']};"
+            f"free={disk_preflight['available_free_bytes']}"
+        )
     resolved_run_id = run_id or (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8])
     run_root = root / resolved_run_id
     run_root.mkdir(parents=True, exist_ok=False)
@@ -627,6 +660,7 @@ def run_test00_source_fidelity(
         "database": str(database),
         "database_sha256": sha256_file(database),
         "source_count": len(results),
+        "disk_preflight": disk_preflight,
         "integrity": integrity,
         "foreign_key_error_count": len(foreign_keys),
         "sources": [item.to_dict() for item in results],

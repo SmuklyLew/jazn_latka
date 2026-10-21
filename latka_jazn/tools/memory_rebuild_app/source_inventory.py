@@ -305,7 +305,7 @@ def _classification(path: Path, metadata: dict[str, Any]) -> tuple[str, str, str
         first_keys = set(json_meta.get("first_item_keys") or [])
         if json_meta.get("parse_error"):
             return "unknown", "unknown", "excluded"
-        if "analizy" in keys or "analizy_utwor" in name or "music_anal" in name:
+        if "analizy" in keys or "analizy_utwor" in name or "music_anal" in name or "analysis_songs" in name:
             return "music_analysis", "assistant_claim", "memory_rebuild"
         if {"latka_ai_pamiec", "pytania_z_ciszy", "relacje", "projekty_meta"} & keys:
             return "affective_memory", "assistant_claim", "memory_rebuild"

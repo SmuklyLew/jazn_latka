@@ -66,6 +66,7 @@ def _is_lossy_html_mode(mode: str) -> bool:
 
 
 def _read_source(path: Path) -> dict[str, Any]:
+    """Stream each graph into compact variant evidence (no full-graph tuple)."""
     source = path.expanduser().resolve()
     if not source.is_file():
         raise FileNotFoundError(source)
@@ -74,7 +75,14 @@ def _read_source(path: Path) -> dict[str, Any]:
     mode = "ignored"
     priority = 99
     warnings: tuple[str, ...] = ()
-    graphs = ()
+    variants: list[dict[str, Any]] = []
+
+    def collect(graphs: Iterable[Any]) -> None:
+        for graph in graphs:
+            variants.append({
+                "conversation_id": graph.conversation_id,
+                **_variant({"sha256": source_hash, "mode": mode}, graph),
+            })
 
     if suffix == ".json":
         kind = probe_json_source_kind(source)
@@ -84,43 +92,43 @@ def _read_source(path: Path) -> dict[str, Any]:
                 "sha256": source_hash,
                 "mode": f"sidecar_json:{kind}",
                 "priority": priority,
-                "graphs": graphs,
+                "variants": variants,
                 "warnings": warnings,
                 "ignored_reason": "non_conversation_json",
             }
-        with ChatExportReader(source, verify_crc=False) as reader:
-            graphs = tuple(reader.iter_graphs())
-            warnings = reader.record_warnings
         mode = "canonical_json"
         priority = 0
+        with ChatExportReader(source, verify_crc=False) as reader:
+            collect(reader.iter_graphs())
+            warnings = reader.record_warnings
     elif suffix in {".html", ".htm"}:
         records, _member, html_mode, warnings = read_html_conversations(source)
-        graphs = tuple(build_conversation_graph(item) for item in records)
         mode = html_mode
         priority = 1 if _is_lossless_html_mode(html_mode) else 2
+        collect(build_conversation_graph(item) for item in records)
     elif suffix == ".zip":
         with ChatExportReader(source, verify_crc=True) as reader:
             if reader.info.conversation_members:
-                graphs = tuple(reader.iter_graphs())
-                warnings = reader.record_warnings
                 mode = "canonical_json_in_zip"
                 priority = 0
+                collect(reader.iter_graphs())
+                warnings = reader.record_warnings
             elif reader.info.html_member:
                 records, _member, html_mode, warnings = read_html_conversations(source)
-                graphs = tuple(build_conversation_graph(item) for item in records)
                 mode = f"html_in_zip:{html_mode}"
                 priority = 1 if _is_lossless_html_mode(html_mode) else 2
+                collect(build_conversation_graph(item) for item in records)
     return {
         "path": source,
         "sha256": source_hash,
         "mode": mode,
         "priority": priority,
-        "graphs": graphs,
+        "variants": variants,
         "warnings": warnings,
         "ignored_reason": (
             "lossy_control_not_canonical"
-            if graphs and _is_lossy_html_mode(mode)
-            else None if graphs else "no_lossless_conversation_graph"
+            if variants and _is_lossy_html_mode(mode)
+            else None if variants else "no_lossless_conversation_graph"
         ),
     }
 
@@ -209,7 +217,7 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         except Exception as exc:
             errors.append({"path": str(path), "error_type": type(exc).__name__, "error": str(exc)})
 
-    chat_sources = [item for item in observations if item["graphs"]]
+    chat_sources = [item for item in observations if item["variants"]]
     lossless = [
         item
         for item in chat_sources
@@ -220,10 +228,10 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
     conversations: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_source: dict[str, set[tuple[str, str]]] = defaultdict(set)
     for source in lossless:
-        for graph in source["graphs"]:
-            item = _variant(source, graph)
-            conversations[graph.conversation_id].append(item)
-            by_source[source["sha256"]].add((graph.conversation_id, graph.semantic_tree_sha256))
+        for item in source["variants"]:
+            conversation_id = str(item["conversation_id"])
+            conversations[conversation_id].append(item)
+            by_source[source["sha256"]].add((conversation_id, item["semantic_tree_sha256"]))
 
     rows: list[dict[str, Any]] = []
     requirements: set[tuple[str, str]] = set()
@@ -286,7 +294,7 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
             "path": str(item["path"]),
             "source_sha256": item["sha256"],
             "mode": item["mode"],
-            "conversation_count": len(item["graphs"]),
+            "conversation_count": len(item["variants"]),
             "ignored_reason": item["ignored_reason"],
             "warning_count": len(item["warnings"]),
         }
@@ -302,7 +310,7 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         "source_count": len(observations),
         "lossless_chat_source_count": len(lossless),
         "lossy_chat_source_count": len(lossy),
-        "ignored_non_chat_source_count": sum(1 for item in observations if not item["graphs"]),
+        "ignored_non_chat_source_count": sum(1 for item in observations if not item["variants"]),
         "unique_conversation_count": len(rows),
         "unique_conversation_variant_count": variants_total,
         "union_node_count": union_nodes,

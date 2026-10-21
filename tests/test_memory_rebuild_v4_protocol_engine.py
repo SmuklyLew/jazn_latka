@@ -626,7 +626,7 @@ def test_studio_runner_reuses_one_application_service_and_authentic_chain(
         def __init__(self, output_root, **kwargs):
             constructors.append((self, Path(output_root), kwargs))
 
-        def run_protocol(self, profile, **kwargs):
+        def run_step(self, profile, **kwargs):
             calls.append((profile, kwargs))
             return {
                 "ok": True,

@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "runtime_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "package_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T03:19:19+00:00",
-  "updated_at_utc": "2026-10-21T03:19:19+00:00",
+  "version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-21T18:18:01+00:00",
+  "updated_at_utc": "2026-10-21T18:18:01+00:00",
   "start_file": "run.py",
-  "file_count": 3235,
-  "static_file_count": 3235,
+  "file_count": 3241,
+  "static_file_count": 3241,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -128,8 +128,8 @@
     },
     {
       "path": ".github/workflows/dependency-artifacts.yml",
-      "size_bytes": 8324,
-      "sha256": "dd8384224d55e1eac1a9cd07240d53299dca4f31c377c395ef2c39484f38ba61",
+      "size_bytes": 8796,
+      "sha256": "4b333141063ea154bcaa9f2bf86587e5216980712745c40e8b6d67e8232bf1e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -218,8 +218,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 5152,
-      "sha256": "5bb5fbda0fadebd0b338117ef3b13c1ea03fc0a4ecac8cb4cef8465a09978505",
+      "size_bytes": 5364,
+      "sha256": "181cbb6365094475cbfbb5d900fa9ec0298808f1ce37b605959d74652b78b3df",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2927,
-      "sha256": "97fad921d8dc18eddc86d382c81ca50c9bf262fa42302362aa74c17b183c3b43",
+      "sha256": "1b8e35323319375bc84d6fc98d9ab26da3413948625bcac6f16e80a37e6f1e09",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -426,7 +426,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1941,
-      "sha256": "e9b07dcb3b3c5d60c229a539310556f1ffed7caffe29e8d5e605a73bce3678d2",
+      "sha256": "c63bd42a0187a419ad44f2daa2d8c53bc4878acf3865fe8535e10e6f324583a6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1372,6 +1372,15 @@
       "path": "docs/memory/MEMORY_STUDIO_DESKTOP_V3_1.md",
       "size_bytes": 6088,
       "sha256": "12d7d6863d92d630315bb9f97b672c9613c050e7d21d1b5b5c210ae5f73b7e4c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_STUDIO_STEPS.md",
+      "size_bytes": 6507,
+      "sha256": "ccad871da2dab935a6f429a525a2322ddb9a71a026d13e57a12af81ff9b253bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9147,7 +9156,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "d3957093f646f2d71eea6fc4c792cf36b2ec4a6bab97350541ac1ede9e5de5b8",
+      "sha256": "fb3710c2f2bfc53d5ac7cd26eed24ae0f2ac1b7bc30471ec2f02dcc88e641258",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9686,8 +9695,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/application.py",
-      "size_bytes": 3530,
-      "sha256": "93264fadf368fbb70c58ab0dfd7549291edfcfc5d8e59498217e469d67241fa6",
+      "size_bytes": 4555,
+      "sha256": "fc47116ba362f9b77c15eee8c3076c65a9303f7db96d66be8fabf8dc2b445e99",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9749,8 +9758,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/cli.py",
-      "size_bytes": 11589,
-      "sha256": "9eca726e86d6594ad2693d923bb1d7f62501f7f965c17ff0b43f4d3b8ca96a2c",
+      "size_bytes": 12080,
+      "sha256": "ab8a3c6a5639136565f45a19fbf43d4bdb58e17c15abd5667fb5904c1a11229f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9796,6 +9805,15 @@
       "path": "latka_jazn/tools/memory_rebuild_app/entrypoint.py",
       "size_bytes": 4587,
       "sha256": "cc9fc581c708494884a171b8f1c22cc2d7461c2dc70abd69e08c73633e32a8d8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/memory_rebuild_app/file_checks.py",
+      "size_bytes": 9208,
+      "sha256": "d5a3f18798bf095153727198f4a085b59609aaec05dfbfd70ce735064bbcc860",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10001,8 +10019,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/report_sanitizer.py",
-      "size_bytes": 2128,
-      "sha256": "b7c9ac0e8a0786e8cb87c2328b22c4660a76b70efb381e8f8e9c10e8a7551835",
+      "size_bytes": 3407,
+      "sha256": "30060cb6b4c9b0721a2e95dab45388213396d00f81a2fc4c77e348cd5eefee9a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10064,8 +10082,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_bundle.py",
-      "size_bytes": 5156,
-      "sha256": "43b0e31a5ec7cda5766ad14db811d86600ecdf67c1aaa7d5553a978ba4b746e4",
+      "size_bytes": 5322,
+      "sha256": "cfc334fe962b36bd6a11cdf68be2b5cd5070be9f089591c7361293edb282fba7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10082,8 +10100,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_fidelity.py",
-      "size_bytes": 26652,
-      "sha256": "81885831d764a8367e2c188802bf251e23f61432bf4cd878fbfe68553d14dda8",
+      "size_bytes": 28083,
+      "sha256": "32a5dc767c4d17dc28bd668307f51887de8f2e7f66d4be59e40f1a852bf9c21d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10091,8 +10109,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_inventory.py",
-      "size_bytes": 16301,
-      "sha256": "164edf5c00d8321c30630ed8b6871c069ea705d0f10935817070795d1c1e4d9e",
+      "size_bytes": 16329,
+      "sha256": "9570276cac07875d2b2b88ce173c8f06609a55bf1fbb53c31c3f0dcdd70cd194",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10100,8 +10118,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_union.py",
-      "size_bytes": 14642,
-      "sha256": "c2b63133369da745dbb995b5b37fc57f657f624c972dc12825a5af59b04bb771",
+      "size_bytes": 14999,
+      "sha256": "74903b12eec3f3dbe4520e82ff66c566b05e9862b114853f900d649817273ee9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10126,9 +10144,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/tools/memory_rebuild_app/steps.py",
+      "size_bytes": 2396,
+      "sha256": "e24e928daf3decda7585b2253591b7181e53614fc8633daaf73ef772e4c88070",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/tools/memory_rebuild_app/studio.py",
-      "size_bytes": 49659,
-      "sha256": "b851ec02eca117a19e119ce5f739f741074d437f69e1b0c7002bb983e2dd1151",
+      "size_bytes": 50807,
+      "sha256": "4ddb8c50a022408715521ebaafe59ca5a3b7179a2099ba70faf1c35e604f43db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10217,8 +10244,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/ui_desktop.py",
-      "size_bytes": 41400,
-      "sha256": "fed2e293244c0da8e6e6bae7180fc80046f70807d80a70c6bc880498115b691b",
+      "size_bytes": 43322,
+      "sha256": "50292ee4325ed74ea3b2d315d889f673f00bb73d7f0b979767dbf99217555dfd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10226,8 +10253,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/ui_window.py",
-      "size_bytes": 3166,
-      "sha256": "c92dc00ae87331464a9fcd3244565ad295fd66716397eb200d78cbd3ad8d8a99",
+      "size_bytes": 3173,
+      "sha256": "a3417143cc40e453d5083874ace19234caa4bade976dc568c373f093a0259d7e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10613,8 +10640,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 13079,
-      "sha256": "4e81797981463e80337d664edbe0cf37e4a86238bfefc3cda82aaa160317194e",
+      "size_bytes": 13277,
+      "sha256": "2ed2edc99c295985c945a745cef501bac79c1193f09d4edcaa88698cae0074a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -14962,6 +14989,15 @@
       "path": "tests/archive/branches/16.3.25.5.116.0.34.12__e599c36a6caa/source/test_zip_resource_limits.py",
       "size_bytes": 2885,
       "sha256": "cdaf6bb1700d65063c590a43b83d4a460ada26e01085d6aedd73acf5c888d369",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.29__f577484/source/test_daemon_result_transport_live_diagnostics.py",
+      "size_bytes": 12384,
+      "sha256": "c36fef07e75641802f89ef6dec505c5ef33c6fd0c4a49cf130993ef56411456d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22213,6 +22249,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.30-pre-studio-ci-regression/test_memory_rebuild_v4_protocol_engine.py",
+      "size_bytes": 26927,
+      "sha256": "ee266c56931a2344b404cc6a0ee60c2cb1ca5f8613c80c94cceb268cd368d59e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.4/chatgpt_bridge_tool_catalog_probe.py",
       "size_bytes": 7488,
       "sha256": "280717e28072b9d1f5b39172ceefe00e4279bb1042aa531afb2f289e7debdd33",
@@ -25463,8 +25508,8 @@
     },
     {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
-      "size_bytes": 12384,
-      "sha256": "c36fef07e75641802f89ef6dec505c5ef33c6fd0c4a49cf130993ef56411456d",
+      "size_bytes": 12457,
+      "sha256": "bcba9abc1802c9cdadd651ef3d0d10fd55f83bf97fe641c134e9435e89b22551",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26894,8 +26939,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
-      "size_bytes": 26927,
-      "sha256": "ee266c56931a2344b404cc6a0ee60c2cb1ca5f8613c80c94cceb268cd368d59e",
+      "size_bytes": 26923,
+      "sha256": "60de83cebf68b5108a59e97c412f1d436f48f652be5e04f2f00d66a8b2279d2e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27013,6 +27058,15 @@
       "path": "tests/test_memory_studio_p1_inspection.py",
       "size_bytes": 5173,
       "sha256": "0b7a0622b86fa504489e70912d8c07dde09f55d16f8563335e571cdb7514e2a1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_studio_step_workflows.py",
+      "size_bytes": 5715,
+      "sha256": "1ae581cc9a80f8607fb7e6406d961918a3e41c5bb0d0e919700e0700f708d11d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28919,8 +28973,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2299990,
-      "sha256": "a9390ec2675534a21878ae0db581e52cf45db994b37f4ca236f2e32a97e65e97",
+      "size_bytes": 2311410,
+      "sha256": "db25a64eab4630bb48d68ce192d180bbc02634a0d9494b874a76adc24eb830c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29567,11 +29621,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-    "package_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-    "release_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging"
+    "runtime_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"

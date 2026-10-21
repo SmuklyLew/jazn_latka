@@ -24,7 +24,8 @@ from .project_store import ProjectStore, default_project_root
 from .studio import STUDIO_VERSION, StudioState, _run_test
 from .studio_workflows import StudioWorkflows
 from .studio_write_safety import require_isolated_database
-from .test_spec import TEST_SPECS
+from .steps import STEP_SPECS
+from .file_checks import check_memory_source_files
 from .unified_memory import CANONICAL_DATABASE_NAME, UnifiedMemoryDatabase
 from .p1_memory_inspection import inspect_memory_layout
 from .p1_memory_provenance import compare_memory_provenance
@@ -47,7 +48,8 @@ PAGES: tuple[tuple[str, str, str], ...] = (
     ("import", "Import i migracja", "Kontrolowany import źródeł i legacy SQLite"),
     ("affect", "Ślady afektywne", "Źródłowe deklaracje i modelowane stany z lineage"),
     ("candidates", "Kandydaci L1", "Ręczny przegląd bez automatycznego L2/L3"),
-    ("tests", "Testy 00–Final", "Pełny łańcuch protokołów odbudowy"),
+    ("tests", "Kroki odbudowy", "Kroki 00–05, budowa i finalny eksport"),
+    ("validation", "Testy plików", "Niezależne sprawdzanie plików, formatów i integralności"),
     ("rebuild", "Odbudowa", "Preflight, plan, jawnie potwierdzony zapis"),
     ("export", "Finalny eksport", "Eksport ze sprawdzeniem wymaganych dowodów"),
     ("settings", "Ustawienia", "Zasady walidacji, retrieval i bezpieczeństwa"),
@@ -447,7 +449,7 @@ class DesktopWorkspace:
                    (" • istnieje" if self.state.database.is_file() else " • jeszcze nie istnieje"))
         self._card("Bezpieczna kolejność",
                    "1. Projekt i źródła → 2. Ścieżki → 3. Preflight/plan → "
-                   "4. Test00–Test04 → 5. Final i eksport. Nigdy nie wybieraj aktywnej bazy jako celu eksperymentu.")
+                   "4. Kroki 00–04 → 5. Final i eksport. Nigdy nie wybieraj aktywnej bazy jako celu eksperymentu.")
         self._card("Afekt i rozmowy",
                    "Jawne identyfikatory conversation_id/message_id/turn_id/trace_id; "
                    "brak źródłowego związku oznacza source_only. Modelowany afekt ≠ przeżycie biologiczne.")
@@ -630,24 +632,64 @@ class DesktopWorkspace:
                    "Generowanie kandydatów i ich ręczny przegląd; żadne automatyczne przejście do L2/L3.")
         self._action_row(("Otwórz kandydatów pamięci", self.workflows.candidates_hub, True),)
 
+    def _page_validation(self) -> None:
+        self._card(
+            "Testy plików i formatów — bez odbudowy",
+            "Tylko odczyt źródeł. Sprawdza SHA-256, parsowanie i struktury formatów, "
+            "pełny JSONL, CRC ZIP i dokumenty ODF. Status REVIEW wymaga decyzji "
+            "operatora; żaden plik nie jest automatycznie odrzucany ani importowany.",
+        )
+        self._action_row(
+            ("Sprawdź włączone pliki projektu", self._verify_source_files, True),
+        )
+
+    def _verify_source_files(self) -> None:
+        project = self._require_project()
+        sources = [Path(item.path) for item in project.enabled_sources()]
+        report = check_memory_source_files(
+            sources,
+            report_dir=self.tool_root / "memory" / "rebuild_tests" / "file_checks",
+        )
+        summary = {
+            "status": report["status"],
+            "file_count": report["file_count"],
+            "counts": report["counts"],
+            "total_size_bytes": report["total_size_bytes"],
+            "report_paths": report.get("report_paths"),
+        }
+        self.dialogs.message("WERYFIKACJA FORMATÓW", _pretty(summary))
+
     def _page_tests(self) -> None:
-        self._label(self.content, "Test00 → Test01 → Test02 → Test03 → Test04 → Final")
-        self._card("Wymagane dowody", "Uruchamiaj po kolei w tej samej sesji Studio. "
-                   "Test04 wymaga prywatnego benchmarku z sekcji Ścieżki. "
-                   "Final wymaga pozytywnego Test04 dla tego samego kandydata.")
+        self._label(self.content, "Krok 00 → Krok 01 → Krok 02 → Krok 03 → Krok 04 → Final")
+        self._card("Kroki i niezależne kontrole", "Kroki wykonują import, budowę i eksport; "
+                   "walidatory sprawdzają pliki, formaty, kompletność i integralność. "
+                   "Krok 04 wymaga prywatnego benchmarku. Po restarcie wznów zapisany przebieg po run_id.")
+        current = self.state.protocol_service
+        if current is not None:
+            self._card("Przebieg zapisany", f"run_id: {current.engine.run_id}")
+        self._action_row(("Wznów kroki po run_id", self._resume_steps, False),)
         frame = ttk.Frame(self.content)
         frame.pack(fill="x")
-        for index, item in enumerate(TEST_SPECS):
+        for index, item in enumerate(STEP_SPECS):
             row = ttk.Frame(frame, padding=(5, 6))
             row.pack(fill="x")
             ttk.Label(row, text=item.label, font=("Segoe UI Semibold", 10),
                       width=40).pack(side="left", padx=5)
-            result = self.state.test_results.get(item.profile)
+            result = self.state.test_results.get(item.legacy_profile)
             ttk.Label(row, text=str(result.get("outcome") if result else "NIE URUCHOMIONO"),
                       width=20).pack(side="left", padx=4)
-            ttk.Button(row, text="Uruchom", command=lambda p=item.profile:
-                       self._execute(f"Protokół {p}", lambda: self._run_protocol_checked(p),
+            ttk.Button(row, text="Uruchom", command=lambda p=item.legacy_profile:
+                       self._execute(f"Krok {p}", lambda: self._run_protocol_checked(p),
                                      threaded=True)).pack(side="right", padx=4)
+
+    def _resume_steps(self) -> None:
+        value = simpledialog.askstring(
+            "Wznów kroki",
+            "Podaj run_id z wcześniejszego przebiegu (bez ścieżki):",
+            parent=self.root,
+        )
+        if value is not None:
+            self.state.resume_step_run(value)
 
     def _run_protocol_checked(self, profile: str) -> None:
         project = self._require_project()
