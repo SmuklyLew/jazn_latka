@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "dd257131f0b46e644fe2290e9cae10dd7c2db17c",
+  "base_merge_commit": "29ced47cb36c1f735cfa3ef853074c652ccae7da",
   "base_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "commit_date": "2026-10-21T03:19:19Z",
+  "commit_date": "2026-10-21T03:31:47Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-21T03:19:19+00:00",
+  "generated_at_utc": "2026-10-21T03:31:47+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b1eb3e385f0b308cc048387ac38057fa96796f85",
+  "git_tree_sha": "1248261c0f62e6cf4c750d4f5bfaee011d5d0d14",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c02b5a6a6283eb255a56c5b52628af5fbfa5b20a",
-    "base_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+    "base_commit": "98fb2de28c10a59a1897b1eee449015819eeac3b",
+    "base_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "dd257131f0b46e644fe2290e9cae10dd7c2db17c",
+    "source_commit": "29ced47cb36c1f735cfa3ef853074c652ccae7da",
     "source_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "dd257131f0b46e644fe2290e9cae10dd7c2db17c",
+  "source_commit": "29ced47cb36c1f735cfa3ef853074c652ccae7da",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
   "tag": null,
