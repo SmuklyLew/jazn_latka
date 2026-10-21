@@ -14,6 +14,11 @@ on:
         type: string
   workflow_dispatch:
     inputs:
+      regenerate-lock:
+        description: Resolve a fresh native lock with Dependency Studio instead of replaying the committed lock
+        required: false
+        default: false
+        type: boolean
       runner:
         description: Native GitHub runner label
         required: true
@@ -71,7 +76,7 @@ jobs:
           py_digits="${{ inputs.python-version }}"
           py_digits="${py_digits//./}"
           lock="latka_jazn/resources/dependencies/locks/core+archive+pdf/${{ inputs.target }}-py${py_digits}.txt"
-          if [ -f "$lock" ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.regenerate-lock }}" != "true" ] && [ -f "$lock" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
             echo "path=$lock" >> "$GITHUB_OUTPUT"
             echo "Using canonical release lock: $lock"
@@ -133,6 +138,41 @@ jobs:
           python -m pip_audit \
             -r "${{ steps.wheelhouse.outputs.bundle_dir }}/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
             --strict --format cyclonedx-json --output "$RUNNER_TEMP/dependencies.cdx.json"
+
+      - name: Report dependency advisories from failed audit
+        if: failure()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = Path(os.environ["RUNNER_TEMP"]) / "pip-audit.json"
+          if not report.is_file():
+              print("No pip-audit.json available: inspect the preceding failure.")
+          else:
+              payload = json.loads(report.read_text(encoding="utf-8"))
+              issues = 0
+              for dependency in payload.get("dependencies", []):
+                  vulns = dependency.get("vulns") or []
+                  if not vulns:
+                      continue
+                  # Only public package/advisory identifiers: no environment paths,
+                  # requirements contents, free-text descriptions, or secrets.
+                  name = str(dependency.get("name", "unknown"))
+                  version = str(dependency.get("version", "unknown"))
+                  for vuln in vulns:
+                      issues += 1
+                      print(json.dumps({
+                          "dependency": name,
+                          "installed": version,
+                          "advisory": str(vuln.get("id", "")),
+                          "aliases": vuln.get("aliases", []),
+                          "fix_versions": vuln.get("fix_versions", []),
+                      }, sort_keys=True))
+              print(f"Public dependency advisory entries: {issues}")
+          PY
 
       - name: Preserve failed dependency audit evidence
         if: failure()

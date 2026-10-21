@@ -19,6 +19,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from latka_jazn.version import PACKAGE_VERSION_FULL
 
+from .canonical_rebuild import canonical_database_path
 from .models import DEFAULT_SETTINGS
 from .project_store import ProjectStore, default_project_root
 from .studio import STUDIO_VERSION, StudioState, _run_test
@@ -58,7 +59,7 @@ PAGES: tuple[tuple[str, str, str], ...] = (
 PAGE_BY_ID = {key: (label, hint) for key, label, hint in PAGES}
 
 PATH_FIELDS = (
-    ("source_directory", "Katalog źródeł", "directory", "project"),
+    ("source_directory", "Folder startowy skanowania (opcjonalny)", "directory", "project"),
     ("target_root", "Katalog odbudowy / staging", "directory", "project"),
     ("database", "Kanoniczna baza memory_jazn.sqlite3", "savefile", "database"),
     ("test04_benchmark", "Prywatny benchmark Test04", "file", "setting"),
@@ -99,6 +100,23 @@ def proposed_path_changes(values: dict[str, str]) -> dict[str, str]:
         if source == target or source in target.parents or target in source.parents:
             raise ValueError("Folder źródeł i katalog odbudowy muszą być rozdzielone.")
     return normalized
+
+
+def suggested_database_after_target_change(
+    old_target: str | Path,
+    new_target: str | Path,
+    database: str | Path,
+) -> Path:
+    """Move only an untouched *default* database path when changing staging.
+
+    Never silently relocate an existing SQLite file or a manually configured
+    database. The caller must explicitly confirm any custom destination.
+    """
+    current = Path(database).expanduser().resolve()
+    original = canonical_database_path(old_target)
+    if current == original and not current.exists():
+        return canonical_database_path(new_target)
+    return current
 
 
 class TkStudioDialogs:
@@ -173,19 +191,63 @@ class TkStudioDialogs:
         window.transient(self.root)
         window.configure(bg=WHITE)
         ttk.Label(window, text=title, style="Heading.TLabel").pack(anchor="w", padx=20, pady=(18, 6))
+
         if text:
-            ttk.Label(window, text=text[:2000], style="Note.TLabel", wraplength=690).pack(
-                anchor="w", padx=20, pady=(0, 12))
-        items = tk.Listbox(window, activestyle="none", font=("Segoe UI", 10),
-                           selectmode=(tk.EXTENDED if multiple else tk.BROWSE),
-                           borderwidth=0, highlightthickness=1, highlightbackground=BORDER)
-        items.pack(expand=True, fill="both", padx=20, pady=4)
+            # The source inventory may contain hundreds of lines. A tall Label
+            # would consume the entire dialog and hide the actual list/buttons.
+            if len(text) > 240 or text.count("\n") > 3:
+                preview = ttk.Frame(window)
+                preview.pack(fill="x", padx=20, pady=(0, 6))
+                details = tk.Text(
+                    preview, height=4, wrap="word", font=("Segoe UI", 9),
+                    bg=BG, fg=MUTED, relief="flat",
+                    highlightthickness=1, highlightbackground=BORDER,
+                )
+                details_scroll = ttk.Scrollbar(preview, orient="vertical", command=details.yview)
+                details.configure(yscrollcommand=details_scroll.set)
+                details.pack(side="left", fill="x", expand=True)
+                details_scroll.pack(side="right", fill="y")
+                details.insert("1.0", text)
+                details.configure(state="disabled")
+            else:
+                ttk.Label(window, text=text, style="Note.TLabel", wraplength=690).pack(
+                    anchor="w", padx=20, pady=(0, 8))
+
+        if multiple:
+            ttk.Label(
+                window, text="Kliknij pozycję, aby ją zaznaczyć lub odznaczyć.",
+                style="Note.TLabel",
+            ).pack(anchor="w", padx=20, pady=(0, 4))
+
+        list_frame = ttk.Frame(window)
+        list_frame.pack(expand=True, fill="both", padx=20, pady=4)
+        items = tk.Listbox(
+            list_frame, activestyle="none", font=("Segoe UI", 10),
+            selectmode=(tk.MULTIPLE if multiple else tk.BROWSE),
+            exportselection=False, borderwidth=0, highlightthickness=1,
+            highlightbackground=BORDER,
+        )
+        items_scroll = ttk.Scrollbar(list_frame, orient="vertical", command=items.yview)
+        items.configure(yscrollcommand=items_scroll.set)
+        items.pack(side="left", expand=True, fill="both")
+        items_scroll.pack(side="right", fill="y")
         for index, (value, label) in enumerate(values):
             items.insert(tk.END, str(label))
             selected = (value in default) if multiple else (value == default)
             if selected:
                 items.selection_set(index)
+
         response: dict[str, Any] = {"value": None}
+        count_text = tk.StringVar()
+
+        def update_count(_event: Any = None) -> None:
+            count_text.set(f"Zaznaczono: {len(items.curselection())} z {len(values)}")
+
+        def change_all(select: bool) -> None:
+            items.selection_clear(0, tk.END)
+            if select and values:
+                items.selection_set(0, tk.END)
+            update_count()
 
         def close(accept: bool) -> None:
             indices = list(items.curselection()) if accept else []
@@ -195,14 +257,26 @@ class TkStudioDialogs:
                 response["value"] = []
             window.destroy()
 
-        controls = ttk.Frame(window, padding=14)
-        controls.pack(fill="x")
-        ttk.Button(controls, text="Anuluj", command=lambda: close(False)).pack(side="right", padx=4)
+        controls = ttk.Frame(window, padding=(20, 10))
+        controls.pack(fill="x", side="bottom")
+        if multiple:
+            ttk.Button(controls, text="Wszystkie", command=lambda: change_all(True)).pack(
+                side="left", padx=(0, 4))
+            ttk.Button(controls, text="Żadne", command=lambda: change_all(False)).pack(
+                side="left", padx=4)
+        ttk.Label(controls, textvariable=count_text).pack(side="left", padx=8)
+        ttk.Button(controls, text="Anuluj", command=lambda: close(False)).pack(
+            side="right", padx=4)
         ttk.Button(controls, text="Wybierz", style="Accent.TButton",
                    command=lambda: close(True)).pack(side="right", padx=4)
+
+        items.bind("<<ListboxSelect>>", update_count)
         items.bind("<Double-1>", lambda _ev: close(True) if not multiple else None)
+        window.bind("<Escape>", lambda _ev: close(False))
         window.protocol("WM_DELETE_WINDOW", lambda: close(False))
+        update_count()
         window.grab_set()
+        items.focus_set()
         window.wait_window()
         return response["value"]
 
@@ -494,6 +568,16 @@ class DesktopWorkspace:
             self._label(self.content, "Utwórz lub wybierz projekt, aby konfigurować ścieżki.", note=True)
             return
         values = project_path_values(project, self.state.database)
+        self._card(
+            "Źródła projektu — lista plików, nie jedna ścieżka",
+            f"Zarejestrowano: {len(project.sources)} plików. "
+            "Dodawaj wiele folderów, folderów z podfolderami i pojedynczych plików "
+            "przez „Projekt i źródła”. Pole folderu startowego poniżej jest "
+            "wyłącznie ułatwieniem przy następnym skanowaniu.",
+        )
+        self._action_row(
+            ("Dodaj foldery lub pliki", self.workflows.sources_hub, True),
+        )
         self._fields = {}
         grid = ttk.Frame(self.content)
         grid.pack(fill="x", pady=10)
@@ -524,11 +608,24 @@ class DesktopWorkspace:
         else:
             selected = filedialog.askopenfilename(parent=self.root, title="Wybierz plik")
         if selected:
+            if key == "target_root":
+                old_target = self._fields["target_root"].get()
+                old_db = self._fields["database"].get()
+                new_db = suggested_database_after_target_change(
+                    old_target, selected, old_db,
+                )
+                self._fields["database"].set(str(new_db))
             self._fields[key].set(selected)
 
     def _save_paths(self) -> None:
         project = self._require_project()
         changes = proposed_path_changes({key: var.get() for key, var in self._fields.items()})
+        if changes["target_root"] != str(Path(project.target_root).resolve()):
+            chosen = suggested_database_after_target_change(
+                project.target_root, changes["target_root"], changes["database"],
+            )
+            changes["database"] = str(chosen)
+            self._fields["database"].set(str(chosen))
         if changes["database"] != str(self.state.database):
             db = Path(changes["database"])
             if db.is_file() and db.name != CANONICAL_DATABASE_NAME:
@@ -536,7 +633,12 @@ class DesktopWorkspace:
         if project.mode == "developer":
             target = Path(changes["target_root"])
             if target == self.tool_root or self.tool_root in target.parents:
-                raise ValueError("Katalog developer staging musi leżeć poza repozytorium.")
+                raise ValueError(
+                    "Katalog odbudowy leży wewnątrz repozytorium Jaźni. "
+                    "Wybierz osobny katalog obok repozytorium, np. "
+                    f"{self.tool_root.parent / 'jazn_memory_projects' / 'nowy_projekt'}. "
+                    "Oryginalne źródła pozostają w swoich folderach."
+                )
         project.source_directory = changes["source_directory"]
         project.target_root = changes["target_root"]
         for key in ("test04_benchmark", "test04_acceptance_report",

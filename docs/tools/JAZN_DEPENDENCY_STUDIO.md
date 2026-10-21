@@ -59,7 +59,7 @@ Current profiles:
 |---|---|---|
 | `core` | runtime required | base `project.dependencies` |
 | `archive` | runtime optional / release sidecar | `py7zr`, `pyzipper`, `rarfile` |
-| `pdf` | runtime optional / release sidecar | `pypdf>=6.19.0,<7` |
+| `pdf` | runtime optional / release sidecar | `pypdf>=6.21.1,<7` |
 | `studio` | operator optional | `memory-rebuild-ui` optional dependencies |
 | `memory-cloud` | runtime optional | matching `pyproject.toml` optional group |
 | `memory-cloud-server` | service optional | matching optional group |
@@ -245,4 +245,4 @@ A release is not considered converged merely because bootstrap resolution succee
 
 ## v16.3.25.5.99 PDF capability split
 
-`activation_profiles=["core"]` remains unchanged. `pypdf>=6.19.0,<7` moved from base `project.dependencies` to the optional `pdf` group because active runtime code does not require the library for ordinary startup/dialogue. `release_profiles=["core","archive","pdf"]` deliberately keeps PDF support in portable release sidecars. Runtime bootstrap remains network-free and may only consume a verified managed environment or verified local wheelhouse.
+`activation_profiles=["core"]` remains unchanged. `pypdf>=6.21.1,<7` moved from base `project.dependencies` to the optional `pdf` group because active runtime code does not require the library for ordinary startup/dialogue. `release_profiles=["core","archive","pdf"]` deliberately keeps PDF support in portable release sidecars. Runtime bootstrap remains network-free and may only consume a verified managed environment or verified local wheelhouse.

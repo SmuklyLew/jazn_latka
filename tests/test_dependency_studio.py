@@ -57,7 +57,7 @@ def _project(tmp_path: Path, *, dependencies: list[str] | None = None) -> Path:
     pyproject = "[project]\nname='fixture'\nversion='1.0'\nrequires-python='>=3.12'\ndependencies=[\n"
     pyproject += "".join(f"  {item!r},\n" for item in deps)
     pyproject += "]\n[project.optional-dependencies]\n"
-    pyproject += "pdf=['pypdf>=6.19.0,<7']\n"
+    pyproject += "pdf=['pypdf>=6.21.1,<7']\n"
     pyproject += "archive=['py7zr>=1.1.3,<2','pyzipper>=0.4.0,<1','rarfile>=4.5,<5']\n"
     pyproject += "memory-rebuild-ui=['prompt-toolkit>=3.0.52,<4']\n"
     pyproject += "memory-cloud=['PyNaCl>=1.5,<2']\n"
@@ -157,7 +157,7 @@ def test_core_archive_pdf_resolves_release_dependencies_without_making_pdf_activ
         "py7zr>=1.1.3,<2",
         "pyzipper>=0.4.0,<1",
         "rarfile>=4.5,<5",
-        "pypdf>=6.19.0,<7",
+        "pypdf>=6.21.1,<7",
     ]
     assert activation_profile_names(root) == ("core",)
 

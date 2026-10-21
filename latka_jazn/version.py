@@ -1,3 +1,7 @@
+# v116.0.34.36 recovers native locked PDF release dependencies with patched pypdf.
+# v116.0.34.34 repairs Windows source picker tests, stable contracts and surfaces strict dependency audit evidence.
+# v116.0.34.33 separates additive multi-folder source selection from external project staging.
+# v116.0.34.32 bounds Windows Memory Studio source-picker layout for large source sets.
 # v116.0.34.31 repairs memory studio CI contracts and preserves stricter audit evidence.
 # v116.0.34.30 separates operator rebuild steps from source-file verification and hardens shareable reports.
 # v116.0.34.29 adds independently validated conversation readiness to live daemon diagnostics.
@@ -96,8 +100,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.31"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.31"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.36"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.36"
 PACKAGE_RELEASE_NAME = "isolated-mcp-oauth-staging"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.31",
-  "active_definition_count": 2507,
+  "system_version": "16.3.25.5.116.0.34.36",
+  "active_definition_count": 2512,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -27524,6 +27524,112 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 12
+    },
+    "tests/test_memory_desktop_source_paths.py::test_change_of_staging_rebases_only_untouched_default_database": {
+      "path": "tests/test_memory_desktop_source_paths.py",
+      "name": "test_change_of_staging_rebases_only_untouched_default_database",
+      "purpose": "Change of staging rebases only untouched default database",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_memory_desktop_source_paths.py::test_custom_or_existing_database_is_never_silently_relocated": {
+      "path": "tests/test_memory_desktop_source_paths.py",
+      "name": "test_custom_or_existing_database_is_never_silently_relocated",
+      "purpose": "Custom or existing database is never silently relocated",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_memory_desktop_source_paths.py::test_target_and_source_must_not_overlap": {
+      "path": "tests/test_memory_desktop_source_paths.py",
+      "name": "test_target_and_source_must_not_overlap",
+      "purpose": "Target and source must not overlap",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_memory_desktop_source_paths.py::test_one_project_registers_sources_from_separate_directories": {
+      "path": "tests/test_memory_desktop_source_paths.py",
+      "name": "test_one_project_registers_sources_from_separate_directories",
+      "purpose": "One project registers sources from separate directories",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.canonical_rebuild",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_memory_desktop_source_picker_windows.py::test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle": {
+      "path": "tests/test_memory_desktop_source_picker_windows.py",
+      "name": "test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle",
+      "purpose": "Picker keeps buttons visible for 113 files and supports click toggle",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_memory_desktop_workspace.py::test_window_routes_to_native_canonical_workspace": {
       "path": "tests/test_memory_desktop_workspace.py",

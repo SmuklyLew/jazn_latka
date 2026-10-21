@@ -203,23 +203,35 @@ class StudioWorkflows:
         if not name or not name.strip():
             return
         target_dir = self._choose_directory(
-            title="Wybierz nowy katalog docelowy pamięci",
-            initial_directory=Path.cwd(),
+            title="Katalog wyników nowego projektu (POZA repozytorium)",
+            initial_directory=self.state.tool_root.parent,
         )
         target_raw = str(target_dir) if target_dir else self.dialogs.input(
             "NOWY PROJEKT",
-            "Katalog docelowy:",
-            "",
+            "Nowy katalog wynikowy poza repozytorium (nie folder źródeł):",
+            str(self.state.tool_root.parent / "jazn_memory_projects" / "nowy_projekt"),
         )
         if not target_raw or not str(target_raw).strip():
             return
+        target = Path(str(target_raw)).expanduser().resolve()
+        root = Path(self.state.tool_root).expanduser().resolve()
+        require_isolated_staging_path(target, tool_root=root)
+        if target == root or root in target.parents:
+            raise ValueError(
+                "Nowy projekt wymaga katalogu wynikowego poza repozytorium. "
+                f"Przykład: {root.parent / 'jazn_memory_projects' / 'nowy_projekt'}"
+            )
         source_dir = self._choose_directory(
-            title="Wybierz główny folder źródeł (opcjonalnie)",
+            title="Opcjonalny pierwszy folder źródeł (kolejne dodasz w projekcie)",
             initial_directory=Path.cwd(),
         )
+        if source_dir:
+            source = Path(source_dir).expanduser().resolve()
+            if source == target or source in target.parents or target in source.parents:
+                raise ValueError("Źródła muszą leżeć poza katalogiem wynikowym projektu.")
         project = RebuildProject.create(
             name.strip(),
-            Path(str(target_raw)).expanduser().resolve(),
+            target,
             source_directory=str(source_dir) if source_dir else "",
         )
         store = self._store()
@@ -237,8 +249,8 @@ class StudioWorkflows:
                     "Usunięcie wpisu nie usuwa pliku z dysku."
                 ),
                 [
-                    ("scan", "Przeskanuj folder źródeł"),
-                    ("files", "Dodaj pliki"),
+                    ("scan", "Dodaj folder (z podfolderami lub bez) — powtórz dla kolejnych"),
+                    ("files", "Dodaj pojedyncze pliki z dowolnych folderów"),
                     ("manual", "Dodaj ścieżkę ręcznie"),
                     ("list", "Lista źródeł — podgląd i edycja"),
                     ("clean", "Usuń z projektu nieistniejące wpisy"),
@@ -336,6 +348,8 @@ class StudioWorkflows:
         )
         if selected is None:
             return
+        # This is only the most recently used *starting* folder. The project's
+        # actual source set is the accumulated, deduplicated file registry.
         project.source_directory = str(folder)
         self._store().save(project)
         self._add_source_paths([Path(item) for item in selected])
