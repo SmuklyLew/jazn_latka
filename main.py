@@ -624,12 +624,58 @@ def _try_chat_gpt_one_shot_via_daemon(
     return 0
 
 
+def _verified_daemon_poll_transport(
+    *,
+    cfg: JaznConfig,
+    host: str,
+    port: int,
+) -> dict[str, Any]:
+    """Re-attest the transport used to read a prior daemon result.
+
+    This is retrieval evidence, not a recreation of the original submit
+    envelope. Never turn a saved PID or a clock-degraded status into proof of
+    a live endpoint without checking package, identity and heartbeat.
+    """
+    if not _chatgpt_daemon_marker_path(cfg).is_file():
+        return {}
+    try:
+        status = status_daemon(cfg, host=host, port=port)
+    except (OSError, ValueError, RuntimeError):
+        return {}
+    if not isinstance(status, dict):
+        return {}
+    if not (
+        status.get("active_state") in {"active_trusted", "active_degraded"}
+        and status.get("endpoint_reachable") is True
+        and status.get("endpoint_identity_matches") is True
+        and status.get("process_identity_confirmed") is True
+        and status.get("heartbeat_fresh") is True
+        and status.get("package_integrity_verified") is True
+        and status.get("source_provenance_verified") is True
+        and str(status.get("daemon_instance_id") or "").strip()
+    ):
+        return {}
+    resolved_root = str(status.get("resolved_active_root") or "")
+    if not resolved_root or Path(resolved_root).resolve() != Path(cfg.root).resolve():
+        return {}
+    return {
+        "selected_transport": "persistent_daemon",
+        "fallback_reason": "daemon_result_live_reverified",
+        "requested_runtime_root": str(cfg.root),
+        "resolved_active_root": resolved_root,
+        "daemon_identity_verified": True,
+        "daemon_instance_id": status["daemon_instance_id"],
+        "transport_evidence_origin": "retrieval_live_status",
+    }
+
+
 def _prepare_chatgpt_daemon_presentation(
     *,
     cfg: JaznConfig,
     payload: dict[str, Any],
     request_id: str | None,
     user_text: str = "",
+    retrieval_transport_observability: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Normalize daemon submit/poll output into the canonical ChatGPT host contract.
 
@@ -638,6 +684,9 @@ def _prepare_chatgpt_daemon_presentation(
     the same presentation/finalization gate as the local JSONL bridge.
     """
     outer = dict(payload) if isinstance(payload, dict) else {}
+    # A fresh poll may independently reverify the live transport. Preserve an
+    # existing origin envelope, and label the new evidence as retrieval-only.
+    poll_transport = _as_dict(retrieval_transport_observability)
     outer.setdefault(
         "host_pre_response_gate_context",
         {
@@ -770,6 +819,17 @@ def _prepare_chatgpt_daemon_presentation(
         "daemon_poll_path": True,
         "daemon_request_id": normalized_request_id,
     })
+    origin_transport = _as_dict(result.get("transport_observability"))
+    if not origin_transport:
+        origin_transport = _as_dict(bridge_meta.get("transport_observability"))
+    if not origin_transport and poll_transport:
+        # Only fresh status evidence may fill the missing origin envelope.
+        # Keep its provenance distinct: it attests this retrieval, not submit.
+        origin_transport = dict(poll_transport)
+        result["retrieval_transport_observability"] = dict(poll_transport)
+    if origin_transport:
+        result["transport_observability"] = dict(origin_transport)
+        bridge_meta["transport_observability"] = dict(origin_transport)
     result["chat_bridge"] = bridge_meta
     result["chatgpt_bridge"] = bridge_meta
     resolved_user_text, user_text_binding_error = _resolve_daemon_user_text_binding(
@@ -1561,6 +1621,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 cfg=cfg,
                 payload=payload,
                 request_id=ns.daemon_result,
+                retrieval_transport_observability=_verified_daemon_poll_transport(
+                    cfg=cfg, host=ns.daemon_host, port=ns.daemon_port,
+                ),
             )
             write_chat_bridge_payload(
                 sys.stdout,
