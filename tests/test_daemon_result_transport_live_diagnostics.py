@@ -48,8 +48,41 @@ def test_real_package_integrity_request_stays_package_route() -> None:
     assert report.primary_intent == "package_runtime_status_question"
 
 
+def _stub_canonical_readiness(
+    tmp_path: Path, monkeypatch, *,
+    conversation_ready: bool | None = True,
+    runtime_ready: bool | None = True,
+    daemon_ready: bool | None = True,
+    daemon_instance_id: str = "instance-922",
+) -> None:
+    from latka_jazn.cli_commands import diagnostics, diagnostics_convergence
+
+    checked_daemon = _live_status(tmp_path)
+    checked_daemon["daemon_instance_id"] = daemon_instance_id
+    checked_daemon["readiness"] = {"endpoint": "/ready"}
+    if daemon_ready is not None:
+        checked_daemon["readiness"]["readiness_ok"] = daemon_ready
+
+    monkeypatch.setattr(
+        diagnostics, "status_payload",
+        lambda *_a, **_kw: {"daemon": checked_daemon},
+    )
+
+    def _converge(_observed, *, root):
+        assert root == tmp_path
+        result = {"capability_matrix": {}}
+        if conversation_ready is not None:
+            result["capability_matrix"]["conversation_ready"] = conversation_ready
+        if runtime_ready is not None:
+            result["runtime_core_ready"] = runtime_ready
+        return result
+
+    monkeypatch.setattr(diagnostics_convergence, "apply_status_convergence", _converge)
+
+
 def test_live_diagnostics_report_daemon_pid_not_cli_pid(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_kw: _live_status(tmp_path))
+    _stub_canonical_readiness(tmp_path, monkeypatch)
     result = CapabilityStatusHandler().handle(
         "Podaj PID demona, daemon_instance_id oraz conversation_ready.",
         context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
@@ -58,6 +91,9 @@ def test_live_diagnostics_report_daemon_pid_not_cli_pid(tmp_path: Path, monkeypa
     assert "daemon_pid=922" in result.body
     assert "daemon_instance_id=instance-922" in result.body
     assert "conversation_ready=True" in result.body
+    assert "runtime_ready=True" in result.body
+    assert "daemon_ready=True" in result.body
+    assert "readiness_source=canonical_status_ready_and_capability_matrix" in result.body
     assert "source_origin=live_status_daemon_read_only" in result.body
 
 
@@ -171,3 +207,69 @@ def test_poll_transport_rejects_other_release_or_recorded_instance(
     assert not main_module._verified_daemon_poll_transport(
         cfg=cfg, host="127.0.0.1", port=8787,
     )
+
+
+def test_live_diagnostics_report_independent_negative_readiness(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_kw: _live_status(tmp_path))
+    _stub_canonical_readiness(
+        tmp_path, monkeypatch, conversation_ready=False, runtime_ready=False,
+        daemon_ready=False,
+    )
+    result = CapabilityStatusHandler().handle(
+        "Podaj PID demona i conversation_ready.",
+        context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
+    )
+    assert "daemon_identity_verified=True" in result.body
+    assert "daemon_pid=922" in result.body
+    assert "conversation_ready=False" in result.body
+    assert "runtime_ready=False" in result.body
+    assert "daemon_ready=False" in result.body
+
+
+def test_live_diagnostics_does_not_promote_liveness_only_or_switched_instance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_kw: _live_status(tmp_path))
+    _stub_canonical_readiness(
+        tmp_path, monkeypatch, conversation_ready=None, runtime_ready=None,
+        daemon_ready=None,
+    )
+    result = CapabilityStatusHandler().handle(
+        "Potwierdź daemon_instance_id i conversation_ready.",
+        context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
+    )
+    assert "daemon_identity_verified=True" in result.body
+    assert "conversation_ready=not_verified" in result.body
+    assert "readiness_source=not_verified" in result.body
+
+    _stub_canonical_readiness(
+        tmp_path, monkeypatch, daemon_instance_id="a-restarted-instance",
+    )
+    switched = CapabilityStatusHandler().handle(
+        "Podaj daemon_instance_id i conversation_ready.",
+        context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
+    )
+    assert "daemon_pid=922" in switched.body
+    assert "conversation_ready=not_verified" in switched.body
+
+
+def test_live_diagnostics_readiness_probe_failure_is_not_success(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from latka_jazn.cli_commands import diagnostics
+
+    monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_kw: _live_status(tmp_path))
+
+    def _unavailable(*_args, **_kwargs):
+        raise OSError("readiness endpoint unreachable")
+
+    monkeypatch.setattr(diagnostics, "status_payload", _unavailable)
+    result = CapabilityStatusHandler().handle(
+        "Sprawdź conversation_ready i PID demona.",
+        context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
+    )
+    assert "daemon_identity_verified=True" in result.body
+    assert "conversation_ready=not_verified" in result.body
+    assert "runtime_ready=not_verified" in result.body
