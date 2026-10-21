@@ -21,6 +21,7 @@ from .project_store import ProjectStore
 from .settings import load_settings
 from .source_fidelity import default_test00_root, run_test00_source_fidelity
 from .source_inventory import inspect_source
+from .file_checks import check_memory_source_files
 from .tui_v24 import run_studio_v24
 
 
@@ -28,8 +29,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rebuild_memory",
         description=(
-            "Jaźń Memory Rebuild v16: Test00 Source Fidelity, projekty źródeł, jedna baza "
-            "memory_jazn.sqlite3, mierzalny Recall baseline, Testy 01–04 i finalny eksport."
+            "Jaźń Memory Rebuild: kroki odbudowy 00–05; testy wyłącznie weryfikują "
+            "pliki, formaty, integralność i wyniki. Kanoniczna baza memory_jazn.sqlite3."
         ),
         allow_abbrev=False,
     )
@@ -47,7 +48,8 @@ def build_parser() -> argparse.ArgumentParser:
     create = sub.add_parser("create-project", help="Utwórz projekt."); create.add_argument("--name", required=True); create.add_argument("--target-root", required=True, type=Path); create.add_argument("--source-directory", type=Path); create.add_argument("--mode", choices=("developer", "system"), default="developer")
     add_source = sub.add_parser("add-source", help="Dodaj i rozpoznaj źródło."); add_source.add_argument("path", type=Path); add_source.add_argument("--approved", action="store_true"); add_source.add_argument("--verify-zip-crc", action="store_true"); add_source.add_argument("--no-sha256", action="store_true")
     inspect = sub.add_parser("inspect-source", help="Rozpoznaj plik bez zapisu projektu."); inspect.add_argument("path", type=Path); inspect.add_argument("--verify-zip-crc", action="store_true"); inspect.add_argument("--no-sha256", action="store_true")
-    test00 = sub.add_parser("test00", help="Uruchom Source Fidelity i bezstratny source mirror."); test00.add_argument("sources", nargs="*", type=Path); test00.add_argument("--output-root", type=Path); test00.add_argument("--run-id")
+    verify = sub.add_parser("verify-sources", help="Wyłącznie testy formatów i integralności plików; bez importu."); verify.add_argument("sources", nargs="+", type=Path); verify.add_argument("--report-dir", type=Path)
+    test00 = sub.add_parser("test00", help="Historyczny alias kroku 00 (Source Fidelity + mirror)."); test00.add_argument("sources", nargs="*", type=Path); test00.add_argument("--output-root", type=Path); test00.add_argument("--run-id")
     recall = sub.add_parser("recall-baseline", help="Uruchom mierzalny FTS5-only Recall benchmark bez treningu."); recall.add_argument("--database", required=True, type=Path); recall.add_argument("--benchmark", required=True, type=Path); recall.add_argument("--output-root", type=Path); recall.add_argument("--run-id")
     add_baseline = sub.add_parser("add-baseline", help="Dodaj bazę testową do porównań."); add_baseline.add_argument("path", type=Path); add_baseline.add_argument("--label"); add_baseline.add_argument("--full-integrity", action="store_true")
     discover = sub.add_parser("discover-baselines", help="Znajdź istniejące zestawy pięciu baz."); discover.add_argument("roots", nargs="+", type=Path); discover.add_argument("--max-depth", type=int, default=4)
@@ -88,6 +90,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         if command in UNIFIED_COMMANDS:
             payload = run_unified_command(args, settings=load_settings(args.settings)); _emit(payload, json_mode=True); return 0 if payload.get("ok") else 2
         store = ProjectStore(args.project_root)
+        if command == "verify-sources":
+            payload = check_memory_source_files(args.sources, report_dir=args.report_dir)
+            _emit(payload, json_mode=True)
+            return 0 if payload.get("ok") else 2
         if command == "test00":
             sources = list(args.sources)
             if not sources:
