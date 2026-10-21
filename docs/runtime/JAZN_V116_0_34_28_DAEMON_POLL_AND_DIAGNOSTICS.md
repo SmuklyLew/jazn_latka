@@ -58,7 +58,7 @@ for daemon PID.
   routing, unaffected real package questions, trustworthy and untrustworthy
   live status, clock-degraded but otherwise healthy polling, missing evidence,
   and unchanged result IDs/text without resubmit.
-- Run: `python -X utf8 -m pytest -q tests/test_v11603428_daemon_result_transport_and_live_diagnostics.py`.
+- Run: `python -X utf8 -m pytest -q tests/test_daemon_result_transport_live_diagnostics.py`.
 - Then run the existing host, daemon and routing suites, `pyright`,
   `compileall`, `doctor`, `package-smoke --profile system`,
   `release_metadata_sync`, and `git diff --check`.
