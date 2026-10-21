@@ -79,6 +79,7 @@ jobs:
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
           tests/test_memory_desktop_actions_windows.py
+          tests/test_memory_desktop_source_picker_windows.py
 
       - name: Run Memory Rebuild v2.4 tests
         shell: pwsh
@@ -94,6 +95,7 @@ jobs:
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
           tests/test_memory_desktop_actions_windows.py
+          tests/test_memory_desktop_source_picker_windows.py
 
       - name: Clean checkout guard
         if: always()
