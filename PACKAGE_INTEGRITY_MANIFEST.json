@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
-  "runtime_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
-  "package_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T19:06:50+00:00",
-  "updated_at_utc": "2026-10-21T19:06:50+00:00",
+  "version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-21T19:14:08+00:00",
+  "updated_at_utc": "2026-10-21T19:14:08+00:00",
   "start_file": "run.py",
-  "file_count": 3241,
-  "static_file_count": 3241,
+  "file_count": 3242,
+  "static_file_count": 3242,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -218,8 +218,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 5364,
-      "sha256": "181cbb6365094475cbfbb5d900fa9ec0298808f1ce37b605959d74652b78b3df",
+      "size_bytes": 5486,
+      "sha256": "bdc531e46b0493bc643f9c34517773062ae4733837fc96d6742c2f1bcf1623d3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "1efa0c2a1b697c2ee0b8e8c8f40c7ef84da20557e619b97fc294b441d5f796ce",
+      "size_bytes": 2927,
+      "sha256": "e8adf47891109fddc113044d6153a7f0e0e2ae94ed9e9c595926443db7db06d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -426,7 +426,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1941,
-      "sha256": "c63bd42a0187a419ad44f2daa2d8c53bc4878acf3865fe8535e10e6f324583a6",
+      "sha256": "a1a408c811125cc057676f01a9160cf1a81c5b53d5422b14aebb5b3de006d8f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9156,7 +9156,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "fb3710c2f2bfc53d5ac7cd26eed24ae0f2ac1b7bc30471ec2f02dcc88e641258",
+      "sha256": "0093b34ef0b77252bdab7f2e5b08ae3cd62de4114804bc05d96c528e800c25f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10640,8 +10640,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 13277,
-      "sha256": "2ed2edc99c295985c945a745cef501bac79c1193f09d4edcaa88698cae0074a9",
+      "size_bytes": 13365,
+      "sha256": "9fe00ad8741c01b0696acef65c66c818d2e1ca2f13be1f2974f807c8dbd8033c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26632,6 +26632,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_desktop_source_picker_windows.py",
+      "size_bytes": 3018,
+      "sha256": "63802ec2be55f04c57025abc969a323a0f21bad43157a7493801aa0745c0a5c4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_desktop_workspace.py",
       "size_bytes": 3313,
       "sha256": "be819fd5f6fb1f16b90a4636db2bb4bff19f69a48cb62d3ae0e2d0bb7a8ec3b0",
@@ -28973,8 +28982,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2311410,
-      "sha256": "db25a64eab4630bb48d68ce192d180bbc02634a0d9494b874a76adc24eb830c8",
+      "size_bytes": 2312279,
+      "sha256": "071aa2a06ad1f79399e37ddf9b094c31829de90223c10b2da132c05aee8d7e51",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29621,11 +29630,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
-    "package_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging",
-    "release_version": "16.3.25.5.116.0.34.31-isolated-mcp-oauth-staging"
+    "runtime_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.32-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"
