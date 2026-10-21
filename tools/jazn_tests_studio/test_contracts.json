@@ -35716,8 +35716,8 @@
       "description_source": "source_identity",
       "line": 96
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_operator_step_names_preserve_legacy_lineage": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_operator_step_names_preserve_legacy_lineage": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_operator_step_names_preserve_legacy_lineage",
       "purpose": "Operator step names preserve legacy lineage",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35742,8 +35742,8 @@
       "description_source": "source_identity",
       "line": 23
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_service_run_step_is_a_compatibility_facade": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_service_run_step_is_a_compatibility_facade": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_service_run_step_is_a_compatibility_facade",
       "purpose": "Service run step is a compatibility facade",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35766,8 +35766,8 @@
       "description_source": "source_identity",
       "line": 35
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_dated_chatgpt_export_files_are_recognized": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_dated_chatgpt_export_files_are_recognized": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_dated_chatgpt_export_files_are_recognized",
       "purpose": "Dated chatgpt export files are recognized",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35790,8 +35790,8 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged",
       "purpose": "File check reads every jsonl line and keeps sources unchanged",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35814,8 +35814,8 @@
       "description_source": "source_identity",
       "line": 56
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff",
       "purpose": "Jsonl failure on late line is not lost to sampled sniff",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35838,8 +35838,8 @@
       "description_source": "source_identity",
       "line": 69
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_odt_is_checked_as_package_not_imported_into_memory": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_odt_is_checked_as_package_not_imported_into_memory": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_odt_is_checked_as_package_not_imported_into_memory",
       "purpose": "Odt is checked as package not imported into memory",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35863,8 +35863,8 @@
       "description_source": "source_identity",
       "line": 78
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_sanitization_redacts_arbitrary_private_text_and_keys": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_sanitization_redacts_arbitrary_private_text_and_keys": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_sanitization_redacts_arbitrary_private_text_and_keys",
       "purpose": "Sanitization redacts arbitrary private text and keys",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
@@ -35887,8 +35887,8 @@
       "description_source": "source_identity",
       "line": 90
     },
-    "tests/test_memory_studio_steps_v11603430.py::test_invalid_resume_run_id_is_rejected_before_filesystem_access": {
-      "path": "tests/test_memory_studio_steps_v11603430.py",
+    "tests/test_memory_studio_step_workflows.py::test_invalid_resume_run_id_is_rejected_before_filesystem_access": {
+      "path": "tests/test_memory_studio_step_workflows.py",
       "name": "test_invalid_resume_run_id_is_rejected_before_filesystem_access",
       "purpose": "Invalid resume run id is rejected before filesystem access",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
