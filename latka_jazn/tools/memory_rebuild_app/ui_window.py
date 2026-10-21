@@ -31,7 +31,7 @@ def build_studio_spec(*, tool_root: Path) -> CommandStudioSpec:
             CommandItem("add-source", "Dodaj źródło", "Dodaj i rozpoznaj źródło projektu.", "--project <ID|nazwa> PATH --approved"),
             CommandItem("add-baseline", "Dodaj baseline", "Dodaj bazę testową do porównań.", "--project <ID|nazwa> PATH"),
             CommandItem("preflight", "Preflight", "Sprawdź projekt przed operacjami zapisu.", "--project <ID|nazwa>"),
-            CommandItem("test00", "Test 00", "Zweryfikuj wierność źródeł i source mirror.", "--project <ID|nazwa>"),
+            CommandItem("test00", "Krok 00", "Weryfikacja źródeł z historycznym poleceniem test00.", "--project <ID|nazwa>"),
             CommandItem("recall-baseline", "Recall baseline", "Uruchom mierzalny FTS5-only benchmark Recall.", "--database <plik.sqlite3> --benchmark <benchmark.json>"),
             CommandItem("compare", "Porównanie", "Porównaj bazę docelową z baseline'ami projektu.", "--project <ID|nazwa>"),
             CommandItem("plan", "Plan", "Uruchom plan zgodności bez zapisu baz.", "--project <ID|nazwa>"),
