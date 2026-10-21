@@ -273,3 +273,22 @@ def test_live_diagnostics_readiness_probe_failure_is_not_success(
     assert "daemon_identity_verified=True" in result.body
     assert "conversation_ready=not_verified" in result.body
     assert "runtime_ready=not_verified" in result.body
+
+
+def test_conversation_readiness_requires_ready_worker_even_if_core_policy_ready(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_kw: _live_status(tmp_path))
+    _stub_canonical_readiness(
+        tmp_path, monkeypatch, conversation_ready=True,
+        runtime_ready=True, daemon_ready=False,
+    )
+    result = CapabilityStatusHandler().handle(
+        "Podaj daemon_instance_id, conversation_ready i daemon_ready.",
+        context={"config": JaznConfig(root=tmp_path), "intent": "runtime_health_check"},
+    )
+    assert "daemon_identity_verified=True" in result.body
+    assert "runtime_ready=True" in result.body
+    assert "daemon_ready=False" in result.body
+    assert "conversation_ready=False" in result.body
+    assert "readiness_source=canonical_status_ready_and_capability_matrix" in result.body
