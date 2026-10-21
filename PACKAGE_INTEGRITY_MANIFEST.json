@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "runtime_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "package_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T17:02:34+00:00",
-  "updated_at_utc": "2026-10-21T17:02:34+00:00",
+  "version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-21T17:08:23+00:00",
+  "updated_at_utc": "2026-10-21T17:08:23+00:00",
   "start_file": "run.py",
-  "file_count": 3237,
-  "static_file_count": 3237,
+  "file_count": 3238,
+  "static_file_count": 3238,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "360033239b586073b0ba86f370876189c99fa3aaed582323217e86f2947485a5",
+      "size_bytes": 2927,
+      "sha256": "45e2db7e6ca4229e7bae0a5de6e9221963a2f02b5922a20cd2e798eb2f0d43d9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9749,8 +9749,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/cli.py",
-      "size_bytes": 11589,
-      "sha256": "9eca726e86d6594ad2693d923bb1d7f62501f7f965c17ff0b43f4d3b8ca96a2c",
+      "size_bytes": 12080,
+      "sha256": "ab8a3c6a5639136565f45a19fbf43d4bdb58e17c15abd5667fb5904c1a11229f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10109,8 +10109,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_union.py",
-      "size_bytes": 14642,
-      "sha256": "c2b63133369da745dbb995b5b37fc57f657f624c972dc12825a5af59b04bb771",
+      "size_bytes": 14999,
+      "sha256": "74903b12eec3f3dbe4520e82ff66c566b05e9862b114853f900d649817273ee9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10235,8 +10235,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/ui_desktop.py",
-      "size_bytes": 42002,
-      "sha256": "b74da6b97bc814d26146eb174f29c0572f203feade50b533e020fcb77c5c3efa",
+      "size_bytes": 43322,
+      "sha256": "50292ee4325ed74ea3b2d315d889f673f00bb73d7f0b979767dbf99217555dfd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10631,8 +10631,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 13079,
-      "sha256": "4e81797981463e80337d664edbe0cf37e4a86238bfefc3cda82aaa160317194e",
+      "size_bytes": 13188,
+      "sha256": "cc0c910098951045e8bcc4eca77490e685955925c107e60464515a089a7b6a7b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27037,6 +27037,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "size_bytes": 4918,
+      "sha256": "b96601451de7a854383188f7faf9d18b32df59ce1dcd64894342babf438f874f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_sync_controller.py",
       "size_bytes": 3847,
       "sha256": "1f0b13d723b6dcaa5de0f3c9122de5ba5eb20ed21bcb0e9d4f12990048aa84f9",
@@ -28937,8 +28946,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2299990,
-      "sha256": "a9390ec2675534a21878ae0db581e52cf45db994b37f4ca236f2e32a97e65e97",
+      "size_bytes": 2308648,
+      "sha256": "20634f4b8d5140d31d5b89d8f108a7233e5d7c1868606304caa58cea75748c50",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29585,11 +29594,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-    "package_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-    "release_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging"
+    "runtime_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"
