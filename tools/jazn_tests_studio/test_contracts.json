@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.29",
-  "active_definition_count": 2497,
+  "system_version": "16.3.25.5.116.0.34.30",
+  "active_definition_count": 2505,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -35715,6 +35715,203 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 96
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_operator_step_names_preserve_legacy_lineage": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_operator_step_names_preserve_legacy_lineage",
+      "purpose": "Operator step names preserve legacy lineage",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_service_run_step_is_a_compatibility_facade": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_service_run_step_is_a_compatibility_facade",
+      "purpose": "Service run step is a compatibility facade",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_dated_chatgpt_export_files_are_recognized": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_dated_chatgpt_export_files_are_recognized",
+      "purpose": "Dated chatgpt export files are recognized",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged",
+      "purpose": "File check reads every jsonl line and keeps sources unchanged",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff",
+      "purpose": "Jsonl failure on late line is not lost to sampled sniff",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_odt_is_checked_as_package_not_imported_into_memory": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_odt_is_checked_as_package_not_imported_into_memory",
+      "purpose": "Odt is checked as package not imported into memory",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_sanitization_redacts_arbitrary_private_text_and_keys": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_sanitization_redacts_arbitrary_private_text_and_keys",
+      "purpose": "Sanitization redacts arbitrary private text and keys",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_memory_studio_steps_v11603430.py::test_invalid_resume_run_id_is_rejected_before_filesystem_access": {
+      "path": "tests/test_memory_studio_steps_v11603430.py",
+      "name": "test_invalid_resume_run_id_is_rejected_before_filesystem_access",
+      "purpose": "Invalid resume run id is rejected before filesystem access",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.application",
+        "latka_jazn.tools.memory_rebuild_app.file_checks",
+        "latka_jazn.tools.memory_rebuild_app.report_sanitizer",
+        "latka_jazn.tools.memory_rebuild_app.source_bundle",
+        "latka_jazn.tools.memory_rebuild_app.steps",
+        "latka_jazn.tools.memory_rebuild_app.studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
     },
     "tests/test_memory_sync_controller.py::test_local_only_mode_never_starts_background_thread_or_sync": {
       "path": "tests/test_memory_sync_controller.py",
