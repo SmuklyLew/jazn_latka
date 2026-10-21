@@ -20,7 +20,10 @@ def _descendants(widget: tk.Misc):
 
 def test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle() -> None:
     root = tk.Tk()
-    root.withdraw()
+    # The real Studio parent is mapped. With withdraw(), a transient dialog
+    # may never be mapped and winfo_height() correctly stays at 1 pixel.
+    root.geometry("240x140+10+10")
+    root.update_idletasks()
     dialogs = TkStudioDialogs(root)
     values = [(f"file-{number}", f"export/file-{number:03d}.json") for number in range(113)]
     long_inventory = (
@@ -36,7 +39,8 @@ def test_picker_keeps_buttons_visible_for_113_files_and_supports_click_toggle() 
             return
         window = dialogs_found[0]
         try:
-            window.update_idletasks()
+            window.update()
+            assert window.winfo_ismapped(), "Picker must be visible to the operator"
             descendants = list(_descendants(window))
             text_widgets = [w for w in descendants if isinstance(w, tk.Text)]
             listboxes = [w for w in descendants if isinstance(w, tk.Listbox)]
