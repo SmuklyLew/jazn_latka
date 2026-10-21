@@ -173,19 +173,63 @@ class TkStudioDialogs:
         window.transient(self.root)
         window.configure(bg=WHITE)
         ttk.Label(window, text=title, style="Heading.TLabel").pack(anchor="w", padx=20, pady=(18, 6))
+
         if text:
-            ttk.Label(window, text=text[:2000], style="Note.TLabel", wraplength=690).pack(
-                anchor="w", padx=20, pady=(0, 12))
-        items = tk.Listbox(window, activestyle="none", font=("Segoe UI", 10),
-                           selectmode=(tk.EXTENDED if multiple else tk.BROWSE),
-                           borderwidth=0, highlightthickness=1, highlightbackground=BORDER)
-        items.pack(expand=True, fill="both", padx=20, pady=4)
+            # The source inventory may contain hundreds of lines. A tall Label
+            # would consume the entire dialog and hide the actual list/buttons.
+            if len(text) > 240 or text.count("\n") > 3:
+                preview = ttk.Frame(window)
+                preview.pack(fill="x", padx=20, pady=(0, 6))
+                details = tk.Text(
+                    preview, height=4, wrap="word", font=("Segoe UI", 9),
+                    bg=BG, fg=MUTED, relief="flat",
+                    highlightthickness=1, highlightbackground=BORDER,
+                )
+                details_scroll = ttk.Scrollbar(preview, orient="vertical", command=details.yview)
+                details.configure(yscrollcommand=details_scroll.set)
+                details.pack(side="left", fill="x", expand=True)
+                details_scroll.pack(side="right", fill="y")
+                details.insert("1.0", text)
+                details.configure(state="disabled")
+            else:
+                ttk.Label(window, text=text, style="Note.TLabel", wraplength=690).pack(
+                    anchor="w", padx=20, pady=(0, 8))
+
+        if multiple:
+            ttk.Label(
+                window, text="Kliknij pozycję, aby ją zaznaczyć lub odznaczyć.",
+                style="Note.TLabel",
+            ).pack(anchor="w", padx=20, pady=(0, 4))
+
+        list_frame = ttk.Frame(window)
+        list_frame.pack(expand=True, fill="both", padx=20, pady=4)
+        items = tk.Listbox(
+            list_frame, activestyle="none", font=("Segoe UI", 10),
+            selectmode=(tk.MULTIPLE if multiple else tk.BROWSE),
+            exportselection=False, borderwidth=0, highlightthickness=1,
+            highlightbackground=BORDER,
+        )
+        items_scroll = ttk.Scrollbar(list_frame, orient="vertical", command=items.yview)
+        items.configure(yscrollcommand=items_scroll.set)
+        items.pack(side="left", expand=True, fill="both")
+        items_scroll.pack(side="right", fill="y")
         for index, (value, label) in enumerate(values):
             items.insert(tk.END, str(label))
             selected = (value in default) if multiple else (value == default)
             if selected:
                 items.selection_set(index)
+
         response: dict[str, Any] = {"value": None}
+        count_text = tk.StringVar()
+
+        def update_count(_event: Any = None) -> None:
+            count_text.set(f"Zaznaczono: {len(items.curselection())} z {len(values)}")
+
+        def change_all(select: bool) -> None:
+            items.selection_clear(0, tk.END)
+            if select and values:
+                items.selection_set(0, tk.END)
+            update_count()
 
         def close(accept: bool) -> None:
             indices = list(items.curselection()) if accept else []
@@ -195,14 +239,26 @@ class TkStudioDialogs:
                 response["value"] = []
             window.destroy()
 
-        controls = ttk.Frame(window, padding=14)
-        controls.pack(fill="x")
-        ttk.Button(controls, text="Anuluj", command=lambda: close(False)).pack(side="right", padx=4)
+        controls = ttk.Frame(window, padding=(20, 10))
+        controls.pack(fill="x", side="bottom")
+        if multiple:
+            ttk.Button(controls, text="Wszystkie", command=lambda: change_all(True)).pack(
+                side="left", padx=(0, 4))
+            ttk.Button(controls, text="Żadne", command=lambda: change_all(False)).pack(
+                side="left", padx=4)
+        ttk.Label(controls, textvariable=count_text).pack(side="left", padx=8)
+        ttk.Button(controls, text="Anuluj", command=lambda: close(False)).pack(
+            side="right", padx=4)
         ttk.Button(controls, text="Wybierz", style="Accent.TButton",
                    command=lambda: close(True)).pack(side="right", padx=4)
+
+        items.bind("<<ListboxSelect>>", update_count)
         items.bind("<Double-1>", lambda _ev: close(True) if not multiple else None)
+        window.bind("<Escape>", lambda _ev: close(False))
         window.protocol("WM_DELETE_WINDOW", lambda: close(False))
+        update_count()
         window.grab_set()
+        items.focus_set()
         window.wait_window()
         return response["value"]
 
