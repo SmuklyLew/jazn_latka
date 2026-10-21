@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.28",
-  "active_definition_count": 2493,
+  "system_version": "16.3.25.5.116.0.34.29",
+  "active_definition_count": 2497,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15681,6 +15681,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15704,6 +15705,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15718,13 +15720,14 @@
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
       "name": "test_live_diagnostics_report_daemon_pid_not_cli_pid",
       "purpose": "Live diagnostics report daemon pid not cli pid",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15733,7 +15736,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 83
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_fail_closed_on_identity_mismatch": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15746,6 +15749,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15754,7 +15758,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 100
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_reverified_with_clock_degraded_but_live_daemon": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15767,6 +15771,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15775,7 +15780,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 113
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_missing_or_mismatched_identity_not_promoted": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15788,6 +15793,7 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15796,7 +15802,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 128
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_attaches_only_reverified_retrieval_evidence": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15809,6 +15815,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15817,7 +15824,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 142
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_does_not_invent_transport_without_attestation": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15830,6 +15837,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15838,7 +15846,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 176
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_rejects_other_release_or_recorded_instance": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15851,6 +15859,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.cli_commands",
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
@@ -15859,7 +15868,95 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 157
+      "line": 193
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_report_independent_negative_readiness": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_live_diagnostics_report_independent_negative_readiness",
+      "purpose": "Live diagnostics report independent negative readiness",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 212
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_does_not_promote_liveness_only_or_switched_instance": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_live_diagnostics_does_not_promote_liveness_only_or_switched_instance",
+      "purpose": "Live diagnostics does not promote liveness only or switched instance",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 231
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_readiness_probe_failure_is_not_success": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_live_diagnostics_readiness_probe_failure_is_not_success",
+      "purpose": "Live diagnostics readiness probe failure is not success",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 258
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_conversation_readiness_requires_ready_worker_even_if_core_policy_ready": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_conversation_readiness_requires_ready_worker_even_if_core_policy_ready",
+      "purpose": "Conversation readiness requires ready worker even if core policy ready",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 278
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
