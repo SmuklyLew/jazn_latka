@@ -20,7 +20,14 @@ class SourceRole(str, Enum):
     UNKNOWN_SIDECAR = "unknown_sidecar"
 
 
-_CONVERSATIONS_RE = re.compile(r"^conversations(?:[-_ ]?\d+)?\.json$", re.IGNORECASE)
+_CONVERSATIONS_RE = re.compile(
+    r"^conversations(?:[-_ ]?\d+|[-_ ]\d{4}[.-]\d{2}[.-]\d{2}(?:[-_ ]\d+)?)?\.json$",
+    re.IGNORECASE,
+)
+_CHAT_HTML_RE = re.compile(
+    r"^chat(?:[-_ ]\d{4}[.-]\d{2}[.-]\d{2}(?:[-_ ]\d+)?)?\.html?$",
+    re.IGNORECASE,
+)
 
 
 def _sha256_file(path: Path) -> str:
@@ -40,7 +47,7 @@ def classify_source_role(relative_path: str) -> SourceRole:
         return SourceRole.SOURCE_ATTACHMENT
     if _CONVERSATIONS_RE.fullmatch(name):
         return SourceRole.CANONICAL_CHAT_GRAPH
-    if name in {"chat.html", "chat.htm"}:
+    if _CHAT_HTML_RE.fullmatch(name):
         return SourceRole.LOSSLESS_CONTROL_GRAPH
     if name == "message_feedback.json":
         return SourceRole.SUPPLEMENTAL_METADATA
