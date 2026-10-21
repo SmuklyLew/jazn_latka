@@ -127,3 +127,18 @@ Current state is strictly **predeployment**; do not claim production readiness.
 - https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
 - https://developers.openai.com/plugins/build/auth
 - https://datatracker.ietf.org/doc/html/rfc7662
+## Isolated staging v116.0.34.27 (never auto-deploy)
+
+Before production, validate the candidate from a separate GitHub branch and a separate Cloudflare Worker. Cloudflare Wrangler environments or a separately named staging Worker use independent KV/secret bindings (see https://developers.cloudflare.com/workers/wrangler/environments/ and https://developers.cloudflare.com/kv/reference/environments/). Version URLs alone do not provide storage isolation.
+
+**Canonical staging endpoints**:
+- issuer: `https://jazn-auth-staging.jazn-lakta.workers.dev`
+- resource: `https://jazn-runtime-staging.jazn-lakta.workers.dev/mcp`
+
+Create a NEW staging KV namespace (do not use production KV ID `b48aac7986a44fd98b905c12a1cea86a`). Create a separate GitHub OAuth App with callback `https://jazn-auth-staging.jazn-lakta.workers.dev/callback`. Use different Client ID/Secret than production. Copy `wrangler.staging.example.jsonc` to the ignored `wrangler.staging.jsonc` and substitute only the new staging KV ID.
+
+Stage Worker requires `GITHUB_CLIENT_ID` (nonsecret variable), `GITHUB_CLIENT_SECRET` (secret), `JAZN_ALLOWED_GITHUB_LOGIN`, `JAZN_ALLOWED_GITHUB_USER_ID` (both variables), `JAZN_INTROSPECTION_CLIENT_ID` (variable), `JAZN_INTROSPECTION_CLIENT_SECRET` (secret), and `OAUTH_KV` (separate KV). In staging, the two URL vars must exactly match the staging constants; wrong host, issuer, audience or unrecognized environment is refused. **Never reuse production secrets or tokens**, and never forward production MCP through the staging resource identifier.
+
+Before deployment: stage credentials securely and run `npm ci && npm run check && npx wrangler deploy --dry-run --config wrangler.staging.jsonc` from this directory. The dry run does not prove working OAuth. Deploy only with `npx wrangler deploy --config wrangler.staging.jsonc` after review, and perform real staging discovery, PKCE, denial and error cases, GitHub login/consent, token refresh/revoke, and introspection (valid/invalid token) with isolated KV. All failures must leave production unchanged. The staging resource is not yet a live MCP server; test full end-to-end only after separately securing and bringing up a staging resource server.
+
+Production must stay on the existing fail-closed `jazn-auth` stub and `jazn-runtime` staging VPC Worker until the runbook's mandatory live gates pass. A green GitHub Actions Node check is source-level/staging-build evidence only. Do not claim any live OAuth activation, ChatGPT tool availability or accepted Jaźń turn from it.

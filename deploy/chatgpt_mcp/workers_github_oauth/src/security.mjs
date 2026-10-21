@@ -1,6 +1,27 @@
 // Pure helpers: no secrets, tokens, or user data persist here.
 export const ISSUER = 'https://jazn-auth.jazn-lakta.workers.dev';
 export const RESOURCE = 'https://jazn-runtime.jazn-lakta.workers.dev/mcp';
+// Staging has a separate Worker, issuer, audience, GitHub OAuth app and KV namespace.
+// Do not accept arbitrary issuer/resource URLs supplied by a request or a variable.
+export const STAGING_ISSUER = 'https://jazn-auth-staging.jazn-lakta.workers.dev';
+export const STAGING_RESOURCE = 'https://jazn-runtime-staging.jazn-lakta.workers.dev/mcp';
+
+export function selectOAuthDeployment(env) {
+  if (!env || typeof env !== 'object') return null;
+  const stage = env.JAZN_AUTH_ENVIRONMENT;
+  if (stage !== undefined && stage !== 'production' && stage !== 'staging') return null;
+  const expected = stage === 'staging'
+    ? { issuer: STAGING_ISSUER, resource: STAGING_RESOURCE, environment: 'staging' }
+    : { issuer: ISSUER, resource: RESOURCE, environment: 'production' };
+  // Staging MUST opt into its own issuer and resource. Production may omit the
+  // new variables for backward-compatible staged rollouts, but any mismatched
+  // declaration fails closed. Neither mode trusts client-supplied URLs.
+  if ((stage === 'staging' || env.JAZN_OAUTH_ISSUER_URL !== undefined) &&
+      env.JAZN_OAUTH_ISSUER_URL !== expected.issuer) return null;
+  if ((stage === 'staging' || env.JAZN_OAUTH_RESOURCE_URL !== undefined) &&
+      env.JAZN_OAUTH_RESOURCE_URL !== expected.resource) return null;
+  return expected;
+}
 export const SCOPES = Object.freeze([
   'jazn:mcp:connect', 'jazn:turn:submit', 'jazn:turn:read',
   'jazn:turn:finalize', 'jazn:status:read', 'jazn:task:read',
@@ -14,13 +35,13 @@ export function githubIdentityAllowed(profile, expectedLogin, expectedId) {
   if (String(profile.id) !== String(expectedId)) return false;
   return true;
 }
-export function tokenRecordToIntrospection(record) {
-  if (!record || record.audience !== RESOURCE || !Array.isArray(record.scope) ||
+export function tokenRecordToIntrospection(record, { issuer = ISSUER, resource = RESOURCE } = {}) {
+  if (!record || record.audience !== resource || !Array.isArray(record.scope) ||
       !record.scope.includes('jazn:mcp:connect') || typeof record.clientId !== 'string' ||
       !record.clientId || typeof record.expiresAt !== 'number' ||
       !Number.isFinite(record.expiresAt) || record.expiresAt <= Date.now() / 1000) return { active: false };
   return {
-    active: true, client_id: record.clientId, iss: ISSUER, aud: RESOURCE,
+    active: true, client_id: record.clientId, iss: issuer, aud: resource,
     scope: record.scope.join(' '), exp: Math.floor(record.expiresAt),
     ...(record.userId ? { sub: String(record.userId) } : {}),
   };

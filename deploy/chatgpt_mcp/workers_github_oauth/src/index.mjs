@@ -3,23 +3,25 @@
 import { OAuthAuthorizationServer, AuthorizationError, authorizationErrorRedirect } from '@cloudflare/workers-oauth-provider';
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import {
-  ISSUER, RESOURCE, SCOPES, consentHtml, githubIdentityAllowed,
+  SCOPES, selectOAuthDeployment, consentHtml, githubIdentityAllowed,
   tokenRecordToIntrospection, requiresSafeAuthSettings, randomVerifier,
   sha256Challenge, basicCredentialsMatch,
 } from './security.mjs';
 
-const auth = new OAuthAuthorizationServer({
-  issuer: ISSUER,
-  resources: [RESOURCE],
-  scopesSupported: SCOPES,
-  clientIdMetadataDocumentEnabled: true,
-  clientRegistrationEndpoint: '/oauth/register',
-});
+function authorizationServer(deployment) {
+  return new OAuthAuthorizationServer({
+    issuer: deployment.issuer,
+    resources: [deployment.resource],
+    scopesSupported: SCOPES,
+    clientIdMetadataDocumentEnabled: true,
+    clientRegistrationEndpoint: '/oauth/register',
+  });
+}
 const noStore = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 function textError(message, status = 400) {
   return new Response(message, { status, headers: { ...noStore, 'content-type': 'text/plain; charset=utf-8' } });
 }
-async function authorize(request, env) {
+async function authorize(request, env, auth, deployment) {
   const oauth = auth.getOAuthApi(env);
   try {
     if (request.method === 'GET') {
@@ -42,7 +44,7 @@ async function authorize(request, env) {
       const { state, headers } = await oauth.beginUpstream(approved.request, { data: { verifier }, headers: approved.headers });
       const github = new URL('https://github.com/login/oauth/authorize');
       github.searchParams.set('client_id', env.GITHUB_CLIENT_ID);
-      github.searchParams.set('redirect_uri', `${ISSUER}/callback`);
+      github.searchParams.set('redirect_uri', `${deployment.issuer}/callback`);
       github.searchParams.set('state', state);
       github.searchParams.set('code_challenge', await sha256Challenge(verifier));
       github.searchParams.set('code_challenge_method', 'S256');
@@ -60,7 +62,7 @@ async function authorize(request, env) {
     throw error; // do not conceal SDK or KV errors as accepted authorizations
   }
 }
-async function callback(request, env) {
+async function callback(request, env, auth, deployment) {
   if (request.method !== 'GET') return textError('Method not allowed', 405);
   const oauth = auth.getOAuthApi(env);
   const { request: original, data, headers } = await oauth.finishUpstream(request);
@@ -74,7 +76,7 @@ async function callback(request, env) {
   const tokenReply = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST', headers: { 'accept': 'application/json', 'content-type': 'application/json' },
     body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET,
-      code, redirect_uri: `${ISSUER}/callback`, code_verifier: data.verifier }),
+      code, redirect_uri: `${deployment.issuer}/callback`, code_verifier: data.verifier }),
     redirect: 'manual',
   });
   if (!tokenReply.ok) return textError('GitHub token exchange failed', 502);
@@ -102,7 +104,7 @@ async function callback(request, env) {
   headers.set('Location', completed.redirectTo);
   return new Response(null, { status: 302, headers });
 }
-async function introspect(request, env) {
+async function introspect(request, env, auth, deployment) {
   if (request.method !== 'POST') return textError('Method not allowed', 405);
   if (!(await basicCredentialsMatch(request, env.JAZN_INTROSPECTION_CLIENT_ID, env.JAZN_INTROSPECTION_CLIENT_SECRET))) {
     return new Response(null, { status: 401, headers: { ...noStore, 'www-authenticate': 'Basic realm="Jaźń MCP introspection"' } });
@@ -113,16 +115,19 @@ async function introspect(request, env) {
   const token = new URLSearchParams(body).get('token');
   let verified = null;
   if (token && token.length <= 4096) {
-    try { verified = await auth.validateToken(RESOURCE, token, env); }
+    try { verified = await auth.validateToken(deployment.resource, token, env); }
     catch { return textError('Token verification unavailable', 503); }
   }
-  return new Response(JSON.stringify(tokenRecordToIntrospection(verified)), {
+  return new Response(JSON.stringify(tokenRecordToIntrospection(verified, { issuer: deployment.issuer, resource: deployment.resource })), {
     status: 200, headers: { ...noStore, 'content-type': 'application/json; charset=utf-8' },
   });
 }
 async function serve(request, env, ctx) {
   const url = new URL(request.url);
-  if (url.origin !== ISSUER) return textError('Unexpected host', 403);
+  const deployment = selectOAuthDeployment(env);
+  if (!deployment) return textError('OAuth deployment configuration mismatch', 503);
+  if (url.origin !== deployment.issuer) return textError('Unexpected host', 403);
+  const auth = authorizationServer(deployment);
   // A public /healthz reports deployment configuration, NOT OAuth or MCP readiness.
   // This endpoint must never return tokens, binding values or a synthetic ready=true.
   if (request.method === 'GET' && url.pathname === '/healthz') {
@@ -136,13 +141,17 @@ async function serve(request, env, ctx) {
     });
   }
   if (!requiresSafeAuthSettings(env)) return textError('OAuth deployment incomplete', 503);
-  if (url.pathname === '/authorize') return authorize(request, env);
-  if (url.pathname === '/callback') return callback(request, env);
-  if (url.pathname === '/oauth/introspect') return introspect(request, env);
+  if (url.pathname === '/authorize') return authorize(request, env, auth, deployment);
+  if (url.pathname === '/callback') return callback(request, env, auth, deployment);
+  if (url.pathname === '/oauth/introspect') return introspect(request, env, auth, deployment);
   return auth.fetch(request, env, ctx); // well-known discovery, registration, token/refresh/revoke
 }
 export class AuthServer extends WorkerEntrypoint {
   fetch(request) { return serve(request, this.env, this.ctx); }
-  validateToken(resource, token) { return auth.validateToken(resource, token, this.env); }
+  validateToken(resource, token) {
+    const deployment = selectOAuthDeployment(this.env);
+    if (!deployment || resource !== deployment.resource || !requiresSafeAuthSettings(this.env)) return null;
+    return authorizationServer(deployment).validateToken(resource, token, this.env);
+  }
 }
 export default { fetch(request, env, ctx) { return serve(request, env, ctx); } };
