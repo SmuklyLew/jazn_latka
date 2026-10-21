@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c02b5a6a6283eb255a56c5b52628af5fbfa5b20a",
-    "base_version": "16.3.25.5.116.0.34.27-isolated-mcp-oauth-staging",
+    "base_commit": "dd257131f0b46e644fe2290e9cae10dd7c2db17c",
+    "base_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "dd257131f0b46e644fe2290e9cae10dd7c2db17c",
