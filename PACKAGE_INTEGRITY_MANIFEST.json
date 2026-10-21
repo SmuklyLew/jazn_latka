@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.29-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T03:19:19+00:00",
-  "updated_at_utc": "2026-10-21T03:19:19+00:00",
+  "generated_at_utc": "2026-10-21T03:34:04+00:00",
+  "updated_at_utc": "2026-10-21T03:34:04+00:00",
   "start_file": "run.py",
-  "file_count": 3235,
-  "static_file_count": 3235,
+  "file_count": 3236,
+  "static_file_count": 3236,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2927,
-      "sha256": "97fad921d8dc18eddc86d382c81ca50c9bf262fa42302362aa74c17b183c3b43",
+      "sha256": "4780658e0ee354ad108732381cc67d02256553f42d6416ac6d7a4758e50725ec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -17695,6 +17695,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_daemon_result_transport_live_diagnostics__pre_v16_3_25_5_116_0_34_30.py",
+      "size_bytes": 12384,
+      "sha256": "c36fef07e75641802f89ef6dec505c5ef33c6fd0c4a49cf130993ef56411456d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_dependency_studio__pre_venv_symlink_fix_v16_3_25_5_116_0_34_20.py",
       "size_bytes": 19053,
       "sha256": "53f778956a1bc64526768e3814aad1dc0b7ddc016698e7b6d77b3d7a20e93315",
@@ -25463,8 +25472,8 @@
     },
     {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
-      "size_bytes": 12384,
-      "sha256": "c36fef07e75641802f89ef6dec505c5ef33c6fd0c4a49cf130993ef56411456d",
+      "size_bytes": 12463,
+      "sha256": "7a234569196a863e85ecd971bd482dab785629e43167f988ba4ddfcda2f90e7b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28920,7 +28929,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2299990,
-      "sha256": "a9390ec2675534a21878ae0db581e52cf45db994b37f4ca236f2e32a97e65e97",
+      "sha256": "a5f15c9d440d81bf2b1a50f724b9fca5cb61fed3890aeecfdf92cc8b87fcfd21",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
