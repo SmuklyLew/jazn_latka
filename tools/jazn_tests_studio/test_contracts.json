@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.28",
-  "active_definition_count": 2492,
+  "active_definition_count": 2493,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15684,11 +15684,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 35
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_real_package_integrity_request_stays_package_route": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15706,11 +15707,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 42
+      "line": 44
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_report_daemon_pid_not_cli_pid": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15726,11 +15728,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 51
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_live_diagnostics_fail_closed_on_identity_mismatch": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15746,11 +15749,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 64
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_reverified_with_clock_degraded_but_live_daemon": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15766,11 +15770,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 77
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_missing_or_mismatched_identity_not_promoted": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15786,11 +15791,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 92
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_attaches_only_reverified_retrieval_evidence": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15806,11 +15812,12 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 104
+      "line": 106
     },
     "tests/test_daemon_result_transport_live_diagnostics.py::test_completed_result_does_not_invent_transport_without_attestation": {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
@@ -15826,11 +15833,33 @@
         "latka_jazn.config",
         "latka_jazn.core",
         "latka_jazn.core.handlers.capability_status_handler",
-        "latka_jazn.nlp.dialogue_intent_classifier"
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 140
+    },
+    "tests/test_daemon_result_transport_live_diagnostics.py::test_poll_transport_rejects_other_release_or_recorded_instance": {
+      "path": "tests/test_daemon_result_transport_live_diagnostics.py",
+      "name": "test_poll_transport_rejects_other_release_or_recorded_instance",
+      "purpose": "Poll transport rejects other release or recorded instance",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.handlers.capability_status_handler",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 157
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
