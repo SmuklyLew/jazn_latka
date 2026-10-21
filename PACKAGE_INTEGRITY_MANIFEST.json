@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.30-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T17:25:28+00:00",
-  "updated_at_utc": "2026-10-21T17:25:28+00:00",
+  "generated_at_utc": "2026-10-21T18:07:22+00:00",
+  "updated_at_utc": "2026-10-21T18:07:22+00:00",
   "start_file": "run.py",
-  "file_count": 3240,
-  "static_file_count": 3240,
+  "file_count": 3241,
+  "static_file_count": 3241,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "07734516caa4d20fd1754df2037dd3a582f372a66ef022c4d78ab9a1487399d5",
+      "size_bytes": 2932,
+      "sha256": "a8176b7c305c5085ae58b428ebceb5ed99c0d516a3486c12cd24792fe5526ba6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22249,6 +22249,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.30-pre-studio-ci-regression/test_memory_rebuild_v4_protocol_engine.py",
+      "size_bytes": 26927,
+      "sha256": "ee266c56931a2344b404cc6a0ee60c2cb1ca5f8613c80c94cceb268cd368d59e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.4/chatgpt_bridge_tool_catalog_probe.py",
       "size_bytes": 7488,
       "sha256": "280717e28072b9d1f5b39172ceefe00e4279bb1042aa531afb2f289e7debdd33",
@@ -26930,8 +26939,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
-      "size_bytes": 26927,
-      "sha256": "ee266c56931a2344b404cc6a0ee60c2cb1ca5f8613c80c94cceb268cd368d59e",
+      "size_bytes": 26923,
+      "sha256": "60de83cebf68b5108a59e97c412f1d436f48f652be5e04f2f00d66a8b2279d2e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
