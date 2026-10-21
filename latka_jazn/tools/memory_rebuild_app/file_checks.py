@@ -15,6 +15,7 @@ import os
 import zipfile
 
 from .report_sanitizer import write_report_pair
+from latka_jazn.tools.chat_export_reader import ChatExportReader
 from .source_inventory import inspect_source, inspect_zip
 
 
@@ -49,6 +50,36 @@ def _check_jsonl(path: Path) -> dict[str, Any]:
                 raise ValueError(f"invalid JSONL at line {line_no} ({type(exc).__name__})") from None
             records += 1
     return {"record_count": records, "ok": True}
+
+
+def _check_json(path: Path, *, canonical_chat: bool, legacy_recovered: bool) -> dict[str, Any]:
+    """Validate entire JSON, streaming canonical ChatGPT arrays by conversation.
+
+    Legacy repair must be reviewed separately; tests never rewrite or silently
+    accept a syntax-repaired source as a lossless original.
+    """
+    if legacy_recovered:
+        return {"ok": True, "status": "legacy_recovery_requires_review"}
+    if canonical_chat:
+        with ChatExportReader(path, verify_crc=False) as reader:
+            count = sum(1 for _ in reader.iter_raw_conversations())
+        return {"ok": True, "status": "full_stream_parse", "conversation_count": count}
+
+    def unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError("duplicate_json_object_key")
+            value[key] = item
+        return value
+
+    # Do not materialize unbounded non-chat JSON files. A format-specific
+    # streaming adapter is required for larger metadata sources.
+    if path.stat().st_size > 64 * 1024 * 1024:
+        return {"ok": True, "status": "large_generic_json_requires_adapter"}
+    with path.open("r", encoding="utf-8-sig", errors="strict") as stream:
+        json.load(stream, object_pairs_hook=unique_pairs)
+    return {"ok": True, "status": "full_json_parse"}
 
 
 def _check_office_package(path: Path) -> dict[str, Any]:
@@ -113,7 +144,13 @@ def check_memory_source_files(
                 format_check: dict[str, Any] = {"status": "not_applicable"}
                 suffix = source.suffix.lower()
                 if inspected.exists and inspected.is_file and not blockers:
-                    if suffix in _TEXT_EXTENSIONS:
+                    if suffix == ".json":
+                        format_check = _check_json(
+                            source,
+                            canonical_chat=inspected.role == "chatgpt_export",
+                            legacy_recovered="legacy_json_recovered" in inspected.warnings,
+                        )
+                    elif suffix in _TEXT_EXTENSIONS:
                         format_check = _check_utf8(source)
                     elif suffix in {".jsonl", ".ndjson"}:
                         format_check = _check_jsonl(source)
@@ -125,6 +162,9 @@ def check_memory_source_files(
                     any("legacy_json_recovered" in warning for warning in inspected.warnings)
                     or inspected.role == "unknown"
                     or inspected.pipeline in {"catalog_only", "excluded"}
+                    or format_check.get("status") in {
+                        "legacy_recovery_requires_review", "large_generic_json_requires_adapter"
+                    }
                 )
                 if blockers:
                     status = "FAILED"
