@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [master]
   push:
-    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite', 'fix/v16.3.25.5.116.0.34.36-pr400-pypdf-security-recovery']
+    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite']
   workflow_dispatch:
 
 permissions:
@@ -39,7 +39,6 @@ jobs:
       runner: ${{ matrix.runner }}
       target: ${{ matrix.target }}
       python-version: ${{ matrix.python }}
-      regenerate-lock: ${{ github.event_name == 'push' && github.ref_name == 'fix/v16.3.25.5.116.0.34.36-pr400-pypdf-security-recovery' }}
     permissions:
       contents: read
       id-token: write
@@ -371,7 +370,7 @@ jobs:
 
   persist_release_locks:
     name: persist canonical dependency locks and release metadata
-    if: github.event_name == 'push' && (github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence' || github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence-final' || (github.ref_name == 'upgrade/package-generator-v10.1.86.0-rewrite' || github.ref_name == 'fix/v16.3.25.5.116.0.34.36-pr400-pypdf-security-recovery'))
+    if: github.event_name == 'push' && (github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence' || github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence-final' || github.ref_name == 'upgrade/package-generator-v10.1.86.0-rewrite')
     needs: [dependency_artifact, cross_target_lock_replay]
     runs-on: ubuntu-latest
     timeout-minutes: 15
