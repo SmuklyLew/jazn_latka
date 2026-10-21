@@ -318,7 +318,10 @@ class CapabilityStatusHandler:
                             runtime_value = converged.get("runtime_core_ready")
                             daemon_value = observed_ready.get("readiness_ok")
                             if isinstance(matrix_value, bool) and isinstance(runtime_value, bool) and isinstance(daemon_value, bool):
-                                conversation_ready = matrix_value
+                                # The capability matrix describes core policy; /ready
+                                # independently verifies that the chat worker can serve.
+                                # Both are necessary for an affirmative conversation claim.
+                                conversation_ready = matrix_value and daemon_value
                                 runtime_ready = runtime_value
                                 daemon_ready = daemon_value
                                 readiness_source = "canonical_status_ready_and_capability_matrix"
