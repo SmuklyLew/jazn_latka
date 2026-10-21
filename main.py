@@ -629,6 +629,7 @@ def _verified_daemon_poll_transport(
     cfg: JaznConfig,
     host: str,
     port: int,
+    payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Re-attest the transport used to read a prior daemon result.
 
@@ -653,7 +654,18 @@ def _verified_daemon_poll_transport(
         and status.get("package_integrity_verified") is True
         and status.get("source_provenance_verified") is True
         and str(status.get("daemon_instance_id") or "").strip()
+        and str(status.get("runtime_version_full") or status.get("runtime_version") or "")
+        == PACKAGE_VERSION_FULL
     ):
+        return {}
+    fetched = _as_dict(payload)
+    fetched_result = _as_dict(fetched.get("result"))
+    recorded_instance = str(
+        fetched_result.get("daemon_instance_id")
+        or fetched.get("daemon_instance_id")
+        or ""
+    ).strip()
+    if recorded_instance and recorded_instance != str(status["daemon_instance_id"]):
         return {}
     resolved_root = str(status.get("resolved_active_root") or "")
     if not resolved_root or Path(resolved_root).resolve() != Path(cfg.root).resolve():
@@ -1623,6 +1635,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 request_id=ns.daemon_result,
                 retrieval_transport_observability=_verified_daemon_poll_transport(
                     cfg=cfg, host=ns.daemon_host, port=ns.daemon_port,
+                    payload=payload,
                 ),
             )
             write_chat_bridge_payload(
