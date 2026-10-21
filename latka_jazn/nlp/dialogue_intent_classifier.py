@@ -741,6 +741,26 @@ class DialogueIntentClassifier:
                 norm,folded,'self_memory_recall_request',memory_evidence,max(0.90,decision_frame.top_score),
                 speech_act=speech.speech_act,question_object='conversation_archive_memory',
             )
+        # Explicit live-process field requests are not package-integrity
+        # questions, even if the surrounding test mentions a SYSTEM ZIP.
+        # Preserve these requested components before the package fast-path.
+        live_daemon_fields = (
+            'daemon_instance_id', 'conversation_ready', 'heartbeat_fresh',
+            'runtime_ready', 'daemon_ready', 'pid demona', 'pid ',
+        )
+        live_daemon_request = any(marker in folded for marker in live_daemon_fields)
+        if live_daemon_request and any(
+            marker in folded for marker in (
+                'sprawdz', 'sprawdź', 'podaj', 'potwierdz', 'potwierdź',
+                'odczytaj', 'zweryfikuj', 'status', 'parametr',
+            )
+        ):
+            return report(
+                norm, folded, 'runtime_health_check',
+                ['explicit_live_daemon_fields_take_precedence_over_package_status'],
+                0.97, diag=True, speech_act=speech.speech_act,
+                question_object='runtime_health',
+            )
         if (
             decision_frame.top_intent == 'package_runtime_status_question'
             and decision_frame.top_score >= 0.68
