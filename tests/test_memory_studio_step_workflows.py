@@ -66,6 +66,23 @@ def test_file_check_reads_every_jsonl_line_and_keeps_sources_unchanged(tmp_path:
     assert str(tmp_path) not in json.dumps(sanitized)
 
 
+def test_late_broken_chatgpt_json_is_not_accepted_after_first_record(tmp_path: Path) -> None:
+    source = tmp_path / "conversations-2025.06.16.json"
+    source.write_text('[{"id":"a","mapping":{}}, {"id":"b","mapping":{}}', encoding="utf-8")
+    report = check_memory_source_files([source])
+    assert report["ok"] is False
+    assert report["files"][0]["status"] == "FAILED"
+
+
+def test_analysis_songs_is_a_music_rebuild_source(tmp_path: Path) -> None:
+    from latka_jazn.tools.memory_rebuild_app.source_inventory import inspect_source
+    path = tmp_path / "analysis_songs.json"
+    path.write_text('{"analizy": []}', encoding="utf-8")
+    inspected = inspect_source(path)
+    assert inspected.role == "music_analysis"
+    assert inspected.pipeline == "memory_rebuild"
+
+
 def test_jsonl_failure_on_late_line_is_not_lost_to_sampled_sniff(tmp_path: Path) -> None:
     source = tmp_path / "runtime_events.jsonl"
     source.write_text('{"id":1}\n' * 30 + '{"secret":"incomplete"\n', encoding="utf-8")
