@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-21T22:06:46+00:00",
-  "updated_at_utc": "2026-10-21T22:06:46+00:00",
+  "generated_at_utc": "2026-10-21T22:11:03+00:00",
+  "updated_at_utc": "2026-10-21T22:11:03+00:00",
   "start_file": "run.py",
   "file_count": 3248,
   "static_file_count": 3248,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2927,
-      "sha256": "82dcdcf563658f6a66b239e501ece5c1e1b3a7cfd479f560510167be48b39962",
+      "sha256": "8318c8b3e3fd786bbaac921c2676a37189d6ca5d198c17132a991f5879cb498e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8958,7 +8958,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "772cf97e47ed52a430d100928480ffbbd36d3b3392556938ff544f7965d46e9f",
+      "sha256": "8cf076d23a64455d4b3fe3e3252fe56f729917a521d0636f772d6fec62e219d5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8967,7 +8967,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "7829bc8d12f1705d928f7aaece3002f3984efa31e588d54cf2fe6af6a5498921",
+      "sha256": "892fa29bf2ef5bddf7eb9221bae56b581f0eb0849d9e227335310b4b8c9875bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8976,7 +8976,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "8b8ae01ec1b530d9c1938336891542f585adc9409f960ec4ea372d366f2f2871",
+      "sha256": "50eb888e4a94fe7930f36feeb12fb5f7277244428f951a7d698c6736f79e6c50",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8985,7 +8985,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "6ce5923a1fbc5a47215a6cef32ae4826d05615fdb4e65f9f9b9daf976f6b6910",
+      "sha256": "6da08a85d79a17ceb33c4ebaecdb080320bd54a70d84072e1dd7d8ac2f767450",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8994,7 +8994,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "e06437db0cb821b80740fe2589c0c9daeccee6c07a2115f995ac248c0faaea49",
+      "sha256": "594a896b05d4fabb33253bd54f47b503b68d2d9a5fe27bc12d670d73f6f49d4d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9003,7 +9003,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "54fd401fb026f78198201ff8f842bf031f2a11809e578b41bfb93ecff14d8016",
+      "sha256": "33b77e37a1275fb766ecc0eea776f81fc76e593f277298079853059419983854",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
