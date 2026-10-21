@@ -301,6 +301,8 @@ class CapabilityStatusHandler:
                         same_instance = bool(
                             observed_daemon.get("daemon_instance_id") == live.get("daemon_instance_id")
                             and observed_daemon.get("pid") == live.get("pid")
+                            and observed_daemon.get("runtime_version_full") == live.get("runtime_version_full")
+                            and observed_daemon.get("resolved_active_root") == live.get("resolved_active_root")
                             and observed_daemon.get("endpoint_identity_matches") is True
                             and observed_daemon.get("process_identity_confirmed") is True
                             and observed_daemon.get("endpoint_reachable") is True
