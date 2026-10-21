@@ -413,6 +413,7 @@ class StudioState:
         )
         lines = [
             step_for_legacy_profile(profile).label,
+            f"  Kontrakt protokołu: {spec.label}",
             "",
             "CEL",
             f"  {spec.goal}",
