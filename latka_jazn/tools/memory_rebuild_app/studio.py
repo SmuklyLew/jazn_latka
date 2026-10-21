@@ -68,7 +68,7 @@ DESIGN_ITEMS: tuple[PageItem, ...] = (
     ),
     PageItem("plan", "Plan bez zapisu", "Preflight i dokładny plan bez uruchamiania odbudowy."),
     PageItem("rebuild", "Wykonaj odbudowę", "Jawnie potwierdzony zapis zgodnie z aktualnym planem."),
-    PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi Testami 01–04."),
+    PageItem("compare", "Porównanie z baseline", "Porównanie celu z zachowanymi wynikami kroków 01–04."),
     PageItem("export", "Finalny eksport", "Staging, pełna walidacja i atomowa publikacja."),
     PageItem("recall", "Recall / benchmark", "FTS5 baseline i mierzalny benchmark przed eksperymentami A/B."),
 )
@@ -455,7 +455,7 @@ class StudioState:
         lines.extend(f"  • {value}" for value in spec.outputs)
         lines.extend(("", "GRANICA PRAWDY"))
         lines.extend(f"  • {value}" for value in spec.truth_boundary)
-        lines.extend(("", "R/Enter uruchamia protokół lub jego aktualny validator."))
+        lines.extend(("", "R/Enter uruchamia krok wraz z niezależną walidacją wyniku."))
         return lines
 
     def _design_detail(self, key: str) -> list[str]:
@@ -487,7 +487,7 @@ class StudioState:
             return [
                 "Recall / benchmark",
                 "",
-                "R0  Source Fidelity (Test00)",
+                "R0  Wierność źródeł (Krok 00)",
                 "R1  Prywatny, wersjonowany benchmark Recall",
                 "R2  FTS5/BM25 baseline — AKTYWNY ETAP",
                 "R3  Query rewrite A/B — NIEIMPLEMENTOWANE",
