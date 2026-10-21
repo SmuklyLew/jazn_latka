@@ -1,3 +1,4 @@
+# v116.0.34.30 separates operator rebuild steps from source-file verification and hardens shareable reports.
 # v116.0.34.29 adds independently validated conversation readiness to live daemon diagnostics.
 # v116.0.34.28 preserves verified daemon-result transport evidence and exact live-daemon diagnostic fields.
 # v116.0.34.27 requires dedicated staging OAuth issuer, audience, KV and GitHub app before public MCP activation.
@@ -94,8 +95,8 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.29"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.29"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.30"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.30"
 PACKAGE_RELEASE_NAME = "isolated-mcp-oauth-staging"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
