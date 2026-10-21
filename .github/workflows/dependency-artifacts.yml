@@ -14,6 +14,11 @@ on:
         type: string
   workflow_dispatch:
     inputs:
+      regenerate-lock:
+        description: Resolve a fresh native lock with Dependency Studio instead of replaying the committed lock
+        required: false
+        default: false
+        type: boolean
       runner:
         description: Native GitHub runner label
         required: true
@@ -71,7 +76,7 @@ jobs:
           py_digits="${{ inputs.python-version }}"
           py_digits="${py_digits//./}"
           lock="latka_jazn/resources/dependencies/locks/core+archive+pdf/${{ inputs.target }}-py${py_digits}.txt"
-          if [ -f "$lock" ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.regenerate-lock }}" != "true" ] && [ -f "$lock" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
             echo "path=$lock" >> "$GITHUB_OUTPUT"
             echo "Using canonical release lock: $lock"
