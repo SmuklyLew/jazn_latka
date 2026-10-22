@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-22T02:56:39+00:00",
-  "updated_at_utc": "2026-10-22T02:56:39+00:00",
+  "generated_at_utc": "2026-10-22T02:59:31+00:00",
+  "updated_at_utc": "2026-10-22T02:59:31+00:00",
   "start_file": "run.py",
-  "file_count": 3257,
-  "static_file_count": 3257,
+  "file_count": 3261,
+  "static_file_count": 3261,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -173,8 +173,8 @@
     },
     {
       "path": ".github/workflows/jazn-github-oauth-staging.yml",
-      "size_bytes": 1677,
-      "sha256": "903915387e29f233e9cf3070455cebec821031dd06bacd3a2674ead940bef967",
+      "size_bytes": 1936,
+      "sha256": "1a9401076f8693cdfc834c911f94779d57e688849dae7db98efadea21ee71088",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "17a9b6e0fcb84ba20b90889cc48f7b7a6457d9809720b52e0f6fa74370ad5df2",
+      "size_bytes": 2932,
+      "sha256": "96b052fb043e893920e76393abbb321111fa4cf31140fe6e0a3dfa70536e5860",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -568,6 +568,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "deploy/chatgpt_mcp/workers_vpc_gateway/staging-config.test.mjs",
+      "size_bytes": 1045,
+      "sha256": "721539ba0e77f3a11c6cb201a31116e6cb7938a4a99d160dbb8ea58089aabb69",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.mjs",
+      "size_bytes": 3287,
+      "sha256": "c03c1f1d8cea45634e9662f5cb8754167d726860ea431aa607f39b3d62e18a5b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.test.mjs",
+      "size_bytes": 1788,
+      "sha256": "3f30fbbedb8a4ea19189b15aaa6d8f89939cd975550fe30aa16bcacc43a88446",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "deploy/chatgpt_mcp/workers_vpc_gateway/worker.mjs",
       "size_bytes": 4661,
       "sha256": "ae82bd0c60df6136cb64e51d8ea43a9eb98339e8feec6946747038741dd46f6a",
@@ -589,6 +616,15 @@
       "path": "deploy/chatgpt_mcp/workers_vpc_gateway/wrangler.example.jsonc",
       "size_bytes": 418,
       "sha256": "de1dd490697266f929ecbe288aff08574f67184e4d32434772944f2c093df427",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_vpc_gateway/wrangler.staging.example.jsonc",
+      "size_bytes": 513,
+      "sha256": "e198f49c73e06bb1c63712438136d0a9efa151541afcb03c849b3946433434c7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
