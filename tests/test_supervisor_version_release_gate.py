@@ -76,7 +76,9 @@ def test_supervisor_never_reuses_healthy_old_or_unverified_daemon(
     assert isinstance(evidence, dict)
     assert evidence["version_gate"]["ok"] is False
     assert evidence["version_gate"]["expected_runtime_version"] == PACKAGE_VERSION_FULL
-    assert blocked["last_start"]["error_code"] == expected_state
+    last_start = blocked["last_start"]
+    assert isinstance(last_start, dict)
+    assert last_start["error_code"] == expected_state
 
 
 def test_supervisor_can_reuse_same_version_only_after_full_verification(
