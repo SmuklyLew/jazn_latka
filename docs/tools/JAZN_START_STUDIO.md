@@ -1,3 +1,60 @@
+# Studio Startu 0.3 — pulpit operatorski
+
+Wersja 0.3 dodaje osobny moduł GUI: tools/jazn_start_studio_dashboard.py.
+Pulpit wyświetla niezależne stany Jaźni, Ollamy, MEMORY i MCP. Stan zadania
+nie jest stanem samej usługi i nie potwierdza finalizacji tury w ChatGPT.
+
+## Uruchomienie
+
+    python -X utf8 tools/jazn_start_studio.py --check
+    python -X utf8 tools/jazn_start_studio.py --text
+    python -X utf8 tools/jazn_start_studio.py --studio
+
+Linux: python3 zamiast python. GUI wymaga graficznego Tcl/Tk; CLI i check nie importują Tk.
+Pulpit odczytuje lokalny status Jaźni i API Ollamy w osobnym wątku automatycznie
+co około 30 sekund (lub po kliknięciu Odśwież). Nie uruchamia usług w tle.
+
+## Prawdomówność statusów
+
+- Jaźń: dopiero zbieżność active_state=active_trusted, endpoint_identity_matches,
+  endpoint_heartbeat_fresh oraz endpoint_reachable daje status zweryfikowanego
+  żywego daemona. Otwarty port 8787 nie wystarcza. Rozbieżność wersji procesu
+  i kodu na dysku jest pokazywana jawnie; nigdy nie wykonujemy automatycznego restartu.
+- Ollama: HTTP 200 i poprawna lista modeli /api/tags dowodzi działania API,
+  nie zdolności Jaźni do wygenerowania odpowiedzi.
+- MEMORY: brak jawnego full_autobiographical_recall_ready lub continuity_ready
+  oznacza stan niezweryfikowany lub częściowo gotowy.
+- MCP: lokalna gotowość transportu nie jest zaakceptowaną turą ChatGPT.
+
+Przy zajętych portach 8787/11434 Studio pomija start drugiej kopii i zgłasza
+informację, a nie czerwony błąd. W zakładce Zadania i logi każda komenda ma
+osobne okno, logi i świadomą akcję start / stop. Eksport logu jest ręczny.
+
+## Ważna uwaga dotycząca MCP 2026-07-28
+
+Zadanie mcp_probe rozpoczyna od stateless server/discover (2026-07-28).
+Dla starszego serwera, który nie obsługuje tej metody, stosuje bezpieczny
+fallback do legacy initialize (2025-06-18), a następnie pobiera narzędzia
+za pomocą tools/list, z ograniczeniem liczby stron. Nie wywołuje tools/call.
+Test lokalny nie potwierdza zewnętrznego OAuth ani finalizacji w ChatGPT.
+
+## Testy
+
+    python -X utf8 -m py_compile tools/jazn_start_studio.py tools/jazn_start_studio_dashboard.py
+    python -X utf8 -m pytest -q tests/test_jazn_start_studio.py tests/test_jazn_start_studio_dashboard.py
+    python -X utf8 tools/jazn_start_studio.py --check
+
+Sprawdź też manualnie --studio na Windows i Linux z dostępnym wyświetlaczem.
+Na Linux headless uruchamiaj --check albo --text.
+
+Oficjalne materiały:
+- https://docs.python.org/3/library/tkinter.html
+- https://docs.python.org/3/library/subprocess.html
+- https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio
+- https://docs.ollama.com/api/tags
+
+---
+
 # Jaźń — Studio Startu 0.2 (Windows i Linux)
 
 Entry point: tools/jazn_start_studio.py. To osobny operator procesu, a nie alternatywny runtime Jaźni. Polecenia SYSTEM przechodzą wyłącznie przez run.py → main.py.

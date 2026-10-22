@@ -24,7 +24,18 @@ from typing import Callable
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-STUDIO_VERSION = "0.2.0"
+STUDIO_VERSION = "0.3.0"
+
+def mcp_request_meta() -> dict:
+    """Required 2026-07-28 per-request metadata; no client credentials."""
+    return {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {},
+        "io.modelcontextprotocol/clientInfo": {
+            "name": "jazn-start-studio-probe", "version": STUDIO_VERSION,
+        },
+    }
+
 OLLAMA_URL = "http://127.0.0.1:11434"
 DAEMON_PORT = 8787
 MAX_LOG_LINES = 2500
@@ -65,7 +76,8 @@ TASK_INDEX = {task.key: task for task in TASKS}
 
 REDACTIONS = (
     re.compile(r"(?i)(authorization\s*[:=]\s*bearer\s+)[^\s,;]+"),
-    re.compile(r'(?i)((?:api[_-]?key|password|secret|token)["\x27]?\s*[:=]\s*["\x27]?)[^\s,;"\x27]+'),
+    # Full key match: do not corrupt JSON booleans such as requires_api_key=false.
+    re.compile(r'(?i)(\b(?:api[_-]?key|password|secret|token|identity_token|access_token)\b["\x27]?\s*[:=]\s*["\x27]?)(?!true\b|false\b|null\b)[^\s,;"\x27]{8,}'),
 )
 
 
@@ -163,17 +175,20 @@ class StudioCore:
         task = TASK_INDEX[key]
         with self.lock:
             state = self.states[key]
-            if state.status in ("uruchamianie", "działa", "zatrzymywanie"):
+            if state.status in ("uruchamianie", "działa", "zatrzymywanie") or (
+                state.proc is not None and state.proc.poll() is None
+            ) or state.status.startswith(("działa PID", "probe PID", "śledzenie")):
                 raise RuntimeError("To zadanie już działa")
             if not self.root.is_dir():
                 raise FileNotFoundError(f"Brak katalogu Jaźni: {self.root}")
             if task.operation == "jazn_start" and is_local_port_open(DAEMON_PORT):
-                raise RuntimeError(
-                    "Port 8787 już odpowiada. Nie uruchamiam kolejnego daemona. "
-                    "Uruchom diagnostykę jazn_status i zweryfikuj jego tożsamość."
-                )
+                self._set(key, "pominięto: port 8787 zajęty")
+                self.emit(key, "INFO", "Port daemona jest zajęty. Uruchom jazn_status, aby potwierdzić jego tożsamość; nie tworzę drugiej kopii.")
+                return
             if task.operation in ("ollama_serve", "ollama_app") and is_local_port_open(11434):
-                raise RuntimeError("Ollama już odpowiada na porcie 11434; nie uruchamiam kopii")
+                self._set(key, "pominięto: port 11434 zajęty")
+                self.emit(key, "INFO", "Ollama/inna usługa korzysta z portu 11434. Sprawdź ollama_api; nie uruchamiam drugiej kopii.")
+                return
             state.generation += 1
             gen = state.generation
             state.cancel = threading.Event()
@@ -316,7 +331,7 @@ class StudioCore:
             raise FileNotFoundError(path)
         cmd = [self.python, "-X", "utf8", str(path), "--root", str(self.root),
                "--daemon-url", "http://127.0.0.1:8787"]
-        self.emit(key, "INFO", "Test lokalny MCP stdio: initialize oraz tools/list; bez wywołania narzędzi")
+        self.emit(key, "INFO", "Test lokalny MCP stdio: server/discover (2026) lub initialize (legacy), tools/list. Bez tools/call.")
         proc = subprocess.Popen(
             cmd, cwd=str(self.root),
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -350,29 +365,71 @@ class StudioCore:
         self._set(key, f"probe PID={proc.pid}")
         stop = self.states[key].cancel
         try:
-            self._mcp_send(proc, {
-                "jsonrpc": "2.0", "id": 1, "method": "initialize",
-                "params": {"protocolVersion": "2025-06-18", "capabilities": {},
-                           "clientInfo": {"name": "jazn-start-studio-probe",
-                                          "version": STUDIO_VERSION}},
-            })
-            init = self._mcp_receive(inbox, 1, stop, timeout=35)
-            if "error" in init:
-                raise RuntimeError(f"MCP initialize error: {init['error']}")
-            server = init.get("result", {}).get("serverInfo", {})
-            self.emit(key, "MCP", f"initialize OK; serwer: {server.get('name', '<brak>')}")
-            self._mcp_send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
-            self._mcp_send(proc, {"jsonrpc": "2.0", "id": 2,
-                                  "method": "tools/list", "params": {}})
-            catalog = self._mcp_receive(inbox, 2, stop, timeout=20)
-            if "error" in catalog:
-                raise RuntimeError(f"MCP tools/list error: {catalog['error']}")
-            tools = catalog.get("result", {}).get("tools", [])
-            if not isinstance(tools, list):
-                raise RuntimeError("MCP tools/list malformed")
-            names = sorted(str(t.get("name", "")) for t in tools if isinstance(t, dict))
-            self.emit(key, "MCP", f"tools/list OK; liczba narzędzi: {len(names)}")
-            self.emit(key, "MCP", ", ".join(names[:80]))
+            # MCP 2026-07-28 uses per-request metadata, not initialize.
+            # A legacy server may reject or ignore server/discover.
+            meta = mcp_request_meta()
+            self._mcp_send(proc, {"jsonrpc": "2.0", "id": 10,
+                                  "method": "server/discover", "params": {"_meta": meta}})
+            modern = False
+            try:
+                discovered = self._mcp_receive(inbox, 10, stop, timeout=7)
+            except TimeoutError:
+                self.emit(key, "MCP", "Brak server/discover w terminie — próba legacy")
+            else:
+                result = discovered.get("result", {})
+                versions = result.get("supportedVersions", []) if isinstance(result, dict) else []
+                if isinstance(versions, list) and "2026-07-28" in versions:
+                    modern = True
+                    self.emit(key, "MCP", "server/discover OK • protokół 2026-07-28 (stateless)")
+                elif discovered.get("error", {}).get("code") == -32022:
+                    raise RuntimeError("Nowoczesny serwer MCP zgłosił nieobsługiwaną wersję protokołu")
+                else:
+                    self.emit(key, "MCP", "Brak modern discovery • przejście do legacy initialize")
+
+            if not modern:
+                self._mcp_send(proc, {
+                    "jsonrpc": "2.0", "id": 11, "method": "initialize",
+                    "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                               "clientInfo": {"name": "jazn-start-studio-probe",
+                                              "version": STUDIO_VERSION}},
+                })
+                init = self._mcp_receive(inbox, 11, stop, timeout=25)
+                if "error" in init:
+                    raise RuntimeError(f"MCP initialize error: {init['error']}")
+                result = init.get("result", {})
+                server = result.get("serverInfo", {}) if isinstance(result, dict) else {}
+                self.emit(key, "MCP", f"initialize OK • legacy • serwer: {server.get('name', '<brak>')}")
+                self._mcp_send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+            names: set[str] = set()
+            cursor: str | None = None
+            for index in range(8):
+                request_id = 100 + index
+                params: dict = {"_meta": meta} if modern else {}
+                if cursor:
+                    params["cursor"] = cursor
+                self._mcp_send(proc, {"jsonrpc": "2.0", "id": request_id,
+                                      "method": "tools/list", "params": params})
+                catalog = self._mcp_receive(inbox, request_id, stop, timeout=20)
+                if "error" in catalog:
+                    raise RuntimeError(f"MCP tools/list error: {catalog['error']}")
+                result = catalog.get("result", {})
+                if not isinstance(result, dict) or not isinstance(result.get("tools"), list):
+                    raise RuntimeError("MCP tools/list malformed")
+                for item in result["tools"]:
+                    if isinstance(item, dict) and isinstance(item.get("name"), str):
+                        names.add(item["name"])
+                next_cursor = result.get("nextCursor")
+                if not isinstance(next_cursor, str) or not next_cursor:
+                    break
+                if next_cursor == cursor:
+                    raise RuntimeError("MCP tools/list pagination did not advance")
+                cursor = next_cursor
+            else:
+                raise RuntimeError("MCP tools/list exceeded pagination limit")
+            self.emit(key, "MCP", f"tools/list OK • {len(names)} narzędzi • "
+                      + ("2026-07-28" if modern else "legacy 2025-06-18"))
+            self.emit(key, "MCP", ", ".join(sorted(names)[:80]))
             required = {"jazn_status", "jazn_generate_visible_reply",
                         "jazn_resume_visible_reply", "jazn_finalize_reply"}
             missing = sorted(required.difference(names))
@@ -380,14 +437,20 @@ class StudioCore:
                 self.emit(key, "MCP", f"Brak narzędzi: {missing}")
                 self._set(key, "lokalne MCP: niekompletne")
             else:
-                self._set(key, "lokalne MCP: katalog gotowy (bez testu hosta)")
+                self._set(key, "lokalne MCP: katalog gotowy (bez testu ChatGPT)")
         finally:
-            if proc.poll() is None:
-                proc.terminate()
+            # stdio's portable graceful shutdown: close stdin before termination.
+            if proc.stdin is not None and not proc.stdin.closed:
+                proc.stdin.close()
+            try:
+                proc.wait(timeout=4)
+            except subprocess.TimeoutExpired:
+                if proc.poll() is None:
+                    proc.terminate()
                 try:
-                    proc.wait(timeout=4)
+                    proc.wait(timeout=3)
                 except subprocess.TimeoutExpired:
-                    self.emit(key, "WARN", "Probe nie zakończył się; wymaga interwencji operatora")
+                    self.emit(key, "WARN", "Własny MCP probe nadal działa; wymagane ręczne zatrzymanie")
             reader.join(timeout=1)
             stderr_thread.join(timeout=1)
 
@@ -510,123 +573,12 @@ def run_text(core: StudioCore) -> int:
 
 
 def run_studio(core: StudioCore) -> int:
-    # Tk is imported only here: Linux headless/text mode needs no X server.
-    import tkinter as tk
-    from tkinter import messagebox, ttk, scrolledtext, filedialog
-
-    root = tk.Tk()
-    root.title("Jaźń — Studio Startu 0.2")
-    root.geometry("1080x640")
-    ttk.Label(root, text="JAŹŃ / STUDIO STARTU", font=("Segoe UI", 17, "bold"),
-              padding=14).pack(anchor="w")
-    ttk.Label(
-        root, text="Operator procesów. Port ≠ tożsamość; katalog MCP ≠ akceptacja tury.",
-        padding=(14, 0, 14, 12)
-    ).pack(anchor="w")
-    tree = ttk.Treeview(root, columns=("group", "title", "state"), show="headings")
-    for col, label, width in (("group", "Moduł", 120), ("title", "Zadanie", 560),
-                              ("state", "Stan", 285)):
-        tree.heading(col, text=label)
-        tree.column(col, width=width)
-    tree.pack(fill="both", expand=True, padx=12, pady=6)
-    for task in TASKS:
-        tree.insert("", "end", iid=task.key,
-                    values=(task.group, task.title, core.states[task.key].status))
-    panes: dict[str, tuple[tk.Toplevel, scrolledtext.ScrolledText]] = {}
-
-    def selected() -> str | None:
-        items = tree.selection()
-        return items[0] if items else None
-
-    def open_pane(key: str):
-        existing = panes.get(key)
-        if existing:
-            existing[0].deiconify()
-            existing[0].lift()
-            return
-        win = tk.Toplevel(root)
-        win.title("Log — " + TASK_INDEX[key].title)
-        win.geometry("930x560")
-        buttons = ttk.Frame(win, padding=8)
-        buttons.pack(fill="x")
-        ttk.Button(buttons, text="Uruchom", command=lambda: action_start(key)).pack(side="left")
-        ttk.Button(buttons, text="Zatrzymaj", command=lambda: action_stop(key)).pack(side="left")
-        def save():
-            path = filedialog.asksaveasfilename(parent=win, defaultextension=".txt")
-            if path:
-                Path(path).write_text("\n".join(core.logs[key]) + "\n", encoding="utf-8")
-        ttk.Button(buttons, text="Zapisz log", command=save).pack(side="left")
-        display = scrolledtext.ScrolledText(win, bg="#14171b", fg="#edf2f6",
-                                           font=("Consolas", 10), wrap="word")
-        display.pack(fill="both", expand=True, padx=8, pady=8)
-        for line in core.logs[key]:
-            display.insert("end", line + "\n")
-        display.see("end")
-        panes[key] = (win, display)
-        win.protocol("WM_DELETE_WINDOW", win.withdraw)
-
-    def action_start(key: str | None = None):
-        key = key or selected()
-        if not key:
-            return
-        open_pane(key)
-        try:
-            core.start(key)
-        except (RuntimeError, OSError, KeyError) as exc:
-            messagebox.showerror("Nie uruchomiono", safe_line(str(exc)), parent=root)
-
-    def action_stop(key: str | None = None):
-        key = key or selected()
-        if not key:
-            return
-        if messagebox.askyesno("Zatrzymanie", f"Zatrzymać zadanie Studio: {key}?",
-                               parent=root):
-            core.stop(key)
-
-    def open_selected() -> None:
-        key = selected()
-        if key is not None:
-            open_pane(key)
-
-    tree.bind("<Double-1>", lambda _event: open_selected())
-    bar = ttk.Frame(root, padding=12)
-    bar.pack(fill="x")
-    ttk.Button(bar, text="Otwórz log", command=open_selected).pack(side="left", padx=3)
-    ttk.Button(bar, text="Uruchom", command=action_start).pack(side="left", padx=3)
-    ttk.Button(bar, text="Zatrzymaj", command=action_stop).pack(side="left", padx=3)
-    ttk.Label(root, text="MCP probe wysyła tylko initialize i tools/list; bez tools/call.",
-              padding=(12, 0, 12, 12)).pack(anchor="w")
-
-    def drain():
-        for _ in range(300):
-            try:
-                key, _, line = core.events.get_nowait()
-            except queue.Empty:
-                break
-            pane = panes.get(key)
-            if pane:
-                pane[1].insert("end", line + "\n")
-                pane[1].see("end")
-            tree.set(key, "state", core.states[key].status)
-        root.after(100, drain)
-
-    def close():
-        running = core.active()
-        if running:
-            messagebox.showwarning(
-                "Aktywne zadania",
-                "Najpierw zatrzymaj zadania uruchomione przez Studio:\n"
-                + ", ".join(running)
-                + "\nNie zatrzymano żadnego istniejącego daemona.",
-                parent=root
-            )
-        else:
-            root.destroy()
-
-    root.protocol("WM_DELETE_WINDOW", close)
-    root.after(100, drain)
-    root.mainloop()
-    return 0
+    # GUI lives in a separate module: terminal/headless operation imports no Tk.
+    try:
+        from tools.jazn_start_studio_dashboard import launch
+    except ModuleNotFoundError:
+        from jazn_start_studio_dashboard import launch
+    return launch(core)
 
 
 def main(argv: list[str] | None = None) -> int:
