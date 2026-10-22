@@ -12,6 +12,7 @@ import asyncio
 import base64
 from dataclasses import dataclass, field
 import json
+import time
 from typing import Any, Callable, Mapping
 from urllib import error, parse, request
 from urllib.parse import urlparse
@@ -128,20 +129,24 @@ class Rfc7662TokenVerifier:
         client_id = str(payload.get("client_id") or "").strip()
         if not client_id:
             return None
-        issuer = str(payload.get("iss") or "").strip()
-        if issuer and issuer.rstrip("/") != self.config.issuer_url.rstrip("/"):
+        issuer = payload.get("iss")
+        if not isinstance(issuer, str) or issuer.rstrip("/") != self.config.issuer_url.rstrip("/"):
             return None
         audience = _audiences(payload.get("aud") or payload.get("resource"))
         expected_resource = self.config.resource_server_url
         if expected_resource not in audience:
             return None
         scopes = _scope_list(payload.get("scope") or payload.get("scopes"))
-        expires_at: int | None = None
-        if payload.get("exp") is not None:
-            try:
-                expires_at = int(payload["exp"])
-            except (TypeError, ValueError):
-                return None
+        if "jazn:mcp:connect" not in scopes:
+            return None
+        # RFC 7662 permits optional expiry metadata, but Jaźń's public ingress
+        # requires a bounded lifetime; never mint an unexpiring AccessToken.
+        raw_exp = payload.get("exp")
+        if isinstance(raw_exp, bool) or not isinstance(raw_exp, int):
+            return None
+        expires_at = raw_exp
+        if expires_at <= time.time():
+            return None
         subject = str(payload.get("sub") or "").strip() or None
         claims: dict[str, Any] = {"iss": issuer} if issuer else {}
         return self._factory()(
