@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
   "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
   "package_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-  "generated_at_utc": "2026-10-22T12:06:10+00:00",
-  "updated_at_utc": "2026-10-22T12:06:10+00:00",
+  "generated_at_utc": "2026-10-22T12:14:14+00:00",
+  "updated_at_utc": "2026-10-22T12:14:14+00:00",
   "start_file": "run.py",
-  "file_count": 3278,
-  "static_file_count": 3278,
+  "file_count": 3280,
+  "static_file_count": 3280,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2962,
-      "sha256": "b5158c6bfb5a58ec3251596a81df54ec236daacecbce3c9ba9bb3f8a9b58941e",
+      "sha256": "1a5017eab5da44709b936bcd3944694f209dca51bf2bb39058eab1e5e08ea98f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3640,6 +3640,15 @@
       "path": "docs/runtime/LOCAL_ACCEPTANCE_CHATGPT_OLLAMA_34_13.md",
       "size_bytes": 3809,
       "sha256": "1f2115f6e505b22871eea7f4624f82734b4ab8ba0f9f3707be7ba59bb247932d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/LOCAL_MCP_TO_CLOUDFLARE_OAUTH_STAGING_42.md",
+      "size_bytes": 6240,
+      "sha256": "e2f0e063bbb882fbdad69483360d37fbc267f16702eff8af54a40dccb00e477f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18235,6 +18244,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_supervisor_version_release_gate__v16_3_25_5_116_0_34_42_pre_typefix.py",
+      "size_bytes": 5026,
+      "sha256": "09fe34b1566cca99cadad8f74966a254e8c6aae8f2057d736a78164a4656d17c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_v1601_memory_transport_generator_source_v16325533.py",
       "size_bytes": 11698,
       "sha256": "fda750cd018826654277cc5e28bd1956b0ebc7c07c28fdef335e0bdfb16b78ca",
@@ -28550,8 +28568,8 @@
     },
     {
       "path": "tests/test_supervisor_version_release_gate.py",
-      "size_bytes": 5026,
-      "sha256": "09fe34b1566cca99cadad8f74966a254e8c6aae8f2057d736a78164a4656d17c",
+      "size_bytes": 5094,
+      "sha256": "1919d0cf13845fea28841710850059c77ec850d0168c520a0998be625779cae5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29298,7 +29316,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2334290,
-      "sha256": "a4620cfd436b44a0fe4254fd709294dba04519cbf120b62ac8271cec2479044e",
+      "sha256": "3a59a68b207506df97aac85735f16cfdf8048a8e51b2d5dbacc8870cf21519cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
