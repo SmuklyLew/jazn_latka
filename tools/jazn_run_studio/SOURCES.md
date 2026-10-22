@@ -52,3 +52,9 @@ boundary: https://docs.python.org/3/library/http.client.html#http.client.HTTPExc
 Server serialization versus receiving-socket capture was compared in an isolated
 synthetic gateway. Do not infer the responsible filtering product from its mere
 presence, and never accept raw bodies after an HTTP framing failure.
+
+Frozen/redirected output encoding follows Python TextIOWrapper.reconfigure
+https://docs.python.org/3.14/library/io.html#io.TextIOWrapper.reconfigure and
+https://docs.python.org/3.14/using/cmdline.html#envvar-PYTHONIOENCODING.
+An inherited PYTHONIOENCODING overrides UTF-8 mode for child standard streams;
+Studio explicitly configures both its own streams and external process pipes.

@@ -302,3 +302,16 @@ from specialized GUI parity. Several rows remain partial and are required work.
 The repeat live test's first turn timed out while the full suite was also using
 the real model; no multi-turn recovery PASS is claimed from that run. Its durable
 request is retained. The two accepted .47 GUI turns remain valid earlier evidence.
+
+## Frozen redirected diagnostics (.51)
+
+The clean .50 full run completed: 2937 passed, 21 skipped, 1 failed in
+302.65s. The remaining real MCP HTTP smoke fails on malformed framing; the
+independent server/socket evidence above does not establish a passing route.
+Doctor and SYSTEM package-smoke both exited 0; package-smoke ok=true.
+
+The .50 console EXE status action exposed a Windows cp1250 UnicodeEncodeError
+when output was redirected. Two new regression cases reproduced the failure
+before the fix. .51 explicitly sets UTF-8 on available output streams and
+child-process pipes, retaining strict encoding. Native rebuild and the same
+redirected status action are required before accepting this correction.

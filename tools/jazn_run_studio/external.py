@@ -14,6 +14,7 @@ _SPAWN_LOCK = threading.RLock()
 def environment() -> dict[str, str]:
     env = dict(os.environ)
     env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     bundle = getattr(sys, "_MEIPASS", None)
     if not getattr(sys, "frozen", False) or not bundle:
         return env

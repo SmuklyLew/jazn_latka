@@ -11,6 +11,11 @@ from .core import ACTION_BY_KEY, Controller, discovery, load_settings
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Frozen console builds do not necessarily honor Python's UTF-8 startup mode.
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="strict")
     parser = argparse.ArgumentParser(description="Studio Jaźni Starter", allow_abbrev=False)
     default_root = Path.cwd() if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[2]
     parser.add_argument("--root", type=Path, default=Path(os.environ.get("JAZN_ROOT", default_root)))
