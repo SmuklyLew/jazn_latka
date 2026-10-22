@@ -1038,8 +1038,19 @@ class MemoryNormalizationSidecar:
             status = "normalization_coverage_unverified"
         elif int(last_run.get("normalized_item_count") or 0) < int(last_run.get("expected_item_count") or 0):
             status = "normalization_partial"
-        elif str(last_run.get("schema_version")) != SCHEMA_VERSION or str(last_run.get("runtime_version")) != self.runtime_version:
+        elif str(last_run.get("schema_version")) != SCHEMA_VERSION:
             status = "normalization_stale"
+        elif str(last_run.get("runtime_version")) != self.runtime_version and not deep_verify:
+            # Package identity is NOT normalization identity. A bounded startup
+            # cannot certify content after a version change: require deep check.
+            status = "normalization_unverified"
+            freshness = {
+                "reason": "runtime_version_changed_deep_verification_required",
+                "unknown_change_reason": True,
+                "invalidates_wake_state": True,
+                "stored_runtime_version": str(last_run.get("runtime_version")),
+                "current_runtime_version": self.runtime_version,
+            }
         else:
             freshness = self._evaluate_freshness(last_run, deep_verify=deep_verify)
             if freshness.get("reason") in {"fingerprint_contract_missing", "fingerprint_contract_changed"}:
@@ -1318,8 +1329,17 @@ class MemoryNormalizationSidecar:
                         # Empty snapshots are valid when the source and sidecar pass
                         # integrity checks.  They explicitly describe an empty memory
                         # state instead of pretending that memory content exists.
-                        elif str(run["schema_version"]) != SCHEMA_VERSION or str(run["runtime_version"]) != self.runtime_version:
+                        elif str(run["schema_version"]) != SCHEMA_VERSION:
                             status = "normalization_stale"
+                        elif str(run["runtime_version"]) != self.runtime_version and not deep_verify:
+                            status = "normalization_unverified"
+                            freshness = {
+                                "reason": "runtime_version_changed_deep_verification_required",
+                                "unknown_change_reason": True,
+                                "invalidates_wake_state": True,
+                                "stored_runtime_version": str(run["runtime_version"]),
+                                "current_runtime_version": self.runtime_version,
+                            }
                         elif str(Path(run["source_db_path"]).resolve()) != str(self.source_db_path.resolve()):
                             status = "source_changed"
                             freshness = {
