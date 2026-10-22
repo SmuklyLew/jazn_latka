@@ -37,6 +37,9 @@ jobs:
       - name: Run OAuth helper tests
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npm run check
+      - name: Reject unsafe staging template before bundle build
+        working-directory: deploy/chatgpt_mcp/workers_github_oauth
+        run: npm run preflight:template
       - name: Compile and check Worker bundle without deploying
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npx --no-install wrangler deploy --dry-run --outdir build-preview
