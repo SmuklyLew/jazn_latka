@@ -73,12 +73,17 @@ def test_real_runpy_mcp_http_listener_and_catalog_are_responsive(tmp_path: Path)
         "--loopback-dev", "--host", "127.0.0.1",
         "--port", str(port), "--daemon-url", "http://127.0.0.1:1",
     ]
-    kwargs: dict[str, object] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if sys.platform == "win32" else {"start_new_session": True}
     with log_path.open("w", encoding="utf-8") as log:
-        proc = subprocess.Popen(
-            cmd, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT,
-            text=True, **kwargs,
-        )
+        if sys.platform == "win32":
+            proc = subprocess.Popen(
+                cmd, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT,
+                text=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+            )
+        else:
+            proc = subprocess.Popen(
+                cmd, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT,
+                text=True, start_new_session=True,
+            )
         try:
             deadline = time.monotonic() + 25
             health: tuple[int, dict[str, object]] | None = None
