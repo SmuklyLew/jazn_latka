@@ -25,8 +25,8 @@ test('production OAuth KV namespace can never be reused for staging', () => {
   assert.ok(errors(wrong).includes('production_kv_reused'));
 });
 test('production Worker name and resources cannot become staging', () => {
-  for (const property of ['name', 'main', 'workers_dev', 'preview_urls']) {
-    const wrong = candidate(); wrong[property] = production[property];
+  for (const [property, value] of Object.entries({name: production.name, main: 'src/production.mjs', workers_dev: false, preview_urls: true})) {
+    const wrong = candidate(); wrong[property] = value;
     assert.equal(auditStaging(production, wrong).ok, false, property);
   }
   for (const variable of ['JAZN_AUTH_ENVIRONMENT', 'JAZN_OAUTH_ISSUER_URL', 'JAZN_OAUTH_RESOURCE_URL']) {
