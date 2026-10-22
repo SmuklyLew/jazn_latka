@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
-  "runtime_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
-  "package_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
-  "generated_at_utc": "2026-10-22T08:16:07+00:00",
-  "updated_at_utc": "2026-10-22T08:16:07+00:00",
+  "version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+  "runtime_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+  "package_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+  "generated_at_utc": "2026-10-22T09:24:57+00:00",
+  "updated_at_utc": "2026-10-22T09:24:57+00:00",
   "start_file": "run.py",
   "file_count": 3266,
   "static_file_count": 3266,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2960,
-      "sha256": "ae21bc349cd7122e0c4dbc50aa21ee0f6ec3af978a4be833a2c09bdcb5b3961c",
+      "size_bytes": 2925,
+      "sha256": "98c613deba9bd7472fb36c8658b4c85b513bc0676d84d23c0a3d4b25b15f349e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7715,8 +7715,8 @@
     },
     {
       "path": "latka_jazn/memory/normalization_sidecar.py",
-      "size_bytes": 117250,
-      "sha256": "a44db8df6d0797c12b335609747c81b0b493c43dc7526d73df2f396974aec39f",
+      "size_bytes": 118424,
+      "sha256": "b56d8c5a85fa6c62cb597ffa86cd9d3d82f5f3a2e9d17d678a2ac007d6b67fd5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10739,8 +10739,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14050,
-      "sha256": "3c34c3e97ac451eb9251f22df9fdcea002185719be1a1396fb5ccc24c87961d7",
+      "size_bytes": 14146,
+      "sha256": "222cb6018c81d1588c963bbe5dcec16c17186cee35dd07b5b508f72492196bde",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29198,8 +29198,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2321749,
-      "sha256": "067b715ff71c0c9a1a08223dfd7e5e668e5a44dde3a524173b00a803da34b7c4",
+      "size_bytes": 2321746,
+      "sha256": "366153ba33e58848b7acab6f0ca3d53bf55197272e90cce26d4c3cc0205ac55d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29846,11 +29846,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
+  "release_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
-    "package_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening",
-    "release_version": "16.3.25.5.116.0.34.39002-mcp-oauth-staging-hardening"
+    "runtime_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+    "package_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+    "release_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence"
   },
   "legacy_aliases": {
     "version": "release_version"
