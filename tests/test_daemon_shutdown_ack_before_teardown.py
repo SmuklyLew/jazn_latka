@@ -66,7 +66,6 @@ def test_authenticated_shutdown_is_scheduled_before_ack(
 def test_unauthenticated_shutdown_never_starts_teardown(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    request_count = 0
     instance = SimpleNamespace(shutdown_requested=threading.Event())
     handler = object.__new__(runtime_daemon.JaznDaemonHandler)
     monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_loopback_only", lambda _: True)
