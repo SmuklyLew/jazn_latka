@@ -186,7 +186,12 @@ class CapabilityStatusHandler:
                 f"provider={provider}, adapter={adapter_id}, model={model}, endpoint={endpoint}, "
                 f"configured={configured}, endpoint_reachable={endpoint_reachable}, probe_state={probe_state}, "
                 f"last_probe_error={last_probe_error}. "
-                "To są fakty ze statusu aktywnego adaptera tej tury; model jest kanałem językowym, nie tożsamością ani pamięcią Jaźni."
+                "To jest diagnostyka konfiguracji i adaptera tej komendy, NIE dowód, "
+                "że ta widoczna odpowiedź została wygenerowana przez podany model. "
+                "Rzeczywiste pochodzenie kandydata wymaga adapter_response.turn_evidence "
+                "powiązanego z turn_id/trace_id; ostateczny tekst wymaga dodatkowo "
+                "dowodu wybrania kandydata i zaakceptowanej finalizacji. "
+                "probe_state=not_probed nie potwierdza generacji."
             )
             satisfied = ["provider", "model", "adapter_status", "endpoint", "truth_boundary"]
             route = "model_adapter_status"

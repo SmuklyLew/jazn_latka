@@ -364,6 +364,12 @@ class LocalLlmAdapter:
                 {
                     "status": "completed",
                     "actual_model": str(data.get("model") or self.model),
+                    # Do not claim a configured fallback was observed in /api/chat.
+                    "actual_model_source": (
+                        "provider_response"
+                        if isinstance(data.get("model"), str) and bool(data["model"].strip())
+                        else "configured_fallback"
+                    ),
                     "done": data.get("done"),
                     "done_reason": data.get("done_reason"),
                     "total_duration": data.get("total_duration"),

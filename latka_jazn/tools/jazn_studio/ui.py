@@ -16,6 +16,8 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from typing import Any, Callable
 
+from latka_jazn.tools.minimal_setup import inspect_minimal_setup
+
 from .core import (
     STUDIO_VERSION, StudioError, StudioSettings,
     apply_fast_forward, fetch_updates, load_settings, probe_http,
@@ -315,6 +317,13 @@ class JaznStudioWindow:
     def _tools(self) -> None:
         area = self.pages["tools"]
         self._head(area, "Narzędzia Jaźni", "Uruchamianie istniejących aplikacji. Studio nie kopiuje ich logiki ani pamięci.")
+        ttk.Button(
+            area, text="Sprawdź minimalną konfigurację (tylko odczyt)",
+            command=lambda: self._run(
+                "Minimalna konfiguracja", lambda: inspect_minimal_setup(self.root), self.minimal_setup_text,
+            ),
+        ).pack(anchor="w", pady=(0, 8))
+        self.minimal_setup_text = self._output(area, height=9)
         for target, caption, explanation in [
             ("configuration", "Studio Konfiguracji", "Walidowane profile Jaźni i edycja ustawień przyszłego startu"),
             ("tests", "Studio Testów", "Katalog kontraktów, pojedyncze testy i historia"),

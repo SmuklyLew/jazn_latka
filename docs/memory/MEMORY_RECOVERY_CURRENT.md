@@ -11,8 +11,11 @@ inspekcjonowana i nigdy nie jest naprawiana ani nadpisywana w miejscu.
 
 1. **L0 — źródła**: archiwum rozmów, `dziennik.json`, `memory/layered/*.jsonl`.
 2. **Recovery SQLite**: `memory/sqlite/recovery_current/runtime_memory_recovered.sqlite3`.
-3. **Sidecar normalizacji**: kanonicznie `memory/sqlite/runtime_write_v1/runtime_audit.sqlite3`;
-   osobny plik jest używany wyłącznie przy jawnym `JAZN_MEMORY_NORMALIZATION_SIDECAR_DB`.
+3. **Sidecar normalizacji**: bieżący domyślny `JaznConfig` wskazuje
+   `memory/sqlite/runtime_write_v1/normalization_sidecar.sqlite3`; jest to
+   osobna baza, a historyczny `runtime_audit.sqlite3` może być jedynie
+   źródłem jawnej migracji lub odczytu kompatybilności. Nie przenoś tych plików
+   ręcznie. Override: `JAZN_MEMORY_NORMALIZATION_SIDECAR_DB`.
 4. **Wake state**: jeden aktywny snapshot ze sprawdzonym SHA i integralnością.
 5. **L1**: ograniczony pakiet wake state tylko na czas sesji.
 6. **L2**: wybrane rekordy źródłowe, TTL i status `pending_review`.
@@ -135,48 +138,22 @@ kompletności wszystkich dawnych rozmów, trafności recallu ani autoryzacji L3.
 
 ### Kanoniczna ścieżka sidecara
 
-`JaznConfig.normalization_sidecar_db_path` jest jednym źródłem ścieżki używanym
-przez normalizację, wake-state, startup status, recovery i `memory-validate`.
-Domyślnie wskazuje aktywną bazę audytową
-`memory/sqlite/runtime_write_v1/runtime_audit.sqlite3`. Dzięki temu jedna baza
-może mieć połączone role `runtime_audit+normalization_sidecar`, a pełny walidator
-nie wymaga nieużywanego pliku `runtime_write_v2/memory_normalization_sidecar.sqlite3`.
+Bieżący kod `latka_jazn/config.py` (_default_normalization_sidecar_db_name)
+wyznacza domyślny sidecar jako
+`memory/sqlite/runtime_write_v1/normalization_sidecar.sqlite3`, nie
+`runtime_audit.sqlite3`. Historyczny opis wspólnej roli audytu i sidecara
+nie jest aktualną domyślną konfiguracją. `JAZN_MEMORY_NORMALIZATION_SIDECAR_DB`
+ma pierwszeństwo jako jawna ścieżka operatora.
 
-Jawny override pozostaje dostępny:
+Różne pliki SQLite nie dowodzą migracji ani uszkodzenia. Odczytaj aktualną
+ścieżkę z `run.py doctor --json` i `memory-validate --json`, sprawdź
+integralność i role baz bez zapisu. Nie zmieniaj nazwy, nie kopiuj samego
+pliku aktywnej bazy i nie dołączaj starego audytu w ciemno.
 
-```powershell
-$env:JAZN_MEMORY_NORMALIZATION_SIDECAR_DB = "memory/sqlite/custom/memory_normalization_sidecar.sqlite3"
-```
+Od v16.3.25.5.116.0.34.41 status normalizacji rozdziela zmianę wersji
+runtime od kontraktu fingerprintu: przy innej wersji `status()` bez pełnej
+weryfikacji zwraca `normalization_unverified`, a `deep_verify=True`
+porównuje logikę źródeł. Stare snapshoty bez zapisanych fingerprintów
+pozostają niezweryfikowane i nie stają się automatycznie `ready`.
+Weryfikacja wake-state i completeness pozostają niezależnymi warunkami.
 
-Zmiany fizycznego układu plików WAL/SHM bez zmiany logicznego fingerprintu
-pamięci nie unieważniają wake-state. Pliki `-wal` i `-shm` są jednak częścią
-aktywnego stanu SQLite i nie wolno ich oddzielać od głównej bazy podczas kopiowania.
-
-## Ollama
-
-Ollama jest opcjonalnym lokalnym kanałem językowym. Nie jest tożsamością ani
-pamięcią Jaźni i nie jest wymagane do działania daemona, statusu, doctor,
-recallu lub narzędzi.
-
-Po instalacji Ollamy ustaw model i adapter, przykładowo:
-
-```powershell
-$env:JAZN_MODEL_ADAPTER = "ollama"
-$env:JAZN_LOCAL_LLM_MODEL = "<nazwa-modelu-z-ollama-list>"
-$env:JAZN_LOCAL_LLM_BASE_URL = "http://127.0.0.1:11434"
-py -X utf8 run.py model-status --root . --probe --json
-```
-
-Probe używa wyłącznie `GET /api/tags`. Nie wysyła rozmów ani danych pamięci.
-Dopiero właściwa tura używa `POST /api/chat` i przekazuje zweryfikowany kontekst.
-
-## Granica prawdy
-
-- Recovery nie dowodzi kompletności wszystkich dawnych wspomnień.
-- Snapshot wake state jest pakietem ciągłości operacyjnej, nie dowodem
-  biologicznej ani fenomenalnej świadomości.
-- Rekord L2 nie jest rekordem L3.
-- Wysoka waga, liczba powtórzeń ani dawny fan-out nie powodują automatycznej
-  promocji L3.
-- Pliki `memory/`, `workspace_runtime/`, SQLite i manifesty zatwierdzeń nie są
-  częścią commita kodu.

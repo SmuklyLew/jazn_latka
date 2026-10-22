@@ -105,6 +105,7 @@ def evaluate_memory_continuity_readiness(
         "normalization_coverage_unverified",
         "source_changed",
         "normalization_stale",
+        "normalization_unverified",
         "snapshot_coverage_unverified",
     }
     invalid_states = {
