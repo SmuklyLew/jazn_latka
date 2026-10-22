@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
-  "runtime_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
-  "package_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
-  "generated_at_utc": "2026-10-22T15:05:47+00:00",
-  "updated_at_utc": "2026-10-22T15:05:47+00:00",
+  "version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
+  "runtime_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
+  "package_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
+  "generated_at_utc": "2026-10-22T22:15:09+00:00",
+  "updated_at_utc": "2026-10-22T22:15:09+00:00",
   "start_file": "run.py",
-  "file_count": 3302,
-  "static_file_count": 3302,
+  "file_count": 3305,
+  "static_file_count": 3305,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 2989,
-      "sha256": "c699ead1775f29c67e2d56a1dc85e021d649caaa65f44f485b92ab1e6098d417",
+      "size_bytes": 3087,
+      "sha256": "0fd34d38d8ef153e43dc4d3260901ba2394a64193b671d8f1df2b007713b92bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "890d3089b9734c82c6c361ca53e11dd77ed2824b69db238c5ba069e59d2ec56b",
+      "size_bytes": 2920,
+      "sha256": "a4f99aecdab9bd508b72819af40aae50eae6950dc10b79ddde4465a6ed685f71",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1947,
-      "sha256": "5f30030ccfa9635551f86943e7d640e4d3a76fd4bb6022c7370c3d209ad2a639",
+      "size_bytes": 1938,
+      "sha256": "8f48188a477b3b7d7caae96b02973e670cb1e13dfd1d6abd6ff6b6240f3c74bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9318,7 +9318,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "7803bdfb71f393db26b845e39b117582a437ae7ddc78be9501339e6e201e634c",
+      "sha256": "ae4f176c629bd18edf014bc1a8d0f7f7d74983eee25216535c9abfbf26501679",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10811,8 +10811,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14153,
-      "sha256": "ab2244bd34c3a9e72ba780e7734119d820d523ea233075fd9ea7dcd528815322",
+      "size_bytes": 14144,
+      "sha256": "c4aab016a4df11b08876bc5d8f9da5e1d72f4125cdb539837e8df308364f0189",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22519,6 +22519,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint/test_chatgpt_ingress_capability.py",
+      "size_bytes": 7034,
+      "sha256": "6e93ddcf542e9ac43a7a569e7be280aa79dd07975a231e61076e7735e13e4f3c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.5-before-v1160347-release-identity/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2604,
       "sha256": "179e93af4180c7655b40e7fba0a776745afefbd0f88b6736807681d3f8360d54",
@@ -25094,8 +25103,8 @@
     },
     {
       "path": "tests/test_chatgpt_ingress_capability.py",
-      "size_bytes": 7034,
-      "sha256": "6e93ddcf542e9ac43a7a569e7be280aa79dd07975a231e61076e7735e13e4f3c",
+      "size_bytes": 7094,
+      "sha256": "61145b9d18c80260a9bc71d4248210bfdf0ac37cdc22f2dfc5515c701212cada",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26446,6 +26455,15 @@
       "path": "tests/test_jazn_run_studio.py",
       "size_bytes": 9076,
       "sha256": "463b4104ee820f3370467bde982b0e2be68ce22abc32661749bd37ff8dc90ad3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jazn_run_studio_chat_contract.py",
+      "size_bytes": 3868,
+      "sha256": "51c4a0fcffb86eaadcd2ee4639c7e6f79c00d6de5741b35bfaf97c3442823cb7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29234,8 +29252,8 @@
     },
     {
       "path": "tools/jazn_run_studio/ACCEPTANCE.md",
-      "size_bytes": 12927,
-      "sha256": "13cd859804cdf89df5edd0f79d86c666ce0dcd8381f9afc8dee0199143f60fee",
+      "size_bytes": 14818,
+      "sha256": "af039d65d7573f9fa9621c3f479fb58f0762cec6be413a558070fc087e8d648a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29252,8 +29270,8 @@
     },
     {
       "path": "tools/jazn_run_studio/SOURCES.md",
-      "size_bytes": 3409,
-      "sha256": "817b82244d9485a4d07ccf5c9021a25fd1e510205da50c487a020b3631a29146",
+      "size_bytes": 4068,
+      "sha256": "8097e9cafe93a5a43b045c993d5ea62f8d3f72a0e43490108b2e7b68a2d591f5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29288,8 +29306,17 @@
     },
     {
       "path": "tools/jazn_run_studio/chat.py",
-      "size_bytes": 9160,
-      "sha256": "30d95ef73a99e4dfa1a94f967d92d48d574d27417042f737c4910036c4c734bc",
+      "size_bytes": 9232,
+      "sha256": "51e73212f3c5b7b08e7448f2c4d4c805fc2ec210fb3e3cf5aaa819534a1aef74",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/chat_protocol.py",
+      "size_bytes": 1263,
+      "sha256": "a6d45dacb66b8464c09f4255348d175642d1285332155ae794a39adddf1007bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29297,8 +29324,8 @@
     },
     {
       "path": "tools/jazn_run_studio/check_types.py",
-      "size_bytes": 609,
-      "sha256": "fb310db93d3fbdf199204587381224f654aeaad1c6d5f7e57f4e3637ea5040a1",
+      "size_bytes": 665,
+      "sha256": "6ae1c43a94159b6c5fff4d5ddcfdc35ec145e0f7a27582a3416c735f64d048c3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29360,8 +29387,8 @@
     },
     {
       "path": "tools/jazn_run_studio/validation_worker.py",
-      "size_bytes": 1606,
-      "sha256": "215ceceafd22f059eedabea929ef3b553b8e35e3d6b540f58f9603c02eac5018",
+      "size_bytes": 3059,
+      "sha256": "2b77143806de82fef3be30fec03b4fea0da03ca4717d71b4bfde8b4bddf3b8ef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29513,8 +29540,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2359925,
-      "sha256": "aa9c4d76aae5fc24f207f4d02895912ab28196cc07addde7ed43902d934ba719",
+      "size_bytes": 2363840,
+      "sha256": "eee7eaabe2f99f2682b7708a84373071391da42f1f4fab3bb1590808d0cceb08",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30171,11 +30198,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
+  "release_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
-    "package_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint",
-    "release_version": "16.3.25.5.116.0.34.46-run-studio-acceptance-checkpoint"
+    "runtime_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
+    "package_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding",
+    "release_version": "16.3.25.5.116.0.34.47-run-studio-chat-binding"
   },
   "legacy_aliases": {
     "version": "release_version"
