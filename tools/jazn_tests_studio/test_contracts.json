@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.51",
-  "active_definition_count": 2584,
+  "system_version": "16.3.25.5.116.0.34.52",
+  "active_definition_count": 2586,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15957,6 +15957,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 280
+    },
+    "tests/test_daemon_shutdown_ack_before_teardown.py::test_authenticated_shutdown_is_scheduled_before_ack": {
+      "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
+      "name": "test_authenticated_shutdown_is_scheduled_before_ack",
+      "purpose": "Authenticated shutdown is scheduled before ack",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [
+        "ConnectionAbortedError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_daemon_shutdown_ack_before_teardown.py::test_unauthenticated_shutdown_never_starts_teardown": {
+      "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
+      "name": "test_unauthenticated_shutdown_never_starts_teardown",
+      "purpose": "Unauthenticated shutdown never starts teardown",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
