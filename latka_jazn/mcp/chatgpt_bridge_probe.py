@@ -7,6 +7,7 @@ liveness, or accepted turns. Never submits a conversation message.
 """
 
 import json
+from http.client import HTTPException
 import os
 from typing import Any, Mapping
 import urllib.error
@@ -276,6 +277,8 @@ def probe_chatgpt_mcp_tool_catalog(
                     429: "mcp_catalog_rate_limited",
                 }.get(exc.code, "mcp_catalog_http_error")
             return _report(reason, observed=names, pages=page + 1)
+        except HTTPException:
+            return _report("mcp_catalog_invalid_http_framing", observed=names, pages=page + 1)
         except (OSError, TimeoutError, urllib.error.URLError):
             return _report("mcp_catalog_unreachable", observed=names, pages=page + 1)
         try:

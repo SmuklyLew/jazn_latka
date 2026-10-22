@@ -91,7 +91,7 @@ jobs:
       - name: Install exact type-audit dependencies
         shell: bash
         run: |
-          python -m pip install -e ".[memory-rebuild-ui,archive,mcp-http]" pytest
+          python -m pip install -e ".[memory-rebuild-ui,archive,mcp-http,run-studio]" pytest
           npm install --global pyright@1.1.411
           python -m pip check
       - name: Verify full active-tree Pyright with detailed errors
