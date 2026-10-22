@@ -151,15 +151,22 @@ class Window(QMainWindow):
             layout.addWidget(QLabel(title))
             row = QHBoxLayout()
             status = QLabel("Nie sprawdzono")
+            status.setWordWrap(True)
+            status.setAccessibleName("Stan usługi " + title)
             self.statuses[service] = status
-            row.addWidget(status, 1)
+            layout.addWidget(status)
             for operation, label in (("start", "Uruchom"), ("stop", "Zatrzymaj"), ("restart", "Restart")):
+                if operation == "restart":
+                    layout.addLayout(row)
+                    row = QHBoxLayout()
                 self.button(label, lambda s=service, op=operation: self.service(s, op), row)
             if service != "runtime":
                 self.button("Sprawdź połączenie", lambda s=service: self.core.probe(s), row)
             layout.addLayout(row)
         self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
-        layout.addWidget(QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie."))
+        remote_note = QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie.")
+        remote_note.setWordWrap(True)
+        layout.addWidget(remote_note)
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         layout.addWidget(self.processes)
@@ -228,14 +235,14 @@ class Window(QMainWindow):
         layout.addStretch()
 
     def _studios(self) -> None:
-        layout = self.page("Studia Jaźni", "Operacje pamięci, testów, paczek i zależności we wspólnym interfejsie. Formularze pochodzą z bieżących parserów narzędzi; wykonanie pozostaje w ich oryginalnym kodzie.")
+        layout = self.page("Studia Jaźni", "Wybierz Studio i operację, uzupełnij formularz, a następnie sprawdź i uruchom planowane działanie.")
         row = QHBoxLayout()
         self.studio_choice = QComboBox()
         for item in STUDIOS:
             if item.key in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
                 self.studio_choice.addItem(item.label, item.key)
         row.addWidget(self.studio_choice)
-        self.button("Wczytaj operacje", lambda: self.core.studio_helper("schema", str(self.studio_choice.currentData())), row)
+        self.button("Wczytaj operacje", self.load_studio_operations, row)
         layout.addLayout(row)
         self.operation = QComboBox()
         self.operation.currentIndexChanged.connect(self.render_operation)
@@ -245,7 +252,9 @@ class Window(QMainWindow):
         self.operation_widgets: dict[str, QWidget] = {}
         self.command_schema: list[dict] = []
         self.schema_key = ""
-        self.button("Wykonaj wybraną operację", self.execute_operation, layout)
+        self.execute_button = self.button("Wykonaj wybraną operację", self.execute_operation, layout)
+        self.execute_button.setEnabled(False)
+        self.studio_choice.currentIndexChanged.connect(self.reset_studio_operations)
         layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
         for item in STUDIOS:
             row = QHBoxLayout()
@@ -255,6 +264,17 @@ class Window(QMainWindow):
             row.addWidget(note, 2)
             layout.addLayout(row)
         layout.addStretch()
+
+    def reset_studio_operations(self, _index: int = -1) -> None:
+        self.schema_key = ""
+        self.command_schema = []
+        self.operation.clear()
+        self.execute_button.setEnabled(False)
+        self.render_operation()
+
+    def load_studio_operations(self) -> None:
+        self.reset_studio_operations()
+        self.core.studio_helper("schema", str(self.studio_choice.currentData()))
 
     def render_operation(self, _index: int = 0) -> None:
         while self.operation_form.rowCount():
@@ -427,6 +447,8 @@ class Window(QMainWindow):
                 self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
                 if key.startswith("helper:schema:"):
+                    if key.split(":", 2)[2] != self.studio_choice.currentData():
+                        continue
                     self.schema_key = key.split(":", 2)[2]
                     self.command_schema = value
                     self.operation.blockSignals(True)
@@ -434,6 +456,7 @@ class Window(QMainWindow):
                     self.operation.addItems([" / ".join(c["path"]) for c in value])
                     self.operation.blockSignals(False)
                     self.render_operation()
+                    self.execute_button.setEnabled(bool(value))
                 else:
                     self.profile_digest = value["digest"]
                     while self.profile_form.rowCount():

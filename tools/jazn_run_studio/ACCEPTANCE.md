@@ -280,3 +280,25 @@ profiling measured a full 3308-file export verification at 5.61 seconds. An
 experimental parallel verifier improved that to only 5.02 seconds; the experiment
 was removed and no integrity verification, caching or timeout policy changed.
 Cold export startup and interrupted-transport real GUI acceptance remain open.
+
+## Native GUI and selection safety (.50)
+
+Native Windows Qt captures (not the offscreen platform) were rendered at
+1240x840 and 860x580 in four themes; keyboard Home/Down navigation was exercised.
+Visual inspection found horizontal overflow on the service page at minimum
+width. .50 uses short control rows and wrapped service/remote-host descriptions;
+a regression requires no horizontal scrolling on that page at the supported
+minimum width. Selecting another studio also clears its old form and rejects a
+delayed schema from the previous selection, preventing unintended old operations.
+
+The active-memory E2E's synthetic subject also explicitly selected null while
+leaving automatic routing on. Its fixture now disables that route, preserving
+the complete real memory/lineage assertions. Its prior committed bytes are
+archived. Focused layout, memory E2E and existing Studio tests: 41 passed.
+
+The complete migration inventory is in STUDIO_MIGRATION.md. It includes the
+additional cursor import/restore tools and separates canonical command exposure
+from specialized GUI parity. Several rows remain partial and are required work.
+The repeat live test's first turn timed out while the full suite was also using
+the real model; no multi-turn recovery PASS is claimed from that run. Its durable
+request is retained. The two accepted .47 GUI turns remain valid earlier evidence.
