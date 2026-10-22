@@ -25,6 +25,17 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 STUDIO_VERSION = "0.3.0"
+
+def mcp_request_meta() -> dict:
+    """Required 2026-07-28 per-request metadata; no client credentials."""
+    return {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {},
+        "io.modelcontextprotocol/clientInfo": {
+            "name": "jazn-start-studio-probe", "version": STUDIO_VERSION,
+        },
+    }
+
 OLLAMA_URL = "http://127.0.0.1:11434"
 DAEMON_PORT = 8787
 MAX_LOG_LINES = 2500
@@ -320,7 +331,7 @@ class StudioCore:
             raise FileNotFoundError(path)
         cmd = [self.python, "-X", "utf8", str(path), "--root", str(self.root),
                "--daemon-url", "http://127.0.0.1:8787"]
-        self.emit(key, "INFO", "Test lokalny MCP stdio: initialize oraz tools/list; bez wywołania narzędzi")
+        self.emit(key, "INFO", "Test lokalny MCP stdio: server/discover (2026) lub initialize (legacy), tools/list. Bez tools/call.")
         proc = subprocess.Popen(
             cmd, cwd=str(self.root),
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -354,29 +365,71 @@ class StudioCore:
         self._set(key, f"probe PID={proc.pid}")
         stop = self.states[key].cancel
         try:
-            self._mcp_send(proc, {
-                "jsonrpc": "2.0", "id": 1, "method": "initialize",
-                "params": {"protocolVersion": "2025-06-18", "capabilities": {},
-                           "clientInfo": {"name": "jazn-start-studio-probe",
-                                          "version": STUDIO_VERSION}},
-            })
-            init = self._mcp_receive(inbox, 1, stop, timeout=35)
-            if "error" in init:
-                raise RuntimeError(f"MCP initialize error: {init['error']}")
-            server = init.get("result", {}).get("serverInfo", {})
-            self.emit(key, "MCP", f"initialize OK; serwer: {server.get('name', '<brak>')}")
-            self._mcp_send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
-            self._mcp_send(proc, {"jsonrpc": "2.0", "id": 2,
-                                  "method": "tools/list", "params": {}})
-            catalog = self._mcp_receive(inbox, 2, stop, timeout=20)
-            if "error" in catalog:
-                raise RuntimeError(f"MCP tools/list error: {catalog['error']}")
-            tools = catalog.get("result", {}).get("tools", [])
-            if not isinstance(tools, list):
-                raise RuntimeError("MCP tools/list malformed")
-            names = sorted(str(t.get("name", "")) for t in tools if isinstance(t, dict))
-            self.emit(key, "MCP", f"tools/list OK; liczba narzędzi: {len(names)}")
-            self.emit(key, "MCP", ", ".join(names[:80]))
+            # MCP 2026-07-28 uses per-request metadata, not initialize.
+            # A legacy server may reject or ignore server/discover.
+            meta = mcp_request_meta()
+            self._mcp_send(proc, {"jsonrpc": "2.0", "id": 10,
+                                  "method": "server/discover", "params": {"_meta": meta}})
+            modern = False
+            try:
+                discovered = self._mcp_receive(inbox, 10, stop, timeout=7)
+            except TimeoutError:
+                self.emit(key, "MCP", "Brak server/discover w terminie — próba legacy")
+            else:
+                result = discovered.get("result", {})
+                versions = result.get("supportedVersions", []) if isinstance(result, dict) else []
+                if isinstance(versions, list) and "2026-07-28" in versions:
+                    modern = True
+                    self.emit(key, "MCP", "server/discover OK • protokół 2026-07-28 (stateless)")
+                elif discovered.get("error", {}).get("code") == -32022:
+                    raise RuntimeError("Nowoczesny serwer MCP zgłosił nieobsługiwaną wersję protokołu")
+                else:
+                    self.emit(key, "MCP", "Brak modern discovery • przejście do legacy initialize")
+
+            if not modern:
+                self._mcp_send(proc, {
+                    "jsonrpc": "2.0", "id": 11, "method": "initialize",
+                    "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                               "clientInfo": {"name": "jazn-start-studio-probe",
+                                              "version": STUDIO_VERSION}},
+                })
+                init = self._mcp_receive(inbox, 11, stop, timeout=25)
+                if "error" in init:
+                    raise RuntimeError(f"MCP initialize error: {init['error']}")
+                result = init.get("result", {})
+                server = result.get("serverInfo", {}) if isinstance(result, dict) else {}
+                self.emit(key, "MCP", f"initialize OK • legacy • serwer: {server.get('name', '<brak>')}")
+                self._mcp_send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+            names: set[str] = set()
+            cursor: str | None = None
+            for index in range(8):
+                request_id = 100 + index
+                params: dict = {"_meta": meta} if modern else {}
+                if cursor:
+                    params["cursor"] = cursor
+                self._mcp_send(proc, {"jsonrpc": "2.0", "id": request_id,
+                                      "method": "tools/list", "params": params})
+                catalog = self._mcp_receive(inbox, request_id, stop, timeout=20)
+                if "error" in catalog:
+                    raise RuntimeError(f"MCP tools/list error: {catalog['error']}")
+                result = catalog.get("result", {})
+                if not isinstance(result, dict) or not isinstance(result.get("tools"), list):
+                    raise RuntimeError("MCP tools/list malformed")
+                for item in result["tools"]:
+                    if isinstance(item, dict) and isinstance(item.get("name"), str):
+                        names.add(item["name"])
+                next_cursor = result.get("nextCursor")
+                if not isinstance(next_cursor, str) or not next_cursor:
+                    break
+                if next_cursor == cursor:
+                    raise RuntimeError("MCP tools/list pagination did not advance")
+                cursor = next_cursor
+            else:
+                raise RuntimeError("MCP tools/list exceeded pagination limit")
+            self.emit(key, "MCP", f"tools/list OK • {len(names)} narzędzi • "
+                      + ("2026-07-28" if modern else "legacy 2025-06-18"))
+            self.emit(key, "MCP", ", ".join(sorted(names)[:80]))
             required = {"jazn_status", "jazn_generate_visible_reply",
                         "jazn_resume_visible_reply", "jazn_finalize_reply"}
             missing = sorted(required.difference(names))
@@ -384,14 +437,20 @@ class StudioCore:
                 self.emit(key, "MCP", f"Brak narzędzi: {missing}")
                 self._set(key, "lokalne MCP: niekompletne")
             else:
-                self._set(key, "lokalne MCP: katalog gotowy (bez testu hosta)")
+                self._set(key, "lokalne MCP: katalog gotowy (bez testu ChatGPT)")
         finally:
-            if proc.poll() is None:
-                proc.terminate()
+            # stdio's portable graceful shutdown: close stdin before termination.
+            if proc.stdin is not None and not proc.stdin.closed:
+                proc.stdin.close()
+            try:
+                proc.wait(timeout=4)
+            except subprocess.TimeoutExpired:
+                if proc.poll() is None:
+                    proc.terminate()
                 try:
-                    proc.wait(timeout=4)
+                    proc.wait(timeout=3)
                 except subprocess.TimeoutExpired:
-                    self.emit(key, "WARN", "Probe nie zakończył się; wymaga interwencji operatora")
+                    self.emit(key, "WARN", "Własny MCP probe nadal działa; wymagane ręczne zatrzymanie")
             reader.join(timeout=1)
             stderr_thread.join(timeout=1)
 
