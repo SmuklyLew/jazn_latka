@@ -3781,14 +3781,30 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             self._json_response(marker)
             return
         if path == "/shutdown":
-            payload = self._daemon_server().write_marker(status="shutdown_requested")
-            payload["ok"] = True
-            self._json_response(payload)
+            # The authenticated stop operation must never depend on writing a
+            # large marker or successfully delivering its acknowledgement.
+            # A slow Windows consumer may time out or disconnect during a
+            # response; scheduling shutdown only afterwards strands the daemon.
+            daemon_server = self._daemon_server()
+            daemon_server.shutdown_requested.set()
+
             def stop_later() -> None:
+                # Give the small ACK a chance to flush, but complete shutdown
+                # even if the client has already disconnected.
                 time.sleep(0.15)
-                self._daemon_server().shutdown_requested.set()
-                self._daemon_server().shutdown()
-            threading.Thread(target=stop_later, name="jazn-daemon-shutdown", daemon=True).start()
+                daemon_server.shutdown()
+
+            threading.Thread(
+                target=stop_later, name="jazn-daemon-shutdown", daemon=True
+            ).start()
+            self._json_response({
+                "schema_version": DAEMON_SCHEMA_VERSION,
+                "ok": True,
+                "shutdown_requested": True,
+                "daemon_instance_id": daemon_server.daemon_instance_id,
+                "daemon_pid": daemon_server.state.pid,
+                "active_root": str(daemon_server.config.root),
+            })
             return
         self._json_response({"ok": False, "error": "not_found", "path": path}, status=404)
 
