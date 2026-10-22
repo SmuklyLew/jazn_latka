@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.39",
-  "active_definition_count": 2515,
+  "system_version": "16.3.25.5.116.0.34.39002",
+  "active_definition_count": 2520,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25231,6 +25231,24 @@
       "description_source": "source_identity",
       "line": 15
     },
+    "tests/test_mcp_http_cli_process_smoke.py::test_real_runpy_mcp_http_listener_and_catalog_are_responsive": {
+      "path": "tests/test_mcp_http_cli_process_smoke.py",
+      "name": "test_real_runpy_mcp_http_listener_and_catalog_are_responsive",
+      "purpose": "Real runpy mcp http listener and catalog are responsive",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
     "tests/test_mcp_http_dependency_profile.py::test_mcp_http_profile_maps_public_ingress_dependencies_without_promoting_core": {
       "path": "tests/test_mcp_http_dependency_profile.py",
       "name": "test_mcp_http_profile_maps_public_ingress_dependencies_without_promoting_core",
@@ -26240,6 +26258,84 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 106
+    },
+    "tests/test_mcp_oauth_introspection_contract_hardening.py::test_valid_token_claims_are_bound_to_staging_resource": {
+      "path": "tests/test_mcp_oauth_introspection_contract_hardening.py",
+      "name": "test_valid_token_claims_are_bound_to_staging_resource",
+      "purpose": "Valid token claims are bound to staging resource",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_mcp_oauth_introspection_contract_hardening.py::test_incomplete_or_mismatched_claims_fail_closed": {
+      "path": "tests/test_mcp_oauth_introspection_contract_hardening.py",
+      "name": "test_incomplete_or_mismatched_claims_fail_closed",
+      "purpose": "Incomplete or mismatched claims fail closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_mcp_oauth_introspection_contract_hardening.py::test_expired_token_is_not_authorized": {
+      "path": "tests/test_mcp_oauth_introspection_contract_hardening.py",
+      "name": "test_expired_token_is_not_authorized",
+      "purpose": "Expired token is not authorized",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_mcp_oauth_introspection_contract_hardening.py::test_inactive_token_is_not_authorized": {
+      "path": "tests/test_mcp_oauth_introspection_contract_hardening.py",
+      "name": "test_inactive_token_is_not_authorized",
+      "purpose": "Inactive token is not authorized",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.oauth_introspection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
     },
     "tests/test_mcp_operational_prompts_acceptance.py::test_operational_prompts_and_completion_are_read_only_and_stateless": {
       "path": "tests/test_mcp_operational_prompts_acceptance.py",
