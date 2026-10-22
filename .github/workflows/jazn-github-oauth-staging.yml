@@ -50,7 +50,7 @@ jobs:
         run: node --test deploy/chatgpt_mcp/workers_vpc_gateway/staging-config.test.mjs
       - name: Fail closed on staging VPC template and candidate guard regressions
         run: |
-          node --test deploy/chatgpt_mcp/workers_vpc_gateway/staging-config.test.mjs deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.test.mjs
+          node --test deploy/chatgpt_mcp/workers_vpc_gateway/staging-config.test.mjs deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.test.mjs deploy/chatgpt_mcp/workers_vpc_gateway/staging-keep-vars.test.mjs
           node deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.mjs --template
       - name: Compile and check Worker bundle without deploying
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
