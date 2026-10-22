@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.41",
-  "active_definition_count": 2532,
+  "active_definition_count": 2533,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -37440,6 +37440,27 @@
       "description_source": "source_identity",
       "line": 21
     },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_configured_model_fallback_never_passes_as_provider_identity": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_configured_model_fallback_never_passes_as_provider_identity",
+      "purpose": "Configured model fallback never passes as provider identity",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
     "tests/test_model_turn_and_host_telemetry_evidence.py::test_configured_model_label_alone_is_never_transport_verified": {
       "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
       "name": "test_configured_model_label_alone_is_never_transport_verified",
@@ -37459,7 +37480,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 53
     },
     "tests/test_model_turn_and_host_telemetry_evidence.py::test_ram_telemetry_without_trusted_os_measurement_is_unknown": {
       "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
@@ -37480,7 +37501,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 66
     },
     "tests/test_model_turn_and_host_telemetry_evidence.py::test_ram_percentage_retains_os_origin_and_timestamp": {
       "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
@@ -37501,7 +37522,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 78
     },
     "tests/test_new_chat_context_feedback.py::test_new_chat_correction_routes_as_feedback_not_package_health": {
       "path": "tests/test_new_chat_context_feedback.py",
