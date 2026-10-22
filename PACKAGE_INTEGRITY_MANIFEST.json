@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-  "runtime_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-  "package_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-  "generated_at_utc": "2026-10-22T09:47:17+00:00",
-  "updated_at_utc": "2026-10-22T09:47:17+00:00",
+  "version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "package_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "generated_at_utc": "2026-10-22T12:14:14+00:00",
+  "updated_at_utc": "2026-10-22T12:14:14+00:00",
   "start_file": "run.py",
-  "file_count": 3275,
-  "static_file_count": 3275,
+  "file_count": 3280,
+  "static_file_count": 3280,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -173,8 +173,8 @@
     },
     {
       "path": ".github/workflows/jazn-github-oauth-staging.yml",
-      "size_bytes": 2465,
-      "sha256": "f54544ba78877cfaf334c45e45148648855148c9601faa0ff7473076fd7eade5",
+      "size_bytes": 2531,
+      "sha256": "95dd0f8173632eadd18305da166f10faad895568c8fc7164ef5c89bdab3a4f24",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -245,8 +245,8 @@
     },
     {
       "path": ".github/workflows/powershell-terminal-regressions.yml",
-      "size_bytes": 8303,
-      "sha256": "8a48a6ec5833e22d31a328a192f0444f2c8546526ce6b4cbf107f01df9884c33",
+      "size_bytes": 8811,
+      "sha256": "282f2ceb01154cf616f2f25ebafb169e28adec9c9e9bc74efa6a486b3abce618",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2920,
-      "sha256": "121eb49b2ecb7d2eb310b2fb150d7987d7cc37589a0ae6eb3d1044fad5fbffd5",
+      "size_bytes": 2962,
+      "sha256": "1a5017eab5da44709b936bcd3944694f209dca51bf2bb39058eab1e5e08ea98f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -425,8 +425,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1940,
-      "sha256": "0828a810aee96031e4377ab732077bfce1be757e1d51b9369dfc9c82fe25f90e",
+      "size_bytes": 1947,
+      "sha256": "4960dd0e4ceb121fc6c3ac3d3d796e7ce754e30082f3403b2d3677c7961d3756",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -604,9 +604,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "deploy/chatgpt_mcp/workers_vpc_gateway/staging-keep-vars.test.mjs",
+      "size_bytes": 1665,
+      "sha256": "e4f557f46f2b71980c583e7d9162e7def92d166d41571b14999ca595aecb4217",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.mjs",
-      "size_bytes": 3287,
-      "sha256": "c03c1f1d8cea45634e9662f5cb8754167d726860ea431aa607f39b3d62e18a5b",
+      "size_bytes": 3502,
+      "sha256": "6aef3f92e9e0ff20a58cab17313f69e3489351311bc593ab0dc18e4f20e7f05b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -650,8 +659,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/workers_vpc_gateway/wrangler.staging.example.jsonc",
-      "size_bytes": 513,
-      "sha256": "e198f49c73e06bb1c63712438136d0a9efa151541afcb03c849b3946433434c7",
+      "size_bytes": 534,
+      "sha256": "24ea2e33203e7cd4568bbdcdaf75f4986ce238a07b06f0933cc5bd2a54a72dcc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3637,6 +3646,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/runtime/LOCAL_MCP_TO_CLOUDFLARE_OAUTH_STAGING_42.md",
+      "size_bytes": 6240,
+      "sha256": "e2f0e063bbb882fbdad69483360d37fbc267f16702eff8af54a40dccb00e477f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/runtime/LOCAL_RUNTIME_NO_API_KEY.md",
       "size_bytes": 1558,
       "sha256": "b00fcbf1d1d6961acbd968d9ee82e241ebc9abd911d3b786792cf62d47fb1484",
@@ -6311,8 +6329,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_supervisor.py",
-      "size_bytes": 24080,
-      "sha256": "b2071dbdcc0cd596ac59e64e8de7c7b0776e1b80b990537f0402e980ebe96b98",
+      "size_bytes": 26843,
+      "sha256": "3013b893f669c7b7fb1d6108a9d599395184670945e162be540ff8d15ba9ea0b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9282,7 +9300,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "c457b78b7146e54d6d729c6d6bd0667f759cc5b1185a5f5b7b5a82108ce1fc2b",
+      "sha256": "c59b553de4e857e00741019b75ecccb562125780afe1f4790fd2b170deb054af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10775,8 +10793,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14146,
-      "sha256": "222cb6018c81d1588c963bbe5dcec16c17186cee35dd07b5b508f72492196bde",
+      "size_bytes": 14153,
+      "sha256": "5ad03db1a8bbc072ad889d1ab9444fac535417bfd4b5c918eed430b1e2054a60",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18220,6 +18238,15 @@
       "path": "tests/archive/test_runtime_stability_wake_state__pre_v16_3_25_5_116_0_34_22.py",
       "size_bytes": 24756,
       "sha256": "b00d7b4f13589fd978c7284a649f8234577ddec653fba1be00918e0bdf66595f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_supervisor_version_release_gate__v16_3_25_5_116_0_34_42_pre_typefix.py",
+      "size_bytes": 5026,
+      "sha256": "09fe34b1566cca99cadad8f74966a254e8c6aae8f2057d736a78164a4656d17c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28540,6 +28567,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_supervisor_version_release_gate.py",
+      "size_bytes": 5094,
+      "sha256": "1919d0cf13845fea28841710850059c77ec850d0168c520a0998be625779cae5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_system_package_canonical_integrity.py",
       "size_bytes": 5040,
       "sha256": "aab5292cf93d6e1264f4c9a0be8cf72ca4bc65158096ecf6b3e565906d2e8c6a",
@@ -29279,8 +29315,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2332678,
-      "sha256": "d2f2b3f545c0af6f636117b67b96fff3782dc84e82d1e98e93342a3b215f98df",
+      "size_bytes": 2334290,
+      "sha256": "3a59a68b207506df97aac85735f16cfdf8048a8e51b2d5dbacc8870cf21519cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29479,6 +29515,15 @@
       "path": "tools/windows/Start-JaznWithConfig.ps1",
       "size_bytes": 2591,
       "sha256": "367b42fc2d787d45c81d1456debdb20c9ed014abc57c68f4ef4ae5b40c818672",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/windows/Test-JaznLocalMcp.ps1",
+      "size_bytes": 4298,
+      "sha256": "a85aa18fe31a24fc4e81989013679cd2bf101193cba3545c3292fdfb0e10b568",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29927,11 +29972,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+  "release_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-    "package_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-    "release_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence"
+    "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+    "package_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+    "release_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.41",
-  "active_definition_count": 2533,
+  "system_version": "16.3.25.5.116.0.34.42",
+  "active_definition_count": 2535,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -52735,6 +52735,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 109
+    },
+    "tests/test_supervisor_version_release_gate.py::test_supervisor_never_reuses_healthy_old_or_unverified_daemon": {
+      "path": "tests/test_supervisor_version_release_gate.py",
+      "name": "test_supervisor_never_reuses_healthy_old_or_unverified_daemon",
+      "purpose": "Supervisor never reuses healthy old or unverified daemon",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_supervisor_version_release_gate.py::test_supervisor_can_reuse_same_version_only_after_full_verification": {
+      "path": "tests/test_supervisor_version_release_gate.py",
+      "name": "test_supervisor_can_reuse_same_version_only_after_full_verification",
+      "purpose": "Supervisor can reuse same version only after full verification",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",

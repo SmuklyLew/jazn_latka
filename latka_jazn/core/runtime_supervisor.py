@@ -507,6 +507,61 @@ def run_supervisor(
                 "full": observed,
                 "health": health.to_dict(),
             }
+            # A healthy identity/heartbeat at the full status layer is not
+            # proof that the process executes this release. This was observed
+            # on Windows with a .39 daemon and a .41 supervisor. A version
+            # mismatch must never fall through to HEALTHY or auto-restart:
+            # the existing process is live, so require an explicit, canonical
+            # operator-managed restart after draining in-flight requests.
+            ping = observed.get("ping") if isinstance(observed, dict) else None
+            full_version = (
+                str(ping.get("runtime_version") or "").strip()
+                if isinstance(ping, dict)
+                else ""
+            )
+            reported_mismatch = (
+                liveness.get("runtime_version_matches") is False
+                or bool(full_version and full_version != PACKAGE_VERSION_FULL)
+            )
+            full_version_unverified = (
+                health.classification is DaemonHealthClass.HEALTHY
+                and full_version != PACKAGE_VERSION_FULL
+            )
+            if reported_mismatch or full_version_unverified:
+                failure_count += 1
+                blocked_reason = (
+                    "daemon_version_mismatch_operator_restart_required"
+                    if reported_mismatch
+                    else "daemon_version_unverified_operator_check_required"
+                )
+                observed_with_health["version_gate"] = {
+                    "ok": False,
+                    "reason": blocked_reason,
+                    "expected_runtime_version": PACKAGE_VERSION_FULL,
+                    "observed_runtime_version": full_version or None,
+                    "cheap_version_matches": liveness.get("runtime_version_matches"),
+                }
+                delay = bounded_restart_backoff_seconds(runtime_root, failure_count)
+                _write_json_atomic(
+                    supervisor_state_path(runtime_root),
+                    _state_payload(
+                        runtime_root,
+                        state=blocked_reason,
+                        failure_count=failure_count,
+                        last_liveness=observed_with_health,
+                        last_start={
+                            "ok": False,
+                            "error_code": blocked_reason,
+                            "error": "Operator must verify daemon identity and use the canonical restart transaction.",
+                        },
+                        next_retry_seconds=delay,
+                        started_at_utc=started_at,
+                        check_interval_seconds=check_interval_seconds,
+                    ),
+                )
+                event.wait(delay)
+                continue
+
             if health.classification is DaemonHealthClass.HEALTHY:
                 failure_count = 0
                 _write_json_atomic(
