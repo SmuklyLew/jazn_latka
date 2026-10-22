@@ -24,8 +24,11 @@ than the larger optional Addons distribution. The core runtime does not require 
 
 For offline environments, use the existing Dependency Studio `run-studio`
 profile to download/verify a native wheelhouse and install only its verified
-hash-locked wheels. This checkpoint registers the profile; native Windows/Linux
-wheelhouse generation and verified offline-install acceptance remain open.
+hash-locked wheels. Native Windows x64 / Python 3.14 download, RECORD/hash
+verification, offline installation and GUI smoke have passed. The exact generated
+lock is preserved at `locks/windows-x64-py314.txt`; it was copied from Dependency
+Studio output. Other target-specific Qt locks and native Linux offline acceptance
+remain open. Never replay the Windows lock as a Linux installation contract.
 
 The first screen detects executables and import availability. It never installs
 programs, starts services, or tests a user turn automatically. Installation links
@@ -87,6 +90,12 @@ Read-only service probes are also available from the terminal:
 `python -X utf8 jazn_run_studio.py --probe ollama` (or `gateway`, `cloudflare`,
 `tunnel_service`). HTTP, model availability, daemon identity and accepted speech
 are reported as separate evidence.
+
+Choose a verified installed SYSTEM root with `--root` / `JAZN_ROOT`. A development
+checkout may differ byte-for-byte from the canonical package (notably Windows
+line endings) and legitimately fail runtime preflight. Use the existing canonical
+release staging/package workflow; never bypass integrity or edit manifest hashes
+to make that checkout appear installed. Studio preserves the runtime's rejection.
 
 ## Build
 

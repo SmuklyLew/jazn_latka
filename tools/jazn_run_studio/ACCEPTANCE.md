@@ -150,3 +150,38 @@ chat acceptance, frozen external command integration, offline Qt wheelhouse
 evidence, process/service restart failure coverage, and richer visual/keyboard/DPI
 acceptance. The broad original objective is not marked complete by these focused
 results. The current source remains a reviewable implementation checkpoint.
+## Milestone 3: acceptance evidence and cross-platform type fix (.46)
+
+- 56 focused Studio/host-turn-coverage tests passed with PYTHONUTF8=1; focused
+  Pyright reports zero errors/warnings. Linux CI on .45 identified an indirect
+  platform guard around ctypes.WinDLL. .46 adds the explicit sys.platform guard
+  required by the platform-specific types; behavior on Windows is unchanged.
+- .45's native Windows EXE passed both GUI smoke and external `--run version`,
+  exit 0. Qt/shiboken license metadata is present in the onedir artifact.
+- Dependency Studio downloaded core+run-studio, verified all four wheel RECORDs
+  and the generated hash lock, then installed a fresh environment with --offline.
+  Its Python imported Qt 6.12.0 and ran GUI smoke successfully. The generated
+  native Windows/Python 3.14 lock was preserved byte-for-byte under `locks/`.
+- Node 24.20.0: npm ci, syntax check, ESM probe and canonical runtime probe passed.
+- Full local deterministic suite on .45: **9 failed, 2900 passed, 21 skipped,
+  7 warnings, 330.39 seconds**. This is a FAIL, despite the focused passes.
+  A missing inherited PYTHONUTF8 setting explained two CLI decoding failures;
+  with that environment corrected those coverage tests pass unchanged.
+- Focused comparison on untouched master reproduces the three runtime
+  time-route/persistence failures, the unreadable optional-memory test failure,
+  and the MCP process/SSE IncompleteRead failure. The full master comparison is
+  separately running to classify order-sensitive recall/Tk behavior. None of
+  these assertions or runtime truth gates were weakened for this branch.
+- First live chat test on a working checkout stopped at runtime preflight,
+  preserving its request ID. Canonical staging then produced a verified .45
+  SYSTEM export with manifest_ok=true, provenance_ok=true, needs_recovery=false.
+  A separate new test turn is being evaluated on that export; the earlier
+  message was not replayed. No live accepted-turn PASS is claimed here yet.
+
+Remaining acceptance is explicit: final-SHA CI and metadata check, a successful
+real model turn with lineage/finalization, native Linux Qt offline installation,
+full passing runtime suite or reviewed resolution of the reproduced base
+failures, and complete replacement of specialized legacy visual inspectors.
+This file documents evidence and limits rather than declaring the original broad
+objective complete.
+

@@ -39,7 +39,7 @@ def spawn(argv: list[str], *, cwd: Path, **kwargs: Any) -> subprocess.Popen[byte
         bundle = getattr(sys, "_MEIPASS", None)
         reset = os.name == "nt" and getattr(sys, "frozen", False) and bundle
         api = None
-        if reset:
+        if reset and sys.platform == "win32":
             import ctypes
             api = ctypes.WinDLL("kernel32", use_last_error=True)
             api.SetDllDirectoryW.argtypes = [ctypes.c_wchar_p]
