@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.39",
-  "active_definition_count": 2515,
+  "system_version": "16.3.25.5.116.0.34.40",
+  "active_definition_count": 2522,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38234,6 +38234,135 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_operator_config_file.py::test_empty_files_keep_existing_code_defaults": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_empty_files_keep_existing_code_defaults",
+      "purpose": "Empty files keep existing code defaults",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_operator_config_file.py::test_minimal_defaults_and_explicit_environment_wins": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_minimal_defaults_and_explicit_environment_wins",
+      "purpose": "Minimal defaults and explicit environment wins",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_operator_config_file.py::test_secret_file_loaded_only_if_missing_without_leaking": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_secret_file_loaded_only_if_missing_without_leaking",
+      "purpose": "Secret file loaded only if missing without leaking",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_operator_config_file.py::test_rejects_bad_secret_file_without_mutating_environment": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_rejects_bad_secret_file_without_mutating_environment",
+      "purpose": "Rejects bad secret file without mutating environment",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorConfigError"
+      ],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_operator_config_file.py::test_disallow_credentials_in_tracked_toml": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_disallow_credentials_in_tracked_toml",
+      "purpose": "Disallow credentials in tracked toml",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorConfigError"
+      ],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_operator_config_file.py::test_rejects_symlink_secret": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_rejects_symlink_secret",
+      "purpose": "Rejects symlink secret",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorConfigError"
+      ],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_operator_config_file.py::test_rejects_world_readable_secret_on_posix": {
+      "path": "tests/test_operator_config_file.py",
+      "name": "test_rejects_world_readable_secret_on_posix",
+      "purpose": "Rejects world readable secret on posix",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorConfigError"
+      ],
+      "targets": [
+        "latka_jazn.operator_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
     },
     "tests/test_operator_executor_cross_platform.py::test_allowlist_rejects_shell_and_unknown_action": {
       "path": "tests/test_operator_executor_cross_platform.py",
