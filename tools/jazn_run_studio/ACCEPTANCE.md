@@ -315,3 +315,16 @@ when output was redirected. Two new regression cases reproduced the failure
 before the fix. .51 explicitly sets UTF-8 on available output streams and
 child-process pipes, retaining strict encoding. Native rebuild and the same
 redirected status action are required before accepting this correction.
+
+
+## .52 Windows shutdown acknowledgment ordering — PR #410
+
+This is a continuation branch based on the original Studio PR #409, not a declaration that the full original scope is accepted.
+
+**Baseline failure:** final .51 GitHub Actions [package-distribution-cleanroom 39870162434](https://github.com/SmuklyLew/jazn_latka/actions/runs/39870162434) failed in the Windows 3.12, 3.13 and 3.14 cleanroom consumer jobs. The daemon's `stop` result returned `daemon_stop_timeout`; the expected daemon process was still alive, and the HTTP `/shutdown` response timed out. This is evidence of incomplete shutdown, not evidence of a successful stop.
+
+**Changed behavior:** an authenticated `POST /shutdown` immediately requests shutdown and schedules the background shutdown worker **before** responding to the client. The reply is a short, identity-bearing JSON acknowledgment. Heavy marker status construction no longer delays scheduling the stop; the canonical daemon finalizer still writes the actual stopped marker and cleanup evidence. No endpoint/PID stop gate, source integrity check, privilege gate or production timeout has been weakened.
+
+**Regression tests added:** tests for a normal ACK, simulated client disconnect during ACK, and a rejected unauthenticated stop. These unit tests are not substitutes for the native Windows cleanroom.
+
+**Pending verification:** all final-head checks and a clean Windows cleanroom stop on Python 3.12/3.13/3.14. The observed client timeout may be caused by multiple interacting teardown delays; do not claim root-cause closure until native tests pass. Original open gates (real transport-resume acceptance, MCP HTTP framing, specialized Qt Studio parity, DPI/accessibility and Linux offline Qt) remain open.
