@@ -3896,9 +3896,32 @@ def run_daemon(
             server.close_sessions()
         finally:
             try:
-                payload = server.marker_payload(status=DAEMON_MARKER_STATUS_STOPPED)
-                payload["runtime_process_active"] = False
-                payload["stopped_at_utc"] = utc_now_iso()
+                # The daemon has already left serve_forever. Rebuilding the full
+                # active marker here would re-verify thousands of files during
+                # the time-critical stop budget. Preserve the most recent
+                # marker evidence and change only the final lifecycle facts.
+                server.state.status = DAEMON_MARKER_STATUS_STOPPED
+                payload = read_json_file(marker_path) or {}
+                payload = dict(payload) if isinstance(payload, dict) else {}
+                payload.update({
+                    "schema_version": DAEMON_SCHEMA_VERSION,
+                    "daemon_instance_id": server.daemon_instance_id,
+                    "active_root": str(config.root),
+                    "daemon_pid": server.state.pid,
+                    "daemon_status": DAEMON_MARKER_STATUS_STOPPED,
+                    "active_state": "inactive",
+                    "runtime_active_state": "inactive",
+                    "runtime_process_active": False,
+                    "heartbeat_fresh": False,
+                    "stopped_at_utc": utc_now_iso(),
+                })
+                nested = payload.get("runtime_daemon")
+                if isinstance(nested, dict):
+                    payload["runtime_daemon"] = {
+                        **nested,
+                        "status": DAEMON_MARKER_STATUS_STOPPED,
+                        "runtime_process_active": False,
+                    }
                 write_json_atomic(marker_path, payload)
             except (OSError, RuntimeError, ValueError, TypeError) as exc:
                 append_daemon_process_event(
