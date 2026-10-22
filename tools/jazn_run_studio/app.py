@@ -17,6 +17,7 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="Odczyt zależności; bez startu usług")
     mode.add_argument("--run", choices=sorted(ACTION_BY_KEY), help="Wykonaj komendę wspólnym backendem")
+    mode.add_argument("--probe", choices=["ollama", "gateway", "cloudflare", "tunnel_service"], help="Odczyt rzeczywistej usługi wspólnym backendem")
     mode.add_argument("--gui-smoke", action="store_true", help="Test okna i zamknięcia; bez startu usług")
     parser.add_argument("--report", type=Path, help="Zapis raportu do nowego pliku")
     args = parser.parse_args(argv)
@@ -25,10 +26,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.check:
             print(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))
             return 0
-        if args.run:
-            job = core.start_action(args.run)
+        if args.run or args.probe:
+            job = core.start_action(args.run) if args.run else core.probe(args.probe)
             job.done.wait()
-            for line in core.logs.get(args.run, ()):
+            for line in core.logs.get(job.key, ()):
                 print(line)
             if args.report:
                 core.export_report(args.report)

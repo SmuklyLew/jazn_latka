@@ -113,3 +113,40 @@ untracked bytecode inside historical archive trees, which must not be staged.
 
 The 5-hour platform window showed 78% remaining at the most recent milestone
 implementation check. Refresh the platform tool before making later budget claims.
+
+## Milestone 2: services, local chat and shared operation forms (.45)
+
+Implemented persistent public chat-ollama transport, durable session/request
+checkpoint without prompt content, same-request result retrieval, and an external
+SYSTEM-side validator reusing write_local_ollama_visible_reply. No candidate is
+shown as runtime speech before acceptance, request binding and turn/trace checks.
+The canonical JSONL bridge now forwards an explicitly supplied request_id to its
+existing daemon session; it previously dropped that field.
+
+Read-only probes cover Ollama models, local HTTP readiness, configured Cloudflare
+Worker readiness and Windows cloudflared service observation. The selected local
+model endpoint currently reports gemma3:latest; this alone is not a chat pass.
+The dashboard now uses readable component rows rather than raw JSON.
+
+Shared Qt forms describe and execute original Memory/Rebuild, Tests, Packages,
+Dependency and Python Runtime argparse commands. Profiles are edited via the
+existing Configuration Studio validators and CAS save. A secrets-file selector
+loads only allowlisted secret keys into child environments and redaction. The
+frozen subprocess environment follows PyInstaller guidance for DLL/library paths.
+Classic specialized windows remain explicitly available, including Version Rebuild;
+these rich visual inspectors have not all been reimplemented as native Qt widgets.
+
+Focused validation: 44 Studio tests passed in 4.67 s; related runtime/contract run
+passed 66 tests before the final helper test was added. Focused Pyright reports
+zero errors/warnings. .44 dedicated Windows/Linux tests and Windows package CI
+are SUCCESS; .44's full-PR failures identified stale startup/deployment versions
+and a dependency-sensitive build test. .45 updates the two non-integrity release
+contracts, preserves the exact original release-hardening installation command
+and adds Qt separately, and makes the DLL-path unit fixture dependency-independent.
+No existing assertion was weakened.
+
+Still required before completion: current-source full suite and CI, actual live
+chat acceptance, frozen external command integration, offline Qt wheelhouse
+evidence, process/service restart failure coverage, and richer visual/keyboard/DPI
+acceptance. The broad original objective is not marked complete by these focused
+results. The current source remains a reviewable implementation checkpoint.

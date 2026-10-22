@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import asdict
 from pathlib import Path
 import queue
 from typing import Callable
@@ -9,9 +10,9 @@ from typing import Callable
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QCloseEvent, QDesktopServices
 from PySide6.QtWidgets import (
-    QApplication, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
+    QApplication, QCheckBox, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QMainWindow, QMessageBox, QPlainTextEdit,
-    QPushButton, QScrollArea, QSplitter, QStackedWidget, QTabWidget,
+    QPushButton, QScrollArea, QSplitter, QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
 )
 
@@ -58,6 +59,7 @@ class Window(QMainWindow):
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex)
         self._dashboard()
         self._services()
+        self._chat()
         self._diagnostics()
         self._studios()
         self._settings()
@@ -69,7 +71,9 @@ class Window(QMainWindow):
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
         # Discovery is read-only and local. Network probes require explicit actions.
-        self.setup.setPlainText(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))
+        self.render_discovery()
+        if isinstance(app := QApplication.instance(), QApplication):
+            app.styleHints().colorSchemeChanged.connect(lambda _scheme: self.apply_theme())
 
     def page(self, title: str, description: str) -> QVBoxLayout:
         pane = QWidget()
@@ -118,14 +122,27 @@ class Window(QMainWindow):
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
-        self.setup = QPlainTextEdit()
-        self.setup.setReadOnly(True)
+        self.setup = QTableWidget(0, 3)
+        self.setup.setHorizontalHeaderLabels(["Składnik", "Stan", "Lokalizacja / szczegóły"])
+        self.setup.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.setup.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.setup)
         links = QHBoxLayout()
         for name, url in INSTALL_LINKS.items():
             self.button("Instalacja: " + name, lambda u=url: QDesktopServices.openUrl(QUrl(u)), links)
         layout.addLayout(links)
-        self.button("Odśwież wykrywanie", lambda: self.setup.setPlainText(json.dumps(discovery(self.core.settings), ensure_ascii=False, indent=2)), layout)
+        self.button("Odśwież wykrywanie", self.render_discovery, layout)
+
+    def render_discovery(self) -> None:
+        data = discovery(self.core.settings)
+        rows = [(name, "Dostępny" if data.get(name) else "Brak", str(data.get(name) or "Wskaż plik w ustawieniach"))
+                for name in ("python", "ollama", "cloudflared", "git")]
+        rows += [(name, "Dostępna" if present else "Brak", "Biblioteka Pythona") for name, present in data["dependencies"].items()]
+        self.setup.setRowCount(len(rows))
+        for row, values in enumerate(rows):
+            for column, value in enumerate(values):
+                self.setup.setItem(row, column, QTableWidgetItem(value))
+        self.setup.resizeColumnsToContents()
 
     def _services(self) -> None:
         layout = self.page("Usługi i procesy", "Stop i restart usług zewnętrznych dotyczą wyłącznie procesów uruchomionych przez to Studio. Proces działający nie oznacza gotowości funkcji.")
@@ -138,11 +155,50 @@ class Window(QMainWindow):
             row.addWidget(status, 1)
             for operation, label in (("start", "Uruchom"), ("stop", "Zatrzymaj"), ("restart", "Restart")):
                 self.button(label, lambda s=service, op=operation: self.service(s, op), row)
+            if service != "runtime":
+                self.button("Sprawdź połączenie", lambda s=service: self.core.probe(s), row)
             layout.addLayout(row)
+        self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
         layout.addWidget(QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie."))
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         layout.addWidget(self.processes)
+
+    def _chat(self) -> None:
+        layout = self.page("Czat lokalny", "Rozmowa przez runtime Jaźni i wybrany model Ollama. Tylko zaakceptowane odpowiedzi runtime pojawiają się jako wypowiedzi Łatki.")
+        self.chat_state = QLabel("Rozłączony. Wybierz model w ustawieniach, uruchom runtime i Ollamę, a następnie połącz.")
+        self.chat_state.setWordWrap(True)
+        layout.addWidget(self.chat_state)
+        row = QHBoxLayout()
+        self.button("Połącz", self.core.connect_chat, row)
+        self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), row)
+        self.button("Wznów wynik", self.resume_chat, row)
+        layout.addLayout(row)
+        self.conversation = QPlainTextEdit()
+        self.conversation.setReadOnly(True)
+        self.conversation.setAccessibleName("Historia lokalnej rozmowy")
+        layout.addWidget(self.conversation, 2)
+        self.message = QPlainTextEdit()
+        self.message.setPlaceholderText("Twoja wiadomość…")
+        self.message.setAccessibleName("Wiadomość do runtime Jaźni")
+        self.message.setMaximumHeight(100)
+        layout.addWidget(self.message)
+        self.button("Wyślij", self.send_chat, layout)
+
+    def send_chat(self) -> None:
+        if self.core.chat is None:
+            raise StudioError("Najpierw połącz czat")
+        text = self.message.toPlainText()
+        request = self.core.chat.send(text)
+        self.conversation.appendPlainText("Ty:\n" + text + "\n")
+        self.message.clear()
+        self.chat_state.setText("Oczekiwanie na wynik: " + request)
+
+    def resume_chat(self) -> None:
+        if self.core.chat is None:
+            from .chat import ChatClient
+            self.core.chat = ChatClient(self.core)
+        self.core.chat.resume()
 
     def service(self, service: str, op: str) -> None:
         if service == "runtime":
@@ -172,15 +228,80 @@ class Window(QMainWindow):
         layout.addStretch()
 
     def _studios(self) -> None:
-        layout = self.page("Studia Jaźni", "Wspólny katalog istniejących narzędzi. Ten etap otwiera ich dotychczasowe interfejsy; migracja stron do wspólnego Qt jest osobnym warunkiem odbioru.")
+        layout = self.page("Studia Jaźni", "Operacje pamięci, testów, paczek i zależności we wspólnym interfejsie. Formularze pochodzą z bieżących parserów narzędzi; wykonanie pozostaje w ich oryginalnym kodzie.")
+        row = QHBoxLayout()
+        self.studio_choice = QComboBox()
+        for item in STUDIOS:
+            if item.key in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
+                self.studio_choice.addItem(item.label, item.key)
+        row.addWidget(self.studio_choice)
+        self.button("Wczytaj operacje", lambda: self.core.studio_helper("schema", str(self.studio_choice.currentData())), row)
+        layout.addLayout(row)
+        self.operation = QComboBox()
+        self.operation.currentIndexChanged.connect(self.render_operation)
+        layout.addWidget(self.operation)
+        self.operation_form = QFormLayout()
+        layout.addLayout(self.operation_form)
+        self.operation_widgets: dict[str, QWidget] = {}
+        self.command_schema: list[dict] = []
+        self.schema_key = ""
+        self.button("Wykonaj wybraną operację", self.execute_operation, layout)
+        layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
         for item in STUDIOS:
             row = QHBoxLayout()
-            self.button(item.label, lambda key=item.key: self.core.start_studio(key), row)
+            self.button("Klasyczne: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
             note = QLabel(item.description)
             note.setWordWrap(True)
             row.addWidget(note, 2)
             layout.addLayout(row)
         layout.addStretch()
+
+    def render_operation(self, _index: int = 0) -> None:
+        while self.operation_form.rowCount():
+            self.operation_form.removeRow(0)
+        self.operation_widgets.clear()
+        index = self.operation.currentIndex()
+        if not 0 <= index < len(self.command_schema):
+            return
+        for field in self.command_schema[index]["fields"]:
+            if field["flag"]:
+                widget = QCheckBox()
+            elif field["choices"]:
+                widget = QComboBox()
+                widget.addItems([""] + field["choices"])
+            elif field["append"] or field["nargs"] in ("+", "*"):
+                widget = QPlainTextEdit()
+                widget.setPlaceholderText("Jeden argument w każdym wierszu")
+                widget.setMaximumHeight(80)
+            else:
+                widget = QLineEdit()
+            widget.setToolTip(str(field["help"]))
+            widget.setAccessibleName(str(field["help"]))
+            self.operation_widgets[field["id"]] = widget
+            label = field["dest"].replace("_", " ") + (" *" if field["required"] else "")
+            self.operation_form.addRow(label, widget)
+
+    def execute_operation(self) -> None:
+        index = self.operation.currentIndex()
+        if not 0 <= index < len(self.command_schema):
+            raise StudioError("Najpierw wczytaj operacje wybranego Studio")
+        selected = self.command_schema[index]
+        if QMessageBox.question(self, "Wykonanie operacji", "Wykonać " + " / ".join(selected["path"]) +
+                "? Operacja może zapisać dane zgodnie z regułami wybranego narzędzia.") != QMessageBox.StandardButton.Yes:
+            return
+        values: dict = {}
+        for key, widget in self.operation_widgets.items():
+            if isinstance(widget, QCheckBox):
+                values[key] = widget.isChecked()
+            elif isinstance(widget, QComboBox):
+                values[key] = widget.currentText()
+            elif isinstance(widget, QPlainTextEdit):
+                entries = [line for line in widget.toPlainText().splitlines() if line]
+                if entries:
+                    values[key] = entries
+            elif isinstance(widget, QLineEdit):
+                values[key] = widget.text()
+        self.core.studio_helper("execute", self.schema_key, {"path": selected["path"], "values": values})
 
     def _settings(self) -> None:
         layout = self.page("Ustawienia", "Profil lokalny Studio jest ignorowany przez Git. Sekrety nie są polami tego profilu. Zmiana ścieżek nie przejmuje działających procesów.")
@@ -188,6 +309,8 @@ class Window(QMainWindow):
         labels = {"python": "Interpreter Python", "ollama": "Plik Ollama", "cloudflared": "Plik cloudflared",
                   "tunnel_config": "Konfiguracja tunelu (plik)", "tunnel_id": "Nazwa / UUID tunelu",
                   "model": "Model Ollama", "accent": "Kolor własny (#RRGGBB)"}
+        labels["cloudflare_url"] = "Adres HTTPS Workera Cloudflare"
+        labels["secrets_file"] = "Plik sekretów JSON (ignorowany przez Git)"
         for key, label in labels.items():
             field = QLineEdit(str(getattr(self.core.settings, key)))
             field.setAccessibleName(label)
@@ -197,15 +320,36 @@ class Window(QMainWindow):
         self.theme.addItems(["system", "light", "dark", "purple", "custom"])
         self.theme.setCurrentText(self.core.settings.theme)
         form.addRow("Motyw", self.theme)
+        self.profile_mode = QComboBox()
+        self.profile_mode.addItem("Bez dodatkowego profilu", "off")
+        self.profile_mode.addItem("Walidowany profil operator", "operator")
+        self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
+        form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
         self.button("Zapisz i zastosuj", self.save, layout)
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Otwórz Studio Konfiguracji", lambda: self.core.start_studio("configuration"), layout)
+        self.button("Wczytaj profil środowiska runtime", lambda: self.core.studio_helper("profile-read"), layout)
+        self.profile_form = QFormLayout()
+        self.profile_widgets: dict[str, QLineEdit | QComboBox] = {}
+        self.profile_digest: str | None = None
+        layout.addLayout(self.profile_form)
+        self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
+
+    def save_profile(self) -> None:
+        if not self.profile_widgets:
+            raise StudioError("Najpierw wczytaj profil środowiska")
+        if QMessageBox.question(self, "Profil środowiska", "Zapisać walidowany profil przyszłych uruchomień? Działający daemon zachowuje swoją konfigurację.") != QMessageBox.StandardButton.Yes:
+            return
+        values = {key: widget.currentText() if isinstance(widget, QComboBox) else widget.text()
+                  for key, widget in self.profile_widgets.items()}
+        self.core.studio_helper("profile-save", data={"values": {k: v for k, v in values.items() if v}, "digest": self.profile_digest})
 
     def save(self) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
         data["theme"] = self.theme.currentText()
+        data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
@@ -265,7 +409,46 @@ class Window(QMainWindow):
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "evidence":
-                self.evidence.setText("Dowody runtime:\n" + json.dumps(value, ensure_ascii=False, indent=2))
+                yes = lambda flag: "tak" if flag else "niepotwierdzone"
+                self.evidence.setText("Runtime: " + str(value.get("active_state") or "niepotwierdzony") +
+                    " • endpoint: " + yes(value.get("endpoint_reachable")) +
+                    " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
+                    " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
+            elif kind == "probe":
+                service = value.get("service")
+                if service in self.statuses:
+                    self.statuses[service].setText("HTTP odpowiada • gotowość: " + str(value.get("ready", "osobny test")))
+                if service == "ollama":
+                    self.chat_state.setText("Modele Ollama: " + ", ".join(value.get("models", [])) + ". Wybierz nazwę w ustawieniach.")
+            elif kind == "chat_state":
+                self.chat_state.setText(str(value))
+            elif kind == "chat_final":
+                self.conversation.appendPlainText(value["text"] + "\n")
+                self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
+            elif kind == "helper":
+                if key.startswith("helper:schema:"):
+                    self.schema_key = key.split(":", 2)[2]
+                    self.command_schema = value
+                    self.operation.blockSignals(True)
+                    self.operation.clear()
+                    self.operation.addItems([" / ".join(c["path"]) for c in value])
+                    self.operation.blockSignals(False)
+                    self.render_operation()
+                else:
+                    self.profile_digest = value["digest"]
+                    while self.profile_form.rowCount():
+                        self.profile_form.removeRow(0)
+                    self.profile_widgets.clear()
+                    for field in value["fields"]:
+                        if field["choices"]:
+                            widget = QComboBox()
+                            widget.addItems([""] + field["choices"])
+                            widget.setCurrentText(value["values"].get(field["key"], ""))
+                        else:
+                            widget = QLineEdit(value["values"].get(field["key"], ""))
+                        widget.setToolTip(field["hint"])
+                        self.profile_widgets[field["key"]] = widget
+                        self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
                 service = key.removeprefix("service:")

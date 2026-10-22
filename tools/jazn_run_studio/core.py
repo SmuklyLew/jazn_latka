@@ -26,6 +26,7 @@ from typing import Any
 
 from latka_jazn.tools.jazn_studio.core import verified_root
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from .external import spawn, environment, run as run_external
 
 MAX_OUTPUT = 2 * 1024 * 1024
 MAX_LINE = 16384
@@ -102,6 +103,7 @@ STUDIOS = (
     Studio("dependencies", "Zależności", ("-m", "latka_jazn.tools.dependency_studio", "--ui", "window"), "Profile i zweryfikowany wheelhouse."),
     Studio("python", "Python Runtime", ("-m", "latka_jazn.tools.python_runtime_studio", "--ui", "window"), "Zarządzanie interpreterami."),
     Studio("start", "Studio Startu (klasyczne)", ("tools/jazn_start_studio.py",), "Dotychczasowa konsola operatora."),
+    Studio("versions", "Wersje i metadane", ("tools/jazn_version_rebuild.py",), "Wersjonowanie, backup i kanoniczne metadane."),
 )
 
 
@@ -122,6 +124,9 @@ class Settings:
     model: str = ""
     theme: str = "system"
     accent: str = "#9876d4"
+    cloudflare_url: str = ""
+    secrets_file: str = ""
+    runtime_profile: str = "off"
 
     @classmethod
     def validate(cls, data: dict[str, Any]) -> Settings:
@@ -134,13 +139,18 @@ class Settings:
             raise StudioError("Nieznany motyw")
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", obj.accent):
             raise StudioError("Kolor wymaga formatu #RRGGBB")
-        for path in (obj.python, obj.ollama, obj.cloudflared, obj.tunnel_config):
+        for path in (obj.python, obj.ollama, obj.cloudflared, obj.tunnel_config, obj.secrets_file):
             if path and (not Path(path).is_absolute() or not Path(path).is_file()):
                 raise StudioError("Wskaż istniejący plik przez ścieżkę absolutną")
         if obj.tunnel_id and not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}", obj.tunnel_id):
             raise StudioError("Nieprawidłowa nazwa / UUID tunelu")
         if obj.model and (obj.model.startswith("-") or not re.fullmatch(r"[\w./:@-]{1,200}", obj.model)):
             raise StudioError("Nieprawidłowa nazwa modelu")
+        if obj.cloudflare_url:
+            from latka_jazn.tools.jazn_studio.core import StudioSettings
+            StudioSettings.validate({"cloudflare_url": obj.cloudflare_url})
+        if obj.runtime_profile not in {"off", "operator"}:
+            raise StudioError("Profil runtime: off albo operator")
         return obj
 
 
@@ -200,7 +210,7 @@ def executable(explicit: str, name: str) -> str:
 
 def discovery(settings: Settings) -> dict[str, Any]:
     return {
-        "python": python_executable(settings),
+        "python": settings.python or os.environ.get("JAZN_STUDIO_PYTHON") or (None if getattr(sys, "frozen", False) else sys.executable),
         "python_version": sys.version.split()[0],
         "ollama": settings.ollama or shutil.which("ollama"),
         "cloudflared": settings.cloudflared or shutil.which("cloudflared"),
@@ -247,6 +257,7 @@ class Job:
     done: threading.Event = field(default_factory=threading.Event, repr=False)
     cancel: threading.Event = field(default_factory=threading.Event, repr=False)
     output: bytearray = field(default_factory=bytearray, repr=False)
+    input_data: bytes | None = field(default=None, repr=False)
 
     def snapshot(self) -> dict[str, Any]:
         return {k: getattr(self, k) for k in ("key", "state", "pid", "returncode", "error", "started", "finished")}
@@ -264,6 +275,7 @@ class Controller:
         self.events: queue.Queue[tuple[str, str, Any]] = queue.Queue(maxsize=5000)
         self.lock = threading.RLock()
         self.closed = False
+        self.chat: Any = None
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -337,6 +349,84 @@ class Controller:
         self._launch(job, argv, None)
         return job
 
+    def probe(self, key: str) -> Job:
+        from . import probes
+        calls = {"ollama": lambda: probes.ollama(self.settings.model), "gateway": probes.gateway,
+                 "cloudflare": lambda: probes.cloudflare(self.settings.cloudflare_url),
+                 "tunnel_service": lambda: probes.tunnel_service(self.root)}
+        if key not in calls:
+            raise StudioError("Nieznany test połączenia")
+        job = self._reserve("probe:" + key)
+        def worker() -> None:
+            try:
+                job.state = "running"
+                evidence = calls[key]()
+                self.emit(job.key, "probe", evidence)
+                self.emit(job.key, "log", json.dumps(evidence, ensure_ascii=False))
+                job.state = "succeeded"
+            except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                job.state, job.error = "failed", type(exc).__name__
+                self.emit(job.key, "log", "Test połączenia nie powiódł się: " + type(exc).__name__)
+            finally:
+                job.finished = time.time()
+                job.done.set()
+                self.emit(job.key, "state", job.snapshot())
+        threading.Thread(target=worker, daemon=True).start()
+        return job
+
+    def connect_chat(self) -> None:
+        if self.chat is None:
+            from .chat import ChatClient
+            self.chat = ChatClient(self)
+        self.chat.connect()
+
+    def child_environment(self, *, profile: bool = False) -> dict[str, str]:
+        env = environment()
+        if profile and self.settings.runtime_profile == "operator":
+            result = run_external([python_executable(self.settings), "-X", "utf8", "-m",
+                                  "tools.jazn_run_studio.studio_worker", "profile-env"], cwd=self.root, timeout=35)
+            if result.returncode or len(result.stdout) > 32768:
+                raise StudioError("Walidacja profilu przyszłego uruchomienia nie powiodła się")
+            values = json.loads(result.stdout)
+            if not isinstance(values, dict):
+                raise StudioError("Niepoprawny profil środowiska")
+            env.update(values)
+        if self.settings.secrets_file:
+            target = _path_without_links(Path(self.settings.secrets_file))
+            if target.is_relative_to(self.root):
+                if not target.is_relative_to(workspace_runtime_path(self.root)):
+                    checked = run_external(["git", "check-ignore", "--quiet", "--", str(target)], cwd=self.root, timeout=5)
+                    if checked.returncode:
+                        raise StudioError("Plik sekretów wewnątrz SYSTEM musi być ignorowany przez Git")
+            if target.stat().st_size > 16384:
+                raise StudioError("Plik sekretów przekracza 16 KiB")
+            values = json.loads(target.read_bytes())
+            allowed = {"JAZN_MEMORY_CLOUD_TOKEN", "JAZN_MEMORY_WRITER_LEASE_TOKEN", "JAZN_MCP_OAUTH_CLIENT_SECRET", "TUNNEL_TOKEN"}
+            if not isinstance(values, dict) or set(values) - allowed or any(not isinstance(v, str) or not v or "\0" in v or "\n" in v for v in values.values()):
+                raise StudioError("Nieprawidłowe pola pliku sekretów")
+            env.update(values)
+            with self.lock:
+                self.redactor.values = sorted(set(self.redactor.values) | set(values.values()), key=len, reverse=True)
+        return env
+
+    def studio_helper(self, mode: str, key: str = "", data: dict[str, Any] | None = None) -> Job:
+        if mode not in {"schema", "execute", "profile-read", "profile-save"}:
+            raise StudioError("Nieznana operacja Studio")
+        if mode in {"schema", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
+            raise StudioError("Nieznane Studio")
+        job = self._reserve("helper:" + mode + ":" + key)
+        if data is not None:
+            job.input_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
+            if len(job.input_data) > 65536:
+                job.done.set()
+                job.state = "failed"
+                raise StudioError("Zbyt duże dane operacji")
+        argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
+        if key:
+            argv.append(key)
+        self._launch(job, argv, 7200 if mode == "execute" else 45)
+        return job
+
     def _launch(self, job: Job, argv: list[str], timeout: int | None) -> None:
         threading.Thread(target=self._run, args=(job, argv, timeout), daemon=True,
                          name="studio-" + job.key).start()
@@ -358,7 +448,8 @@ class Controller:
                     job.cancel.set()
             for byte in chunk:
                 if byte == 10:
-                    self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace").rstrip("\r"))
+                    if not job.key.startswith(("helper:schema:", "helper:profile-")):
+                        self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace").rstrip("\r"))
                     pending.clear()
                     overflow = False
                 elif not overflow:
@@ -367,19 +458,16 @@ class Controller:
                         overflow = True
                     else:
                         pending.append(byte)
-        if pending or overflow:
+        if (pending or overflow) and not job.key.startswith(("helper:schema:", "helper:profile-")):
             self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace"))
         pipe.close()
 
     def _run(self, job: Job, argv: list[str], timeout: int | None) -> None:
         try:
-            env = dict(os.environ)
-            env["PYTHONUTF8"] = "1"
             # Never pass shell text; the retained handle is the ownership proof.
-            proc = subprocess.Popen(argv, cwd=self.root, stdin=subprocess.DEVNULL,
+            proc = spawn(argv, cwd=self.root, stdin=subprocess.PIPE if job.input_data is not None else subprocess.DEVNULL,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    env=env, shell=False,
-                                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+                                    env=self.child_environment(profile=job.key in {"start", "restart"}))
             with self.lock:
                 job.proc = proc
                 job.pid = proc.pid
@@ -388,6 +476,11 @@ class Controller:
             assert proc.stdout is not None
             reader = threading.Thread(target=self._read, args=(job, proc.stdout), daemon=True)
             reader.start()
+            if job.input_data is not None:
+                assert proc.stdin is not None
+                proc.stdin.write(job.input_data)
+                proc.stdin.close()
+                job.input_data = None
             deadline = time.monotonic() + timeout if timeout else None
             while proc.poll() is None:
                 if job.cancel.wait(0.05) or (deadline is not None and time.monotonic() >= deadline):
@@ -426,6 +519,11 @@ class Controller:
                 except ValueError:
                     job.state = "failed"
                     job.error = "invalid_status_json"
+            if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:profile-")):
+                try:
+                    self.emit(job.key, "helper", json.loads(raw))
+                except ValueError:
+                    job.state, job.error = "failed", "invalid_helper_json"
             job.done.set()
             self.emit(job.key, "state", job.snapshot())
 

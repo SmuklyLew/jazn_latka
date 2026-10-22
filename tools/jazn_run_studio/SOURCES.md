@@ -13,6 +13,7 @@ by feature so subsequent stages can verify signatures without repeating discover
 | Child process execution and timeout | https://docs.python.org/3/library/subprocess.html | argv arrays, shell=False, retained ownership handles, terminate/wait/kill |
 | Native deployment | https://doc.qt.io/qtforpython-6/deployment/index.html | Existing repo PyInstaller approach retained; Qt provides other deployment tooling |
 | PyInstaller onedir and options | https://pyinstaller.org/en/stable/usage.html | External SYSTEM remains separate; explicit build/work/dist locations |
+| Frozen external child process environment | https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html | Restore external DLL paths and original Unix library variables when spawning system tools |
 | Qt license notices | https://doc.qt.io/qtforpython-6/licenses.html | Distribution review is a release gate; no invented project license |
 | Ollama model discovery | https://docs.ollama.com/api/tags | GET /api/tags is model listing, not proof of accepted Jaźń generation |
 | cloudflared installation | https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/ | Official installation links only |

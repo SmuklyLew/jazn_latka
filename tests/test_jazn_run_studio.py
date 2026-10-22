@@ -213,11 +213,14 @@ def test_optional_qt_dependency_uses_canonical_profile() -> None:
 @pytest.mark.skipif(os.name != "nt", reason="Windows loader PATH contract")
 def test_windows_build_does_not_scan_foreign_dll_directories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from tools.jazn_run_studio import build
+    import importlib.util
+    from types import SimpleNamespace
     observed: dict = {}
     def run(argv: list[str], **kwargs):
         observed.update(kwargs)
         return type("Result", (), {"returncode": 0})()
     monkeypatch.setenv("PATH", "Z:\\foreign-tools\\bin")
+    monkeypatch.setattr(importlib.util, "find_spec", lambda _name: SimpleNamespace(origin=str(tmp_path / "PySide6" / "__init__.py")))
     monkeypatch.setattr(sys, "argv", ["build.py", "--output", str(tmp_path / "new-build")])
     monkeypatch.setattr(build.subprocess, "run", run)
     assert build.main() == 0

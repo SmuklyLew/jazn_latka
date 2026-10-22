@@ -44,17 +44,49 @@ point to the official publishers. Missing dependencies are explicit errors.
   unverified. Runtime status preserves separate identity, heartbeat, endpoint and
   conversation-readiness fields.
 - Existing studios open using their canonical entrypoints. Their existing Tk
-  interfaces are still present in this checkpoint; a common Qt migration is pending.
+  interfaces remain an explicit optional choice. The shared Qt forms now expose
+  canonical Memory/Rebuild, Tests, Package Generator, Dependency and Python
+  Runtime commands. Forms are derived from their original argparse definitions;
+  original business logic validates and executes each operation. Configuration
+  profiles are editable in the same Qt settings page. Specialized legacy visual
+  inspectors and the Version Rebuild window remain separate.
 - Reports contain the bounded logs of every job, job states and exit codes.
   Secret-like assignments and inherited secret values are filtered before display
   or export. Export creates a new file exclusively and never overwrites a source file.
 - Closing Studio asks before cancelling its owned jobs. Daemon stop is a separate
   explicit runtime action. The application waits asynchronously for child shutdown.
 
-Settings are secret-free JSON under `workspace_runtime/jazn_run_studio/`, ignored
-by Git. Saves check the previous content hash and replace atomically. Runtime ENV
-profiles continue to use Configuration Studio validation. This checkpoint does
-not add a secret editor, import arbitrary ENV files, or support paid OpenAI API.
+Settings are secret-free JSON under the canonical
+`workspace_runtime/jazn_run_studio/`, ignored by Git. Saves check the previous
+content hash and replace atomically. An optional `operator` profile is validated
+by Configuration Studio and applied to future runtime/chat starts only.
+
+An optional secrets JSON file must live outside SYSTEM, in its canonical ignored
+workspace, or in a path confirmed ignored by Git. Supported keys are
+`JAZN_MCP_OAUTH_CLIENT_SECRET`, `JAZN_MEMORY_CLOUD_TOKEN`,
+`JAZN_MEMORY_WRITER_LEASE_TOKEN`, and `TUNNEL_TOKEN`. Values enter only child
+environments and the redaction registry; they are never copied into settings or
+reports. The file is never sourced as executable shell code. Editing secret
+values stays in the operator's local editor. Paid OpenAI API remains future work.
+
+## Local chat
+
+Start the runtime and Ollama explicitly, verify the model list, select a model in
+settings, then connect the Local Chat page. Studio keeps one `run.py chat-ollama`
+JSONL pipe and one stable session. Each request ID is saved **before** sending;
+the checkpoint contains no user message. Only the canonical local final validator
+may release text to the chat view, with request binding and turn/trace lineage.
+
+On interrupted or uncertain transport, use **Wznów wynik**. It retrieves the same
+daemon request through `run.py --daemon-result`; it never resubmits user text.
+Until that request is resolved, a new message is blocked. Closing the transport
+does not stop the daemon. Conversation text is displayed locally but is not added
+to the shared diagnostic log export.
+
+Read-only service probes are also available from the terminal:
+`python -X utf8 jazn_run_studio.py --probe ollama` (or `gateway`, `cloudflare`,
+`tunnel_service`). HTTP, model availability, daemon identity and accepted speech
+are reported as separate evidence.
 
 ## Build
 
@@ -70,6 +102,10 @@ directory together. This is a desktop operator for an external SYSTEM, not a
 frozen copy of the runtime. Set `JAZN_ROOT` to that SYSTEM and
 `JAZN_STUDIO_PYTHON` to a real Python interpreter, or use the corresponding
 settings. Build diagnostics can use `--console`.
+`BUILD_INFO.json` records the source commit and tool versions. PySide6 and
+shiboken distribution metadata/license notices are copied into the artifact.
+External child launches restore system DLL/library paths as prescribed by
+PyInstaller, preventing the desktop's bundled Qt from contaminating runtime tools.
 
 GitHub workflow `jazn-run-studio` tests Windows/Linux on Python 3.12/3.14 and
 builds a Windows onedir artifact after tests. Actual CI outcomes are separate
