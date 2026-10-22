@@ -17,6 +17,9 @@ export function auditGateway(config, productionServiceId, { template = false } =
   const errors = [];
   const refuse = (condition, code) => { if (condition) errors.push(code); };
   refuse(config.name !== 'jazn-runtime-staging', 'worker_name_invalid');
+  // Non-secret console variables are managed separately from the VPC binding.
+  // A deploy must not silently remove them from an existing staging Worker.
+  refuse(config.keep_vars !== true, 'keep_vars_required');
   refuse(config.main !== 'worker.mjs', 'worker_entrypoint_invalid');
   refuse(config.workers_dev !== true || config.preview_urls !== false, 'worker_exposure_flags_invalid');
   refuse(config.compatibility_date !== '2026-10-14', 'compatibility_date_invalid');
