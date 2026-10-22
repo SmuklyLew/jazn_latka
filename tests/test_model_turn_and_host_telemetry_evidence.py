@@ -24,7 +24,7 @@ def test_completed_adapter_response_retains_turn_lineage_and_real_model() -> Non
         text="OK", provider="ollama", model="gemma3:latest",
         status="completed", adapter_id="local_llm_adapter",
         endpoint_used="/api/chat",
-        transport={"attempts": [{"actual_model": "gemma3:latest"}]},
+        transport={"attempts": [{"actual_model": "gemma3:latest", "actual_model_source": "provider_response"}]},
     )
     info = model_turn_evidence(req, response)
     assert info["lineage_verified"] is True
@@ -32,6 +32,22 @@ def test_completed_adapter_response_retains_turn_lineage_and_real_model() -> Non
     assert info["model_identity_verified_from_provider"] is True
     assert info["turn_id"] == "t42"
     assert info["trace_id"] == "x42"
+
+
+def test_configured_model_fallback_never_passes_as_provider_identity() -> None:
+    req = ModelAdapterRequest(prompt="test", metadata={"turn_id": "t45", "trace_id": "x45"})
+    response = ModelAdapterResponse(
+        text="OK", provider="ollama", model="gemma3:latest",
+        status="completed", endpoint_used="/api/chat",
+        transport={"attempts": [
+            {"actual_model": "gemma3:latest", "actual_model_source": "configured_fallback"},
+        ]},
+    )
+    evidence = model_turn_evidence(req, response)
+    assert evidence["generation_observed"] is True
+    assert evidence["model_identity_verified_from_provider"] is False
+    assert evidence["transport_observed_model"] is None
+    assert evidence["model_name_origin"] == "configured_fallback"
 
 
 def test_configured_model_label_alone_is_never_transport_verified() -> None:
