@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-22T01:24:44+00:00",
-  "updated_at_utc": "2026-10-22T01:24:44+00:00",
+  "generated_at_utc": "2026-10-22T02:51:30+00:00",
+  "updated_at_utc": "2026-10-22T02:51:30+00:00",
   "start_file": "run.py",
-  "file_count": 3254,
-  "static_file_count": 3254,
+  "file_count": 3256,
+  "static_file_count": 3256,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "57bf7ac87f81d7fec585cfb5f5054dbcea7bc0692490ecb590a5dbf235b5cca8",
+      "size_bytes": 2932,
+      "sha256": "98e4a772f4a919acd719a3392f92116f46b1c58ac421aa8ed643c943de46fde4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -496,6 +496,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/staging-preflight.mjs",
+      "size_bytes": 5094,
+      "sha256": "7ee21d616dcf6174f3b33da87a14411a3dd5f05e29c451c71cb3c4f17ab3a5e1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "deploy/chatgpt_mcp/workers_github_oauth/test/deployment-boundary.test.mjs",
       "size_bytes": 1494,
       "sha256": "09094fb809c13afe6d3ba4be1824045db3a6cf2a4259fc10cda19d1346c2f646",
@@ -517,6 +526,15 @@
       "path": "deploy/chatgpt_mcp/workers_github_oauth/test/staging-isolation.test.mjs",
       "size_bytes": 2535,
       "sha256": "dedcf22039913f6c46722b6c852dd8bbf7c969305a27e0e66633b69d02992e4f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "deploy/chatgpt_mcp/workers_github_oauth/test/staging-preflight.test.mjs",
+      "size_bytes": 2905,
+      "sha256": "f4e16e56b2065485e160d3a1dd8a2e19841bed9d217d29db622c7391ba334e0d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
