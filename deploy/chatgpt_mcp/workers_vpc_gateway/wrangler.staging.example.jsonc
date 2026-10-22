@@ -1,0 +1,16 @@
+{
+  // TEMPLATE ONLY — a distinct, nonproduction VPC Service is required.
+  // Copy to an untracked local file; do NOT deploy a placeholder.
+  // Never reuse the production service or turn on verified_oauth_proxy by default.
+  "name": "jazn-runtime-staging",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-14",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vpc_services": [
+    {
+      "binding": "JAZN_PRIVATE_MCP",
+      "service_id": "REPLACE_WITH_ISOLATED_STAGING_VPC_SERVICE_ID"
+    }
+  ]
+}
