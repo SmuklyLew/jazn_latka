@@ -10,8 +10,8 @@ import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "tools"))
-from jazn_start_studio import (  # noqa: E402
+sys.path.insert(0, str(ROOT))
+from tools.jazn_start_studio import (  # noqa: E402
     StudioCore, STUDIO_VERSION, TASK_INDEX, TASKS, MAX_LOG_LINES,
     read_only_check, safe_line,
 )
