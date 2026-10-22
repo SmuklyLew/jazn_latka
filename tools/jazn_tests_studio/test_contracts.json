@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.41",
-  "active_definition_count": 2527,
+  "active_definition_count": 2532,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -37397,6 +37397,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 115
+    },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_adapter_status_is_not_a_completed_model_generation": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_adapter_status_is_not_a_completed_model_generation",
+      "purpose": "Adapter status is not a completed model generation",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_completed_adapter_response_retains_turn_lineage_and_real_model": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_completed_adapter_response_retains_turn_lineage_and_real_model",
+      "purpose": "Completed adapter response retains turn lineage and real model",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_configured_model_label_alone_is_never_transport_verified": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_configured_model_label_alone_is_never_transport_verified",
+      "purpose": "Configured model label alone is never transport verified",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_ram_telemetry_without_trusted_os_measurement_is_unknown": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_ram_telemetry_without_trusted_os_measurement_is_unknown",
+      "purpose": "Ram telemetry without trusted os measurement is unknown",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_model_turn_and_host_telemetry_evidence.py::test_ram_percentage_retains_os_origin_and_timestamp": {
+      "path": "tests/test_model_turn_and_host_telemetry_evidence.py",
+      "name": "test_ram_percentage_retains_os_origin_and_timestamp",
+      "purpose": "Ram percentage retains os origin and timestamp",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.telemetry_evidence",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.turn_evidence"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
     },
     "tests/test_new_chat_context_feedback.py::test_new_chat_correction_routes_as_feedback_not_package_health": {
       "path": "tests/test_new_chat_context_feedback.py",
