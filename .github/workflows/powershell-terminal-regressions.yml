@@ -28,6 +28,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Parse Jaźń MCP local operator script (no daemon required)
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'tools/windows/Test-JaznLocalMcp.ps1'),
+            [ref]$tokens, [ref]$parseErrors
+          )
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+
       - name: Set up Python 3.12.9 (complete Windows Tcl/Tk)
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
