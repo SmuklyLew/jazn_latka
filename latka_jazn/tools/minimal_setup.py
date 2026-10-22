@@ -14,6 +14,7 @@ import sys
 from typing import Any
 from urllib import request
 
+from latka_jazn.core.telemetry_evidence import sample_host_memory
 from latka_jazn.tools.configuration_studio import (
     profile_file, profile_snapshot, save_profile, system_root,
 )
@@ -54,7 +55,7 @@ def _probe_ollama(url: str = LOCAL_OLLAMA, *, timeout: float = 2.5) -> dict[str,
     return result
 
 
-def inspect_minimal_setup(root: Path, *, probe_ollama: bool = False) -> dict[str, Any]:
+def inspect_minimal_setup(root: Path, *, probe_ollama: bool = False, probe_ram: bool = False) -> dict[str, Any]:
     root = system_root(root)
     dependencies = {name: find_spec(name) is not None for name in REQUIRED_MCP_IMPORTS}
     profile, digest = profile_snapshot(root)
@@ -71,6 +72,7 @@ def inspect_minimal_setup(root: Path, *, probe_ollama: bool = False) -> dict[str
         "future_profile_overrides": sorted(profile),
         "recommended_future_profile": dict(FUTURE_PROFILE),
         "ollama": _probe_ollama() if probe_ollama else {"status": "not_probed", "source": None},
+        "ram": sample_host_memory() if probe_ram else {"status": "not_probed", "physical_ram_percent_used": None},
         "daemon_ready_verified": False,
         "mcp_tools_verified": False,
         "oauth_ready_verified": False,
@@ -90,6 +92,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=".", help="Verified SYSTEM root")
     parser.add_argument("--probe-ollama", action="store_true",
                         help="Opt-in local /api/tags and /api/ps observation")
+    parser.add_argument("--probe-ram", action="store_true",
+                        help="Opt-in current host OS RAM measurement with source")
     parser.add_argument("--create-profile", action="store_true",
                         help="Explicitly create missing future-run operator profile; never overwrite")
     parser.add_argument("--json", action="store_true")
@@ -100,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         if digest is not None:
             parser.error("operator profile exists; no silent overwrite")
         save_profile(root, FUTURE_PROFILE, expected_sha256=None)
-    report = inspect_minimal_setup(root, probe_ollama=args.probe_ollama)
+    report = inspect_minimal_setup(root, probe_ollama=args.probe_ollama, probe_ram=args.probe_ram)
     if args.create_profile:
         report["read_only"] = False
         report["profile_created"] = True
