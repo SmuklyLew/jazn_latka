@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
   "runtime_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
   "package_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
-  "generated_at_utc": "2026-10-22T09:27:30+00:00",
-  "updated_at_utc": "2026-10-22T09:27:30+00:00",
+  "generated_at_utc": "2026-10-22T09:30:23+00:00",
+  "updated_at_utc": "2026-10-22T09:30:23+00:00",
   "start_file": "run.py",
-  "file_count": 3267,
-  "static_file_count": 3267,
+  "file_count": 3270,
+  "static_file_count": 3270,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2925,
-      "sha256": "012c81ee67964e6312cbe268d6bd004e857dc6c4652fa32b83bf7165fbeb8210",
+      "sha256": "938e5936f3d4798a93cd9bcce2736d44e693cc23092e1e3886dcf2c11ba149d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10561,6 +10561,15 @@
       "path": "latka_jazn/tools/migration_report.py",
       "size_bytes": 240,
       "sha256": "0fc58960073813724eb9d6c6e150a908a48df3cab50977fbf57e1e9ad0bd6bdf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/minimal_setup.py",
+      "size_bytes": 5267,
+      "sha256": "a52c587b29bf179cd37d2d5e6bae8e04c81360927b5820372490f9a9dd08ff72",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27361,6 +27370,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_minimal_setup_preflight.py",
+      "size_bytes": 2186,
+      "sha256": "62673636301747c350426023a0263bb2798d73addfc8c852350fe79f8a78a1b6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_model_executor_preflight.py",
       "size_bytes": 2950,
       "sha256": "3892d3280033c60df762dffcb6ae120eb1c428be55508660e48bf19a54a1a249",
@@ -28918,6 +28936,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_minimal_setup.py",
+      "size_bytes": 400,
+      "sha256": "b4ab33031eeaff9dee977bc77862a5e5469369dc3be95173414405974d4a8f57",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_pack_generator.py",
       "size_bytes": 9781,
       "sha256": "b10dc93598d8c308007950662ce8636ed1c82745079678874232509f0a27b868",
@@ -29207,8 +29234,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2324205,
-      "sha256": "09199f2ec2a8c2729c6b79f5654e0eb875a4587bc5acdc51a98024246bccb653",
+      "size_bytes": 2327333,
+      "sha256": "63281421d35ab232365662f16fadbe53bf68c53c07399e7efe4a9f25563a2218",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
