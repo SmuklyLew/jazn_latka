@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-  "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-  "package_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-  "generated_at_utc": "2026-10-22T12:14:14+00:00",
-  "updated_at_utc": "2026-10-22T12:14:14+00:00",
+  "version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+  "runtime_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+  "package_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+  "generated_at_utc": "2026-10-22T13:39:49+00:00",
+  "updated_at_utc": "2026-10-22T13:39:49+00:00",
   "start_file": "run.py",
-  "file_count": 3280,
-  "static_file_count": 3280,
+  "file_count": 3292,
+  "static_file_count": 3292,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -182,8 +182,17 @@
     },
     {
       "path": ".github/workflows/jazn-operations-studio-windows.yml",
-      "size_bytes": 4951,
-      "sha256": "458cd524597a92d7f7a8a2d2406c0fc653f58a236fa3e9084490e87980a1fc91",
+      "size_bytes": 4962,
+      "sha256": "9de9e607ae24e9038f1db9b2eb0e7665c2161d3201b60d95f5df6ecd5fcd0ce8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/jazn-run-studio.yml",
+      "size_bytes": 2675,
+      "sha256": "c77a00cc4b4f47e9000f757335efcd373b27953735c18ddb820e4f639ebe093d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -254,8 +263,8 @@
     },
     {
       "path": ".github/workflows/pyright-active-tree-audit.yml",
-      "size_bytes": 2787,
-      "sha256": "9808834e6e9e7163810ac00de19dd7dc2c72cefe80b55760d64195d395dcf6f2",
+      "size_bytes": 2798,
+      "sha256": "1f825d0d484792663642340a886e26118c36bd04852df5385f9829991025ae52",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -272,8 +281,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 20817,
-      "sha256": "993452cbe53b00473a54349aa8739f0698ab890fbd9bdf1aec7c5dd7560e50d5",
+      "size_bytes": 20829,
+      "sha256": "f02d43e05a485a80ff21446a0bda6805bcd320bf6d987a70053f64839a4bb298",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2969,
-      "sha256": "b2b592c0fa7df9473176d231a1142d9fb9e1b3fba2c5f2cf315c28c596172375",
+      "size_bytes": 2962,
+      "sha256": "d6f1ee468fd0031cb589cb1340c876b2ef38441e3fdfbb5fced6fc301839882c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3910,6 +3919,15 @@
       "path": "jazn_project/tests/test_jazn.py",
       "size_bytes": 50,
       "sha256": "04e602fcc2065b99e6c0361c84bdb4e17015de6180c249e4738c53ec6bd86a05",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "jazn_run_studio.py",
+      "size_bytes": 198,
+      "sha256": "36edf10163aebb83ca209ae80daad238ffec59980e42aeb63e1f5e08f9dc01d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9155,8 +9173,8 @@
     },
     {
       "path": "latka_jazn/resources/dependencies/profiles.json",
-      "size_bytes": 2059,
-      "sha256": "fd259647dc51663b62b207443d3bd5e7c8a56c9072f6fe5407a81c5199e3c78b",
+      "size_bytes": 2202,
+      "sha256": "990acf208443be52200b82bcc2a843bf19f5e0c2a026845a255a999b1311c404",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10793,8 +10811,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14153,
-      "sha256": "5ad03db1a8bbc072ad889d1ab9444fac535417bfd4b5c918eed430b1e2054a60",
+      "size_bytes": 14151,
+      "sha256": "faef924c4fec5644d08f3e94a12c7489f54b030b00415247f199f0205b06b8a5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10910,8 +10928,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2287,
-      "sha256": "082a80a86df53c68219708a19b74b9eee40fa413c6cd47b36009c14a989d174e",
+      "size_bytes": 2340,
+      "sha256": "300a358edc28a4777b0831935e355979496c62385b7120f1eaf7a87313b8d791",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26407,6 +26425,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_run_studio.py",
+      "size_bytes": 8686,
+      "sha256": "b30cc889890c98d220adb14b32c9d14512a2abcefd40564ee76efa760af1512c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_start_studio.py",
       "size_bytes": 4114,
       "sha256": "b6826d7ad45b89092e4c566197953ad9f1b44e4992a98ae33db79ea4453054e6",
@@ -29179,6 +29206,87 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/ACCEPTANCE.md",
+      "size_bytes": 5704,
+      "sha256": "5de51227fcbe7cf3f75a203fddd848d3c695c7814ded801372281e7e46ebbe7e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/README.md",
+      "size_bytes": 4107,
+      "sha256": "e5968b3d6f8f2f2d8a6f10ce84b68d9c5ecf270eb7233690beda8c38362a6cbb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/SOURCES.md",
+      "size_bytes": 3018,
+      "sha256": "88628bf436ce3ce2924fa41d0614f31bbd842ccbe8bfe8f72d0a3b78c8f91cca",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/__init__.py",
+      "size_bytes": 105,
+      "sha256": "3265eff27b4d63cb44735344e3b0c92f1a0fdf89b425203f06a7626fa9badd71",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/app.py",
+      "size_bytes": 2070,
+      "sha256": "b5e2b89f9d709c0d53edb59101bdeda0146aa5f69aee4e022588d5b0a211b810",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/build.py",
+      "size_bytes": 1765,
+      "sha256": "a0a4b622a7163d5e30b2f50d618f2c762f664d754d4dfc484467aa6acac1a7ad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/core.py",
+      "size_bytes": 22895,
+      "sha256": "c3302842290935e2312da30104bd8043979f3d9c11c33ae773aee180c3a1c7a2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/requirements.txt",
+      "size_bytes": 220,
+      "sha256": "88af67014fb994614c4498d336412e06a47e1e99aa57be3e1cd02ea4539756d0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/window.py",
+      "size_bytes": 15397,
+      "sha256": "d5beb08e1277c92ba5b9cd72880a80fa9060cfe2881909f1d4e5f022cb986359",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_start_studio.py",
       "size_bytes": 27533,
       "sha256": "9980e2062c685547555ba5b7a406fa90d6af12ab73a56a891fddd6a7cb76fcf5",
@@ -29315,8 +29423,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2334290,
-      "sha256": "3a59a68b207506df97aac85735f16cfdf8048a8e51b2d5dbacc8870cf21519cd",
+      "size_bytes": 2347451,
+      "sha256": "a7c765051bb34ba4aca43759f365fdd12ace85a9470ef9c24c2c887ebc7aaaaf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29972,11 +30080,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "release_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-    "package_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-    "release_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight"
+    "runtime_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+    "package_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+    "release_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation"
   },
   "legacy_aliases": {
     "version": "release_version"
