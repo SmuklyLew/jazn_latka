@@ -7,12 +7,14 @@ on:
     paths:
       - ".github/workflows/jazn-github-oauth-staging.yml"
       - "deploy/chatgpt_mcp/workers_github_oauth/**"
+      - "deploy/chatgpt_mcp/workers_vpc_gateway/**"
   pull_request:
     branches:
       - master
     paths:
       - ".github/workflows/jazn-github-oauth-staging.yml"
       - "deploy/chatgpt_mcp/workers_github_oauth/**"
+      - "deploy/chatgpt_mcp/workers_vpc_gateway/**"
   workflow_dispatch:
 
 permissions:
@@ -40,6 +42,8 @@ jobs:
       - name: Reject unsafe staging template before bundle build
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npm run preflight:template
+      - name: Verify isolated VPC staging template (no deployment)
+        run: node --test deploy/chatgpt_mcp/workers_vpc_gateway/staging-config.test.mjs
       - name: Compile and check Worker bundle without deploying
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npx --no-install wrangler deploy --dry-run --outdir build-preview
