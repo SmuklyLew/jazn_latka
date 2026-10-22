@@ -162,5 +162,6 @@ def test_shutdown_marker_reuses_last_evidence_without_full_reverification(
     assert marker["runtime_process_active"] is False
     assert marker["active_state"] == "inactive"
     assert marker["daemon_instance_id"] == "verified-instance"
-    assert isinstance(marker["runtime_daemon"], dict)
-    assert marker["runtime_daemon"]["status"] == runtime_daemon.DAEMON_MARKER_STATUS_STOPPED
+    nested = marker["runtime_daemon"]
+    assert isinstance(nested, dict)
+    assert nested["status"] == runtime_daemon.DAEMON_MARKER_STATUS_STOPPED
