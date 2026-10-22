@@ -30,6 +30,7 @@ DAEMON_PORT = 8787
 MAX_LOG_LINES = 2500
 MAX_HTTP_BYTES = 256 * 1024
 WINDOWS = os.name == "nt"
+NEW_PROCESS_GROUP = 0x00000200  # Windows CREATE_NEW_PROCESS_GROUP
 
 # Never accept arbitrary shell snippets: every command has an argv contract.
 @dataclass(frozen=True)
@@ -220,7 +221,7 @@ class StudioCore:
                                  stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL,
                                  stderr=subprocess.DEVNULL,
-                                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                                 creationflags=NEW_PROCESS_GROUP)
                 self.emit(key, "INFO", "Przekazano uruchomienie aplikacji; sprawdź API osobno")
                 self._set(key, "przekazano start (niezweryfikowany)")
             else:
@@ -232,23 +233,25 @@ class StudioCore:
         finally:
             if self._current(key, gen):
                 with self.lock:
-                    self.states[key].owned = False
-                    self.states[key].proc = None
+                    state = self.states[key]
+                    if state.proc is None or state.proc.poll() is not None:
+                        state.owned = False
+                        state.proc = None
+                    else:
+                        state.status = "wymaga ręcznego zatrzymania"
+                        self.emit(key, "WARN", "Własny proces nadal działa; nie utracono właściciela PID")
 
     def _process(self, task: Task, gen: int) -> None:
         key = task.key
         command = self.command(task)
-        options = dict(
-            args=command, cwd=str(self.root),
+        proc = subprocess.Popen(
+            command, cwd=str(self.root),
             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True, encoding="utf-8",
             errors="replace", bufsize=1, shell=False,
+            creationflags=NEW_PROCESS_GROUP if WINDOWS else 0,
+            start_new_session=not WINDOWS,
         )
-        if WINDOWS:
-            options["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-        else:
-            options["start_new_session"] = True
-        proc = subprocess.Popen(**options)
         with self.lock:
             state = self.states[key]
             if state.generation != gen:
@@ -314,30 +317,30 @@ class StudioCore:
         cmd = [self.python, "-X", "utf8", str(path), "--root", str(self.root),
                "--daemon-url", "http://127.0.0.1:8787"]
         self.emit(key, "INFO", "Test lokalny MCP stdio: initialize oraz tools/list; bez wywołania narzędzi")
-        options = dict(
-            args=cmd, cwd=str(self.root),
+        proc = subprocess.Popen(
+            cmd, cwd=str(self.root),
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True, encoding="utf-8",
             errors="replace", bufsize=1, shell=False,
+            creationflags=NEW_PROCESS_GROUP if WINDOWS else 0,
+            start_new_session=not WINDOWS,
         )
-        if WINDOWS:
-            options["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-        else:
-            options["start_new_session"] = True
-        proc = subprocess.Popen(**options)
         inbox: queue.Queue[str] = queue.Queue(maxsize=1000)
         with self.lock:
             self.states[key].proc = proc
             self.states[key].owned = True
+        rpc_stdout = proc.stdout
+        if rpc_stdout is None:
+            raise RuntimeError("MCP stdout unavailable")
         def read_rpc() -> None:
             try:
-                for line in proc.stdout:
+                for line in rpc_stdout:
                     try:
                         inbox.put_nowait(line)
                     except queue.Full:
                         break
             finally:
-                proc.stdout.close()
+                rpc_stdout.close()
         reader = threading.Thread(target=read_rpc, daemon=True)
         reader.start()
         stderr_thread = threading.Thread(
@@ -436,7 +439,7 @@ class StudioCore:
     def active(self) -> list[str]:
         with self.lock:
             return [key for key, st in self.states.items()
-                    if st.status in ("uruchamianie", "działa", "zatrzymywanie")
+                    if st.status in ("uruchamianie", "działa", "zatrzymywanie", "wymaga ręcznego zatrzymania")
                     or st.status.startswith(("działa PID", "probe PID", "śledzenie"))]
 
 
@@ -580,11 +583,15 @@ def run_studio(core: StudioCore) -> int:
                                parent=root):
             core.stop(key)
 
-    tree.bind("<Double-1>", lambda _event: open_pane(selected()) if selected() else None)
+    def open_selected() -> None:
+        key = selected()
+        if key is not None:
+            open_pane(key)
+
+    tree.bind("<Double-1>", lambda _event: open_selected())
     bar = ttk.Frame(root, padding=12)
     bar.pack(fill="x")
-    ttk.Button(bar, text="Otwórz log", command=lambda: open_pane(selected())
-               if selected() else None).pack(side="left", padx=3)
+    ttk.Button(bar, text="Otwórz log", command=open_selected).pack(side="left", padx=3)
     ttk.Button(bar, text="Uruchom", command=action_start).pack(side="left", padx=3)
     ttk.Button(bar, text="Zatrzymaj", command=action_stop).pack(side="left", padx=3)
     ttk.Label(root, text="MCP probe wysyła tylko initialize i tools/list; bez tools/call.",
