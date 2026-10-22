@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a9823e369d8136fb268fd8f32eb2a3f4c24123f1",
-  "base_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
-  "commit_date": "2026-10-22T00:12:18+02:00",
+  "base_merge_commit": "85371d50c218be4be45f0cc941e2b24b751ac38d",
+  "base_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
+  "commit_date": "2026-10-22T00:36:59Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-21T22:12:18+00:00",
+  "generated_at_utc": "2026-10-22T00:36:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "134a53e50028414031a37370fb782404d74e8bde",
+  "git_tree_sha": "b405e8f22e25f85c965d5cd9bf46dc19811a7fdb",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "a9823e369d8136fb268fd8f32eb2a3f4c24123f1",
+    "base_commit": "e2bacd853feade3955fbe01950b3c431df370914",
     "base_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "a9823e369d8136fb268fd8f32eb2a3f4c24123f1",
-    "source_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging"
+    "source_commit": "85371d50c218be4be45f0cc941e2b24b751ac38d",
+    "source_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "a9823e369d8136fb268fd8f32eb2a3f4c24123f1",
+  "source_commit": "85371d50c218be4be45f0cc941e2b24b751ac38d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
+  "source_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.36-isolated-mcp-oauth-staging",
+  "update_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
   "version_source": "latka_jazn/version.py"
 }
