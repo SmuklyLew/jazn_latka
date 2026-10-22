@@ -8,6 +8,7 @@ on:
     paths:
       - "tools/jazn_run_studio/**"
       - "jazn_run_studio.py"
+      - "tests/test_daemon_shutdown_ack_before_teardown.py"
       - "tests/test_jazn_run_studio.py"
       - "tests/test_jazn_run_studio_integrations.py"
       - "tests/test_jazn_run_studio_secrets.py"
@@ -46,7 +47,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py
-      - run: python -m pytest -q tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_utf8.py
+      - run: python -m pytest -q tests/test_daemon_shutdown_ack_before_teardown.py tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_utf8.py
       - run: python tools/jazn_run_studio/check_types.py
       - run: python -X utf8 jazn_run_studio.py --check
       - run: python -X utf8 jazn_run_studio.py --gui-smoke
