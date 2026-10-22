@@ -36,7 +36,7 @@ Local verification (Windows, isolated Python 3.14.4, Qt 6.12.0):
 | Full deterministic suite | NOT RUN at milestone 1 |
 | Native Windows/Linux offline wheelhouse | NOT RUN |
 | Live model + runtime chat | NOT RUN / not yet implemented in this desktop shell |
-| GitHub CI | Pending first branch push |
+| GitHub CI | Draft PR #409; initial Linux EGL and Windows interpreter failures; corrections under validation |
 
 The first pytest attempt could not create its default sandbox temporary folder.
 An explicit writable `--basetemp` resolved the environment error. The subsequent
@@ -51,6 +51,29 @@ controlled Windows PATH and the rebuilt EXE smoke passes; a regression test
 checks foreign DLL directories cannot enter that scan. A debug artifact was
 modified only to isolate this cause; the passing non-console build was generated
 from the corrected build script without artifact surgery.
+
+## Milestone 1b: cross-platform CI corrections
+
+The `.43` checkpoint is pushed as `eec4d5acef9964717d1600344ba19a329ba0c24c`
+(content source `1fd74de09f2b6332b960ffa1417102c17058c4c3`) in draft
+https://github.com/SmuklyLew/jazn_latka/pull/409. Independent metadata check:
+PASS, synchronized=true, manifest_matches=true, provenance_matches=true,
+3292 static files. A Windows EXE built from that committed source passed GUI
+smoke, exit 0; its SHA256 was
+`3F8340C53B3A7F90B74FC20562DEFC832AF4E7EFA3BAA9CC28903C08F7D72D49`.
+
+CI on the initial checkpoint caught missing Linux `libEGL.so.1` and Pyright's
+failure to resolve imports when passed relative `--pythonpath python` on
+Windows. `.44` adds Linux graphics libraries and an absolute-running-interpreter
+type-check wrapper. The GUI test selects Qt offscreen only on headless Unix;
+it still executes all navigation/theme assertions. Its prior committed source
+is preserved byte-for-byte in the versioned test archive. Local revalidation:
+25 passed in 2.59 s; the new type-check wrapper reports zero errors/warnings.
+
+Preparing optional dependencies for a full local suite hit two PyPI read
+timeouts (including a retry with a longer package-download timeout). Runtime
+and test timeouts were not changed. Full local testing remains NOT RUN; resolve
+the download route or use completed remote evidence before claiming it passed.
 
 ## Required next milestones (not completed)
 

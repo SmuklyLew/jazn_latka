@@ -176,8 +176,10 @@ def test_raw_stdout_is_cleared_after_completion(system: Path) -> None:
     assert "split-sensitive-value" not in json.dumps(core.report())
 
 
-def test_gui_navigation_theme_and_event_loop_remain_responsive(system: Path) -> None:
+def test_gui_navigation_theme_and_event_loop_remain_responsive(system: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("PySide6")
+    if os.name != "nt" and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
+        monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication
     from tools.jazn_run_studio.window import Window

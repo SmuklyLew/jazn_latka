@@ -35,9 +35,12 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[run-studio]" pytest pyright==1.1.414
+      - name: Install Qt Linux graphics libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py
       - run: python -m pytest -q tests/test_jazn_run_studio.py
-      - run: python -m pyright --pythonpath python tools/jazn_run_studio jazn_run_studio.py tests/test_jazn_run_studio.py
+      - run: python tools/jazn_run_studio/check_types.py
       - run: python -X utf8 jazn_run_studio.py --check
       - run: python -X utf8 jazn_run_studio.py --gui-smoke
       - run: git diff --check

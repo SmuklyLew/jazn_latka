@@ -105,9 +105,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.43"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.43"
-PACKAGE_RELEASE_NAME = "run-studio-operator-foundation"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.44"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.44"
+PACKAGE_RELEASE_NAME = "run-studio-cross-platform-gates"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

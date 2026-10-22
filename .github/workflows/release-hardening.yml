@@ -240,6 +240,9 @@ jobs:
           --write
           --json
 
+      - name: Install Qt libraries for full-suite GUI coverage
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+
       - name: Materialize Test Studio catalog locally for PR validation
         if: github.event_name == 'pull_request'
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write

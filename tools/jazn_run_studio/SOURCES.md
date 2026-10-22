@@ -7,6 +7,7 @@ by feature so subsequent stages can verify signatures without repeating discover
 | Feature | Primary source | Consequence |
 | --- | --- | --- |
 | Qt installation and Widgets | https://doc.qt.io/qtforpython-6/gettingstarted.html | Optional PySide6 Widgets shell; no Qt requirement in core |
+| Linux GUI system dependencies | https://doc.qt.io/qt-6/linux-requirements.html | Headless CI still needs Qt shared graphics libraries; use offscreen without skipping GUI assertions |
 | External processes / async state | https://doc.qt.io/qtforpython-6/PySide6/QtCore/QProcess.html | Running is distinct from completion; never block GUI waiting for work |
 | GUI thread boundaries | https://doc.qt.io/qtforpython-6/PySide6/QtCore/QThread.html | Workers publish data, only GUI thread touches widgets |
 | Child process execution and timeout | https://docs.python.org/3/library/subprocess.html | argv arrays, shell=False, retained ownership handles, terminate/wait/kill |
