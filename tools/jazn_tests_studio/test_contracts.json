@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.41",
-  "active_definition_count": 2523,
+  "active_definition_count": 2527,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -37032,6 +37032,82 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 247
+    },
+    "tests/test_minimal_setup_preflight.py::test_read_only_default_never_claims_activation": {
+      "path": "tests/test_minimal_setup_preflight.py",
+      "name": "test_read_only_default_never_claims_activation",
+      "purpose": "Read only default never claims activation",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.minimal_setup"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_minimal_setup_preflight.py::test_explicit_creation_only_sets_future_process_profile": {
+      "path": "tests/test_minimal_setup_preflight.py",
+      "name": "test_explicit_creation_only_sets_future_process_profile",
+      "purpose": "Explicit creation only sets future process profile",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "SystemExit"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.minimal_setup"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_minimal_setup_preflight.py::test_ollama_probe_refuses_any_non_loopback_target": {
+      "path": "tests/test_minimal_setup_preflight.py",
+      "name": "test_ollama_probe_refuses_any_non_loopback_target",
+      "purpose": "Ollama probe refuses any non loopback target",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.minimal_setup"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_minimal_setup_preflight.py::test_ollama_probe_missing_server_never_means_model_failure": {
+      "path": "tests/test_minimal_setup_preflight.py",
+      "name": "test_ollama_probe_missing_server_never_means_model_failure",
+      "purpose": "Ollama probe missing server never means model failure",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.minimal_setup"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
     },
     "tests/test_model_executor_preflight.py::test_chatgpt_adapter_is_host_bridge_without_local_generation": {
       "path": "tests/test_model_executor_preflight.py",
