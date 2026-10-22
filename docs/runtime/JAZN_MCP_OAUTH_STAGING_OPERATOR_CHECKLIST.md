@@ -63,6 +63,18 @@ production tokens, IDs or resource audience. The Python resource server
 must receive matching introspection client credentials through trusted host
 environment secrets, not committed files, arguments or chat messages.
 
+For the isolated VPC gateway, copy workers_vpc_gateway/wrangler.staging.example.jsonc
+into a locally ignored staging configuration, replace the VPC Service placeholder
+with the NEW nonproduction VPC Service ID, and provide the actual production
+service ID as JAZN_PRODUCTION_VPC_SERVICE_ID (nonsecret) from Cloudflare API.
+Run the read-only static preflight before ANY staging gateway dry-run:
+
+    node deploy/chatgpt_mcp/workers_vpc_gateway/staging-preflight.mjs --candidate <local-staging-gateway.jsonc>
+
+This candidate check requires valid distinct service IDs, a single bound VPC
+service and NO forwarding/authorization variables. It cannot prove the selected
+staging service actually reaches a nonproduction backend; verify that separately.
+
 A separately named jazn-runtime-staging VPC Worker must use a separately
 verified NONPRODUCTION backend/VPC Service. Do not proxy staging MCP into
 the production daemon or memory. Keep JAZN_INGRESS_MODE unset until OAuth
