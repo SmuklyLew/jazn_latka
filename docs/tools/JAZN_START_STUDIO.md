@@ -32,11 +32,11 @@ osobne okno, logi i świadomą akcję start / stop. Eksport logu jest ręczny.
 
 ## Ważna uwaga dotycząca MCP 2026-07-28
 
-Obecne zadanie mcp_probe wykonuje legacy initialize / tools/list w osobnym
-procesie stdio. Nowsze serwery mogą korzystać ze stateless server/discover
-i metadanych protokołu per request. Wynik probe nie dowodzi zgodności
-wszystkich rewizji, zewnętrznego OAuth ani faktycznego przekazania wiadomości.
-Probe nie wywołuje narzędzi konwersacyjnych.
+Zadanie mcp_probe rozpoczyna od stateless server/discover (2026-07-28).
+Dla starszego serwera, który nie obsługuje tej metody, stosuje bezpieczny
+fallback do legacy initialize (2025-06-18), a następnie pobiera narzędzia
+za pomocą tools/list, z ograniczeniem liczby stron. Nie wywołuje tools/call.
+Test lokalny nie potwierdza zewnętrznego OAuth ani finalizacji w ChatGPT.
 
 ## Testy
 
