@@ -5,10 +5,11 @@
   "type": "module",
   "description": "Jaźń Cloudflare GitHub OAuth for protected MCP ingress (opt-in, fail closed)",
   "scripts": {
-    "check": "node --check src/index.mjs && node --check src/security.mjs && node --test test/security.test.mjs test/deployment-boundary.test.mjs test/staging-isolation.test.mjs test/staging-preflight.test.mjs",
+    "check": "node --check src/index.mjs && node --check src/security.mjs && node --test test/security.test.mjs test/deployment-boundary.test.mjs test/staging-isolation.test.mjs test/staging-preflight.test.mjs test/staging-keep-vars.test.mjs test/oauth-negative.test.mjs",
     "deploy": "wrangler deploy",
     "preflight:template": "node staging-preflight.mjs --template",
-    "preflight:staging": "node staging-preflight.mjs --candidate wrangler.staging.jsonc"
+    "preflight:staging": "node staging-preflight.mjs --candidate wrangler.staging.jsonc",
+    "test:workerd": "node --test test/workerd-oauth-smoke.test.mjs"
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^1.0.0"

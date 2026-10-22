@@ -2,6 +2,7 @@
   // TEMPLATE ONLY: copy to wrangler.staging.jsonc after creating a DIFFERENT
   // KV namespace and GitHub OAuth App. This file MUST NOT be deployed as-is.
   "name": "jazn-auth-staging",
+  "keep_vars": true,
   "main": "src/index.mjs",
   "compatibility_date": "2026-10-18",
   "compatibility_flags": ["global_fetch_strictly_public"],

@@ -35,6 +35,9 @@ export function auditStaging(production, staging, { template = false } = {}) {
   reject(prodKv.length !== 1 || prodKv[0]?.binding !== 'OAUTH_KV' ||
     !/^[a-f0-9]{32}$/.test(prodKv[0]?.id || ''), 'production_kv_reference_invalid');
   reject(staging.name !== 'jazn-auth-staging', 'staging_worker_name_invalid');
+  // Preserve dashboard-managed allowlist/client identifiers on every deploy.
+  // Secrets are never defined as plaintext Wrangler vars.
+  reject(staging.keep_vars !== true, 'staging_keep_vars_required');
   reject(staging.main !== production.main || staging.main !== 'src/index.mjs', 'worker_entrypoint_mismatch');
   reject(staging.workers_dev !== true, 'staging_workers_dev_required');
   reject(staging.preview_urls !== false, 'staging_previews_must_be_disabled');

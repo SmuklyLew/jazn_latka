@@ -55,11 +55,18 @@ Review resource identifiers and permissions before using it on another account.
 Do not commit or print either secret. The tracked `package-lock.json` was
 created by the isolated GitHub Actions Node 24 staging build and fixes the
 resolved OAuth provider version at `1.2.3` (93 package records). Run `npm ci`
-and `npm run check` to use these exact resolved dependencies. Do not silently
+and `npm run check` to use these exact resolved dependencies.
+Also run `npm run test:workerd` (bundled Worker inside local Miniflare/workerd)
+for invalid-credential and incomplete-staging fail-closed smoke. This does not
+verify a real GitHub login or ChatGPT callback. Do not silently
 upgrade them in production. The staging build also runs Wrangler `deploy --dry-run`
 and does **not** publish to Cloudflare.
 
 **Warning:** `wrangler deploy` replaces Worker code and can affect bindings.
+The isolated staging template deliberately requires `keep_vars: true` so a
+subsequent Wrangler deployment preserves dashboard-only TEXT variables;
+`staging-preflight.mjs` rejects candidates without this flag. Use Cloudflare
+Secret bindings for both credentials and verify binding names/types after deploy.
 Save a rollback deployment/version, record all binding *names and types* and
 review the diff. Verify that `GITHUB_CLIENT_SECRET` and `OAUTH_KV` remain
 present afterward without reading the secret value. Never deploy the candidate

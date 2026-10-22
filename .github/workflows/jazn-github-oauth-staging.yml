@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "upgrade/**"
+      - "fix/**"
     paths:
       - ".github/workflows/jazn-github-oauth-staging.yml"
       - "deploy/chatgpt_mcp/workers_github_oauth/**"
@@ -39,6 +40,9 @@ jobs:
       - name: Run OAuth helper tests
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npm run check
+      - name: Exercise real workerd OAuth fail-closed behavior (local-only)
+        working-directory: deploy/chatgpt_mcp/workers_github_oauth
+        run: npm run test:workerd
       - name: Reject unsafe staging template before bundle build
         working-directory: deploy/chatgpt_mcp/workers_github_oauth
         run: npm run preflight:template
