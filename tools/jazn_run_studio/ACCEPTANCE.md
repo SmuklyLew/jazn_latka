@@ -170,13 +170,16 @@ results. The current source remains a reviewable implementation checkpoint.
 - Focused comparison on untouched master reproduces the three runtime
   time-route/persistence failures, the unreadable optional-memory test failure,
   and the MCP process/SSE IncompleteRead failure. The full master comparison is
-  separately running to classify order-sensitive recall/Tk behavior. None of
+  complete: 6 failed, 2859 passed, 21 skipped, 6 warnings in 337.01 s. It also
+  reproduces the Tk GUI failure; the recall test passed on master. None of
   these assertions or runtime truth gates were weakened for this branch.
 - First live chat test on a working checkout stopped at runtime preflight,
   preserving its request ID. Canonical staging then produced a verified .45
   SYSTEM export with manifest_ok=true, provenance_ok=true, needs_recovery=false.
-  A separate new test turn is being evaluated on that export; the earlier
-  message was not replayed. No live accepted-turn PASS is claimed here yet.
+  A separate new test turn on that export timed out after 180 s without an
+  accepted visible reply. Its durable request ID is preserved, the earlier
+  message was not replayed, and canonical cleanup returned exit 0. This live
+  acceptance is FAIL; the cause still requires investigation.
 
 Remaining acceptance is explicit: final-SHA CI and metadata check, a successful
 real model turn with lineage/finalization, native Linux Qt offline installation,
@@ -185,3 +188,14 @@ failures, and complete replacement of specialized legacy visual inspectors.
 This file documents evidence and limits rather than declaring the original broad
 objective complete.
 
+Final code evidence for 3a874f9f335f73d2c30fdebf323b91cb0e656aec:
+native Windows build and both frozen GUI/external version smoke checks passed.
+GitHub full active-tree Pyright passed. Studio tests, types and GUI smoke passed
+on Ubuntu Python 3.12/3.14 and Windows Python 3.14; Windows Python 3.12 remains
+queued at this checkpoint. The Windows package CI job passed. These are results
+for the source commit, not a claim that all final-head PR checks are green.
+
+The repeated .46 full suite with PYTHONUTF8=1 has not completed at the time
+of this source checkpoint (last progress: 14%, in the MCP descriptor area).
+Its final status is recorded separately in the checkpoint/PR; no full-suite
+PASS is inferred from the focused results.
