@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.38",
-  "active_definition_count": 2512,
+  "active_definition_count": 2515,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23955,6 +23955,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
+      "path": "tests/test_jazn_start_studio_mcp_2026.py",
+      "name": "test_mcp_2026_request_metadata",
+      "purpose": "Mcp 2026 request metadata",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_discover_uses_metadata_and_no_conversation_call": {
+      "path": "tests/test_jazn_start_studio_mcp_2026.py",
+      "name": "test_mcp_2026_discover_uses_metadata_and_no_conversation_call",
+      "purpose": "Mcp 2026 discover uses metadata and no conversation call",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_receive_rejects_text_logging_on_stdout": {
+      "path": "tests/test_jazn_start_studio_mcp_2026.py",
+      "name": "test_mcp_receive_rejects_text_logging_on_stdout",
+      "purpose": "Mcp receive rejects text logging on stdout",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
     },
     "tests/test_jazn_studio_gui_windows.py::test_studio_window_navigation_and_configuration": {
       "path": "tests/test_jazn_studio_gui_windows.py",
