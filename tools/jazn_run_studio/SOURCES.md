@@ -46,3 +46,9 @@ https://docs.ollama.com/api/chat documents messages, done and completion metrics
 The request/session/turn binding fix is derived from the canonical
 DaemonConversationSession and runtime_daemon._unwrap_daemon_chat_job source,
 and a captured isolated synthetic live turn, rather than a guessed API shape.
+
+The malformed-HTTP diagnosis follows Python's documented transport exception
+boundary: https://docs.python.org/3/library/http.client.html#http.client.HTTPException.
+Server serialization versus receiving-socket capture was compared in an isolated
+synthetic gateway. Do not infer the responsible filtering product from its mere
+presence, and never accept raw bodies after an HTTP framing failure.

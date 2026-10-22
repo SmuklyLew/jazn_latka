@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from http.client import HTTPException
 import os
 import ssl
 from pathlib import Path
@@ -33,7 +34,10 @@ def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     except HTTPError as exc:
         response = exc
     with response:
-        raw = response.read(262145)
+        try:
+            raw = response.read(262145)
+        except HTTPException as exc:
+            raise ValueError("Invalid HTTP response framing") from exc
         code = int(response.code)
     if len(raw) > 262144:
         raise ValueError("Response exceeds 256 KiB")

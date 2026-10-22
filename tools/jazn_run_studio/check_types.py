@@ -10,7 +10,8 @@ def main() -> int:
         [sys.executable, "-m", "pyright", "--pythonpath", sys.executable,
          "tools/jazn_run_studio", "jazn_run_studio.py", "tests/test_jazn_run_studio.py",
          "tests/test_jazn_run_studio_integrations.py", "tests/test_jazn_run_studio_secrets.py",
-         "tests/test_jazn_run_studio_chat_contract.py", "tests/test_jazn_run_studio_lifecycle_results.py"],
+         "tests/test_jazn_run_studio_chat_contract.py", "tests/test_jazn_run_studio_lifecycle_results.py",
+         "tests/test_jazn_run_studio_http_framing.py"],
         cwd=root, shell=False, check=False,
     ).returncode
 

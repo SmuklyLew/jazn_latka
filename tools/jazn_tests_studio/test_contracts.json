@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.48",
-  "active_definition_count": 2578,
+  "system_version": "16.3.25.5.116.0.34.49",
+  "active_definition_count": 2580,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24412,6 +24412,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 81
+    },
+    "tests/test_jazn_run_studio_http_framing.py::test_catalog_malformed_http_returns_structured_failure_without_body": {
+      "path": "tests/test_jazn_run_studio_http_framing.py",
+      "name": "test_catalog_malformed_http_returns_structured_failure_without_body",
+      "purpose": "Catalog malformed http returns structured failure without body",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_jazn_run_studio_http_framing.py::test_service_framing_failure_finishes_failed_job": {
+      "path": "tests/test_jazn_run_studio_http_framing.py",
+      "name": "test_service_framing_failure_finishes_failed_job",
+      "purpose": "Service framing failure finishes failed job",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
     },
     "tests/test_jazn_run_studio_integrations.py::test_frozen_child_environment_restores_system_libraries": {
       "path": "tests/test_jazn_run_studio_integrations.py",

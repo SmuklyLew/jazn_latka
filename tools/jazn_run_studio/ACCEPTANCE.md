@@ -259,3 +259,24 @@ red run remains historical evidence; current source CI still requires review.
 Local MCP HTTP framing is being investigated separately: raw network capture
 contains a chunked header with an unchunked JSON body. Do not claim a local MCP
 catalog pass until this transport discrepancy is explained.
+
+## P0 continuation: malformed HTTP diagnostics (.49)
+
+An isolated gateway diagnostic records the h11 server writing Content-Length
+and the complete JSON body. The receiving raw socket instead sees
+Transfer-Encoding: chunked and that same unchunked body. This independently
+locates the malformed framing between server serialization and client receipt.
+The exact intermediary is not identified; installed antivirus names alone do
+not establish attribution. The original master reproduces the catalog failure.
+
+The catalog probe now returns mcp_catalog_invalid_http_framing rather than an
+uncaught IncompleteRead traceback. Studio's service probe finishes as failed
+instead of retaining a running state when that HTTP exception occurs. Neither
+path accepts malformed content or exposes its raw bytes in the diagnosis.
+
+A fresh .48 public cold start correctly fails with a nonzero exit code when
+the daemon does not reach verified liveness within its existing budget. Local
+profiling measured a full 3308-file export verification at 5.61 seconds. An
+experimental parallel verifier improved that to only 5.02 seconds; the experiment
+was removed and no integrity verification, caching or timeout policy changed.
+Cold export startup and interrupted-transport real GUI acceptance remain open.
