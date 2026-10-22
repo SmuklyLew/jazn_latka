@@ -37,17 +37,22 @@ function bundledWorker(directory) {
 }
 
 function worker(bundle, extraBindings = {}) {
+  // Miniflare v5 (locked with Wrangler 4) requires workers:[]; old v3
+  // top-level WorkerOptions are rejected as invalid runtime configuration.
   return new Miniflare({
-    modules:[{type:'ESModule',path:bundle}],
-    compatibilityDate:'2026-10-18',
-    compatibilityFlags:['global_fetch_strictly_public'],
-    kvNamespaces:['OAUTH_KV'],
-    bindings:{
-      JAZN_AUTH_ENVIRONMENT:'staging',
-      JAZN_OAUTH_ISSUER_URL:issuer,
-      JAZN_OAUTH_RESOURCE_URL:resource,
-      ...extraBindings,
-    },
+    workers:[{
+      name:'jazn-oauth-workerd-smoke',
+      modules:[{type:'ESModule',path:bundle}],
+      compatibilityDate:'2026-10-18',
+      compatibilityFlags:['global_fetch_strictly_public'],
+      kvNamespaces:{OAUTH_KV:'isolated-jazn-oauth-test'},
+      bindings:{
+        JAZN_AUTH_ENVIRONMENT:'staging',
+        JAZN_OAUTH_ISSUER_URL:issuer,
+        JAZN_OAUTH_RESOURCE_URL:resource,
+        ...extraBindings,
+      },
+    }],
   });
 }
 
