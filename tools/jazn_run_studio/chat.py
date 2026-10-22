@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from .core import StudioError, _path_without_links, python_executable, settings_path
 from .external import run, spawn
+from .chat_protocol import frames
 
 if TYPE_CHECKING:
     from .core import Controller, Job
@@ -72,15 +73,7 @@ class ChatClient:
                 stderr.start()
                 def reader() -> None:
                     try:
-                        while True:
-                            line = output.readline(2097153)
-                            if not line:
-                                return
-                            if len(line) > 2097152:
-                                raise ValueError("chat_output_limit")
-                            payload = json.loads(line)
-                            if not isinstance(payload, dict):
-                                raise ValueError("chat_protocol_shape")
+                        for payload in frames(output):
                             self.receive(payload)
                     except (OSError, ValueError, subprocess.SubprocessError):
                         self.core.emit("chat", "chat_state", "Błąd transportu. Zachowano request_id; użyj Wznów wynik.")
@@ -139,10 +132,17 @@ class ChatClient:
         if not request:
             self.core.emit("chat", "chat_state", "Odebrano diagnostykę transportu bez aktywnego żądania.")
             return
+        if payload.get("error_code") and payload.get("ok") is False:
+            code = str(payload["error_code"])
+            if not code.isascii() or not code.replace("_", "").isalnum() or len(code) > 100:
+                code = "runtime_error"
+            self.core.emit("chat", "chat_state", "Runtime zgłosił błąd: " + code + ". Zachowano request_id; użyj Wznów wynik.")
+            return
         # No unaccepted candidate or user prompt is sent into the shared log registry.
         checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
                        "tools.jazn_run_studio.validation_worker"], cwd=self.core.root,
-                      data=json.dumps({"payload": payload, "request_id": request}, ensure_ascii=False).encode("utf-8"), timeout=30)
+                      data=json.dumps({"payload": payload, "request_id": request,
+                                       "session_id": self.session_id}, ensure_ascii=False).encode("utf-8"), timeout=30)
         if checked.returncode or len(checked.stdout) > 2097152:
             raise ValueError("Final validator failed")
         result = json.loads(checked.stdout)

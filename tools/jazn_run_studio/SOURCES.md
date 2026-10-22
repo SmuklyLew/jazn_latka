@@ -36,3 +36,13 @@ official `action.yml` at each SHA was read via GitHub API; all declare node24:
 
 The user-mentioned PNG was not present alongside the supplied objective file.
 The Medium examples are visual suggestions, not relied-on API documentation.
+
+Continuation sources checked 2026-10-23: Python's
+https://docs.python.org/3/library/pathlib.html#pathlib.Path.is_file documents
+file-query semantics, without promising a fixed internal stat-call count;
+https://docs.python.org/3/library/tkinter.html#threading-model describes shared
+event queues and cautions about multiple Tk interpreters in one thread;
+https://docs.ollama.com/api/chat documents messages, done and completion metrics.
+The request/session/turn binding fix is derived from the canonical
+DaemonConversationSession and runtime_daemon._unwrap_daemon_chat_job source,
+and a captured isolated synthetic live turn, rather than a guessed API shape.

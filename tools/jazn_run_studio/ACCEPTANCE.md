@@ -199,3 +199,33 @@ The repeated .46 full suite with PYTHONUTF8=1 has not completed at the time
 of this source checkpoint (last progress: 14%, in the MCP descriptor area).
 Its final status is recorded separately in the checkpoint/PR; no full-suite
 PASS is inferred from the focused results.
+
+## P0 continuation: actual result binding (.47)
+
+The completed .46 HEAD CI has one red workflow (PowerShell Tk), with the other
+checks successful or explicitly skipped release finalization. A new complete
+local .46 run with local-network permission reports 2904 passed, 21 skipped,
+5 failed in 354.71 s. Tk and recall pass in this run. The earlier 14% stall is
+diagnosed by a stack dump: Windows asyncio's socketpair blocks in accept in the
+restricted executor. The same MCP test passes with local-network permission.
+This is execution-environment evidence, not a reason to weaken tests.
+
+A real .46 Ollama turn returned answer_ok=true, final_visible_answer, valid
+integrity and no pending host finalization. Studio rejected it because the
+completed daemon result retains request_id inside daemon_job, not at top level.
+.47 validates that canonical binding, rejects all conflicting IDs, additionally
+binds the expected session and checks turn/trace agreement with the final
+contract. It still delegates final text acceptance to the existing runtime
+validator. Regression tests use the real canonical daemon unwrap function.
+
+Structured multi-line startup errors are now parsed as bounded object frames
+and reported by error code without exposing candidate text or replaying input.
+No timeout was enlarged. The optional-memory failure was a Python 3.14 Windows
+test fixture assuming is_file calls Path.stat; its replacement injects the same
+PermissionError independently of call count, preserving all assertions. The
+previous committed test bytes are archived unchanged.
+
+The .46 local full-suite failures still being diagnosed are MCP HTTP framing and
+three time-route/persistence cases, plus that now-repaired fixture. Real live
+chat acceptance on the new committed source, Windows Tk CI diagnosis, complete
+studio migration and the remaining original acceptance requirements remain open.
