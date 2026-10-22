@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
-  "runtime_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
-  "package_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
-  "generated_at_utc": "2026-10-22T13:39:49+00:00",
-  "updated_at_utc": "2026-10-22T13:39:49+00:00",
+  "version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
+  "runtime_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
+  "package_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
+  "generated_at_utc": "2026-10-22T13:46:28+00:00",
+  "updated_at_utc": "2026-10-22T13:46:28+00:00",
   "start_file": "run.py",
-  "file_count": 3292,
-  "static_file_count": 3292,
+  "file_count": 3294,
+  "static_file_count": 3294,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 2675,
-      "sha256": "c77a00cc4b4f47e9000f757335efcd373b27953735c18ddb820e4f639ebe093d",
+      "size_bytes": 2772,
+      "sha256": "6f6a01e022cb2b7656115052cfad7f4d3a35a453902751773a40121c49495b9e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -281,8 +281,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 20829,
-      "sha256": "f02d43e05a485a80ff21446a0bda6805bcd320bf6d987a70053f64839a4bb298",
+      "size_bytes": 20972,
+      "sha256": "96ffe57df5c390f11d4f518c21ca896724428cd7fe54a7cef30a6f476e1b8dc9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "d6f1ee468fd0031cb589cb1340c876b2ef38441e3fdfbb5fced6fc301839882c",
+      "size_bytes": 2968,
+      "sha256": "df24fa6b5e16ed1a7fe1b6c5af5953588a062ed204c524fce7d8364e6d4cfdbf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10811,8 +10811,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14151,
-      "sha256": "faef924c4fec5644d08f3e94a12c7489f54b030b00415247f199f0205b06b8a5",
+      "size_bytes": 14152,
+      "sha256": "7eb74917aeb7ff247f634d9634f24eeb4b83321f0d35a5c7bfc327fccad6dd17",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22501,6 +22501,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.43-run-studio-foundation/test_jazn_run_studio.py",
+      "size_bytes": 8686,
+      "sha256": "b30cc889890c98d220adb14b32c9d14512a2abcefd40564ee76efa760af1512c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.5-before-v1160347-release-identity/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2604,
       "sha256": "179e93af4180c7655b40e7fba0a776745afefbd0f88b6736807681d3f8360d54",
@@ -26426,8 +26435,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio.py",
-      "size_bytes": 8686,
-      "sha256": "b30cc889890c98d220adb14b32c9d14512a2abcefd40564ee76efa760af1512c",
+      "size_bytes": 8878,
+      "sha256": "ae4b06b483c86789dce8b598ddbf3b809dcbab88593e7cb4b918bbc1631777fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29207,8 +29216,8 @@
     },
     {
       "path": "tools/jazn_run_studio/ACCEPTANCE.md",
-      "size_bytes": 5704,
-      "sha256": "5de51227fcbe7cf3f75a203fddd848d3c695c7814ded801372281e7e46ebbe7e",
+      "size_bytes": 7149,
+      "sha256": "31674cc8109ec71b7649046add33833c374985e762cb1529bf59d094e9fd4259",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29225,8 +29234,8 @@
     },
     {
       "path": "tools/jazn_run_studio/SOURCES.md",
-      "size_bytes": 3018,
-      "sha256": "88628bf436ce3ce2924fa41d0614f31bbd842ccbe8bfe8f72d0a3b78c8f91cca",
+      "size_bytes": 3203,
+      "sha256": "1dcf98ebb2ffd2294f8c6e5ed56b679a3362b6357075efd45e8eb6f80b7f688c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29254,6 +29263,15 @@
       "path": "tools/jazn_run_studio/build.py",
       "size_bytes": 1765,
       "sha256": "a0a4b622a7163d5e30b2f50d618f2c762f664d754d4dfc484467aa6acac1a7ad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/check_types.py",
+      "size_bytes": 513,
+      "sha256": "1d347401986001c1ad7284bfa58bc0a84445a39d1d046e0fb669ac1400c34cf3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29424,7 +29442,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2347451,
-      "sha256": "a7c765051bb34ba4aca43759f365fdd12ace85a9470ef9c24c2c887ebc7aaaaf",
+      "sha256": "140fe4d7f39e447d4b977c4d1387580d0f5b92e1bccbc113cdf8658031905ec8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30080,11 +30098,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
+  "release_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
-    "package_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation",
-    "release_version": "16.3.25.5.116.0.34.43-run-studio-operator-foundation"
+    "runtime_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
+    "package_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates",
+    "release_version": "16.3.25.5.116.0.34.44-run-studio-cross-platform-gates"
   },
   "legacy_aliases": {
     "version": "release_version"
