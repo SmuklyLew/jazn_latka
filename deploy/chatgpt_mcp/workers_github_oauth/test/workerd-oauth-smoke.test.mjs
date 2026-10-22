@@ -48,12 +48,11 @@ function worker(bundle, extraBindings = {}) {
   const env = Object.fromEntries(Object.entries(entries).map(([key, value]) => [
     key, {type:'text', value},
   ]));
-  env.OAUTH_KV = {type:'kv', namespaceId:'isolated-jazn-oauth-test'};
+  env.OAUTH_KV = {type:'kv'};
   return new Miniflare({
     workers:[{
       config: {
         name:'jazn-oauth-workerd-smoke',
-        type:'worker',
         compatibilityDate:'2026-10-18',
         compatibilityFlags:['global_fetch_strictly_public'],
         manifest:{
