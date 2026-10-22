@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
   "runtime_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
   "package_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-22T03:03:18+00:00",
-  "updated_at_utc": "2026-10-22T03:03:18+00:00",
+  "generated_at_utc": "2026-10-22T03:32:47+00:00",
+  "updated_at_utc": "2026-10-22T03:32:47+00:00",
   "start_file": "run.py",
   "file_count": 3261,
   "static_file_count": 3261,
@@ -390,7 +390,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2932,
-      "sha256": "282c486592dd97e4a6a23573374f21696b6034fc9351edf9a59f2048b00d4da3",
+      "sha256": "701d8e54a71b2327f6ebbf14f3637fd142e655b821b5967d9e1c43287f0a5b3b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9228,7 +9228,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "5c0ee30986d5802e3ee41de86cb5b87c5964fb1cd6a391e662b54ecc44267ae7",
+      "sha256": "9f60bf5b691cf6ce5fbc811d37d4fbcb0b44d860a9313d077ba94e7851724bd0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
