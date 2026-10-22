@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare'; // pinned as a Wrangler transitive dependency in package-lock
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync, statSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,20 +37,30 @@ function bundledWorker(directory) {
 }
 
 function worker(bundle, extraBindings = {}) {
-  // Miniflare v5 (locked with Wrangler 4) requires workers:[]; old v3
-  // top-level WorkerOptions are rejected as invalid runtime configuration.
+  // Locked Miniflare 5 uses cloudflare.config-style config inside workers[].
+  // Module contents come from the exact Wrangler dry-run bundle.
+  const entries = {
+    JAZN_AUTH_ENVIRONMENT:'staging',
+    JAZN_OAUTH_ISSUER_URL:issuer,
+    JAZN_OAUTH_RESOURCE_URL:resource,
+    ...extraBindings,
+  };
+  const env = Object.fromEntries(Object.entries(entries).map(([key, value]) => [
+    key, {type:'text', value},
+  ]));
+  env.OAUTH_KV = {type:'kv', namespaceId:'isolated-jazn-oauth-test'};
   return new Miniflare({
     workers:[{
-      name:'jazn-oauth-workerd-smoke',
-      modules:[{type:'ESModule',path:bundle}],
-      compatibilityDate:'2026-10-18',
-      compatibilityFlags:['global_fetch_strictly_public'],
-      kvNamespaces:{OAUTH_KV:'isolated-jazn-oauth-test'},
-      bindings:{
-        JAZN_AUTH_ENVIRONMENT:'staging',
-        JAZN_OAUTH_ISSUER_URL:issuer,
-        JAZN_OAUTH_RESOURCE_URL:resource,
-        ...extraBindings,
+      config: {
+        name:'jazn-oauth-workerd-smoke',
+        type:'worker',
+        compatibilityDate:'2026-10-18',
+        compatibilityFlags:['global_fetch_strictly_public'],
+        manifest:{
+          mainModule:'index.js',
+          modules:{'index.js':{type:'esm',contents:readFileSync(bundle,'utf8')}},
+        },
+        env,
       },
     }],
   });
