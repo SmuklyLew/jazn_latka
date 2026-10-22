@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
-  "runtime_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
-  "package_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-22T01:13:22+00:00",
-  "updated_at_utc": "2026-10-22T01:13:22+00:00",
+  "version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-22T01:16:26+00:00",
+  "updated_at_utc": "2026-10-22T01:16:26+00:00",
   "start_file": "run.py",
-  "file_count": 3252,
-  "static_file_count": 3252,
+  "file_count": 3253,
+  "static_file_count": 3253,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 367,
@@ -389,8 +389,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "beaa5cfd090baec1ad9b18301f9d1dd65c336ce5ab91a9728a0564e9cf6eb26f",
+      "size_bytes": 2927,
+      "sha256": "d09912486759ab0ae1982ac7b6976eb142832a27a07cebe8d5aeb2bdf097b517",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10649,8 +10649,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 13742,
-      "sha256": "9da8d3cefa4f65a40ea253e901a6aa0ace5bb9302a87d16231ea4e36d1f8f28a",
+      "size_bytes": 13854,
+      "sha256": "b958559f69ff8c2ca035d0aaa2814fcc756b727da5ed4d194dbd58125238d414",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26254,6 +26254,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_start_studio_dashboard.py",
+      "size_bytes": 4989,
+      "sha256": "e80087aaa10e07031328d749780e346a6e21df5027ea372d5c780cde2875a29a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_studio_gui_windows.py",
       "size_bytes": 2161,
       "sha256": "5a9e075660cae1a227d688f0f1bc6a3a4be3745fac3250995de3b64aa6402e66",
@@ -28937,8 +28946,8 @@
     },
     {
       "path": "tools/jazn_start_studio.py",
-      "size_bytes": 28419,
-      "sha256": "fc9cc7cd92f5a57200e4e3540d8b23b740a8dc12f2391f8e7538f3f57a810794",
+      "size_bytes": 24448,
+      "sha256": "610ecfd16b71c05913b9f29c0e4696fd83d81c067f1d672aef6b289a9ebd6dbf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28946,8 +28955,8 @@
     },
     {
       "path": "tools/jazn_start_studio_dashboard.py",
-      "size_bytes": 21653,
-      "sha256": "56397bfc83ea91754f99989b33a1ec55ad855d545e875cbb2edc07aa9db53019",
+      "size_bytes": 22033,
+      "sha256": "0afa616750a2ee1ab529a83de98ba6e424133200bac80e11643f856e626e76d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29073,7 +29082,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2315890,
-      "sha256": "ea9997ac8fceb26e869be668c43deb25dc519ac9d00868aa34dd90b56c460625",
+      "sha256": "a8d56a7c80f24d6fcdff91e46f7d44a6a28349a1e16207198d926da7a4d00c14",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29720,11 +29729,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
-    "package_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging",
-    "release_version": "16.3.25.5.116.0.34.37-isolated-mcp-oauth-staging"
+    "runtime_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.38-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"
