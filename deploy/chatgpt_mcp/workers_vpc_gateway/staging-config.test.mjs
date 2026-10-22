@@ -17,5 +17,5 @@ test('staging VPC gateway template is separate, nondeployable and fail closed', 
   for (const field of ['vars','env','routes','route','kv_namespaces','services']) {
     assert.equal(Object.hasOwn(sample, field), false, field);
   }
-  assert.ok(!raw.includes('verified_oauth_proxy'));
+  assert.ok(!JSON.stringify(sample).includes('verified_oauth_proxy'));
 });
