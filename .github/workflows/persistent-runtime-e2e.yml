@@ -95,6 +95,8 @@ on:
       - "tests/test_mcp_http_resources.py"
       - "tests/test_mcp_http_cli.py"
       - "tests/test_mcp_oauth_introspection.py"
+      - "tests/test_mcp_oauth_introspection_contract_hardening.py"
+      - "tests/test_mcp_http_cli_process_smoke.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_persistent_remote_runtime_operations.py"
@@ -212,6 +214,8 @@ on:
       - "tests/test_mcp_http_resources.py"
       - "tests/test_mcp_http_cli.py"
       - "tests/test_mcp_oauth_introspection.py"
+      - "tests/test_mcp_oauth_introspection_contract_hardening.py"
+      - "tests/test_mcp_http_cli_process_smoke.py"
       - "tests/test_chatgpt_plugin_package.py"
       - "tests/test_chatgpt_public_mcp_deployment.py"
       - "tests/test_persistent_remote_runtime_operations.py"
@@ -304,7 +308,9 @@ jobs:
           tests/test_mcp_http_tasks_nonblocking_dispatch.py
           tests/test_mcp_http_resources.py
           tests/test_mcp_http_cli.py
+          tests/test_mcp_http_cli_process_smoke.py
           tests/test_mcp_oauth_introspection.py
+          tests/test_mcp_oauth_introspection_contract_hardening.py
           tests/test_chatgpt_plugin_package.py
           tests/test_chatgpt_public_mcp_deployment.py
           tests/test_persistent_remote_runtime_operations.py
