@@ -24,7 +24,7 @@ from typing import Callable
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-STUDIO_VERSION = "0.2.0"
+STUDIO_VERSION = "0.3.0"
 OLLAMA_URL = "http://127.0.0.1:11434"
 DAEMON_PORT = 8787
 MAX_LOG_LINES = 2500
@@ -65,7 +65,8 @@ TASK_INDEX = {task.key: task for task in TASKS}
 
 REDACTIONS = (
     re.compile(r"(?i)(authorization\s*[:=]\s*bearer\s+)[^\s,;]+"),
-    re.compile(r'(?i)((?:api[_-]?key|password|secret|token)["\x27]?\s*[:=]\s*["\x27]?)[^\s,;"\x27]+'),
+    # Full key match: do not corrupt JSON booleans such as requires_api_key=false.
+    re.compile(r'(?i)(\b(?:api[_-]?key|password|secret|token|identity_token|access_token)\b["\x27]?\s*[:=]\s*["\x27]?)(?!true\b|false\b|null\b)[^\s,;"\x27]{8,}'),
 )
 
 
@@ -163,17 +164,20 @@ class StudioCore:
         task = TASK_INDEX[key]
         with self.lock:
             state = self.states[key]
-            if state.status in ("uruchamianie", "działa", "zatrzymywanie"):
+            if state.status in ("uruchamianie", "działa", "zatrzymywanie") or (
+                state.proc is not None and state.proc.poll() is None
+            ) or state.status.startswith(("działa PID", "probe PID", "śledzenie")):
                 raise RuntimeError("To zadanie już działa")
             if not self.root.is_dir():
                 raise FileNotFoundError(f"Brak katalogu Jaźni: {self.root}")
             if task.operation == "jazn_start" and is_local_port_open(DAEMON_PORT):
-                raise RuntimeError(
-                    "Port 8787 już odpowiada. Nie uruchamiam kolejnego daemona. "
-                    "Uruchom diagnostykę jazn_status i zweryfikuj jego tożsamość."
-                )
+                self._set(key, "pominięto: port 8787 zajęty")
+                self.emit(key, "INFO", "Port daemona jest zajęty. Uruchom jazn_status, aby potwierdzić jego tożsamość; nie tworzę drugiej kopii.")
+                return
             if task.operation in ("ollama_serve", "ollama_app") and is_local_port_open(11434):
-                raise RuntimeError("Ollama już odpowiada na porcie 11434; nie uruchamiam kopii")
+                self._set(key, "pominięto: port 11434 zajęty")
+                self.emit(key, "INFO", "Ollama/inna usługa korzysta z portu 11434. Sprawdź ollama_api; nie uruchamiam drugiej kopii.")
+                return
             state.generation += 1
             gen = state.generation
             state.cancel = threading.Event()
@@ -510,123 +514,12 @@ def run_text(core: StudioCore) -> int:
 
 
 def run_studio(core: StudioCore) -> int:
-    # Tk is imported only here: Linux headless/text mode needs no X server.
-    import tkinter as tk
-    from tkinter import messagebox, ttk, scrolledtext, filedialog
-
-    root = tk.Tk()
-    root.title("Jaźń — Studio Startu 0.2")
-    root.geometry("1080x640")
-    ttk.Label(root, text="JAŹŃ / STUDIO STARTU", font=("Segoe UI", 17, "bold"),
-              padding=14).pack(anchor="w")
-    ttk.Label(
-        root, text="Operator procesów. Port ≠ tożsamość; katalog MCP ≠ akceptacja tury.",
-        padding=(14, 0, 14, 12)
-    ).pack(anchor="w")
-    tree = ttk.Treeview(root, columns=("group", "title", "state"), show="headings")
-    for col, label, width in (("group", "Moduł", 120), ("title", "Zadanie", 560),
-                              ("state", "Stan", 285)):
-        tree.heading(col, text=label)
-        tree.column(col, width=width)
-    tree.pack(fill="both", expand=True, padx=12, pady=6)
-    for task in TASKS:
-        tree.insert("", "end", iid=task.key,
-                    values=(task.group, task.title, core.states[task.key].status))
-    panes: dict[str, tuple[tk.Toplevel, scrolledtext.ScrolledText]] = {}
-
-    def selected() -> str | None:
-        items = tree.selection()
-        return items[0] if items else None
-
-    def open_pane(key: str):
-        existing = panes.get(key)
-        if existing:
-            existing[0].deiconify()
-            existing[0].lift()
-            return
-        win = tk.Toplevel(root)
-        win.title("Log — " + TASK_INDEX[key].title)
-        win.geometry("930x560")
-        buttons = ttk.Frame(win, padding=8)
-        buttons.pack(fill="x")
-        ttk.Button(buttons, text="Uruchom", command=lambda: action_start(key)).pack(side="left")
-        ttk.Button(buttons, text="Zatrzymaj", command=lambda: action_stop(key)).pack(side="left")
-        def save():
-            path = filedialog.asksaveasfilename(parent=win, defaultextension=".txt")
-            if path:
-                Path(path).write_text("\n".join(core.logs[key]) + "\n", encoding="utf-8")
-        ttk.Button(buttons, text="Zapisz log", command=save).pack(side="left")
-        display = scrolledtext.ScrolledText(win, bg="#14171b", fg="#edf2f6",
-                                           font=("Consolas", 10), wrap="word")
-        display.pack(fill="both", expand=True, padx=8, pady=8)
-        for line in core.logs[key]:
-            display.insert("end", line + "\n")
-        display.see("end")
-        panes[key] = (win, display)
-        win.protocol("WM_DELETE_WINDOW", win.withdraw)
-
-    def action_start(key: str | None = None):
-        key = key or selected()
-        if not key:
-            return
-        open_pane(key)
-        try:
-            core.start(key)
-        except (RuntimeError, OSError, KeyError) as exc:
-            messagebox.showerror("Nie uruchomiono", safe_line(str(exc)), parent=root)
-
-    def action_stop(key: str | None = None):
-        key = key or selected()
-        if not key:
-            return
-        if messagebox.askyesno("Zatrzymanie", f"Zatrzymać zadanie Studio: {key}?",
-                               parent=root):
-            core.stop(key)
-
-    def open_selected() -> None:
-        key = selected()
-        if key is not None:
-            open_pane(key)
-
-    tree.bind("<Double-1>", lambda _event: open_selected())
-    bar = ttk.Frame(root, padding=12)
-    bar.pack(fill="x")
-    ttk.Button(bar, text="Otwórz log", command=open_selected).pack(side="left", padx=3)
-    ttk.Button(bar, text="Uruchom", command=action_start).pack(side="left", padx=3)
-    ttk.Button(bar, text="Zatrzymaj", command=action_stop).pack(side="left", padx=3)
-    ttk.Label(root, text="MCP probe wysyła tylko initialize i tools/list; bez tools/call.",
-              padding=(12, 0, 12, 12)).pack(anchor="w")
-
-    def drain():
-        for _ in range(300):
-            try:
-                key, _, line = core.events.get_nowait()
-            except queue.Empty:
-                break
-            pane = panes.get(key)
-            if pane:
-                pane[1].insert("end", line + "\n")
-                pane[1].see("end")
-            tree.set(key, "state", core.states[key].status)
-        root.after(100, drain)
-
-    def close():
-        running = core.active()
-        if running:
-            messagebox.showwarning(
-                "Aktywne zadania",
-                "Najpierw zatrzymaj zadania uruchomione przez Studio:\n"
-                + ", ".join(running)
-                + "\nNie zatrzymano żadnego istniejącego daemona.",
-                parent=root
-            )
-        else:
-            root.destroy()
-
-    root.protocol("WM_DELETE_WINDOW", close)
-    root.after(100, drain)
-    root.mainloop()
-    return 0
+    # GUI lives in a separate module: terminal/headless operation imports no Tk.
+    try:
+        from tools.jazn_start_studio_dashboard import launch
+    except ModuleNotFoundError:
+        from jazn_start_studio_dashboard import launch
+    return launch(core)
 
 
 def main(argv: list[str] | None = None) -> int:
