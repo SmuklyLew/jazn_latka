@@ -1,3 +1,4 @@
+# v116.0.34.52 initiates bounded daemon shutdown before slow/disconnected HTTP acknowledgements.
 # v116.0.34.41 adds first-run preflight, source-bound memory freshness and model/telemetry truth gates.
 # v116.0.34.39002 hardens OAuth staging var preservation, token claims and real MCP/workerd CI.
 # v116.0.34.39 guards isolated OAuth staging config with static preflight and regression CI.
@@ -105,9 +106,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.51"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.51"
-PACKAGE_RELEASE_NAME = "run-studio-frozen-utf8"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.52"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.52"
+PACKAGE_RELEASE_NAME = "run-studio-windows-shutdown-ack"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
