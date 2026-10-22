@@ -1,6 +1,6 @@
 # Jaźń — isolated OAuth/MCP staging operator checklist
 
-**System release:** 16.3.25.5.116.0.34.39
+**System release:** 16.3.25.5.116.0.34.39002
 **Evidence:** source preparation only; NOT OAuth deployment, live MCP readiness or an accepted Jaźń turn.
 
 ## Boundaries and default state
@@ -16,10 +16,14 @@ From deploy/chatgpt_mcp/workers_github_oauth, run:
     npm ci --ignore-scripts --no-audit --no-fund
     npm run check
     npm run preflight:template
+    npm run test:workerd
 
 The tracked wrangler.staging.example.jsonc is deliberately nondeployable:
 its staging KV ID is a placeholder. Create a NEW, separate staging KV namespace,
 copy that example to the ignored wrangler.staging.jsonc and insert the staging KV ID.
+The staging candidate MUST retain `keep_vars: true` to preserve dashboard-managed
+allowlist/client identifiers across Wrangler deploys; the offline preflight
+rejects a missing or false setting. Never place either secret in tracked vars.
 
 Run these before considering a staging deployment:
 
@@ -30,6 +34,10 @@ The preflight checks exact staging Worker name, issuer and resource, entrypoint,
 compatibility, allowed variables, forbidden bindings, independent KV ID, and
 separation from production KV. It never reads secrets or contacts Cloudflare.
 PASS is NOT a permit to promote, nor evidence of working OAuth.
+The Node `test:workerd` gate executes the bundled Worker inside isolated
+Miniflare/workerd with mock credentials and KV; it checks fail-closed denial,
+wrong introspection credentials and inactive tokens, NOT a live GitHub callback.
+Run full GitHub/ChatGPT end-to-end acceptance separately.
 
 ## GitHub OAuth staging App (operator action)
 
