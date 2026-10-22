@@ -138,8 +138,6 @@ def summarize_ollama(tags: dict[str, Any] | None, error: str | None = None) -> H
 
 
 def read_health(core: StudioCore) -> HealthSnapshot:
-    from tools.jazn_start_studio import http_json
-
     data: dict[str, Any] = {}
     problem = ""
     try:
@@ -160,7 +158,13 @@ def read_health(core: StudioCore) -> HealthSnapshot:
         problem = type(exc).__name__
 
     try:
-        tags = http_json("/api/tags", timeout=3)
+        with urlopen("http://127.0.0.1:11434/api/tags", timeout=3) as reply:
+            if reply.status != 200:
+                raise RuntimeError("API HTTP " + str(reply.status))
+            raw = reply.read(256 * 1024 + 1)
+        if len(raw) > 256 * 1024:
+            raise RuntimeError("Zbyt długa odpowiedź API")
+        tags = json.loads(raw)
         ollama = summarize_ollama(tags)
     except (OSError, ValueError, RuntimeError, URLError) as exc:
         ollama = summarize_ollama(None, type(exc).__name__)
@@ -184,7 +188,10 @@ def launch(core: StudioCore) -> int:
     import tkinter as tk
     from tkinter import ttk, messagebox, filedialog
     from tkinter.scrolledtext import ScrolledText
-    from tools.jazn_start_studio import TASKS, TASK_INDEX, STUDIO_VERSION, safe_line
+    try:
+        from tools.jazn_start_studio import TASKS, TASK_INDEX, STUDIO_VERSION, safe_line
+    except ModuleNotFoundError:
+        from jazn_start_studio import TASKS, TASK_INDEX, STUDIO_VERSION, safe_line
 
     root = tk.Tk()
     root.title(f"Jaźń — Studio Startu {STUDIO_VERSION}")
