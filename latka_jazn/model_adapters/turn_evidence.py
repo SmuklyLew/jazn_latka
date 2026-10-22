@@ -24,13 +24,18 @@ def model_turn_evidence(
     )
     attempts = response.transport.get("attempts") if isinstance(response.transport, dict) else None
     actual_model = None
+    actual_model_source = None
     if isinstance(attempts, list):
         for attempt in reversed(attempts):
             if isinstance(attempt, dict) and isinstance(attempt.get("actual_model"), str):
                 actual_model = attempt["actual_model"].strip() or None
                 if actual_model:
+                    actual_model_source = attempt.get("actual_model_source")
                     break
-    matched = bool(actual_model and actual_model == response.model)
+    matched = bool(
+        actual_model and actual_model == response.model
+        and actual_model_source == "provider_response"
+    )
     return {
         "schema_version": "jazn_model_turn_evidence/v1",
         "turn_id": turn_id or None,
@@ -39,7 +44,8 @@ def model_turn_evidence(
         "adapter_id": response.adapter_id or None,
         "provider": response.provider or None,
         "declared_model": response.model or None,
-        "transport_observed_model": actual_model,
+        "transport_observed_model": actual_model if actual_model_source == "provider_response" else None,
+        "model_name_origin": actual_model_source or "not_verified",
         "model_identity_verified_from_provider": bool(completed and matched),
         "endpoint_used": response.endpoint_used,
         "generation_observed": completed,
