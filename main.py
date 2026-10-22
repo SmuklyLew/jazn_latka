@@ -107,6 +107,18 @@ def _bootstrap_entrypoint_environment(argv: list[str]) -> None:
     raise SystemExit(78)
 
 
+# Apply only the public operator defaults and optional local secrets before any
+# dependency/runtime import or process spawn. --version stays side-effect free.
+if __name__ == "__main__" and not _version_fast_path_requested(sys.argv[1:]):
+    from latka_jazn.operator_config import OperatorConfigError, load_operator_configuration
+
+    try:
+        load_operator_configuration(Path(__file__).resolve().parent)
+    except OperatorConfigError as exc:
+        print(f"Jaźń operator configuration rejected: {exc}", file=sys.stderr)
+        raise SystemExit(78) from None
+
+
 if __name__ == "__main__" and _version_fast_path_requested(sys.argv[1:]):
     _configure_stdio_utf8()
     print(PACKAGE_VERSION_FULL)

@@ -1,16 +1,16 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-  "runtime_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-  "package_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-  "generated_at_utc": "2026-10-22T03:32:47+00:00",
-  "updated_at_utc": "2026-10-22T03:32:47+00:00",
+  "version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
+  "runtime_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
+  "package_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
+  "generated_at_utc": "2026-10-22T08:59:44+00:00",
+  "updated_at_utc": "2026-10-22T08:59:44+00:00",
   "start_file": "run.py",
-  "file_count": 3261,
-  "static_file_count": 3261,
+  "file_count": 3264,
+  "static_file_count": 3264,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
-  "excluded_file_count": 367,
+  "excluded_file_count": 369,
   "runtime_state_file": "RUNTIME_STATE.json",
   "runtime_memory_split_policy": {
     "static_manifest": "PACKAGE_INTEGRITY_MANIFEST.json protects static project files only.",
@@ -299,8 +299,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2626,
-      "sha256": "509ab3e8d584a4f824ab0dda0c6cd67bcf2c633af4c0b4b887f6247074d899bf",
+      "size_bytes": 2726,
+      "sha256": "58305b865442d64aa8c813eeb46a90c265e68e6e38f63e2270f2b90769a057d9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -389,8 +389,17 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "5c449383ebf264e6ac2f383c602ae988800b4cdc23c790cb351d14c3553fdb2e",
+      "size_bytes": 2927,
+      "sha256": "07bb69fbcff526fd760945b3024bc694e9858fd0b25891987deb6f34df43e0df",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "config/jazn.toml",
+      "size_bytes": 428,
+      "sha256": "fd8364633c03ec850d4637bf7b434ba02c47cd8927ff8148be7a8ac9cb698709",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8677,6 +8686,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/operator_config.py",
+      "size_bytes": 6387,
+      "sha256": "d6a41dda78fa5eaca51f66c6848ba4d36d28e10fefa149fccc5fdddbaa7d7191",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/packaging/__init__.py",
       "size_bytes": 33,
       "sha256": "4a1f87cb206a77fcb627355c7ffe0a1f8639dcedfed477242cbfad8612e74e53",
@@ -10712,8 +10730,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 13947,
-      "sha256": "5962beb70fc7645c7d234064a4152b132200a925354605515b4228cc9eb22970",
+      "size_bytes": 14031,
+      "sha256": "db3462530c18e0d8872de835efe97ba28668e09917324e214e4887e7063d55b0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10820,8 +10838,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 139821,
-      "sha256": "9e3b0180cc60b28f09ee792e2df9117307bbc0892d0cddc86ead21a1e3a8852e",
+      "size_bytes": 140391,
+      "sha256": "c53b36f000205d943598cb798eb9c8e031decee0ab358fdbb7a0c875ef2392c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27442,6 +27460,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_operator_config_file.py",
+      "size_bytes": 3613,
+      "sha256": "00e3f2083482a9e834c325aadc9f57b3cd84c0821004dd1ae19c44c4b010f799",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_operator_executor_cross_platform.py",
       "size_bytes": 4398,
       "sha256": "754d1915aaace144c479f161a49b0edb3d4ac33467b0765089054832422e8169",
@@ -29153,8 +29180,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2317929,
-      "sha256": "516c87d661ddf5f0b46cca4f4f641f3f36eb3a1b9ca8252a370ae4d7fd0d9522",
+      "size_bytes": 2322947,
+      "sha256": "f8953a372560813570a92ee068c3cd9babfc22412f73c92f5cd58502211a5b42",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29780,7 +29807,9 @@
     ".archives/pre_v15_1_0_3_90/tree/tests/test_runtime_stability_wake_state.py",
     ".archives/pre_v15_1_0_3_90/tree/tools/jazn_version_rebuild.py",
     ".archives/pre_v15_1_0_3_90/tree/tools/memory_migrate_legacy.py",
-    "PACKAGE_INTEGRITY_MANIFEST.json"
+    "PACKAGE_INTEGRITY_MANIFEST.json",
+    "config/jazn.secrets.env.example",
+    "docs/runtime/OPERATOR_CONFIG_AND_SECRETS.md"
   ],
   "deferred_hash_files": [],
   "schema_contract": {
@@ -29801,11 +29830,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
+  "release_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-    "package_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging",
-    "release_version": "16.3.25.5.116.0.34.39-isolated-mcp-oauth-staging"
+    "runtime_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
+    "package_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging",
+    "release_version": "16.3.25.5.116.0.34.40-isolated-mcp-oauth-staging"
   },
   "legacy_aliases": {
     "version": "release_version"
