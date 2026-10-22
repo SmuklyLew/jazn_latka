@@ -8,6 +8,8 @@ from typing import Any
 
 from latka_jazn.core.response_candidate import ResponseCandidate
 from latka_jazn.core.runtime_turn_contract import RuntimeTurnContract
+from latka_jazn.model_adapters.base import ModelAdapterResponse
+from latka_jazn.model_adapters.turn_evidence import model_turn_evidence
 
 
 def generate_response_candidates(
@@ -70,6 +72,8 @@ def generate_response_candidates(
         if hasattr(response, "to_dict")
         else {}
     )
+    if isinstance(response, ModelAdapterResponse):
+        response_payload["turn_evidence"] = model_turn_evidence(request, response)
     candidates[0].adapter_response = _adapter_diagnostics_payload(
         response_payload
     )
@@ -88,7 +92,7 @@ def generate_response_candidates(
                 generation_reason="adapter_completed",
                 source_origin=str(getattr(response, "source_origin", "model_adapter")),
                 endpoint_used=getattr(response, "endpoint_used", None),
-                adapter_response=(response.to_dict() if hasattr(response, "to_dict") else {}),
+                adapter_response=dict(response_payload),
             )
         )
     return candidates[:limit]
