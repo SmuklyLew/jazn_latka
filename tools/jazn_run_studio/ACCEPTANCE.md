@@ -229,3 +229,33 @@ The .46 local full-suite failures still being diagnosed are MCP HTTP framing and
 three time-route/persistence cases, plus that now-repaired fixture. Real live
 chat acceptance on the new committed source, Windows Tk CI diagnosis, complete
 studio migration and the remaining original acceptance requirements remain open.
+
+## P0 continuation: operation results and deterministic isolation (.48)
+
+Actual Qt chat on the committed .47 export displayed two accepted real Ollama
+replies with a stable session, unique request/turn/trace IDs, matching hashes and
+canonical final validation. The interruption/recovery scenario needs a harness
+race correction: it attempted to resume after the result had already completed.
+This proves the two visible turns, not the entire recovery/failure matrix.
+
+The complete master control reports 2859 passed, 21 skipped and 6 failed in
+386.94 s. All five failures from the new .46 run also occur on that base. Three
+time/persistence failures were traced to live auto-routing into Ollama despite
+the tests selecting a null adapter. Explicit JAZN_LLM_ROUTE=off makes those same
+three tests pass without changing any assertion. The factory intentionally
+auto-routes null/auto configurations; tests now disable that route explicitly.
+Their prior committed bytes are archived unchanged.
+
+The public lifecycle CLI previously returned exit 0 after failed daemon start
+or stop. .48 propagates the actual ok status, removes argparse's leading option
+separator for start/stop (preserving chat message separators), and makes Studio
+also reject an old runtime's ok=false JSON even when its process returns 0.
+Nineteen targeted lifecycle/persistence/CLI tests pass after these changes.
+
+The independently dispatched master PowerShell workflow passed its Tcl/Tk GUI
+steps; local real Tk tests also passed, as did 200 repeated configuration-window
+test cases. No Tk asset absence was reproduced in these controls. The original
+red run remains historical evidence; current source CI still requires review.
+Local MCP HTTP framing is being investigated separately: raw network capture
+contains a chunked header with an unchunked JSON body. Do not claim a local MCP
+catalog pass until this transport discrepancy is explained.

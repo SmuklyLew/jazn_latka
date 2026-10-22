@@ -510,6 +510,13 @@ class Controller:
             # Raw diagnostic stdout is never retained after completion.
             raw = bytes(job.output)
             job.output.clear()
+            if job.state == "succeeded" and job.key in {"start", "stop", "restart"}:
+                try:
+                    outcome = json.loads(raw)
+                    if not isinstance(outcome, dict) or outcome.get("ok") is not True:
+                        job.state, job.error = "failed", "runtime_operation_rejected"
+                except ValueError:
+                    job.state, job.error = "failed", "invalid_operation_json"
             if job.state == "succeeded" and job.key == "status":
                 try:
                     value = json.loads(raw)

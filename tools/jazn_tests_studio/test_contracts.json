@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.47",
-  "active_definition_count": 2574,
+  "system_version": "16.3.25.5.116.0.34.48",
+  "active_definition_count": 2578,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24684,6 +24684,94 @@
       "description_source": "source_identity",
       "line": 174
     },
+    "tests/test_jazn_run_studio_lifecycle_results.py::test_lifecycle_separator_forwards_port_without_changing_chat_text": {
+      "path": "tests/test_jazn_run_studio_lifecycle_results.py",
+      "name": "test_lifecycle_separator_forwards_port_without_changing_chat_text",
+      "purpose": "Lifecycle separator forwards port without changing chat text",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands.lifecycle",
+        "latka_jazn.config",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_jazn_run_studio_lifecycle_results.py::test_public_lifecycle_exit_code_matches_runtime_result": {
+      "path": "tests/test_jazn_run_studio_lifecycle_results.py",
+      "name": "test_public_lifecycle_exit_code_matches_runtime_result",
+      "purpose": "Public lifecycle exit code matches runtime result",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands.lifecycle",
+        "latka_jazn.config",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jazn_run_studio_lifecycle_results.py::test_studio_does_not_trust_zero_exit_from_old_failed_runtime": {
+      "path": "tests/test_jazn_run_studio_lifecycle_results.py",
+      "name": "test_studio_does_not_trust_zero_exit_from_old_failed_runtime",
+      "purpose": "Studio does not trust zero exit from old failed runtime",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands.lifecycle",
+        "latka_jazn.config",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_jazn_run_studio_lifecycle_results.py::test_explicit_off_route_keeps_deterministic_null_adapter": {
+      "path": "tests/test_jazn_run_studio_lifecycle_results.py",
+      "name": "test_explicit_off_route_keeps_deterministic_null_adapter",
+      "purpose": "Explicit off route keeps deterministic null adapter",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands.lifecycle",
+        "latka_jazn.config",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
     "tests/test_jazn_run_studio_secrets.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
       "path": "tests/test_jazn_run_studio_secrets.py",
       "name": "test_external_secret_file_only_enters_child_environment_and_redactor",
@@ -46934,7 +47022,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 29
     },
     "tests/test_runtime_persistence_degraded.py::test_checkpoint_failure_preserves_valid_final": {
       "path": "tests/test_runtime_persistence_degraded.py",
@@ -46955,7 +47043,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 65
     },
     "tests/test_runtime_reload_daemon_lifecycle.py::test_process_fingerprint_binds_pid_to_start_identity": {
       "path": "tests/test_runtime_reload_daemon_lifecycle.py",
