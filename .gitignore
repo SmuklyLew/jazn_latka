@@ -12,6 +12,9 @@ node_modules/
 .npm/
 npm-debug.log*
 
+# Explicitly ignore local operator credentials (example is safe to track)
+/config/jazn.secrets.env
+
 # Runtime/private state at repository root
 .env
 .env.*

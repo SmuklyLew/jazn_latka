@@ -1,0 +1,11 @@
+# Kanoniczne, publiczne minimum operatora Jaźni.
+# Os.environ (uruchomienie Studio lub CLI) ma pierwszeństwo nad tym plikiem.
+# Pozostałe ustawienia pozostają domyślne w JaznConfig / innych modułach.
+schema_version = 1
+
+[environment]
+JAZN_LLM_ROUTE = "auto"
+JAZN_MEMORY_MODE = "optional"
+JAZN_MEMORY_READINESS_POLICY = "native_unified_required"
+JAZN_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
+JAZN_ALLOW_PAID_OPENAI = "0"
