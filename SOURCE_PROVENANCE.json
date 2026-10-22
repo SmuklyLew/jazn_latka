@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "c2c2aa4f6a38d62ad47c7d1c9e707d3aafbacfd3",
-    "base_version": "16.3.25.5.116.0.34.41-first-run-memory-evidence",
+    "base_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
+    "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
