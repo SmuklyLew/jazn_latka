@@ -10,7 +10,9 @@ merge this stacked continuation independently of review of #409–#411.
 
 ## Implementation checkpoint
 
-SYSTEM: `16.3.25.5.116.0.34.59-run-studio-native-brotli-locks`.
+SYSTEM: `16.3.25.5.116.0.34.60-run-studio-release-contract-sync`.
+Native-lock checkpoint pushed and read back:
+`2438327f81085f2fcd6a379b6adfe39c3279975c` (source `380d825363e7abc25af06ba1d0f3978ac3f632ad`).
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/412.
 First pushed metadata checkpoint: `e84be3ad0fdf71a40bd5198cb01fbd038bca9e07`;
 implementation source: `0599a198475258723f1ce3704e448d84616ee790`.
@@ -61,3 +63,35 @@ Next: obtain six native generated locks and audit reports, verify artifact diges
 and native target provenance, copy exact canonical lock bytes, run focused lock
 regressions, then complete full P0 gates before larger P1 work. Keep PR Draft.
 No private MEMORY, active runtime data, historical tests or source branches changed.
+
+## .59 full validation and .60 correction
+
+The preceding next-step paragraph is superseded: native lock recovery and its
+artifact verification are complete. .59 targeted dependency/MCP checks: 32 PASS,
+1 SKIPPED. Existing synthetic memory P1 checks: 31 PASS, 2 SKIPPED. Active compile,
+source Qt GUI smoke, catalog check and diff check PASS. SYSTEM package-smoke
+outside sandbox: exit 0, ok=true. Status snapshot: exit 1, daemon inactive,
+marker invalid and endpoint unavailable; no accepted conversation established.
+Independent .59 metadata check PASS, 3322 files, synchronized=true.
+
+.59 full local Windows pytest: 2966 PASS, 21 SKIPPED, 16 FAIL, 328.42s. Twelve
+failures expose stale startup_contract.json version .57. .60 synchronizes it
+with version.py and deployment.contract.json; no assertion was changed. Two
+subprocess-output failures are reproduced and resolved by inheriting explicit
+PYTHONUTF8=1 and PYTHONIOENCODING=utf-8 (parent -X utf8 does not propagate).
+Focused release/coverage/bootstrap set after correction: 69 PASS, 1 SKIPPED,
+1 FAIL in Tk initialization. Tk failed to read installed init.tcl/ttk.tcl even
+though OS inspection confirms the files exist; another focused attempt passed
+that GUI case. This intermittent local-host issue remains unresolved. The MCP
+real-process smoke consistently fails with mcp_catalog_invalid_http_framing;
+do not accept malformed content or claim a local MCP pass.
+
+.59 CI passed Studio, full active-tree Pyright, persistent-runtime E2E,
+MCP conformance, host-spawn, memory-cloud, stable contracts and container smoke.
+Release-hardening Windows failed; remaining jobs/PowerShell/cleanroom were still
+in progress when .60 was prepared. These results apply to .59 only.
+
+Next exact step: commit/push .60 with generated metadata, verify final-source
+full CI, rerun deterministic suite with inherited UTF-8, investigate residual
+local Tk/MCP issues without weakening tests. Do not call P0 complete yet.
+P1 Qt integration, P2/P3 parity, P4 live recovery, P5 EXE acceptance remain open.
