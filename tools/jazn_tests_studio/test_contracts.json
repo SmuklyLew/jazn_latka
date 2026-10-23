@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.55",
-  "active_definition_count": 2592,
+  "system_version": "16.3.25.5.116.0.34.57",
+  "active_definition_count": 2601,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23295,6 +23295,23 @@
       "description_source": "source_identity",
       "line": 221
     },
+    "tests/test_jazn_archive_brotli_security_floor.py::test_archive_optional_dependencies_require_patched_brotli": {
+      "path": "tests/test_jazn_archive_brotli_security_floor.py",
+      "name": "test_archive_optional_dependencies_require_patched_brotli",
+      "purpose": "Archive optional dependencies require patched brotli",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
     "tests/test_jazn_operator_studio.py::test_studio_settings_roundtrip_and_compare_and_swap": {
       "path": "tests/test_jazn_operator_studio.py",
       "name": "test_studio_settings_roundtrip_and_compare_and_swap",
@@ -24931,6 +24948,152 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_invalid_gateway_and_daemon_configuration_rejected": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_invalid_gateway_and_daemon_configuration_rejected",
+      "purpose": "Invalid gateway and daemon configuration rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_configured_gateway_start_uses_explicit_local_mode": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_configured_gateway_start_uses_explicit_local_mode",
+      "purpose": "Configured gateway start uses explicit local mode",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_gateway_refuses_occupied_port_without_adopting_process": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_gateway_refuses_occupied_port_without_adopting_process",
+      "purpose": "Gateway refuses occupied port without adopting process",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_gateway_probe_uses_selected_port_and_keeps_truth_boundary": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_gateway_probe_uses_selected_port_and_keeps_truth_boundary",
+      "purpose": "Gateway probe uses selected port and keeps truth boundary",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_read_json_refuses_non_probe_local_paths": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_read_json_refuses_non_probe_local_paths",
+      "purpose": "Read json refuses non probe local paths",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_selected_port_survives_settings_round_trip": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_selected_port_survives_settings_round_trip",
+      "purpose": "Selected port survives settings round trip",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_overflow_drops_logs_but_never_a_validated_final_or_state": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_overflow_drops_logs_but_never_a_validated_final_or_state",
+      "purpose": "Overflow drops logs but never a validated final or state",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "Empty"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
+    "tests/test_jazn_run_studio_mcp_events.py::test_gui_drains_critical_events_even_with_full_log_queue": {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "name": "test_gui_drains_critical_events_even_with_full_log_queue",
+      "purpose": "Gui drains critical events even with full log queue",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
