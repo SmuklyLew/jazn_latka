@@ -330,6 +330,8 @@ class Window(QMainWindow):
                   "tunnel_config": "Konfiguracja tunelu (plik)", "tunnel_id": "Nazwa / UUID tunelu",
                   "model": "Model Ollama", "accent": "Kolor własny (#RRGGBB)"}
         labels["cloudflare_url"] = "Adres HTTPS Workera Cloudflare"
+        labels["mcp_port"] = "Port lokalnej bramy MCP (127.0.0.1)"
+        labels["daemon_url"] = "URL lokalnego daemona (127.0.0.1)"
         labels["secrets_file"] = "Plik sekretów JSON (ignorowany przez Git)"
         for key, label in labels.items():
             field = QLineEdit(str(getattr(self.core.settings, key)))
@@ -422,10 +424,15 @@ class Window(QMainWindow):
 
     def poll(self) -> None:
         for _ in range(150):
+            # A saturated log queue must not delay terminal state / chat-final
+            # delivery. Overflow critical events are consumed first.
             try:
-                key, kind, value = self.core.events.get_nowait()
+                key, kind, value = self.core.critical_events.get_nowait()
             except queue.Empty:
-                break
+                try:
+                    key, kind, value = self.core.events.get_nowait()
+                except queue.Empty:
+                    break
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "evidence":
