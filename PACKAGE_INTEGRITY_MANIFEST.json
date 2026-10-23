@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
-  "runtime_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
-  "package_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
-  "generated_at_utc": "2026-10-23T23:12:12+00:00",
-  "updated_at_utc": "2026-10-23T23:12:12+00:00",
+  "version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+  "runtime_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+  "package_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+  "generated_at_utc": "2026-10-23T23:19:49+00:00",
+  "updated_at_utc": "2026-10-23T23:19:49+00:00",
   "start_file": "run.py",
-  "file_count": 3321,
-  "static_file_count": 3321,
+  "file_count": 3322,
+  "static_file_count": 3322,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2956,
-      "sha256": "749bcbe84dac4083c4d5295261ac7d405e9ad4f6ef4bcfad972fd8cadf1bc02e",
+      "size_bytes": 2962,
+      "sha256": "335f1d8a9695c8dd839e38ba918180f19166cbbba9698aa5fd3e237d93a29e10",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1952,
-      "sha256": "12049130d9fbce358f776158c546deb4e21937e32e1623cb4b1a10d87e261e25",
+      "size_bytes": 1945,
+      "sha256": "ac8916d5b42a1b1187a85e6bcc79762e76b630f621750b4507213effcc50e4f8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1640,8 +1640,8 @@
     },
     {
       "path": "docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md",
-      "size_bytes": 2832,
-      "sha256": "76cdd8e5077c896bd081445abb28804f80385ad7a16ec49a0ec466c35d7f3749",
+      "size_bytes": 4164,
+      "sha256": "048ad5b6efa3ba1662dcd3f07d94470e2d881d65de0c49033bcc475a1c64c277",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9129,7 +9129,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "8cf076d23a64455d4b3fe3e3252fe56f729917a521d0636f772d6fec62e219d5",
+      "sha256": "7e6bf7660dc1b57791949bd2d175bf1e8604f80adf652efad396b6500210ca7f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9138,7 +9138,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "892fa29bf2ef5bddf7eb9221bae56b581f0eb0849d9e227335310b4b8c9875bc",
+      "sha256": "ddaed26f0a7a5a77fc724eb1462dad38fec3d970e45f3c10499f9e2681296a90",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9147,7 +9147,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "50eb888e4a94fe7930f36feeb12fb5f7277244428f951a7d698c6736f79e6c50",
+      "sha256": "fb95eeea87c427e65bf52535c71c895d14f315fe38fe11ee641f95614be70c92",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9156,7 +9156,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "6da08a85d79a17ceb33c4ebaecdb080320bd54a70d84072e1dd7d8ac2f767450",
+      "sha256": "ed22dc5289779a5bb314d1d03543ee9d8c6de8ad62460026c6abd06cc58cd856",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9165,7 +9165,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "594a896b05d4fabb33253bd54f47b503b68d2d9a5fe27bc12d670d73f6f49d4d",
+      "sha256": "434700ee19720fed3668ad6b4c19e45cf0efdfaa830cbf72e92c82a8c2340109",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9174,7 +9174,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "33b77e37a1275fb766ecc0eea776f81fc76e593f277298079853059419983854",
+      "sha256": "ad2b5d6a97234bb9fa0f71dd9a7c83826c7da27b77440d3f3c9041fe08fb2bb1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10820,8 +10820,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14719,
-      "sha256": "4169edda959337c6d303033781cce108d13b79d9e6b6472cf9129a452e0652b9",
+      "size_bytes": 14720,
+      "sha256": "feb3f5634b9a995af8d7dd142fc55406683bfeb0f3d477e96ac39539c5de3f4f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28180,6 +28180,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_release_locks_brotli_floor.py",
+      "size_bytes": 1003,
+      "sha256": "66770599e8f3c11caae7068adb6f2d6889dc886b739b6ff0adb8b43ea1c2c602",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_release_metadata_canonical_git.py",
       "size_bytes": 5815,
       "sha256": "f31d2f5cdee2ebe77a64700336b1bd0daf77da08a1741c6fac82f25726f5392d",
@@ -29684,8 +29693,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2385756,
-      "sha256": "1b04dfcd786c00a908d6697f24205ab740604f7f647705a384d121c1b1a5583c",
+      "size_bytes": 2386414,
+      "sha256": "58a04474c4dff6dff4c613a0575ecf186f7eb97e41d9ff6bcf83be16ef913b3a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30342,11 +30351,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+  "release_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
-    "package_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
-    "release_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract"
+    "runtime_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+    "package_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+    "release_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks"
   },
   "legacy_aliases": {
     "version": "release_version"
