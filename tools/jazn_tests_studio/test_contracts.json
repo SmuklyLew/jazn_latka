@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.54",
-  "active_definition_count": 2589,
+  "system_version": "16.3.25.5.116.0.34.55",
+  "active_definition_count": 2592,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24931,6 +24931,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
+      "path": "tests/test_jazn_run_studio_probe_readiness.py",
+      "name": "test_gateway_http_reachability_is_not_readiness",
+      "purpose": "Gateway http reachability is not readiness",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jazn_run_studio_probe_readiness.py::test_cloudflare_health_is_not_automatically_ready": {
+      "path": "tests/test_jazn_run_studio_probe_readiness.py",
+      "name": "test_cloudflare_health_is_not_automatically_ready",
+      "purpose": "Cloudflare health is not automatically ready",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_jazn_run_studio_probe_readiness.py::test_ollama_missing_selected_model_is_not_ready_for_selected_model": {
+      "path": "tests/test_jazn_run_studio_probe_readiness.py",
+      "name": "test_ollama_missing_selected_model_is_not_ready_for_selected_model",
+      "purpose": "Ollama missing selected model is not ready for selected model",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
     },
     "tests/test_jazn_run_studio_secrets.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
       "path": "tests/test_jazn_run_studio_secrets.py",
