@@ -328,3 +328,10 @@ This is a continuation branch based on the original Studio PR #409, not a declar
 **Regression tests added:** tests for a normal ACK, simulated client disconnect during ACK, and a rejected unauthenticated stop. These unit tests are not substitutes for the native Windows cleanroom.
 
 **Pending verification:** all final-head checks and a clean Windows cleanroom stop on Python 3.12/3.13/3.14. The observed client timeout may be caused by multiple interacting teardown delays; do not claim root-cause closure until native tests pass. Original open gates (real transport-resume acceptance, MCP HTTP framing, specialized Qt Studio parity, DPI/accessibility and Linux offline Qt) remain open.
+
+
+## .55 operator probe readiness truth — pending final CI
+
+Source changes on `fix/jazn-run-studio-windows-daemon-shutdown-20261023` separate completed endpoint queries from usable capability. Gateway and Cloudflare probes with `ready=false` retain the evidence payload but the Studio operation ends `failed/service_not_ready`; HTTP 200 alone is not operational proof. The Ollama probe marks a configured model missing from `/api/tags` as `failed/selected_model_missing`. A listed model is not proof of generation. New `tests/test_jazn_run_studio_probe_readiness.py` covers HTTP 200/401/503, both readiness states and model match/mismatch. The canonical daemon `/shutdown` logic and memory data were not changed.
+
+**Verification boundary:** the source edits are committed to the feature branch through GitHub. Final-source Pyright, full Windows/Linux cleanroom, GUI smoke, canonical manifest synchronization and end-to-end functional chat have not been independently verified at the time of this source checkpoint. Keep PR Draft until all gates actually pass. No claims are made about the user's local PC.
