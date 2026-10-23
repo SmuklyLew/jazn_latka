@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.52",
-  "active_definition_count": 2586,
+  "active_definition_count": 2587,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -15973,6 +15973,7 @@
         "ConnectionAbortedError"
       ],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core"
       ],
       "status": "current",
@@ -15990,11 +15991,30 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.core"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 66
+    },
+    "tests/test_daemon_shutdown_ack_before_teardown.py::test_shutdown_marker_reuses_last_evidence_without_full_reverification": {
+      "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
+      "name": "test_shutdown_marker_reuses_last_evidence_without_full_reverification",
+      "purpose": "Only startup verifies the package; the final marker must be bounded.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 85
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
