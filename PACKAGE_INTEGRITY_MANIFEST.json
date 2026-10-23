@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-  "runtime_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-  "package_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-  "generated_at_utc": "2026-10-23T22:06:37+00:00",
-  "updated_at_utc": "2026-10-23T22:06:37+00:00",
+  "version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+  "runtime_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+  "package_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+  "generated_at_utc": "2026-10-23T22:15:28+00:00",
+  "updated_at_utc": "2026-10-23T22:15:28+00:00",
   "start_file": "run.py",
-  "file_count": 3317,
-  "static_file_count": 3317,
+  "file_count": 3319,
+  "static_file_count": 3319,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -191,8 +191,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 3761,
-      "sha256": "1449e4e8eed0d8732bf1205557141eddfe4e77a6ded6c94e08bb0fdb6569c757",
+      "size_bytes": 4014,
+      "sha256": "c15b3fa2ee6f40d1e9fb8d1c49f40c39e3c93f3474db9fce77883d30a1ca0556",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2986,
-      "sha256": "f241b7ae4629fb78a3d6a4a49776818fe4f5831b8cdb1c8c521d180b55db88c8",
+      "size_bytes": 2999,
+      "sha256": "841905d2e7c6a47d9995ed630cd0133f2ce4573fb43d96eb0b8e8193f4a49763",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1949,
-      "sha256": "aa5a09335c09389d9126e2a7f3509ad8fb4762f66b13c08978e3b7325afb080d",
+      "size_bytes": 1952,
+      "sha256": "12049130d9fbce358f776158c546deb4e21937e32e1623cb4b1a10d87e261e25",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9318,7 +9318,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "f0aa188be73df6d8a09b1a9edc27a8fc450b70f38d65a8b947614f8dcc3e27e0",
+      "sha256": "134a0a8c747b4e53f017df29b75efb85d588e0a7ce259875823616eb5c9f533e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10811,8 +10811,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14550,
-      "sha256": "f70619489beaafeae9e8859ad4db58c2999a870c6355172623295dc98542b472",
+      "size_bytes": 14727,
+      "sha256": "ae7dd468d7bf368e562a0b705a2854128e3a7e6abb1a53fec3bb83914de120ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10928,8 +10928,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size_bytes": 2340,
-      "sha256": "300a358edc28a4777b0831935e355979496c62385b7120f1eaf7a87313b8d791",
+      "size_bytes": 2432,
+      "sha256": "a9757b89b235d66d73415f3e7167e07371aa431676e3206c6b7c026ce30971f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26407,6 +26407,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_archive_brotli_security_floor.py",
+      "size_bytes": 519,
+      "sha256": "8fc99f9660d84a680d0e5d708241841de99af9f30eb9b75700b6d6b01cb6d598",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_operator_studio.py",
       "size_bytes": 8906,
       "sha256": "86e629adb3b35b62d365f7e2b0600a14978b3d08e7182989b7f089e3f74dc00d",
@@ -26554,6 +26563,15 @@
       "path": "tests/test_jazn_run_studio_lifecycle_results.py",
       "size_bytes": 2837,
       "sha256": "77caacc8689a2acdb663971f888da4fbd5994be82addd2c5ccfd6717fd2fb3c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jazn_run_studio_mcp_events.py",
+      "size_bytes": 6452,
+      "sha256": "b40b27001bf8805c0efb8b8aa58dad5b7256034c911abdf5aa0b0f82017b29ec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29360,8 +29378,8 @@
     },
     {
       "path": "tools/jazn_run_studio/README.md",
-      "size_bytes": 7345,
-      "sha256": "b3c24dcaa19dfa86c79651ab82c8fc6a3b7778095fa00fbe19c892b3e34499d0",
+      "size_bytes": 8208,
+      "sha256": "b358387184f75098336d9808935d84e8cfdec21b883673748bb3cda6e6a43377",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29441,8 +29459,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 31626,
-      "sha256": "5dc74e47e610be159b5906a560d4e8176dc3c46de2210c5e14bff7265da071af",
+      "size_bytes": 31814,
+      "sha256": "ea233729d18fafba20a18badb5b030fca098215c635e1cc9c8375f52b4c3413c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29504,8 +29522,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 27219,
-      "sha256": "ec0d1be9cc58180f4a7fdebc2767a7d2875ff5141acbcb8abf7732bc7c4ce3b4",
+      "size_bytes": 27275,
+      "sha256": "cd0e6cea365151ef2e614bbe47bc8a804a3604905657ab06c687d9d8b2313bda",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29648,8 +29666,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2377873,
-      "sha256": "56f1b32fb2f92407de4eed88c59c5f8f8bd0b9769e64b807b460bd4675ba6d5a",
+      "size_bytes": 2384414,
+      "sha256": "ff42874e53962a4ea0760a5dbea81df60f2788e85d172bcd7794cf15cb151bba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30306,11 +30324,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
+  "release_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-    "package_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-    "release_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth"
+    "runtime_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+    "package_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+    "release_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security"
   },
   "legacy_aliases": {
     "version": "release_version"
