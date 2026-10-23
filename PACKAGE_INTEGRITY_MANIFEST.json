@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
-  "runtime_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
-  "package_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
-  "generated_at_utc": "2026-10-23T23:27:36+00:00",
-  "updated_at_utc": "2026-10-23T23:27:36+00:00",
+  "version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
+  "runtime_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
+  "package_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
+  "generated_at_utc": "2026-10-23T23:50:38+00:00",
+  "updated_at_utc": "2026-10-23T23:50:38+00:00",
   "start_file": "run.py",
-  "file_count": 3322,
-  "static_file_count": 3322,
+  "file_count": 3325,
+  "static_file_count": 3325,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "941aa336e31ec5ed98da4d431d50b02cffcc8c888c70c8f0eb37c212532f73c0",
+      "size_bytes": 2980,
+      "sha256": "af9177d4ccc4e1fd32d8b3295737c338a4c2e348439e81751a5a33eeedf07dfb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1947,
-      "sha256": "ff8d93a48c8380fd54ef456ad58e7eed1eabd7eeaee8c36640b7d21595a502be",
+      "size_bytes": 1948,
+      "sha256": "4e00098bf8952d5283d685b1ed64e2097ee8faad76031362e00959b70591bd47",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1640,8 +1640,8 @@
     },
     {
       "path": "docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md",
-      "size_bytes": 6346,
-      "sha256": "1773187e648c651a8c56e2dbb503a127159175828073c7f21e1e897ae4492717",
+      "size_bytes": 9737,
+      "sha256": "b8f53086a4657bf594eebef08af07e5eec032462ab950bb37517b71deb49eb70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9327,7 +9327,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "0c4da6d053b4ef6fb6ee9bf9e2f1dd49bcc4df38e80f6bf232f1e898a6bcfb4a",
+      "sha256": "a7b93cac0f5f1ce1adc46596ccf32612f7ae8f13ef053e8dd9bde352b5317987",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10082,8 +10082,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/p1_memory_provenance.py",
-      "size_bytes": 25671,
-      "sha256": "298e706b4019522fc23266f04247ec8514d58811f9d3c550ac05094d3b169630",
+      "size_bytes": 27704,
+      "sha256": "00766cd8fee2ccaef3c5539f7a593e8adb8632f09b8575905613fbaa4e407485",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10820,8 +10820,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14722,
-      "sha256": "a9e40a239d4adecc1f9b0d4b11cfed40b1e41b0de863615217d9ba691fe61edc",
+      "size_bytes": 14723,
+      "sha256": "6b2d93296c001bd89107626873f42d0422fb6be2b0b7fab728fbab0b73921d69",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24562,6 +24562,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_active_memory_evidence_binding.py",
+      "size_bytes": 5920,
+      "sha256": "02e9de30d2a5c3df2a47c27b4a27a390fa0d7f291bbb7ee6f07c0ec4483d437a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_active_memory_readiness_p1.py",
       "size_bytes": 4752,
       "sha256": "d14a98ace88041acfd6d86a907c779660c3fd656c4a70b7405b7f0d63a5cc7ee",
@@ -27217,6 +27226,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_provenance_resource_limits.py",
+      "size_bytes": 2577,
+      "sha256": "79bd0d4d5d1f6244fac5ff856b8f0eea02ebdb51cc44a127c911899f7428f3e4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "size_bytes": 3218,
+      "sha256": "3431f59b280ce0003b85a203f44ceab812736056d9701ee3226a0d5790facadb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_provenance_windows_file_stability.py",
       "size_bytes": 2560,
       "sha256": "1b753026e6d80524dfa69be25f1b7d7dff38722cb0545723946cf348ef0e62fb",
@@ -29693,8 +29720,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2386414,
-      "sha256": "6fdf4ed0d1bc68015a36f61a37d83a1d58586aaa2e5a8f62e55ccdb6a6caa69a",
+      "size_bytes": 2397242,
+      "sha256": "46be96a177e4809518b6ab1dbd9e8a2f8a0feebd2828860855e47402a12040df",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30351,11 +30378,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+  "release_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
-    "package_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
-    "release_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync"
+    "runtime_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
+    "package_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits",
+    "release_version": "16.3.25.5.116.0.34.61-memory-comparison-resource-limits"
   },
   "legacy_aliases": {
     "version": "release_version"
