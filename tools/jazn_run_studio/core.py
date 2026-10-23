@@ -118,6 +118,7 @@ def _path_without_links(path: Path) -> Path:
 @dataclass(frozen=True)
 class Settings:
     python: str = ""
+    mcp_python: str = ""
     ollama: str = ""
     cloudflared: str = ""
     tunnel_config: str = ""
@@ -142,7 +143,7 @@ class Settings:
             raise StudioError("Nieznany motyw")
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", obj.accent):
             raise StudioError("Kolor wymaga formatu #RRGGBB")
-        for path in (obj.python, obj.ollama, obj.cloudflared, obj.tunnel_config, obj.secrets_file):
+        for path in (obj.python, obj.mcp_python, obj.ollama, obj.cloudflared, obj.tunnel_config, obj.secrets_file):
             if path and (not Path(path).is_absolute() or not Path(path).is_file()):
                 raise StudioError("Wskaż istniejący plik przez ścieżkę absolutną")
         if obj.tunnel_id and not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}", obj.tunnel_id):
@@ -370,7 +371,8 @@ class Controller:
             # The canonical CLI refuses MCP without an explicit security mode.
             # Studio owns only a local developer listener; public OAuth must be
             # configured through the separately validated deployment workflow.
-            argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python))
+            argv = [mcp_interpreter, "-X", "utf8", str(self.root / "run.py"),
                     "mcp-http", "--loopback-dev", "--host", "127.0.0.1",
                     "--port", str(port), "--daemon-url", self.settings.daemon_url]
         else:
