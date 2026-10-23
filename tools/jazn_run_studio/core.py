@@ -23,6 +23,7 @@ import tempfile
 import threading
 import time
 from typing import Any
+from urllib.parse import urlsplit
 
 from latka_jazn.tools.jazn_studio.core import verified_root
 from latka_jazn.core.runtime_root import workspace_runtime_path
@@ -125,6 +126,8 @@ class Settings:
     theme: str = "system"
     accent: str = "#9876d4"
     cloudflare_url: str = ""
+    mcp_port: str = "8080"
+    daemon_url: str = "http://127.0.0.1:8787"
     secrets_file: str = ""
     runtime_profile: str = "off"
 
@@ -146,6 +149,18 @@ class Settings:
             raise StudioError("Nieprawidłowa nazwa / UUID tunelu")
         if obj.model and (obj.model.startswith("-") or not re.fullmatch(r"[\w./:@-]{1,200}", obj.model)):
             raise StudioError("Nieprawidłowa nazwa modelu")
+        if not re.fullmatch(r"[0-9]{4,5}", obj.mcp_port) or not 1024 <= int(obj.mcp_port) <= 65535:
+            raise StudioError("Port MCP musi być liczbą od 1024 do 65535")
+        try:
+            daemon = urlsplit(obj.daemon_url)
+            daemon_port = daemon.port
+        except ValueError as exc:
+            raise StudioError("Nieprawidłowy adres lokalnego daemona") from exc
+        if (daemon.scheme != "http" or daemon.hostname != "127.0.0.1"
+                or daemon_port is None or daemon.username is not None
+                or daemon.password is not None or daemon.path not in {"", "/"}
+                or daemon.query or daemon.fragment):
+            raise StudioError("Adres daemona musi wskazywać wyłącznie http://127.0.0.1:PORT")
         if obj.cloudflare_url:
             from latka_jazn.tools.jazn_studio.core import StudioSettings
             StudioSettings.validate({"cloudflare_url": obj.cloudflare_url})
@@ -273,6 +288,9 @@ class Controller:
         self.jobs: dict[str, Job] = {}
         self.logs: dict[str, deque[str]] = {}
         self.events: queue.Queue[tuple[str, str, Any]] = queue.Queue(maxsize=5000)
+        # Terminal states, validated chat finals and helper results cannot be
+        # discarded when a burst of diagnostic logs fills the bounded queue.
+        self.critical_events: queue.SimpleQueue[tuple[str, str, Any]] = queue.SimpleQueue()
         self.lock = threading.RLock()
         self.closed = False
         self.chat: Any = None
@@ -285,7 +303,8 @@ class Controller:
             try:
                 self.events.put_nowait((key, kind, value))
             except queue.Full:
-                pass
+                if kind != "log":
+                    self.critical_events.put((key, kind, value))
 
     def command(self, key: str) -> list[str]:
         try:
@@ -342,7 +361,17 @@ class Controller:
             argv = [executable(self.settings.cloudflared, "cloudflared"), "tunnel", "--config",
                     self.settings.tunnel_config, "run", self.settings.tunnel_id]
         elif service == "gateway":
-            argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), "mcp-http"]
+            port = int(self.settings.mcp_port)
+            with socket.socket() as probe:
+                probe.settimeout(0.3)
+                if probe.connect_ex(("127.0.0.1", port)) == 0:
+                    raise StudioError("Port MCP jest zajęty; Studio nie przejmuje istniejącej bramy")
+            # The canonical CLI refuses MCP without an explicit security mode.
+            # Studio owns only a local developer listener; public OAuth must be
+            # configured through the separately validated deployment workflow.
+            argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+                    "mcp-http", "--loopback-dev", "--host", "127.0.0.1",
+                    "--port", str(port), "--daemon-url", self.settings.daemon_url]
         else:
             raise StudioError("Ta usługa nie jest lokalnym zarządzanym procesem")
         job = self._reserve("service:" + service)
@@ -351,7 +380,8 @@ class Controller:
 
     def probe(self, key: str) -> Job:
         from . import probes
-        calls = {"ollama": lambda: probes.ollama(self.settings.model), "gateway": probes.gateway,
+        calls = {"ollama": lambda: probes.ollama(self.settings.model),
+                 "gateway": lambda: probes.gateway(self.settings.mcp_port),
                  "cloudflare": lambda: probes.cloudflare(self.settings.cloudflare_url),
                  "tunnel_service": lambda: probes.tunnel_service(self.root)}
         if key not in calls:
