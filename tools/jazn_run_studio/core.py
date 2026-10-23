@@ -157,7 +157,8 @@ class Settings:
         except ValueError as exc:
             raise StudioError("Nieprawidłowy adres lokalnego daemona") from exc
         if (daemon.scheme != "http" or daemon.hostname != "127.0.0.1"
-                or daemon_port is None or daemon.username is not None
+                or daemon_port is None or not 1 <= daemon_port <= 65535
+                or daemon.username is not None
                 or daemon.password is not None or daemon.path not in {"", "/"}
                 or daemon.query or daemon.fragment):
             raise StudioError("Adres daemona musi wskazywać wyłącznie http://127.0.0.1:PORT")
