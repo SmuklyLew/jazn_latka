@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from http.client import HTTPException
 import os
+import re
 import ssl
 from pathlib import Path
 from typing import Any
@@ -21,7 +22,11 @@ class NoRedirect(HTTPRedirectHandler):
 
 def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     parts = urlsplit(url)
-    local = parts.scheme == "http" and parts.hostname == "127.0.0.1" and parts.port in {8080, 11434}
+    local = (parts.scheme == "http" and parts.hostname == "127.0.0.1"
+             and ((parts.port == 11434 and parts.path == "/api/tags")
+                  or (parts.port is not None and 1024 <= parts.port <= 65535
+                      and parts.path == "/readyz")))
+
     remote = parts.scheme == "https" and str(parts.hostname or "").endswith(".workers.dev") and parts.port in {None, 443}
     if not (local or remote) or parts.username or parts.password or parts.query or parts.fragment:
         raise ValueError("Unsupported service probe URL")
@@ -58,8 +63,10 @@ def ollama(model: str = "") -> dict[str, Any]:
             "generation_verified": False, "accepted_visible_turn": False}
 
 
-def gateway() -> dict[str, Any]:
-    code, payload = read_json("http://127.0.0.1:8080/readyz")
+def gateway(port: str = "8080") -> dict[str, Any]:
+    if not isinstance(port, str) or not re.fullmatch(r"[0-9]{4,5}", port) or not 1024 <= int(port) <= 65535:
+        raise ValueError("Invalid local MCP gateway port")
+    code, payload = read_json(f"http://127.0.0.1:{int(port)}/readyz")
     return {"service": "gateway", "http_status": code, "endpoint_reachable": True,
             "ready": code == 200 and payload.get("ready") is True,
             "gateway_live": payload.get("gateway_live") is True,
