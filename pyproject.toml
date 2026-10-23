@@ -32,6 +32,9 @@ markers = [
 ]
 
 [project.optional-dependencies]
+run-studio = [
+  "PySide6-Essentials>=6.12,<6.13",
+]
 pdf = [
   "pypdf>=6.21.1,<7",
 ]
