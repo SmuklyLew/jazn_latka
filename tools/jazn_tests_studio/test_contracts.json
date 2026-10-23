@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.58",
-  "active_definition_count": 2603,
+  "system_version": "16.3.25.5.116.0.34.59",
+  "active_definition_count": 2604,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -44483,6 +44483,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 113
+    },
+    "tests/test_release_locks_brotli_floor.py::test_release_lock_has_patched_brotli": {
+      "path": "tests/test_release_locks_brotli_floor.py",
+      "name": "test_release_lock_has_patched_brotli",
+      "purpose": "Release lock has patched brotli",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
     },
     "tests/test_release_metadata_canonical_git.py::test_canonical_manifest_hashes_git_blob_not_crlf_worktree": {
       "path": "tests/test_release_metadata_canonical_git.py",
