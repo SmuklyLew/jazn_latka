@@ -86,6 +86,8 @@ Until that request is resolved, a new message is blocked. Closing the transport
 does not stop the daemon. Conversation text is displayed locally but is not added
 to the shared diagnostic log export.
 
+Service probe completion is separate from service readiness: an HTTP response with `ready=false` or non-ready gateway/Cloudflare status fails the operator check while preserving the response evidence. When a model is selected, its absence from Ollama `/api/tags` fails the model-selection check, but an installed model still does not prove generation or an accepted Jaźń turn.
+
 Read-only service probes are also available from the terminal:
 `python -X utf8 jazn_run_studio.py --probe ollama` (or `gateway`, `cloudflare`,
 `tunnel_service`). HTTP, model availability, daemon identity and accepted speech
