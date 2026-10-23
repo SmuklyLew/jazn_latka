@@ -363,7 +363,15 @@ class Controller:
                 evidence = calls[key]()
                 self.emit(job.key, "probe", evidence)
                 self.emit(job.key, "log", json.dumps(evidence, ensure_ascii=False))
-                job.state = "succeeded"
+                # A reachable endpoint or successful probe execution is not proof
+                # of service readiness. Preserve the evidence event, but keep
+                # the operator job red when the selected capability is absent.
+                if key in {"gateway", "cloudflare"} and evidence.get("ready") is not True:
+                    job.state, job.error = "failed", "service_not_ready"
+                elif key == "ollama" and evidence.get("selected_model_present") is False:
+                    job.state, job.error = "failed", "selected_model_missing"
+                else:
+                    job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
                 job.state, job.error = "failed", type(exc).__name__
                 self.emit(job.key, "log", "Test połączenia nie powiódł się: " + type(exc).__name__)
