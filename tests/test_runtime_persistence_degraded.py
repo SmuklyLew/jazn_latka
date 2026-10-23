@@ -14,6 +14,7 @@ def _session(tmp_path: Path, monkeypatch) -> JaznRuntimeSession:
         "JAZN_ALLOW_NETWORK": "0",
         "JAZN_DICTIONARY_ALLOW_NETWORK": "0",
         "JAZN_MODEL_ADAPTER": "null",
+        "JAZN_LLM_ROUTE": "off",
     }.items():
         monkeypatch.setenv(name, value)
     (tmp_path / "main.py").write_text("# isolated runtime root\n", encoding="utf-8")

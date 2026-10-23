@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
-  "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
-  "commit_date": "2026-10-22T12:14:14Z",
+  "base_merge_commit": "acca9957f52bc0134baf8bd063b62acc2cdd90de",
+  "base_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+  "commit_date": "2026-10-23T22:15:28Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-22T12:14:14+00:00",
+  "generated_at_utc": "2026-10-23T22:15:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a4e25c35f11a58b59b9a25933f3033ee8963fda5",
+  "git_tree_sha": "bbabb2029b488afe5b232eb867da66879b3787f3",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
+    "base_commit": "2503ccdc407cc733e4282372173dd17b3e3be068",
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
-    "source_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight"
+    "source_commit": "acca9957f52bc0134baf8bd063b62acc2cdd90de",
+    "source_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "release_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "runtime_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "453c9e7c7abcfea9a539b38bb00f949327f8b3da",
+  "source_commit": "acca9957f52bc0134baf8bd063b62acc2cdd90de",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "source_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+  "update_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
   "version_source": "latka_jazn/version.py"
 }

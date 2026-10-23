@@ -1558,7 +1558,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
             )
             payload["trusted_time_injection"] = injected
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        return 0
+        return 0 if payload.get("ok") is True else 1
 
     if ns.daemon_refresh_time:
         cfg = config or JaznConfig()
@@ -1605,13 +1605,14 @@ def legacy_main(argv: list[str] | None = None) -> int:
 
     if ns.daemon_stop:
         cfg = config or JaznConfig()
-        print(json.dumps(stop_daemon(
+        payload = stop_daemon(
             cfg,
             host=ns.daemon_host,
             port=ns.daemon_port,
             marker_output=ns.daemon_marker_output,
-        ), ensure_ascii=False, indent=2, sort_keys=True))
-        return 0
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0 if payload.get("ok") is True else 1
 
 
     if ns.daemon_autostart_policy:
