@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
-  "runtime_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
-  "package_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
-  "generated_at_utc": "2026-10-23T22:15:28+00:00",
-  "updated_at_utc": "2026-10-23T22:15:28+00:00",
+  "version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+  "runtime_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+  "package_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+  "generated_at_utc": "2026-10-23T23:12:12+00:00",
+  "updated_at_utc": "2026-10-23T23:12:12+00:00",
   "start_file": "run.py",
-  "file_count": 3319,
-  "static_file_count": 3319,
+  "file_count": 3321,
+  "static_file_count": 3321,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2999,
-      "sha256": "841905d2e7c6a47d9995ed630cd0133f2ce4573fb43d96eb0b8e8193f4a49763",
+      "size_bytes": 2956,
+      "sha256": "749bcbe84dac4083c4d5295261ac7d405e9ad4f6ef4bcfad972fd8cadf1bc02e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1633,6 +1633,15 @@
       "path": "docs/plans/HOST_CAPABILITY_HANDSHAKE_PLAN.md",
       "size_bytes": 13442,
       "sha256": "bb0d70e76cc98d8a9ef5a8081000dd299edb60c5a1c3216469a21335229c726f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md",
+      "size_bytes": 2832,
+      "sha256": "76cdd8e5077c896bd081445abb28804f80385ad7a16ec49a0ec466c35d7f3749",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10811,8 +10820,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14727,
-      "sha256": "ae7dd468d7bf368e562a0b705a2854128e3a7e6abb1a53fec3bb83914de120ce",
+      "size_bytes": 14719,
+      "sha256": "4169edda959337c6d303033781cce108d13b79d9e6b6472cf9129a452e0652b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26551,6 +26560,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_run_studio_job_error_contract.py",
+      "size_bytes": 666,
+      "sha256": "a71627c086829f034cdff8f5dc1c8fc0d928fcfdfc79f5d16f7969fc7c141f73",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_run_studio_layout.py",
       "size_bytes": 1871,
       "sha256": "13192f3b4fa70f786d407dec401c440fa9fbee9fc4090632cc4760a836263ae0",
@@ -29459,8 +29477,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 31814,
-      "sha256": "ea233729d18fafba20a18badb5b030fca098215c635e1cc9c8375f52b4c3413c",
+      "size_bytes": 31823,
+      "sha256": "b594678ed896722b441cb1c92e44edd001f28d6b46a90f7bdbcd9e8394123f04",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29666,8 +29684,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2384414,
-      "sha256": "ff42874e53962a4ea0760a5dbea81df60f2788e85d172bcd7794cf15cb151bba",
+      "size_bytes": 2385756,
+      "sha256": "1b04dfcd786c00a908d6697f24205ab740604f7f647705a384d121c1b1a5583c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30324,11 +30342,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
+  "release_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
-    "package_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security",
-    "release_version": "16.3.25.5.116.0.34.57-run-studio-mcp-events-brotli-security"
+    "runtime_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+    "package_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract",
+    "release_version": "16.3.25.5.116.0.34.58-run-studio-job-error-contract"
   },
   "legacy_aliases": {
     "version": "release_version"
