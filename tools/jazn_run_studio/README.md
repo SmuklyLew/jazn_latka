@@ -43,6 +43,18 @@ point to the official publishers. Missing dependencies are explicit errors.
 - Ollama, the local MCP gateway and a configured Cloudflare Tunnel can be launched
   as owned child processes. Stop/restart uses the retained process handle. Studio
   never adopts a PID or stops pre-existing system services.
+- The local MCP service must explicitly start with `mcp-http --loopback-dev --host
+  127.0.0.1`. The shared settings control `mcp_port` (1024–65535, default
+  8080) and the loopback-only `daemon_url` (default
+  `http://127.0.0.1:8787`). The same configured MCP port is used by the
+  readiness probe; an occupied port is never adopted as Studio-owned.
+  `mcp_python` optionally selects a verified Python interpreter with the
+  separate MCP/uvicorn dependencies installed (the core Jaźń interpreter is
+  unchanged). Public OAuth MCP is a distinct explicitly configured deployment,
+  never an automatic fallback of this local action.
+- Critical completion, state and validated chat-final events have a separate
+  overflow channel. Saturated diagnostic log streams can lose redundant log
+  updates but must not discard accepted final messages or terminal states.
 - A running child is labeled as running, with functional readiness explicitly
   unverified. Runtime status preserves separate identity, heartbeat, endpoint and
   conversation-readiness fields.
