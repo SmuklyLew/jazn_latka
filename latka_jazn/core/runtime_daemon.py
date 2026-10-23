@@ -3370,7 +3370,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
     def _authenticated(self, *, mutating: bool = False) -> bool:
         if mutating and self.headers.get("Origin"):
             self._daemon_server().state.auth_failure_count += 1
-            self._drain_rejected_request_body()
+            self._drain_bounded_request_body()
             self._json_response(
                 {"ok": False, "error_code": "browser_origin_not_allowed"},
                 status=HTTPStatus.FORBIDDEN,
@@ -3384,20 +3384,19 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         if supplied and secrets.compare_digest(supplied, self._daemon_server().auth_token):
             return True
         self._daemon_server().state.auth_failure_count += 1
-        self._drain_rejected_request_body()
+        self._drain_bounded_request_body()
         self._json_response(
             {"ok": False, "error_code": "daemon_auth_required"},
             status=HTTPStatus.UNAUTHORIZED,
         )
         return False
 
-    def _drain_rejected_request_body(self) -> None:
-        """Boundedly consume an already-sent body before closing a rejected POST.
+    def _drain_bounded_request_body(self) -> None:
+        """Boundedly consume a POST body before closing an HTTP connection.
 
-        Windows may translate a close with unread request bytes into TCP RST,
-        hiding the intended 401/403 response from the client. The short socket
-        deadline keeps authentication rejection fail-closed for partial or
-        deliberately slow bodies.
+        Windows may reset a connection when a reply closes a socket with unread
+        request bytes. This applies to valid shutdown acknowledgements as well
+        as rejected requests. Keep a short socket deadline for slow clients.
         """
 
         raw_values = self.headers.get_all("Content-Length") or []
@@ -3785,6 +3784,9 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             # large marker or successfully delivering its acknowledgement.
             # A slow Windows consumer may time out or disconnect during a
             # response; scheduling shutdown only afterwards strands the daemon.
+            # An authenticated client may have sent a small JSON body. Leaving
+            # it unread can reset the connection on Windows before the ACK.
+            self._drain_bounded_request_body()
             daemon_server = self._daemon_server()
             daemon_server.shutdown_requested.set()
 
@@ -5305,7 +5307,7 @@ def stop_daemon(
         shutdown_response = http_json(
             "POST",
             daemon_url(host, int(port), "/shutdown"),
-            {},
+            None,
             timeout=2.0,
             token=read_daemon_auth_token(subject_root),
         )
