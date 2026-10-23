@@ -326,7 +326,7 @@ class Window(QMainWindow):
     def _settings(self) -> None:
         layout = self.page("Ustawienia", "Profil lokalny Studio jest ignorowany przez Git. Sekrety nie są polami tego profilu. Zmiana ścieżek nie przejmuje działających procesów.")
         form = QFormLayout()
-        labels = {"python": "Interpreter Python", "ollama": "Plik Ollama", "cloudflared": "Plik cloudflared",
+        labels = {"python": "Interpreter Python", "mcp_python": "Python MCP (opcjonalny, z mcp/uvicorn)", "ollama": "Plik Ollama", "cloudflared": "Plik cloudflared",
                   "tunnel_config": "Konfiguracja tunelu (plik)", "tunnel_id": "Nazwa / UUID tunelu",
                   "model": "Model Ollama", "accent": "Kolor własny (#RRGGBB)"}
         labels["cloudflare_url"] = "Adres HTTPS Workera Cloudflare"
