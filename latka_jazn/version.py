@@ -1,3 +1,4 @@
+# v116.0.34.57 requires security-patched Brotli for archive release bundles.
 # v116.0.34.56 secures configurable loopback MCP startup and reliable Studio GUI event delivery.
 # v116.0.34.55 keeps HTTP probe completion distinct from real Studio service readiness.
 # v116.0.34.54 repairs synthetic HTTP shutdown fixture while retaining native socket regression.
@@ -110,9 +111,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.56"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.56"
-PACKAGE_RELEASE_NAME = "run-studio-mcp-events-hardening"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.57"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.57"
+PACKAGE_RELEASE_NAME = "run-studio-mcp-events-brotli-security"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
