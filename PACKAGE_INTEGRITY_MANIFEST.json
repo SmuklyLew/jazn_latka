@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
-  "runtime_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
-  "package_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
-  "generated_at_utc": "2026-10-23T23:19:49+00:00",
-  "updated_at_utc": "2026-10-23T23:19:49+00:00",
+  "version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+  "runtime_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+  "package_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+  "generated_at_utc": "2026-10-23T23:27:36+00:00",
+  "updated_at_utc": "2026-10-23T23:27:36+00:00",
   "start_file": "run.py",
   "file_count": 3322,
   "static_file_count": 3322,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "335f1d8a9695c8dd839e38ba918180f19166cbbba9698aa5fd3e237d93a29e10",
+      "size_bytes": 2974,
+      "sha256": "941aa336e31ec5ed98da4d431d50b02cffcc8c888c70c8f0eb37c212532f73c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1945,
-      "sha256": "ac8916d5b42a1b1187a85e6bcc79762e76b630f621750b4507213effcc50e4f8",
+      "size_bytes": 1947,
+      "sha256": "ff8d93a48c8380fd54ef456ad58e7eed1eabd7eeaee8c36640b7d21595a502be",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1640,8 +1640,8 @@
     },
     {
       "path": "docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md",
-      "size_bytes": 4164,
-      "sha256": "048ad5b6efa3ba1662dcd3f07d94470e2d881d65de0c49033bcc475a1c64c277",
+      "size_bytes": 6346,
+      "sha256": "1773187e648c651a8c56e2dbb503a127159175828073c7f21e1e897ae4492717",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9327,7 +9327,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "134a0a8c747b4e53f017df29b75efb85d588e0a7ce259875823616eb5c9f533e",
+      "sha256": "0c4da6d053b4ef6fb6ee9bf9e2f1dd49bcc4df38e80f6bf232f1e898a6bcfb4a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10820,8 +10820,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14720,
-      "sha256": "feb3f5634b9a995af8d7dd142fc55406683bfeb0f3d477e96ac39539c5de3f4f",
+      "size_bytes": 14722,
+      "sha256": "a9e40a239d4adecc1f9b0d4b11cfed40b1e41b0de863615217d9ba691fe61edc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29694,7 +29694,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2386414,
-      "sha256": "58a04474c4dff6dff4c613a0575ecf186f7eb97e41d9ff6bcf83be16ef913b3a",
+      "sha256": "6fdf4ed0d1bc68015a36f61a37d83a1d58586aaa2e5a8f62e55ccdb6a6caa69a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30351,11 +30351,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
+  "release_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
-    "package_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks",
-    "release_version": "16.3.25.5.116.0.34.59-run-studio-native-brotli-locks"
+    "runtime_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+    "package_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync",
+    "release_version": "16.3.25.5.116.0.34.60-run-studio-release-contract-sync"
   },
   "legacy_aliases": {
     "version": "release_version"
