@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d2f8afb7c52f860c6c4d2aaacfd26500532f4a0d",
+  "base_merge_commit": "41a7aa08b73ef805bd392ba793b3d2e4229236fc",
   "base_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
-  "commit_date": "2026-10-23T21:20:46Z",
+  "commit_date": "2026-10-24T00:06:37+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-23T21:20:46+00:00",
+  "generated_at_utc": "2026-10-23T22:06:37+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "499353882800c99225fd11c07f74305a6e1bfabf",
+  "git_tree_sha": "aa0391c0c9ae9853047602c511d0558fdc87ac3b",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d2f8afb7c52f860c6c4d2aaacfd26500532f4a0d",
+    "source_commit": "41a7aa08b73ef805bd392ba793b3d2e4229236fc",
     "source_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d2f8afb7c52f860c6c4d2aaacfd26500532f4a0d",
+  "source_commit": "41a7aa08b73ef805bd392ba793b3d2e4229236fc",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.55-run-studio-service-readiness-truth",
   "tag": null,
