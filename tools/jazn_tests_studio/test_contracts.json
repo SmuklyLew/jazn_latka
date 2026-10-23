@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.52",
-  "active_definition_count": 2587,
+  "system_version": "16.3.25.5.116.0.34.53",
+  "active_definition_count": 2589,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16015,6 +16015,44 @@
       "status": "current",
       "description_source": "native_docstring",
       "line": 85
+    },
+    "tests/test_daemon_shutdown_http_body.py::test_authenticated_shutdown_ack_with_real_http_request": {
+      "path": "tests/test_daemon_shutdown_http_body.py",
+      "name": "test_authenticated_shutdown_ack_with_real_http_request",
+      "purpose": "A Windows TCP peer must receive its short ACK without unread POST bytes.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 19
+    },
+    "tests/test_daemon_shutdown_http_body.py::test_stop_client_uses_bodyless_post_after_identity_gate": {
+      "path": "tests/test_daemon_shutdown_http_body.py",
+      "name": "test_stop_client_uses_bodyless_post_after_identity_gate",
+      "purpose": "No JSON body remains unread in the daemon's /shutdown handler.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 72
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
