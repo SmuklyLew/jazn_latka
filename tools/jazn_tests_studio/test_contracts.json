@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.60",
-  "active_definition_count": 2604,
+  "system_version": "16.3.25.5.116.0.34.61",
+  "active_definition_count": 2617,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -211,6 +211,96 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 223
+    },
+    "tests/test_active_memory_evidence_binding.py::test_signed_observation_still_cannot_prove_recall_or_activation": {
+      "path": "tests/test_active_memory_evidence_binding.py",
+      "name": "test_signed_observation_still_cannot_prove_recall_or_activation",
+      "purpose": "Signed observation still cannot prove recall or activation",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.p1_active_memory_readiness",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_active_memory_evidence_binding.py::test_authenticated_claims_do_not_override_failed_binding": {
+      "path": "tests/test_active_memory_evidence_binding.py",
+      "name": "test_authenticated_claims_do_not_override_failed_binding",
+      "purpose": "Authenticated claims do not override failed binding",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.p1_active_memory_readiness",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_active_memory_evidence_binding.py::test_wrong_process_command_blocks_readiness": {
+      "path": "tests/test_active_memory_evidence_binding.py",
+      "name": "test_wrong_process_command_blocks_readiness",
+      "purpose": "Wrong process command blocks readiness",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.p1_active_memory_readiness",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_active_memory_evidence_binding.py::test_missing_authentication_blocks_readiness": {
+      "path": "tests/test_active_memory_evidence_binding.py",
+      "name": "test_missing_authentication_blocks_readiness",
+      "purpose": "Missing authentication blocks readiness",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.p1_active_memory_readiness",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
     },
     "tests/test_active_memory_readiness_p1.py::test_evidence_endpoint_requires_auth_and_nonce": {
       "path": "tests/test_active_memory_readiness_p1.py",
@@ -30787,6 +30877,185 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 90
+    },
+    "tests/test_memory_provenance_resource_limits.py::test_oversized_native_record_blocks_equality_without_source_writes": {
+      "path": "tests/test_memory_provenance_resource_limits.py",
+      "name": "test_oversized_native_record_blocks_equality_without_source_writes",
+      "purpose": "Oversized native record blocks equality without source writes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ComparisonBlocked"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_memory_provenance_resource_limits.py::test_index_budget_blocks_even_small_equal_databases": {
+      "path": "tests/test_memory_provenance_resource_limits.py",
+      "name": "test_index_budget_blocks_even_small_equal_databases",
+      "purpose": "Index budget blocks even small equal databases",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ComparisonBlocked"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_memory_provenance_resource_limits.py::test_comparison_deadline_blocks_equal_result": {
+      "path": "tests/test_memory_provenance_resource_limits.py",
+      "name": "test_comparison_deadline_blocks_equal_result",
+      "purpose": "Comparison deadline blocks equal result",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ComparisonBlocked"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_memory_provenance_resource_limits.py::test_legitimate_bounded_comparison_still_verifies_equality": {
+      "path": "tests/test_memory_provenance_resource_limits.py",
+      "name": "test_legitimate_bounded_comparison_still_verifies_equality",
+      "purpose": "Legitimate bounded comparison still verifies equality",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_memory_provenance_sqlite_semantics.py::test_composite_primary_key_identifies_one_modified_row": {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "name": "test_composite_primary_key_identifies_one_modified_row",
+      "purpose": "Composite primary key identifies one modified row",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_memory_provenance_sqlite_semantics.py::test_no_primary_key_retains_duplicate_multiplicity": {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "name": "test_no_primary_key_retains_duplicate_multiplicity",
+      "purpose": "No primary key retains duplicate multiplicity",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_provenance_sqlite_semantics.py::test_sqlite_storage_types_are_distinct": {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "name": "test_sqlite_storage_types_are_distinct",
+      "purpose": "Sqlite storage types are distinct",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_memory_provenance_sqlite_semantics.py::test_volatile_timestamp_does_not_change_semantic_fingerprint": {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "name": "test_volatile_timestamp_does_not_change_semantic_fingerprint",
+      "purpose": "Volatile timestamp does not change semantic fingerprint",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_memory_provenance_sqlite_semantics.py::test_volatile_named_column_remains_significant_when_it_is_the_key": {
+      "path": "tests/test_memory_provenance_sqlite_semantics.py",
+      "name": "test_volatile_named_column_remains_significant_when_it_is_the_key",
+      "purpose": "Volatile named column remains significant when it is the key",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_memory_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
     },
     "tests/test_memory_provenance_windows_file_stability.py::test_windows_path_stat_and_fstat_agree_on_birthtime_not_ctime": {
       "path": "tests/test_memory_provenance_windows_file_stability.py",

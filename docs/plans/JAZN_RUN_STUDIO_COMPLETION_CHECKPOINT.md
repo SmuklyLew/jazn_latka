@@ -10,7 +10,7 @@ merge this stacked continuation independently of review of #409–#411.
 
 ## Implementation checkpoint
 
-SYSTEM: `16.3.25.5.116.0.34.60-run-studio-release-contract-sync`.
+SYSTEM: `16.3.25.5.116.0.34.61-memory-comparison-resource-limits`.
 Native-lock checkpoint pushed and read back:
 `2438327f81085f2fcd6a379b6adfe39c3279975c` (source `380d825363e7abc25af06ba1d0f3978ac3f632ad`).
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/412.
@@ -95,3 +95,57 @@ Next exact step: commit/push .60 with generated metadata, verify final-source
 full CI, rerun deterministic suite with inherited UTF-8, investigate residual
 local Tk/MCP issues without weakening tests. Do not call P0 complete yet.
 P1 Qt integration, P2/P3 parity, P4 live recovery, P5 EXE acceptance remain open.
+
+## .60 P0 source and .61 P1 resource-boundary unit
+
+P0 pushed checkpoint: `0904e9376b782a70867ea15c3f96d088a1582f23`, source
+`28184b66d7b94a41d7d2b81d1246cf2b75e3e000`. PR synthetic merge at inspection:
+`4644d4c8046f1a573468a489bd27169f30f5bcda`. Release-hardening explicitly
+checks the head source; default PR checkout workflows use the synthetic merge.
+Independent .60 metadata check PASS (3322 files, synchronized=true).
+Release-hardening 40039984983 SUCCESS: Ubuntu full suite 2987 PASS, 16 SKIPPED;
+full Pyright zero errors/warnings. Cleanroom 40039985026 SUCCESS, all six native
+builders/strict audits, all six opposite-OS replays and all six consumers.
+PR rollup: 57 SUCCESS, 2 SKIPPED, 1 IN_PROGRESS when .61 was prepared.
+Last job is PowerShell 40039984946: full deterministic suite completed without
+failure; SYSTEM package-smoke still in progress. Do not cancel it with a push.
+
+.60 full local Windows suite: 2981 PASS, 21 SKIPPED, 1 FAIL, 485.06s. The sole
+failure is the MCP real-process probe reporting invalid HTTP framing. The same
+test on a separately checked-out, unchanged source f6eb4919 also failed with
+that diagnostic (7.27s). Local MCP acceptance remains FAIL; no framing bypass
+was introduced. Tk passed this full run. Explicit inherited UTF-8 corrected
+subprocess decoding. Ollama read-only /api/tags probe succeeded with
+gemma3:latest; no new accepted runtime turn or recovery is claimed.
+
+.61 repairs a reproduced P1 limit gap: setting both declared row/index budgets
+to 64 bytes previously still yielded equal for a synthetic 1 KiB row. The
+existing comparator now limits native SQLite record decoding, canonical row
+bytes, index pages and comparison time (including diff/fingerprint iteration).
+Source connections remain read-only; no activation behavior changed.
+
+| Synthetic regression | Expected | Observed |
+| --- | --- | --- |
+| Oversized record | blocked, original database bytes unchanged | PASS |
+| Index over budget | blocked, no equality result | PASS |
+| Expired comparison | blocked, no equality result | PASS |
+| Bounded equal pair | equal | PASS |
+| Composite PK / changed payload | one changed key | PASS |
+| No PK / duplicate multiplicity | difference retained | PASS |
+| NULL, integer, real, text, BLOB, Unicode | distinct types, no raw output | PASS |
+| Volatile timestamp, including key exception | ignore only non-key timestamp | PASS |
+| Signed wrong PID/root/instance/nonce/proof | runtime not ready | PASS |
+| Stale heartbeat, wrong process, missing auth | runtime not ready | PASS |
+| Runtime generation changes during observation | conflict | PASS |
+| Correct configured observation | no recall/continuity/activation inference | PASS |
+
+Combined synthetic P1 run: 53 PASS, 2 SKIPPED; focused Pyright zero errors and
+warnings; active-tree compile and diff check PASS. Existing tests unchanged;
+three new regression files need no predecessor snapshots. Catalog regenerated.
+Full .61 suite/CI and canonical metadata check remain required after commit.
+Official limit contracts: https://www.sqlite.org/limits.html and
+https://docs.python.org/3.14/library/sqlite3.html#sqlite3.Connection.setlimit.
+
+Next: finish the .60 PowerShell observation, push the .61 metadata checkpoint,
+then integrate the existing read-only P1 services into a dedicated Qt view via
+the canonical run.py/main.py command route. Preserve all ten evidence boundaries.

@@ -111,9 +111,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.60"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.60"
-PACKAGE_RELEASE_NAME = "run-studio-release-contract-sync"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.61"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.61"
+PACKAGE_RELEASE_NAME = "memory-comparison-resource-limits"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
