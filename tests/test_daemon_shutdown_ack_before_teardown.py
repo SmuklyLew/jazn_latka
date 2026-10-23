@@ -1,6 +1,7 @@
 """Regression: Windows daemon shutdown must not depend on HTTP ACK delivery."""
 from __future__ import annotations
 
+from http.client import HTTPMessage
 from pathlib import Path
 from types import SimpleNamespace
 import threading
@@ -24,6 +25,10 @@ def test_authenticated_shutdown_is_scheduled_before_ack(
         shutdown=lambda: shutdown_completed.set(),
     )
     handler = object.__new__(runtime_daemon.JaznDaemonHandler)
+    # The real BaseHTTPRequestHandler builds headers when parsing the request.
+    # Set a valid, bodyless HTTP message for this deliberately uninitialized
+    # unit-test instance. Full socket/body framing is tested separately.
+    handler.headers = HTTPMessage()
     monkeypatch.setattr(
         runtime_daemon.JaznDaemonHandler, "_loopback_only", lambda _self: True
     )
