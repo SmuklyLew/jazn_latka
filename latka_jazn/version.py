@@ -1,3 +1,4 @@
+# v116.0.34.54 repairs synthetic HTTP shutdown fixture while retaining native socket regression.
 # v116.0.34.53 drains authenticated shutdown HTTP request bodies and tests real TCP acknowledgements on Windows.
 # v116.0.34.52 initiates bounded daemon shutdown before slow/disconnected HTTP acknowledgements.
 # v116.0.34.41 adds first-run preflight, source-bound memory freshness and model/telemetry truth gates.
@@ -107,9 +108,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.53"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.53"
-PACKAGE_RELEASE_NAME = "run-studio-windows-shutdown-http-framing"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.54"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.54"
+PACKAGE_RELEASE_NAME = "run-studio-shutdown-ack-fixture"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
