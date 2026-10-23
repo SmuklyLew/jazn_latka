@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
-  "runtime_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
-  "package_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
-  "generated_at_utc": "2026-10-23T00:42:31+00:00",
-  "updated_at_utc": "2026-10-23T00:42:31+00:00",
+  "version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
+  "runtime_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
+  "package_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
+  "generated_at_utc": "2026-10-23T00:56:13+00:00",
+  "updated_at_utc": "2026-10-23T00:56:13+00:00",
   "start_file": "run.py",
-  "file_count": 3315,
-  "static_file_count": 3315,
+  "file_count": 3316,
+  "static_file_count": 3316,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3017,
-      "sha256": "55e4ebec7fa6c44ced6e8850535e420048fcaefd51ce9435eff322b70ebd3d15",
+      "size_bytes": 2963,
+      "sha256": "c25e3ca351eb886c1d50c60efe1ab3c2b9461f6dfb27a59b3306bcfe93bac5fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1955,
-      "sha256": "4bd0f20e0a6f2cbf28468da30f0bc040bcc99da9a0a7e4c36463d65ebce1519e",
+      "size_bytes": 1946,
+      "sha256": "6c5784e6b1517f3f0e0b3b9a2ea2bed19a144aea4c2747285301e8f0ef93eb1f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9318,7 +9318,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "208adab3b4d8a216c00608eba4dded2844b4adb98e3586dd00c302f571479522",
+      "sha256": "1d24acc61d17df1bf5cb875f7ffe2a63b997edf9e3480ae2f0613ae3915c1b27",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10811,8 +10811,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14371,
-      "sha256": "d2449f026275991f25eb40292302ebcfe4c1f88ce2c94ffa2bc05026f635a445",
+      "size_bytes": 14459,
+      "sha256": "bbbd7df1aa3e877b695717815e191e1a8c45d2190bf23943ef64d6234b9236aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15169,6 +15169,15 @@
       "path": "tests/archive/branches/16.3.25.5.116.0.34.29__f577484/source/test_daemon_result_transport_live_diagnostics.py",
       "size_bytes": 12384,
       "sha256": "c36fef07e75641802f89ef6dec505c5ef33c6fd0c4a49cf130993ef56411456d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.53__20a25ca/source/test_daemon_shutdown_ack_before_teardown.py",
+      "size_bytes": 6390,
+      "sha256": "9cf581d60860c71ef3b7dcaf6463c697f204fbb196bccdd4b5eae6bcff46f3c7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -25805,8 +25814,8 @@
     },
     {
       "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
-      "size_bytes": 6390,
-      "sha256": "9cf581d60860c71ef3b7dcaf6463c697f204fbb196bccdd4b5eae6bcff46f3c7",
+      "size_bytes": 6691,
+      "sha256": "36bfa19b5bacbffa4de83409d48127e5cc42134054ae585d4073552c7d15f888",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29631,7 +29640,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2375703,
-      "sha256": "6a7fc28bf4f4b797d9688c025c776c14f3ac6f7ce092483a7b61fc8b269760f8",
+      "sha256": "02065032628a30e89225a263d04f8ee41dc97b6b06d17d9fc1ab98d3f7eddeaf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30288,11 +30297,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
+  "release_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
-    "package_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing",
-    "release_version": "16.3.25.5.116.0.34.53-run-studio-windows-shutdown-http-framing"
+    "runtime_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
+    "package_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture",
+    "release_version": "16.3.25.5.116.0.34.54-run-studio-shutdown-ack-fixture"
   },
   "legacy_aliases": {
     "version": "release_version"
