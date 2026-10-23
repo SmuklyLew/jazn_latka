@@ -267,7 +267,7 @@ class Job:
     state: str = "starting"
     pid: int | None = None
     returncode: int | None = None
-    error: str = ""
+    error: str | None = None
     started: float = field(default_factory=time.time)
     finished: float | None = None
     proc: subprocess.Popen[bytes] | None = field(default=None, repr=False)
