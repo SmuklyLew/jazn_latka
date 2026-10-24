@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "e8bb7dd7ea1a40c1c91df5343ba59692d1367f08",
+  "base_merge_commit": "4afc863b68762d1d0f2976de6a4ccedbe2f76518",
   "base_version": "16.3.25.5.116.0.34.72-studio-part2-operator-observability",
-  "commit_date": "2026-10-24T07:32:22Z",
+  "commit_date": "2026-10-24T07:39:35Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-24T07:32:22+00:00",
+  "generated_at_utc": "2026-10-24T07:39:35+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6fe25e8f7511bc1f72ede14786ea678f616b58aa",
+  "git_tree_sha": "966eae2d94eecd328241cb919e1059a0d28d6214",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "e8bb7dd7ea1a40c1c91df5343ba59692d1367f08",
+    "source_commit": "4afc863b68762d1d0f2976de6a4ccedbe2f76518",
     "source_version": "16.3.25.5.116.0.34.72-studio-part2-operator-observability"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "e8bb7dd7ea1a40c1c91df5343ba59692d1367f08",
+  "source_commit": "4afc863b68762d1d0f2976de6a4ccedbe2f76518",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.72-studio-part2-operator-observability",
   "tag": null,
