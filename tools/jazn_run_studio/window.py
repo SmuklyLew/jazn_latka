@@ -64,6 +64,7 @@ class Window(QMainWindow):
         self._chat()
         self._diagnostics()
         self._studios()
+        self._tests_catalog()
         self._memory()
         self._settings()
         self._about()
@@ -272,6 +273,15 @@ class Window(QMainWindow):
             row.addWidget(note, 2)
             layout.addLayout(row)
         layout.addStretch()
+
+    def _tests_catalog(self) -> None:
+        from .test_catalog_view import TestCatalogPanel
+        layout = self.page(
+            "Katalog testów",
+            "Natywny podgląd Test Studio: filtrowanie testów i ich oczekiwań bez uruchamiania lub edycji.",
+        )
+        self.tests_catalog_panel = TestCatalogPanel(self.core.root)
+        layout.addWidget(self.tests_catalog_panel)
 
     def _memory(self) -> None:
         from .memory_view import MemoryPanel
