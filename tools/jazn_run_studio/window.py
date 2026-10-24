@@ -508,7 +508,16 @@ class Window(QMainWindow):
                 self.chat_state.setText(str(value))
             elif kind == "chat_final":
                 self.conversation.appendPlainText(value["text"] + "\n")
-                self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
+                # A checkpoint is acknowledged only after the actual GUI append.
+                # Without this ACK a restart can poll the same canonical result.
+                try:
+                    if self.core.chat is None:
+                        raise StudioError("Transport rozmowy nie jest dostępny")
+                    self.core.chat.acknowledge_final(value["request_id"])
+                except (OSError, StudioError):
+                    self.chat_state.setText("Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
+                else:
+                    self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
                 if key.startswith("helper:preview:"):
                     if key.removeprefix("helper:preview:") != self.schema_key:

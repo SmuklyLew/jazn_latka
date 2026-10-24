@@ -47,6 +47,8 @@ def main() -> int:
                     "pyinstaller": version("pyinstaller"), "layout": "onedir",
                     "qt_license_notices": "_internal/*dist-info/licenses/"}
             (artifact / "BUILD_INFO.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
+            from tools.jazn_run_studio.p5_artifact_evidence import write_frozen_bundle_manifest
+            write_frozen_bundle_manifest(artifact)
     return code
 
 

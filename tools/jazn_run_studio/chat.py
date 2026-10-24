@@ -25,6 +25,8 @@ class ChatClient:
         self.lock = threading.RLock()
         self.session_id = "studio-" + uuid4().hex
         self.pending: str | None = None
+        # A final stays pending until the GUI confirms its presentation.
+        self._awaiting_gui_ack: str | None = None
         self.started_at = 0.0
         self.job: Job | None = None
         self.checkpoint = _path_without_links(settings_path(core.root).with_name("chat-checkpoint.json"))
@@ -150,12 +152,31 @@ class ChatClient:
             with self.lock:
                 if self.pending != request:
                     raise ValueError("Request changed during validation")
-                self.pending = None
-                self.started_at = 0
-                self._save()
+                if self._awaiting_gui_ack == request:
+                    return  # Duplicate transport completion, not a second visible turn.
+                self._awaiting_gui_ack = request
+            # No durable checkpoint is cleared here: a GUI/crash interruption
+            # must retain the exact request_id for daemon-result recovery.
             self.core.emit("chat", "chat_final", result)
         else:
             self.core.emit("chat", "chat_state", "Brak zaakceptowanej wypowiedzi. Zachowano request_id: " + request)
+
+    def acknowledge_final(self, request_id: str) -> None:
+        """Clear a pending turn only after the accepted final reaches the GUI."""
+        with self.lock:
+            if not request_id or self.pending != request_id or self._awaiting_gui_ack != request_id:
+                raise StudioError("Brak zaakceptowanego wyniku do potwierdzenia")
+            previous_started = self.started_at
+            self.pending = None
+            self.started_at = 0.0
+            try:
+                self._save()
+            except OSError:
+                # An unsuccessful checkpoint update may never unlock another send.
+                self.pending = request_id
+                self.started_at = previous_started
+                raise
+            self._awaiting_gui_ack = None
 
     def resume(self) -> None:
         request = self.pending
@@ -170,7 +191,7 @@ class ChatClient:
                 if len(done.stdout) > 2097152:
                     raise ValueError("poll_output_limit")
                 self.receive(json.loads(done.stdout))
-                job.state = "succeeded" if self.pending is None else "failed"
+                job.state = "succeeded" if (self.pending is None or self._awaiting_gui_ack == request) else "failed"
                 job.returncode = done.returncode
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
                 job.state, job.error = "failed", type(exc).__name__
