@@ -217,6 +217,20 @@ def render_version(path: Path, data: VersionData) -> bytes:
             raise RebuildError(f"Oczekiwano jednego przypisania {key}; znaleziono {len(found)}.")
         match = found[0]
         text = text[:match.start()] + match.group("prefix") + value + match.group("suffix") + text[match.end():]
+    if not data.package.startswith("v"):
+        # Legacy files often defined DISTRIBUTION_VERSION before PACKAGE_VERSION.
+        # Python itself must be able to import the new alias, not only the
+        # static reader: put the canonical literal before its reference.
+        lines = text.splitlines(keepends=True)
+        distribution_idx = next(i for i, line in enumerate(lines)
+                                if re.match(r"^\s*DISTRIBUTION_VERSION\s*=", line))
+        package_idx = next(i for i, line in enumerate(lines)
+                           if re.match(r"^\s*PACKAGE_VERSION\s*=", line))
+        if distribution_idx < package_idx:
+            lines[distribution_idx], lines[package_idx] = (
+                lines[package_idx], lines[distribution_idx]
+            )
+            text = "".join(lines)
     ast.parse(text, filename=str(path))
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     if newline == "\r\n":
