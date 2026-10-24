@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.63",
-  "active_definition_count": 2635,
+  "system_version": "16.3.25.5.116.0.34.64",
+  "active_definition_count": 2641,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25419,6 +25419,110 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_raw_errors_are_not_displayable_reason_codes": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_raw_errors_are_not_displayable_reason_codes",
+      "purpose": "Raw errors are not displayable reason codes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_short_stable_reason_code_is_preserved": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_short_stable_reason_code_is_preserved",
+      "purpose": "Short stable reason code is preserved",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_layout_blockers_do_not_echo_private_path": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_layout_blockers_do_not_echo_private_path",
+      "purpose": "Layout blockers do not echo private path",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_comparison_issue_does_not_echo_private_path": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_comparison_issue_does_not_echo_private_path",
+      "purpose": "Comparison issue does not echo private path",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_qt_failed_job_uses_safe_status_instead_of_exception": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_qt_failed_job_uses_safe_status_instead_of_exception",
+      "purpose": "Qt failed job uses safe status instead of exception",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_qt_failed_report_uses_safe_reason": {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "name": "test_qt_failed_report_uses_safe_reason",
+      "purpose": "Qt failed report uses safe reason",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
     },
     "tests/test_jazn_run_studio_secrets.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
       "path": "tests/test_jazn_run_studio_secrets.py",
