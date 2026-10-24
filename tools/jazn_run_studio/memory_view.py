@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import re
 from typing import Any
 
 from PySide6.QtWidgets import (
@@ -10,6 +11,13 @@ from PySide6.QtWidgets import (
 )
 
 from .core import Controller
+
+_SAFE_REASON = re.compile(r"[a-z][a-z0-9_:-]{0,79}\\Z", re.ASCII)
+
+
+def safe_reason(value: object, fallback: str = "observation_failed") -> str:
+    """Expose only short diagnostic codes; raw exception text can contain private paths."""
+    return value if isinstance(value, str) and _SAFE_REASON.fullmatch(value) else fallback
 
 
 def evidence_rows(operation: str, result: dict[str, Any]) -> list[tuple[str, str, str]]:
@@ -27,20 +35,20 @@ def evidence_rows(operation: str, result: dict[str, Any]) -> list[tuple[str, str
             state = "verified" if database.get("schema_compatible") is True else "unverified"
             if value.get("status") in {"unsafe_path", "ambiguous", "invalid", "bounded_scan_required"}:
                 state = "blocked"
-            rows.append((label + ": schemat", state, str(value.get("status", "unverified"))))
+            rows.append((label + ": schemat", state, safe_reason(value.get("status"), "unverified")))
         rows.append(("Pamięć rzeczywiście zweryfikowana w runtime", "unverified", "wymaga osobnej obserwacji runtime"))
         for issue in result.get("readiness", {}).get("blockers", []):
-            rows.append(("Blokada inspekcji", "blocked", str(issue)))
+            rows.append(("Blokada inspekcji", "blocked", safe_reason(issue, "inspection_blocked")))
     elif operation == "comparison":
         for name, comparison in result.get("comparisons", {}).items():
             equal = comparison.get("fingerprint_equal")
             state = "verified" if equal is True else "different" if equal is False else "unverified"
             if comparison.get("state") == "incompatible":
                 state = "incompatible"
-            rows.append((name + ": zgodność zawartości", state, str(comparison.get("issue", comparison.get("state", "unverified")))))
+            rows.append((name + ": zgodność zawartości", state, safe_reason(comparison.get("issue", comparison.get("state")), "comparison_blocked")))
             lineage = comparison.get("lineage", {})
             rows.append((name + ": deklarowana lineage", str(lineage.get("verification_state", "unverified")),
-                         str(lineage.get("state", "unverified"))))
+                         safe_reason(lineage.get("state"), "unverified")))
             uuid_equal = lineage.get("database_uuid_equal")
             rows.append((name + ": zgodność deklarowanych UUID", "verified" if uuid_equal is True else
                          "different" if uuid_equal is False else "unverified", "zgodność UUID nie certyfikuje genealogii"))
@@ -55,7 +63,7 @@ def evidence_rows(operation: str, result: dict[str, Any]) -> list[tuple[str, str
         rows.append(("Niezależnie zweryfikowana proweniencja", "unverified", "zgodne rekordy i UUID nie dowodzą genealogii"))
         rows.append(("Atomowy snapshot wszystkich baz", "unverified", "obserwacje baz są sekwencyjne"))
         if result.get("issue"):
-            rows.append(("Blokada porównania", "blocked", str(result["issue"])))
+            rows.append(("Blokada porównania", "blocked", safe_reason(result["issue"], "comparison_blocked")))
     else:
         labels = {"runtime_root": "Root runtime", "version_integrity": "Wersja i integralność",
             "process": "PID i komenda procesu", "endpoint": "Uwierzytelniony endpoint i instancja",
@@ -67,7 +75,7 @@ def evidence_rows(operation: str, result: dict[str, Any]) -> list[tuple[str, str
             if key in {"recall", "continuity"}:
                 state = "verified" if (result.get("memory_" + key + "_ready") is True
                     and result.get("independent_" + key + "_verified") is True) else "unverified"
-            rows.append((label, state, str(result.get("checks", {}).get(key, {}).get("issue", ""))))
+            rows.append((label, state, safe_reason(result.get("checks", {}).get(key, {}).get("issue"), "")))
         for key, label in (("runtime_ready", "Gotowość bieżącego runtime"),
                            ("activation_preflight_passed", "Pozytywny preflight aktywacji"),
                            ("activation_authorized", "Autoryzacja aktywacji")):
@@ -174,7 +182,7 @@ class MemoryPanel(QWidget):
         report = value["report"]
         self.pending.pop(operation, None)
         rows = (evidence_rows(operation, report.get("result", {})) if report.get("ok") is True else
-                [(operation, "blocked", str(report.get("issue", "observation_failed")))])
+                [(operation, "blocked", safe_reason(report.get("issue")))])
         table = self.tables[operation]
         table.setRowCount(len(rows))
         for row, values in enumerate(rows):
@@ -191,6 +199,6 @@ class MemoryPanel(QWidget):
         self.pending.pop(operation, None)
         table = self.tables[operation]
         table.setRowCount(1)
-        for column, text in enumerate(("Obserwacja", "blocked", str(value.get("error") or value["state"]))):
+        for column, text in enumerate(("Obserwacja", "blocked", safe_reason(value.get("error"), str(value["state"])))):
             table.setItem(0, column, QTableWidgetItem(text))
         self.timestamps[operation].setText("Obserwacja nieukończona; brak pozytywnego dowodu")

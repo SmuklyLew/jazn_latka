@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "runtime_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
