@@ -194,8 +194,8 @@ def build_version(version: str, distribution: str, name: str) -> VersionData:
 
 def render_version(path: Path, data: VersionData) -> bytes:
     raw = path.read_bytes()
-    bom = raw.startswith(b"\\xef\\xbb\\xbf")
-    newline = "\\r\\n" if b"\\r\\n" in raw else "\\n"
+    bom = raw.startswith(b"\xef\xbb\xbf")
+    newline = "\r\n" if b"\r\n" in raw else "\n"
     text = raw.decode("utf-8-sig")
     # Preserve the static alias, or migrate a legacy literal on new writes.
     values = {
@@ -208,9 +208,9 @@ def render_version(path: Path, data: VersionData) -> bytes:
     }
     for key, value in values.items():
         pattern = re.compile(
-            rf"(?m)^(?P<prefix>[ \\t]*{re.escape(key)}[ \\t]*=[ \\t]*)"
-            r"(?:(?P<q>['\\\"])(?P<old>.*?)(?P=q)|(?P<alias>PACKAGE_VERSION))"
-            r"(?P<suffix>[ \\t]*(?:#.*)?)$"
+            rf"(?m)^(?P<prefix>[ \t]*{re.escape(key)}[ \t]*=[ \t]*)"
+            r"""(?:(?P<q>['"])(?P<old>.*?)(?P=q)|(?P<alias>PACKAGE_VERSION))"""
+            r"(?P<suffix>[ \t]*(?:#.*)?)$"
         )
         found = list(pattern.finditer(text))
         if len(found) != 1:
@@ -218,11 +218,11 @@ def render_version(path: Path, data: VersionData) -> bytes:
         match = found[0]
         text = text[:match.start()] + match.group("prefix") + value + match.group("suffix") + text[match.end():]
     ast.parse(text, filename=str(path))
-    text = text.replace("\\r\\n", "\\n").replace("\\r", "\\n")
-    if newline == "\\r\\n":
-        text = text.replace("\\n", "\\r\\n")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    if newline == "\r\n":
+        text = text.replace("\n", "\r\n")
     encoded = text.encode("utf-8")
-    return (b"\\xef\\xbb\\xbf" + encoded) if bom else encoded
+    return (b"\xef\xbb\xbf" + encoded) if bom else encoded
 
 def command(args: list[str], root: Path, timeout: int = 300) -> subprocess.CompletedProcess[str]:
     try:
