@@ -49,6 +49,7 @@ class Window(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.setMinimumHeight(170)
         self.tabs.hide()
+        self.logs_user_hidden = False
         content = QSplitter(Qt.Orientation.Vertical)
         content.addWidget(self.pages)
         content.addWidget(self.tabs)
@@ -504,6 +505,7 @@ class Window(QMainWindow):
 
     def toggle_logs(self) -> None:
         visible = not self.tabs.isVisible()
+        self.logs_user_hidden = not visible
         self.tabs.setVisible(visible)
         self.log_toggle.setText("Ukryj logi" if visible else "Pokaż logi")
 
@@ -522,8 +524,9 @@ class Window(QMainWindow):
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
             self.tabs.addTab(view, key)
-            self.tabs.show()
-            self.log_toggle.setText("Ukryj logi")
+            if not self.logs_user_hidden:
+                self.tabs.show()
+                self.log_toggle.setText("Ukryj logi")
         return self.logs[key]
 
     def poll(self) -> None:
