@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.77",
-  "active_definition_count": 2690,
+  "system_version": "16.3.25.5.116.0.34.78",
+  "active_definition_count": 2694,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26367,6 +26367,78 @@
       "description_source": "source_identity",
       "line": 42
     },
+    "tests/test_jazn_system_root_config.py::test_root_config_env_precedence": {
+      "path": "tests/test_jazn_system_root_config.py",
+      "name": "test_root_config_env_precedence",
+      "purpose": "Root config env precedence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.system_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_jazn_system_root_config.py::test_studio_settings_survive_workspace_change": {
+      "path": "tests/test_jazn_system_root_config.py",
+      "name": "test_studio_settings_survive_workspace_change",
+      "purpose": "Studio settings survive workspace change",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.system_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_jazn_system_root_config.py::test_config_rejects_secrets_bad_url_and_duplicates": {
+      "path": "tests/test_jazn_system_root_config.py",
+      "name": "test_config_rejects_secrets_bad_url_and_duplicates",
+      "purpose": "Config rejects secrets bad url and duplicates",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core.system_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_jazn_system_root_config.py::test_config_backup_and_compare_and_swap": {
+      "path": "tests/test_jazn_system_root_config.py",
+      "name": "test_config_backup_and_compare_and_swap",
+      "purpose": "Config backup and compare and swap",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core.system_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
       "name": "test_selective_retrieval_reuses_hybrid_fts5",
@@ -42782,26 +42854,16 @@
       "description_source": "source_identity",
       "line": 125
     },
-    "tests/test_package_smoke_workspace_isolation.py::test_package_smoke_uses_only_ephemeral_workspace": {
+    "tests/test_package_smoke_workspace_isolation.py::<parse_error>": {
       "path": "tests/test_package_smoke_workspace_isolation.py",
-      "name": "test_package_smoke_uses_only_ephemeral_workspace",
-      "purpose": "Package smoke uses only ephemeral workspace",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "e2e",
+      "name": "<parse_error>",
+      "purpose": "Source must parse as valid Python.",
+      "expected": "AST parsing succeeds; current error: '(' was never closed (<unknown>, line 21)",
+      "category": "contract",
       "tags": [
-        "package",
-        "repository"
+        "syntax"
       ],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.release_readiness"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 14
+      "status": "incompatible"
     },
     "tests/test_package_version_workflow_regression.py::test_version_rebuild_metadata_check_includes_base_version": {
       "path": "tests/test_package_version_workflow_regression.py",
