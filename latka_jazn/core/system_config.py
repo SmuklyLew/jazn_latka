@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from hashlib import sha256
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import re
 import tempfile
 from typing import Any, Mapping, MutableMapping
@@ -58,7 +58,7 @@ def _unique_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def _validate(values: Mapping[str, str], studio: Mapping[str, str]) -> SystemConfig:
+def _validate(root: Path, values: Mapping[str, str], studio: Mapping[str, str]) -> SystemConfig:
     if set(values) - ALLOWED or set(studio) - STUDIO_FIELDS:
         raise SystemConfigError("Nieznany klucz lub sekret w konfiguracji SYSTEM")
     for key, val in [*values.items(), *studio.items()]:
@@ -66,13 +66,36 @@ def _validate(values: Mapping[str, str], studio: Mapping[str, str]) -> SystemCon
             raise SystemConfigError("Nieprawidłowy tekst konfiguracji")
         if key in ENUMS and val not in ENUMS[key]:
             raise SystemConfigError("Nieprawidłowa wartość enum")
-        if key in ALLOWED and key not in ENUMS:
+        if key == "JAZN_MEMORY_TIER_DB":
+            portable = val.replace("\\", "/")
+            segments = portable.split("/")
+            if (PureWindowsPath(portable).anchor or portable.startswith("/") or ":" in portable
+                    or any(part in {"", ".", ".."} for part in segments)
+                    or segments[0].lower() == "memory"
+                    or not portable.lower().endswith((".sqlite", ".sqlite3", ".db"))):
+                raise SystemConfigError("Baza MEMORY wymaga bezpiecznej ścieżki względnej")
+        elif key in ALLOWED and key not in ENUMS:
             if key == "JAZN_RUNTIME_WORKSPACE_DIR" and val.startswith(("$ROOT/", "$" + "{ROOT}/")):
                 tail = val.split("/", 1)[1]
                 if not tail or any(part in {"", ".", ".."} for part in tail.split("/")) or ":" in tail:
                     raise SystemConfigError("Niebezpieczna ścieżka workspace")
             elif not Path(val).is_absolute():
                 raise SystemConfigError("Wymagana absolutna ścieżka konfiguracji")
+    def resolve_workspace(value: str) -> Path:
+        if value.startswith(("$ROOT/", "$" + "{ROOT}/")):
+            return (root / value.split("/", 1)[1]).resolve()
+        return Path(value).resolve()
+    workspace = (resolve_workspace(values["JAZN_RUNTIME_WORKSPACE_DIR"])
+                 if "JAZN_RUNTIME_WORKSPACE_DIR" in values else None)
+    memory = (Path(values["JAZN_MEMORY_ROOT"]).resolve()
+              if "JAZN_MEMORY_ROOT" in values else None)
+    if workspace is not None and workspace.is_relative_to(root) and workspace != root / "workspace_runtime":
+        raise SystemConfigError("Workspace nie może leżeć w drzewie SYSTEM")
+    if memory is not None and memory.is_relative_to(root) and memory != root / "memory":
+        raise SystemConfigError("MEMORY nie może leżeć w drzewie kodu SYSTEM")
+    if workspace is not None and memory is not None:
+        if workspace.is_relative_to(memory) or memory.is_relative_to(workspace):
+            raise SystemConfigError("Workspace i MEMORY nie mogą się nakładać")
     if "python" in studio and not Path(studio["python"]).is_absolute():
         raise SystemConfigError("Ścieżka interpretera musi być absolutna")
     if "model" in studio and not re.fullmatch(r"[\w./:@-]{1,200}", studio["model"]):
@@ -106,7 +129,7 @@ def read_system_config(root: str | Path) -> SystemConfig:
             or not isinstance(data.get("values"), dict)
             or not isinstance(data.get("studio"), dict)):
         raise SystemConfigError("Nieznany schemat konfiguracji SYSTEM")
-    checked = _validate(data["values"], data["studio"])
+    checked = _validate(Path(root).resolve(), data["values"], data["studio"])
     return SystemConfig(checked.values, checked.studio, sha256(payload).hexdigest())
 
 
@@ -129,7 +152,7 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
     current = read_system_config(root)
     if current.digest != expected_digest:
         raise SystemConfigError("Konflikt równoczesnego zapisu konfiguracji")
-    checked = _validate(values, studio)
+    checked = _validate(Path(root).resolve(), values, studio)
     content = (json.dumps({"schema_version": SCHEMA, "values": checked.values, "studio": checked.studio},
                           ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
     if len(content) > MAX_BYTES:

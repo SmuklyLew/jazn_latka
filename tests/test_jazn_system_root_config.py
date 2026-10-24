@@ -68,3 +68,21 @@ def test_config_backup_and_compare_and_swap(tmp_path: Path) -> None:
     assert second.digest != first.digest
     backup = json.loads((tmp_path / "jazn_system_config.previous.json").read_text(encoding="utf-8"))
     assert backup["values"]["JAZN_MEMORY_MODE"] == "off"
+
+def test_memory_db_relative_path_and_root_collisions(tmp_path: Path) -> None:
+    expected = write_system_config(
+        tmp_path, {"JAZN_MEMORY_TIER_DB": "sqlite/runtime_write_v2/runtime_memory.sqlite3"},
+        {}, expected_digest=None,
+    )
+    assert expected.values["JAZN_MEMORY_TIER_DB"].startswith("sqlite/")
+    with pytest.raises(SystemConfigError, match="MEMORY"):
+        write_system_config(
+            tmp_path, {"JAZN_MEMORY_TIER_DB": "../escape.sqlite3"}, {},
+            expected_digest=expected.digest,
+        )
+    with pytest.raises(SystemConfigError, match="Workspace"):
+        write_system_config(
+            tmp_path, {"JAZN_RUNTIME_WORKSPACE_DIR": str(tmp_path / "memory" / "daemon"),
+                       "JAZN_MEMORY_ROOT": str(tmp_path / "memory")}, {},
+            expected_digest=expected.digest,
+        )
