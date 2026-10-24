@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
-  "base_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-  "commit_date": "2026-10-24T02:20:19+02:00",
+  "base_merge_commit": "4b3a3a87e5f42054deb7645130893ed9f43ee747",
+  "base_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+  "commit_date": "2026-10-24T01:12:32Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-24T00:20:19+00:00",
+  "generated_at_utc": "2026-10-24T01:12:32+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "c92da4f966fead8e7439884e4773fbf3a8732965",
+  "git_tree_sha": "7d9202192f2533f8cdbb2b50b31339174ca7ec97",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
-    "source_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout"
+    "source_commit": "4b3a3a87e5f42054deb7645130893ed9f43ee747",
+    "source_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "release_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "runtime_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
+  "source_commit": "4b3a3a87e5f42054deb7645130893ed9f43ee747",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "source_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "update_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "version_source": "latka_jazn/version.py"
 }

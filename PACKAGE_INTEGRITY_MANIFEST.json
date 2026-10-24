@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-  "runtime_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-  "package_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-  "generated_at_utc": "2026-10-24T00:20:19+00:00",
-  "updated_at_utc": "2026-10-24T00:20:19+00:00",
+  "version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+  "generated_at_utc": "2026-10-24T01:12:32+00:00",
+  "updated_at_utc": "2026-10-24T01:12:32+00:00",
   "start_file": "run.py",
-  "file_count": 3331,
-  "static_file_count": 3331,
+  "file_count": 3333,
+  "static_file_count": 3333,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2962,
-      "sha256": "f729e1c88dec17fdc8dbb123af3b9fb2a295e4ce4d568d8e3f4b6f799226017b",
+      "size_bytes": 2957,
+      "sha256": "a1f8b993b4df0d5e7d1eefcfd473ed8c52a4006b7f853275823a209f1bc97ceb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,7 +435,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1945,
-      "sha256": "3304c65c5b96c000ff66c7ad9284fd26039d35938b40b4c56d5d940dbb6196db",
+      "sha256": "d80bc9148d5a35d986a2399c8ce46e0b0677836bfc5b97f949859214fa04c30c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1642,6 +1642,15 @@
       "path": "docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md",
       "size_bytes": 21800,
       "sha256": "9d8ec66911ac1200356b16f83a20d466c42a2c43ec793219dfce496ee5a8d480",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_RUN_STUDIO_CONTINUATION_20261024.md",
+      "size_bytes": 2218,
+      "sha256": "7fc1cea3b3d69a3274b354952a10651864179c5da8b235f77fb374db6ae079b7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9327,7 +9336,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "343cca21f8395e2b016468687b61e072f02bbfc5aba48c58ce38e0f1c5473584",
+      "sha256": "3dc45de994c711fd63077a1adc1c8d70d6668a03385ac3d84319eca24f472fb3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10829,8 +10838,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 14720,
-      "sha256": "50474ba3bebc28825c1ef6e33ac9ebe05b5b5fada3accaa5cf65a4f5b63b4e9c",
+      "size_bytes": 14824,
+      "sha256": "7dd049eb1834a279d90db862ee0be55d23803bab1fe561f181fd281fbe141094",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26632,6 +26641,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
+      "size_bytes": 2279,
+      "sha256": "94e9a90c89f0a034a944bbefa6e6e2d75cb75951ae0fce60f5f015ebffe49431",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_run_studio_utf8.py",
       "size_bytes": 1528,
       "sha256": "02a954ad94c249f8afd8665087354e176ab637c93dd38efc8c7f079981fbe019",
@@ -29585,8 +29603,8 @@
     },
     {
       "path": "tools/jazn_run_studio/memory_view.py",
-      "size_bytes": 11779,
-      "sha256": "b487d2a708c07a47d37255775a57f72fff1e28ac5b2fcd8b56a8829e9d3b14fc",
+      "size_bytes": 12214,
+      "sha256": "bd5e364b51466712a1f869825ca829a0ae97d9fc34d14a628489e0c8364da219",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29774,8 +29792,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2411598,
-      "sha256": "49729257572f4697d3c661e778c5862b9c1fdf55680de6bcd010c2342bcc19b1",
+      "size_bytes": 2415884,
+      "sha256": "39f4150d27db3a279322cee8775da627e1cc5135fe0cc2913912dd9aa7f08364",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30432,11 +30450,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
+  "release_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-    "package_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-    "release_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout"
+    "runtime_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.64-studio-memory-safe-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
