@@ -84,6 +84,40 @@ environments and the redaction registry; they are never copied into settings or
 reports. The file is never sourced as executable shell code. Editing secret
 values stays in the operator's local editor. Paid OpenAI API remains future work.
 
+## Read-only MEMORY evidence
+
+The shared Qt page **Dowody MEMORY** exposes the existing P1 inspection,
+snapshot comparison and active-runtime evidence services. It does not launch
+the legacy Tk window. Three separate tabs retain separate observation times:
+source/target/staging/host-selected roles; content and declared provenance; and
+authenticated runtime/database evidence. Changing the selected project or pins
+invalidates the view and rejects delayed results from the old selection.
+
+The controller uses the public `run.py -> main.py` route:
+
+```text
+python -X utf8 run.py memory-inspection --operation layout --project <project.memory-rebuild.json> --json
+python -X utf8 run.py memory-inspection --operation comparison --project <project.memory-rebuild.json> --json
+python -X utf8 run.py memory-inspection --operation readiness --json
+```
+
+The project file is read with size, path and stability guards, without creating
+a ProjectStore. Comparison explicitly asks before private-content reads; it
+uses the original bounded Online Backup/diff implementation and temporary
+cleanup. Optional independently reviewed frozen reference/parent artifacts and
+their expected SHA-256 values are supplied only to readiness via `--reference`,
+`--reference-sha256`, `--parent`, `--parent-sha256`. No pin is discovered or
+trusted automatically. Reports include codes and aggregate observations, never
+project contents or private paths. Completed observations are included in the
+shared diagnostic export with their separate timestamps.
+
+Successful observation execution does not mean successful readiness. Matching
+content does not verify lineage. Configured database evidence does not prove
+recall or continuity. Activation preflight and authorization remain false;
+there is no activation control on this page. This is the P1 evidence slice,
+not full Memory Studio migration parity (source editing/import, affect,
+candidates, protocol and rebuild workflows remain listed in STUDIO_MIGRATION).
+
 ## Local chat
 
 Start the runtime and Ollama explicitly, verify the model list, select a model in

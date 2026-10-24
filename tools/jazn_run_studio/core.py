@@ -296,6 +296,7 @@ class Controller:
         self.lock = threading.RLock()
         self.closed = False
         self.chat: Any = None
+        self.memory_observations: dict[str, Any] = {}
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -472,6 +473,27 @@ class Controller:
         threading.Thread(target=self._run, args=(job, argv, timeout), daemon=True,
                          name="studio-" + job.key).start()
 
+    def inspect_memory(self, operation: str, *, project: str = "",
+                       reference: str = "", reference_sha256: str = "",
+                       parent: str = "", parent_sha256: str = "") -> Job:
+        if operation not in {"layout", "comparison", "readiness"}:
+            raise StudioError("Nieznana inspekcja pamięci")
+        if operation != "readiness" and not project:
+            raise StudioError("Wybierz plik projektu pamięci")
+        argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+                "memory-inspection", "--root", str(self.root), "--operation", operation, "--json"]
+        for option, value in (("project", project), ("reference", reference),
+                              ("reference-sha256", reference_sha256), ("parent", parent),
+                              ("parent-sha256", parent_sha256)):
+            if value:
+                argv.extend(("--" + option, value))
+        job = self._reserve("memory:p1:" + operation)
+        with self.lock:
+            self.memory_observations.pop(operation, None)
+        # Comparison's existing bounded backups and hashes can each take 90 s.
+        self._launch(job, argv, 600 if operation == "comparison" else 45)
+        return job
+
     def _read(self, job: Job, pipe: Any) -> None:
         pending = bytearray()
         overflow = False
@@ -489,7 +511,7 @@ class Controller:
                     job.cancel.set()
             for byte in chunk:
                 if byte == 10:
-                    if not job.key.startswith(("helper:schema:", "helper:profile-")):
+                    if not job.key.startswith(("helper:schema:", "helper:profile-", "memory:p1:")):
                         self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace").rstrip("\r"))
                     pending.clear()
                     overflow = False
@@ -499,7 +521,7 @@ class Controller:
                         overflow = True
                     else:
                         pending.append(byte)
-        if (pending or overflow) and not job.key.startswith(("helper:schema:", "helper:profile-")):
+        if (pending or overflow) and not job.key.startswith(("helper:schema:", "helper:profile-", "memory:p1:")):
             self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace"))
         pipe.close()
 
@@ -551,6 +573,19 @@ class Controller:
             # Raw diagnostic stdout is never retained after completion.
             raw = bytes(job.output)
             job.output.clear()
+            if job.key.startswith("memory:p1:") and job.state in {"succeeded", "failed"} and raw:
+                try:
+                    observation = json.loads(raw)
+                    if not isinstance(observation, dict) or observation.get("schema") != "jazn_memory_operator_observation/v1":
+                        raise ValueError("memory_observation_shape")
+                    with self.lock:
+                        self.memory_observations[job.key.removeprefix("memory:p1:")] = {
+                            "observed_at_utc": datetime.fromtimestamp(job.started, timezone.utc).isoformat(),
+                            "report": observation,
+                        }
+                    self.emit(job.key, "memory_report", {"started": job.started, "report": observation})
+                except ValueError:
+                    job.state, job.error = "failed", "invalid_memory_observation_json"
             if job.state == "succeeded" and job.key in {"start", "stop", "restart"}:
                 try:
                     outcome = json.loads(raw)
@@ -629,6 +664,8 @@ class Controller:
             return {"schema": "jazn_run_studio_report/v1", "observed_at_utc": datetime.now(timezone.utc).isoformat(),
                     "jobs": [j.snapshot() for j in self.jobs.values()],
                     "logs": {k: list(lines) for k, lines in self.logs.items()},
+                    "memory_observations": dict(self.memory_observations),
+                    "memory_observation_boundary": "Separate historical read-only observations; not an atomic cross-database snapshot or activation authority.",
                     "accepted_visible_turn": False}
 
     def export_report(self, path: Path) -> None:

@@ -10,7 +10,7 @@ merge this stacked continuation independently of review of #409–#411.
 
 ## Implementation checkpoint
 
-SYSTEM: `16.3.25.5.116.0.34.61-memory-comparison-resource-limits`.
+SYSTEM: `16.3.25.5.116.0.34.62-studio-memory-evidence-view`.
 Native-lock checkpoint pushed and read back:
 `2438327f81085f2fcd6a379b6adfe39c3279975c` (source `380d825363e7abc25af06ba1d0f3978ac3f632ad`).
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/412.
@@ -149,3 +149,59 @@ https://docs.python.org/3.14/library/sqlite3.html#sqlite3.Connection.setlimit.
 Next: finish the .60 PowerShell observation, push the .61 metadata checkpoint,
 then integrate the existing read-only P1 services into a dedicated Qt view via
 the canonical run.py/main.py command route. Preserve all ten evidence boundaries.
+
+## .62 dedicated Qt MEMORY evidence
+
+P0 .60 final rollup: 58 SUCCESS, 2 SKIPPED, no pending/failed checks. PowerShell
+40039984946 SUCCESS: isolated Tk 2 PASS, Memory GUI 2 PASS, exact failure surface
+59 PASS, isolated health-check 1 PASS, full suite 2943 PASS/24 SKIPPED/1 DESELECTED
+in 848.31s, followed by successful SYSTEM package-smoke and clean checkout guard.
+The deselected health-check was run separately with its unchanged assertion.
+The local MCP framing failure remains an explicitly reproduced baseline-host
+acceptance limitation, not a green local MCP claim.
+
+.61 pushed checkpoint: `aa2b32300bf4fb7914f1f00cd8e59d03dfe7763f`, source
+`daa0282296d4292931121f1ca84a265454474727`. Independent metadata check PASS,
+3325 files, manifest/provenance synchronized. Its PR rollup was 60 SUCCESS,
+2 SKIPPED, 1 IN_PROGRESS; do not transfer that state to .62.
+
+.62 adds the actual shared Qt P1 evidence slice, via:
+`Window/MemoryPanel -> Controller -> run.py memory-inspection -> main.py ->
+latka_jazn.cli -> existing P1 services`. No domain parser or lifecycle is added
+to run.py. The adapter reads bounded/stable project JSON without constructing
+ProjectStore, creating directories, saving projects or activating MEMORY.
+Optional independently supplied frozen reference/parent pins use the existing
+verifier. Incomplete/invalid pins fail closed; no automatic pin discovery.
+
+Three Qt tabs separately expose source/target/staging/host-selected roles,
+content/declared UUID/lineage differences, and authenticated runtime/schema/
+identity/provenance/recall/continuity evidence. Readiness now includes only
+validated stable reason codes; paths/arbitrary diagnostics are discarded.
+Content equality never promotes lineage. Recall/continuity need independent
+positive evidence; preflight and activation remain false. Comparison requires
+an explicit private-read confirmation. Source/SQLite data stay read-only.
+
+Changing selections invalidates the display and rejects delayed responses.
+Failed operations cannot remain visually running. The diagnostic export stores
+separate dated code/aggregate observations, never project contents or private
+paths; it explicitly disclaims cross-database atomicity and activation authority.
+Optional pin fields collapse; empty logs do not consume the initial viewport.
+
+Validation: 187 PASS/2 SKIPPED across Studio/P1/CLI before the last extra Qt
+roundtrip; final additional Qt set 9 PASS, including real asynchronous public
+launcher roundtrip and redacted export. Type checks: zero errors/warnings.
+Native Qt Windows captures at 1240x840 and 860x580 inspected; initial excessive
+vertical controls corrected, final minimum-width page has no horizontal overflow.
+GUI tests cover separate tabs, evidence boundaries, errors and stale replies.
+Node24 install/check/probe and GitHub Actions SHA audit PASS (22 workflows,
+zero findings); no action pins changed. Existing active tests remain unchanged.
+
+P1 evidence integration is implemented, pending final-source full suite/CI.
+Memory Studio as a whole remains partial. All twelve migration inventory rows
+now have explicit partial/not-started states; none claims full parity. P2/P3,
+real P4 multi-turn/recovery, and P5 final-source EXE/offline acceptance remain open.
+
+Next exact steps: sync catalog, commit .62, canonical metadata write/check,
+push/read back SHA, run full deterministic suite/Pyright/doctor/package-smoke
+and final-source PR CI. Preserve the local MCP baseline limitation separately.
+Then continue remaining shared Studio workflows and real Ollama recovery.

@@ -6,6 +6,7 @@ ancestry, or authority to switch a production MEMORY database.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any
 
 from latka_jazn.core.active_memory_evidence import CHECKS, collect_active_memory_evidence
@@ -15,6 +16,10 @@ SCHEMA = "jazn_active_memory_readiness_preflight/v1"
 _REQUIRED = ("runtime_root", "version_integrity", "process", "endpoint", "heartbeat",
              "memory_root", "memory_schema", "database_identity")
 _VALID_STATES = frozenset({"verified", "unverified", "conflict", "different", "blocked", "incompatible"})
+
+
+def _issue_code(value: Any) -> str:
+    return value if isinstance(value, str) and re.fullmatch(r"[a-z][a-z0-9_]{2,90}", value) else "evidence_issue_unavailable"
 
 
 def assess_active_memory_readiness(
@@ -33,7 +38,7 @@ def assess_active_memory_readiness(
         state = row.get("state") if isinstance(row, dict) else None
         if state not in _VALID_STATES:
             state = "unverified"
-        checks[key] = {"state": state}
+        checks[key] = {"state": state, "issue": _issue_code(row.get("issue") if isinstance(row, dict) else None)}
 
     runtime_ready = all(checks[key]["state"] == "verified" for key in _REQUIRED)
     provenance: dict[str, Any] = {"state": "unverified", "issue": "operator_pins_not_supplied"}
@@ -44,7 +49,8 @@ def assess_active_memory_readiness(
                 Path(database), reference=pinned_reference, parent=pinned_parent,
             )
     provenance_state = provenance.get("state", "unverified")
-    checks["provenance"] = {"state": provenance_state if provenance_state in _VALID_STATES else "unverified"}
+    checks["provenance"] = {"state": provenance_state if provenance_state in _VALID_STATES else "unverified",
+                            "issue": _issue_code(provenance.get("issue"))}
     return {
         "schema": SCHEMA,
         "checks": checks,

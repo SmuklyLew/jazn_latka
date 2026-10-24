@@ -1,5 +1,13 @@
 # Scope, evidence and remaining gates
 
+Current continuation evidence is recorded in
+`docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md`. The .60 P0 checkpoint
+has 58 SUCCESS/2 SKIPPED checks. .61 enforces P1 resource limits; .62 provides
+a dedicated shared Qt MEMORY evidence page and canonical read-only operator
+route. Those changes do not close full Studio migration, real Ollama recovery
+or final-source EXE/offline acceptance. Earlier outcomes below remain tied to
+their recorded source versions.
+
 Baseline verified on 2026-10-22:
 `master = origin/master = 2503ccdc407cc733e4282372173dd17b3e3be068`.
 Working branch: `codex/jazn-run-studio`. No merge is authorized.

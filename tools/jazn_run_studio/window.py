@@ -46,6 +46,7 @@ class Window(QMainWindow):
         self.pages = QStackedWidget()
         self.tabs = QTabWidget()
         self.tabs.setMinimumHeight(170)
+        self.tabs.hide()
         content = QSplitter(Qt.Orientation.Vertical)
         content.addWidget(self.pages)
         content.addWidget(self.tabs)
@@ -62,6 +63,7 @@ class Window(QMainWindow):
         self._chat()
         self._diagnostics()
         self._studios()
+        self._memory()
         self._settings()
         self._about()
         self.nav.setCurrentRow(0)
@@ -265,6 +267,12 @@ class Window(QMainWindow):
             layout.addLayout(row)
         layout.addStretch()
 
+    def _memory(self) -> None:
+        from .memory_view import MemoryPanel
+        layout = self.page("Dowody MEMORY", "Odczytowe P1: role baz, porównanie i niezależna gotowość runtime.")
+        self.memory_panel = MemoryPanel(self.core, self.guard)
+        layout.addWidget(self.memory_panel)
+
     def reset_studio_operations(self, _index: int = -1) -> None:
         self.schema_key = ""
         self.command_schema = []
@@ -420,6 +428,7 @@ class Window(QMainWindow):
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
             self.tabs.addTab(view, key)
+            self.tabs.show()
         return self.logs[key]
 
     def poll(self) -> None:
@@ -435,6 +444,8 @@ class Window(QMainWindow):
                     break
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
+            elif kind == "memory_report":
+                self.memory_panel.receive(key, value)
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
                 self.evidence.setText("Runtime: " + str(value.get("active_state") or "niepotwierdzony") +
@@ -480,6 +491,8 @@ class Window(QMainWindow):
                         self.profile_widgets[field["key"]] = widget
                         self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
+                if key.startswith("memory:p1:"):
+                    self.memory_panel.receive_state(key, value)
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
                 service = key.removeprefix("service:")
                 if service in self.statuses:

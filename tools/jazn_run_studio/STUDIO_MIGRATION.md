@@ -28,6 +28,28 @@ GUI callbacks and command specifications, so those facades and specs are part
 of the audit. Legacy/archive versions are historical evidence, not migration
 targets or active test gates.
 
+## Explicit shared-Qt migration state (.62)
+
+These states apply to the complete application, not just CLI availability.
+
+| Application | State | Current evidence / remaining gate |
+| --- | --- | --- |
+| System Studio | integracja częściowa | shared runtime controls; update/cognitive/settings parity open |
+| Start Studio | integracja częściowa | common service controller; full original catalog/settings comparison open |
+| Configuration Studio | integracja częściowa | profile read/save; path map, preview/restore and dirty-state parity open |
+| Memory Studio | integracja częściowa | dedicated Qt P1 role/comparison/readiness evidence view in .62; imports, affect/candidates, protocol and full operational parity open |
+| Memory Rebuild | integracja częściowa | canonical forms; specialized plan/progress/dialog parity open |
+| Test Studio | integracja częściowa | canonical commands/logs; expectation review, selection and history UI parity open |
+| Package Generator | integracja częściowa | canonical commands; structured plan/progress/settings parity open |
+| Dependency Studio | integracja częściowa | canonical forms and native locks; structured inventory/install UI parity open |
+| Python Runtime Studio | integracja częściowa | canonical forms; interpreter inventory and operational UI parity open |
+| Version Rebuild | nierozpoczęta | legacy window only; no dedicated shared-Qt workflow yet |
+| Chat export/import | nierozpoczęta | dedicated Qt workflow not yet implemented |
+| Memory restore | nierozpoczęta | dedicated Qt plan/compare/restore workflow not yet implemented |
+
+No row is fully integrated. Native Qt rendering and regressions for the P1
+evidence slice do not establish parity for the rest of Memory Studio.
+
 For each row, closure requires a before/after action mapping, positive and error
 tests, equivalent persisted settings and review/backup semantics where present,
 real Qt rendering/keyboard acceptance, and successful final-source CI. Partial

@@ -58,3 +58,11 @@ https://docs.python.org/3.14/library/io.html#io.TextIOWrapper.reconfigure and
 https://docs.python.org/3.14/using/cmdline.html#envvar-PYTHONIOENCODING.
 An inherited PYTHONIOENCODING overrides UTF-8 mode for child standard streams;
 Studio explicitly configures both its own streams and external process pipes.
+
+P1 completion sources checked 2026-10-24:
+https://www.sqlite.org/limits.html documents SQLITE_LIMIT_LENGTH as both a
+string/BLOB and encoded-record limit. Python exposes the per-connection guard
+through https://docs.python.org/3.14/library/sqlite3.html#sqlite3.Connection.setlimit.
+The comparator also enforces its existing index/time budgets. The new Qt view
+calls the existing P1 services through run.py/main.py; it does not reconstruct
+the daemon verifier or infer recall/activation from configured database evidence.
