@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
+  "runtime_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",

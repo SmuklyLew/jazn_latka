@@ -132,6 +132,9 @@ if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-prefligh
     raise SystemExit(run_host_preflight_cli(sys.argv[2:]))
 
 if __name__ == "__main__":
+    _bootstrap_entrypoint_environment(list(sys.argv[1:]))
+    # Dependency-empty cleanroom must reach its established exit contract
+    # before resolving optional project-local configuration modules.
     from latka_jazn.core.system_config import SystemConfigError, apply_system_config
     try:
         apply_system_config(Path(__file__).resolve().parent, os.environ)
@@ -139,7 +142,6 @@ if __name__ == "__main__":
         print(json.dumps({"ok": False, "error_code": "system_config_invalid",
                           "reason": str(exc)}, ensure_ascii=False), file=sys.stderr)
         raise SystemExit(78) from exc
-    _bootstrap_entrypoint_environment(list(sys.argv[1:]))
 
 # Install runtime-wide compatibility overlays before any import can transitively
 # load runtime_daemon/chat_command_contract. This was previously owned by
