@@ -92,6 +92,7 @@ def test_version_rebuild_preserves_alias_on_modern_write(tmp_path: Path) -> None
     version_dir = tmp_path / "latka_jazn"
     version_dir.mkdir()
     (version_dir / "version.py").write_bytes(path.read_bytes())
+    (tmp_path / "run.py").write_text("# canonical root fixture\n", encoding="utf-8")
     assert rebuild.read_version(tmp_path) == data
 
 
