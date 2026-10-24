@@ -485,6 +485,7 @@ def test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall(
     for name, value in {
         "JAZN_TEST_MODE": "1",
         "JAZN_MODEL_ADAPTER": "null",
+        "JAZN_LLM_ROUTE": "off",
         "JAZN_ALLOW_NETWORK": "0",
         "JAZN_DICTIONARY_ALLOW_NETWORK": "0",
         "JAZN_NETWORK_TIME_FIRST": "0",

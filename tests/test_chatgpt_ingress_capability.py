@@ -131,17 +131,14 @@ def test_unreadable_optional_memory_file_never_blocks_core(
     path.write_text("pretend-file", encoding="utf-8")
 
     original_stat = Path.stat
-    calls = 0
-
-    def fail_second_stat(p: Path, *args: object, **kwargs: object):
-        nonlocal calls
+    def unreadable_stat(p: Path, *args: object, **kwargs: object):
         if p == path:
-            calls += 1
-            if calls > 1:
-                raise PermissionError("private memory cannot be inspected")
+            # Windows Python 3.14 can implement is_file without Path.stat.
+            # Deny the metadata read itself, independently of its call count.
+            raise PermissionError("private memory cannot be inspected")
         return original_stat(p, *args, **kwargs)
 
-    monkeypatch.setattr(Path, "stat", fail_second_stat)
+    monkeypatch.setattr(Path, "stat", unreadable_stat)
     monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
     monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory))
     status = build_memory_availability_status(root)

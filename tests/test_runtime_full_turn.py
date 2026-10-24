@@ -59,6 +59,7 @@ def test_full_runtime_turn_commits_transactionally_without_legacy_fanout(tmp_pat
     monkeypatch.setenv("JAZN_ALLOW_NETWORK", "0")
     monkeypatch.setenv("JAZN_DICTIONARY_ALLOW_NETWORK", "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
+    monkeypatch.setenv("JAZN_LLM_ROUTE", "off")
     (tmp_path / "main.py").write_text("# isolated runtime root\n", encoding="utf-8")
     # Full transactional-memory acceptance requires a synthetic explicit
     # MEMORY attachment. Bare operational SQLite is never evidence of recall.

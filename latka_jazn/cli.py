@@ -243,6 +243,15 @@ def build_parser() -> argparse.ArgumentParser:
             child.add_argument("--dry-run", action="store_true")
             child.add_argument("--force", action="store_true")
 
+    child = sub.add_parser("memory-inspection", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--operation", choices=("layout", "comparison", "readiness"), required=True)
+    child.add_argument("--project", type=Path)
+    child.add_argument("--reference", type=Path)
+    child.add_argument("--reference-sha256")
+    child.add_argument("--parent", type=Path)
+    child.add_argument("--parent-sha256")
+
     child = sub.add_parser("memory-recover", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--force-recovery", action="store_true")
@@ -459,7 +468,7 @@ def main(
         "replay-turn", "export", "package-smoke", "release-metadata", "release-build", "runtime-bootstrap",
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
         "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-sentinel", "memory-recover", "memory-import-html",
-        "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
+        "memory-inspection", "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
         "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
@@ -473,6 +482,14 @@ def main(
         parser.print_help()
         return 0
     root = Path(ns.root).resolve()
+
+    if ns.command == "memory-inspection":
+        from latka_jazn.tools.memory_rebuild_app.p1_operator_report import build_operator_report
+        payload = build_operator_report(root, operation=ns.operation, project_file=ns.project,
+            reference=ns.reference, reference_sha256=ns.reference_sha256,
+            parent=ns.parent, parent_sha256=ns.parent_sha256)
+        _emit(payload, as_json=True)
+        return 0 if payload["ok"] else 2
 
     if ns.command == "host-diagnose":
         from latka_jazn.core.host_spawn_diagnostics import build_host_spawn_diagnostics

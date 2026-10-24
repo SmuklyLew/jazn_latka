@@ -16,6 +16,10 @@
       "kind": "operator_optional",
       "source_optional_group": "memory-rebuild-ui"
     },
+    "run-studio": {
+      "kind": "operator_optional",
+      "source_optional_group": "run-studio"
+    },
     "memory-cloud": {
       "kind": "runtime_optional",
       "source_optional_group": "memory-cloud"
@@ -58,6 +62,7 @@
     "pyzipper": "pyzipper",
     "rarfile": "rarfile",
     "prompt-toolkit": "prompt_toolkit",
+    "pyside6-essentials": "PySide6",
     "pynacl": "nacl",
     "psycopg": "psycopg",
     "boto3": "boto3",
