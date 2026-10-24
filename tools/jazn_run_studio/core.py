@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from importlib.util import find_spec
 import json
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
 import queue
@@ -280,6 +282,32 @@ class Job:
         return {k: getattr(self, k) for k in ("key", "state", "pid", "returncode", "error", "started", "finished")}
 
 
+def write_error_record(root: Path, key: str, snapshot: dict[str, Any], redactor: Redactor) -> Path:
+    """Persist only redacted, bounded failure metadata in the Git-ignored workspace.
+
+    Never persist command arguments, chat contents, raw stdout or tracebacks.
+    This is an operator diagnostic, not a runtime event or finalization record.
+    """
+    folder = _path_without_links(workspace_runtime_path(root) / "jazn_run_studio")
+    folder.mkdir(parents=True, exist_ok=True)
+    filename = _path_without_links(folder / "errors_jazn_studio.log")
+    fields = {
+        "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "job": redactor.text(key[:128]),
+        "state": "failed",
+        "error": redactor.text(str(snapshot.get("error") or "unspecified")[:256]),
+        "returncode": snapshot.get("returncode") if isinstance(snapshot.get("returncode"), int) else None,
+    }
+    handler = RotatingFileHandler(filename, maxBytes=1_048_576, backupCount=3, encoding="utf-8")
+    try:
+        record = logging.LogRecord("jazn_studio_errors", logging.ERROR, "", 0,
+                                   json.dumps(fields, ensure_ascii=False), (), None)
+        handler.emit(record)
+    finally:
+        handler.close()
+    return filename
+
+
 class Controller:
     """Bounded job and event registry; work never runs on the GUI thread."""
 
@@ -303,6 +331,19 @@ class Controller:
             if kind == "log":
                 value = self.redactor.text(str(value))
                 self.logs.setdefault(key, deque(maxlen=2500)).append(value)
+            elif kind == "state" and isinstance(value, dict):
+                value = dict(value)
+                if value.get("error"):
+                    value["error"] = self.redactor.text(str(value["error"]))
+                if value.get("state") == "failed":
+                    try:
+                        write_error_record(self.root, key, value, self.redactor)
+                    except (OSError, StudioError):
+                        # A diagnostic disk failure must never lose the terminal
+                        # job state or the accepted chat-final delivery channel.
+                        warning = "BŁĄD: nie można zapisać lokalnego rejestru awarii"
+                        self.logs.setdefault("studio:errors", deque(maxlen=2500)).append(warning)
+                        self.critical_events.put(("studio:errors", "log", warning))
             try:
                 self.events.put_nowait((key, kind, value))
             except queue.Full:
