@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.84",
-  "active_definition_count": 2706,
+  "system_version": "16.3.25.5.116.0.34.85",
+  "active_definition_count": 2709,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26454,6 +26454,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_jazn_run_studio_workbench_qt.py::test_shared_palette_has_independent_light_dark_purple_and_custom_modes": {
+      "path": "tests/test_jazn_run_studio_workbench_qt.py",
+      "name": "test_shared_palette_has_independent_light_dark_purple_and_custom_modes",
+      "purpose": "Shared palette has independent light dark purple and custom modes",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_jazn_run_studio_workbench_qt.py::test_sidebar_and_contextual_panel_are_keyboard_accessible": {
+      "path": "tests/test_jazn_run_studio_workbench_qt.py",
+      "name": "test_sidebar_and_contextual_panel_are_keyboard_accessible",
+      "purpose": "Sidebar and contextual panel are keyboard accessible",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 16,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_jazn_run_studio_workbench_qt.py::test_workbench_preserves_viewport_and_neutral_status": {
+      "path": "tests/test_jazn_run_studio_workbench_qt.py",
+      "name": "test_workbench_preserves_viewport_and_neutral_status",
+      "purpose": "Workbench preserves viewport and neutral status",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
