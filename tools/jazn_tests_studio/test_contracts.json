@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.68",
-  "active_definition_count": 2653,
+  "system_version": "16.3.25.5.116.0.34.69",
+  "active_definition_count": 2661,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24585,6 +24585,68 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jazn_run_studio_bundle_integrity.py::test_full_onedir_inventory_matches_and_does_not_promote_security": {
+      "path": "tests/test_jazn_run_studio_bundle_integrity.py",
+      "name": "test_full_onedir_inventory_matches_and_does_not_promote_security",
+      "purpose": "Full onedir inventory matches and does not promote security",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jazn_run_studio_bundle_integrity.py::test_modified_dependency_or_missing_dependency_invalidates_full_bundle": {
+      "path": "tests/test_jazn_run_studio_bundle_integrity.py",
+      "name": "test_modified_dependency_or_missing_dependency_invalidates_full_bundle",
+      "purpose": "Modified dependency or missing dependency invalidates full bundle",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_jazn_run_studio_bundle_integrity.py::test_untracked_additions_and_missing_manifest_fail_closed": {
+      "path": "tests/test_jazn_run_studio_bundle_integrity.py",
+      "name": "test_untracked_additions_and_missing_manifest_fail_closed",
+      "purpose": "Untracked additions and missing manifest fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_jazn_run_studio_bundle_integrity.py::test_bundle_links_are_not_accepted": {
+      "path": "tests/test_jazn_run_studio_bundle_integrity.py",
+      "name": "test_bundle_links_are_not_accepted",
+      "purpose": "Bundle links are not accepted",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
     "tests/test_jazn_run_studio_chat_contract.py::test_canonical_live_bridge_and_poll_results_share_strict_binding": {
       "path": "tests/test_jazn_run_studio_chat_contract.py",
       "name": "test_canonical_live_bridge_and_poll_results_share_strict_binding",
@@ -24677,6 +24739,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 81
+    },
+    "tests/test_jazn_run_studio_delivery_ack.py::test_accepted_final_remains_pending_until_gui_ack_and_is_not_emitted_twice": {
+      "path": "tests/test_jazn_run_studio_delivery_ack.py",
+      "name": "test_accepted_final_remains_pending_until_gui_ack_and_is_not_emitted_twice",
+      "purpose": "Accepted final remains pending until gui ack and is not emitted twice",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_jazn_run_studio_delivery_ack.py::test_checkpoint_failure_preserves_pending_request": {
+      "path": "tests/test_jazn_run_studio_delivery_ack.py",
+      "name": "test_checkpoint_failure_preserves_pending_request",
+      "purpose": "Checkpoint failure preserves pending request",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jazn_run_studio_delivery_ack.py::test_unaccepted_transport_result_stays_pending_without_gui_final": {
+      "path": "tests/test_jazn_run_studio_delivery_ack.py",
+      "name": "test_unaccepted_transport_result_stays_pending_without_gui_final",
+      "purpose": "Unaccepted transport result stays pending without gui final",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_jazn_run_studio_delivery_ack.py::test_restart_reloads_pending_request_without_replay": {
+      "path": "tests/test_jazn_run_studio_delivery_ack.py",
+      "name": "test_restart_reloads_pending_request_without_replay",
+      "purpose": "Restart reloads pending request without replay",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
     },
     "tests/test_jazn_run_studio_http_framing.py::test_catalog_malformed_http_returns_structured_failure_without_body": {
       "path": "tests/test_jazn_run_studio_http_framing.py",
