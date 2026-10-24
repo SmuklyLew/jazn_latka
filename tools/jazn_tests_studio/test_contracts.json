@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.81",
-  "active_definition_count": 2695,
+  "system_version": "16.3.25.5.116.0.34.82",
+  "active_definition_count": 2698,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26082,6 +26082,55 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jazn_run_studio_reconnect_acceptance_qt.py::test_invalid_route_does_not_reserve_chat_job": {
+      "path": "tests/test_jazn_run_studio_reconnect_acceptance_qt.py",
+      "name": "test_invalid_route_does_not_reserve_chat_job",
+      "purpose": "Invalid route does not reserve chat job",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_jazn_run_studio_reconnect_acceptance_qt.py::test_qt_final_is_acked_only_after_display_and_reconnect_checkpoint": {
+      "path": "tests/test_jazn_run_studio_reconnect_acceptance_qt.py",
+      "name": "test_qt_final_is_acked_only_after_display_and_reconnect_checkpoint",
+      "purpose": "Qt final is acked only after display and reconnect checkpoint",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_jazn_run_studio_reconnect_acceptance_qt.py::test_pending_route_change_refuses_wrong_daemon_after_reconnect": {
+      "path": "tests/test_jazn_run_studio_reconnect_acceptance_qt.py",
+      "name": "test_pending_route_change_refuses_wrong_daemon_after_reconnect",
+      "purpose": "Pending route change refuses wrong daemon after reconnect",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
     },
     "tests/test_jazn_run_studio_safe_memory_diagnostics.py::test_raw_errors_are_not_displayable_reason_codes": {
       "path": "tests/test_jazn_run_studio_safe_memory_diagnostics.py",
