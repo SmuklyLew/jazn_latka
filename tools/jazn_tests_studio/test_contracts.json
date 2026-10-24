@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.83",
+  "system_version": "16.3.25.5.116.0.34.84",
   "active_definition_count": 2704,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -25469,7 +25469,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 62
     },
     "tests/test_jazn_run_studio_local_acceptance.py::test_custom_case_is_local_and_read_only_until_operator_marks_it": {
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
@@ -25486,7 +25486,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 72
     },
     "tests/test_jazn_run_studio_local_acceptance.py::test_corrupt_or_symlinked_state_fails_closed": {
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
@@ -25503,7 +25503,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 85
     },
     "tests/test_jazn_run_studio_local_acceptance.py::test_qt_acceptance_page_renders_without_live_runtime": {
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
@@ -25520,7 +25520,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 94
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_invalid_gateway_and_daemon_configuration_rejected": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
