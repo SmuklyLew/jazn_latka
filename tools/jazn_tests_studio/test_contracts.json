@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.65",
-  "active_definition_count": 2645,
+  "system_version": "16.3.25.5.116.0.34.66",
+  "active_definition_count": 2650,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25430,6 +25430,85 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 105
+    },
+    "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_quarantined_or_missing_exe_cannot_be_promoted": {
+      "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
+      "name": "test_quarantined_or_missing_exe_cannot_be_promoted",
+      "purpose": "Quarantined or missing exe cannot be promoted",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_current_bytes_can_match_without_av_clearance": {
+      "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
+      "name": "test_current_bytes_can_match_without_av_clearance",
+      "purpose": "Current bytes can match without av clearance",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_incomplete_build_metadata_fails_closed": {
+      "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
+      "name": "test_incomplete_build_metadata_fails_closed",
+      "purpose": "Incomplete build metadata fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_wrong_hash_and_malformed_metadata_are_not_success": {
+      "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
+      "name": "test_wrong_hash_and_malformed_metadata_are_not_success",
+      "purpose": "Wrong hash and malformed metadata are not success",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_invalid_expected_identifiers_fail_closed": {
+      "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
+      "name": "test_invalid_expected_identifiers_fail_closed",
+      "purpose": "Invalid expected identifiers fail closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
