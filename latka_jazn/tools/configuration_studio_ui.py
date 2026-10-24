@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from latka_jazn.memory.memory_root import resolve_memory_root
 
+from latka_jazn.core.system_config import config_path, migrate_operator_profile
 from .configuration_studio import (
     SETTINGS, ConfigValidationError, describe_profile, inspect_system,
     profile_file, profile_snapshot, read_profile, save_profile, restore_previous_profile, system_root,
@@ -57,6 +58,22 @@ class ConfigurationStudio:
         ttk.Label(root, textvariable=self.status, style="Status.TLabel",
                   anchor="w", padding=(15, 8)).pack(fill="x")
         self.open_page("overview")
+
+    def migrate_to_system(self) -> None:
+        if not messagebox.askyesno(
+            "Migracja konfiguracji",
+            "Skopiować operator.json do prywatnego ROOT? Zmiana dotyczy tylko przyszłych uruchomień.",
+            parent=self.root,
+        ):
+            return
+        try:
+            migrate_operator_profile(self.system)
+        except (ValueError, OSError) as exc:
+            messagebox.showerror("Migracja odrzucona", str(exc), parent=self.root)
+            return
+        self.status.set("Zapisano: " + str(config_path(self.system)))
+        self._clear()
+        self._page_overview()
 
     def _set_theme(self) -> None:
         style = ttk.Style(self.root)
@@ -112,9 +129,12 @@ class ConfigurationStudio:
     def _page_overview(self) -> None:
         self._heading("Centrum konfiguracji", "System, workspace, pamięć i ustawienia bez mieszania danych.")
         details = describe_profile(self.system)
+        ttk.Button(self.content, text="Migruj operator.json do ROOT",
+                   command=self.migrate_to_system).pack(anchor="w", pady=(0, 12))
         for label, value in (
             ("Zweryfikowany katalog SYSTEM", str(self.system)),
             ("Plik profilu operatorskiego", str(details["profile_path"])),
+            ("Kanoniczny plik ROOT", str(config_path(self.system))),
             ("Liczba nadpisań w profilu", str(len(details["values"]))),
             ("Stan zastosowania", "Tylko przy przyszłym, jawnym uruchomieniu"),
         ):

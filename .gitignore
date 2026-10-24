@@ -12,6 +12,10 @@ node_modules/
 .npm/
 npm-debug.log*
 
+# Local SYSTEM config; never commit private operator settings
+/jazn_system_config.json
+/jazn_system_config.previous.json
+
 # Runtime/private state at repository root
 .env
 .env.*

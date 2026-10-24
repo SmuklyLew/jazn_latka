@@ -29,6 +29,7 @@ from urllib.parse import urlsplit
 
 from latka_jazn.tools.jazn_studio.core import verified_root
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.system_config import read_system_config, write_system_config
 from .external import spawn, environment, run as run_external
 
 MAX_OUTPUT = 2 * 1024 * 1024
@@ -191,14 +192,17 @@ def settings_path(root: Path) -> Path:
 
 
 def load_settings(root: Path) -> tuple[Settings, str | None]:
+    canonical = read_system_config(root)
     target = settings_path(root)
     if not target.exists():
-        return Settings(), None
+        return Settings.validate(dict(canonical.studio)), None
     raw = target.read_bytes()
     if len(raw) > 32768:
         raise StudioError("Zbyt duży plik ustawień")
     data = json.loads(raw)
-    return Settings.validate(data), sha256(raw).hexdigest()
+    if not isinstance(data, dict):
+        raise StudioError("Nieprawidłowy format ustawień Studio")
+    return Settings.validate({**data, **canonical.studio}), sha256(raw).hexdigest()
 
 
 def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
@@ -208,6 +212,12 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
     if current != expected:
         raise StudioError("Ustawienia zmieniły się na dysku; wczytaj je ponownie")
     target.parent.mkdir(parents=True, exist_ok=True)
+    canonical = read_system_config(root)
+    shared = {key: val for key, val in (
+        ("python", settings.python), ("model", settings.model),
+        ("daemon_url", settings.daemon_url),
+    ) if val}
+    write_system_config(root, canonical.values, shared, expected_digest=canonical.digest)
     data = (json.dumps(asdict(settings), ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     fd, name = tempfile.mkstemp(dir=target.parent, prefix=".settings-")
     try:
