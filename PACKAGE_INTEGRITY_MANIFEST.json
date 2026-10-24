@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
-  "runtime_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
-  "package_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
-  "generated_at_utc": "2026-10-24T04:55:10+00:00",
-  "updated_at_utc": "2026-10-24T04:55:10+00:00",
+  "version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
+  "runtime_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
+  "package_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
+  "generated_at_utc": "2026-10-24T05:16:54+00:00",
+  "updated_at_utc": "2026-10-24T05:16:54+00:00",
   "start_file": "run.py",
-  "file_count": 3339,
-  "static_file_count": 3339,
+  "file_count": 3341,
+  "static_file_count": 3341,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "de5c4b3185eedb787f37b4693139366ea8c908fed854739ebcaf13cf05ecd373",
+      "size_bytes": 2957,
+      "sha256": "bef8690d2a4797b338a39a5d8c0f9b779a8772248c1a7708deff64f3bb2b03db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1947,
-      "sha256": "f46ed187e8f8ade645a151f0b560470fef79e6caed1ea24648d6b1bf59c5f469",
+      "size_bytes": 1945,
+      "sha256": "ca2a72d5404b8537fc00dafc3aa013cf113104deb1cbfdf838f0263e5d9bc3a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2569,6 +2569,15 @@
       "path": "docs/reports/JAZN_V116_0_34_5_CHATGPT_TOOL_CATALOG_PARITY.md",
       "size_bytes": 3817,
       "sha256": "54c723712245cf996760758c44df2101858eb01469af6a400768c111a50e7f97",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_67_WINDOWS_HEALTH_LATENCY_DIAGNOSTICS.md",
+      "size_bytes": 2852,
+      "sha256": "aecf27c2c34cd9c864b108e4de4fd6b7a12f6261498e1e413cb277a00ce71423",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9354,7 +9363,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "e79391c970cd836d4ae8eeef6036fba279523f6f14dc01ea4c4f8958e76f4a98",
+      "sha256": "8824fbbfdedadb9774e1399f21f850c3084f8f7f0958c49fb72e2eb767542d18",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10856,8 +10865,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 15013,
-      "sha256": "4ee9919bcb29dd9a2b8c8d733688be1ba00dce92efa28aa2c54fe8f9bf1e8f2e",
+      "size_bytes": 15111,
+      "sha256": "78e4202e93205eaab9a362a00dc1f16d765f479c03eddbfdd8ea995ef5865389",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -22708,6 +22717,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.66-before-health-latency-diagnostics/test_turn_atomicity.py",
+      "size_bytes": 13115,
+      "sha256": "69968595c69d188ec96765a31ea8d5b234e6dfa0df4c3ae7cfabd3d8245cc2a9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.7-before-pyright-fix/test_v1160347_chatgpt_mcp_catalog_sse.py",
       "size_bytes": 4599,
       "sha256": "6158010028405709f7528730684b83382fef64047248b0ab20a42c72abe797e7",
@@ -28991,8 +29009,8 @@
     },
     {
       "path": "tests/test_turn_atomicity.py",
-      "size_bytes": 13115,
-      "sha256": "69968595c69d188ec96765a31ea8d5b234e6dfa0df4c3ae7cfabd3d8245cc2a9",
+      "size_bytes": 14305,
+      "sha256": "7dc62d89f81ae0c5c48e5855fa78ceaded05bf07ed40a6a989034c73d45f5c41",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29847,7 +29865,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2422023,
-      "sha256": "d8464d2caad07612b501e49db46111792dbff283dd34abd2ce15ede19d76275c",
+      "sha256": "0b0df4a451970bbeea76e16d05ede50aff7e9d956d9e36d935273eea02db7a21",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30504,11 +30522,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
+  "release_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
-    "package_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence",
-    "release_version": "16.3.25.5.116.0.34.66-studio-alpha-acceptance-evidence"
+    "runtime_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
+    "package_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence",
+    "release_version": "16.3.25.5.116.0.34.67-studio-health-latency-evidence"
   },
   "legacy_aliases": {
     "version": "release_version"
