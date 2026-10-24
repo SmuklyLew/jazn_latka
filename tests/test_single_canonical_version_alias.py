@@ -112,3 +112,21 @@ def test_version_rebuild_migrates_legacy_literal_on_new_write(tmp_path: Path) ->
     path.write_text(rendered, encoding="utf-8")
     assert rebuild.assignments(path)["DISTRIBUTION_VERSION"] == data.package
     assert rebuild.pyproject_ok is not None
+
+
+def test_editor_preserves_bom_and_crlf(tmp_path: Path) -> None:
+    rebuild = importlib.import_module("tools.jazn_version_rebuild")
+    path = tmp_path / "version.py"
+    source = (
+        'PACKAGE_VERSION = "16.3.25.5.116.0.34.74"\r\n'
+        'DISTRIBUTION_VERSION = PACKAGE_VERSION\r\n'
+        'PACKAGE_RELEASE_NAME = "one"\r\n'
+    )
+    path.write_bytes(b"\xef\xbb\xbf" + source.encode("utf-8"))
+    change = rebuild.build_version("16.3.25.5.116.0.34.75", "", "two")
+    output = rebuild.render_version(path, change)
+    assert output.startswith(b"\xef\xbb\xbf")
+    assert b"\r\n" in output
+    assert output.count(b"\n") == output.count(b"\r\n")
+    path.write_bytes(output)
+    assert rebuild.assignments(path)["DISTRIBUTION_VERSION"] == change.package
