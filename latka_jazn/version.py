@@ -1,3 +1,4 @@
+# v116.0.34.74 makes PACKAGE_VERSION canonical and DISTRIBUTION_VERSION a static-compatible alias.
 # v116.0.34.73 corrects release distribution identity for the part-2 Studio branch.
 # v116.0.34.72 adds part-2 operator status mirrors, log controls, Qt palette and redacted rotating errors.
 # v116.0.34.71 fixes onedir bundle manifest import for directly executed build.py.
@@ -121,9 +122,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.73"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.73"
-PACKAGE_RELEASE_NAME = "studio-part2-release-identity-consistency"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.74"
+DISTRIBUTION_VERSION = PACKAGE_VERSION
+PACKAGE_RELEASE_NAME = "studio-single-source-version"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

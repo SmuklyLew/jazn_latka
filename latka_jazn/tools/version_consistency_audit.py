@@ -260,7 +260,12 @@ def _generated_metadata_errors(root: Path) -> list[dict[str, Any]]:
     pyproject = pyproject_path.read_text(encoding="utf-8") if pyproject_path.is_file() else ""
     if 'dynamic = ["version"]' not in pyproject:
         errors.append({"kind": "pyproject_version_not_dynamic", "path": "pyproject.toml"})
-    if 'version = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}' not in pyproject:
+    # Canonical builds use PACKAGE_VERSION (a literal for setuptools' AST
+    # reader). Historical fixture metadata may still point to the old alias.
+    if not any(
+        f'version = {{attr = "latka_jazn.version.{field}"}}' in pyproject
+        for field in ("PACKAGE_VERSION", "DISTRIBUTION_VERSION")
+    ):
         errors.append({"kind": "pyproject_not_bound_to_version_py", "path": "pyproject.toml"})
 
     manifest = _load_json(root / "PACKAGE_INTEGRITY_MANIFEST.json")
