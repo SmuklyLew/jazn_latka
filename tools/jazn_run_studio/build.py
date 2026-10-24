@@ -10,6 +10,17 @@ import subprocess
 import sys
 
 
+def _write_bundle_manifest(artifact: Path) -> None:
+    """Find sibling writer in module mode or direct-script mode, without sys.path edits."""
+    from importlib import import_module
+
+    sibling = (
+        f"{__package__}.p5_artifact_evidence"
+        if __package__ else "p5_artifact_evidence"
+    )
+    import_module(sibling).write_frozen_bundle_manifest(artifact)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--output", type=Path, required=True, help="New artifact parent directory")
@@ -47,8 +58,7 @@ def main() -> int:
                     "pyinstaller": version("pyinstaller"), "layout": "onedir",
                     "qt_license_notices": "_internal/*dist-info/licenses/"}
             (artifact / "BUILD_INFO.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
-            from tools.jazn_run_studio.p5_artifact_evidence import write_frozen_bundle_manifest
-            write_frozen_bundle_manifest(artifact)
+            _write_bundle_manifest(artifact)
     return code
 
 

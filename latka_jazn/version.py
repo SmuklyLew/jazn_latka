@@ -1,3 +1,4 @@
+# v116.0.34.71 fixes onedir bundle manifest import for directly executed build.py.
 # v116.0.34.70 strengthens isolated Qt delivery test typing and cross-platform regression selection.
 # v116.0.34.69 preserves accepted Studio finals until GUI acknowledgment and inventories all onedir files.
 # v116.0.34.68 adds a native read-only Test Studio catalogue and expectation viewer.
@@ -118,9 +119,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.70"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.70"
-PACKAGE_RELEASE_NAME = "studio-local-delivery-typing-regressions"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.71"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.71"
+PACKAGE_RELEASE_NAME = "studio-build-import-regression"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

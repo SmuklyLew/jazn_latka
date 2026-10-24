@@ -58,7 +58,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py
-      - run: python -m pytest -q tests/test_daemon_shutdown_ack_before_teardown.py tests/test_daemon_shutdown_http_body.py tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_delivery_ack.py tests/test_jazn_run_studio_bundle_integrity.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_utf8.py tests/test_jazn_run_studio_mcp_events.py tests/test_jazn_run_studio_p5_artifact_evidence.py tests/test_jazn_run_studio_native_test_catalog_qt.py tests/test_jazn_archive_brotli_security_floor.py
+      - run: python -m pytest -q tests/test_daemon_shutdown_ack_before_teardown.py tests/test_daemon_shutdown_http_body.py tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_build_import.py tests/test_jazn_run_studio_delivery_ack.py tests/test_jazn_run_studio_bundle_integrity.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_utf8.py tests/test_jazn_run_studio_mcp_events.py tests/test_jazn_run_studio_p5_artifact_evidence.py tests/test_jazn_run_studio_native_test_catalog_qt.py tests/test_jazn_archive_brotli_security_floor.py
       - run: python -m pytest -q tests/test_jazn_run_studio_memory_view.py tests/test_memory_operator_report.py tests/test_memory_evidence_compact_layout.py tests/test_memory_readiness_pin_diagnostics.py
       - run: python tools/jazn_run_studio/check_types.py
       - run: python -X utf8 jazn_run_studio.py --check
@@ -76,6 +76,8 @@ jobs:
           python-version: "3.14"
       - run: python -m pip install -e ".[run-studio]" pyinstaller==6.22.3
       - run: python tools/jazn_run_studio/build.py --output "${{ runner.temp }}/studio-build"
+      - name: Verify actual onedir manifest before GUI smoke
+        run: python -c "from pathlib import Path; from tools.jazn_run_studio.p5_artifact_evidence import verify_frozen_bundle_manifest as verify; assert verify(Path(r'${{ runner.temp }}/studio-build/dist/JaznRunStudio'))[0], 'bundle_inventory_invalid'"
       - name: Verify frozen GUI against explicit SYSTEM and interpreter
         shell: pwsh
         run: |
