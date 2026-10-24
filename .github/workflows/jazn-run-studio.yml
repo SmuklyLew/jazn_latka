@@ -1,0 +1,92 @@
+name: jazn-run-studio
+
+on:
+  push:
+    branches: ["codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024"]
+  pull_request:
+    branches: [master]
+    paths:
+      - "tools/jazn_run_studio/**"
+      - "jazn_run_studio.py"
+      - "tests/test_daemon_shutdown_ack_before_teardown.py"
+      - "tests/test_daemon_shutdown_http_body.py"
+      - "latka_jazn/core/runtime_daemon.py"
+      - "tests/test_jazn_run_studio.py"
+      - "tests/test_jazn_run_studio_mcp_events.py"
+      - "tests/test_jazn_archive_brotli_security_floor.py"
+      - "tests/test_jazn_run_studio_integrations.py"
+      - "tests/test_jazn_run_studio_secrets.py"
+      - "tests/test_jazn_run_studio_chat_contract.py"
+      - "tests/test_jazn_run_studio_lifecycle_results.py"
+      - "tests/test_jazn_run_studio_http_framing.py"
+      - "tests/test_jazn_run_studio_layout.py"
+      - "tests/test_jazn_run_studio_utf8.py"
+      - "tests/test_jazn_run_studio_memory_view.py"
+      - "tests/test_memory_operator_report.py"
+      - "tests/test_memory_evidence_compact_layout.py"
+      - "tests/test_memory_readiness_pin_diagnostics.py"
+      - "latka_jazn/tools/memory_rebuild_app/p1_operator_report.py"
+      - "latka_jazn/cli.py"
+      - "pyproject.toml"
+      - "latka_jazn/resources/dependencies/profiles.json"
+      - ".github/workflows/jazn-run-studio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python: ["3.12", "3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[run-studio,memory-rebuild-ui,archive,mcp-http]" pytest pyright==1.1.414
+      - name: Install Qt Linux graphics libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+      - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py
+      - run: python -m pytest -q tests/test_daemon_shutdown_ack_before_teardown.py tests/test_daemon_shutdown_http_body.py tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_utf8.py tests/test_jazn_run_studio_mcp_events.py tests/test_jazn_archive_brotli_security_floor.py
+      - run: python -m pytest -q tests/test_jazn_run_studio_memory_view.py tests/test_memory_operator_report.py tests/test_memory_evidence_compact_layout.py tests/test_memory_readiness_pin_diagnostics.py
+      - run: python tools/jazn_run_studio/check_types.py
+      - run: python -X utf8 jazn_run_studio.py --check
+      - run: python -X utf8 jazn_run_studio.py --gui-smoke
+      - run: git diff --check
+
+  package:
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.14"
+      - run: python -m pip install -e ".[run-studio]" pyinstaller==6.22.3
+      - run: python tools/jazn_run_studio/build.py --output "${{ runner.temp }}/studio-build"
+      - name: Verify frozen GUI against explicit SYSTEM and interpreter
+        shell: pwsh
+        run: |
+          $env:JAZN_ROOT = (Get-Location).Path
+          $env:JAZN_STUDIO_PYTHON = (Get-Command python).Source
+          $exe = "${{ runner.temp }}/studio-build/dist/JaznRunStudio/JaznRunStudio.exe"
+          $job = Start-Process -FilePath $exe -ArgumentList '--gui-smoke' -WindowStyle Hidden -PassThru
+          if (-not $job.WaitForExit(30000)) { $job.Kill(); throw 'Frozen GUI timeout' }
+          if ($job.ExitCode -ne 0) { throw "Frozen GUI failed: $($job.ExitCode)" }
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: JaznRunStudio-Windows
+          path: ${{ runner.temp }}/studio-build/dist/JaznRunStudio/
+          if-no-files-found: error
+          retention-days: 7
