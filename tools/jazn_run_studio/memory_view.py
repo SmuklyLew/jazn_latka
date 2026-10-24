@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 
 from .core import Controller
 
-_SAFE_REASON = re.compile(r"[a-z][a-z0-9_:-]{0,79}\\Z", re.ASCII)
+_SAFE_REASON = re.compile(r"[a-z][a-z0-9_:-]{0,79}\Z", re.ASCII)
 
 
 def safe_reason(value: object, fallback: str = "observation_failed") -> str:
