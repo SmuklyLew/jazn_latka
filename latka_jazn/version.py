@@ -1,3 +1,4 @@
+# v116.0.34.65 adds canonical preview/confirm for shared Studio operations (alpha).
 # v116.0.34.64 keeps Qt MEMORY failure diagnostics to short reason codes; raw errors remain off the UI.
 # v116.0.34.57 requires security-patched Brotli for archive release bundles.
 # v116.0.34.56 secures configurable loopback MCP startup and reliable Studio GUI event delivery.
@@ -112,9 +113,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.64"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.64"
-PACKAGE_RELEASE_NAME = "studio-memory-safe-diagnostics"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.65"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.65"
+PACKAGE_RELEASE_NAME = "studio-alpha-operation-preview"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -6,6 +6,7 @@ frozen copy of the memory/test/package engines. No private data is in schemas.
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import importlib
 import json
 import sys
@@ -85,6 +86,27 @@ def argv_for(command: dict[str, Any], values: dict[str, Any]) -> list[str]:
     return output
 
 
+def preview_fingerprint(spec: dict[str, Any]) -> str:
+    """Hash exact operator inputs without retaining private arguments in UI evidence."""
+    encoded = json.dumps(spec, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 65536:
+        raise ValueError("Operation preview input limit")
+    return sha256(encoded).hexdigest()
+
+
+def preview_command(command: dict[str, Any], spec: dict[str, Any]) -> dict[str, Any]:
+    """Validate the original command shape; this never executes a domain operation."""
+    if not isinstance(spec, dict) or set(spec) != {"path", "values"}:
+        raise ValueError("Invalid preview shape")
+    if spec["path"] != command["path"] or not isinstance(spec["values"], dict):
+        raise ValueError("Preview selection mismatch")
+    argv = argv_for(command, spec["values"])
+    return {"schema": "jazn_studio_command_preview/v1", "path": list(command["path"]),
+            "fingerprint": preview_fingerprint(spec), "argument_count": len(argv),
+            "requires_confirmation": True, "execution_performed": False,
+            "displays_raw_arguments": False}
+
+
 def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     from pathlib import Path
     from latka_jazn.tools.configuration_studio import SETTINGS, ENUMS, profile_snapshot, save_profile, validated_launch_values
@@ -100,7 +122,7 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("mode", choices=["schema", "execute", "profile-read", "profile-save", "profile-env"])
+    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env"])
     parser.add_argument("key", nargs="?", choices=sorted(MODULES))
     args = parser.parse_args()
     if args.mode.startswith("profile-"):
@@ -122,7 +144,14 @@ def main() -> int:
     if len(raw) > 65536:
         raise ValueError("Operation input limit")
     spec = json.loads(raw)
+    if not isinstance(spec, dict) or not isinstance(spec.get("path"), list):
+        raise ValueError("Invalid operation payload")
     selected = next(c for c in schema if c["path"] == spec["path"])
+    if args.mode == "preview":
+        report = preview_command(selected, spec)
+        canonical.parse_args(argv_for(selected, spec["values"]))  # Original validation only.
+        print(json.dumps(report, ensure_ascii=False))
+        return 0
     argv = argv_for(selected, spec["values"])
     canonical.parse_args(argv)  # Original types/required/mutual-exclusion rules.
     return int(module.main(argv))

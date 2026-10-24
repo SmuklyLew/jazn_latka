@@ -452,9 +452,9 @@ class Controller:
         return env
 
     def studio_helper(self, mode: str, key: str = "", data: dict[str, Any] | None = None) -> Job:
-        if mode not in {"schema", "execute", "profile-read", "profile-save"}:
+        if mode not in {"schema", "preview", "execute", "profile-read", "profile-save"}:
             raise StudioError("Nieznana operacja Studio")
-        if mode in {"schema", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
+        if mode in {"schema", "preview", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
             raise StudioError("Nieznane Studio")
         job = self._reserve("helper:" + mode + ":" + key)
         if data is not None:
@@ -511,7 +511,7 @@ class Controller:
                     job.cancel.set()
             for byte in chunk:
                 if byte == 10:
-                    if not job.key.startswith(("helper:schema:", "helper:profile-", "memory:p1:")):
+                    if not job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-", "memory:p1:")):
                         self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace").rstrip("\r"))
                     pending.clear()
                     overflow = False
@@ -521,7 +521,7 @@ class Controller:
                         overflow = True
                     else:
                         pending.append(byte)
-        if (pending or overflow) and not job.key.startswith(("helper:schema:", "helper:profile-", "memory:p1:")):
+        if (pending or overflow) and not job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-", "memory:p1:")):
             self.emit(job.key, "log", "[Pominięto zbyt długi wiersz]" if overflow else pending.decode("utf-8", "replace"))
         pipe.close()
 
@@ -602,7 +602,7 @@ class Controller:
                 except ValueError:
                     job.state = "failed"
                     job.error = "invalid_status_json"
-            if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:profile-")):
+            if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
                     self.emit(job.key, "helper", json.loads(raw))
                 except ValueError:

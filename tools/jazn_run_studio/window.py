@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
+from .studio_worker import preview_fingerprint
 
 INSTALL_LINKS = {
     "Python": "https://www.python.org/downloads/",
@@ -254,6 +255,11 @@ class Window(QMainWindow):
         self.operation_widgets: dict[str, QWidget] = {}
         self.command_schema: list[dict] = []
         self.schema_key = ""
+        self.preview_approved = ""
+        self.preview_note = QLabel("Sprawdź plan polecenia przed wykonaniem operacji.")
+        self.preview_note.setWordWrap(True)
+        layout.addWidget(self.preview_note)
+        self.button("Sprawdź plan (bez wykonania)", self.preview_operation, layout)
         self.execute_button = self.button("Wykonaj wybraną operację", self.execute_operation, layout)
         self.execute_button.setEnabled(False)
         self.studio_choice.currentIndexChanged.connect(self.reset_studio_operations)
@@ -274,6 +280,7 @@ class Window(QMainWindow):
         layout.addWidget(self.memory_panel)
 
     def reset_studio_operations(self, _index: int = -1) -> None:
+        self.invalidate_operation_preview()
         self.schema_key = ""
         self.command_schema = []
         self.operation.clear()
@@ -285,6 +292,7 @@ class Window(QMainWindow):
         self.core.studio_helper("schema", str(self.studio_choice.currentData()))
 
     def render_operation(self, _index: int = 0) -> None:
+        self.invalidate_operation_preview()
         while self.operation_form.rowCount():
             self.operation_form.removeRow(0)
         self.operation_widgets.clear()
@@ -306,17 +314,27 @@ class Window(QMainWindow):
             widget.setToolTip(str(field["help"]))
             widget.setAccessibleName(str(field["help"]))
             self.operation_widgets[field["id"]] = widget
+            if isinstance(widget, QCheckBox):
+                widget.toggled.connect(self.invalidate_operation_preview)
+            elif isinstance(widget, QComboBox):
+                widget.currentTextChanged.connect(self.invalidate_operation_preview)
+            elif isinstance(widget, QPlainTextEdit):
+                widget.textChanged.connect(self.invalidate_operation_preview)
+            elif isinstance(widget, QLineEdit):
+                widget.textChanged.connect(self.invalidate_operation_preview)
             label = field["dest"].replace("_", " ") + (" *" if field["required"] else "")
             self.operation_form.addRow(label, widget)
 
-    def execute_operation(self) -> None:
+    def invalidate_operation_preview(self, *_args: object) -> None:
+        self.preview_approved = ""
+        if hasattr(self, "preview_note"):
+            self.preview_note.setText("Plan niezatwierdzony; sprawdź go po każdej zmianie.")
+
+    def operation_payload(self) -> dict:
         index = self.operation.currentIndex()
-        if not 0 <= index < len(self.command_schema):
+        if not 0 <= index < len(self.command_schema) or not self.schema_key:
             raise StudioError("Najpierw wczytaj operacje wybranego Studio")
         selected = self.command_schema[index]
-        if QMessageBox.question(self, "Wykonanie operacji", "Wykonać " + " / ".join(selected["path"]) +
-                "? Operacja może zapisać dane zgodnie z regułami wybranego narzędzia.") != QMessageBox.StandardButton.Yes:
-            return
         values: dict = {}
         for key, widget in self.operation_widgets.items():
             if isinstance(widget, QCheckBox):
@@ -329,7 +347,25 @@ class Window(QMainWindow):
                     values[key] = entries
             elif isinstance(widget, QLineEdit):
                 values[key] = widget.text()
-        self.core.studio_helper("execute", self.schema_key, {"path": selected["path"], "values": values})
+        return {"path": selected["path"], "values": values}
+
+    def preview_operation(self) -> None:
+        spec = self.operation_payload()
+        self.invalidate_operation_preview()
+        self.core.studio_helper("preview", self.schema_key, spec)
+        self.preview_note.setText("Walidacja planu przez kanoniczny parser trwa…")
+
+    def execute_operation(self) -> None:
+        spec = self.operation_payload()
+        if not self.preview_approved or preview_fingerprint(spec) != self.preview_approved:
+            raise StudioError("Brak aktualnego zatwierdzonego planu. Sprawdź go ponownie.")
+        if QMessageBox.question(self, "Uruchom operację",
+                "Wykonać zatwierdzony plan " + " / ".join(spec["path"]) +
+                "? Operacja może zapisać dane. To nie jest symulacja."
+                ) != QMessageBox.StandardButton.Yes:
+            return
+        self.invalidate_operation_preview()
+        self.core.studio_helper("execute", self.schema_key, spec)
 
     def _settings(self) -> None:
         layout = self.page("Ustawienia", "Profil lokalny Studio jest ignorowany przez Git. Sekrety nie są polami tego profilu. Zmiana ścieżek nie przejmuje działających procesów.")
@@ -413,7 +449,7 @@ class Window(QMainWindow):
                       "Studio jest aplikacją operatorską; runtime pozostaje właścicielem pamięci, tożsamości i finalizacji.\n\n"
                       "W repozytorium bazowym nie znaleziono pliku LICENSE. Studio nie nadaje projektowi nowej licencji.\n"
                       "Qt for Python / PySide6: informacje o licencjach i zależnościach należy dołączyć do dystrybucji.\n\n"
-                      "Stan wydania: etap implementacji, przed pełnym odbiorem integracji i CI.")
+                      "Stan wydania: alpha 0.3.0a1. Pełna migracja i testy P4/P5 pozostają otwarte.")
         text.setWordWrap(True)
         layout.addWidget(text)
         self.button("Źródła projektu", lambda: QDesktopServices.openUrl(QUrl("https://github.com/SmuklyLew/jazn_latka")), layout)
@@ -464,6 +500,22 @@ class Window(QMainWindow):
                 self.conversation.appendPlainText(value["text"] + "\n")
                 self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
+                if key.startswith("helper:preview:"):
+                    if key.removeprefix("helper:preview:") != self.schema_key:
+                        continue
+                    try:
+                        current = preview_fingerprint(self.operation_payload())
+                    except StudioError:
+                        continue
+                    if (value.get("schema") == "jazn_studio_command_preview/v1"
+                            and value.get("fingerprint") == current
+                            and value.get("execution_performed") is False
+                            and value.get("requires_confirmation") is True):
+                        self.preview_approved = current
+                        self.preview_note.setText("Plan sprawdzony: " + " / ".join(value["path"]) +
+                            " • argumentów: " + str(value["argument_count"]) +
+                            ". Przed wykonaniem zostaniesz poproszony o potwierdzenie.")
+                    continue
                 if key.startswith("helper:schema:"):
                     if key.split(":", 2)[2] != self.studio_choice.currentData():
                         continue
