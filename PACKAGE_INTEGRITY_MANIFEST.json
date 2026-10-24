@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
-  "runtime_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
-  "package_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
-  "generated_at_utc": "2026-10-24T12:31:50+00:00",
-  "updated_at_utc": "2026-10-24T12:31:50+00:00",
+  "version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
+  "runtime_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
+  "package_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
+  "generated_at_utc": "2026-10-24T12:37:29+00:00",
+  "updated_at_utc": "2026-10-24T12:37:29+00:00",
   "start_file": "run.py",
   "file_count": 3372,
   "static_file_count": 3372,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2993,
-      "sha256": "73f59cbfdf022c1e212840fc084a5918f1ecc579941e4748f9a565351bd4ef83",
+      "size_bytes": 2987,
+      "sha256": "e1d9136a7dcb9bbc22f22083a5a2749b6b0af021bcf088be4ad3ffcb4b8e4c9a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1951,
-      "sha256": "1c91846bcbddfc7584b6a40aa51f7432b28cddaa5056f5ae466998e898e3d07d",
+      "size_bytes": 1950,
+      "sha256": "2a651c0136ddaa6272de743845eaaf9a0c5e302e0aa45a12bd3f4871fd6ec674",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9462,7 +9462,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "3ce49b33ac93c8e7c1598f1248d9ef07ffc095622442dacb8f392f4a7a86977b",
+      "sha256": "83cd28f919c105d059146bd3292cb3a43bf39aa1744a02c6a585082d20743607",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10964,8 +10964,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 16261,
-      "sha256": "dcd2e2e35ad237028fa6ec8bf9d4d8ee496f74548bfe66a3bfb995c0b7ab244c",
+      "size_bytes": 16338,
+      "sha256": "842a6726a7d646a172196c084fbcbd1ca245ac13b43f3f35b6eeca6f0683baa5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11072,8 +11072,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 140324,
-      "sha256": "c7f7a21fdb95cfc9bc541a79847d92b4554d4bcdf9e4ae6fe54f5f3378912370",
+      "size_bytes": 140467,
+      "sha256": "a03f688c377dc1c4c00925725601d2178d8affa5593f6393857ddde54f5d02e1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30144,7 +30144,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2455198,
-      "sha256": "72bdb49b031748eefa9c8535791065fe8d47e1600c8e71a007f6459a00508658",
+      "sha256": "dc4f06603921e7029faad3ab69b8dd21064a9004c61748f817949eab6fbd5ba1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30801,11 +30801,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
+  "release_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
-    "package_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard",
-    "release_version": "16.3.25.5.116.0.34.80-studio-root-config-memory-path-guard"
+    "runtime_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
+    "package_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity",
+    "release_version": "16.3.25.5.116.0.34.81-studio-root-config-bootstrap-parity"
   },
   "legacy_aliases": {
     "version": "release_version"
