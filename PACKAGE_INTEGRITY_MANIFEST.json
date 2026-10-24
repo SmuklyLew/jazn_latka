@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-  "runtime_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-  "package_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-  "generated_at_utc": "2026-10-24T10:39:46+00:00",
-  "updated_at_utc": "2026-10-24T10:39:46+00:00",
+  "version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
+  "runtime_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
+  "package_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
+  "generated_at_utc": "2026-10-24T12:16:43+00:00",
+  "updated_at_utc": "2026-10-24T12:16:43+00:00",
   "start_file": "run.py",
-  "file_count": 3364,
-  "static_file_count": 3364,
+  "file_count": 3365,
+  "static_file_count": 3365,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2963,
-      "sha256": "2ac23643ae1d121636a3f0e5624a69f2f1711fec077f55305e2d44d9a9548758",
+      "size_bytes": 2969,
+      "sha256": "b1012c48170160c2881b0e0fab737666e51f4e78d5f97f8481f3c00d5ea9face",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10838,8 +10838,8 @@
     },
     {
       "path": "latka_jazn/tools/release_readiness.py",
-      "size_bytes": 16663,
-      "sha256": "b17118d1652d18648c8b04def56933c37658de9c9fc7520cd5f9176faa804e95",
+      "size_bytes": 17729,
+      "sha256": "2b876ba31e860d25ec22c7d0f434fca25cec6606a95f393b57636fb0cf4761f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10937,8 +10937,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 15926,
-      "sha256": "8357fc7a1fdc9958e4faa0368ff8b795958a20d3b3378102d649b6a54c646d93",
+      "size_bytes": 16008,
+      "sha256": "f9bdecbd579a6d3236809578d7520c417249865e748001366819c8f1d50e236e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28270,6 +28270,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_package_smoke_workspace_isolation.py",
+      "size_bytes": 1564,
+      "sha256": "5b16372033a7bbf0d0872067f1e1a7cc7de76e317e9fb0b5090f5831e0b3c366",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_package_version_workflow_regression.py",
       "size_bytes": 5763,
       "sha256": "adbbe564301195a54833de7fe2d3e218281a367d3e0ee13591438cd9842a3e28",
@@ -30071,8 +30080,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2450799,
-      "sha256": "057809567d814532d9d95c92f1255382b95a14c6e665b440d884998562043b3d",
+      "size_bytes": 2451616,
+      "sha256": "5ac717205fb8dc5c105af2c9895604477a435569a6dd89ccd773d3ee70d89b38",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30729,11 +30738,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
+  "release_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-    "package_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-    "release_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity"
+    "runtime_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
+    "package_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation",
+    "release_version": "16.3.25.5.116.0.34.77-studio-smoke-workspace-isolation"
   },
   "legacy_aliases": {
     "version": "release_version"
