@@ -8,7 +8,7 @@ import queue
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QCloseEvent, QColor, QDesktopServices
+from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QKeySequence
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QColorDialog, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QMainWindow, QMessageBox, QPlainTextEdit,
@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
 from .studio_worker import preview_fingerprint
+from .workbench_theme import workbench_stylesheet
 
 INSTALL_LINKS = {
     "Python": "https://www.python.org/downloads/",
@@ -43,24 +44,97 @@ class Window(QMainWindow):
         self.statuses: dict[str, QLabel] = {}
         self.dashboard_statuses: dict[str, QLabel] = {}
         self.nav = QListWidget()
+        self.nav.setObjectName("workbenchNavigation")
         self.nav.setAccessibleName("Nawigacja Studio")
-        self.nav.setMaximumWidth(220)
+        self.nav.setMinimumWidth(188)
+        self.nav.setMaximumWidth(250)
         self.pages = QStackedWidget()
+        self.pages.setAccessibleName("Obszar roboczy Jaźni")
         self.tabs = QTabWidget()
-        self.tabs.setMinimumHeight(170)
+        self.tabs.setObjectName("workbenchOutputTabs")
+        self.tabs.setAccessibleName("Dolny panel logów, zdarzeń i diagnostyki")
+        self.tabs.setDocumentMode(True)
+        self.tabs.setTabsClosable(False)
+        self.tabs.setMinimumHeight(140)
         self.tabs.hide()
         self.logs_user_hidden = False
-        content = QSplitter(Qt.Orientation.Vertical)
-        content.addWidget(self.pages)
-        content.addWidget(self.tabs)
-        content.setStretchFactor(0, 3)
-        content.setStretchFactor(1, 1)
-        shell = QSplitter()
-        shell.addWidget(self.nav)
-        shell.addWidget(content)
-        shell.setStretchFactor(1, 1)
-        self.setCentralWidget(shell)
+
+        self.sidebar = QWidget()
+        self.sidebar.setObjectName("workbenchSidebar")
+        sidebar_layout = QVBoxLayout(self.sidebar)
+        sidebar_layout.setContentsMargins(8, 14, 8, 10)
+        sidebar_layout.setSpacing(8)
+        brand = QLabel("JAŹŃ  /  STUDIO")
+        brand.setObjectName("workbenchBrand")
+        sidebar_layout.addWidget(brand)
+        description = QLabel("PANEL OPERACYJNY")
+        description.setObjectName("workbenchCaption")
+        sidebar_layout.addWidget(description)
+        sidebar_layout.addWidget(self.nav, 1)
+        self.sidebar_footnote = QLabel("Runtime • gotowość niezweryfikowana")
+        self.sidebar_footnote.setObjectName("workbenchFootnote")
+        self.sidebar_footnote.setWordWrap(True)
+        sidebar_layout.addWidget(self.sidebar_footnote)
+
+        self.topbar = QWidget()
+        self.topbar.setObjectName("workbenchTopbar")
+        header_layout = QHBoxLayout(self.topbar)
+        header_layout.setContentsMargins(14, 7, 14, 7)
+        header_layout.setSpacing(12)
+        self.menu_button = QPushButton("☰")
+        self.menu_button.setAccessibleName("Pokaż lub ukryj boczną nawigację")
+        self.menu_button.setToolTip("Boczna nawigacja (Ctrl+B)")
+        self.menu_button.setFixedWidth(40)
+        self.menu_button.clicked.connect(self.toggle_sidebar)
+        header_layout.addWidget(self.menu_button)
+        self.current_section = QLabel("Pulpit")
+        self.current_section.setObjectName("workbenchSection")
+        header_layout.addWidget(self.current_section)
+        header_layout.addStretch(1)
+        self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
+        self.workbench_status.setObjectName("workbenchStatus")
+        self.workbench_status.setAccessibleName("Informacja o trybie Studio, nie o gotowości daemona")
+        header_layout.addWidget(self.workbench_status)
+
+        self.content_splitter = QSplitter(Qt.Orientation.Vertical)
+        self.content_splitter.setObjectName("workbenchVerticalSplitter")
+        self.content_splitter.addWidget(self.pages)
+        self.content_splitter.addWidget(self.tabs)
+        self.content_splitter.setCollapsible(0, False)
+        self.content_splitter.setCollapsible(1, True)
+        self.content_splitter.setStretchFactor(0, 4)
+        self.content_splitter.setStretchFactor(1, 1)
+        self.content_splitter.setHandleWidth(5)
+
+        canvas = QWidget()
+        canvas.setObjectName("workbenchCanvas")
+        canvas_layout = QVBoxLayout(canvas)
+        canvas_layout.setContentsMargins(0, 0, 0, 0)
+        canvas_layout.setSpacing(0)
+        canvas_layout.addWidget(self.topbar)
+        canvas_layout.addWidget(self.content_splitter, 1)
+
+        self.shell_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.shell_splitter.addWidget(self.sidebar)
+        self.shell_splitter.addWidget(canvas)
+        self.shell_splitter.setCollapsible(0, True)
+        self.shell_splitter.setCollapsible(1, False)
+        self.shell_splitter.setStretchFactor(0, 0)
+        self.shell_splitter.setStretchFactor(1, 1)
+        self.shell_splitter.setHandleWidth(5)
+        self.shell_splitter.setSizes([214, 1026])
+        self.setCentralWidget(self.shell_splitter)
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex)
+        self.nav.currentRowChanged.connect(self.update_current_section)
+
+        self.panel_shortcut = QAction("Przełącz panel logów", self)
+        self.panel_shortcut.setShortcut(QKeySequence("Ctrl+J"))
+        self.panel_shortcut.triggered.connect(self.toggle_logs)
+        self.addAction(self.panel_shortcut)
+        self.sidebar_shortcut = QAction("Przełącz pasek nawigacji", self)
+        self.sidebar_shortcut.setShortcut(QKeySequence("Ctrl+B"))
+        self.sidebar_shortcut.triggered.connect(self.toggle_sidebar)
+        self.addAction(self.sidebar_shortcut)
         self._dashboard()
         self._services()
         self._chat()
@@ -480,24 +554,12 @@ class Window(QMainWindow):
         self.statusBar().showMessage("Zapisano ustawienia Studio")
 
     def apply_theme(self) -> None:
-        theme = self.core.settings.theme
         app = QApplication.instance()
-        dark = theme in {"dark", "purple", "custom"}
-        if theme == "system" and isinstance(app, QApplication):
-            dark = app.styleHints().colorScheme() == Qt.ColorScheme.Dark
-        bg, surface, text, border = ("#1e1d25", "#282632", "#eeeaf4", "#494355") if dark else ("#f4f2f8", "#ffffff", "#272332", "#c9c2d6")
-        accent = self.core.settings.accent if theme == "custom" else "#9876d4"
-        self.setStyleSheet(f"""
-            QWidget {{ background: {bg}; color: {text}; font-size: 14px; }}
-            QLabel#heading {{ font-size: 27px; font-weight: 600; padding-bottom: 10px; }}
-            QListWidget {{ background: {surface}; border: 0; padding: 12px 4px; }}
-            QListWidget::item {{ padding: 14px 12px; }}
-            QListWidget::item:selected {{ background: {accent}; color: #171020; }}
-            QPushButton {{ background: {surface}; border: 1px solid {border}; border-radius: 5px; padding: 8px 14px; }}
-            QPushButton:hover, QPushButton:focus {{ border: 2px solid {accent}; padding: 7px 13px; }}
-            QPlainTextEdit, QLineEdit, QComboBox {{ background: {surface}; border: 1px solid {border}; padding: 6px; selection-background-color: {accent}; }}
-            QPlainTextEdit {{ font-family: Consolas, monospace; }}
-        """)
+        system_dark = (isinstance(app, QApplication)
+                       and app.styleHints().colorScheme() == Qt.ColorScheme.Dark)
+        self.setStyleSheet(workbench_stylesheet(
+            self.core.settings.theme, self.core.settings.accent, system_dark=system_dark,
+        ))
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
@@ -513,11 +575,26 @@ class Window(QMainWindow):
         self.button("Licencje Qt", lambda: QDesktopServices.openUrl(QUrl("https://doc.qt.io/qtforpython-6/licenses.html")), layout)
         layout.addStretch()
 
+    def update_current_section(self, row: int) -> None:
+        item = self.nav.item(row)
+        if item is not None:
+            self.current_section.setText(item.text())
+
+    def toggle_sidebar(self) -> None:
+        visible = not self.sidebar.isVisible()
+        self.sidebar.setVisible(visible)
+        self.menu_button.setToolTip("Ukryj boczną nawigację (Ctrl+B)" if visible
+                                    else "Pokaż boczną nawigację (Ctrl+B)")
+        if visible:
+            self.nav.setFocus()
+
     def toggle_logs(self) -> None:
         visible = not self.tabs.isVisible()
         self.logs_user_hidden = not visible
         self.tabs.setVisible(visible)
         self.log_toggle.setText("Ukryj logi" if visible else "Pokaż logi")
+        if visible and self.tabs.count():
+            self.tabs.setFocus()
 
     def update_service_summary(self, service: str, detail: str) -> None:
         """Mirror the same observed state; never infer readiness from a PID."""
