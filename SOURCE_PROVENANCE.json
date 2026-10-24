@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2c96150bb8f3aff99284b94673338dd9748a6221",
+  "base_merge_commit": "6d7bb263b23331d91396ab3cd54cd1f96f089c01",
   "base_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
-  "commit_date": "2026-10-24T10:34:09Z",
+  "commit_date": "2026-10-24T10:39:46Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-24T10:34:09+00:00",
+  "generated_at_utc": "2026-10-24T10:39:46+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "31db3b5c8eceb4ae3635631a16c242870646f71b",
+  "git_tree_sha": "56559a1063f4d1613cc054eadcea91de503ab790",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2c96150bb8f3aff99284b94673338dd9748a6221",
+    "source_commit": "6d7bb263b23331d91396ab3cd54cd1f96f089c01",
     "source_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2c96150bb8f3aff99284b94673338dd9748a6221",
+  "source_commit": "6d7bb263b23331d91396ab3cd54cd1f96f089c01",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.76-studio-chat-endpoint-continuity",
   "tag": null,
