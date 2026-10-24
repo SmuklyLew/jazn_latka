@@ -1,4 +1,4 @@
-# Odbiór lokalny w Studio Jaźni (.83)
+# Odbiór lokalny w Studio Jaźni (.84)
 
 ## Cel i granice
 
@@ -32,6 +32,10 @@ zastępuje sprawdzania lineage, process identity ani finalization.
 \`gui-daemon\`, \`ollama-two-turns\`, \`chat-reconnect\`, \`chat-resume\`,
 \`daemon-restart\`, \`smoke-isolation\`, \`config-persistence\`,
 \`studios-parity\`, \`offline-exe\` i \`ui-accessibility\`.
+
+Dodatkowo każde z 12 studiów otrzymuje własną pozycję w kolejce `studio-*`,
+z własnym stanem i historią. Jedna ogólna pozycja `studios-parity` nie
+zastępuje 12 dowodów szczegółowych.
 
 Tylko ich rzeczywisty odbiór na systemie operatora może zamknąć ręczną bramkę.
 Po zakończeniu i archiwizacji można dopisać kolejne testy w następnym wydaniu,

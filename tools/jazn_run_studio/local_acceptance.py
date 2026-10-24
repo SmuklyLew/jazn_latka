@@ -65,6 +65,37 @@ CATALOG: tuple[dict[str, str], ...] = (
      "expected": "Wszystkie kontrolki osiągalne, bez przycięć i z dostępnie opisanymi operacjami."},
 )
 
+
+# Individual gates for each application in STUDIO_MIGRATION.md.
+# These only instruct a human operator; they never dispatch dangerous operations.
+_STUDIO_CASES: tuple[tuple[str, str, str], ...] = (
+    ("system", "System Studio", "Połączenia, aktualizacje, audyty poznawcze i zachowanie ustawień"),
+    ("start", "Start Studio", "Katalog usług/zadań, logi, ownership procesów i gotowość"),
+    ("configuration", "Studio Konfiguracji", "Mapa ścieżek, preview zmian, backup, restore i ochrona niezapisanych pól"),
+    ("memory", "Memory Studio", "Role baz, źródła, walidacje, afekt, kandydaci i protokół"),
+    ("memory-rebuild", "Memory Rebuild", "Plan odbudowy, wybór źródeł, walidacja, postęp i eksport"),
+    ("test-studio", "Jaźń Studio Testów", "Oczekiwania testów, recenzje, wybór, anulowanie, wyniki i historia"),
+    ("generator", "Generator paczek", "Plan, generowanie, split/join, verify, anulowanie, trwałość ustawień"),
+    ("dependencies", "Studio Zależności", "Profile, lockfiles, offline Windows/Unix, instalacje i błędy"),
+    ("python-runtime", "Python Runtime Studio", "Inwentarz interpreterów, weryfikacja pakietów i ustawienia"),
+    ("version-rebuild", "Version Rebuild", "Odczyt AST, preview diff, backup, synchronizacja metadanych i audyt"),
+    ("chat-import", "Import/eksport rozmów", "Źródła, plan, tożsamość importu, weryfikacja, kolejka i wyszukiwanie"),
+    ("memory-restore", "Restore MEMORY", "Skan źródeł, baseline, plan, porównanie, backup i jawne zatwierdzenie"),
+)
+
+STUDIO_CATALOG: tuple[dict[str, str], ...] = tuple({
+    "id": "studio-" + key,
+    "category": "Migracja 12 studiów",
+    "title": label,
+    "steps": "Porównaj na swoim Windows/Unix bieżącą natywną stronę Qt z poprzednim Studio. "
+             "Wykonaj test odczytu, walidacji błędów i bezpiecznych operacji; "
+             "operacje zapisujące testuj wyłącznie w izolowanym projekcie z backupem. "
+             "Sprawdź: " + areas + ".",
+    "expected": "Udokumentowana funkcjonalna zgodność wszystkich wskazanych operacji, "
+                "prawidłowy stan błędów i brak regresji. Uruchomienie klasycznego okna "
+                "bez natywnego workflow Qt nie zalicza tego przypadku.",
+} for key, label, areas in _STUDIO_CASES)
+
 def scope_version(root: Path) -> str:
     return read_runtime_version_from_version_py(root) or "unverified-source"
 
@@ -102,7 +133,7 @@ def load(root: Path) -> tuple[dict[str, Any], str | None]:
 
 
 def catalog(root: Path, data: dict[str, Any]) -> list[dict[str, str]]:
-    items = [dict(row) for row in CATALOG]
+    items = [dict(row) for row in (*CATALOG, *STUDIO_CATALOG)]
     for row in data["custom_tests"]:
         if not isinstance(row, dict) or set(row) != {"id", "category", "title", "steps", "expected"}:
             raise ValueError("Uszkodzona definicja własnego testu")
