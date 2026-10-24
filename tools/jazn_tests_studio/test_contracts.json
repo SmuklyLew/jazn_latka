@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.82",
-  "active_definition_count": 2698,
+  "system_version": "16.3.25.5.116.0.34.83",
+  "active_definition_count": 2704,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25417,6 +25417,110 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 51
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_manual_results_are_outside_system_memory_and_workspace": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_manual_results_are_outside_system_memory_and_workspace",
+      "purpose": "Manual results are outside system memory and workspace",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_save_archive_and_version_reopens_test": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_save_archive_and_version_reopens_test",
+      "purpose": "Save archive and version reopens test",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_cas_and_secret_rejection": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_cas_and_secret_rejection",
+      "purpose": "Cas and secret rejection",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_custom_case_is_local_and_read_only_until_operator_marks_it": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_custom_case_is_local_and_read_only_until_operator_marks_it",
+      "purpose": "Custom case is local and read only until operator marks it",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_corrupt_or_symlinked_state_fails_closed": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_corrupt_or_symlinked_state_fails_closed",
+      "purpose": "Corrupt or symlinked state fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "JSONDecodeError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_jazn_run_studio_local_acceptance.py::test_qt_acceptance_page_renders_without_live_runtime": {
+      "path": "tests/test_jazn_run_studio_local_acceptance.py",
+      "name": "test_qt_acceptance_page_renders_without_live_runtime",
+      "purpose": "Qt acceptance page renders without live runtime",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_invalid_gateway_and_daemon_configuration_rejected": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
