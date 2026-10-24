@@ -1,5 +1,100 @@
 # Studio Jaźni completion checkpoint — 2026-10-24
 
+## Authoritative pause checkpoint — .63
+
+User requested checkpoint-only closure: stop feature work, preserve completed
+.63 work on Draft PR #412, and end execution after push verification. This
+section supersedes all historical next-step paragraphs below. No merge, new
+stage or new long test is authorized during this closure.
+
+- Version: `16.3.25.5.116.0.34.63-studio-memory-offscreen-layout`.
+- Branch: `codex/jazn-run-studio-completion-20261024`.
+- Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/412 (base `master`).
+- Last verified implementation/release HEAD before this documentation seal:
+  `417aa3cc176230d863e6fd9bbdb1a30f7a330b85` (canonical metadata commit).
+- Its content source commit: `0ff0f2f66659e7fb12a4ea2b17095ed0549ef0cc`.
+- Local HEAD, remote branch and PR HEAD matched that full SHA; tree was clean.
+  This documentation seal and its generated metadata are descendants in the
+  same .63 checkpoint unit. Their final full SHA and remote equality are recorded
+  in the closing report; a committed document cannot contain its own commit hash.
+
+| Priority | State at pause | Remaining acceptance / continuation |
+| --- | --- | --- |
+| P0 | Original blockers closed on .60; six native Brotli locks verified. .60 CI: 58 SUCCESS, 2 SKIPPED. | Later .63 changes require their own final CI. Baseline-local MCP framing failure remains explicitly open. |
+| P1 | Resource bounds, signed evidence regressions and dedicated shared Qt MEMORY evidence implemented. .63 fixes reproduced Windows offscreen overflow and incorrect supplied-pin diagnostic. | Final .63 Windows viewport CI and full validation pending. Complete remaining Memory Studio acceptance; activation stays unauthorized/read-only. |
+| P2 | Inherited central Starter workflows partial; no new P2 stage started. | Dashboard/services/processes/logs/chat/settings/dependencies/themes/about, accessibility, keyboard and DPI acceptance. |
+| P3 | All 12 migration rows explicitly partial or not started; none full parity. | Version Rebuild/import-export/restore and remaining parity; preserve legacy until replacement acceptance. |
+| P4 | Real Ollama accepted multi-turn and recovery NOT RUN on this source. | Prove accepted turns, idempotent transport/restart recovery and lineage. Reachable gemma3:latest is not accepted-turn evidence. |
+| P5 | Final .63 native EXE, external SYSTEM and offline Qt acceptance NOT RUN. | Final-source Windows/Linux packaging, offline dependencies, licenses and real executable acceptance. |
+
+Validation ledger (results belong only to the stated source):
+
+- .63 exact Windows `QT_QPA_PLATFORM=offscreen` viewport regression: **12 PASS**.
+  Original assertion unchanged; expanded/collapsed pins and completed results
+  covered. Broader targeted .63 set: **37 PASS**. Full active-tree Pyright:
+  **0 errors, 0 warnings**; active compile, catalog and diff checks PASS.
+- .62 Studio CI `40043367907`: Linux 3.12–3.14 PASS; Windows 3.12–3.14 FAIL
+  with **170 px horizontal MEMORY overflow**. .63 fixes the measured 688 px
+  pin-button minimum, form wrapping, labels and timestamps. Local regression
+  passes do not close cross-platform CI acceptance.
+- Interim .62 local full suite: **3022 PASS, 21 SKIPPED, 1 FAIL**, 398.15 s.
+  The failure is `test_mcp_http_cli_process_smoke.py::test_real_runpy_mcp_http_listener_and_catalog_are_responsive`,
+  diagnostic `mcp_catalog_invalid_http_framing`. The same failure was reproduced
+  on baseline `f6eb491965d8b90d3e4109022f96e16a3f586bf5`; no framing assertion
+  or integrity check was relaxed. This run predates .63 and is not .63 acceptance.
+- .60 release-hardening `40039984983` SUCCESS: Ubuntu full suite **2987 PASS,
+  16 SKIPPED**. PowerShell `40039984946` SUCCESS: isolated Tk **2 PASS**, Memory
+  GUI **2 PASS**, exact failure surface **59 PASS**, isolated health check
+  **1 PASS**; full suite **2943 PASS, 24 SKIPPED, 1 DESELECTED** (848.31 s),
+  then SYSTEM smoke and clean checkout guard PASS. The deselected health check
+  ran separately with its unchanged assertion. Cleanroom `40039985026` SUCCESS
+  includes all six native builders, audits, opposite-OS replays and consumers.
+- .62 independent metadata check PASS (3329 files), doctor and SYSTEM smoke
+  exit 0. .63 canonical metadata WRITE completed before the captured HEAD.
+  Independent .63 metadata CHECK, full pytest, doctor and SYSTEM smoke are
+  **NOT RUN** locally; deferred at user request. No final .63 cleanroom claim.
+- No historical/previously active test was modified. No private MEMORY,
+  runtime databases or source branches were changed.
+
+GitHub Actions snapshot for `417aa3cc176230d863e6fd9bbdb1a30f7a330b85`:
+
+| Workflow | Run | Observed state |
+| --- | --- | --- |
+| powershell-terminal-regressions | 40044173062 | IN_PROGRESS |
+| jazn-run-studio (includes Windows MEMORY viewport) | 40044173029 | IN_PROGRESS |
+| release-hardening | 40044173064 | IN_PROGRESS |
+| package-distribution-cleanroom | 40044173071 | IN_PROGRESS |
+| persistent-runtime-e2e | 40044173112 | IN_PROGRESS |
+| jazn-operations-studio-windows | 40044173070 | IN_PROGRESS |
+| pyright-active-tree-audit | 40044173109 | SUCCESS |
+| memory-rebuild-v24-windows | 40044173060 | SUCCESS |
+| MCP conformance | 40044173285 | SUCCESS |
+| Stable test contracts | 40044173174 | SUCCESS |
+| host-spawn-memory-convergence | 40044173038 | SUCCESS |
+| memory-cloud optional capability | 40044173045 | SUCCESS |
+| dependency-review / JavaScript Node24 / MCP container | 40044173080 / 40044173035 / 40044173061 | SUCCESS |
+
+No failed run in that snapshot; unfinished runs are not PASS. The documentation
+and canonical metadata push creates a new final HEAD and may supersede/cancel
+these runs. Read Actions for the actual final HEAD on resume; do not transfer
+the .60 green rollup or this intermediate snapshot to that HEAD.
+
+Exact resumption point, only after the user resumes work:
+
+1. Read this section and applicable runbooks; verify worktree, branch, full HEAD,
+   cleanliness, remote equality, PR #412 Draft state and final-HEAD CI.
+2. Inspect .63 Windows MEMORY viewport, PowerShell, release-hardening and
+   cleanroom outcomes first. Preserve failures/log evidence; fix without weakening
+   tests. Run deferred final-source local gates and independent metadata check.
+   Keep the reproduced baseline-host MCP framing failure separately classified.
+3. Finish outstanding P1 acceptance, then P2, P3, real P4 Ollama/recovery, P5
+   packaging in that order. No activation or accepted runtime reply is inferred
+   from UI evidence; never replay a pending durable runtime request.
+
+The overall completion objective is unfinished. This is a durable pause
+checkpoint, not completion of P0–P5. Stop after final push/readback and clean-tree
+verification; do not wait for long Actions jobs or start another development unit.
+
 Branch: `codex/jazn-run-studio-completion-20261024`.
 Verified source SHA: `f6eb491965d8b90d3e4109022f96e16a3f586bf5` (PR #411).
 PR #409 HEAD `fd3491a34188e188d58be29d74c80ce99e7a6670` and PR #410 HEAD
