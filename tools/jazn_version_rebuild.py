@@ -196,7 +196,9 @@ def render_version(path: Path, data: VersionData) -> bytes:
     raw = path.read_bytes()
     bom = raw.startswith(b"\xef\xbb\xbf")
     newline = "\r\n" if b"\r\n" in raw else "\n"
-    text = raw.decode("utf-8-sig")
+    # re.MULTILINE's $ matches before LF, not before CR in CRLF.
+    # Normalize for parsing and restore the original newline on output.
+    text = raw.decode("utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
     # Preserve the static alias, or migrate a legacy literal on new writes.
     values = {
         "PACKAGE_VERSION": json.dumps(data.package, ensure_ascii=False),

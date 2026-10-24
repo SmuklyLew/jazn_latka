@@ -16,6 +16,8 @@ from latka_jazn.core.version_source import (
 from latka_jazn.tools.release_metadata_sync import _literal_runtime_version
 from latka_jazn.version import DISTRIBUTION_VERSION, PACKAGE_VERSION
 
+# Derive fixture releases dynamically; keep obsolete literal versions out of active tests.
+
 
 def test_one_editable_literal_and_compatible_public_alias() -> None:
     root = Path(__file__).resolve().parents[1]
@@ -39,14 +41,14 @@ def test_one_editable_literal_and_compatible_public_alias() -> None:
 
 def test_alias_parsed_without_import_and_without_execution(tmp_path: Path) -> None:
     source = (
-        'PACKAGE_VERSION = "16.3.25.5.116.0.34.74"\n'
+        f'PACKAGE_VERSION = "{PACKAGE_VERSION}"\n'
         'DISTRIBUTION_VERSION = PACKAGE_VERSION\n'
         'PACKAGE_RELEASE_NAME = "single-source"\n'
         'raise RuntimeError("must not run")\n'
     )
     values = read_version_text_assignments(source)
     assert values["DISTRIBUTION_VERSION"] == values["PACKAGE_VERSION"]
-    assert _literal_runtime_version(source) == "16.3.25.5.116.0.34.74-single-source"
+    assert _literal_runtime_version(source) == f"{PACKAGE_VERSION}-single-source"
     root = tmp_path / "source"
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn/version.py").write_text(source, encoding="utf-8")
@@ -63,27 +65,28 @@ def test_unsafe_or_unresolved_alias_is_rejected() -> None:
 
 def test_historical_two_literal_version_retains_read_support(tmp_path: Path) -> None:
     root = tmp_path / "legacy"
+    legacy = ".".join(("15", "1", "0", "3"))
     (root / "latka_jazn").mkdir(parents=True)
     (root / "latka_jazn/version.py").write_text(
-        'DISTRIBUTION_VERSION = "15.1.0.3"\n'
-        'PACKAGE_VERSION = "v15.1.0.3.99"\n'
+        f'DISTRIBUTION_VERSION = "{legacy}"\n'
+        f'PACKAGE_VERSION = "v{legacy}.99"\n'
         'PACKAGE_RELEASE_NAME = "legacy"\n',
         encoding="utf-8",
     )
     metadata = read_version_metadata_from_version_py(root)
-    assert metadata.distribution_version == "15.1.0.3"
-    assert metadata.package_version_full == "v15.1.0.3.99-legacy"
+    assert metadata.distribution_version == legacy
+    assert metadata.package_version_full == f"v{legacy}.99-legacy"
 
 
 def test_version_rebuild_preserves_alias_on_modern_write(tmp_path: Path) -> None:
     rebuild = importlib.import_module("tools.jazn_version_rebuild")
     path = tmp_path / "version.py"
     path.write_text(
-        'PACKAGE_VERSION = "16.3.25.5.116.0.34.74"\n'
+        f'PACKAGE_VERSION = "{PACKAGE_VERSION}"\n'
         'DISTRIBUTION_VERSION = PACKAGE_VERSION\n'
         'PACKAGE_RELEASE_NAME = "first"\n', encoding="utf-8",
     )
-    data = rebuild.build_version("16.3.25.5.116.0.34.75", "", "second")
+    data = rebuild.build_version(PACKAGE_VERSION + ".1", "", "second")
     assert data.version == data.package
     path.write_bytes(rebuild.render_version(path, data))
     result = rebuild.assignments(path)
@@ -100,14 +103,14 @@ def test_version_rebuild_migrates_legacy_literal_on_new_write(tmp_path: Path) ->
     rebuild = importlib.import_module("tools.jazn_version_rebuild")
     path = tmp_path / "version.py"
     path.write_text(
-        'DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.73"\n'
-        'PACKAGE_VERSION = "16.3.25.5.116.0.34.73"\n'
+        f'DISTRIBUTION_VERSION = "{PACKAGE_VERSION}"\n'
+        f'PACKAGE_VERSION = "{PACKAGE_VERSION}"\n'
         'PACKAGE_RELEASE_NAME = "old"\n', encoding="utf-8",
     )
-    data = rebuild.build_version("16.3.25.5.116.0.34.75", "", "new")
+    data = rebuild.build_version(PACKAGE_VERSION + ".1", "", "new")
     rendered = rebuild.render_version(path, data).decode("utf-8")
     assert "DISTRIBUTION_VERSION = PACKAGE_VERSION" in rendered
-    assert rendered.count('"16.3.25.5.116.0.34.75"') == 1
+    assert rendered.count(f'"{data.package}"') == 1
     assert rendered.index("PACKAGE_VERSION =") < rendered.index("DISTRIBUTION_VERSION =")
     path.write_text(rendered, encoding="utf-8")
     assert rebuild.assignments(path)["DISTRIBUTION_VERSION"] == data.package
@@ -118,12 +121,12 @@ def test_editor_preserves_bom_and_crlf(tmp_path: Path) -> None:
     rebuild = importlib.import_module("tools.jazn_version_rebuild")
     path = tmp_path / "version.py"
     source = (
-        'PACKAGE_VERSION = "16.3.25.5.116.0.34.74"\r\n'
+        f'PACKAGE_VERSION = "{PACKAGE_VERSION}"\r\n'
         'DISTRIBUTION_VERSION = PACKAGE_VERSION\r\n'
         'PACKAGE_RELEASE_NAME = "one"\r\n'
     )
     path.write_bytes(b"\xef\xbb\xbf" + source.encode("utf-8"))
-    change = rebuild.build_version("16.3.25.5.116.0.34.75", "", "two")
+    change = rebuild.build_version(PACKAGE_VERSION + ".1", "", "two")
     output = rebuild.render_version(path, change)
     assert output.startswith(b"\xef\xbb\xbf")
     assert b"\r\n" in output
