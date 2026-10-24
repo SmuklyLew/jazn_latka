@@ -136,6 +136,7 @@ class Window(QMainWindow):
             layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
+        self.button("Odśwież usługi", self.refresh_services, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
@@ -181,12 +182,23 @@ class Window(QMainWindow):
                 self.button("Sprawdź połączenie", lambda s=service: self.core.probe(s), row)
             layout.addLayout(row)
         self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
+        self.button("Odśwież status usług", self.refresh_services, layout)
         remote_note = QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie.")
         remote_note.setWordWrap(True)
         layout.addWidget(remote_note)
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         layout.addWidget(self.processes)
+
+    def refresh_services(self) -> None:
+        """Explicit, read-only probes; no silent auto-start or PID adoption."""
+        self.core.start_action("status")
+        self.core.probe("ollama")
+        self.core.probe("gateway")
+        if self.core.settings.cloudflare_url:
+            self.core.probe("cloudflare")
+        else:
+            self.update_service_summary("cloudflare", "Nie skonfigurowano • brak adresu HTTPS")
 
     def _chat(self) -> None:
         layout = self.page("Czat lokalny", "Rozmowa przez runtime Jaźni i wybrany model Ollama. Tylko zaakceptowane odpowiedzi runtime pojawiają się jako wypowiedzi Łatki.")
