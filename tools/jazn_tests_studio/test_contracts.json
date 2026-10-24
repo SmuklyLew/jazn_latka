@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.79",
-  "active_definition_count": 2694,
+  "system_version": "16.3.25.5.116.0.34.80",
+  "active_definition_count": 2695,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26438,6 +26438,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 60
+    },
+    "tests/test_jazn_system_root_config.py::test_memory_db_relative_path_and_root_collisions": {
+      "path": "tests/test_jazn_system_root_config.py",
+      "name": "test_memory_db_relative_path_and_root_collisions",
+      "purpose": "Memory db relative path and root collisions",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core.system_config"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
