@@ -609,6 +609,14 @@ class Window(QMainWindow):
                         self.profile_widgets[field["key"]] = widget
                         self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
+                if value.get("state") in {"succeeded", "failed", "stopped"}:
+                    result = ("Ukończono" if value["state"] == "succeeded"
+                              else "Zatrzymano" if value["state"] == "stopped" else "BŁĄD")
+                    reason = self.core.redactor.text(str(value.get("error") or ""))
+                    line = key + " • " + result + ((" • " + reason) if reason else "")
+                    self.log_view("Zdarzenia").appendPlainText(line)
+                    if value["state"] == "failed":
+                        self.log_view("Błędy").appendPlainText(line)
                 if key.startswith("memory:p1:"):
                     self.memory_panel.receive_state(key, value)
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
