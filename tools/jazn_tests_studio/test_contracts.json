@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.70",
-  "active_definition_count": 2661,
+  "system_version": "16.3.25.5.116.0.34.71",
+  "active_definition_count": 2663,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24584,6 +24584,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_jazn_run_studio_build_import.py::test_module_import_generates_bundle_inventory": {
+      "path": "tests/test_jazn_run_studio_build_import.py",
+      "name": "test_module_import_generates_bundle_inventory",
+      "purpose": "Module import generates bundle inventory",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_jazn_run_studio_build_import.py::test_direct_build_script_import_without_repo_root": {
+      "path": "tests/test_jazn_run_studio_build_import.py",
+      "name": "test_direct_build_script_import_without_repo_root",
+      "purpose": "Direct build script import without repo root",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
     },
     "tests/test_jazn_run_studio_bundle_integrity.py::test_full_onedir_inventory_matches_and_does_not_promote_security": {
       "path": "tests/test_jazn_run_studio_bundle_integrity.py",
