@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.64",
-  "active_definition_count": 2641,
+  "system_version": "16.3.25.5.116.0.34.65",
+  "active_definition_count": 2645,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24522,6 +24522,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 214
+    },
+    "tests/test_jazn_run_studio_alpha_preview.py::test_preview_preserves_only_safe_metadata": {
+      "path": "tests/test_jazn_run_studio_alpha_preview.py",
+      "name": "test_preview_preserves_only_safe_metadata",
+      "purpose": "Preview preserves only safe metadata",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_jazn_run_studio_alpha_preview.py::test_edit_requires_a_new_preview": {
+      "path": "tests/test_jazn_run_studio_alpha_preview.py",
+      "name": "test_edit_requires_a_new_preview",
+      "purpose": "Edit requires a new preview",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_jazn_run_studio_alpha_preview.py::test_unknown_args_wrong_path_and_oversize_are_rejected": {
+      "path": "tests/test_jazn_run_studio_alpha_preview.py",
+      "name": "test_unknown_args_wrong_path_and_oversize_are_rejected",
+      "purpose": "Unknown args wrong path and oversize are rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_run_studio_alpha_preview_qt.py::test_preview_is_invalidated_on_field_changes": {
+      "path": "tests/test_jazn_run_studio_alpha_preview_qt.py",
+      "name": "test_preview_is_invalidated_on_field_changes",
+      "purpose": "Preview is invalidated on field changes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
     },
     "tests/test_jazn_run_studio_chat_contract.py::test_canonical_live_bridge_and_poll_results_share_strict_binding": {
       "path": "tests/test_jazn_run_studio_chat_contract.py",
