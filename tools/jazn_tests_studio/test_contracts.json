@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.78",
+  "system_version": "16.3.25.5.116.0.34.79",
   "active_definition_count": 2694,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -42854,16 +42854,26 @@
       "description_source": "source_identity",
       "line": 125
     },
-    "tests/test_package_smoke_workspace_isolation.py::<parse_error>": {
+    "tests/test_package_smoke_workspace_isolation.py::test_package_smoke_uses_only_ephemeral_workspace": {
       "path": "tests/test_package_smoke_workspace_isolation.py",
-      "name": "<parse_error>",
-      "purpose": "Source must parse as valid Python.",
-      "expected": "AST parsing succeeds; current error: '(' was never closed (<unknown>, line 21)",
-      "category": "contract",
+      "name": "test_package_smoke_uses_only_ephemeral_workspace",
+      "purpose": "Package smoke uses only ephemeral workspace",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
       "tags": [
-        "syntax"
+        "package",
+        "repository"
       ],
-      "status": "incompatible"
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.release_readiness"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
     },
     "tests/test_package_version_workflow_regression.py::test_version_rebuild_metadata_check_includes_base_version": {
       "path": "tests/test_package_version_workflow_regression.py",
