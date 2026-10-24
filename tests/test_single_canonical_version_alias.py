@@ -108,4 +108,7 @@ def test_version_rebuild_migrates_legacy_literal_on_new_write(tmp_path: Path) ->
     rendered = rebuild.render_version(path, data).decode("utf-8")
     assert "DISTRIBUTION_VERSION = PACKAGE_VERSION" in rendered
     assert rendered.count('"16.3.25.5.116.0.34.75"') == 1
+    assert rendered.index("PACKAGE_VERSION =") < rendered.index("DISTRIBUTION_VERSION =")
+    path.write_text(rendered, encoding="utf-8")
+    assert rebuild.assignments(path)["DISTRIBUTION_VERSION"] == data.package
     assert rebuild.pyproject_ok is not None
