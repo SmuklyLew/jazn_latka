@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 from .core import ACTION_BY_KEY, Controller, discovery, load_settings
+from latka_jazn.core.system_config import apply_system_config
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -27,6 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report", type=Path, help="Zapis raportu do nowego pliku")
     args = parser.parse_args(argv)
     try:
+        apply_system_config(args.root, os.environ)
         core = Controller(args.root)
         if args.check:
             print(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))

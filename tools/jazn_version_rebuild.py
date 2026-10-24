@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from latka_jazn.core.version_source import read_version_py_assignments
 from latka_jazn.tools.application_shell.operator_paths import legacy_read_path, operator_file, operator_state_dir, validate_operator_path
 
 ProgressCallback = Callable[[int, str], None]
@@ -149,30 +150,19 @@ def save_settings(path: Path, settings: Settings) -> None:
 
 def assignments(path: Path) -> dict[str, str]:
     try:
-        tree = ast.parse(path.read_text(encoding="utf-8-sig"), filename=str(path))
-    except SyntaxError as exc:
-        raise RebuildError(f"Błędna składnia {path}: {exc}") from exc
-    result: dict[str, str] = {}
-    for node in tree.body:
-        targets: list[str] = []
-        value = None
-        if isinstance(node, ast.Assign):
-            targets = [item.id for item in node.targets if isinstance(item, ast.Name)]
-            value = node.value
-        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-            targets = [node.target.id]
-            value = node.value
-        if isinstance(value, ast.Constant) and isinstance(value.value, str):
-            for target in targets:
-                result[target] = value.value.strip()
-    return result
-
+        return read_version_py_assignments(path)
+    except (SyntaxError, ValueError) as exc:
+        raise RebuildError(f"Niepoprawne źródło wersji {path}: {exc}") from exc
 
 def validate(data: VersionData) -> None:
     if not VERSION_PATTERN.fullmatch(data.version):
         raise RebuildError("Numer wersji musi mieć format liczbowy, np. poprzednia linia runtime.")
-    if not data.package.startswith("v") or not VERSION_PATTERN.fullmatch(data.package[1:]):
-        raise RebuildError("PACKAGE_VERSION musi mieć format, np. vX.Y.Z.N.")
+    if data.package.startswith("v"):
+        # Imported historical releases may still use their old v-prefixed format.
+        if not VERSION_PATTERN.fullmatch(data.package[1:]):
+            raise RebuildError("Niepoprawny historyczny PACKAGE_VERSION")
+    elif data.package != data.version:
+        raise RebuildError("Nowe wydanie musi mieć identyczne numery PACKAGE_VERSION i DISTRIBUTION_VERSION")
     if "\n" in data.name or "\r" in data.name:
         raise RebuildError("Nazwa wersji nie może zawierać nowej linii.")
 
@@ -194,8 +184,10 @@ def build_version(version: str, distribution: str, name: str) -> VersionData:
         raise RebuildError("Numer wersji musi mieć format liczbowy, np. poprzednia linia runtime.")
     if distribution and not DIST_PATTERN.fullmatch(distribution):
         raise RebuildError("Numer dystrybucji musi być liczbą, np. 88 albo 88.1.")
-    package = f"v{version}" + (f".{distribution}" if distribution else "")
-    data = VersionData(version, package, name.strip())
+    # New releases are unprefixed PEP 440 versions. Extra segments extend
+    # the canonical number, rather than creating an independent version.
+    package = version + (f".{distribution}" if distribution else "")
+    data = VersionData(package, package, name.strip())
     validate(data)
     return data
 
@@ -204,28 +196,49 @@ def render_version(path: Path, data: VersionData) -> bytes:
     raw = path.read_bytes()
     bom = raw.startswith(b"\xef\xbb\xbf")
     newline = "\r\n" if b"\r\n" in raw else "\n"
-    text = raw.decode("utf-8-sig")
+    # re.MULTILINE's $ matches before LF, not before CR in CRLF.
+    # Normalize for parsing and restore the original newline on output.
+    text = raw.decode("utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
+    # Preserve the static alias, or migrate a legacy literal on new writes.
     values = {
-        "DISTRIBUTION_VERSION": data.version,
-        "PACKAGE_VERSION": data.package,
-        "PACKAGE_RELEASE_NAME": data.name,
+        "PACKAGE_VERSION": json.dumps(data.package, ensure_ascii=False),
+        "DISTRIBUTION_VERSION": (
+            json.dumps(data.version, ensure_ascii=False)
+            if data.package.startswith("v") else "PACKAGE_VERSION"
+        ),
+        "PACKAGE_RELEASE_NAME": json.dumps(data.name, ensure_ascii=False),
     }
     for key, value in values.items():
-        pattern = re.compile(rf"(?m)^(?P<prefix>\s*{re.escape(key)}\s*=\s*)(?P<q>['\"])(?P<old>.*?)(?P=q)(?P<suffix>\s*(?:#.*)?)$")
+        pattern = re.compile(
+            rf"(?m)^(?P<prefix>[ \t]*{re.escape(key)}[ \t]*=[ \t]*)"
+            r"""(?:(?P<q>['"])(?P<old>.*?)(?P=q)|(?P<alias>PACKAGE_VERSION))"""
+            r"(?P<suffix>[ \t]*(?:#.*)?)$"
+        )
         found = list(pattern.finditer(text))
         if len(found) != 1:
             raise RebuildError(f"Oczekiwano jednego przypisania {key}; znaleziono {len(found)}.")
         match = found[0]
-        literal = json.dumps(value, ensure_ascii=False)
-        replacement = match.group("prefix") + literal + match.group("suffix")
-        text = text[: match.start()] + replacement + text[match.end() :]
+        text = text[:match.start()] + match.group("prefix") + value + match.group("suffix") + text[match.end():]
+    if not data.package.startswith("v"):
+        # Legacy files often defined DISTRIBUTION_VERSION before PACKAGE_VERSION.
+        # Python itself must be able to import the new alias, not only the
+        # static reader: put the canonical literal before its reference.
+        lines = text.splitlines(keepends=True)
+        distribution_idx = next(i for i, line in enumerate(lines)
+                                if re.match(r"^\s*DISTRIBUTION_VERSION\s*=", line))
+        package_idx = next(i for i, line in enumerate(lines)
+                           if re.match(r"^\s*PACKAGE_VERSION\s*=", line))
+        if distribution_idx < package_idx:
+            lines[distribution_idx], lines[package_idx] = (
+                lines[package_idx], lines[distribution_idx]
+            )
+            text = "".join(lines)
     ast.parse(text, filename=str(path))
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     if newline == "\r\n":
         text = text.replace("\n", "\r\n")
     encoded = text.encode("utf-8")
     return (b"\xef\xbb\xbf" + encoded) if bom else encoded
-
 
 def command(args: list[str], root: Path, timeout: int = 300) -> subprocess.CompletedProcess[str]:
     try:
@@ -462,7 +475,10 @@ def pyproject_ok(root: Path) -> bool:
         text = (root / PYPROJECT_PATH).read_text(encoding="utf-8-sig")
     except OSError:
         return False
-    return 'dynamic = ["version"]' in text and 'version = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}' in text
+    return ('dynamic = ["version"]' in text and any(
+        f'version = {{attr = "latka_jazn.version.{field}"}}' in text
+        for field in ("PACKAGE_VERSION", "DISTRIBUTION_VERSION")
+    ))
 
 
 def compile_version(root: Path, python: str) -> str:
@@ -636,7 +652,7 @@ class App(tk.Tk):
         form.columnconfigure(3, weight=1)
         ttk.Label(form, text="Numer wersji:").grid(row=0, column=0, sticky="w", padx=(0, 7), pady=5)
         ttk.Entry(form, textvariable=self.version_var).grid(row=0, column=1, sticky="ew", pady=5)
-        ttk.Label(form, text="Numer dystrybucji:").grid(row=0, column=2, sticky="w", padx=(18, 7), pady=5)
+        ttk.Label(form, text="Dodatkowy segment (opcjonalnie):").grid(row=0, column=2, sticky="w", padx=(18, 7), pady=5)
         ttk.Entry(form, textvariable=self.dist_var).grid(row=0, column=3, sticky="ew", pady=5)
         ttk.Label(form, text="Nazwa wersji:").grid(row=1, column=0, sticky="w", padx=(0, 7), pady=5)
         ttk.Entry(form, textvariable=self.name_var).grid(row=1, column=1, columnspan=3, sticky="ew", pady=5)

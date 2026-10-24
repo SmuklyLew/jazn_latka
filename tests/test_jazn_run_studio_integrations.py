@@ -130,7 +130,8 @@ def test_poll_never_resubmits_user_text(core: Controller, monkeypatch: pytest.Mo
     monkeypatch.setattr(client, "receive", lambda _payload: None)
     client.resume()
     assert core.jobs["chat:resume"].done.wait(5)
-    assert calls[0][-2:] == ["--daemon-result", "pending-request"]
+    assert calls[0][calls[0].index("--daemon-result") + 1] == "pending-request"
+    assert calls[0][-4:] == ["--daemon-host", "127.0.0.1", "--daemon-port", "8787"]
     assert client.pending == "pending-request"
 
 

@@ -11,7 +11,7 @@ import time
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from .core import StudioError, _path_without_links, python_executable, settings_path
+from .core import StudioError, _path_without_links, daemon_cli_options, python_executable, settings_path
 from .external import run, spawn
 from .chat_protocol import frames
 
@@ -25,6 +25,10 @@ class ChatClient:
         self.lock = threading.RLock()
         self.session_id = "studio-" + uuid4().hex
         self.pending: str | None = None
+        # The pending request is bound to this endpoint for its entire life.
+        # Switching ports during resume could otherwise poll the wrong daemon.
+        self.daemon_url = core.settings.daemon_url
+        self.daemon_options = daemon_cli_options(core.settings)
         # A final stays pending until the GUI confirms its presentation.
         self._awaiting_gui_ack: str | None = None
         self.started_at = 0.0
@@ -38,13 +42,16 @@ class ChatClient:
             for key in ("session_id", "request_id"):
                 if saved.get(key) is not None and not fullmatch(r"[A-Za-z0-9_-]{1,128}", saved[key]):
                     raise StudioError("Nieprawidłowy identyfikator checkpointu")
+            if saved.get("request_id") and saved.get("daemon_url") != self.daemon_url:
+                raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
             self.session_id = saved["session_id"]
             self.pending = saved.get("request_id")
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
         _path_without_links(self.checkpoint)
-        data = {"session_id": self.session_id, "request_id": self.pending}
+        data = {"session_id": self.session_id, "request_id": self.pending,
+                "daemon_url": self.daemon_url}
         fd, name = tempfile.mkstemp(dir=self.checkpoint.parent, prefix=".chat-")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
@@ -55,13 +62,32 @@ class ChatClient:
         finally:
             Path(name).unlink(missing_ok=True)
 
+    def _require_same_endpoint(self) -> None:
+        if self.core.settings.daemon_url != self.daemon_url:
+            raise StudioError("Zmieniono endpoint daemona; rozłącz klienta i rozstrzygnij poprzednią turę przed ponownym połączeniem")
+        if daemon_cli_options(self.core.settings) != self.daemon_options:
+            raise StudioError("Niezgodność zweryfikowanego endpointu daemona")
+
+    def connection_command(self) -> list[str]:
+        self._require_same_endpoint()
+        return [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
+                "--chat-ollama", *self.daemon_options,
+                "--ollama-model", self.core.settings.model, "--session-id", self.session_id]
+
+    def resume_command(self, request: str) -> list[str]:
+        self._require_same_endpoint()
+        return [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
+                "--daemon-result", request, *self.daemon_options]
+
     def connect(self) -> None:
         if not self.core.settings.model:
             raise StudioError("Wybierz model Ollama w ustawieniach")
+        # Validate endpoint/model before reserving a long-lived job. Otherwise
+        # changing the selected daemon leaves an unfinished "chat" reservation
+        # and blocks the next connection attempt even though no process spawned.
+        argv = self.connection_command()
         job = self.core._reserve("chat")
         self.job = job
-        argv = [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
-                "chat-ollama", "--ollama-model", self.core.settings.model, "--session-id", self.session_id]
         def worker() -> None:
             try:
                 proc = spawn(argv, cwd=self.core.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -109,6 +135,7 @@ class ChatClient:
         threading.Thread(target=worker, daemon=True).start()
 
     def send(self, message: str) -> str:
+        self._require_same_endpoint()
         with self.lock:
             if self.pending:
                 raise StudioError("Najpierw odbierz wynik poprzedniego request_id; wiadomość nie zostanie powtórzona")
@@ -182,12 +209,12 @@ class ChatClient:
         request = self.pending
         if not request:
             raise StudioError("Brak oczekującego request_id")
+        argv = self.resume_command(request)
         job = self.core._reserve("chat:resume")
         def worker() -> None:
             try:
                 job.state = "running"
-                done = run([python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
-                            "--daemon-result", request], cwd=self.core.root, timeout=30)
+                done = run(argv, cwd=self.core.root, timeout=30)
                 if len(done.stdout) > 2097152:
                     raise ValueError("poll_output_limit")
                 self.receive(json.loads(done.stdout))

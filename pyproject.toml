@@ -88,7 +88,7 @@ polish-nlp = [
 archive = "latka_jazn.plugins.archive_plugin:plugin"
 
 [tool.setuptools.dynamic]
-version = {attr = "latka_jazn.version.DISTRIBUTION_VERSION"}
+version = {attr = "latka_jazn.version.PACKAGE_VERSION"}
 
 [tool.setuptools.packages.find]
 where = ["."]

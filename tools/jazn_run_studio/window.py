@@ -8,9 +8,9 @@ import queue
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QCloseEvent, QDesktopServices
+from PySide6.QtGui import QCloseEvent, QColor, QDesktopServices
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
+    QApplication, QCheckBox, QColorDialog, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QMainWindow, QMessageBox, QPlainTextEdit,
     QPushButton, QScrollArea, QSplitter, QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
@@ -41,6 +41,7 @@ class Window(QMainWindow):
         self.logs: dict[str, QPlainTextEdit] = {}
         self.fields: dict[str, QLineEdit] = {}
         self.statuses: dict[str, QLabel] = {}
+        self.dashboard_statuses: dict[str, QLabel] = {}
         self.nav = QListWidget()
         self.nav.setAccessibleName("Nawigacja Studio")
         self.nav.setMaximumWidth(220)
@@ -48,6 +49,7 @@ class Window(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.setMinimumHeight(170)
         self.tabs.hide()
+        self.logs_user_hidden = False
         content = QSplitter(Qt.Orientation.Vertical)
         content.addWidget(self.pages)
         content.addWidget(self.tabs)
@@ -68,6 +70,10 @@ class Window(QMainWindow):
         self._memory()
         self._settings()
         self._about()
+        self.log_toggle = QPushButton("Pokaż logi")
+        self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
+        self.log_toggle.clicked.connect(self.toggle_logs)
+        self.statusBar().addPermanentWidget(self.log_toggle)
         self.nav.setCurrentRow(0)
         self.statusBar().showMessage(str(core.root))
         self.apply_theme()
@@ -121,8 +127,17 @@ class Window(QMainWindow):
         self.evidence = QLabel("Runtime: jeszcze nie sprawdzono. Gotowość rozmowy wymaga osobnego potwierdzenia.")
         self.evidence.setWordWrap(True)
         layout.addWidget(self.evidence)
+        layout.addWidget(QLabel("Stan usług (ostatnio potwierdzony; brak testu ≠ zatrzymanie)"))
+        for service, title in (("runtime", "Jaźń"), ("ollama", "Ollama"),
+                               ("gateway", "Brama MCP"), ("cloudflare", "Cloudflare Tunnel")):
+            label = QLabel(title + ": Nie sprawdzono")
+            label.setWordWrap(True)
+            label.setAccessibleName("Pulpit: " + title)
+            self.dashboard_statuses[service] = label
+            layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
+        self.button("Odśwież usługi", self.refresh_services, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
@@ -168,12 +183,23 @@ class Window(QMainWindow):
                 self.button("Sprawdź połączenie", lambda s=service: self.core.probe(s), row)
             layout.addLayout(row)
         self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
+        self.button("Odśwież status usług", self.refresh_services, layout)
         remote_note = QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie.")
         remote_note.setWordWrap(True)
         layout.addWidget(remote_note)
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         layout.addWidget(self.processes)
+
+    def refresh_services(self) -> None:
+        """Explicit, read-only probes; no silent auto-start or PID adoption."""
+        self.core.start_action("status")
+        self.core.probe("ollama")
+        self.core.probe("gateway")
+        if self.core.settings.cloudflare_url:
+            self.core.probe("cloudflare")
+        else:
+            self.update_service_summary("cloudflare", "Nie skonfigurowano • brak adresu HTTPS")
 
     def _chat(self) -> None:
         layout = self.page("Czat lokalny", "Rozmowa przez runtime Jaźni i wybrany model Ollama. Tylko zaakceptowane odpowiedzi runtime pojawiają się jako wypowiedzi Łatki.")
@@ -402,6 +428,7 @@ class Window(QMainWindow):
         self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
         form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
+        self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Otwórz Studio Konfiguracji", lambda: self.core.start_studio("configuration"), layout)
@@ -412,6 +439,16 @@ class Window(QMainWindow):
         layout.addLayout(self.profile_form)
         self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
+
+    def choose_custom_color(self) -> None:
+        """Only the user's explicit acceptance changes the draft settings."""
+        initial = QColor(self.fields["accent"].text())
+        if not initial.isValid():
+            initial = QColor(self.core.settings.accent)
+        selected = QColorDialog.getColor(initial, self, "Kolor akcentu Jaźni")
+        if selected.isValid():
+            self.fields["accent"].setText(selected.name())
+            self.theme.setCurrentText("custom")
 
     def save_profile(self) -> None:
         if not self.profile_widgets:
@@ -466,6 +503,19 @@ class Window(QMainWindow):
         self.button("Licencje Qt", lambda: QDesktopServices.openUrl(QUrl("https://doc.qt.io/qtforpython-6/licenses.html")), layout)
         layout.addStretch()
 
+    def toggle_logs(self) -> None:
+        visible = not self.tabs.isVisible()
+        self.logs_user_hidden = not visible
+        self.tabs.setVisible(visible)
+        self.log_toggle.setText("Ukryj logi" if visible else "Pokaż logi")
+
+    def update_service_summary(self, service: str, detail: str) -> None:
+        """Mirror the same observed state; never infer readiness from a PID."""
+        if service in self.statuses:
+            self.statuses[service].setText(detail)
+        if service in self.dashboard_statuses:
+            self.dashboard_statuses[service].setText(service.upper() + ": " + detail)
+
     def log_view(self, key: str) -> QPlainTextEdit:
         if key not in self.logs:
             view = QPlainTextEdit()
@@ -474,7 +524,9 @@ class Window(QMainWindow):
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
             self.tabs.addTab(view, key)
-            self.tabs.show()
+            if not self.logs_user_hidden:
+                self.tabs.show()
+                self.log_toggle.setText("Ukryj logi")
         return self.logs[key]
 
     def poll(self) -> None:
@@ -494,14 +546,24 @@ class Window(QMainWindow):
                 self.memory_panel.receive(key, value)
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                self.evidence.setText("Runtime: " + str(value.get("active_state") or "niepotwierdzony") +
+                detail = ("Stan " + str(value.get("active_state") or "niepotwierdzony") +
                     " • endpoint: " + yes(value.get("endpoint_reachable")) +
                     " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
                     " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
+                self.evidence.setText("Runtime: " + detail)
+                self.update_service_summary("runtime", detail)
             elif kind == "probe":
                 service = value.get("service")
                 if service in self.statuses:
-                    self.statuses[service].setText("HTTP odpowiada • gotowość: " + str(value.get("ready", "osobny test")))
+                    if value.get("ready") is True:
+                        detail = "Gotowe • endpoint i deklarowana gotowość potwierdzone; funkcja wymaga osobnego testu"
+                    elif value.get("ready") is False:
+                        detail = "BŁĄD • usługa nie zgłasza gotowości"
+                    elif service == "ollama":
+                        detail = "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana"
+                    else:
+                        detail = "Odpowiedź testu • gotowość niezweryfikowana"
+                    self.update_service_summary(str(service), detail)
                 if service == "ollama":
                     self.chat_state.setText("Modele Ollama: " + ", ".join(value.get("models", [])) + ". Wybierz nazwę w ustawieniach.")
             elif kind == "chat_state":
@@ -562,12 +624,37 @@ class Window(QMainWindow):
                         self.profile_widgets[field["key"]] = widget
                         self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
+                if value.get("state") in {"succeeded", "failed", "stopped"}:
+                    result = ("Ukończono" if value["state"] == "succeeded"
+                              else "Zatrzymano" if value["state"] == "stopped" else "BŁĄD")
+                    reason = self.core.redactor.text(str(value.get("error") or ""))
+                    line = key + " • " + result + ((" • " + reason) if reason else "")
+                    self.log_view("Zdarzenia").appendPlainText(line)
+                    if value["state"] == "failed":
+                        self.log_view("Błędy").appendPlainText(line)
                 if key.startswith("memory:p1:"):
                     self.memory_panel.receive_state(key, value)
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
                 service = key.removeprefix("service:")
-                if service in self.statuses:
-                    self.statuses[service].setText(value["state"] + " • PID " + str(value["pid"]) + " • gotowość funkcji niezweryfikowana")
+                if service in self.statuses and key.startswith("service:"):
+                    state = str(value["state"])
+                    if state == "failed":
+                        detail = "BŁĄD • " + str(value.get("error") or "niepowodzenie")
+                    elif state == "stopped":
+                        detail = "Zatrzymano proces należący do Studio • stan zewnętrzny niezweryfikowany"
+                    else:
+                        detail = "Proces: " + state + " • PID " + str(value.get("pid")) + " • gotowość niezweryfikowana"
+                    self.update_service_summary(service, detail)
+                elif key in {"start", "stop", "restart"}:
+                    state = str(value["state"])
+                    if state == "failed":
+                        detail = "BŁĄD • " + str(value.get("error") or "operacja nieudana")
+                    else:
+                        detail = "Operacja " + key + ": " + state + " • odśwież status, aby potwierdzić gotowość"
+                    self.update_service_summary("runtime", detail)
+                elif key.startswith("probe:") and value["state"] == "failed":
+                    service = key.removeprefix("probe:")
+                    self.update_service_summary(service, "BŁĄD testu • " + str(value.get("error") or "niepowodzenie"))
         with self.core.lock:
             snapshots = [j.snapshot() for j in self.core.jobs.values()]
         self.processes.setPlainText(json.dumps(snapshots, ensure_ascii=False, indent=2))
