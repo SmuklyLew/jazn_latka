@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.84",
-  "active_definition_count": 2704,
+  "active_definition_count": 2706,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24522,6 +24522,38 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 214
+    },
+    "tests/test_jazn_run_studio_12_manual_studio_gates.py::test_all_twelve_studios_have_unique_nonexecuting_acceptance_cases": {
+      "path": "tests/test_jazn_run_studio_12_manual_studio_gates.py",
+      "name": "test_all_twelve_studios_have_unique_nonexecuting_acceptance_cases",
+      "purpose": "All twelve studios have unique nonexecuting acceptance cases",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_jazn_run_studio_12_manual_studio_gates.py::test_one_studio_pass_does_not_mark_others_passed_or_automatically_archive": {
+      "path": "tests/test_jazn_run_studio_12_manual_studio_gates.py",
+      "name": "test_one_studio_pass_does_not_mark_others_passed_or_automatically_archive",
+      "purpose": "One studio pass does not mark others passed or automatically archive",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_jazn_run_studio_alpha_preview.py::test_preview_preserves_only_safe_metadata": {
       "path": "tests/test_jazn_run_studio_alpha_preview.py",
