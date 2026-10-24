@@ -115,7 +115,7 @@ def catalog(root: Path, data: dict[str, Any]) -> list[dict[str, str]]:
     return items
 
 
-def outcome(data: dict[str, Any], test_id: str, version: str) -> dict[str, str] | None:
+def outcome(data: dict[str, Any], test_id: str, version: str) -> dict[str, Any] | None:
     for section in ("archive", "results"):
         for row in reversed(data[section]):
             if not isinstance(row, dict):

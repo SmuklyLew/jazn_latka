@@ -39,14 +39,16 @@ def test_save_archive_and_version_reopens_test(roots):
     digest = a.save_result(system, digest, "chat-reconnect", "failed", "Transport returned 1", "report-01")
     data, old = a.load(system)
     assert old == digest
-    assert a.outcome(data, "chat-reconnect", a.scope_version(system))["status"] == "failed"
+    failed = a.outcome(data, "chat-reconnect", a.scope_version(system))
+    assert failed is not None and failed["status"] == "failed"
     with pytest.raises(ValueError, match="PASS"):
         a.archive_result(system, digest, "chat-reconnect")
     digest = a.save_result(system, digest, "chat-reconnect", "passed", "Two accepted turns", "report-02")
     digest = a.archive_result(system, digest, "chat-reconnect")
     data, _ = a.load(system)
     assert len(data["archive"]) == 1
-    assert a.outcome(data, "chat-reconnect", a.scope_version(system))["archived"]
+    archived = a.outcome(data, "chat-reconnect", a.scope_version(system))
+    assert archived is not None and archived["archived"] is True
     with pytest.raises(ValueError, match="archiwum"):
         a.save_result(system, digest, "chat-reconnect", "failed", "Regression", "new")
     (system / "latka_jazn/version.py").write_text(
@@ -97,11 +99,13 @@ def test_qt_acceptance_page_renders_without_live_runtime(roots, monkeypatch):
     app = QApplication.instance() or QApplication([])
     panel = LocalAcceptancePanel(system)
     assert panel.table.rowCount() >= 10
-    assert "DO WYKONANIA" in panel.table.item(0, 3).text()
+    first = panel.table.item(0, 3)
+    assert first is not None and "DO WYKONANIA" in first.text()
     panel.state.setCurrentIndex(1)
     panel.note.setPlainText("Nie udało się uruchomić")
     panel.evidence.setText("operator-log-01")
     panel.save()
-    assert panel.table.item(0, 3).text() == "FAILED"
+    result = panel.table.item(0, 3)
+    assert result is not None and result.text() == "FAILED"
     panel.close()
     app.processEvents()
