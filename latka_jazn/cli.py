@@ -865,11 +865,31 @@ def main(
     if ns.command in {"start", "stop", "chat", "chat-gpt"}:
         return dispatch_legacy(["--root", str(root), *lifecycle.legacy_args(ns.command, list(ns.remainder))])
     if ns.command == "restart":
-        dispatch_legacy(["--root", str(root), "--daemon-stop"])
-        started = dispatch_legacy(["--root", str(root), "--daemon-start"])
+        remaining = list(ns.remainder)
+        if remaining[:1] == ["--"]:
+            remaining = remaining[1:]
+        restart_parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
+        restart_parser.add_argument("--daemon-host", default="127.0.0.1")
+        restart_parser.add_argument("--daemon-port", type=int, default=8787)
+        restart_parser.add_argument("--json", action="store_true")
+        try:
+            restart_ns = restart_parser.parse_args(remaining)
+        except SystemExit:
+            return 2
+        if restart_ns.daemon_host != "127.0.0.1" or not 1 <= restart_ns.daemon_port <= 65535:
+            return 2
+        target = ["--daemon-host", restart_ns.daemon_host,
+                  "--daemon-port", str(restart_ns.daemon_port)]
+        # Both operations must target the same verified local daemon. Never
+        # fall through to the default 8787 when a different port was selected.
+        dispatch_legacy(["--root", str(root), "--daemon-stop", *target])
+        started = dispatch_legacy(["--root", str(root), "--daemon-start", *target])
         if started != 0:
             return started
-        payload = diagnostics.status_payload(root, probe_endpoint=True)
+        payload = diagnostics.status_payload(
+            root, probe_endpoint=True,
+            daemon_host=restart_ns.daemon_host, daemon_port=restart_ns.daemon_port,
+        )
         return 0 if payload.get("ok") else 1
     if ns.command == "host-finalize":
         payload = host_commands.finalize_payload(ns)

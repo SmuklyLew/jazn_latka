@@ -173,6 +173,18 @@ class Settings:
         return obj
 
 
+def daemon_cli_options(settings: Settings) -> list[str]:
+    """Validated local endpoint args shared by Studio lifecycle and chat.
+
+    Do not infer daemon ownership from a listening port. The canonical CLI
+    performs root/process verification; Studio only selects the endpoint.
+    """
+    checked = Settings.validate(asdict(settings))
+    endpoint = urlsplit(checked.daemon_url)
+    assert endpoint.port is not None  # Guaranteed by Settings.validate.
+    return ["--daemon-host", "127.0.0.1", "--daemon-port", str(endpoint.port)]
+
+
 def settings_path(root: Path) -> Path:
     # A local operator profile, not runtime or private MEMORY configuration.
     return _path_without_links(workspace_runtime_path(root) / "jazn_run_studio" / "settings.json")
@@ -355,7 +367,16 @@ class Controller:
             action = ACTION_BY_KEY[key]
         except KeyError:
             raise StudioError("Nieznana operacja") from None
-        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *action.args]
+        args = list(action.args)
+        if key in {"status", "doctor", "start", "stop", "restart"}:
+            # Preserve unchanged default commands while routing configured
+            # non-default endpoints through the public Jaźń control plane.
+            if self.settings.daemon_url != "http://127.0.0.1:8787":
+                target = daemon_cli_options(self.settings)
+                if key in {"start", "stop", "restart"}:
+                    args.append("--")  # argparse.REMAINDER on lifecycle verbs.
+                args.extend(target)
+        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
 
     def _reserve(self, key: str) -> Job:
         with self.lock:
