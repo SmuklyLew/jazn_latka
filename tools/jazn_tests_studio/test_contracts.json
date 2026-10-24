@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.74",
+  "system_version": "16.3.25.5.116.0.34.75",
   "active_definition_count": 2682,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -53012,7 +53012,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 20
+      "line": 22
     },
     "tests/test_single_canonical_version_alias.py::test_alias_parsed_without_import_and_without_execution": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53031,7 +53031,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 42
     },
     "tests/test_single_canonical_version_alias.py::test_unsafe_or_unresolved_alias_is_rejected": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53052,7 +53052,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 58
     },
     "tests/test_single_canonical_version_alias.py::test_historical_two_literal_version_retains_read_support": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53071,7 +53071,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 66
     },
     "tests/test_single_canonical_version_alias.py::test_version_rebuild_preserves_alias_on_modern_write": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53090,7 +53090,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 81
     },
     "tests/test_single_canonical_version_alias.py::test_version_rebuild_migrates_legacy_literal_on_new_write": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53109,7 +53109,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 99
+      "line": 102
     },
     "tests/test_single_canonical_version_alias.py::test_editor_preserves_bom_and_crlf": {
       "path": "tests/test_single_canonical_version_alias.py",
@@ -53128,7 +53128,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 120
     },
     "tests/test_single_canonical_workspace_contract.py::test_release_identity_and_release_metadata_accept_unprefixed_version": {
       "path": "tests/test_single_canonical_workspace_contract.py",
