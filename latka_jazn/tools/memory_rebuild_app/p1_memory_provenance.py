@@ -330,10 +330,14 @@ def _canonical(value: object) -> bytes:
 
 def _index_snapshot(
     path: Path, index: sqlite3.Connection, role: str, *, max_rows: int,
+    deadline: float,
 ) -> dict[str, tuple[tuple[str, str, int], ...]]:
     count = 0
     shapes: dict[str, tuple[tuple[str, str, int], ...]] = {}
     with closing(connect_runtime_readonly(path)) as source:
+        # Bound native SQLite record decoding before a large BLOB reaches Python.
+        source.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, MAX_ROW_BYTES)
+        source.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
         tables = {str(row[0]) for row in source.execute(
             "SELECT name FROM sqlite_master WHERE type='table'"
         )}
@@ -353,14 +357,20 @@ def _index_snapshot(
             query = f"SELECT {','.join(quote(c) for c in columns)} FROM {quote(table)}"
             batch: list[tuple[str, str, str, str]] = []
             for row in source.execute(query):
+                if time.monotonic() > deadline:
+                    raise ComparisonBlocked("semantic_comparison_timeout")
                 count += 1
                 if count > max_rows:
                     raise ComparisonBlocked("semantic_row_limit")
                 values = list(row)
-                key_hash = hashlib.sha256(_canonical([values[i] for i in positions])).hexdigest()
-                content_hash = hashlib.sha256(_canonical({
+                key_bytes = _canonical([values[i] for i in positions])
+                content_bytes = _canonical({
                     col: values[i] for col, i in zip(contents, content_pos)
-                })).hexdigest()
+                })
+                if len(key_bytes) + len(content_bytes) > MAX_ROW_BYTES:
+                    raise ComparisonBlocked("semantic_row_size_limit")
+                key_hash = hashlib.sha256(key_bytes).hexdigest()
+                content_hash = hashlib.sha256(content_bytes).hexdigest()
                 batch.append((role, table, key_hash, content_hash))
                 if len(batch) >= 500:
                     _write_batch(index, batch)
@@ -377,9 +387,17 @@ def _write_batch(index: sqlite3.Connection, batch: list[tuple[str, str, str, str
         "ON CONFLICT(role,table_name,key_hash,content_hash) DO UPDATE SET qty=qty+1",
         batch,
     )
+    _check_index_budget(index)
 
 
-def _key_groups(index: sqlite3.Connection, role: str, table: str) -> Iterator[tuple[str, str]]:
+def _check_index_budget(index: sqlite3.Connection) -> None:
+    pages = int(index.execute("PRAGMA page_count").fetchone()[0])
+    page_size = int(index.execute("PRAGMA page_size").fetchone()[0])
+    if pages * page_size > MAX_INDEX_BYTES:
+        raise ComparisonBlocked("semantic_index_size_limit")
+
+
+def _key_groups(index: sqlite3.Connection, role: str, table: str, *, deadline: float) -> Iterator[tuple[str, str]]:
     cursor = index.execute(
         "SELECT key_hash,content_hash,qty FROM hashed_rows WHERE role=? AND table_name=? "
         "ORDER BY key_hash,content_hash", (role, table),
@@ -387,6 +405,8 @@ def _key_groups(index: sqlite3.Connection, role: str, table: str) -> Iterator[tu
     previous: str | None = None
     digest = hashlib.sha256()
     for key, content, qty in cursor:
+        if time.monotonic() > deadline:
+            raise ComparisonBlocked("semantic_comparison_timeout")
         key = str(key)
         if previous is not None and key != previous:
             yield previous, digest.hexdigest()
@@ -397,8 +417,9 @@ def _key_groups(index: sqlite3.Connection, role: str, table: str) -> Iterator[tu
         yield previous, digest.hexdigest()
 
 
-def _diff(index: sqlite3.Connection, table: str) -> dict[str, int]:
-    left, right = iter(_key_groups(index, "a", table)), iter(_key_groups(index, "b", table))
+def _diff(index: sqlite3.Connection, table: str, *, deadline: float) -> dict[str, int]:
+    left = iter(_key_groups(index, "a", table, deadline=deadline))
+    right = iter(_key_groups(index, "b", table, deadline=deadline))
     l, r = next(left, None), next(right, None)
     added = removed = changed = 0
     while l is not None or r is not None:
@@ -415,11 +436,11 @@ def _diff(index: sqlite3.Connection, table: str) -> dict[str, int]:
     return {"added": added, "removed": removed, "changed": changed}
 
 
-def _fingerprint(index: sqlite3.Connection, role: str, tables: list[str]) -> str:
+def _fingerprint(index: sqlite3.Connection, role: str, tables: list[str], *, deadline: float) -> str:
     sha = hashlib.sha256()
     for table in sorted(tables):
         sha.update(("table:" + table + "\n").encode("utf-8"))
-        for key, digest in _key_groups(index, role, table):
+        for key, digest in _key_groups(index, role, table, deadline=deadline):
             sha.update((key + ":" + digest + "\n").encode("ascii"))
     return sha.hexdigest()
 
@@ -430,17 +451,34 @@ def compare_snapshots(
     """Stable row-key diff of two independent, frozen SQLite snapshots."""
     if max_rows < 1:
         raise ComparisonBlocked("invalid_row_limit")
-    shapes_a = _index_snapshot(first, index, "a", max_rows=max_rows)
-    shapes_b = _index_snapshot(second, index, "b", max_rows=max_rows)
+    if MAX_ROW_BYTES < 1 or MAX_INDEX_BYTES < 1 or OPERATION_SECONDS <= 0:
+        raise ComparisonBlocked("invalid_resource_limit")
+    deadline = time.monotonic() + OPERATION_SECONDS
+    _check_index_budget(index)
+    try:
+        shapes_a = _index_snapshot(first, index, "a", max_rows=max_rows, deadline=deadline)
+        shapes_b = _index_snapshot(second, index, "b", max_rows=max_rows, deadline=deadline)
+    except sqlite3.DataError as exc:
+        raise ComparisonBlocked("semantic_row_size_limit") from exc
+    except sqlite3.OperationalError as exc:
+        if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_INTERRUPT:
+            raise ComparisonBlocked("semantic_comparison_timeout") from exc
+        raise
     if shapes_a != shapes_b:
         return {"state": "incompatible", "fingerprint_equal": None,
                 "table_diffs": [], "issue": "table_shapes_differ"}
     rows = []
     for table in sorted(shapes_a):
-        delta = _diff(index, table)
+        if time.monotonic() > deadline:
+            raise ComparisonBlocked("semantic_comparison_timeout")
+        delta = _diff(index, table, deadline=deadline)
         if any(delta.values()):
             rows.append({"table": table, **delta})
-    equal = _fingerprint(index, "a", sorted(shapes_a)) == _fingerprint(index, "b", sorted(shapes_b))
+    equal = _fingerprint(index, "a", sorted(shapes_a), deadline=deadline) == _fingerprint(
+        index, "b", sorted(shapes_b), deadline=deadline,
+    )
+    if time.monotonic() > deadline:
+        raise ComparisonBlocked("semantic_comparison_timeout")
     if equal == bool(rows):
         raise ComparisonBlocked("fingerprint_and_diff_disagree")
     return {"state": "equal" if equal else "different", "fingerprint_equal": equal,

@@ -3370,7 +3370,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
     def _authenticated(self, *, mutating: bool = False) -> bool:
         if mutating and self.headers.get("Origin"):
             self._daemon_server().state.auth_failure_count += 1
-            self._drain_rejected_request_body()
+            self._drain_bounded_request_body()
             self._json_response(
                 {"ok": False, "error_code": "browser_origin_not_allowed"},
                 status=HTTPStatus.FORBIDDEN,
@@ -3384,20 +3384,19 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         if supplied and secrets.compare_digest(supplied, self._daemon_server().auth_token):
             return True
         self._daemon_server().state.auth_failure_count += 1
-        self._drain_rejected_request_body()
+        self._drain_bounded_request_body()
         self._json_response(
             {"ok": False, "error_code": "daemon_auth_required"},
             status=HTTPStatus.UNAUTHORIZED,
         )
         return False
 
-    def _drain_rejected_request_body(self) -> None:
-        """Boundedly consume an already-sent body before closing a rejected POST.
+    def _drain_bounded_request_body(self) -> None:
+        """Boundedly consume a POST body before closing an HTTP connection.
 
-        Windows may translate a close with unread request bytes into TCP RST,
-        hiding the intended 401/403 response from the client. The short socket
-        deadline keeps authentication rejection fail-closed for partial or
-        deliberately slow bodies.
+        Windows may reset a connection when a reply closes a socket with unread
+        request bytes. This applies to valid shutdown acknowledgements as well
+        as rejected requests. Keep a short socket deadline for slow clients.
         """
 
         raw_values = self.headers.get_all("Content-Length") or []
@@ -3781,14 +3780,33 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             self._json_response(marker)
             return
         if path == "/shutdown":
-            payload = self._daemon_server().write_marker(status="shutdown_requested")
-            payload["ok"] = True
-            self._json_response(payload)
+            # The authenticated stop operation must never depend on writing a
+            # large marker or successfully delivering its acknowledgement.
+            # A slow Windows consumer may time out or disconnect during a
+            # response; scheduling shutdown only afterwards strands the daemon.
+            # An authenticated client may have sent a small JSON body. Leaving
+            # it unread can reset the connection on Windows before the ACK.
+            self._drain_bounded_request_body()
+            daemon_server = self._daemon_server()
+            daemon_server.shutdown_requested.set()
+
             def stop_later() -> None:
+                # Give the small ACK a chance to flush, but complete shutdown
+                # even if the client has already disconnected.
                 time.sleep(0.15)
-                self._daemon_server().shutdown_requested.set()
-                self._daemon_server().shutdown()
-            threading.Thread(target=stop_later, name="jazn-daemon-shutdown", daemon=True).start()
+                daemon_server.shutdown()
+
+            threading.Thread(
+                target=stop_later, name="jazn-daemon-shutdown", daemon=True
+            ).start()
+            self._json_response({
+                "schema_version": DAEMON_SCHEMA_VERSION,
+                "ok": True,
+                "shutdown_requested": True,
+                "daemon_instance_id": daemon_server.daemon_instance_id,
+                "daemon_pid": daemon_server.state.pid,
+                "active_root": str(daemon_server.config.root),
+            })
             return
         self._json_response({"ok": False, "error": "not_found", "path": path}, status=404)
 
@@ -3880,9 +3898,32 @@ def run_daemon(
             server.close_sessions()
         finally:
             try:
-                payload = server.marker_payload(status=DAEMON_MARKER_STATUS_STOPPED)
-                payload["runtime_process_active"] = False
-                payload["stopped_at_utc"] = utc_now_iso()
+                # The daemon has already left serve_forever. Rebuilding the full
+                # active marker here would re-verify thousands of files during
+                # the time-critical stop budget. Preserve the most recent
+                # marker evidence and change only the final lifecycle facts.
+                server.state.status = DAEMON_MARKER_STATUS_STOPPED
+                payload = read_json_file(marker_path) or {}
+                payload = dict(payload) if isinstance(payload, dict) else {}
+                payload.update({
+                    "schema_version": DAEMON_SCHEMA_VERSION,
+                    "daemon_instance_id": server.daemon_instance_id,
+                    "active_root": str(config.root),
+                    "daemon_pid": server.state.pid,
+                    "daemon_status": DAEMON_MARKER_STATUS_STOPPED,
+                    "active_state": "inactive",
+                    "runtime_active_state": "inactive",
+                    "runtime_process_active": False,
+                    "heartbeat_fresh": False,
+                    "stopped_at_utc": utc_now_iso(),
+                })
+                nested = payload.get("runtime_daemon")
+                if isinstance(nested, dict):
+                    payload["runtime_daemon"] = {
+                        **nested,
+                        "status": DAEMON_MARKER_STATUS_STOPPED,
+                        "runtime_process_active": False,
+                    }
                 write_json_atomic(marker_path, payload)
             except (OSError, RuntimeError, ValueError, TypeError) as exc:
                 append_daemon_process_event(
@@ -5266,7 +5307,7 @@ def stop_daemon(
         shutdown_response = http_json(
             "POST",
             daemon_url(host, int(port), "/shutdown"),
-            {},
+            None,
             timeout=2.0,
             token=read_daemon_auth_token(subject_root),
         )

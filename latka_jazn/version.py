@@ -1,3 +1,14 @@
+# v116.0.34.68 adds a native read-only Test Studio catalogue and expectation viewer.
+# v116.0.34.67 adds numerical per-stage diagnostics to the unchanged Windows health-check <5s gate.
+# v116.0.34.66 provides fail-closed Studio P5 frozen-artifact evidence and sanitized acceptance gates.
+# v116.0.34.65 adds canonical preview/confirm for shared Studio operations (alpha).
+# v116.0.34.64 keeps Qt MEMORY failure diagnostics to short reason codes; raw errors remain off the UI.
+# v116.0.34.57 requires security-patched Brotli for archive release bundles.
+# v116.0.34.56 secures configurable loopback MCP startup and reliable Studio GUI event delivery.
+# v116.0.34.55 keeps HTTP probe completion distinct from real Studio service readiness.
+# v116.0.34.54 repairs synthetic HTTP shutdown fixture while retaining native socket regression.
+# v116.0.34.53 drains authenticated shutdown HTTP request bodies and tests real TCP acknowledgements on Windows.
+# v116.0.34.52 initiates bounded daemon shutdown before slow/disconnected HTTP acknowledgements.
 # v116.0.34.41 adds first-run preflight, source-bound memory freshness and model/telemetry truth gates.
 # v116.0.34.39002 hardens OAuth staging var preservation, token claims and real MCP/workerd CI.
 # v116.0.34.39 guards isolated OAuth staging config with static preflight and regression CI.
@@ -105,9 +116,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.42"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.42"
-PACKAGE_RELEASE_NAME = "supervisor-mcp-staging-preflight"
+DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.68"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.68"
+PACKAGE_RELEASE_NAME = "studio-native-test-catalog-readonly"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

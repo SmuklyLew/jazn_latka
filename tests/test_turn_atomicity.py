@@ -331,6 +331,30 @@ def test_isolated_health_check_is_fast_valid_and_has_no_semantic_write(tmp_path:
         duration = time.perf_counter() - started
         after = _semantic_counts(memory_path)
 
+        # Structured timing evidence when Windows CI nears the strict 5 s SLA.
+        # Numeric stage timings only: no prompts, absolute paths or private traces.
+        # Keep the real session pipeline, semantic-write checks and <5 s bound.
+        if duration >= 3.0:
+            telemetry = result.get("turn_telemetry") or {}
+            stages = telemetry.get("stages") if isinstance(telemetry, dict) else None
+            measured = [
+                (str(name), float(stage["duration_ms"]))
+                for name, stage in (stages or {}).items()
+                if isinstance(stage, dict)
+                and isinstance(stage.get("duration_ms"), (int, float))
+            ]
+            measured.sort(key=lambda item: item[1], reverse=True)
+            print(
+                "ISOLATED_HEALTH_LATENCY_DIAGNOSTICS",
+                {
+                    "wall_ms": round(duration * 1000, 3),
+                    "stages_ms": [
+                        {"stage": name, "duration_ms": round(elapsed, 3)}
+                        for name, elapsed in measured[:12]
+                    ],
+                    "semantic_writes_unchanged": before == after,
+                },
+            )
         assert duration < 5.0
         assert result["conversation_decision"]["detected_user_intent"] == "runtime_health_check"
         assert result["conversation_decision"]["route"] == "runtime_health_check"

@@ -1527,6 +1527,7 @@ def run_jsonl_chat_bridge(
             input_kind = "plain_text"
             input_field = "plain_text"
             payload_session_id = None
+            payload_request_id = None
             client = default_client
 
             try:
@@ -1575,6 +1576,7 @@ def run_jsonl_chat_bridge(
                         write_chat_bridge_payload(stdout, persisted or {}, output_mode=output_mode)
                     continue
                 payload_session_id = str(payload.get("session_id") or "").strip() or None
+                payload_request_id = str(payload.get("request_id") or "").strip() or None
                 user_text, input_kind, input_field = extract_user_text_from_payload(payload)
 
             if not user_text.strip():
@@ -1602,6 +1604,7 @@ def run_jsonl_chat_bridge(
                     process_reused=True,
                     command=command,
                     model_channel_config=turn_model_channel_config,
+                    **({"request_id": payload_request_id} if payload_request_id else {}),
                 )
             except RuntimeTurnTimeoutError as exc:
                 write_chat_bridge_payload(stdout, error_payload(
