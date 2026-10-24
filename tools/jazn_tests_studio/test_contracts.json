@@ -25193,13 +25193,13 @@
       "path": "tests/test_jazn_run_studio_integrations.py",
       "name": "test_poll_never_resubmits_user_text",
       "purpose": "Poll never resubmits user text",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -25227,7 +25227,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 138
     },
     "tests/test_jazn_run_studio_integrations.py::test_public_jsonl_bridge_preserves_preallocated_request_id": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -25247,7 +25247,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 151
+      "line": 152
     },
     "tests/test_jazn_run_studio_integrations.py::test_integrated_python_studio_executes_original_detect_host_command": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -25268,7 +25268,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 174
+      "line": 175
     },
     "tests/test_jazn_run_studio_job_error_contract.py::test_job_report_encodes_absent_error_as_json_null": {
       "path": "tests/test_jazn_run_studio_job_error_contract.py",
