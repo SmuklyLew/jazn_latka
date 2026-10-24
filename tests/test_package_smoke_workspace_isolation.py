@@ -18,7 +18,7 @@ def test_package_smoke_uses_only_ephemeral_workspace(tmp_path: Path, monkeypatch
     marker = original / "JAZN_ACTIVE_RUNTIME.json"
     marker.write_text(json.dumps({"active_root": "do not replace"}), encoding="utf-8")
     monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(original))
-    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(tmp_path / "PRIVATE_MEMORY")
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(tmp_path / "PRIVATE_MEMORY"))
     original_environment = dict(os.environ)
     temporary = tmp_path / "readiness" / "isolated"
     temporary.mkdir(parents=True)
