@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.72",
-  "active_definition_count": 2674,
+  "active_definition_count": 2675,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25714,6 +25714,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jazn_run_studio_part2_collapsed_qt.py::test_new_error_tab_does_not_reopen_manually_collapsed_logs": {
+      "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
+      "name": "test_new_error_tab_does_not_reopen_manually_collapsed_logs",
+      "purpose": "New error tab does not reopen manually collapsed logs",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_jazn_run_studio_part2_error_journal.py::test_failure_journal_redacts_secret_values": {
       "path": "tests/test_jazn_run_studio_part2_error_journal.py",
