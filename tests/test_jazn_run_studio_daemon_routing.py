@@ -102,7 +102,7 @@ def test_restart_reuses_selected_endpoint_and_does_not_fall_back_to_8787(
     monkeypatch.setattr(cli.diagnostics, "status_payload",
                         lambda root, **kwargs: {"ok": kwargs["daemon_port"] == 8877})
     (tmp_path / "run.py").write_text("", encoding="utf-8")
-    assert cli.dispatch(["restart", "--", "--daemon-host", "127.0.0.1",
+    assert cli.main(["restart", "--", "--daemon-host", "127.0.0.1",
                          "--daemon-port", "8877"]) == 0
     assert len(called) == 2
     assert all("--daemon-port" in args and "8877" in args for args in called)
