@@ -89,7 +89,10 @@ def test_version_rebuild_preserves_alias_on_modern_write(tmp_path: Path) -> None
     result = rebuild.assignments(path)
     assert result["DISTRIBUTION_VERSION"] == result["PACKAGE_VERSION"] == data.package
     assert "DISTRIBUTION_VERSION = PACKAGE_VERSION" in path.read_text(encoding="utf-8")
-    assert rebuild.read_version(tmp_path) == data if (tmp_path / "latka_jazn/version.py").exists() else result["PACKAGE_VERSION"] == data.package
+    version_dir = tmp_path / "latka_jazn"
+    version_dir.mkdir()
+    (version_dir / "version.py").write_bytes(path.read_bytes())
+    assert rebuild.read_version(tmp_path) == data
 
 
 def test_version_rebuild_migrates_legacy_literal_on_new_write(tmp_path: Path) -> None:
