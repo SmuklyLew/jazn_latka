@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.62",
-  "active_definition_count": 2633,
+  "system_version": "16.3.25.5.116.0.34.63",
+  "active_definition_count": 2635,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29446,6 +29446,25 @@
       "description_source": "source_identity",
       "line": 65
     },
+    "tests/test_memory_evidence_compact_layout.py::test_completed_memory_observation_fits_minimum_width": {
+      "path": "tests/test_memory_evidence_compact_layout.py",
+      "name": "test_completed_memory_observation_fits_minimum_width",
+      "purpose": "Completed memory observation fits minimum width",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_memory_experience_recall_handler.py::test_memory_experience_intents_use_dedicated_handler": {
       "path": "tests/test_memory_experience_recall_handler.py",
       "name": "test_memory_experience_intents_use_dedicated_handler",
@@ -31556,6 +31575,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 83
+    },
+    "tests/test_memory_readiness_pin_diagnostics.py::test_present_pin_with_no_runtime_reports_the_actual_missing_gate": {
+      "path": "tests/test_memory_readiness_pin_diagnostics.py",
+      "name": "test_present_pin_with_no_runtime_reports_the_actual_missing_gate",
+      "purpose": "Present pin with no runtime reports the actual missing gate",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.p1_active_memory_readiness",
+        "latka_jazn.tools.memory_rebuild_app.p1_provenance_chain"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
     },
     "tests/test_memory_rebuild.py::test_plan_simulates_previous_exports_in_temporary_database": {
       "path": "tests/test_memory_rebuild.py",

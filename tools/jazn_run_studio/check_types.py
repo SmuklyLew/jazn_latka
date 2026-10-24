@@ -12,7 +12,8 @@ def main() -> int:
          "tests/test_jazn_run_studio_integrations.py", "tests/test_jazn_run_studio_secrets.py",
          "tests/test_jazn_run_studio_chat_contract.py", "tests/test_jazn_run_studio_lifecycle_results.py",
          "tests/test_jazn_run_studio_http_framing.py", "tests/test_jazn_run_studio_layout.py", "tests/test_jazn_run_studio_utf8.py",
-         "tests/test_jazn_run_studio_memory_view.py", "tests/test_memory_operator_report.py"],
+         "tests/test_jazn_run_studio_memory_view.py", "tests/test_memory_operator_report.py",
+         "tests/test_memory_evidence_compact_layout.py", "tests/test_memory_readiness_pin_diagnostics.py"],
         cwd=root, shell=False, check=False,
     ).returncode
 

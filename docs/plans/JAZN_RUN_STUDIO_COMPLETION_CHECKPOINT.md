@@ -10,7 +10,7 @@ merge this stacked continuation independently of review of #409–#411.
 
 ## Implementation checkpoint
 
-SYSTEM: `16.3.25.5.116.0.34.62-studio-memory-evidence-view`.
+SYSTEM: `16.3.25.5.116.0.34.63-studio-memory-offscreen-layout`.
 Native-lock checkpoint pushed and read back:
 `2438327f81085f2fcd6a379b6adfe39c3279975c` (source `380d825363e7abc25af06ba1d0f3978ac3f632ad`).
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/412.
@@ -205,3 +205,31 @@ Next exact steps: sync catalog, commit .62, canonical metadata write/check,
 push/read back SHA, run full deterministic suite/Pyright/doctor/package-smoke
 and final-source PR CI. Preserve the local MCP baseline limitation separately.
 Then continue remaining shared Studio workflows and real Ollama recovery.
+
+## .63 Windows offscreen follow-up
+
+.62 pushed checkpoint: `0dcba60c83bce352da8aba99e70cda4ae871d6b5`, source
+`2b5ec75f8c295c0c2cfb662f5d1e6303ce8a5c10`.
+Studio CI 40043367907 passed Linux 3.12–3.14 but failed Windows 3.12–3.14:
+the unchanged minimum-width assertion observed 170 px horizontal overflow.
+Exact local QT_QPA_PLATFORM=offscreen reproduction confirmed it. Widget geometry
+identified the optional pin button minimum width as 688 px. .63 shortens that
+button and tab labels, stacks pin form rows, and wraps observation timestamps.
+Both collapsed and expanded pins plus completed results now fit 860 px.
+Native-mode rendering alone had missed this platform/style difference.
+
+Exact offscreen regression set: 12 PASS, including the original unchanged
+assertion and two new expanded/completed-layout cases. No existing active test
+was edited. A separate new regression verifies that a supplied independent pin
+with no ready runtime is diagnosed as runtime_not_ready_for_pinned_provenance,
+rather than incorrectly claiming no pin was supplied. No readiness or activation
+gate was weakened. Versions/startup/deployment are synchronized at .63.
+
+Broader .63 targeted run: 37 PASS; Studio type gate zero errors/warnings;
+catalog regenerated and diff check PASS. Independent .62 metadata check PASS
+for source 2b5ec75f (3329 files); doctor and SYSTEM package-smoke exited 0.
+
+Final-source .63 full suite, metadata check, doctor/package-smoke and CI are
+required. .62 interim local runs started before this correction and must not
+be treated as .63 acceptance. Continue to classify the baseline-local MCP
+framing limitation separately. All P2–P5 remaining gates above are unchanged.

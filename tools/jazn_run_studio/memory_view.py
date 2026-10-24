@@ -94,18 +94,20 @@ class MemoryPanel(QWidget):
         picker.addWidget(choose)
         form.addRow("Projekt", picker)
         layout.addLayout(form)
-        pin_toggle = QPushButton("Niezależne referencje proweniencji (opcjonalne)")
+        pin_toggle = QPushButton("Referencje (opcjonalne)")
+        self.pin_toggle = pin_toggle
         pin_toggle.setCheckable(True)
         layout.addWidget(pin_toggle)
         pin_box = QWidget()
         pin_form = QFormLayout(pin_box)
+        pin_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
         pin_note = QLabel("Wyłącznie zamrożone artefakty i SHA-256 przypięte niezależnie przez operatora. Zgodność nie upoważnia do aktywacji.")
         pin_note.setWordWrap(True)
         pin_form.addRow(pin_note)
         self.pin_fields: dict[str, QLineEdit] = {}
-        for key, label in (("reference", "Niezależny artefakt referencyjny"),
-                           ("reference_sha256", "Oczekiwany SHA-256 referencji"),
-                           ("parent", "Niezależny artefakt rodzica"), ("parent_sha256", "Oczekiwany SHA-256 rodzica")):
+        for key, label in (("reference", "Artefakt referencyjny"),
+                           ("reference_sha256", "SHA-256 referencji"),
+                           ("parent", "Artefakt rodzica"), ("parent_sha256", "SHA-256 rodzica")):
             entry = QLineEdit()
             entry.setAccessibleName(label)
             pin_form.addRow(label, entry)
@@ -124,11 +126,12 @@ class MemoryPanel(QWidget):
         self.tabs = QTabWidget()
         self.tables: dict[str, QTableWidget] = {}
         self.timestamps: dict[str, QLabel] = {}
-        for operation, label in (("layout", "Źródła / target / staging / host"),
-                                 ("comparison", "Zawartość i proweniencja"), ("readiness", "Dowody runtime")):
+        for operation, label in (("layout", "Role baz"),
+                                 ("comparison", "Porównanie"), ("readiness", "Runtime")):
             page = QWidget()
             inner = QVBoxLayout(page)
             timestamp = QLabel("Jeszcze nie wykonano obserwacji")
+            timestamp.setWordWrap(True)
             inner.addWidget(timestamp)
             table = QTableWidget(0, 3)
             table.setHorizontalHeaderLabels(["Właściwość", "Stan", "Dowód / blokada"])

@@ -41,7 +41,9 @@ def assess_active_memory_readiness(
         checks[key] = {"state": state, "issue": _issue_code(row.get("issue") if isinstance(row, dict) else None)}
 
     runtime_ready = all(checks[key]["state"] == "verified" for key in _REQUIRED)
-    provenance: dict[str, Any] = {"state": "unverified", "issue": "operator_pins_not_supplied"}
+    provenance: dict[str, Any] = {"state": "unverified", "issue": (
+        "runtime_not_ready_for_pinned_provenance" if pinned_reference is not None else "operator_pins_not_supplied"
+    )}
     if pinned_reference is not None and runtime_ready:
         database = internal.get("observed_memory_path")
         if isinstance(database, str) and database:
