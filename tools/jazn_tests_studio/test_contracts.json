@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.71",
-  "active_definition_count": 2663,
+  "system_version": "16.3.25.5.116.0.34.72",
+  "active_definition_count": 2674,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25714,6 +25714,181 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jazn_run_studio_part2_error_journal.py::test_failure_journal_redacts_secret_values": {
+      "path": "tests/test_jazn_run_studio_part2_error_journal.py",
+      "name": "test_failure_journal_redacts_secret_values",
+      "purpose": "Failure journal redacts secret values",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_jazn_run_studio_part2_error_journal.py::test_journal_record_excludes_unrelated_sensitive_fields": {
+      "path": "tests/test_jazn_run_studio_part2_error_journal.py",
+      "name": "test_journal_record_excludes_unrelated_sensitive_fields",
+      "purpose": "Journal record excludes unrelated sensitive fields",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_jazn_run_studio_part2_error_journal.py::test_terminal_failed_event_still_emitted_if_error_disk_unavailable": {
+      "path": "tests/test_jazn_run_studio_part2_error_journal.py",
+      "name": "test_terminal_failed_event_still_emitted_if_error_disk_unavailable",
+      "purpose": "Terminal failed event still emitted if error disk unavailable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_dashboard_mirrors_observed_process_without_claiming_readiness": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_dashboard_mirrors_observed_process_without_claiming_readiness",
+      "purpose": "Dashboard mirrors observed process without claiming readiness",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_runtime_ready_requires_explicit_evidence": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_runtime_ready_requires_explicit_evidence",
+      "purpose": "Runtime ready requires explicit evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_lower_logs_panel_can_be_hidden_and_restored": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_lower_logs_panel_can_be_hidden_and_restored",
+      "purpose": "Lower logs panel can be hidden and restored",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_color_palette_accepts_valid_selection_without_premature_save": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_color_palette_accepts_valid_selection_without_premature_save",
+      "purpose": "Color palette accepts valid selection without premature save",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_color_palette_cancel_keeps_draft": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_color_palette_cancel_keeps_draft",
+      "purpose": "Color palette cancel keeps draft",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_uses_only_read_only_status_and_probe_contracts": {
+      "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
+      "name": "test_refresh_uses_only_read_only_status_and_probe_contracts",
+      "purpose": "Refresh uses only read only status and probe contracts",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_includes_configured_cloudflare_observation": {
+      "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
+      "name": "test_refresh_includes_configured_cloudflare_observation",
+      "purpose": "Refresh includes configured cloudflare observation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_propagates_failure_without_making_up_ready_state": {
+      "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
+      "name": "test_refresh_propagates_failure_without_making_up_ready_state",
+      "purpose": "Refresh propagates failure without making up ready state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
