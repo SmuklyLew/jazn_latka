@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "0ff0f2f66659e7fb12a4ea2b17095ed0549ef0cc",
+  "base_merge_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
   "base_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
-  "commit_date": "2026-10-24T02:14:21+02:00",
+  "commit_date": "2026-10-24T02:20:19+02:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-24T00:14:21+00:00",
+  "generated_at_utc": "2026-10-24T00:20:19+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "03b8a080bbe53851609763cdccca03a52a0dc952",
+  "git_tree_sha": "c92da4f966fead8e7439884e4773fbf3a8732965",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "0ff0f2f66659e7fb12a4ea2b17095ed0549ef0cc",
+    "source_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
     "source_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "0ff0f2f66659e7fb12a4ea2b17095ed0549ef0cc",
+  "source_commit": "4e227ebcb8ed7f77f1c516f8e3e4ed5c12be8a57",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.63-studio-memory-offscreen-layout",
   "tag": null,
