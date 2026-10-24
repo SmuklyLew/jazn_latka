@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.69",
+  "system_version": "16.3.25.5.116.0.34.70",
   "active_definition_count": 2661,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -24755,7 +24755,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 50
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_checkpoint_failure_preserves_pending_request": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -24772,7 +24772,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 68
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_unaccepted_transport_result_stays_pending_without_gui_final": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -24787,7 +24787,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 79
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_restart_reloads_pending_request_without_replay": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -24802,7 +24802,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 89
     },
     "tests/test_jazn_run_studio_http_framing.py::test_catalog_malformed_http_returns_structured_failure_without_body": {
       "path": "tests/test_jazn_run_studio_http_framing.py",
