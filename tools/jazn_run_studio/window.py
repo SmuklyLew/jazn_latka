@@ -67,6 +67,7 @@ class Window(QMainWindow):
         self._diagnostics()
         self._studios()
         self._tests_catalog()
+        self._local_acceptance()
         self._memory()
         self._settings()
         self._about()
@@ -308,6 +309,15 @@ class Window(QMainWindow):
         )
         self.tests_catalog_panel = TestCatalogPanel(self.core.root)
         layout.addWidget(self.tests_catalog_panel)
+
+    def _local_acceptance(self) -> None:
+        from .local_acceptance_view import LocalAcceptancePanel
+        layout = self.page(
+            "Odbiór lokalny",
+            "Testy do wykonania przez operatora: zapisz rzeczywisty wynik, dowód i archiwizuj po zaliczeniu.",
+        )
+        self.local_acceptance_panel = LocalAcceptancePanel(self.core.root)
+        layout.addWidget(self.local_acceptance_panel)
 
     def _memory(self) -> None:
         from .memory_view import MemoryPanel
