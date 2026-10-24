@@ -1,3 +1,4 @@
+# v116.0.34.77 isolates all package-smoke runtime state from operator workspace.
 # v116.0.34.76 binds Studio GUI lifecycle, chat and resume to one verified endpoint.
 # v116.0.34.75 fixes BOM/CRLF editor and current-line test governance.
 # v116.0.34.74 makes PACKAGE_VERSION canonical and DISTRIBUTION_VERSION a static-compatible alias.
@@ -124,9 +125,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.76"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.77"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "studio-chat-endpoint-continuity"
+PACKAGE_RELEASE_NAME = "studio-smoke-workspace-isolation"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
