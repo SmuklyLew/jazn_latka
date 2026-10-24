@@ -82,9 +82,12 @@ class ChatClient:
     def connect(self) -> None:
         if not self.core.settings.model:
             raise StudioError("Wybierz model Ollama w ustawieniach")
+        # Validate endpoint/model before reserving a long-lived job. Otherwise
+        # changing the selected daemon leaves an unfinished "chat" reservation
+        # and blocks the next connection attempt even though no process spawned.
+        argv = self.connection_command()
         job = self.core._reserve("chat")
         self.job = job
-        argv = self.connection_command()
         def worker() -> None:
             try:
                 proc = spawn(argv, cwd=self.core.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
