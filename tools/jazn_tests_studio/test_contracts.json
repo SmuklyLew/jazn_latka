@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.67",
-  "active_definition_count": 2650,
+  "system_version": "16.3.25.5.116.0.34.68",
+  "active_definition_count": 2653,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25430,6 +25430,51 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 105
+    },
+    "tests/test_jazn_run_studio_native_test_catalog_qt.py::test_native_catalog_is_read_only_and_loads_on_request": {
+      "path": "tests/test_jazn_run_studio_native_test_catalog_qt.py",
+      "name": "test_native_catalog_is_read_only_and_loads_on_request",
+      "purpose": "Native catalog is read only and loads on request",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jazn_run_studio_native_test_catalog_qt.py::test_catalog_loading_failure_is_not_shown_as_zero_passed": {
+      "path": "tests/test_jazn_run_studio_native_test_catalog_qt.py",
+      "name": "test_catalog_loading_failure_is_not_shown_as_zero_passed",
+      "purpose": "Catalog loading failure is not shown as zero passed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_jazn_run_studio_native_test_catalog_qt.py::test_catalog_limits_visible_rows_with_explicit_count": {
+      "path": "tests/test_jazn_run_studio_native_test_catalog_qt.py",
+      "name": "test_catalog_limits_visible_rows_with_explicit_count",
+      "purpose": "Catalog limits visible rows with explicit count",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_jazn_run_studio_p5_artifact_evidence.py::test_quarantined_or_missing_exe_cannot_be_promoted": {
       "path": "tests/test_jazn_run_studio_p5_artifact_evidence.py",
