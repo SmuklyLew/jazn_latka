@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.73",
-  "active_definition_count": 2675,
+  "system_version": "16.3.25.5.116.0.34.74",
+  "active_definition_count": 2681,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -52994,6 +52994,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 61
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_one_editable_literal_and_compatible_public_alias": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_one_editable_literal_and_compatible_public_alias",
+      "purpose": "One editable literal and compatible public alias",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_alias_parsed_without_import_and_without_execution": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_alias_parsed_without_import_and_without_execution",
+      "purpose": "Alias parsed without import and without execution",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_unsafe_or_unresolved_alias_is_rejected": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_unsafe_or_unresolved_alias_is_rejected",
+      "purpose": "Unsafe or unresolved alias is rejected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_historical_two_literal_version_retains_read_support": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_historical_two_literal_version_retains_read_support",
+      "purpose": "Historical two literal version retains read support",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_version_rebuild_preserves_alias_on_modern_write": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_version_rebuild_preserves_alias_on_modern_write",
+      "purpose": "Version rebuild preserves alias on modern write",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_single_canonical_version_alias_v74.py::test_version_rebuild_migrates_legacy_literal_on_new_write": {
+      "path": "tests/test_single_canonical_version_alias_v74.py",
+      "name": "test_version_rebuild_migrates_legacy_literal_on_new_write",
+      "purpose": "Version rebuild migrates legacy literal on new write",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.version_source",
+        "latka_jazn.tools.release_metadata_sync",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
     },
     "tests/test_single_canonical_workspace_contract.py::test_release_identity_and_release_metadata_accept_unprefixed_version": {
       "path": "tests/test_single_canonical_workspace_contract.py",
