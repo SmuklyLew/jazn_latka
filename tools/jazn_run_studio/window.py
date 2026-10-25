@@ -390,8 +390,8 @@ class Window(QMainWindow):
     def _local_acceptance(self) -> None:
         from .local_acceptance_view import LocalAcceptancePanel
         layout = self.page(
-            "TPA — Testy przepuszczania aktualizacji",
-            "Automatyczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
+            "TPA",
+            "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
         )
         self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
         layout.addWidget(self.local_acceptance_panel)
