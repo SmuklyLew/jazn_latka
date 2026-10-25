@@ -111,7 +111,7 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     from pathlib import Path
     from latka_jazn.tools.configuration_studio import (
         SETTINGS, ENUMS, inspect_system, preview_profile_changes, profile_snapshot,
-        restore_previous_profile, save_profile, validate_values, validated_launch_values,
+        restore_previous_profile, save_profile, validate_values, validated_launch_values, profile_file,
     )
     root = Path.cwd()
     if operation == "profile-env":
@@ -131,6 +131,7 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         restore_previous_profile(root, expected_sha256=data.get("digest"))
     values, digest = profile_snapshot(root)
     return {"schema": "jazn_config_snapshot/v1", "values": values, "digest": digest,
+            "profile_path": str(profile_file(root)),
             "fields": [{"key": s.key, "title": s.title, "hint": s.hint,
                         "kind": s.kind, "section": s.section,
                         "choices": sorted(ENUMS.get(s.kind, []))} for s in SETTINGS],
