@@ -19,6 +19,7 @@ from PySide6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, Signa
 
 from latka_jazn.tools.application_shell.operator_paths import operator_file
 from .core import Redactor
+from .local_acceptance import scope_version
 
 # Keep test filenames literal: never accept arbitrary shell commands or node IDs.
 AUTOMATED_CASES: dict[str, tuple[str, ...]] = {
@@ -109,12 +110,12 @@ class SafeTPARunner(QObject):
         self.process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         self.active = True
         self.progress.emit("TPA: uruchamianie izolowanych testów regresyjnych…")
+        self.timer.start(TIMEOUT_MS)
         self.process.start(str(selected), [
             "-X", "utf8", "-m", "pytest", "-q", "-p", "no:cacheprovider",
             "--tb=short", "--basetemp", str(isolated / "pytest"),
             *self.files,
         ])
-        self.timer.start(TIMEOUT_MS)
 
     def stop(self) -> None:
         if not self.active:
@@ -170,7 +171,7 @@ class SafeTPARunner(QObject):
                   else "PASS" if normal and code == 0 else "FAIL")
         report: dict[str, Any] = {
             "schema_version": "jazn_tpa_automatic_subcheck/v1",
-            "version_scope": "source-local",
+            "version_scope": scope_version(self.root),
             "started_utc": self.started,
             "finished_utc": datetime.now(timezone.utc).isoformat(),
             "case_ids": list(self.case_ids),
@@ -179,7 +180,7 @@ class SafeTPARunner(QObject):
             "exit_code": code,
             "reason": self.reason or ("tests_failed" if status == "FAIL" else "completed"),
             "manual_gate_automatically_passed": False,
-            "live_runtime_or_memory_touched": False,
+            "production_resources_intentionally_touched": False,
             "output_redacted_excerpt": self.output[:MAX_OUTPUT],
         }
         try:
