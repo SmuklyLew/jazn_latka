@@ -147,7 +147,8 @@ def apply_system_config(root: str | Path, environment: MutableMapping[str, str])
 
 
 def write_system_config(root: str | Path, values: Mapping[str, str], studio: Mapping[str, str],
-                        *, expected_digest: str | None) -> SystemConfig:
+                        *, expected_digest: str | None,
+                        expected_profile_sha256: str | None = None) -> SystemConfig:
     path = config_path(root)
     current = read_system_config(root)
     if current.digest != expected_digest:
@@ -169,13 +170,36 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
                 handle.write(path.read_bytes())
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(prev_stage, backup)
-            prev_stage = None
+            # Keep rollback bytes staged until the operator profile CAS passes.
+            # A rejected migration must not modify the existing backup.
         fd, stage = tempfile.mkstemp(dir=path.parent, prefix=".jazn-config-", suffix=".tmp")
         with os.fdopen(fd, "wb") as handle:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
+        # Migrations perform a final source CAS at the actual commit boundary.
+        # The caller holds the shared profile lock through this os.replace;
+        # independent uncooperative filesystem writes cannot be fully excluded.
+        if expected_profile_sha256 is not None:
+            from latka_jazn.tools.configuration_studio import profile_file
+            try:
+                # Compare raw bytes at the commit boundary under the shared
+                # writer guard. The approved structured snapshot was validated
+                # above; a changed source is now rejected before os.replace.
+                commit_profile_path = profile_file(root)
+                if not commit_profile_path.is_file() or commit_profile_path.is_symlink():
+                    raise SystemConfigError("Profil operatora nie jest zwykłym plikiem.")
+                commit_profile_sha256 = sha256(commit_profile_path.read_bytes()).hexdigest()
+            except OSError as exc:
+                raise SystemConfigError("Nie można ponownie odczytać profilu operatora.") from exc
+            if commit_profile_sha256 != expected_profile_sha256:
+                raise SystemConfigError(
+                    "Profil operatora zmieniono przed zapisem konfiguracji ROOT. "
+                    "Wczytaj profil ponownie."
+                )
+        if prev_stage is not None:
+            os.replace(prev_stage, backup)
+            prev_stage = None
         os.replace(stage, path)
         stage = None
     finally:
@@ -228,6 +252,7 @@ def migrate_operator_profile(
                 return current
             return write_system_config(
                 root, merged, current.studio, expected_digest=current.digest,
+                expected_profile_sha256=digest,
             )
     except sqlite3.OperationalError as exc:
         raise SystemConfigError("Nie uzyskano blokady profilu operatora.") from exc

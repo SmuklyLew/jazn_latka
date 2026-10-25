@@ -1,4 +1,7 @@
 # Python/cache
+# Build outputs are reproducible and never belong in Git/SYSTEM.
+/build/
+**/local_private_canon_extension.py
 __pycache__/
 *.py[cod]
 *.pyo

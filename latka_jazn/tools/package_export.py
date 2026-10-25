@@ -29,6 +29,7 @@ SYSTEM_EXCLUDE_PREFIXES = (
     "workspace_runtime/",
     "exports/",
     "backups/",
+    "build/",
 )
 NLP_INCLUDE_PREFIXES = (
     "latka_jazn/nlp/",
@@ -41,6 +42,7 @@ GITHUB_SAFE_EXCLUDE_PREFIXES = (
     "workspace_runtime/",
     "exports/",
     "backups/",
+    "build/",
 )
 # Source-safe means safe by provenance and content, not merely by directory.
 GITHUB_SAFE_PRIVATE_EXACT = {
@@ -52,6 +54,7 @@ _PRIVATE_MARKER_PARTS = (
     ("raw_conversation", "embedded_source"),
 )
 COMMON_EXCLUDE_PARTS = {
+    "build",
     "__pycache__",
     ".pytest_cache",
     ".mypy_cache",
@@ -80,6 +83,7 @@ FORBIDDEN_PACKAGE_PREFIXES = (
     "status/",
     "logs/",
     "log/",
+    "build/",
     ".pytest_cache/",
 )
 FORBIDDEN_PACKAGE_EXACT = {
@@ -263,6 +267,10 @@ def forbidden_package_reason(rel: str) -> str | None:
         rel = validate_safe_relative_path(str(rel))
     except UnsafeRelativePathError as exc:
         return str(exc)
+    # Treat generated build roots consistently on case-sensitive Linux and
+    # case-insensitive Windows, including explicitly supplied package plans.
+    if rel.casefold() == "build" or rel.casefold().startswith("build/"):
+        return "generated build directory must never enter a source package"
     parts = set(Path(rel).parts)
     if "__pycache__" in parts:
         return "__pycache__ is never packaged"
@@ -270,6 +278,8 @@ def forbidden_package_reason(rel: str) -> str | None:
         return ".pytest_cache is never packaged"
     if rel in FORBIDDEN_PACKAGE_EXACT:
         return "runtime/root marker is never packaged"
+    if rel.casefold().split("/")[-1] == "local_private_canon_extension.py":
+        return "local private canon cannot be bundled in a SYSTEM source export"
     if rel.startswith(FORBIDDEN_PACKAGE_PREFIXES):
         return "runtime or bridge queue directory is never packaged"
     if any(Path(rel).match(pattern) for pattern in FORBIDDEN_PACKAGE_GLOBS):
@@ -331,7 +341,7 @@ def private_generated_source_reason(path: Path, rel: str) -> str | None:
     scanner implementation cannot match itself merely because it documents them.
     """
     rel = _normalize_package_rel(rel)
-    if rel in GITHUB_SAFE_PRIVATE_EXACT:
+    if rel in GITHUB_SAFE_PRIVATE_EXACT or rel.endswith("/local_private_canon_extension.py"):
         return "known_private_generated_source"
     if path.suffix.lower() not in {".py", ".json", ".jsonl", ".md", ".txt"}:
         return None

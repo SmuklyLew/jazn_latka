@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.90",
-  "active_definition_count": 2727,
+  "system_version": "16.3.25.5.116.0.34.92",
+  "active_definition_count": 2734,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26735,6 +26735,86 @@
       "description_source": "source_identity",
       "line": 61
     },
+    "tests/test_jazn_secure_generated_release_paths.py::test_generated_and_private_paths_cannot_enter_integrity_manifest": {
+      "path": "tests/test_jazn_secure_generated_release_paths.py",
+      "name": "test_generated_and_private_paths_cannot_enter_integrity_manifest",
+      "purpose": "Generated and private paths cannot enter integrity manifest",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_jazn_secure_generated_release_paths.py::test_export_plans_reject_generated_and_private_paths": {
+      "path": "tests/test_jazn_secure_generated_release_paths.py",
+      "name": "test_export_plans_reject_generated_and_private_paths",
+      "purpose": "Export plans reject generated and private paths",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "PackagePlanValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_secure_generated_release_paths.py::test_source_export_ignores_generated_tree_even_when_present": {
+      "path": "tests/test_jazn_secure_generated_release_paths.py",
+      "name": "test_source_export_ignores_generated_tree_even_when_present",
+      "purpose": "Source export ignores generated tree even when present",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_jazn_secure_generated_release_paths.py::test_canonical_release_staging_fails_closed_on_tracked_build": {
+      "path": "tests/test_jazn_secure_generated_release_paths.py",
+      "name": "test_canonical_release_staging_fails_closed_on_tracked_build",
+      "purpose": "Canonical release staging fails closed on tracked build",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SourceProvenanceError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
       "name": "test_mcp_2026_request_metadata",
@@ -43159,6 +43239,48 @@
       "description_source": "source_identity",
       "line": 11
     },
+    "tests/test_package_export_generated_path_caseguard.py::test_explicit_plans_reject_case_variant_build_roots": {
+      "path": "tests/test_package_export_generated_path_caseguard.py",
+      "name": "test_explicit_plans_reject_case_variant_build_roots",
+      "purpose": "Explicit plans reject case variant build roots",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "PackagePlanValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_package_export_generated_path_caseguard.py::test_system_export_does_not_include_mixed_case_build_tree": {
+      "path": "tests/test_package_export_generated_path_caseguard.py",
+      "name": "test_system_export_does_not_include_mixed_case_build_tree",
+      "purpose": "System export does not include mixed case build tree",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
     "tests/test_package_generator_release_version.py::test_release_version_is_read_from_canonical_version_file": {
       "path": "tests/test_package_generator_release_version.py",
       "name": "test_release_version_is_read_from_canonical_version_file",
@@ -56275,6 +56397,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 84
+    },
+    "tests/test_system_config_commit_boundary_cas.py::test_changed_profile_does_not_modify_root_or_previous_backup": {
+      "path": "tests/test_system_config_commit_boundary_cas.py",
+      "name": "test_changed_profile_does_not_modify_root_or_previous_backup",
+      "purpose": "Changed profile does not modify root or previous backup",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",
