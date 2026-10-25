@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d1a28fa1677f905a42672404661f5a1f047a4be8",
-  "base_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity",
-  "commit_date": "2026-10-25T17:07:40Z",
+  "base_merge_commit": "50b7e3f5a48d5b44f43d93c9771b0a55c055ffa8",
+  "base_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence",
+  "commit_date": "2026-10-25T17:15:07Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-25T17:07:40+00:00",
+  "generated_at_utc": "2026-10-25T17:15:07+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "781e795f0d6f1bfa4f9b7f8ac685306933ad16db",
+  "git_tree_sha": "93b5386f7db04de5b38a6e778e2f7927f7fd6805",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d1a28fa1677f905a42672404661f5a1f047a4be8",
-    "source_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity"
+    "source_commit": "50b7e3f5a48d5b44f43d93c9771b0a55c055ffa8",
+    "source_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity",
+  "release_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity",
+  "runtime_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d1a28fa1677f905a42672404661f5a1f047a4be8",
+  "source_commit": "50b7e3f5a48d5b44f43d93c9771b0a55c055ffa8",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity",
+  "source_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.88-native-configuration-qt-parity",
+  "update_version": "16.3.25.5.116.0.34.89-native-studio-qt-ci-convergence",
   "version_source": "latka_jazn/version.py"
 }
