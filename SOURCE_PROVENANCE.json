@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a2d4a749e644c238b7d31d4bbeb83e09a4a3be2c",
+  "base_merge_commit": "2329bc402e90f5ba7c4d8399dc6c8d999d2064cb",
   "base_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-  "commit_date": "2026-10-25T12:22:28+01:00",
+  "commit_date": "2026-10-25T12:25:45+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-25T11:22:28+00:00",
+  "generated_at_utc": "2026-10-25T11:25:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "919dea0df5b69c46394be2ee9378df0e350112ba",
+  "git_tree_sha": "617fa548b7315d16bbe26fc23c1a75534f6e7798",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "a2d4a749e644c238b7d31d4bbeb83e09a4a3be2c",
+    "source_commit": "2329bc402e90f5ba7c4d8399dc6c8d999d2064cb",
     "source_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "a2d4a749e644c238b7d31d4bbeb83e09a4a3be2c",
+  "source_commit": "2329bc402e90f5ba7c4d8399dc6c8d999d2064cb",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
   "tag": null,
