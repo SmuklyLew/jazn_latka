@@ -83,6 +83,7 @@ FORBIDDEN_PACKAGE_PREFIXES = (
     "status/",
     "logs/",
     "log/",
+    "build/",
     ".pytest_cache/",
 )
 FORBIDDEN_PACKAGE_EXACT = {
@@ -273,6 +274,8 @@ def forbidden_package_reason(rel: str) -> str | None:
         return ".pytest_cache is never packaged"
     if rel in FORBIDDEN_PACKAGE_EXACT:
         return "runtime/root marker is never packaged"
+    if rel.casefold().split("/")[-1] == "local_private_canon_extension.py":
+        return "local private canon cannot be bundled in a SYSTEM source export"
     if rel.startswith(FORBIDDEN_PACKAGE_PREFIXES):
         return "runtime or bridge queue directory is never packaged"
     if any(Path(rel).match(pattern) for pattern in FORBIDDEN_PACKAGE_GLOBS):
