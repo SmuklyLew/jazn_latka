@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.88",
-  "active_definition_count": 2718,
+  "active_definition_count": 2719,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24810,16 +24810,16 @@
       "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
       "name": "test_profile_draft_does_not_save_before_preview",
       "purpose": "Profile draft does not save before preview",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 42
+      "line": 55
     },
     "tests/test_jazn_run_studio_configuration_native_qt.py::test_stale_async_preview_cannot_approve_new_draft": {
       "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
@@ -24834,7 +24834,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 82
     },
     "tests/test_jazn_run_studio_configuration_native_qt.py::test_failed_write_never_marks_draft_saved": {
       "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
@@ -24849,7 +24849,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 80
+      "line": 97
     },
     "tests/test_jazn_run_studio_configuration_native_qt.py::test_copy_command_requires_absolute_verified_profile_path": {
       "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
@@ -24866,7 +24866,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 114
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -26516,6 +26516,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_jazn_run_studio_version_native_qt.py::test_readonly_version_panel_dispatches_canonical_worker_without_writes": {
+      "path": "tests/test_jazn_run_studio_version_native_qt.py",
+      "name": "test_readonly_version_panel_dispatches_canonical_worker_without_writes",
+      "purpose": "Readonly version panel dispatches canonical worker without writes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_shared_palette_has_independent_light_dark_purple_and_custom_modes": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
