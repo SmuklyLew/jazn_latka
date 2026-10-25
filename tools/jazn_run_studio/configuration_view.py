@@ -46,6 +46,7 @@ class ConfigurationPanel(QWidget):
         self.profile_path = ""
         self.widgets: dict[str, QLineEdit | QComboBox] = {}
         self.preview_hash = ""
+        self.requested_preview_hash = ""
         self.busy = ""
         self.loaded_once = False
         main = QVBoxLayout(self)
@@ -136,6 +137,8 @@ class ConfigurationPanel(QWidget):
         if self.busy:
             raise StudioError("Inna operacja Konfiguracji jest jeszcze wykonywana.")
         self.busy = operation
+        if operation == "profile-preview" and data is not None:
+            self.requested_preview_hash = profile_fingerprint(data["values"], data.get("digest"))
         self._enabled(self.loaded_once)
         try:
             self.core.studio_helper(operation, data=data)
@@ -235,9 +238,11 @@ class ConfigurationPanel(QWidget):
                     lines.append("  zapisane: " + str(item.get("saved")))
                     lines.append("  projekt:  " + str(item.get("proposed")))
             self.details.setPlainText("\n".join(lines))
-            if value.get("changes_count") and set(value.get("changed_keys", [])) == set(
+            if (value.get("changes_count") and
+                    self.requested_preview_hash == profile_fingerprint(self.values(), self.digest) and
+                    set(value.get("changed_keys", [])) == set(
                 k for k in self.widgets if self.loaded.get(k) != self.values().get(k)
-            ):
+            )):
                 self.preview_hash = profile_fingerprint(self.values(), self.digest)
             self.status.setText("Podgląd odczytowy zatwierdzony do ręcznej decyzji.")
         elif mode == "profile-paths":
@@ -301,6 +306,7 @@ class ConfigurationPanel(QWidget):
 
     def _failed(self, reason: str) -> None:
         self.preview_hash = ""
+        self.requested_preview_hash = ""
         self.status.setText("BŁĄD Konfiguracji: " + reason)
         self.busy = ""
         self._enabled(self.loaded_once)
