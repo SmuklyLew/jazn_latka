@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.87",
-  "active_definition_count": 2714,
+  "system_version": "16.3.25.5.116.0.34.88",
+  "active_definition_count": 2718,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24805,6 +24805,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 81
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_profile_draft_does_not_save_before_preview": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_profile_draft_does_not_save_before_preview",
+      "purpose": "Profile draft does not save before preview",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_stale_async_preview_cannot_approve_new_draft": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_stale_async_preview_cannot_approve_new_draft",
+      "purpose": "Stale async preview cannot approve new draft",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_failed_write_never_marks_draft_saved": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_failed_write_never_marks_draft_saved",
+      "purpose": "Failed write never marks draft saved",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_copy_command_requires_absolute_verified_profile_path": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_copy_command_requires_absolute_verified_profile_path",
+      "purpose": "Copy command requires absolute verified profile path",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
