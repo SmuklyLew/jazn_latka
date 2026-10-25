@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "22f7440089259c365f7cff13d9ee41a7daee6b36",
+  "base_merge_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
   "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
-  "commit_date": "2026-10-25T20:28:41Z",
+  "commit_date": "2026-10-25T22:24:13+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-25T20:28:41+00:00",
+  "generated_at_utc": "2026-10-25T21:24:13+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "7a9136de15693ed411e7b947cf1b1779366f67d4",
+  "git_tree_sha": "b0b3e868e37ae5cff9e6559b4312248f296d360e",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "86b51597a1d5992b011e45e208bd0755fb040453",
-    "base_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
+    "base_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
+    "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "22f7440089259c365f7cff13d9ee41a7daee6b36",
+    "source_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
     "source_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "22f7440089259c365f7cff13d9ee41a7daee6b36",
+  "source_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
   "tag": null,
