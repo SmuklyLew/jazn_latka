@@ -1,4 +1,5 @@
-# v116.0.34.90 binds operator-approved profile CAS across native ROOT migration and protects concurrent writes.\n# v116.0.34.89 strengthens native Studio Qt test/type gates and review-safe release readiness.
+# v116.0.34.90 binds operator-approved profile CAS across native ROOT migration and protects concurrent writes.
+# v116.0.34.89 strengthens native Studio Qt test/type gates and review-safe release readiness.
 # v116.0.34.88 begins native Qt Configuration Studio parity with canonical CAS validation, dry-run and restore, and explicit migration gates.
 # v116.0.34.87 synchronizes canonical startup and MCP deployment identities for master promotion.
 # v116.0.34.86 adds TPA isolated regression subchecks, purple workbench refinements, and clearer operator status.
