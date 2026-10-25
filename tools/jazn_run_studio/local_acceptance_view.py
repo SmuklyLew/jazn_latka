@@ -25,7 +25,8 @@ class LocalAcceptancePanel(QWidget):
         self.data: dict = {}
         self.digest: str | None = None
         self.rows: list[dict[str, str]] = []
-        self.runner = SafeTPARunner(root, python or sys.executable, self)
+        interpreter = python or ("" if getattr(sys, "frozen", False) else sys.executable)
+        self.runner = SafeTPARunner(root, interpreter, self)
         self.runner.progress.connect(self._auto_progress)
         self.runner.completed.connect(self._auto_completed)
         layout = QVBoxLayout(self)
