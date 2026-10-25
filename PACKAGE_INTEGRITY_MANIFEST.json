@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
-  "runtime_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
-  "package_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
-  "generated_at_utc": "2026-10-25T19:56:28+00:00",
-  "updated_at_utc": "2026-10-25T19:56:28+00:00",
+  "version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "runtime_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "package_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "generated_at_utc": "2026-10-25T20:28:41+00:00",
+  "updated_at_utc": "2026-10-25T20:28:41+00:00",
   "start_file": "run.py",
-  "file_count": 3400,
-  "static_file_count": 3400,
+  "file_count": 3401,
+  "static_file_count": 3401,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -399,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2986,
-      "sha256": "a3c40815b7cc7bf63854124f4548414d34c05ad776479fd3daeb6226fd00dfe0",
+      "size_bytes": 2974,
+      "sha256": "3467c6b7b9feb03a584d73c886f2a5fcec89f1d7a6ff7b9cf67d2bba94d08fd0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1950,
-      "sha256": "c7933778bec6d47335867d696e2c273283cf6a9258904c331f6573c46bea1547",
+      "size_bytes": 1948,
+      "sha256": "fa5e74ea056bb3f5faaceeacf0a4a7788875338512219aac3193404a65b057db",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9517,7 +9517,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "65bf122c4b45d2a98d0c6e5b161b3b04bf5c08c94678724f5a607959f890c771",
+      "sha256": "80396d92e02a7dd394db2b5bd93ca2ee2bdf58b2e0274acb2e9b8337092efab7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10857,8 +10857,8 @@
     },
     {
       "path": "latka_jazn/tools/package_export.py",
-      "size_bytes": 29019,
-      "sha256": "419c84fa03def2134ea5db8457f8b8d62bdd66d9776511229df3738bf789102a",
+      "size_bytes": 29321,
+      "sha256": "ed89e7158f587cb61e7810528479c67f22a3ba45b5ceef279756580201aee408",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11019,8 +11019,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 17346,
-      "sha256": "9c2836376271f19a8264d1427515e67266882c31099b8a454c594ef713dab25a",
+      "size_bytes": 17452,
+      "sha256": "71594febfdbcc24842e0cd94b09e825c2b173f61338c25ebcec57cc19aa31b76",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28496,6 +28496,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_package_export_generated_path_caseguard.py",
+      "size_bytes": 1306,
+      "sha256": "1bb5c8b442f154a266302f448b955a7e7e9204b0e6b51784599291fd6e49b7c6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_package_generator_release_version.py",
       "size_bytes": 2128,
       "sha256": "055149ae99e59ccae8286f856645fb72d34afa039d58e73ba557f10cb5702376",
@@ -30396,8 +30405,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2482801,
-      "sha256": "8615ee8b20122b9f9c36a27f557c394103acd7af048b94420b3d5334d4a040c5",
+      "size_bytes": 2484410,
+      "sha256": "e81ed4d6ae0544d1a6987db635b020dbe9707f3b37ac73d113d919a0d73fb7b5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31054,11 +31063,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+  "release_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
-    "package_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
-    "release_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas"
+    "runtime_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+    "package_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+    "release_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions"
   },
   "legacy_aliases": {
     "version": "release_version"
