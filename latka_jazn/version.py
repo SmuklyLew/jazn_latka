@@ -1,3 +1,33 @@
+# v116.0.34.87 synchronizes canonical startup and MCP deployment identities for master promotion.
+# v116.0.34.86 adds TPA isolated regression subchecks, purple workbench refinements, and clearer operator status.
+# v116.0.34.85 adds reusable purple workbench shell and keyboard-resizable panels.
+# v116.0.34.84 creates individual local acceptance gates for all twelve studios.
+# v116.0.34.83 adds version-scoped operator-only manual acceptance queue and archive.
+# v116.0.34.82 validates chat reconnect routes before process reservation.
+# v116.0.34.81 restores dependency-empty preflight before ROOT config import.
+# v116.0.34.80 validates MEMORY database paths and protects ROOT from workspace overlap.
+# v116.0.34.79 repairs smoke regression syntax and aligns runtime contract versions.
+# v116.0.34.78 adds ROOT-local system config, shared loader and migration.
+# v116.0.34.77 isolates all package-smoke runtime state from operator workspace.
+# v116.0.34.76 binds Studio GUI lifecycle, chat and resume to one verified endpoint.
+# v116.0.34.75 fixes BOM/CRLF editor and current-line test governance.
+# v116.0.34.74 makes PACKAGE_VERSION canonical and DISTRIBUTION_VERSION a static-compatible alias.
+# v116.0.34.73 corrects release distribution identity for the part-2 Studio branch.
+# v116.0.34.72 adds part-2 operator status mirrors, log controls, Qt palette and redacted rotating errors.
+# v116.0.34.71 fixes onedir bundle manifest import for directly executed build.py.
+# v116.0.34.70 strengthens isolated Qt delivery test typing and cross-platform regression selection.
+# v116.0.34.69 preserves accepted Studio finals until GUI acknowledgment and inventories all onedir files.
+# v116.0.34.68 adds a native read-only Test Studio catalogue and expectation viewer.
+# v116.0.34.67 adds numerical per-stage diagnostics to the unchanged Windows health-check <5s gate.
+# v116.0.34.66 provides fail-closed Studio P5 frozen-artifact evidence and sanitized acceptance gates.
+# v116.0.34.65 adds canonical preview/confirm for shared Studio operations (alpha).
+# v116.0.34.64 keeps Qt MEMORY failure diagnostics to short reason codes; raw errors remain off the UI.
+# v116.0.34.57 requires security-patched Brotli for archive release bundles.
+# v116.0.34.56 secures configurable loopback MCP startup and reliable Studio GUI event delivery.
+# v116.0.34.55 keeps HTTP probe completion distinct from real Studio service readiness.
+# v116.0.34.54 repairs synthetic HTTP shutdown fixture while retaining native socket regression.
+# v116.0.34.53 drains authenticated shutdown HTTP request bodies and tests real TCP acknowledgements on Windows.
+# v116.0.34.52 initiates bounded daemon shutdown before slow/disconnected HTTP acknowledgements.
 # v116.0.34.41 adds first-run preflight, source-bound memory freshness and model/telemetry truth gates.
 # v116.0.34.39002 hardens OAuth staging var preservation, token claims and real MCP/workerd CI.
 # v116.0.34.39 guards isolated OAuth staging config with static preflight and regression CI.
@@ -105,9 +135,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-DISTRIBUTION_VERSION = "16.3.25.5.116.0.34.42"
-PACKAGE_VERSION = "16.3.25.5.116.0.34.42"
-PACKAGE_RELEASE_NAME = "supervisor-mcp-staging-preflight"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.87"
+DISTRIBUTION_VERSION = PACKAGE_VERSION
+PACKAGE_RELEASE_NAME = "master-promotion-contract-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

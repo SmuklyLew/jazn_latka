@@ -69,12 +69,17 @@ jobs:
           tests/test_configuration_studio_gui_windows.py
           tests/test_configuration_studio_hardening.py
 
-      - name: Test model and actual Windows Tk controls
+      # Real Tk widgets need a fresh Tcl interpreter. Keep the GUI case
+      # mandatory; do not mix it with model tests that may alter Tcl state.
+      - name: Test actual Windows Tk controls in a fresh Python process
+        shell: pwsh
+        run: python -X utf8 -m pytest -q -ra --tb=short tests/test_configuration_studio_gui_windows.py
+
+      - name: Test model and hardening separately
         shell: pwsh
         run: >-
           python -X utf8 -m pytest -q -ra --tb=short
           tests/test_configuration_studio.py
-          tests/test_configuration_studio_gui_windows.py
           tests/test_configuration_studio_hardening.py
 
       - name: Check CLI read-only path map

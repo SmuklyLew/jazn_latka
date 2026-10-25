@@ -78,9 +78,17 @@ jobs:
           tests/test_memory_desktop_workspace.py
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
-          tests/test_memory_desktop_actions_windows.py
           tests/test_memory_desktop_source_picker_windows.py
           tests/test_memory_desktop_source_paths.py
+
+      # Tk is process-global. Preserve native GUI coverage in a clean process,
+      # not mixed with the 60+ model/migration cases in the same interpreter.
+      - name: Run Windows Memory GUI widgets in a fresh Python process
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          tests/test_memory_desktop_actions_windows.py
 
       - name: Run Memory Rebuild v2.4 tests
         shell: pwsh

@@ -1,0 +1,4 @@
+# Compatibility installation entrypoint. Run from the repository root:
+# python -m pip install -r tools/jazn_run_studio/requirements.txt
+# Versions and dependencies are owned exclusively by pyproject.toml.
+.[run-studio]

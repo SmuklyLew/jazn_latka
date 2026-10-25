@@ -133,6 +133,15 @@ if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-prefligh
 
 if __name__ == "__main__":
     _bootstrap_entrypoint_environment(list(sys.argv[1:]))
+    # Dependency-empty cleanroom must reach its established exit contract
+    # before resolving optional project-local configuration modules.
+    from latka_jazn.core.system_config import SystemConfigError, apply_system_config
+    try:
+        apply_system_config(Path(__file__).resolve().parent, os.environ)
+    except SystemConfigError as exc:
+        print(json.dumps({"ok": False, "error_code": "system_config_invalid",
+                          "reason": str(exc)}, ensure_ascii=False), file=sys.stderr)
+        raise SystemExit(78) from exc
 
 # Install runtime-wide compatibility overlays before any import can transitively
 # load runtime_daemon/chat_command_contract. This was previously owned by
@@ -1558,7 +1567,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
             )
             payload["trusted_time_injection"] = injected
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
-        return 0
+        return 0 if payload.get("ok") is True else 1
 
     if ns.daemon_refresh_time:
         cfg = config or JaznConfig()
@@ -1605,13 +1614,14 @@ def legacy_main(argv: list[str] | None = None) -> int:
 
     if ns.daemon_stop:
         cfg = config or JaznConfig()
-        print(json.dumps(stop_daemon(
+        payload = stop_daemon(
             cfg,
             host=ns.daemon_host,
             port=ns.daemon_port,
             marker_output=ns.daemon_marker_output,
-        ), ensure_ascii=False, indent=2, sort_keys=True))
-        return 0
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0 if payload.get("ok") is True else 1
 
 
     if ns.daemon_autostart_policy:
