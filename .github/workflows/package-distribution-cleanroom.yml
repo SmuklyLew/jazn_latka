@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [master]
   push:
-    branches: [master, 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite']
+    branches: [master, 'fix/jazn-v11603491-security-runtime-release-20261025', 'upgrade/v16.3.25.5-package-distribution-convergence', 'upgrade/v16.3.25.5-package-distribution-convergence-final', 'upgrade/package-generator-v10.1.86.0-rewrite']
   workflow_dispatch:
 
 permissions:
