@@ -39,6 +39,12 @@ def panel(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, qapp: QApplication) -
     qapp.processEvents()
 
 
+def mode_choice(panel: ConfigurationPanel) -> QComboBox:
+    item = panel.widgets["JAZN_MEMORY_MODE"]
+    assert isinstance(item, QComboBox)
+    return item
+
+
 def sample_snapshot() -> dict:
     return {
         "schema": "jazn_config_snapshot/v1",
@@ -58,9 +64,7 @@ def test_profile_draft_does_not_save_before_preview(panel: ConfigurationPanel) -
     assert not panel.save_button.isEnabled()
     panel.receive("helper:profile-read:", sample_snapshot())
     assert panel.loaded_once and not panel.dirty
-    item = panel.widgets["JAZN_MEMORY_MODE"]
-    assert isinstance(item, QComboBox)
-    item.setCurrentText("off")
+    mode_choice(panel).setCurrentText("off")
     assert panel.dirty
     assert not panel.save_button.isEnabled()
     panel.preview()
@@ -72,9 +76,7 @@ def test_profile_draft_does_not_save_before_preview(panel: ConfigurationPanel) -
                          "title": "MEMORY", "saved": "optional", "proposed": "off"}]}
     panel.receive("helper:profile-preview:", preview)
     assert panel.save_button.isEnabled()
-    item = panel.widgets["JAZN_MEMORY_MODE"]
-    assert isinstance(item, QComboBox)
-    item.setCurrentText("required")
+    mode_choice(panel).setCurrentText("required")
     assert not panel.save_button.isEnabled()
     assert panel.preview_hash == ""
 
@@ -82,9 +84,9 @@ def test_profile_draft_does_not_save_before_preview(panel: ConfigurationPanel) -
 def test_stale_async_preview_cannot_approve_new_draft(panel: ConfigurationPanel) -> None:
     panel.reload()
     panel.receive("helper:profile-read:", sample_snapshot())
-    panel.widgets["JAZN_MEMORY_MODE"].setCurrentText("off")
+    mode_choice(panel).setCurrentText("off")
     panel.preview()
-    panel.widgets["JAZN_MEMORY_MODE"].setCurrentText("required")
+    mode_choice(panel).setCurrentText("required")
     panel.receive("helper:profile-preview:", {
         "schema": "jazn_config_profile_preview/v1", "read_only": True,
         "profile_sha256": "a" * 64, "changes_count": 1,
@@ -97,7 +99,7 @@ def test_stale_async_preview_cannot_approve_new_draft(panel: ConfigurationPanel)
 def test_failed_write_never_marks_draft_saved(panel: ConfigurationPanel) -> None:
     panel.reload()
     panel.receive("helper:profile-read:", sample_snapshot())
-    panel.widgets["JAZN_MEMORY_MODE"].setCurrentText("off")
+    mode_choice(panel).setCurrentText("off")
     panel.preview()
     panel.receive("helper:profile-preview:", {
         "schema": "jazn_config_profile_preview/v1", "read_only": True,
