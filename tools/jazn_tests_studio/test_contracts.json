@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.91",
-  "active_definition_count": 2732,
+  "system_version": "16.3.25.5.116.0.34.92",
+  "active_definition_count": 2734,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43238,6 +43238,48 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 11
+    },
+    "tests/test_package_export_generated_path_caseguard.py::test_explicit_plans_reject_case_variant_build_roots": {
+      "path": "tests/test_package_export_generated_path_caseguard.py",
+      "name": "test_explicit_plans_reject_case_variant_build_roots",
+      "purpose": "Explicit plans reject case variant build roots",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "PackagePlanValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_package_export_generated_path_caseguard.py::test_system_export_does_not_include_mixed_case_build_tree": {
+      "path": "tests/test_package_export_generated_path_caseguard.py",
+      "name": "test_system_export_does_not_include_mixed_case_build_tree",
+      "purpose": "System export does not include mixed case build tree",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
     },
     "tests/test_package_generator_release_version.py::test_release_version_is_read_from_canonical_version_file": {
       "path": "tests/test_package_generator_release_version.py",
