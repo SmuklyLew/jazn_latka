@@ -267,6 +267,10 @@ def forbidden_package_reason(rel: str) -> str | None:
         rel = validate_safe_relative_path(str(rel))
     except UnsafeRelativePathError as exc:
         return str(exc)
+    # Treat generated build roots consistently on case-sensitive Linux and
+    # case-insensitive Windows, including explicitly supplied package plans.
+    if rel.casefold() == "build" or rel.casefold().startswith("build/"):
+        return "generated build directory must never enter a source package"
     parts = set(Path(rel).parts)
     if "__pycache__" in parts:
         return "__pycache__ is never packaged"
