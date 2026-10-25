@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.91",
-  "active_definition_count": 2731,
+  "active_definition_count": 2732,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -56355,6 +56355,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 84
+    },
+    "tests/test_system_config_commit_boundary_cas.py::test_changed_profile_does_not_modify_root_or_previous_backup": {
+      "path": "tests/test_system_config_commit_boundary_cas.py",
+      "name": "test_changed_profile_does_not_modify_root_or_previous_backup",
+      "purpose": "Changed profile does not modify root or previous backup",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",
