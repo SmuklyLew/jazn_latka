@@ -524,7 +524,7 @@ class Controller:
         return env
 
     def studio_helper(self, mode: str, key: str = "", data: dict[str, Any] | None = None) -> Job:
-        if mode not in {"schema", "preview", "execute", "profile-read", "profile-save"}:
+        if mode not in {"schema", "preview", "execute", "profile-read", "profile-save", "profile-paths", "profile-preview", "profile-validate", "profile-restore", "profile-migrate", "version-inspect"}:
             raise StudioError("Nieznana operacja Studio")
         if mode in {"schema", "preview", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
             raise StudioError("Nieznane Studio")

@@ -147,6 +147,10 @@ class Window(QMainWindow):
         self._memory()
         self._settings()
         self._about()
+        # Preserve legacy navigation indices for Test/MEMORY/TPA operator
+        # workspaces. New native pages are appended, never inserted mid-list.
+        self._configuration()
+        self._version_studio()
         self.log_toggle = QPushButton("Pokaż logi")
         self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
         self.log_toggle.clicked.connect(self.toggle_logs)
@@ -379,6 +383,26 @@ class Window(QMainWindow):
             row.addWidget(note, 2)
             layout.addLayout(row)
         layout.addStretch()
+
+    def _configuration(self) -> None:
+        from .configuration_view import ConfigurationPanel
+        layout = self.page(
+            "Konfiguracja Qt",
+            "Profil przyszłych uruchomień — walidacja, mapa ścieżek, "
+            "kontrolowany podgląd, zapis CAS i przywracanie kopii. Bez aktywacji daemona.",
+        )
+        self.configuration_panel = ConfigurationPanel(self.core)
+        layout.addWidget(self.configuration_panel)
+
+    def _version_studio(self) -> None:
+        from .version_view import VersionPanel
+        layout = self.page(
+            "Wersje Qt",
+            "Natywna kontrola wersji (odczyt bez zapisu). "
+            "Zmiany wydania i przywracanie metadanych nadal wymagają osobnego przeglądu.",
+        )
+        self.version_panel = VersionPanel(self.core)
+        layout.addWidget(self.version_panel)
 
     def _tests_catalog(self) -> None:
         from .test_catalog_view import TestCatalogPanel
@@ -696,6 +720,18 @@ class Window(QMainWindow):
                 else:
                     self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
+                if key == "helper:version-inspect:":
+                    self.version_panel.receive(value)
+                    continue
+                if key in {
+                    "helper:profile-paths:", "helper:profile-validate:",
+                    "helper:profile-preview:", "helper:profile-restore:", "helper:profile-migrate:",
+                }:
+                    self.configuration_panel.receive(key, value)
+                    continue
+                if key in {"helper:profile-read:", "helper:profile-save:"}:
+                    self.configuration_panel.receive(key, value)
+                    # Preserve the existing Settings profile editor compatibility.
                 if key.startswith("helper:preview:"):
                     if key.removeprefix("helper:preview:") != self.schema_key:
                         continue
@@ -723,7 +759,7 @@ class Window(QMainWindow):
                     self.operation.blockSignals(False)
                     self.render_operation()
                     self.execute_button.setEnabled(bool(value))
-                else:
+                elif key in {"helper:profile-read:", "helper:profile-save:"}:
                     self.profile_digest = value["digest"]
                     while self.profile_form.rowCount():
                         self.profile_form.removeRow(0)
@@ -739,6 +775,10 @@ class Window(QMainWindow):
                         self.profile_widgets[field["key"]] = widget
                         self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
+                if key == "helper:version-inspect:":
+                    self.version_panel.receive_state(value)
+                if key.startswith("helper:profile-"):
+                    self.configuration_panel.receive_state(key, value)
                 if value.get("state") in {"succeeded", "failed", "stopped"}:
                     result = ("Ukończono" if value["state"] == "succeeded"
                               else "Zatrzymano" if value["state"] == "stopped" else "BŁĄD")
@@ -781,6 +821,9 @@ class Window(QMainWindow):
             self.statusBar().showMessage("Zapisano raport: " + name)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        if not self.smoke and not self.configuration_panel.may_discard():
+            event.ignore()
+            return
         with self.core.lock:
             active = any(not j.done.is_set() for j in self.core.jobs.values())
         if active and not self.core.closed and not self.smoke and QMessageBox.question(self, "Zamknięcie Studio",

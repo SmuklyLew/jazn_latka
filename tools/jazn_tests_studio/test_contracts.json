@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.87",
-  "active_definition_count": 2714,
+  "system_version": "16.3.25.5.116.0.34.90",
+  "active_definition_count": 2727,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23402,6 +23402,106 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
+      "path": "tests/test_jazn_operator_profile_migration_toctou.py",
+      "name": "test_worker_aborts_if_file_changes_after_gui_sha_validation",
+      "purpose": "Worker aborts if file changes after gui sha validation",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jazn_operator_profile_migration_toctou.py::test_canonical_migrator_aborts_if_profile_changes_during_migration": {
+      "path": "tests/test_jazn_operator_profile_migration_toctou.py",
+      "name": "test_canonical_migrator_aborts_if_profile_changes_during_migration",
+      "purpose": "Canonical migrator aborts if profile changes during migration",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_jazn_operator_profile_migration_toctou.py::test_canonical_migrator_checks_digest_again_before_write": {
+      "path": "tests/test_jazn_operator_profile_migration_toctou.py",
+      "name": "test_canonical_migrator_checks_digest_again_before_write",
+      "purpose": "Canonical migrator checks digest again before write",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_jazn_operator_profile_migration_toctou.py::test_approved_profile_migrates_without_modifying_live_runtime": {
+      "path": "tests/test_jazn_operator_profile_migration_toctou.py",
+      "name": "test_approved_profile_migrates_without_modifying_live_runtime",
+      "purpose": "Approved profile migrates without modifying live runtime",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_jazn_operator_profile_migration_toctou.py::test_old_digest_is_rejected_and_root_is_unchanged": {
+      "path": "tests/test_jazn_operator_profile_migration_toctou.py",
+      "name": "test_old_digest_is_rejected_and_root_is_unchanged",
+      "purpose": "Old digest is rejected and root is unchanged",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "SystemConfigError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 130
+    },
     "tests/test_jazn_operator_studio.py::test_studio_settings_roundtrip_and_compare_and_swap": {
       "path": "tests/test_jazn_operator_studio.py",
       "name": "test_studio_settings_roundtrip_and_compare_and_swap",
@@ -24805,6 +24905,124 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 81
+    },
+    "tests/test_jazn_run_studio_config_root_migration_qt.py::test_worker_migration_guards_source_digest": {
+      "path": "tests/test_jazn_run_studio_config_root_migration_qt.py",
+      "name": "test_worker_migration_guards_source_digest",
+      "purpose": "Worker migration guards source digest",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_jazn_run_studio_config_root_migration_qt.py::test_gui_migration_requires_explicit_consent": {
+      "path": "tests/test_jazn_run_studio_config_root_migration_qt.py",
+      "name": "test_gui_migration_requires_explicit_consent",
+      "purpose": "Gui migration requires explicit consent",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_jazn_run_studio_config_root_migration_qt.py::test_unsaved_gui_draft_blocks_root_migration": {
+      "path": "tests/test_jazn_run_studio_config_root_migration_qt.py",
+      "name": "test_unsaved_gui_draft_blocks_root_migration",
+      "purpose": "Unsaved gui draft blocks root migration",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_profile_draft_does_not_save_before_preview": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_profile_draft_does_not_save_before_preview",
+      "purpose": "Profile draft does not save before preview",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_stale_async_preview_cannot_approve_new_draft": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_stale_async_preview_cannot_approve_new_draft",
+      "purpose": "Stale async preview cannot approve new draft",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_failed_write_never_marks_draft_saved": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_failed_write_never_marks_draft_saved",
+      "purpose": "Failed write never marks draft saved",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_jazn_run_studio_configuration_native_qt.py::test_copy_command_requires_absolute_verified_profile_path": {
+      "path": "tests/test_jazn_run_studio_configuration_native_qt.py",
+      "name": "test_copy_command_requires_absolute_verified_profile_path",
+      "purpose": "Copy command requires absolute verified profile path",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -26454,6 +26672,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 29
+    },
+    "tests/test_jazn_run_studio_version_native_qt.py::test_readonly_version_panel_dispatches_canonical_worker_without_writes": {
+      "path": "tests/test_jazn_run_studio_version_native_qt.py",
+      "name": "test_readonly_version_panel_dispatches_canonical_worker_without_writes",
+      "purpose": "Readonly version panel dispatches canonical worker without writes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_shared_palette_has_independent_light_dark_purple_and_custom_modes": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",

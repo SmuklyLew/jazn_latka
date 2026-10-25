@@ -2,7 +2,7 @@ name: jazn-run-studio
 
 on:
   push:
-    branches: ["codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024", "fix/jazn-studio-p4-p5-evidence-gates-20261024", "fix/jazn-studio-part2-verified-ui-20261024", "fix/jazn-tpa-workbench-v11603486-20261025"]
+    branches: ["codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024", "fix/jazn-studio-p4-p5-evidence-gates-20261024", "fix/jazn-studio-part2-verified-ui-20261024", "fix/jazn-tpa-workbench-v11603486-20261025", "upgrade/v16-3-25-5-116-0-34-88-native-studios"]
   pull_request:
     branches: [master, fix/jazn-studio-local-acceptance-20261024]
     paths:
@@ -13,6 +13,10 @@ on:
       - "latka_jazn/core/runtime_daemon.py"
       - "tests/test_jazn_run_studio.py"
       - "tests/test_jazn_tpa_safe_executor.py"
+      - "tests/test_jazn_run_studio_configuration_native_qt.py"
+      - "tests/test_jazn_run_studio_version_native_qt.py"
+      - "tests/test_jazn_run_studio_config_root_migration_qt.py"
+      - "tests/test_jazn_operator_profile_migration_toctou.py"
       - "tests/test_jazn_run_studio_mcp_events.py"
       - "tests/test_jazn_archive_brotli_security_floor.py"
       - "tests/test_jazn_run_studio_integrations.py"
@@ -59,6 +63,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py
+      - run: python -m pytest -q tests/test_jazn_run_studio_configuration_native_qt.py tests/test_jazn_run_studio_version_native_qt.py tests/test_jazn_run_studio_config_root_migration_qt.py tests/test_jazn_operator_profile_migration_toctou.py
       - run: python -m pytest -q tests/test_jazn_tpa_workbench_layout_diagnostics.py
       - run: python -m pytest -q tests/test_daemon_shutdown_ack_before_teardown.py tests/test_daemon_shutdown_http_body.py tests/test_jazn_run_studio.py tests/test_jazn_run_studio_integrations.py tests/test_jazn_run_studio_secrets.py tests/test_jazn_run_studio_chat_contract.py tests/test_jazn_run_studio_build_import.py tests/test_jazn_run_studio_delivery_ack.py tests/test_jazn_run_studio_bundle_integrity.py tests/test_jazn_run_studio_lifecycle_results.py tests/test_jazn_run_studio_http_framing.py tests/test_jazn_run_studio_layout.py tests/test_jazn_run_studio_part2_operator_qt.py tests/test_jazn_run_studio_part2_collapsed_qt.py tests/test_jazn_run_studio_part2_refresh_qt.py tests/test_jazn_run_studio_part2_error_journal.py tests/test_single_canonical_version_alias.py tests/test_jazn_run_studio_utf8.py tests/test_jazn_run_studio_mcp_events.py tests/test_jazn_run_studio_p5_artifact_evidence.py tests/test_jazn_run_studio_native_test_catalog_qt.py tests/test_jazn_archive_brotli_security_floor.py
       - run: python -m pytest -q tests/test_jazn_tpa_safe_executor.py tests/test_jazn_tpa_workbench_layout_diagnostics.py tests/test_jazn_run_studio_local_acceptance.py tests/test_jazn_run_studio_12_manual_studio_gates.py tests/test_jazn_run_studio_workbench_qt.py

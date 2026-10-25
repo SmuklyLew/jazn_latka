@@ -186,18 +186,48 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
     return SystemConfig(checked.values, checked.studio, sha256(content).hexdigest())
 
 
-def migrate_operator_profile(root: str | Path) -> SystemConfig:
-    """Explicit copy from validated operator.json; no live daemon mutation."""
-    from latka_jazn.tools.configuration_studio import profile_snapshot
+def migrate_operator_profile(
+    root: str | Path, *, expected_sha256: str | None = None,
+) -> SystemConfig:
+    """Migrate a verified operator snapshot, never a newer profile by accident.
 
-    current = read_system_config(root)
-    operator_values, digest = profile_snapshot(root)
-    if digest is None:
+    Cooperating profile writers use the same per-profile cross-process guard.
+    Legacy callers may omit expected_sha256; interactive Qt supplies its
+    operator-approved digest. No live daemon or MEMORY state is modified.
+    """
+    import sqlite3
+
+    from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
+    from latka_jazn.tools.configuration_studio import profile_file, profile_snapshot
+
+    profile_path = profile_file(root)
+    if not profile_path.is_file():
         raise SystemConfigError("Brak profilu operator.json")
-    if any(key in current.values and current.values[key] != val
-           for key, val in operator_values.items()):
-        raise SystemConfigError("Konflikt profilu operatora z konfiguracją SYSTEM")
-    merged = {**current.values, **operator_values}
-    if merged == current.values:
-        return current
-    return write_system_config(root, merged, current.studio, expected_digest=current.digest)
+    try:
+        with runtime_sqlite_write_guard(profile_path, timeout_ms=30000):
+            current = read_system_config(root)
+            operator_values, digest = profile_snapshot(root)
+            if digest is None:
+                raise SystemConfigError("Brak profilu operator.json")
+            if expected_sha256 is not None and digest != expected_sha256:
+                raise SystemConfigError(
+                    "Profil operatora zmieniono po potwierdzeniu. Wczytaj go ponownie."
+                )
+            if any(key in current.values and current.values[key] != val
+                   for key, val in operator_values.items()):
+                raise SystemConfigError("Konflikt profilu operatora z konfiguracją SYSTEM")
+            merged = {**current.values, **operator_values}
+            # Verify once more just before committing to catch noncooperating
+            # file replacements between the first read and the write.
+            _, latest_digest = profile_snapshot(root)
+            if latest_digest != digest:
+                raise SystemConfigError(
+                    "Profil operatora zmieniono podczas migracji. Wczytaj go ponownie."
+                )
+            if merged == current.values:
+                return current
+            return write_system_config(
+                root, merged, current.studio, expected_digest=current.digest,
+            )
+    except sqlite3.OperationalError as exc:
+        raise SystemConfigError("Nie uzyskano blokady profilu operatora.") from exc

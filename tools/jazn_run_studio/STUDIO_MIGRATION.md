@@ -55,3 +55,46 @@ tests, equivalent persisted settings and review/backup semantics where present,
 real Qt rendering/keyboard acceptance, and successful final-source CI. Partial
 rows must remain partial. Do not remove legacy functionality before parity is
 verified, and do not call launching a legacy window full Qt integration.
+
+## Native Qt migration checkpoint (.88, PR review)
+
+This is an **incremental source implementation, not proof of full parity or
+local operator acceptance**. The historical .62 state table above is retained
+as its original audit checkpoint; the following describes the newer .88 delta.
+
+| Application | .88 source-level change | Remaining acceptance |
+| --- | --- | --- |
+| Configuration Studio | Dedicated Qt page (`configuration_view.py`) with canonical path map, field kinds, validation, CAS-bound dry-run preview, guarded save, previous-profile restore, reload, unsaved-draft close check and copy-only launch command | Compare all original Tk screens, file selectors, launcher paths, migrations, error recovery and real Windows keyboard/DPI workflows; observe tests/CI |
+| Version Rebuild | Dedicated read-only Qt inspection (`version_view.py`) via original `read_version`, no metadata writes | Editable version, canonical metadata sync, backups, diffs/patches, audit, settings, rollback and operator confirmation; legacy remains active |
+| System / Start / Memory / Memory Rebuild / Tests / Package / Dependency / Python | No unsupported claim of new parity; existing Qt integrations and canonical operation forms remain | Original parity gates remain open as listed above |
+| Chat export/import | No native Qt workflow delivered in .88 | Source review, plan, import, validation, review queue and search require explicit private-data guards |
+| Memory restore | No native Qt workflow delivered in .88 | Select/scan, dry-run plan, protected restore, compare, checkpoints and recovery remain open |
+
+**State:** 10 partial, 2 not yet started for full Qt parity. No row
+is called complete. Do not remove or deprecate functioning legacy interfaces
+until accepted functional equivalents exist. A canonical read-only view does
+not prove whole-Studio migration.
+
+Safety: the Qt panel delegates profile operations to the original
+`latka_jazn.tools.configuration_studio` services in the selected external
+Python process; do not duplicate private MEMORY write logic in the GUI.
+Profile drafts and automatic results never represent the active daemon state.
+
+Engineering references: [Qt QComboBox signals](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QComboBox.html),
+[Qt QFileDialog](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QFileDialog.html),
+[Qt confirmation dialogs](https://doc.qt.io/qt-6/qmessagebox.html).
+
+## .89 — native Configuration ROOT migration acceptance
+
+The Qt page additionally exposes the original `migrate_operator_profile`
+through a separate worker. The write operation is explicit, confirmation-gated
+and restricted to an on-disk operator profile matching the visible SHA-256.
+Original ROOT validation, conflict checks, rollback semantics and durable
+write remain owned by the canonical `latka_jazn.core.system_config` service.
+Unsaved GUI draft changes are rejected rather than implicitly migrated.
+Migration does **not** reconfigure an already running daemon. Positive,
+conflict and unsaved-input regressions are collected in the Qt suite.
+
+The .88 migration inventory and full application parity gates remain open:
+no claim of full parity for all twelve Studios and no deprecation of the
+original Tk Configuration Studio without accepted Windows operator tests.
