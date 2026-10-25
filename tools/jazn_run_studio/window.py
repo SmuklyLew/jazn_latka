@@ -723,7 +723,7 @@ class Window(QMainWindow):
                     continue
                 if key in {
                     "helper:profile-paths:", "helper:profile-validate:",
-                    "helper:profile-preview:", "helper:profile-restore:",
+                    "helper:profile-preview:", "helper:profile-restore:", "helper:profile-migrate:",
                 }:
                     self.configuration_panel.receive(key, value)
                     continue
