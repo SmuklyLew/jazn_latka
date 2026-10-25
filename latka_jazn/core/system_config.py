@@ -170,8 +170,8 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
                 handle.write(path.read_bytes())
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(prev_stage, backup)
-            prev_stage = None
+            # Keep rollback bytes staged until the operator profile CAS passes.
+            # A rejected migration must not modify the existing backup.
         fd, stage = tempfile.mkstemp(dir=path.parent, prefix=".jazn-config-", suffix=".tmp")
         with os.fdopen(fd, "wb") as handle:
             handle.write(content)
@@ -197,6 +197,9 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
                     "Profil operatora zmieniono przed zapisem konfiguracji ROOT. "
                     "Wczytaj profil ponownie."
                 )
+        if prev_stage is not None:
+            os.replace(prev_stage, backup)
+            prev_stage = None
         os.replace(stage, path)
         stage = None
     finally:
