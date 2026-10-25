@@ -61,6 +61,8 @@ class Window(QMainWindow):
 
         self.sidebar = QWidget()
         self.sidebar.setObjectName("workbenchSidebar")
+        self.sidebar.setMinimumWidth(188)
+        self.sidebar.setMaximumWidth(250)
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(8, 14, 8, 10)
         sidebar_layout.setSpacing(8)
