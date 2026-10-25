@@ -1,6 +1,9 @@
 """Qt width diagnostic preserving the existing 860x580 acceptance assertion."""
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("PySide6")
 from PySide6.QtWidgets import QScrollArea, QWidget
 from PySide6.QtTest import QTest
 from tests.test_jazn_run_studio_layout import window
