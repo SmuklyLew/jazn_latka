@@ -55,8 +55,8 @@ class LocalAcceptancePanel(QWidget):
         self.auto_cancel = QPushButton("Anuluj podtest")
         self.auto_cancel.setEnabled(False)
         self.auto_cancel.clicked.connect(self.runner.stop)
-        auto_row.addWidget(self.auto_cancel)
         layout.addLayout(auto_row)
+        layout.addWidget(self.auto_cancel)
         self.auto_status = QLabel(
             "TPA: testy automatyczne sprawdzają wybrane regresje, ale nigdy "
             "nie zatwierdzają 22 bramek odbioru ręcznego."
