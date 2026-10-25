@@ -26771,7 +26771,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 9
+      "line": 12
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
