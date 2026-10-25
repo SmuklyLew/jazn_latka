@@ -181,8 +181,17 @@ def write_system_config(root: str | Path, values: Mapping[str, str], studio: Map
         # The caller holds the shared profile lock through this os.replace;
         # independent uncooperative filesystem writes cannot be fully excluded.
         if expected_profile_sha256 is not None:
-            from latka_jazn.tools.configuration_studio import profile_snapshot
-            _, commit_profile_sha256 = profile_snapshot(root)
+            from latka_jazn.tools.configuration_studio import profile_file
+            try:
+                # Compare raw bytes at the commit boundary under the shared
+                # writer guard. The approved structured snapshot was validated
+                # above; a changed source is now rejected before os.replace.
+                commit_profile_path = profile_file(root)
+                if not commit_profile_path.is_file() or commit_profile_path.is_symlink():
+                    raise SystemConfigError("Profil operatora nie jest zwykłym plikiem.")
+                commit_profile_sha256 = sha256(commit_profile_path.read_bytes()).hexdigest()
+            except OSError as exc:
+                raise SystemConfigError("Nie można ponownie odczytać profilu operatora.") from exc
             if commit_profile_sha256 != expected_profile_sha256:
                 raise SystemConfigError(
                     "Profil operatora zmieniono przed zapisem konfiguracji ROOT. "
