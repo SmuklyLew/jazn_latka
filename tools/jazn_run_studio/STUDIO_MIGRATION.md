@@ -83,3 +83,18 @@ Profile drafts and automatic results never represent the active daemon state.
 Engineering references: [Qt QComboBox signals](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QComboBox.html),
 [Qt QFileDialog](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QFileDialog.html),
 [Qt confirmation dialogs](https://doc.qt.io/qt-6/qmessagebox.html).
+
+## .89 — native Configuration ROOT migration acceptance
+
+The Qt page additionally exposes the original `migrate_operator_profile`
+through a separate worker. The write operation is explicit, confirmation-gated
+and restricted to an on-disk operator profile matching the visible SHA-256.
+Original ROOT validation, conflict checks, rollback semantics and durable
+write remain owned by the canonical `latka_jazn.core.system_config` service.
+Unsaved GUI draft changes are rejected rather than implicitly migrated.
+Migration does **not** reconfigure an already running daemon. Positive,
+conflict and unsaved-input regressions are collected in the Qt suite.
+
+The .88 migration inventory and full application parity gates remain open:
+no claim of full parity for all twelve Studios and no deprecation of the
+original Tk Configuration Studio without accepted Windows operator tests.
