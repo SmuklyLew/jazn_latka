@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
   "runtime_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
   "package_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-  "generated_at_utc": "2026-10-25T11:06:14+00:00",
-  "updated_at_utc": "2026-10-25T11:06:14+00:00",
+  "generated_at_utc": "2026-10-25T11:11:12+00:00",
+  "updated_at_utc": "2026-10-25T11:11:12+00:00",
   "start_file": "run.py",
-  "file_count": 3386,
-  "static_file_count": 3386,
+  "file_count": 3387,
+  "static_file_count": 3387,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2992,
-      "sha256": "2be84918c86296b9d9d4d4dce71b381e9707db1383a23d6f112955e073a3c618",
+      "size_bytes": 2987,
+      "sha256": "d60482e5577e51b8e6f82b809d526e88d4037cf4f1b8f21c434558ec44f3e279",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23059,6 +23059,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.85-tpa-before-workbench-fixture/test_jazn_run_studio_workbench_qt.py",
+      "size_bytes": 2722,
+      "sha256": "1402db42d6107d2679c61b6ad3a5764a5f04495a6c44ce2e946be42b23629eeb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.9-conversation-startup/test_runtime_composition_lifecycle.py",
       "size_bytes": 5358,
       "sha256": "01a05a8d48ef014d30840ed314ac96cd1109f21559abd04364f42f060ea92686",
@@ -27038,8 +27047,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
-      "size_bytes": 2722,
-      "sha256": "1402db42d6107d2679c61b6ad3a5764a5f04495a6c44ce2e946be42b23629eeb",
+      "size_bytes": 2806,
+      "sha256": "2711a5ef96de9ca3333171922120443b7deb2a33e26630f66caa4aa57c13eea6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30098,8 +30107,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_runner.py",
-      "size_bytes": 8443,
-      "sha256": "cb8304e61cd06021bd4045da6321ae6394004df61d9022c8d6d25bdf913b8f3e",
+      "size_bytes": 8596,
+      "sha256": "6b87ca3729a133069bec961632f12e1bc04079b44af3467c4c6b2028bcae72af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30270,7 +30279,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2468113,
-      "sha256": "8aa35cea7ed1130cbe344d8be973324e8dd3af59daaa048cb613ccc6f0710a76",
+      "sha256": "c0bdf5a7878c971e7d7fce9c37be7cf3ebcb9f7adbc015bdd947c9251487e676",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
