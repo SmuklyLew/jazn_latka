@@ -514,6 +514,7 @@ class Window(QMainWindow):
         form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
         self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
+        self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
@@ -524,6 +525,20 @@ class Window(QMainWindow):
         layout.addLayout(self.profile_form)
         self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
+
+    def fill_discovered_defaults(self) -> None:
+        """Suggest detected executables only in empty draft fields; never start services."""
+        found = discovery(self.core.settings)
+        changed: list[str] = []
+        for name in ("python", "ollama", "cloudflared"):
+            candidate = found.get(name)
+            if (not self.fields[name].text().strip()
+                    and isinstance(candidate, str) and Path(candidate).is_file()):
+                self.fields[name].setText(candidate)
+                changed.append(name)
+        self.statusBar().showMessage(
+            "Propozycje w formularzu (nie zapisano): " + (", ".join(changed) if changed else "brak nowych")
+        )
 
     def choose_custom_color(self) -> None:
         """Only the user's explicit acceptance changes the draft settings."""
