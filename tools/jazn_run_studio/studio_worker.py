@@ -129,6 +129,18 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         save_profile(root, data["values"], expected_sha256=data.get("digest"))
     if operation == "profile-restore":
         restore_previous_profile(root, expected_sha256=data.get("digest"))
+    if operation == "profile-migrate":
+        # Do not copy unsaved GUI values into the ROOT config.
+        # The canonical migrator rejects conflicting settings and performs
+        # the guarded, durable write for future launches only.
+        from latka_jazn.core.system_config import config_path, migrate_operator_profile
+        _, digest = profile_snapshot(root)
+        if digest is None or digest != data.get("digest"):
+            raise ValueError("Zapisany profil zmieniono. Ponownie wczytaj operator.json.")
+        migrate_operator_profile(root)
+        return {"schema": "jazn_config_root_migration/v1",
+                "profile_sha256": digest, "config_path": str(config_path(root)),
+                "saved": True, "runtime_activated": False}
     values, digest = profile_snapshot(root)
     return {"schema": "jazn_config_snapshot/v1", "values": values, "digest": digest,
             "profile_path": str(profile_file(root)),
@@ -140,11 +152,11 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env", "profile-paths", "profile-preview", "profile-validate", "profile-restore", "version-inspect"])
+    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env", "profile-paths", "profile-preview", "profile-validate", "profile-restore", "profile-migrate", "version-inspect"])
     parser.add_argument("key", nargs="?", choices=sorted(MODULES))
     args = parser.parse_args()
     if args.mode.startswith("profile-"):
-        raw = sys.stdin.buffer.read(32769) if args.mode in {"profile-save", "profile-preview", "profile-validate", "profile-restore"} else b"{}"
+        raw = sys.stdin.buffer.read(32769) if args.mode in {"profile-save", "profile-preview", "profile-validate", "profile-restore", "profile-migrate"} else b"{}"
         if len(raw) > 32768:
             raise ValueError("Profile input limit")
         print(json.dumps(profile(args.mode, json.loads(raw)), ensure_ascii=False))
