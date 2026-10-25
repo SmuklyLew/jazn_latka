@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.92",
-  "active_definition_count": 2734,
+  "system_version": "16.3.25.5.116.0.34.93",
+  "active_definition_count": 2737,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25215,6 +25215,55 @@
       "description_source": "source_identity",
       "line": 89
     },
+    "tests/test_jazn_run_studio_env_guard.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_external_secret_file_only_enters_child_environment_and_redactor",
+      "purpose": "External secret file only enters child environment and redactor",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_jazn_run_studio_env_guard.py::test_secret_file_cannot_override_paths_or_arbitrary_environment": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_secret_file_cannot_override_paths_or_arbitrary_environment",
+      "purpose": "Secret file cannot override paths or arbitrary environment",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jazn_run_studio_env_guard.py::test_nonignored_secret_inside_system_is_rejected": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_nonignored_secret_inside_system_is_rejected",
+      "purpose": "Nonignored secret inside system is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
     "tests/test_jazn_run_studio_http_framing.py::test_catalog_malformed_http_returns_structured_failure_without_body": {
       "path": "tests/test_jazn_run_studio_http_framing.py",
       "name": "test_catalog_malformed_http_returns_structured_failure_without_body",
@@ -26590,55 +26639,6 @@
       "description_source": "source_identity",
       "line": 50
     },
-    "tests/test_jazn_run_studio_secrets.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_external_secret_file_only_enters_child_environment_and_redactor",
-      "purpose": "External secret file only enters child environment and redactor",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 18
-    },
-    "tests/test_jazn_run_studio_secrets.py::test_secret_file_cannot_override_paths_or_arbitrary_environment": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_secret_file_cannot_override_paths_or_arbitrary_environment",
-      "purpose": "Secret file cannot override paths or arbitrary environment",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 0,
-      "expected_exceptions": [
-        "StudioError"
-      ],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 29
-    },
-    "tests/test_jazn_run_studio_secrets.py::test_nonignored_secret_inside_system_is_rejected": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_nonignored_secret_inside_system_is_rejected",
-      "purpose": "Nonignored secret inside system is rejected",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 0,
-      "expected_exceptions": [
-        "StudioError"
-      ],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 38
-    },
     "tests/test_jazn_run_studio_utf8.py::test_redirected_headless_output_is_utf8": {
       "path": "tests/test_jazn_run_studio_utf8.py",
       "name": "test_redirected_headless_output_is_utf8",
@@ -26865,6 +26865,38 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 31
+    },
+    "tests/test_jazn_start_studio_output_redaction.py::test_operator_output_masks_credential_text": {
+      "path": "tests/test_jazn_start_studio_output_redaction.py",
+      "name": "test_operator_output_masks_credential_text",
+      "purpose": "Operator output masks credential text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_jazn_start_studio_output_redaction.py::test_studio_output_keeps_nonsecret_boolean_and_plain_diagnostics": {
+      "path": "tests/test_jazn_start_studio_output_redaction.py",
+      "name": "test_studio_output_keeps_nonsecret_boolean_and_plain_diagnostics",
+      "purpose": "Studio output keeps nonsecret boolean and plain diagnostics",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
     },
     "tests/test_jazn_studio_gui_windows.py::test_studio_window_navigation_and_configuration": {
       "path": "tests/test_jazn_studio_gui_windows.py",
@@ -56417,6 +56449,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 13
+    },
+    "tests/test_system_distribution_test_inventory.py::test_studio_contract_sources_are_present_and_allowed_in_system_package": {
+      "path": "tests/test_system_distribution_test_inventory.py",
+      "name": "test_studio_contract_sources_are_present_and_allowed_in_system_package",
+      "purpose": "Studio contract sources are present and allowed in system package",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",

@@ -1,3 +1,4 @@
+# v116.0.34.93 restores shipped Test Studio test inventory and protects short Studio Startu credentials.
 # v116.0.34.92 makes generated build path filtering case-insensitive across OSes and adds regression cases.
 # v116.0.34.91 excludes generated/private build artifacts, adds commit-time profile CAS and diagnoses cleanroom failures.
 # v116.0.34.90 binds operator-approved profile CAS across native ROOT migration and protects concurrent writes.
@@ -140,9 +141,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.92"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.93"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "secure-build-casefold-regressions"
+PACKAGE_RELEASE_NAME = "system-studio-distribution-hardening"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

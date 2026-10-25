@@ -76,16 +76,29 @@ TASK_INDEX = {task.key: task for task in TASKS}
 
 REDACTIONS = (
     re.compile(r"(?i)(authorization\s*[:=]\s*bearer\s+)[^\s,;]+"),
-    # Full key match: do not corrupt JSON booleans such as requires_api_key=false.
-    re.compile(r'(?i)(\b(?:api[_-]?key|password|secret|token|identity_token|access_token)\b["\x27]?\s*[:=]\s*["\x27]?)(?!true\b|false\b|null\b)[^\s,;"\x27]{8,}'),
+    # Credential fields may be short or quoted JSON values with spaces. Redact
+    # before writing to the bounded GUI/event history; preserve boolean flags.
+    re.compile(
+        r'''(?i)(\b[\w-]*(?:api[_-]?key|password|secret|token|credential)[\w-]*\b["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}"']+)'''
+    ),
 )
+_URL_USERINFO = re.compile(r"(?i)(https?://)[^/\s:@]+:[^/\s@]+@")
 
 
 def safe_line(text: str) -> str:
-    # A best-effort display redactor; do not persist raw subprocess output.
+    """Redact operator output before the GUI/event log may retain it."""
     text = str(text).replace("\x00", "")
-    for pattern in REDACTIONS:
-        text = pattern.sub(r"\1[UKRYTO]", text)
+    text = REDACTIONS[0].sub(r"\1[UKRYTO]", text)
+
+    def mask_value(match: re.Match[str]) -> str:
+        raw = match.group(0)[len(match.group(1)):].strip(chr(34) + chr(39))
+        # Legitimate diagnostic booleans such as requires_api_key=false are not secrets.
+        if raw.lower() in {"true", "false", "null"}:
+            return match.group(0)
+        return match.group(1) + "[UKRYTO]"
+
+    text = REDACTIONS[1].sub(mask_value, text)
+    text = _URL_USERINFO.sub(r"\1[UKRYTO]@", text)
     return text[:4000]
 
 
