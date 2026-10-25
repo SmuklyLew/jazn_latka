@@ -140,7 +140,7 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env", "profile-paths", "profile-preview", "profile-validate", "profile-restore"])
+    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env", "profile-paths", "profile-preview", "profile-validate", "profile-restore", "version-inspect"])
     parser.add_argument("key", nargs="?", choices=sorted(MODULES))
     args = parser.parse_args()
     if args.mode.startswith("profile-"):
@@ -148,6 +148,16 @@ def main() -> int:
         if len(raw) > 32768:
             raise ValueError("Profile input limit")
         print(json.dumps(profile(args.mode, json.loads(raw)), ensure_ascii=False))
+        return 0
+    if args.mode == "version-inspect":
+        from pathlib import Path
+        from tools.jazn_version_rebuild import read_version
+        item = read_version(Path.cwd())
+        print(json.dumps({
+            "schema": "jazn_version_readonly_inspection/v1",
+            "package": item.package, "name": item.name, "version": item.version,
+            "full": item.full, "read_only": True, "execution_performed": False,
+        }, ensure_ascii=False))
         return 0
     if not args.key:
         parser.error("Studio key is required")
