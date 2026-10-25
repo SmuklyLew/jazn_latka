@@ -3,25 +3,29 @@ from __future__ import annotations
 
 from pathlib import Path
 from collections.abc import Iterator
-from types import SimpleNamespace
 
 import pytest
 
 pytest.importorskip("PySide6")
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QComboBox
 
+from tools.jazn_run_studio.core import Controller, Settings
 from tools.jazn_run_studio.configuration_view import (
     ConfigurationPanel, launch_command, profile_fingerprint,
 )
 
 
 @pytest.fixture
-def panel(tmp_path: Path) -> Iterator[ConfigurationPanel]:
+def panel(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[ConfigurationPanel]:
     _ = QApplication.instance() or QApplication([])
-    backend = SimpleNamespace(root=tmp_path, requests=[])
-    backend.studio_helper = lambda mode, **kw: backend.requests.append((mode, kw))
+    (tmp_path / "latka_jazn").mkdir()
+    (tmp_path / "latka_jazn" / "version.py").write_text("# fixture", encoding="utf-8")
+    (tmp_path / "main.py").touch()
+    (tmp_path / "run.py").touch()
+    backend = Controller(tmp_path, Settings(model="local-test"))
+    requests: list[tuple[str, dict]] = []
+    monkeypatch.setattr(backend, "studio_helper", lambda mode, **kw: requests.append((mode, kw)))
     widget = ConfigurationPanel(backend)
-    widget._test_backend = backend
     yield widget
     widget.close()
 
@@ -45,7 +49,9 @@ def test_profile_draft_does_not_save_before_preview(panel: ConfigurationPanel) -
     assert not panel.save_button.isEnabled()
     panel.receive("helper:profile-read:", sample_snapshot())
     assert panel.loaded_once and not panel.dirty
-    panel.widgets["JAZN_MEMORY_MODE"].setCurrentText("off")
+    item = panel.widgets["JAZN_MEMORY_MODE"]
+    assert isinstance(item, QComboBox)
+    item.setCurrentText("off")
     assert panel.dirty
     assert not panel.save_button.isEnabled()
     panel.preview()
@@ -57,7 +63,9 @@ def test_profile_draft_does_not_save_before_preview(panel: ConfigurationPanel) -
                          "title": "MEMORY", "saved": "optional", "proposed": "off"}]}
     panel.receive("helper:profile-preview:", preview)
     assert panel.save_button.isEnabled()
-    panel.widgets["JAZN_MEMORY_MODE"].setCurrentText("required")
+    item = panel.widgets["JAZN_MEMORY_MODE"]
+    assert isinstance(item, QComboBox)
+    item.setCurrentText("required")
     assert not panel.save_button.isEnabled()
     assert panel.preview_hash == ""
 
