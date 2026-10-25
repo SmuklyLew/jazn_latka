@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
-  "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
-  "commit_date": "2026-10-25T22:24:13+01:00",
+  "base_merge_commit": "36ecee90973175d52162faa3d33a3f0508105a4f",
+  "base_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
+  "commit_date": "2026-10-25T23:33:19+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-25T21:24:13+00:00",
+  "generated_at_utc": "2026-10-25T22:33:19+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "b0b3e868e37ae5cff9e6559b4312248f296d360e",
+  "git_tree_sha": "a531aa74f782d9196505b441e37fcaff4a460a00",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
+    "base_commit": "9e388555dbba2dc973987270c130e80a3ef806f2",
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
-    "source_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions"
+    "source_commit": "36ecee90973175d52162faa3d33a3f0508105a4f",
+    "source_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "release_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "runtime_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "369383c3e6ada7badff6d86bd3b78d25066c5a46",
+  "source_commit": "36ecee90973175d52162faa3d33a3f0508105a4f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "source_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+  "update_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "version_source": "latka_jazn/version.py"
 }
