@@ -30,7 +30,7 @@ def profile_fingerprint(values: dict[str, str], digest: str | None) -> str:
 def launch_command(root: Path, profile_path: str) -> str:
     """Display the original explicit Windows launcher, never run it."""
     launcher = root / "tools" / "windows" / "Start-JaznWithConfig.ps1"
-    if not Path(profile_path).is_absolute():
+    if (not Path(profile_path).is_absolute() or any(ch in profile_path for ch in ('"', "\n", "\r"))):
         raise ValueError("Brak zweryfikowanej ścieżki profilu.")
     return f'pwsh -File "{launcher}" -Profile "{profile_path}"'
 
@@ -263,6 +263,7 @@ class ConfigurationPanel(QWidget):
             self.status.setText("Poprawny profil: " + str(value.get("count")) +
                                 " nadpisań. Żadnych zmian nie zapisano.")
         self.busy = ""
+        self.requested_preview_hash = ""
         self._enabled(self.loaded_once)
 
     def _snapshot(self, value: dict[str, Any]) -> None:
