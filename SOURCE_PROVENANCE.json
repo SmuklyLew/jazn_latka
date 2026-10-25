@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "2503ccdc407cc733e4282372173dd17b3e3be068",
-    "base_version": "16.3.25.5.116.0.34.42-supervisor-mcp-staging-preflight",
+    "base_commit": "b818be41c652f076e6f96424f9843cb9570026a4",
+    "base_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "b818be41c652f076e6f96424f9843cb9570026a4",
