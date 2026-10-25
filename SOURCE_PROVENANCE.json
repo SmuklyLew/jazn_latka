@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "bd44e239d712aa41f7f1f4b36ec35f69fdc0a039",
+  "base_merge_commit": "f6917962a1507549bb81f494e928eb0fb3e8fb99",
   "base_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-  "commit_date": "2026-10-25T23:42:00+01:00",
+  "commit_date": "2026-10-25T23:45:01+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-25T22:42:00+00:00",
+  "generated_at_utc": "2026-10-25T22:45:01+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "2f129544aea745f4130bf8bf5866c128ca9cc557",
+  "git_tree_sha": "81cc3e1282ee4ec5a818f26cb0ea9cc9e8810c4d",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "bd44e239d712aa41f7f1f4b36ec35f69fdc0a039",
+    "source_commit": "f6917962a1507549bb81f494e928eb0fb3e8fb99",
     "source_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "bd44e239d712aa41f7f1f4b36ec35f69fdc0a039",
+  "source_commit": "f6917962a1507549bb81f494e928eb0fb3e8fb99",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "tag": null,
