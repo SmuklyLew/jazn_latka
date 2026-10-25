@@ -28,6 +28,33 @@ The native profile editor and color picker remain usable, but do not confer
 full Configuration Studio migration parity. Read
 `docs/plans/JAZN_TPA_11603486_STUDIO_MODERNIZATION.md` for the remaining gates.
 
+## Natywna Konfiguracja i Wersje Qt (.88 — integracja częściowa)
+
+Strona **Konfiguracja Qt** korzysta z tego samego procesowego adaptera, który
+przekazuje operacje do oryginalnych funkcji
+`latka_jazn.tools.configuration_studio` w zweryfikowanym SYSTEM.
+Nie posiada własnego silnika zapisu ani własnego rozpoznawania MEMORY.
+Dostępne operacje: wczytanie profilu operatora, mapa efektywnych ścieżek
+(odczyt), walidacja, podgląd diff (dry-run), zapis po jawnej zgodzie z kontrolą
+SHA-256 poprzedniej wersji profilu, przywrócenie kopii po potwierdzeniu,
+wczytanie z dysku z ochroną brudnego formularza i skopiowanie komendy
+uruchomienia bez jej wykonania. Edycja nie zmienia bieżącego daemona.
+
+Zatwierdzenie zapisu jest aktywne wyłącznie dla dokładnie obejrzanego projektu.
+Zmieniony draft unieważnia podgląd; odpowiedź starej asynchronicznej operacji
+nie może zatwierdzić nowszych zmian. Operacje zapisu i przywrócenia wymagają
+zgody i poprawnego digestu, a błędy są sygnalizowane zamiast zastępowane
+sukcesem.
+
+Strona **Wersje Qt** pozwala odczytać kanoniczny numer i nazwę pakietu poprzez
+oryginalną usługę Version Rebuild. **Nie zapisuje metadanych i nie buduje paczek**.
+Pełny edytor wersji, backupy i diff pozostają w oryginalnym Studiu Wersji.
+
+Nie ukończono pełnej migracji 12 aplikacji. Kryteria i rzeczywisty stan są w
+`STUDIO_MIGRATION.md`. Zielone testy CI nie zastępują odbioru manualnego na
+Windows, w szczególności rzeczywistego zapisu profilu z konfliktem CAS,
+ścieżek w prywatnym ROOT, DPI ani wybranego modelu Ollama.
+
 ## Install and launch
 
 Use Python 3.12 or later, with a Qt-supported interpreter/platform and a verified
