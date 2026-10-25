@@ -79,7 +79,7 @@ REDACTIONS = (
     # Credential fields may be short or quoted JSON values with spaces. Redact
     # before writing to the bounded GUI/event history; preserve boolean flags.
     re.compile(
-        r'''(?i)(\b[\w-]*(?:api[_-]?key|password|secret|token|credential)[\w-]*\b["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}"']+)'''
+        r'''(?i)(\b[\w-]*(?:api[_-]?key|password|secret|token|credential)(?:[_-](?:file|path))?\b["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}"']+)'''
     ),
 )
 _URL_USERINFO = re.compile(r"(?i)(https?://)[^/\s:@]+:[^/\s@]+@")

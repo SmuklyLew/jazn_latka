@@ -23,3 +23,9 @@ def test_operator_output_masks_credential_text(text: str, exposed: str) -> None:
 def test_studio_output_keeps_nonsecret_boolean_and_plain_diagnostics() -> None:
     assert safe_line('requires_api_key=false') == 'requires_api_key=false'
     assert safe_line('model ready; version=1.2.3') == 'model ready; version=1.2.3'
+
+
+def test_studio_output_keeps_token_counters_and_nonsecret_metrics() -> None:
+    assert safe_line('token_count=125') == 'token_count=125'
+    assert safe_line('token_limit=300') == 'token_limit=300'
+    assert safe_line('password_policy=enabled') == 'password_policy=enabled'
