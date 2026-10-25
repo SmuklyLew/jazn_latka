@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
-  "runtime_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
-  "package_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
-  "generated_at_utc": "2026-10-25T10:58:39+00:00",
-  "updated_at_utc": "2026-10-25T10:58:39+00:00",
+  "version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+  "runtime_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+  "package_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+  "generated_at_utc": "2026-10-25T11:05:07+00:00",
+  "updated_at_utc": "2026-10-25T11:05:07+00:00",
   "start_file": "run.py",
-  "file_count": 3384,
-  "static_file_count": 3384,
+  "file_count": 3386,
+  "static_file_count": 3386,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2974,
-      "sha256": "b502a1c8737bcc681eac6c5e949d681425c54bdfc1378591e0b302b8d0c01737",
+      "size_bytes": 2987,
+      "sha256": "73f77009638f83dbe254a966abd360fc6de2ae1d58a485062317f04969cb95a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1660,6 +1660,15 @@
       "path": "docs/plans/JAZN_STUDIO_ALPHA_GATE_11603465.md",
       "size_bytes": 1045,
       "sha256": "3d4b7afc45400f3be553662d71bfb39b31a1015276dad9d5ee26936c526c966a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JAZN_TPA_11603486_STUDIO_MODERNIZATION.md",
+      "size_bytes": 4660,
+      "sha256": "105c5e8441931d351eca6e91d70bfcb42d2d6cbc29e7b60e4d64191fd1063ee5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10991,8 +11000,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 16660,
-      "sha256": "932a7f24966a79165bbbddb6cc8927c1c6a3a79965409e6867db5b65ce4216ec",
+      "size_bytes": 16777,
+      "sha256": "511a03d1555e6a2bc975d1bb20e461efafd217fc1a11c05ae6422e7ea86f9e52",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27082,6 +27091,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_tpa_safe_executor.py",
+      "size_bytes": 2743,
+      "sha256": "0fe22a7a07f2b333b01338f5f3faa1f8653a86a60f9032cdd81abb4a8ae07cb4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_knowledge_fabric.py",
       "size_bytes": 1355,
       "sha256": "caf7ba370e1be1c97b0be6ee0a2d0162eef8496d69ee449016897a715d75df7f",
@@ -29900,8 +29918,8 @@
     },
     {
       "path": "tools/jazn_run_studio/README.md",
-      "size_bytes": 12317,
-      "sha256": "3357733b56a1f1b7ad9ae64d4c8207f1abf929bad5f6f0ce94953f00600feb51",
+      "size_bytes": 13798,
+      "sha256": "6bef989ce8ddb62bca87f011852bc737230abc9e0068d48954f38f33869a3597",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29982,7 +30000,7 @@
     {
       "path": "tools/jazn_run_studio/core.py",
       "size_bytes": 38222,
-      "sha256": "8b847f520c1d43659e5f20798eff98bbcaf536fba0141f8d88c4a08946c3afab",
+      "sha256": "a54614f6f3a622d871d09d8e1077c92574545b96d35c99d6b29939535963f3cc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30080,8 +30098,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_runner.py",
-      "size_bytes": 8377,
-      "sha256": "669f3489d6fd7d97125d6ab39ee0431fbea64f589252d7146cd9978492290d63",
+      "size_bytes": 8443,
+      "sha256": "cb8304e61cd06021bd4045da6321ae6394004df61d9022c8d6d25bdf913b8f3e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30098,8 +30116,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 40700,
-      "sha256": "c6510ef3d8032b1fd52c11979a60f52eb7e2464bedb8d472c4bf639399b2ae8e",
+      "size_bytes": 42362,
+      "sha256": "3666a50f66b73818831c6e960f97c808bdae7abbe466512e707bcd5d64345299",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30107,8 +30125,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
-      "size_bytes": 5140,
-      "sha256": "de8f1cdd30b91efd8b7b904a6d2364075a9e663640a65df1f3225ea68d6a9054",
+      "size_bytes": 5237,
+      "sha256": "b9d20b059849f42bfb2453a9894b3ea93b26d913e8df0099b8483c91b45aa949",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30251,8 +30269,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2465362,
-      "sha256": "235526d8d665e4574680411e8a1adba96b46b8f15d8cdcba317f05f26a7c1434",
+      "size_bytes": 2468113,
+      "sha256": "8aa35cea7ed1130cbe344d8be973324e8dd3af59daaa048cb613ccc6f0710a76",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30909,11 +30927,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
+  "release_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
-    "package_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell",
-    "release_version": "16.3.25.5.116.0.34.85-studio-qt-shared-workbench-shell"
+    "runtime_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+    "package_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+    "release_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench"
   },
   "legacy_aliases": {
     "version": "release_version"
