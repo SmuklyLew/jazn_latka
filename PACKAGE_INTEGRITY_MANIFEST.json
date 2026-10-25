@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
-  "runtime_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
-  "package_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
-  "generated_at_utc": "2026-10-25T19:31:58+00:00",
-  "updated_at_utc": "2026-10-25T19:31:58+00:00",
+  "version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+  "runtime_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+  "package_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+  "generated_at_utc": "2026-10-25T19:38:33+00:00",
+  "updated_at_utc": "2026-10-25T19:38:33+00:00",
   "start_file": "run.py",
-  "file_count": 3397,
-  "static_file_count": 3397,
+  "file_count": 3398,
+  "static_file_count": 3398,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -24,6 +24,7 @@
       "__pycache__",
       "backups",
       "backups_git",
+      "build",
       "checkpoints",
       "exports",
       "memory",
@@ -236,8 +237,8 @@
     },
     {
       "path": ".github/workflows/package-distribution-cleanroom.yml",
-      "size_bytes": 21388,
-      "sha256": "9d5b2e8dd86df2a44677cfbe3cafdcadf413ebed5bcebf4d97acee038c5a689b",
+      "size_bytes": 22030,
+      "sha256": "b91a11e8c9f6e3213569985f946a37ea10e2520bde249113a9301f34e79edf89",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -308,8 +309,8 @@
     },
     {
       "path": ".gitignore",
-      "size_bytes": 2748,
-      "sha256": "660f54f7e7b82adda0d089346d57baf4583df4e2ccd65ee742ee9966cb36fc59",
+      "size_bytes": 2857,
+      "sha256": "ca590da7bafc247a630c5594be31d943205ea6d15bbd1a1be08d8803e710979c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2967,
-      "sha256": "0643044a0f63586f4f9a534674fdff0c901f516b78312a97eada1cc07ba32507",
+      "size_bytes": 2986,
+      "sha256": "6d7119b43ebc450be044a02b071768d19baac48558538d75dd5273fc0ddc4f71",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1946,
-      "sha256": "ef20758ed4a69071059dfead9946075ffbb75239fadb0cb861399386c5cf0201",
+      "size_bytes": 1950,
+      "sha256": "c7933778bec6d47335867d696e2c273283cf6a9258904c331f6573c46bea1547",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6707,8 +6708,8 @@
     },
     {
       "path": "latka_jazn/core/system_config.py",
-      "size_bytes": 11208,
-      "sha256": "38f374046f1417369c751e1f9a4ca7258a7206bab47bdcdc90cad1a5734319af",
+      "size_bytes": 12002,
+      "sha256": "e94ed84effb5434d42fea51cea0128217a6d863c03a14fcb5e7b47735578b2b8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9507,7 +9508,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "6d4e93aa37a8c9b55bd6eb44f965288063ef1fd06aaa95e91c3b4995ee287a64",
+      "sha256": "65bf122c4b45d2a98d0c6e5b161b3b04bf5c08c94678724f5a607959f890c771",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10847,8 +10848,8 @@
     },
     {
       "path": "latka_jazn/tools/package_export.py",
-      "size_bytes": 28754,
-      "sha256": "e56b645590124e60b54dc83dcf1ee4eb31e3b43c5de32affe4c5fa00a54ec11a",
+      "size_bytes": 29019,
+      "sha256": "419c84fa03def2134ea5db8457f8b8d62bdd66d9776511229df3738bf789102a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10856,8 +10857,8 @@
     },
     {
       "path": "latka_jazn/tools/package_integrity.py",
-      "size_bytes": 38769,
-      "sha256": "05f818c8a702933a0f3a551eae23222b08a20e75847da13bb61634fe948cb257",
+      "size_bytes": 38855,
+      "sha256": "e543f9c580431cc2c61a56b7e389439932298f83de8758c1023c432a5c26b801",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10919,8 +10920,8 @@
     },
     {
       "path": "latka_jazn/tools/release_staging.py",
-      "size_bytes": 9866,
-      "sha256": "c3c1c7be36f822e76da1fc2d78550487322797a6c3b91bc10f5c9c3f001cbdc2",
+      "size_bytes": 10297,
+      "sha256": "4ac3cc3ad6ea069e9d96b1f51a30a6da33c07132ee510ce7d54dc3219102bfd0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11009,8 +11010,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 17220,
-      "sha256": "74c78cf8f8feaa63b07523d80ee5c5a9f42bd98d81e83ea6cacb74fc3a291567",
+      "size_bytes": 17346,
+      "sha256": "9c2836376271f19a8264d1427515e67266882c31099b8a454c594ef713dab25a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27118,6 +27119,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_secure_generated_release_paths.py",
+      "size_bytes": 3179,
+      "sha256": "3627d15cfd3cc1c5a20ba21b8b4b641fd4223430f5f63705d315e396259ced6e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_start_studio.py",
       "size_bytes": 4114,
       "sha256": "b6826d7ad45b89092e4c566197953ad9f1b44e4992a98ae33db79ea4453054e6",
@@ -30368,8 +30378,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2478664,
-      "sha256": "a30907639e1ef6195a8cde255f55028b7e5f334daa5e7f7cdcbaf7e6a0de778b",
+      "size_bytes": 2481990,
+      "sha256": "c3e515c86394c69c656bbe2b6d90409148c3e08b83c59f2f19245b3fad96741a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31026,11 +31036,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
+  "release_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
-    "package_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
-    "release_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard"
+    "runtime_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+    "package_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas",
+    "release_version": "16.3.25.5.116.0.34.91-secure-build-source-and-profile-cas"
   },
   "legacy_aliases": {
     "version": "release_version"
