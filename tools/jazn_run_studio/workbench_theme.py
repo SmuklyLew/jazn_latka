@@ -37,8 +37,8 @@ def workbench_colors(theme: str, accent: str, *, system_dark: bool = False) -> W
         )
     if theme == "purple":
         return WorkbenchColors(
-            "#15121f", "#1c1929", "#1a1726", "#242031",
-            "#302a41", "#40364f", "#eeeaf4", "#aea5c1", chosen_accent, "#160f21"
+            "#11101c", "#141221", "#191627", "#211c31",
+            "#302845", "#4a3c63", "#eeeaf8", "#b3aacb", chosen_accent, "#150f23"
         )
     return WorkbenchColors(
         "#17161d", "#201e29", "#1d1b26", "#282531",
@@ -51,8 +51,8 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
     c = workbench_colors(theme, accent, system_dark=system_dark)
     return f"""
         QWidget {{ background: {c.background}; color: {c.text}; font-size: 13px; }}
-        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 1px solid {c.border}; }}
-        QWidget#workbenchTopbar {{ background: {c.editor}; border-bottom: 1px solid {c.border}; }}
+        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 2px solid {c.border}; }}
+        QWidget#workbenchTopbar {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {c.editor}, stop:1 {c.sidebar}); border-bottom: 1px solid {c.border}; }}
         QLabel#workbenchBrand {{ color: {c.accent}; font-size: 17px; font-weight: 700; }}
         QLabel#workbenchCaption, QLabel#workbenchStatus, QLabel#workbenchFootnote {{
             color: {c.muted}; font-size: 12px;
@@ -73,7 +73,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
         }}
         QPushButton {{
             background: {c.surface}; border: 1px solid {c.border};
-            border-radius: 5px; min-height: 24px; padding: 5px 11px;
+            border-radius: 6px; min-height: 26px; padding: 5px 11px;
         }}
         QPushButton:hover {{ background: {c.hover}; border-color: {c.accent}; }}
         QPushButton:focus, QListWidget:focus, QTabBar::tab:focus {{
@@ -86,7 +86,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             selection-color: {c.selected_text};
         }}
         QPlainTextEdit {{ font-family: Consolas, 'DejaVu Sans Mono', monospace; }}
-        QSplitter::handle {{ background: {c.border}; }}
+        QSplitter::handle {{ background: {c.border}; border: 1px solid {c.hover}; }}
         QSplitter::handle:hover {{ background: {c.accent}; }}
         QTabWidget::pane {{ border: 1px solid {c.border}; background: {c.editor}; }}
         QTabBar::tab {{

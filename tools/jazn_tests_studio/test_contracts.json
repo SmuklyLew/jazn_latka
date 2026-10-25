@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.85",
-  "active_definition_count": 2709,
+  "system_version": "16.3.25.5.116.0.34.86",
+  "active_definition_count": 2714,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26470,7 +26470,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 15
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_sidebar_and_contextual_panel_are_keyboard_accessible": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
@@ -26485,7 +26485,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 30
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_workbench_preserves_viewport_and_neutral_status": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
@@ -26500,7 +26500,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 61
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
@@ -26691,6 +26691,87 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 72
+    },
+    "tests/test_jazn_tpa_safe_executor.py::test_all_22_operator_cases_remain_manual_gates": {
+      "path": "tests/test_jazn_tpa_safe_executor.py",
+      "name": "test_all_22_operator_cases_remain_manual_gates",
+      "purpose": "All 22 operator cases remain manual gates",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_jazn_tpa_safe_executor.py::test_allowlist_only_permits_existing_bounded_regression_files": {
+      "path": "tests/test_jazn_tpa_safe_executor.py",
+      "name": "test_allowlist_only_permits_existing_bounded_regression_files",
+      "purpose": "Allowlist only permits existing bounded regression files",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jazn_tpa_safe_executor.py::test_symlink_or_missing_subcheck_fails_closed": {
+      "path": "tests/test_jazn_tpa_safe_executor.py",
+      "name": "test_symlink_or_missing_subcheck_fails_closed",
+      "purpose": "Symlink or missing subcheck fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_jazn_tpa_safe_executor.py::test_qt_runner_rejects_invalid_python_before_spawning": {
+      "path": "tests/test_jazn_tpa_safe_executor.py",
+      "name": "test_qt_runner_rejects_invalid_python_before_spawning",
+      "purpose": "Qt runner rejects invalid python before spawning",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_jazn_tpa_workbench_layout_diagnostics.py::test_service_page_and_stack_fit_minimum_width": {
+      "path": "tests/test_jazn_tpa_workbench_layout_diagnostics.py",
+      "name": "test_service_page_and_stack_fit_minimum_width",
+      "purpose": "Service page and stack fit minimum width",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",

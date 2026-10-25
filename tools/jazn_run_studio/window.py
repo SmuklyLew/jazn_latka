@@ -36,7 +36,7 @@ class Window(QMainWindow):
         self.smoke = smoke
         from .core import load_settings
         _, self.digest = load_settings(core.root)
-        self.setWindowTitle("Studio Jaźni Starter")
+        self.setWindowTitle("Studio Jaźni — TPA / Panel operacyjny")
         self.resize(1240, 840)
         self.setMinimumSize(860, 580)
         self.logs: dict[str, QPlainTextEdit] = {}
@@ -61,10 +61,12 @@ class Window(QMainWindow):
 
         self.sidebar = QWidget()
         self.sidebar.setObjectName("workbenchSidebar")
+        self.sidebar.setMinimumWidth(188)
+        self.sidebar.setMaximumWidth(250)
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(8, 14, 8, 10)
         sidebar_layout.setSpacing(8)
-        brand = QLabel("JAŹŃ  /  STUDIO")
+        brand = QLabel("JAŹŃ  /  STUDIO  •  TPA")
         brand.setObjectName("workbenchBrand")
         sidebar_layout.addWidget(brand)
         description = QLabel("PANEL OPERACYJNY")
@@ -212,7 +214,7 @@ class Window(QMainWindow):
             layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
-        self.button("Odśwież usługi", self.refresh_services, row)
+        self.button("Stan usług", self.refresh_services, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
@@ -336,7 +338,10 @@ class Window(QMainWindow):
             note.setWordWrap(True)
             row.addWidget(note, 2)
             layout.addLayout(row)
-        self.button("Zapisz raport ze wszystkich logów…", self.export, layout)
+        self.button("Zapisz raport techniczny JSON…", self.export, layout)
+        legend = QLabel("Zdarzenia — komunikaty dla operatora; Błędy — krótkie powody niepowodzeń; pełny dziennik — Ctrl+J.")
+        legend.setWordWrap(True)
+        layout.addWidget(legend)
         layout.addStretch()
 
     def _studios(self) -> None:
@@ -368,7 +373,7 @@ class Window(QMainWindow):
         layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
         for item in STUDIOS:
             row = QHBoxLayout()
-            self.button("Klasyczne: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
+            self.button("Archiwalne / do przeglądu: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
             note = QLabel(item.description)
             note.setWordWrap(True)
             row.addWidget(note, 2)
@@ -387,10 +392,10 @@ class Window(QMainWindow):
     def _local_acceptance(self) -> None:
         from .local_acceptance_view import LocalAcceptancePanel
         layout = self.page(
-            "Odbiór lokalny",
-            "Testy do wykonania przez operatora: zapisz rzeczywisty wynik, dowód i archiwizuj po zaliczeniu.",
+            "TPA",
+            "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
         )
-        self.local_acceptance_panel = LocalAcceptancePanel(self.core.root)
+        self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
         layout.addWidget(self.local_acceptance_panel)
 
     def _memory(self) -> None:
@@ -513,9 +518,10 @@ class Window(QMainWindow):
         form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
         self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
+        self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
-        self.button("Otwórz Studio Konfiguracji", lambda: self.core.start_studio("configuration"), layout)
+        self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
         self.button("Wczytaj profil środowiska runtime", lambda: self.core.studio_helper("profile-read"), layout)
         self.profile_form = QFormLayout()
         self.profile_widgets: dict[str, QLineEdit | QComboBox] = {}
@@ -523,6 +529,20 @@ class Window(QMainWindow):
         layout.addLayout(self.profile_form)
         self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
+
+    def fill_discovered_defaults(self) -> None:
+        """Suggest detected executables only in empty draft fields; never start services."""
+        found = discovery(self.core.settings)
+        changed: list[str] = []
+        for name in ("python", "ollama", "cloudflared"):
+            candidate = found.get(name)
+            if (not self.fields[name].text().strip()
+                    and isinstance(candidate, str) and Path(candidate).is_file()):
+                self.fields[name].setText(candidate)
+                changed.append(name)
+        self.statusBar().showMessage(
+            "Propozycje w formularzu (nie zapisano): " + (", ".join(changed) if changed else "brak nowych")
+        )
 
     def choose_custom_color(self) -> None:
         """Only the user's explicit acceptance changes the draft settings."""
@@ -633,8 +653,16 @@ class Window(QMainWindow):
                 self.memory_panel.receive(key, value)
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                detail = ("Stan " + str(value.get("active_state") or "niepotwierdzony") +
-                    " • endpoint: " + yes(value.get("endpoint_reachable")) +
+                ready = all(value.get(flag) is True for flag in (
+                    "endpoint_reachable", "process_identity_confirmed",
+                    "endpoint_identity_matches", "heartbeat_fresh",
+                    "conversation_ready",
+                ))
+                state = str(value.get("active_state") or "niepotwierdzony")
+                heading = ("Pracuje — zweryfikowany runtime" if ready else
+                           "Zatrzymane — runtime nieaktywny" if state in {"dead", "stopped", "inactive"} else
+                           "Gotowość niezweryfikowana")
+                detail = (heading + " • endpoint: " + yes(value.get("endpoint_reachable")) +
                     " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
                     " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
                 self.evidence.setText("Runtime: " + detail)
@@ -643,7 +671,7 @@ class Window(QMainWindow):
                 service = value.get("service")
                 if service in self.statuses:
                     if value.get("ready") is True:
-                        detail = "Gotowe • endpoint i deklarowana gotowość potwierdzone; funkcja wymaga osobnego testu"
+                        detail = "Pracuje • endpoint i gotowość usługi potwierdzone; funkcja wymaga osobnego testu"
                     elif value.get("ready") is False:
                         detail = "BŁĄD • usługa nie zgłasza gotowości"
                     elif service == "ollama":
@@ -728,9 +756,9 @@ class Window(QMainWindow):
                     if state == "failed":
                         detail = "BŁĄD • " + str(value.get("error") or "niepowodzenie")
                     elif state == "stopped":
-                        detail = "Zatrzymano proces należący do Studio • stan zewnętrzny niezweryfikowany"
+                        detail = "Zatrzymane • proces należący do Studio; stan obcej usługi niezweryfikowany"
                     else:
-                        detail = "Proces: " + state + " • PID " + str(value.get("pid")) + " • gotowość niezweryfikowana"
+                        detail = ("Pracuje proces" if state == "running" else "Proces: " + state) + " • PID " + str(value.get("pid")) + " • gotowość funkcji niezweryfikowana"
                     self.update_service_summary(service, detail)
                 elif key in {"start", "stop", "restart"}:
                     state = str(value["state"])

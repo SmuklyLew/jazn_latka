@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 from PySide6.QtWidgets import (
     QComboBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit,
@@ -9,20 +10,25 @@ from PySide6.QtWidgets import (
 )
 
 from . import local_acceptance as store
+from .tpa_runner import AUTOMATED_CASES, SafeTPARunner
 
 STATES = (("PASS — operator potwierdził", "passed"),
           ("FAIL — problem", "failed"), ("BLOKADA — nie da się wykonać", "blocked"))
 
 
 class LocalAcceptancePanel(QWidget):
-    """No test here runs itself and no local evidence is published to GitHub."""
+    """Operator acceptance with isolated optional regression subchecks."""
 
-    def __init__(self, root: Path, parent: QWidget | None = None) -> None:
+    def __init__(self, root: Path, parent: QWidget | None = None, *, python: str = "") -> None:
         super().__init__(parent)
         self.root = root
         self.data: dict = {}
         self.digest: str | None = None
         self.rows: list[dict[str, str]] = []
+        interpreter = python or ("" if getattr(sys, "frozen", False) else sys.executable)
+        self.runner = SafeTPARunner(root, interpreter, self)
+        self.runner.progress.connect(self._auto_progress)
+        self.runner.completed.connect(self._auto_completed)
         layout = QVBoxLayout(self)
         self.summary = QLabel()
         self.summary.setWordWrap(True)
@@ -31,7 +37,7 @@ class LocalAcceptancePanel(QWidget):
         self.table.setHorizontalHeaderLabels(["ID", "Test lokalny", "Kategoria", "Stan w tej wersji"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table.setAccessibleName("Kolejka odbioru lokalnego Jaźni")
+        self.table.setAccessibleName("TPA — testy przepuszczania aktualizacji Jaźni")
         self.table.currentCellChanged.connect(self.selected)
         layout.addWidget(self.table)
         self.instructions = QPlainTextEdit()
@@ -39,6 +45,31 @@ class LocalAcceptancePanel(QWidget):
         self.instructions.setMaximumHeight(160)
         self.instructions.setAccessibleName("Kroki i kryteria lokalnego testu")
         layout.addWidget(self.instructions)
+        auto_row = QHBoxLayout()
+        self.auto_one = QPushButton("Uruchom podtest zaznaczonego")
+        self.auto_one.setAccessibleName("Uruchom bezpieczny podtest wybranego scenariusza TPA")
+        self.auto_one.clicked.connect(self.run_selected_subcheck)
+        auto_row.addWidget(self.auto_one)
+        self.auto_safe = QPushButton("Uruchom bezpieczne podtesty")
+        self.auto_safe.clicked.connect(self.run_safe_subchecks)
+        auto_row.addWidget(self.auto_safe)
+        self.auto_cancel = QPushButton("Anuluj podtest")
+        self.auto_cancel.setEnabled(False)
+        self.auto_cancel.clicked.connect(self.runner.stop)
+        layout.addLayout(auto_row)
+        layout.addWidget(self.auto_cancel)
+        self.auto_status = QLabel(
+            "TPA: testy automatyczne sprawdzają wybrane regresje, ale nigdy "
+            "nie zatwierdzają 22 bramek odbioru ręcznego."
+        )
+        self.auto_status.setWordWrap(True)
+        layout.addWidget(self.auto_status)
+        self.auto_log = QPlainTextEdit()
+        self.auto_log.setReadOnly(True)
+        self.auto_log.setMaximumHeight(120)
+        self.auto_log.document().setMaximumBlockCount(600)
+        self.auto_log.setAccessibleName("Dziennik izolowanych podtestów TPA")
+        layout.addWidget(self.auto_log)
         form = QFormLayout()
         self.state = QComboBox()
         for title, key in STATES:
@@ -94,6 +125,55 @@ class LocalAcceptancePanel(QWidget):
         except (OSError, ValueError) as exc:
             self.feedback.setText("Błąd: " + str(exc))
 
+    def run_selected_subcheck(self) -> None:
+        case_id = self._chosen()
+        if case_id not in AUTOMATED_CASES:
+            self.auto_status.setText(
+                "TPA: ten scenariusz wymaga wykonania instrukcji przez operatora. "
+                "Nie uruchomiono testu ani nie nadano PASS."
+            )
+            return
+        self._start_automatic((case_id,))
+
+    def run_safe_subchecks(self) -> None:
+        self._start_automatic(tuple(AUTOMATED_CASES))
+
+    def _start_automatic(self, case_ids: tuple[str, ...]) -> None:
+        try:
+            self.runner.start_cases(case_ids)
+        except (OSError, ValueError) as exc:
+            self.auto_status.setText("TPA: BLOKADA • " + str(exc))
+            return
+        self.auto_one.setEnabled(False)
+        self.auto_safe.setEnabled(False)
+        self.auto_cancel.setEnabled(True)
+        self.auto_status.setText("TPA: PRACUJE • izolowany proces testowy; bramki ręczne bez zmian.")
+
+    def _auto_progress(self, line: str) -> None:
+        self.auto_log.appendPlainText(line.rstrip())
+
+    def _auto_completed(self, report: object) -> None:
+        if not isinstance(report, dict):
+            return
+        self.auto_one.setEnabled(True)
+        self.auto_safe.setEnabled(True)
+        self.auto_cancel.setEnabled(False)
+        status = str(report.get("status") or "BLOCKED")
+        path = str(report.get("evidence_path") or "nie zapisano")
+        self.auto_status.setText(
+            "TPA: " + status + " • podtest regresyjny, a NIE pełny odbiór. "
+            "Dowód: " + path
+        )
+        if report.get("persistence_error"):
+            self.auto_log.appendPlainText(
+                "BŁĄD: dowód nie został zapisany; nie wolno zakładać trwałości wyniku."
+            )
+
+    def closeEvent(self, event) -> None:
+        if self.runner.active:
+            self.runner.stop()
+        super().closeEvent(event)
+
     def refresh(self) -> None:
         self.data, self.digest = store.load(self.root)
         self.rows = store.catalog(self.root, self.data)
@@ -110,7 +190,7 @@ class LocalAcceptancePanel(QWidget):
         done = sum(bool(store.outcome(self.data, x["id"], version)) for x in self.rows)
         self.summary.setText(
             f"Wersja: {version}  •  {done}/{len(self.rows)} zarejestrowanych wyników. "
-            "Status PASS jest deklaracją operatora, nie automatycznym dowodem CI. "
+            "Ręczny PASS nie jest dowodem CI; PASS podtestu nie zalicza odbioru. "
             "Po zmianie wersji wyniki wracają do kolejki."
         )
         self.archived.setText(
@@ -129,6 +209,16 @@ class LocalAcceptancePanel(QWidget):
             "CEL: " + test["title"] + "\n\nKROKI:\n" + test["steps"] +
             "\n\nOCZEKIWANY WYNIK:\n" + test["expected"]
         )
+        if test["id"] in AUTOMATED_CASES:
+            self.auto_status.setText(
+                "TPA: dostępny bezpieczny podtest regresyjny (częściowe pokrycie). "
+                "Pełny odbiór wymaga rzeczywistego potwierdzenia przez operatora."
+            )
+        elif not self.runner.active:
+            self.auto_status.setText(
+                "TPA: tylko ręcznie / brak zatwierdzonego wykonawcy automatycznego. "
+                "Nie uruchomiono żadnej operacji."
+            )
         state = store.outcome(self.data, test["id"], store.scope_version(self.root))
         self.note.setPlainText(str(state.get("note", "")) if state else "")
         self.evidence.setText(str(state.get("evidence", "")) if state else "")
