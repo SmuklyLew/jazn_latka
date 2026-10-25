@@ -15,9 +15,16 @@ from tools.jazn_run_studio.configuration_view import (
 )
 
 
+@pytest.fixture(scope="module")
+def qapp() -> Iterator[QApplication]:
+    instance = QApplication.instance() or QApplication([])
+    assert isinstance(instance, QApplication)
+    yield instance
+    instance.processEvents()
+
+
 @pytest.fixture
-def panel(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[ConfigurationPanel]:
-    _ = QApplication.instance() or QApplication([])
+def panel(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, qapp: QApplication) -> Iterator[ConfigurationPanel]:
     (tmp_path / "latka_jazn").mkdir()
     (tmp_path / "latka_jazn" / "version.py").write_text("# fixture", encoding="utf-8")
     (tmp_path / "main.py").touch()
@@ -28,6 +35,8 @@ def panel(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Configura
     widget = ConfigurationPanel(backend)
     yield widget
     widget.close()
+    widget.deleteLater()
+    qapp.processEvents()
 
 
 def sample_snapshot() -> dict:
