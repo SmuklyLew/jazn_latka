@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-  "runtime_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-  "package_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-  "generated_at_utc": "2026-10-25T11:31:46+00:00",
-  "updated_at_utc": "2026-10-25T11:31:46+00:00",
+  "version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+  "package_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+  "generated_at_utc": "2026-10-25T13:37:35+00:00",
+  "updated_at_utc": "2026-10-25T13:37:35+00:00",
   "start_file": "run.py",
   "file_count": 3388,
   "static_file_count": 3388,
@@ -110,8 +110,8 @@
     },
     {
       "path": ".github/workflows/configuration-studio-windows.yml",
-      "size_bytes": 5879,
-      "sha256": "7547142e4b96abe6da7f1f8ae68e57cab635969b7e56a741b9bbbc58ae9920c1",
+      "size_bytes": 6160,
+      "sha256": "d0ab48fb669d6d6b5976b46482dbbbd4c21148c22189b7de8f182610a91e2335",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -227,8 +227,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 5590,
-      "sha256": "1d5f522220d7a209472863cc8d1f9754c158ad1f48611251bb805462aeba2ea9",
+      "size_bytes": 5918,
+      "sha256": "fcfe6f28cfbffa653bb49aeb77a3d2a10bb474f700755dfa8b9639af02870c35",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -398,8 +398,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2987,
-      "sha256": "ffcc2b78f64c6a5c57bba5690e2530859cb325abf0dbf182884352d65ec299d1",
+      "size_bytes": 3002,
+      "sha256": "d7a8aeb9d55aa9861bf0bb6a0e73a239c27cc9926395803023bc02c38e5b0d7d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -434,8 +434,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1947,
-      "sha256": "f9d5de81f054bcded4689bfeda16beec23705f9aaa937658d067546093fb44d0",
+      "size_bytes": 1952,
+      "sha256": "89aba502f61135777eabf8b7c86af3cdcca968e07a273a78c67a1ab2ae390ff0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9498,7 +9498,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7904,
-      "sha256": "9adf94b66f3c698168be32382ca8ad978e2a91721056c4013f73b7d089e3f94c",
+      "sha256": "e1e3cf3d804b6981a7ff8d096d936c905e596d5877095bcb7620b520fd1742e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11000,8 +11000,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 16777,
-      "sha256": "511a03d1555e6a2bc975d1bb20e461efafd217fc1a11c05ae6422e7ea86f9e52",
+      "size_bytes": 16877,
+      "sha256": "e107781e962c7be2d983a3edd67990e5470c62127c83a6afb047eb3ae3cf0753",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30288,7 +30288,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2468791,
-      "sha256": "58c8a18a2c7da5cf6bcf9908f5469c4bd0e8c56088bd6e7892cd8e6767b06d30",
+      "sha256": "3dc79124f8af0a80d61a6e2f8356577742577dd1f77d5e1b07ae9d1626aad128",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30945,11 +30945,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
+  "release_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-    "package_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench",
-    "release_version": "16.3.25.5.116.0.34.86-tpa-safe-subchecks-purple-workbench"
+    "runtime_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+    "package_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+    "release_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
