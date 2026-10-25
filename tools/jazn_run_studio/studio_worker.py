@@ -109,24 +109,41 @@ def preview_command(command: dict[str, Any], spec: dict[str, Any]) -> dict[str, 
 
 def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
     from pathlib import Path
-    from latka_jazn.tools.configuration_studio import SETTINGS, ENUMS, profile_snapshot, save_profile, validated_launch_values
+    from latka_jazn.tools.configuration_studio import (
+        SETTINGS, ENUMS, inspect_system, preview_profile_changes, profile_snapshot,
+        restore_previous_profile, save_profile, validate_values, validated_launch_values,
+    )
     root = Path.cwd()
     if operation == "profile-env":
         return validated_launch_values(root)
+    if operation == "profile-paths":
+        return {"schema": "jazn_config_path_map/v1", "rows": inspect_system(root),
+                "read_only": True, "runtime_ready": False}
+    if operation == "profile-validate":
+        values = validate_values(root, data["values"])
+        return {"schema": "jazn_config_validation/v1", "count": len(values),
+                "saved": False, "runtime_activated": False}
+    if operation == "profile-preview":
+        return preview_profile_changes(root, data["values"], expected_sha256=data.get("digest"))
     if operation == "profile-save":
         save_profile(root, data["values"], expected_sha256=data.get("digest"))
+    if operation == "profile-restore":
+        restore_previous_profile(root, expected_sha256=data.get("digest"))
     values, digest = profile_snapshot(root)
-    return {"values": values, "digest": digest,
-            "fields": [{"key": s.key, "title": s.title, "hint": s.hint, "choices": sorted(ENUMS.get(s.kind, []))} for s in SETTINGS]}
+    return {"schema": "jazn_config_snapshot/v1", "values": values, "digest": digest,
+            "fields": [{"key": s.key, "title": s.title, "hint": s.hint,
+                        "kind": s.kind, "section": s.section,
+                        "choices": sorted(ENUMS.get(s.kind, []))} for s in SETTINGS],
+            "future_launch_only": True, "runtime_activated": False}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env"])
+    parser.add_argument("mode", choices=["schema", "preview", "execute", "profile-read", "profile-save", "profile-env", "profile-paths", "profile-preview", "profile-validate", "profile-restore"])
     parser.add_argument("key", nargs="?", choices=sorted(MODULES))
     args = parser.parse_args()
     if args.mode.startswith("profile-"):
-        raw = sys.stdin.buffer.read(32769) if args.mode == "profile-save" else b"{}"
+        raw = sys.stdin.buffer.read(32769) if args.mode in {"profile-save", "profile-preview", "profile-validate", "profile-restore"} else b"{}"
         if len(raw) > 32768:
             raise ValueError("Profile input limit")
         print(json.dumps(profile(args.mode, json.loads(raw)), ensure_ascii=False))
