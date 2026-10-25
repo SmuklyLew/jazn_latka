@@ -9,7 +9,7 @@ def main() -> int:
     return subprocess.run(
         [sys.executable, "-m", "pyright", "--pythonpath", sys.executable,
          "tools/jazn_run_studio", "jazn_run_studio.py", "tests/test_jazn_run_studio.py",
-         "tests/test_jazn_run_studio_integrations.py", "tests/test_jazn_run_studio_secrets.py",
+         "tests/test_jazn_run_studio_integrations.py", "tests/test_jazn_run_studio_env_guard.py",
          "tests/test_jazn_run_studio_chat_contract.py", "tests/test_jazn_run_studio_lifecycle_results.py",
          "tests/test_jazn_run_studio_http_framing.py", "tests/test_jazn_run_studio_layout.py", "tests/test_jazn_run_studio_utf8.py",
          "tests/test_jazn_run_studio_memory_view.py", "tests/test_memory_operator_report.py",
