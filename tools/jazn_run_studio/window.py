@@ -142,13 +142,15 @@ class Window(QMainWindow):
         self._chat()
         self._diagnostics()
         self._studios()
-        self._configuration()
-        self._version_studio()
         self._tests_catalog()
         self._local_acceptance()
         self._memory()
         self._settings()
         self._about()
+        # Preserve legacy navigation indices for Test/MEMORY/TPA operator
+        # workspaces. New native pages are appended, never inserted mid-list.
+        self._configuration()
+        self._version_studio()
         self.log_toggle = QPushButton("Pokaż logi")
         self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
         self.log_toggle.clicked.connect(self.toggle_logs)
