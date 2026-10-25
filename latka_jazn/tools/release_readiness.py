@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+from unittest.mock import patch
 import json
 import os
 import shutil
@@ -164,6 +166,28 @@ def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
         port=port,
         marker_output=str(marker),
     )
+
+
+@contextmanager
+def _isolated_readiness_environment(isolated: Path) -> Iterator[None]:
+    """Keep in-process daemon checks and subprocesses off an operator workspace.
+
+    package-smoke uses a temporary SYSTEM which disappears after the test.
+    Inheriting the user's workspace would leave an active marker referencing
+    that deleted root. Restore the exact parent environment on exit.
+    """
+    env = dict(os.environ)
+    for key in tuple(env):
+        if key.startswith((
+            "JAZN_MEMORY_", "JAZN_RUNTIME_", "JAZN_CONVERSATION_",
+            "JAZN_AUDIT_", "JAZN_REST_",
+        )) or key in {"LATKA_NLP_DATA_DIR", "JAZN_DAEMON_AUTOSTART"}:
+            env.pop(key, None)
+    env["JAZN_RUNTIME_WORKSPACE_DIR"] = str((isolated / "workspace_runtime").resolve())
+    env["JAZN_MEMORY_MODE"] = "off"
+    env["JAZN_DAEMON_AUTOSTART"] = "0"
+    with patch.dict(os.environ, env, clear=True):
+        yield
 
 
 def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) -> None:
@@ -330,7 +354,8 @@ def build_release_readiness_report(root: Path | str, *, profile: str = "system")
                 configuration_error = True
             else:
                 checks.append(_check("isolated_package_copy", True, root=str(isolated)))
-                _run_isolated_system_checks(isolated, checks)
+                with _isolated_readiness_environment(isolated):
+                    _run_isolated_system_checks(isolated, checks)
 
     if profile in {"memory", "full"}:
         cfg = JaznConfig(root=root)

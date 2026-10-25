@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from importlib.util import find_spec
 import json
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
 import queue
@@ -27,6 +29,7 @@ from urllib.parse import urlsplit
 
 from latka_jazn.tools.jazn_studio.core import verified_root
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.system_config import read_system_config, write_system_config
 from .external import spawn, environment, run as run_external
 
 MAX_OUTPUT = 2 * 1024 * 1024
@@ -171,20 +174,35 @@ class Settings:
         return obj
 
 
+def daemon_cli_options(settings: Settings) -> list[str]:
+    """Validated local endpoint args shared by Studio lifecycle and chat.
+
+    Do not infer daemon ownership from a listening port. The canonical CLI
+    performs root/process verification; Studio only selects the endpoint.
+    """
+    checked = Settings.validate(asdict(settings))
+    endpoint = urlsplit(checked.daemon_url)
+    assert endpoint.port is not None  # Guaranteed by Settings.validate.
+    return ["--daemon-host", "127.0.0.1", "--daemon-port", str(endpoint.port)]
+
+
 def settings_path(root: Path) -> Path:
     # A local operator profile, not runtime or private MEMORY configuration.
     return _path_without_links(workspace_runtime_path(root) / "jazn_run_studio" / "settings.json")
 
 
 def load_settings(root: Path) -> tuple[Settings, str | None]:
+    canonical = read_system_config(root)
     target = settings_path(root)
     if not target.exists():
-        return Settings(), None
+        return Settings.validate(dict(canonical.studio)), None
     raw = target.read_bytes()
     if len(raw) > 32768:
         raise StudioError("Zbyt duży plik ustawień")
     data = json.loads(raw)
-    return Settings.validate(data), sha256(raw).hexdigest()
+    if not isinstance(data, dict):
+        raise StudioError("Nieprawidłowy format ustawień Studio")
+    return Settings.validate({**data, **canonical.studio}), sha256(raw).hexdigest()
 
 
 def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
@@ -194,6 +212,12 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
     if current != expected:
         raise StudioError("Ustawienia zmieniły się na dysku; wczytaj je ponownie")
     target.parent.mkdir(parents=True, exist_ok=True)
+    canonical = read_system_config(root)
+    shared = {key: val for key, val in (
+        ("python", settings.python), ("model", settings.model),
+        ("daemon_url", settings.daemon_url),
+    ) if val}
+    write_system_config(root, canonical.values, shared, expected_digest=canonical.digest)
     data = (json.dumps(asdict(settings), ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     fd, name = tempfile.mkstemp(dir=target.parent, prefix=".settings-")
     try:
@@ -280,6 +304,32 @@ class Job:
         return {k: getattr(self, k) for k in ("key", "state", "pid", "returncode", "error", "started", "finished")}
 
 
+def write_error_record(root: Path, key: str, snapshot: dict[str, Any], redactor: Redactor) -> Path:
+    """Persist only redacted, bounded failure metadata in the Git-ignored workspace.
+
+    Never persist command arguments, chat contents, raw stdout or tracebacks.
+    This is an operator diagnostic, not a runtime event or finalization record.
+    """
+    folder = _path_without_links(workspace_runtime_path(root) / "jazn_run_studio")
+    folder.mkdir(parents=True, exist_ok=True)
+    filename = _path_without_links(folder / "errors_jazn_studio.log")
+    fields = {
+        "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "job": redactor.text(key[:128]),
+        "state": "failed",
+        "error": redactor.text(str(snapshot.get("error") or "unspecified")[:256]),
+        "returncode": snapshot.get("returncode") if isinstance(snapshot.get("returncode"), int) else None,
+    }
+    handler = RotatingFileHandler(filename, maxBytes=1_048_576, backupCount=3, encoding="utf-8")
+    try:
+        record = logging.LogRecord("jazn_studio_errors", logging.ERROR, "", 0,
+                                   json.dumps(fields, ensure_ascii=False), (), None)
+        handler.emit(record)
+    finally:
+        handler.close()
+    return filename
+
+
 class Controller:
     """Bounded job and event registry; work never runs on the GUI thread."""
 
@@ -303,6 +353,19 @@ class Controller:
             if kind == "log":
                 value = self.redactor.text(str(value))
                 self.logs.setdefault(key, deque(maxlen=2500)).append(value)
+            elif kind == "state" and isinstance(value, dict):
+                value = dict(value)
+                if value.get("error"):
+                    value["error"] = self.redactor.text(str(value["error"]))
+                if value.get("state") == "failed":
+                    try:
+                        write_error_record(self.root, key, value, self.redactor)
+                    except (OSError, StudioError):
+                        # A diagnostic disk failure must never lose the terminal
+                        # job state or the accepted chat-final delivery channel.
+                        warning = "BŁĄD: nie można zapisać lokalnego rejestru awarii"
+                        self.logs.setdefault("studio:errors", deque(maxlen=2500)).append(warning)
+                        self.critical_events.put(("studio:errors", "log", warning))
             try:
                 self.events.put_nowait((key, kind, value))
             except queue.Full:
@@ -314,7 +377,16 @@ class Controller:
             action = ACTION_BY_KEY[key]
         except KeyError:
             raise StudioError("Nieznana operacja") from None
-        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *action.args]
+        args = list(action.args)
+        if key in {"status", "doctor", "start", "stop", "restart"}:
+            # Preserve unchanged default commands while routing configured
+            # non-default endpoints through the public Jaźń control plane.
+            if self.settings.daemon_url != "http://127.0.0.1:8787":
+                target = daemon_cli_options(self.settings)
+                if key in {"start", "stop", "restart"}:
+                    args.append("--")  # argparse.REMAINDER on lifecycle verbs.
+                args.extend(target)
+        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
 
     def _reserve(self, key: str) -> Job:
         with self.lock:

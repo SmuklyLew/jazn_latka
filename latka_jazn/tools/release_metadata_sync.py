@@ -16,12 +16,12 @@ Legacy fields remain present as documented aliases so existing readers can
 migrate without a flag-day break.
 """
 
-import ast
 from collections.abc import Iterable
 from pathlib import Path
 import re
 from typing import Any
 
+from latka_jazn.core.version_source import read_version_text_assignments
 from latka_jazn.tools import _release_metadata_sync_impl as _impl
 
 _impl._PACKAGE_VERSION_RE = re.compile(r"^v?\d+(?:\.\d+)+$")
@@ -39,28 +39,11 @@ _VERSION_PATH = "latka_jazn/version.py"
 
 
 def _literal_runtime_version(version_py_text: str) -> str | None:
-    """Read literal release identity from version.py text without importing it."""
-
+    """Extract Git-source release version using the same safe static AST reader."""
     try:
-        tree = ast.parse(version_py_text, filename=_VERSION_PATH)
-    except SyntaxError:
+        values = read_version_text_assignments(version_py_text, filename=_VERSION_PATH)
+    except (SyntaxError, ValueError):
         return None
-    values: dict[str, str] = {}
-    for node in tree.body:
-        targets: list[str] = []
-        value_node: ast.AST | None = None
-        if isinstance(node, ast.Assign):
-            targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
-            value_node = node.value
-        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-            targets = [node.target.id]
-            value_node = node.value
-        if not isinstance(value_node, ast.Constant) or not isinstance(value_node.value, str):
-            continue
-        value = value_node.value.strip()
-        for target in targets:
-            values[target] = value
-
     package = (values.get("PACKAGE_VERSION") or "").strip()
     distribution = (values.get("DISTRIBUTION_VERSION") or "").strip()
     release = (values.get("PACKAGE_RELEASE_NAME") or "").strip()
@@ -69,7 +52,6 @@ def _literal_runtime_version(version_py_text: str) -> str | None:
     if not package:
         return None
     return f"{package}-{release}" if release else package
-
 
 def _version_at_commit(root: Path, commit: str | None) -> str | None:
     value = str(commit or "").strip().lower()

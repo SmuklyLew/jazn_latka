@@ -84,6 +84,44 @@ environments and the redaction registry; they are never copied into settings or
 reports. The file is never sourced as executable shell code. Editing secret
 values stays in the operator's local editor. Paid OpenAI API remains future work.
 
+## Part 2 operator observability (.72 checkpoint)
+
+The dashboard and **Usługi i procesy** now mirror the latest *observed*
+service evidence. A retained subprocess PID is always labeled as process-only,
+not as function or conversation readiness. Explicit HTTP readiness and canonical
+runtime status have different messages; no background probe is inferred from
+a running process. Data can be stale until an operator starts a new probe.
+
+The lower diagnostic tabs can be shown/hidden with the status-bar toggle.
+The technical per-job streams are separate from human-readable **Zdarzenia**
+and **Błędy** tabs. This UI separation does not change runtime or daemon logs.
+
+On a failed controller job, a bounded, structured and redacted diagnostic
+entry is written to ignored
+`workspace_runtime/jazn_run_studio/errors_jazn_studio.log`. It uses standard
+Python rotating logs (1 MiB each, up to three backups), and contains only the
+observation time, job key, failure reason and optional return code. It never
+records raw stdout, arguments, chat text or secrets. If this diagnostic file
+cannot be written, the event still reaches the GUI; a separate warning is
+shown. Reports remain opt-in and redact inherited secret values.
+
+Custom accent can now be selected with the native Qt color palette or typed
+as validated `#RRGGBB`. Canceling the dialog changes nothing; accepting only
+updates the unsaved draft until **Zapisz i zastosuj** is clicked.
+
+This is **not** complete part-2 acceptance. The migration inventory in
+`STUDIO_MIGRATION.md` still contains 12 partial/not-started rows.
+Windows/Unix real runtime and model-generation checks, antivirus/vendor review,
+portable offline EXE acceptance, accessibility and complete GUI parity remain
+independent gates. Do not merge or distribute as production-ready solely on
+successful synthetic Qt tests.
+
+Qt references:
+- https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QColorDialog.html
+- https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QSplitter.html
+- https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QStatusBar.html
+- https://docs.python.org/3/library/logging.handlers.html
+
 ## Read-only MEMORY evidence
 
 The shared Qt page **Dowody MEMORY** exposes the existing P1 inspection,
