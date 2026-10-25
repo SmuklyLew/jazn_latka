@@ -212,7 +212,7 @@ class Window(QMainWindow):
             layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
-        self.button("Sprawdź stan usług", self.refresh_services, row)
+        self.button("Stan usług", self.refresh_services, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
