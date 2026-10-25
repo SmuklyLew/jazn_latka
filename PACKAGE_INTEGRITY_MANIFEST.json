@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "runtime_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
   "package_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-  "generated_at_utc": "2026-10-25T22:35:21+00:00",
-  "updated_at_utc": "2026-10-25T22:35:21+00:00",
+  "generated_at_utc": "2026-10-25T22:42:00+00:00",
+  "updated_at_utc": "2026-10-25T22:42:00+00:00",
   "start_file": "run.py",
-  "file_count": 3405,
-  "static_file_count": 3405,
+  "file_count": 3406,
+  "static_file_count": 3406,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -400,7 +400,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2999,
-      "sha256": "41a3f345832657ea1f8ad616704990d5835e2cb8a9a582700b4fc64f35fd337a",
+      "sha256": "a41bae10c4b6996031d9ece9c7a44fbcbefe3a02a05228064d63238276af507c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23123,6 +23123,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.93-pre-log-metrics/test_jazn_start_studio_output_redaction.py",
+      "size_bytes": 898,
+      "sha256": "b5547891e2a06473cb9d9e01df7e2dc9dcf29d793df24310536a73ccd172d4c8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -27183,8 +27192,8 @@
     },
     {
       "path": "tests/test_jazn_start_studio_output_redaction.py",
-      "size_bytes": 898,
-      "sha256": "b5547891e2a06473cb9d9e01df7e2dc9dcf29d793df24310536a73ccd172d4c8",
+      "size_bytes": 1176,
+      "sha256": "9ad969bcdaad736f3995d188469d9338ddb9aae5612757ad4635b7ce0339864f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30306,8 +30315,8 @@
     },
     {
       "path": "tools/jazn_start_studio.py",
-      "size_bytes": 28086,
-      "sha256": "b5662d1d8924aa216fb55ee80fa30ceedb0fe2e0c58c71243a5c24e7eb0f408f",
+      "size_bytes": 28102,
+      "sha256": "326e462359499717e20d16dccbbc99d73d9262af456ab73d4a49da28850ae0e1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30441,8 +30450,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2486679,
-      "sha256": "5a1a6123678c75d2c5638e5255ea85bd5bc7522be6e0a586938de6f606eb576e",
+      "size_bytes": 2487403,
+      "sha256": "752cefc21101a99969da41d50806ec24e36b8aa7f1aedeb4d0634e9e36e40659",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
