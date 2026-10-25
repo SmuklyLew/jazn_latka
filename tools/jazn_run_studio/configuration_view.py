@@ -27,13 +27,12 @@ def profile_fingerprint(values: dict[str, str], digest: str | None) -> str:
     return sha256(payload).hexdigest()
 
 
-def launch_command(root: Path) -> str:
+def launch_command(root: Path, profile_path: str) -> str:
     """Display the original explicit Windows launcher, never run it."""
     launcher = root / "tools" / "windows" / "Start-JaznWithConfig.ps1"
-    config = root / "workspace_runtime" / "configuration_studio" / "profiles" / "operator.json"
-    # This is an operator hint only. The actual path is resolved by the
-    # canonical profile engine and may be external to this default layout.
-    return f'pwsh -File "{launcher}" -Profile "{config}"'
+    if not Path(profile_path).is_absolute():
+        raise ValueError("Brak zweryfikowanej ścieżki profilu.")
+    return f'pwsh -File "{launcher}" -Profile "{profile_path}"'
 
 
 class ConfigurationPanel(QWidget):
@@ -44,6 +43,7 @@ class ConfigurationPanel(QWidget):
         self.core = core
         self.digest: str | None = None
         self.loaded: dict[str, str] = {}
+        self.profile_path = ""
         self.widgets: dict[str, QLineEdit | QComboBox] = {}
         self.preview_hash = ""
         self.busy = ""
@@ -186,7 +186,7 @@ class ConfigurationPanel(QWidget):
             self._run("profile-restore", {"digest": self.digest})
 
     def copy_command(self) -> None:
-        command = launch_command(self.core.root)
+        command = launch_command(self.core.root, self.profile_path)
         clipboard = QApplication.clipboard()
         clipboard.setText(command)
         self.status.setText("Skopiowano przykładową komendę. Nie uruchomiono procesu.")
@@ -270,6 +270,7 @@ class ConfigurationPanel(QWidget):
             self.form.removeRow(0)
         self.widgets.clear()
         self.loaded = {str(k): str(v) for k, v in entries.items()}
+        self.profile_path = str(value.get("profile_path") or "")
         self.digest = value.get("digest") if isinstance(value.get("digest"), str) else None
         for field in fields:
             if not isinstance(field, dict) or not isinstance(field.get("key"), str):
