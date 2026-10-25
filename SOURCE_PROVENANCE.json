@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "d27cf2965a525c03ba160bd142c84649e67b11d1",
-    "base_version": "16.3.25.5.116.0.34.87-master-promotion-contract-convergence",
+    "base_commit": "11fbf5e4b26ffc6c53bd4453b042f2fc00ec80de",
+    "base_version": "16.3.25.5.116.0.34.90-config-root-migration-cas-guard",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "11fbf5e4b26ffc6c53bd4453b042f2fc00ec80de",
