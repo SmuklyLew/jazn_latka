@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.test_jazn_run_studio_layout import window  # shared isolated Qt fixture
+
 from tools.jazn_run_studio.workbench_theme import (
     workbench_colors, workbench_stylesheet,
 )
