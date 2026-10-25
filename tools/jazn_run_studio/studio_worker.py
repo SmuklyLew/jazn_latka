@@ -137,7 +137,9 @@ def profile(operation: str, data: dict[str, Any]) -> dict[str, Any]:
         _, digest = profile_snapshot(root)
         if digest is None or digest != data.get("digest"):
             raise ValueError("Zapisany profil zmieniono. Ponownie wczytaj operator.json.")
-        migrate_operator_profile(root)
+        # Pass the exact GUI-approved digest into the canonical migration.
+        # Rechecking only here would permit a second read to use newer bytes.
+        migrate_operator_profile(root, expected_sha256=digest)
         return {"schema": "jazn_config_root_migration/v1",
                 "profile_sha256": digest, "config_path": str(config_path(root)),
                 "saved": True, "runtime_activated": False}
