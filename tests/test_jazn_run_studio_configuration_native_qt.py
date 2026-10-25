@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from collections.abc import Iterator
 from types import SimpleNamespace
 
 import pytest
@@ -15,7 +16,7 @@ from tools.jazn_run_studio.configuration_view import (
 
 
 @pytest.fixture
-def panel(tmp_path: Path) -> ConfigurationPanel:
+def panel(tmp_path: Path) -> Iterator[ConfigurationPanel]:
     _ = QApplication.instance() or QApplication([])
     backend = SimpleNamespace(root=tmp_path, requests=[])
     backend.studio_helper = lambda mode, **kw: backend.requests.append((mode, kw))
