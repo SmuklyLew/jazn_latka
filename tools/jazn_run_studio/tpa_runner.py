@@ -52,7 +52,9 @@ def isolated_environment(folder: Path) -> QProcessEnvironment:
     """Never inherit Jaźń runtime/memory bindings into a TPA subprocess."""
     env = QProcessEnvironment.systemEnvironment()
     for key in env.keys():
-        if key.startswith("JAZN_"):
+        upper = key.upper()
+        if (upper.startswith("JAZN_")
+                or any(term in upper for term in ("TOKEN", "SECRET", "PASSWORD", "API_KEY", "CREDENTIAL"))):
             env.remove(key)
     env.insert("JAZN_RUNTIME_WORKSPACE_DIR", str(folder / "runtime"))
     env.insert("JAZN_OPERATOR_STATE_ROOT", str(folder / "operator"))
@@ -192,7 +194,7 @@ class SafeTPARunner(QObject):
                 handle.flush()
                 os.fsync(handle.fileno())
             report["evidence_path"] = str(path)
-        except OSError:
+        except (OSError, ValueError):
             report["evidence_path"] = ""
             report["persistence_error"] = "operator_evidence_write_failed"
         finally:
