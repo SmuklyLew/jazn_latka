@@ -337,7 +337,9 @@ class Window(QMainWindow):
             row.addWidget(note, 2)
             layout.addLayout(row)
         self.button("Zapisz raport techniczny JSON…", self.export, layout)
-        layout.addWidget(QLabel("Zdarzenia — komunikaty dla operatora; Błędy — krótkie powody niepowodzeń; pełny dziennik — Ctrl+J."))
+        legend = QLabel("Zdarzenia — komunikaty dla operatora; Błędy — krótkie powody niepowodzeń; pełny dziennik — Ctrl+J.")
+        legend.setWordWrap(True)
+        layout.addWidget(legend)
         layout.addStretch()
 
     def _studios(self) -> None:
