@@ -26470,7 +26470,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 15
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_sidebar_and_contextual_panel_are_keyboard_accessible": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
@@ -26485,7 +26485,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 30
     },
     "tests/test_jazn_run_studio_workbench_qt.py::test_workbench_preserves_viewport_and_neutral_status": {
       "path": "tests/test_jazn_run_studio_workbench_qt.py",
@@ -26500,7 +26500,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 61
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
