@@ -368,6 +368,20 @@ jobs:
           test "$rc" -ne 0
           grep -q "no_compatible_verified_dependency_bundle\|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
 
+      - name: Preserve cleanroom startup evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cleanroom-startup-failure-${{ matrix.target }}-py${{ matrix.python }}
+          path: |
+            ${{ runner.temp }}/start.json
+            ${{ runner.temp }}/preflight.json
+            ${{ runner.temp }}/workspace_runtime/daemon/stdout.log
+            ${{ runner.temp }}/workspace_runtime/daemon/stderr.log
+            ${{ runner.temp }}/workspace_runtime/daemon/process_events.jsonl
+          if-no-files-found: warn
+          retention-days: 3
+
   persist_release_locks:
     name: persist canonical dependency locks and release metadata
     if: github.event_name == 'push' && (github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence' || github.ref_name == 'upgrade/v16.3.25.5-package-distribution-convergence-final' || github.ref_name == 'upgrade/package-generator-v10.1.86.0-rewrite')
