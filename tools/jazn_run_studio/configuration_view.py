@@ -209,7 +209,7 @@ class ConfigurationPanel(QWidget):
     def receive(self, key: str, value: object) -> None:
         if not isinstance(value, dict):
             return
-        mode = key.removeprefix("helper:")
+        mode = key.removeprefix("helper:").removesuffix(":")
         if mode != self.busy:
             return
         if mode in {"profile-read", "profile-save", "profile-restore"}:
@@ -312,7 +312,7 @@ class ConfigurationPanel(QWidget):
         self._enabled(self.loaded_once)
 
     def receive_state(self, key: str, value: object) -> None:
-        mode = key.removeprefix("helper:")
+        mode = key.removeprefix("helper:").removesuffix(":")
         if mode != self.busy or not isinstance(value, dict):
             return
         if value.get("state") in {"failed", "stopped"}:
