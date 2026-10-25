@@ -13,8 +13,7 @@ from typing import Any, Callable
 
 from PySide6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFormLayout, QHBoxLayout,
-    QLabel, QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget,
+    QLabel, QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget,
 )
 
 from .core import Controller, StudioError
@@ -80,10 +79,12 @@ class ConfigurationPanel(QWidget):
         self.save_button.clicked.connect(self.save)
         self.restore_button = QPushButton("Przywróć poprzedni profil")
         self.restore_button.clicked.connect(self.restore)
+        self.migrate_button = QPushButton("Migruj zapisany profil do konfiguracji ROOT…")
+        self.migrate_button.clicked.connect(self.migrate)
         self.copy_button = QPushButton("Kopiuj komendę startową")
         self.copy_button.clicked.connect(self.copy_command)
         for widget in (self.check_button, self.preview_button, self.save_button,
-                       self.restore_button, self.copy_button):
+                       self.restore_button, self.migrate_button, self.copy_button):
             main.addWidget(widget)
         self.details = QPlainTextEdit()
         self.details.setReadOnly(True)
@@ -99,6 +100,7 @@ class ConfigurationPanel(QWidget):
             button.setEnabled(ready and not self.busy)
         self.save_button.setEnabled(ready and not self.busy and
                                     bool(self.preview_hash) and self.dirty)
+        self.migrate_button.setEnabled(ready and not self.busy and not self.dirty and bool(self.digest))
         self.load_button.setEnabled(not self.busy)
         self.paths_button.setEnabled(not self.busy)
 
@@ -188,6 +190,20 @@ class ConfigurationPanel(QWidget):
         ) == QMessageBox.StandardButton.Yes:
             self._run("profile-restore", {"digest": self.digest})
 
+    def migrate(self) -> None:
+        """Explicit copy from the saved operator profile; no live reconfigure."""
+        if not self.loaded_once or self.dirty or self.digest is None:
+            self.status.setText("Zapisz i wczytaj aktualny profil przed migracją do ROOT.")
+            return
+        if QMessageBox.question(
+            self, "Migracja operator.json do ROOT",
+            "Skopiować wyłącznie zapisane, zwalidowane wartości do konfiguracji SYSTEM? "
+            "Operacja może zapisać plik ROOT, ale nie aktywuje daemona. Konflikt blokuje zmianę.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        ) == QMessageBox.StandardButton.Yes:
+            self._run("profile-migrate", {"digest": self.digest})
+
     def copy_command(self) -> None:
         command = launch_command(self.core.root, self.profile_path)
         clipboard = QApplication.clipboard()
@@ -245,6 +261,15 @@ class ConfigurationPanel(QWidget):
             )):
                 self.preview_hash = profile_fingerprint(self.values(), self.digest)
             self.status.setText("Podgląd odczytowy zatwierdzony do ręcznej decyzji.")
+        elif mode == "profile-migrate":
+            if (value.get("schema") != "jazn_config_root_migration/v1"
+                    or value.get("profile_sha256") != self.digest
+                    or value.get("saved") is not True
+                    or value.get("runtime_activated") is not False):
+                self._failed("Migracja ROOT nie została potwierdzona.")
+                return
+            self.status.setText("Zapisano konfigurację ROOT na przyszły start. Runtime niezmieniony.")
+            self.details.setPlainText("Konfiguracja ROOT: " + str(value.get("config_path")))
         elif mode == "profile-paths":
             if value.get("schema") != "jazn_config_path_map/v1" or value.get("read_only") is not True:
                 self._failed("Błędna mapa ścieżek.")
