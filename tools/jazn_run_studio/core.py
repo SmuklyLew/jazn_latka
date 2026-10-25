@@ -127,7 +127,7 @@ class Settings:
     tunnel_config: str = ""
     tunnel_id: str = ""
     model: str = ""
-    theme: str = "system"
+    theme: str = "purple"
     accent: str = "#9876d4"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
