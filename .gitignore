@@ -113,6 +113,7 @@ CHECKPOINTS/
 *_checkpoint/
 branch_*/
 branches/
+/build/
 
 # Versioned test snapshots are source evidence, not local branch workspaces.
 !tests/archive/branches/
@@ -133,3 +134,5 @@ tools/jazn_pack_generator_app/runtime/jazn-pack-generator.jsonl
 
 # OAuth staging configuration is generated from a reviewed template with a separate KV ID.
 /deploy/chatgpt_mcp/workers_github_oauth/wrangler.staging.jsonc
+
+/build/
