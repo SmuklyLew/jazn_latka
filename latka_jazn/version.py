@@ -1,4 +1,4 @@
-# v116.0.34.89 strengthens native Studio Qt test/type gates and review-safe release readiness.
+# v116.0.34.90 binds operator-approved profile CAS across native ROOT migration and protects concurrent writes.\n# v116.0.34.89 strengthens native Studio Qt test/type gates and review-safe release readiness.
 # v116.0.34.88 begins native Qt Configuration Studio parity with canonical CAS validation, dry-run and restore, and explicit migration gates.
 # v116.0.34.87 synchronizes canonical startup and MCP deployment identities for master promotion.
 # v116.0.34.86 adds TPA isolated regression subchecks, purple workbench refinements, and clearer operator status.
@@ -137,9 +137,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.89"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.90"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "native-studio-qt-ci-convergence"
+PACKAGE_RELEASE_NAME = "config-root-migration-cas-guard"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
