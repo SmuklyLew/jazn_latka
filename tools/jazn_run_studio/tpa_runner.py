@@ -146,10 +146,10 @@ class SafeTPARunner(QObject):
         self.progress.emit(line[-1200:])
 
     def _read_stdout(self) -> None:
-        self._append(self.process.readAllStandardOutput().data())
+        self._append(bytes(self.process.readAllStandardOutput().data()))
 
     def _read_stderr(self) -> None:
-        self._append(self.process.readAllStandardError().data())
+        self._append(bytes(self.process.readAllStandardError().data()))
 
     def _process_error(self, error: QProcess.ProcessError) -> None:
         if self.active and error == QProcess.ProcessError.FailedToStart:
