@@ -27,7 +27,7 @@ from latka_jazn.version import (
 MANIFEST_NAME = "PACKAGE_INTEGRITY_MANIFEST.json"
 REQUIRED_STATIC_PATHS = {"SOURCE_PROVENANCE.json", "run.py", "main.py", "latka_jazn/version.py"}
 FORBIDDEN_ROOT_NAMES = {
-    ".git", ".archives", "memory", "workspace_runtime", "backups", "backups_git",
+    ".git", ".archives", "build", "memory", "workspace_runtime", "backups", "backups_git",
     "exports", "processed", "requests", "responses", "status", "checkpoints",
     ".pytest_cache", "__pycache__",
 }
@@ -278,6 +278,8 @@ def path_is_forbidden(relative: str) -> bool:
     name = parts[-1]
     lower_name = name.lower()
     if lower_name in {item.lower() for item in FORBIDDEN_FILE_NAMES}:
+        return True
+    if lower_name == "local_private_canon_extension.py":
         return True
     if lower_name == ".env" or lower_name.startswith(".env.") and lower_name != ".env.example":
         return True

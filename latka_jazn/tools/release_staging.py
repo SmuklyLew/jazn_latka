@@ -151,6 +151,14 @@ def create_release_staging(
         relative = validate_safe_relative_path(raw_path.decode("utf-8", "strict"))
         if object_type != "blob" or mode == "120000":
             raise SourceProvenanceError(f"release staging rejects non-regular Git entry: {relative}")
+        # Never materialize generated copies or local-private canonical source
+        # from a tracked Git blob, even if .gitignore was bypassed.
+        if relative.casefold().startswith("build/") or relative.casefold().endswith(
+            "/local_private_canon_extension.py"
+        ):
+            raise SourceProvenanceError(
+                f"release staging forbids generated/private source path: {relative}"
+            )
         entries.append((object_sha, relative))
 
     # Read every blob through one long-lived Git process.  Each request is
