@@ -29,6 +29,7 @@ SYSTEM_EXCLUDE_PREFIXES = (
     "workspace_runtime/",
     "exports/",
     "backups/",
+    "build/",
 )
 NLP_INCLUDE_PREFIXES = (
     "latka_jazn/nlp/",
@@ -41,6 +42,7 @@ GITHUB_SAFE_EXCLUDE_PREFIXES = (
     "workspace_runtime/",
     "exports/",
     "backups/",
+    "build/",
 )
 # Source-safe means safe by provenance and content, not merely by directory.
 GITHUB_SAFE_PRIVATE_EXACT = {
@@ -52,6 +54,7 @@ _PRIVATE_MARKER_PARTS = (
     ("raw_conversation", "embedded_source"),
 )
 COMMON_EXCLUDE_PARTS = {
+    "build",
     "__pycache__",
     ".pytest_cache",
     ".mypy_cache",
@@ -331,7 +334,7 @@ def private_generated_source_reason(path: Path, rel: str) -> str | None:
     scanner implementation cannot match itself merely because it documents them.
     """
     rel = _normalize_package_rel(rel)
-    if rel in GITHUB_SAFE_PRIVATE_EXACT:
+    if rel in GITHUB_SAFE_PRIVATE_EXACT or rel.endswith("/local_private_canon_extension.py"):
         return "known_private_generated_source"
     if path.suffix.lower() not in {".py", ".json", ".jsonl", ".md", ".txt"}:
         return None
