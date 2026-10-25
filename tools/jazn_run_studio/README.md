@@ -260,3 +260,14 @@ from the existence of the workflow.
 No LICENSE file was found at the audited baseline. This change does not invent
 or grant a project license. Qt notices and a distribution-license review must be
 completed before public binary distribution.
+
+## .89 Configuration ROOT migration
+
+**Konfiguracja Qt → Migruj zapisany profil do konfiguracji ROOT…** calls the
+original guarded `migrate_operator_profile` through the external Python
+worker. It requires a loaded, clean operator profile, the exact saved digest,
+and a second explicit confirmation. Conflicting values reject the operation.
+It is a persisted *future launch* setting, not a running-daemon reconfigure.
+
+The original Tk Studio remains available while final operator acceptance
+is pending. See `STUDIO_MIGRATION.md` for full parity status.
