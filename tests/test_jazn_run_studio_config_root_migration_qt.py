@@ -28,18 +28,19 @@ def test_worker_migration_guards_source_digest(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    calls: list[Path] = []
+    calls: list[tuple[Path, str | None]] = []
     monkeypatch.setattr(configuration_studio, "profile_snapshot",
                         lambda _root: ({"JAZN_MEMORY_MODE": "optional"}, "a" * 64))
     monkeypatch.setattr(system_config, "migrate_operator_profile",
-                        lambda root: calls.append(root))
+                        lambda root, *, expected_sha256=None:
+                        calls.append((root, expected_sha256)))
     monkeypatch.setattr(system_config, "config_path",
                         lambda root: Path(root) / "system_config.json")
     with pytest.raises(ValueError, match="zmieniono"):
         studio_worker.profile("profile-migrate", {"digest": "b" * 64})
     assert not calls
     result = studio_worker.profile("profile-migrate", {"digest": "a" * 64})
-    assert calls == [tmp_path]
+    assert calls == [(tmp_path, "a" * 64)]
     assert result["schema"] == "jazn_config_root_migration/v1"
     assert result["saved"] is True
     assert result["runtime_activated"] is False
