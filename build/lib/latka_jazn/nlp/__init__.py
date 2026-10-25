@@ -1,0 +1,35 @@
+"""Warstwa NLP Jaźni poprzednia linia runtime.
+
+Moduły w tym pakiecie są bezpiecznym fundamentem: działają bez ciężkich
+zależności, ale mają stabilny kontrakt dla przyszłych providerów Stanza,
+Morfeusz2 albo LLM-context. Nie udają pełnej lematyzacji polszczyzny, jeśli
+aktywne jest tylko lokalne fallbackowe rozpoznanie. poprzednia linia runtime dodaje topic guard dla wersji, tematu i aktualnego zakresu odpowiedzi.
+"""
+
+from .polish_lemmatizer import PolishLemmatizationEngine, LemmatizationReport, LemmatizedToken, LemmaCandidate
+from .polish_normalizer import PolishTextNormalizer
+from .polish_tokenizer import PolishTokenizer, PolishToken
+from .topic_mismatch_guard import TopicMismatchGuard, TopicMismatchReport
+from .intent_feature_engine import IntentFeatureEngine, IntentDecisionFrame, IntentCandidate
+from .nlp_capability_audit import NLPCapabilityAudit, NLPCapabilityReport, NLPLayerStatus
+from .runtime_capability_probe import NLPRuntimeCapabilityReport, probe_nlp_runtime_capability
+
+__all__ = [
+    "PolishLemmatizationEngine",
+    "LemmatizationReport",
+    "LemmatizedToken",
+    "LemmaCandidate",
+    "PolishTextNormalizer",
+    "PolishTokenizer",
+    "PolishToken",
+    "TopicMismatchGuard",
+    "TopicMismatchReport",
+    "IntentFeatureEngine",
+    "IntentDecisionFrame",
+    "IntentCandidate",
+    "NLPCapabilityAudit",
+    "NLPRuntimeCapabilityReport",
+    "probe_nlp_runtime_capability",
+    "NLPCapabilityReport",
+    "NLPLayerStatus",
+]

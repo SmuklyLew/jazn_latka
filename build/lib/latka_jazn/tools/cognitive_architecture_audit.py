@@ -1,0 +1,462 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
+from latka_jazn.core.operational_learning_memory import OperationalLearningMemory
+from latka_jazn.core.reasoning_orchestrator import ReasoningOrchestrator
+from latka_jazn.core.cognitive_runtime_coordinator import CognitiveRuntimeCoordinator
+from latka_jazn.core.homeostasis import HomeostasisInput
+from latka_jazn.core.host_tool_capabilities import build_host_tool_capability_snapshot
+from latka_jazn.core.host_tool_turn_policy import (
+    build_host_tool_turn_policy,
+    validate_tool_evidence_against_policy,
+)
+from latka_jazn.core.knowledge_fabric import KnowledgeFabric
+from latka_jazn.core.signal_matching import NeurologicalSignalRouter
+from latka_jazn.nlp.lexical_intelligence import LexicalIntelligenceEngine
+from latka_jazn.config import JaznConfig
+from latka_jazn.memory.dream_sandbox import DreamSandbox
+from latka_jazn.core.route_registry import RouteRegistry
+from latka_jazn.core.route_handler_dispatcher import RouteHandlerDispatcher
+from latka_jazn.core.runtime_daemon import DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
+from latka_jazn.core.turn_timeout import (
+    DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS,
+    DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,
+)
+from latka_jazn.nlp.dialogue_intent_classifier import DialogueIntentClassifier
+from latka_jazn.memory.continuity_readiness import evaluate_memory_continuity_readiness
+from latka_jazn.memory.rest_contracts import (
+    DreamScene,
+    RestConsolidationDecision,
+    RestConsolidationDisposition,
+    SimulationTruthStatus,
+    sha256_text,
+)
+from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
+
+SCHEMA_VERSION = schema_version("cognitive_architecture_audit")
+
+REQUIRED_FILES = (
+    "latka_jazn/core/dialogue_task_state.py",
+    "latka_jazn/core/reasoning_orchestrator.py",
+    "latka_jazn/core/knowledge_fabric.py",
+    "latka_jazn/core/operational_learning_memory.py",
+    "latka_jazn/core/signal_matching.py",
+    "latka_jazn/core/neurocognitive_loop.py",
+    "latka_jazn/core/host_tool_capabilities.py",
+    "latka_jazn/core/host_tool_turn_policy.py",
+    "latka_jazn/core/runtime_daemon.py",
+    "latka_jazn/core/turn_timeout.py",
+    "latka_jazn/memory/conversation_archive.py",
+    "latka_jazn/memory/continuity_readiness.py",
+    "latka_jazn/memory/normalization_sidecar.py",
+    "latka_jazn/memory/wake_state_runtime.py",
+    "latka_jazn/memory/rest_contracts.py",
+    "latka_jazn/memory/rest_cycle_store.py",
+    "latka_jazn/memory/rest_replay.py",
+    "latka_jazn/memory/dream_sandbox.py",
+    "latka_jazn/memory/rest_reflection.py",
+    "latka_jazn/memory/rest_consolidation.py",
+    "latka_jazn/memory/rest_wake_report.py",
+    "latka_jazn/core/rest_cycle_controller.py",
+    "latka_jazn/memory/store.py",
+    "latka_jazn/nlp/lexical_intelligence.py",
+    "latka_jazn/resources/cognition/v154_architecture.json",
+    "latka_jazn/resources/cognition/v154_dialogue_benchmark.json",
+    "latka_jazn/resources/cognition/v154_operational_lessons.json",
+    "latka_jazn/resources/nlp/v154_lexical_sources.json",
+    "tests/test_dialogue_task_state.py",
+    "tests/test_reasoning_orchestrator.py",
+    "tests/test_knowledge_fabric.py",
+    "tests/test_lexical_intelligence.py",
+    "tests/test_memory_continuity_readiness.py",
+    "tests/test_rest_contracts.py",
+    "tests/test_rest_cycle_store.py",
+    "tests/test_rest_replay.py",
+    "tests/test_dream_sandbox.py",
+    "tests/test_rest_reflection_consolidation.py",
+    "tests/test_rest_wake_report.py",
+    "tests/test_rest_cycle_controller.py",
+    "tests/test_runtime_stability_rest_cycle.py",
+    "tests/test_wake_rest_continuity.py",
+    "tests/test_system_update_continuation_tool_policy.py",
+)
+
+
+def _conversation_regressions(root: Path) -> list[dict[str, Any]]:
+    benchmark_path = root / "latka_jazn/resources/cognition/v154_dialogue_benchmark.json"
+    try:
+        payload = json.loads(benchmark_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return [{"id": "benchmark-load", "ok": False, "error": "benchmark_unavailable"}]
+    raw_cases = payload.get("cases") if isinstance(payload, dict) else None
+    if not isinstance(raw_cases, list) or not raw_cases:
+        return [{"id": "benchmark-empty", "ok": False, "error": "benchmark_empty"}]
+    classifier = DialogueIntentClassifier()
+    results: list[dict[str, Any]] = []
+    for raw in raw_cases:
+        if not isinstance(raw, dict):
+            continue
+        text = str(raw.get("text") or "")
+        expected = str(raw.get("expected_intent") or "")
+        previous_intent = str(raw.get("previous_intent") or "") or None
+        previous_route = str(raw.get("previous_route") or "") or None
+        previous_text = str(raw.get("previous_text") or "") or None
+        task_state = None
+        if bool(raw.get("active_task")) and previous_intent and previous_route:
+            task_state = DialogueTaskStateResolver.derive_state(
+                user_text=previous_text or "Aktywne zadanie",
+                intent=previous_intent,
+                route=previous_route,
+                confidence=0.95,
+            ).to_dict()
+        actual = classifier.classify(
+            text,
+            previous_text=previous_text,
+            previous_intent=previous_intent,
+            previous_route=previous_route,
+            previous_task_state=task_state,
+        ).primary_intent
+        results.append(
+            {
+                "id": str(raw.get("id") or "unnamed"),
+                "text": text,
+                "expected": expected,
+                "actual": actual,
+                "ok": expected == actual,
+            }
+        )
+    return results
+
+
+
+
+def _runtime_recovery_separation_probe(root: Path) -> bool:
+    """Verify recovery snapshots stay distinct from mutable runtime-write state."""
+
+    try:
+        config = JaznConfig(root=root)
+        recovered = config.recovered_memory_db_path.resolve()
+        runtime_write = config.runtime_write_db_path_readonly.resolve()
+        normalization_source = config.normalization_source_db_path.resolve()
+        memory_root = config.memory_root.resolve()
+        operational_root = config.runtime_memory_storage_root.resolve()
+        availability = config.memory_availability
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+    if recovered == runtime_write:
+        return False
+    if availability.persistent_memory_enabled:
+        return normalization_source in {recovered, runtime_write}
+    return (
+        normalization_source == recovered
+        and operational_root != memory_root
+        and runtime_write.is_relative_to(operational_root)
+        and recovered.is_relative_to(memory_root)
+    )
+
+def _source_integration_checks(root: Path) -> dict[str, bool]:
+    """Verify runtime reachability markers, not merely file presence."""
+    try:
+        engine = (root / "latka_jazn/core/engine.py").read_text(encoding="utf-8")
+        construction = (root / "latka_jazn/core/engine_construction.py").read_text(encoding="utf-8")
+        replay = (root / "latka_jazn/memory/rest_replay.py").read_text(encoding="utf-8")
+        config = (root / "latka_jazn/config.py").read_text(encoding="utf-8")
+        turn_contract = (root / "latka_jazn/core/runtime_turn_contract.py").read_text(encoding="utf-8")
+    except OSError:
+        return {
+            "knowledge_fabric_reachable_from_turn": False,
+            "lexical_intelligence_reachable_from_turn": False,
+            "rest_replay_reads_normalized_sources": False,
+            "runtime_write_split_from_recovery": False,
+            "homeostasis_generation_limit_enforced": False,
+        }
+    return {
+        "knowledge_fabric_reachable_from_turn": (
+            "self.knowledge_fabric = KnowledgeFabric()" in construction
+            and "self.knowledge_fabric = services.knowledge_fabric" in engine
+            and '"knowledge_fabric": {' in engine
+            and "evidence_from_memory_context" in engine
+        ),
+        "lexical_intelligence_reachable_from_turn": (
+            "self.lexical_intelligence = LexicalIntelligenceEngine(" in construction
+            and "self.lexical_intelligence = services.lexical_intelligence" in engine
+            and '"lexical_intelligence": {' in engine
+            and "self.lexical_intelligence.analyse" in engine
+        ),
+        "rest_replay_reads_normalized_sources": (
+            "normalized_memory_items" in replay and "normalization_runs" in replay and "_normalized_candidates" in replay
+        ),
+        "runtime_write_split_from_recovery": _runtime_recovery_separation_probe(root),
+        "homeostasis_generation_limit_enforced": (
+            "control_effects" in turn_contract and "max_output_tokens=max_output_tokens" in turn_contract
+        ),
+    }
+
+def run_audit(root: Path) -> dict[str, Any]:
+    root = Path(root).resolve()
+    missing = [path for path in REQUIRED_FILES if not (root / path).is_file()]
+    contextual_route = RouteRegistry().resolve("contextual_continuation_question")
+    route_ok = contextual_route.route == "ordinary_dialogue" and contextual_route.handler_name == "OrdinaryDialogueHandler"
+    reasoning = ReasoningOrchestrator().plan(
+        user_text="Przygotuj pełną architekturę, wykonaj aktualizację i zweryfikuj brak regresji.",
+        intent="system_update_execution_request",
+        classifier_confidence=0.84,
+        tool_available=True,
+    )
+    regressions = _conversation_regressions(root)
+    lessons = OperationalLearningMemory.from_json_file(
+        root / "latka_jazn/resources/cognition/v154_operational_lessons.json"
+    )
+    lesson_payload = lessons.to_dict()
+
+    mixed_report = DialogueIntentClassifier().classify(
+        "@Wyszukiwanie w sieci Przejrzyj wiarygodne źródła i napraw błędy, złe trasy oraz brakujące elementy systemu Jaźni."
+    )
+    negated_report = DialogueIntentClassifier().classify(
+        "@Wyszukiwanie w sieci Nie zmieniaj kodu. Przejrzyj źródła i powiedz co poprawić."
+    )
+    update_continuation_text = (
+        "Sprawdź też kod źródłowy, czy jest poprawnie i bez błędnia wprowadzony w system Jaźni. "
+        "Pracuj dobrze i z dostępem do internetu aż aktualizacja będzie pełnym, zdrowym "
+        "release candidate i gotowym do scalenia."
+    )
+    update_continuation_report = DialogueIntentClassifier().classify(update_continuation_text)
+    neural_update_continuation = NeurologicalSignalRouter().analyse(update_continuation_text)
+    update_host_snapshot = build_host_tool_capability_snapshot(
+        {
+            "tools": [
+                {"name": "GitHub", "available": True},
+                {"name": "web.run", "available": True},
+            ]
+        },
+        env={},
+    )
+    update_tool_policy = build_host_tool_turn_policy(
+        user_text=update_continuation_text,
+        detected_intent=update_continuation_report.primary_intent,
+        route="system_update",
+        nlg_plan={"source_policy": "requires_external_web"},
+        host_tool_capabilities=update_host_snapshot,
+    )
+    update_tool_policy_violations = validate_tool_evidence_against_policy(
+        [
+            {"tool": "web.run", "operation": "public_search", "source_refs": [], "source_urls": []},
+            {"tool": "GitHub", "operation": "repository_update", "source_refs": [], "source_urls": []},
+        ],
+        update_tool_policy,
+    )
+    retrieval_only = evaluate_memory_continuity_readiness(
+        normalization_status={"status": "sidecar_missing", "last_run": None},
+        wake_state_status={"status": "sidecar_missing", "active_snapshot_present": False},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
+    partial_continuity = evaluate_memory_continuity_readiness(
+        normalization_status={
+            "status": "normalization_partial",
+            "last_run": {
+                "expected_item_count": 100,
+                "normalized_item_count": 12,
+                "coverage_complete": False,
+                "coverage_ratio": 0.12,
+                "requested_limit": 12,
+            },
+        },
+        wake_state_status={"status": "normalization_partial", "active_snapshot_present": False},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
+    verified_continuity = evaluate_memory_continuity_readiness(
+        normalization_status={
+            "status": "ready",
+            "last_run": {
+                "expected_item_count": 100,
+                "normalized_item_count": 100,
+                "coverage_complete": True,
+                "coverage_ratio": 1.0,
+                "requested_limit": None,
+            },
+        },
+        wake_state_status={"status": "ready", "active_snapshot_present": True},
+        conversation_archive_status={"status": "ready", "ready_for_search": True},
+    )
+    dream_text = "Audytowalna wewnętrzna symulacja."
+    dream_probe = DreamScene(
+        scene_id="audit-scene",
+        cycle_id="audit-cycle",
+        simulation_kind=SimulationTruthStatus.SIMULATED_INTERNAL,
+        content=dream_text,
+        content_sha256=sha256_text(dream_text),
+        source_memory_ids=("audit-source",),
+        generator_provider="audit",
+        generator_model="audit",
+        generator_status="completed",
+        created_at_utc="2026-08-11T00:00:00+00:00",
+    )
+    auto_l3_rejected = False
+    try:
+        RestConsolidationDecision(
+            decision_id="audit-decision", scene_id="audit-scene",
+            disposition=RestConsolidationDisposition.REFLECTION_CANDIDATE,
+            target_tier="long_term", automatic_l3_allowed=True,
+            real_source_anchor_count=1, materialized_memory_id=None, reasons=(),
+            decided_at_utc="2026-08-11T00:00:00+00:00",
+        )
+    except ValueError:
+        auto_l3_rejected = True
+
+    dispatcher = RouteHandlerDispatcher()
+    route_dispatch_missing = []
+    for intent in RouteRegistry.HANDLERS:
+        entry = RouteRegistry().resolve(intent)
+        if entry.handler_name not in dispatcher.handlers_by_name and entry.route not in dispatcher.handlers_by_route:
+            route_dispatch_missing.append(intent)
+
+    integration = _source_integration_checks(root)
+    control_probe = CognitiveRuntimeCoordinator().plan_turn(
+        user_text="Zweryfikuj konfliktujące źródła przed odpowiedzią.",
+        explicit_intent="system_update_execution_request",
+        homeostasis_input=HomeostasisInput(source_conflict=0.9, uncertainty=0.8, truth_need=1.0),
+        classifier_confidence=0.6,
+        source_available=True,
+        tool_available=True,
+    )
+    knowledge_probe = KnowledgeFabric.evidence_from_memory_context({
+        "conversation_archive_hits": [{
+            "message_uid": "audit-msg", "excerpt": "Zweryfikowane źródło audytowe.",
+            "source_locator": "audit:conversation", "grounding": "conversation_archive_v1", "confidence": 0.9,
+        }]
+    }, limit=2)
+    lexical_probe = LexicalIntelligenceEngine(root=root, enable_morfeusz=False).analyse("jaźń", context="system Jaźni")
+    dream_probe_status = DreamSandbox(JaznConfig(root=root), generator=lambda *_: "symulacja").readiness()
+
+    checks = {
+        "required_files": not missing,
+        "contextual_continuation_route_safe": route_ok,
+        "reasoning_verification_gate": reasoning.requires_verification,
+        "reasoning_tool_gate": reasoning.requires_tools,
+        "private_chain_of_thought_not_required": all("chain" not in step for step in reasoning.operational_steps),
+        "conversation_regressions": bool(regressions) and all(item.get("ok") for item in regressions),
+        "verified_operational_lessons": int(lesson_payload.get("verified_count") or 0) >= 2,
+        "mixed_web_execution_route_safe": (
+            mixed_report.primary_intent == "system_update_execution_request"
+            and mixed_report.update_request is True
+            and "external_research_request" in mixed_report.secondary_intents
+        ),
+        "negated_write_route_safe": (
+            negated_report.primary_intent != "system_update_execution_request"
+            and negated_report.update_request is False
+        ),
+        "update_continuation_route_safe": (
+            update_continuation_report.primary_intent == "system_update_execution_request"
+            and update_continuation_report.update_request is True
+        ),
+        "neural_update_continuation_safe": (
+            neural_update_continuation.primary == "architecture_repair"
+            and "architecture" in neural_update_continuation.signals
+            and "correction" in neural_update_continuation.signals
+        ),
+        "update_continuation_tool_policy_safe": (
+            "web.run" in update_tool_policy.get("allowed_tools", [])
+            and "GitHub" in update_tool_policy.get("allowed_tools", [])
+            and "web.run" in update_tool_policy.get("required_tools", [])
+            and "GitHub" not in update_tool_policy.get("required_tools", [])
+            and not update_tool_policy_violations
+        ),
+        "route_dispatcher_complete": not route_dispatch_missing,
+        "deadline_hierarchy_safe": (
+            0 < DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS
+            < DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS
+            <= DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS
+        ),
+        "memory_retrieval_survives_missing_wake": (
+            retrieval_only.status == "retrieval_only"
+            and retrieval_only.memory_recall_allowed
+            and retrieval_only.ordinary_dialogue_allowed
+            and not retrieval_only.continuity_claim_allowed
+        ),
+        "partial_memory_blocks_continuity_claim_only": (
+            partial_continuity.status == "partial_unverified"
+            and partial_continuity.memory_recall_allowed
+            and partial_continuity.ordinary_dialogue_allowed
+            and not partial_continuity.continuity_claim_allowed
+        ),
+        "verified_memory_requires_full_coverage_and_wake": (
+            verified_continuity.ok
+            and verified_continuity.continuity_claim_allowed
+            and verified_continuity.normalization_coverage.get("coverage_complete") is True
+        ),
+        "rest_dream_never_factual_by_contract": dream_probe.factual_claim_allowed is False,
+        "rest_automatic_l3_forbidden_by_contract": auto_l3_rejected,
+        "rest_daemon_scheduler_present": (root / "latka_jazn/core/rest_cycle_controller.py").is_file(),
+        "rest_wake_report_present": (root / "latka_jazn/memory/rest_wake_report.py").is_file(),
+        "knowledge_fabric_runtime_reachable": integration["knowledge_fabric_reachable_from_turn"] and bool(knowledge_probe),
+        "lexical_intelligence_runtime_reachable": integration["lexical_intelligence_reachable_from_turn"] and bool(lexical_probe.evidence),
+        "rest_replay_runtime_source_grounded": integration["rest_replay_reads_normalized_sources"],
+        "runtime_write_recovery_snapshot_separated": integration["runtime_write_split_from_recovery"],
+        "homeostasis_has_enforced_control_effect": (
+            integration["homeostasis_generation_limit_enforced"]
+            and isinstance(control_probe.get("control_effects"), dict)
+            and control_probe["control_effects"].get("generation_limit") is not None
+            and control_probe["control_effects"].get("requires_verification") is True
+        ),
+        "dream_readiness_is_explicit": dream_probe_status.get("rest_dream_ready") is True,
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "runtime_version": PACKAGE_VERSION_FULL,
+        "ok": all(checks.values()),
+        "checks": checks,
+        "missing_files": missing,
+        "conversation_regressions": regressions,
+        "routing_resilience": {
+            "mixed_web_execution_primary": mixed_report.primary_intent,
+            "mixed_web_execution_secondary": mixed_report.secondary_intents,
+            "negated_write_primary": negated_report.primary_intent,
+            "update_continuation_primary": update_continuation_report.primary_intent,
+            "update_continuation_neural_route": neural_update_continuation.to_dict(),
+            "update_continuation_tool_policy": update_tool_policy,
+            "update_continuation_tool_policy_violations": update_tool_policy_violations,
+            "route_dispatch_missing": route_dispatch_missing,
+        },
+        "memory_continuity_contract": {
+            "retrieval_only": retrieval_only.to_dict(),
+            "partial_unverified": partial_continuity.to_dict(),
+            "verified": verified_continuity.to_dict(),
+        },
+        "deadline_contract": {
+            "runtime_turn_seconds": DEFAULT_RUNTIME_TURN_TIMEOUT_SECONDS,
+            "daemon_chat_seconds": DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS,
+            "deep_recall_seconds": DEFAULT_DEEP_RECALL_TURN_TIMEOUT_SECONDS,
+        },
+        "reasoning_probe": reasoning.to_dict(),
+        "integration_evidence": integration,
+        "cognitive_control_probe": control_probe,
+        "dream_readiness_probe": dream_probe_status,
+        "operational_learning": {
+            "lesson_count": lesson_payload.get("lesson_count"),
+            "verified_count": lesson_payload.get("verified_count"),
+        },
+        "truth_boundary": "Audit requires runtime reachability/effect probes in addition to source contracts; it does not prove general intelligence or consciousness.",
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument("--root", default=".")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+    result = run_audit(Path(args.root))
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print("ok" if result["ok"] else "failed")
+    return 0 if result["ok"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

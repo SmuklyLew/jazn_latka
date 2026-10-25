@@ -1,0 +1,382 @@
+from __future__ import annotations
+
+from contextlib import contextmanager
+from dataclasses import replace
+from pathlib import Path
+from typing import Any, Iterator
+import json
+import sqlite3
+
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable, runtime_sqlite_write_guard
+
+from latka_jazn.memory.memory_tier_schema import SCHEMA_SQL
+from latka_jazn.memory.memory_tier_support import (
+    WorkingMemoryBudget,
+    WriteSummary,
+    iso,
+    json_text,
+    record_from_dict,
+)
+from latka_jazn.memory.memory_tiers import (
+    LongTermMemoryRecord,
+    MemoryRecord,
+    MemoryTier,
+    ShortTermMemoryRecord,
+    WorkingMemoryRecord,
+)
+from latka_jazn.version import schema_version
+
+SCHEMA_VERSION = schema_version("memory_tier_store")
+
+
+class MemoryTierCoreStore:
+    def __init__(self, path: str | Path, *, busy_timeout_ms: int = 30_000, synchronous: str = "FULL") -> None:
+        self.path = Path(path).expanduser().resolve()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.busy_timeout_ms = max(1000, int(busy_timeout_ms))
+        self.con = connect_runtime_writable(
+            self.path,
+            timeout_ms=self.busy_timeout_ms,
+            synchronous=synchronous,
+            isolation_level=None,
+            temp_store="FILE",
+            cache_size=-16384,
+        )
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.executescript(SCHEMA_SQL)
+            self.con.execute("INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('schema_version',?)", (SCHEMA_VERSION,))
+            self.con.execute(
+                "INSERT OR REPLACE INTO memory_store_meta(key,value) VALUES('truth_boundary',?)",
+                ("L1/L2/L3 są rozdzielone. L2 nie jest promocją L3, a outbox nie dowodzi wykonania efektu.",),
+            )
+
+    @contextmanager
+    def transaction(self) -> Iterator[None]:
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            if self.con.in_transaction:
+                raise RuntimeError("nested memory transactions are forbidden")
+            self.con.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+            except BaseException:
+                self.con.rollback()
+                raise
+            else:
+                self.con.commit()
+
+    def close(self) -> None:
+        with runtime_sqlite_write_guard(self.path, timeout_ms=self.busy_timeout_ms):
+            self.con.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
+
+    def save_record(self, record: MemoryRecord, *, working_budget: WorkingMemoryBudget | None = None) -> WriteSummary:
+        with self.transaction():
+            summary = self.write_record(record)
+            evicted = 0
+            if isinstance(record, WorkingMemoryRecord):
+                evicted = self.enforce_working_budget(record.session_id, working_budget or WorkingMemoryBudget())
+            return WriteSummary(records_written=summary.records_written,
+                                evidence_written=summary.evidence_written,
+                                working_records_evicted=evicted)
+
+    def _merge_duplicate_record(self, existing: MemoryRecord, incoming: MemoryRecord) -> MemoryRecord:
+        if type(existing) is not type(incoming):
+            raise ValueError("canonical memory key collision across record types")
+        evidence_by_key = {item.evidence_key: item for item in existing.evidence}
+        evidence_by_key.update({item.evidence_key: item for item in incoming.evidence})
+        merged = replace(
+            existing,
+            confidence=max(float(existing.confidence), float(incoming.confidence)),
+            importance=max(float(existing.importance), float(incoming.importance)),
+            updated_at_utc=max(existing.updated_at_utc, incoming.updated_at_utc),
+            tags=tuple(dict.fromkeys((*existing.tags, *incoming.tags))),
+            evidence=tuple(evidence_by_key[key] for key in sorted(evidence_by_key)),
+        )
+        if isinstance(merged, WorkingMemoryRecord) and isinstance(incoming, WorkingMemoryRecord):
+            merged = replace(
+                merged,
+                session_id=incoming.session_id,
+                turn_id=incoming.turn_id or merged.turn_id,
+                active_goal=incoming.active_goal or merged.active_goal,
+                active_goal_ids=tuple(dict.fromkeys((
+                    *merged.active_goal_ids,
+                    *incoming.active_goal_ids,
+                )))[:32],
+                cognitive_anchor_ids=tuple(dict.fromkeys((
+                    *merged.cognitive_anchor_ids,
+                    *incoming.cognitive_anchor_ids,
+                )))[:64],
+                expires_on_session_end=bool(merged.expires_on_session_end and incoming.expires_on_session_end),
+                checkpoint_allowed=bool(merged.checkpoint_allowed or incoming.checkpoint_allowed),
+            )
+        elif isinstance(merged, ShortTermMemoryRecord) and isinstance(incoming, ShortTermMemoryRecord):
+            last_reinforced = max(
+                (value for value in (merged.last_reinforced_at_utc, incoming.last_reinforced_at_utc) if value is not None),
+                default=None,
+            )
+            merged = replace(
+                merged,
+                expires_at_utc=max(merged.expires_at_utc, incoming.expires_at_utc),
+                reinforcement_count=max(merged.reinforcement_count, incoming.reinforcement_count),
+                last_reinforced_at_utc=last_reinforced,
+                reinforcement_evidence_keys=tuple(dict.fromkeys((
+                    *merged.reinforcement_evidence_keys,
+                    *incoming.reinforcement_evidence_keys,
+                ))),
+            )
+        elif isinstance(merged, LongTermMemoryRecord) and isinstance(incoming, LongTermMemoryRecord):
+            merged = replace(
+                merged,
+                revision=max(merged.revision, incoming.revision),
+                invalidated_at_utc=incoming.invalidated_at_utc or merged.invalidated_at_utc,
+                invalidation_reason=incoming.invalidation_reason or merged.invalidation_reason,
+            )
+        return merged
+
+    def write_record(self, record: MemoryRecord) -> WriteSummary:
+        self._require_transaction()
+        existing_by_id = self.con.execute(
+            "SELECT tier,content_sha256 FROM memory_records WHERE memory_id=?", (record.memory_id,),
+        ).fetchone()
+        if existing_by_id and (str(existing_by_id["tier"]) != record.tier.value
+                               or str(existing_by_id["content_sha256"]) != record.content_sha256):
+            raise ValueError("memory_id collision with different tier or content")
+
+        canonical_row = self.con.execute(
+            """SELECT memory_id,record_json FROM memory_records
+               WHERE tier=? AND kind=? AND content_sha256=? AND domain=? AND mode=?""",
+            (record.tier.value, record.kind.value, record.content_sha256, record.domain, record.mode),
+        ).fetchone()
+        effective_record = record
+        if canonical_row is not None:
+            existing_record = record_from_dict(json.loads(str(canonical_row["record_json"])))
+            effective_record = self._merge_duplicate_record(existing_record, record)
+            canonical_id = str(canonical_row["memory_id"])
+            if effective_record.memory_id != canonical_id:
+                effective_record = replace(effective_record, memory_id=canonical_id)
+
+        payload = effective_record.to_dict()
+        self.con.execute(
+            """INSERT INTO memory_records(
+               memory_id,tier,kind,content,content_sha256,domain,mode,truth_status,
+               confidence,importance,created_at_utc,updated_at_utc,tags_json,record_json,active)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(memory_id) DO UPDATE SET
+                 truth_status=excluded.truth_status,
+                 confidence=MAX(memory_records.confidence,excluded.confidence),
+                 importance=MAX(memory_records.importance,excluded.importance),
+                 updated_at_utc=excluded.updated_at_utc,tags_json=excluded.tags_json,
+                 record_json=excluded.record_json,active=excluded.active""",
+            (effective_record.memory_id, effective_record.tier.value, effective_record.kind.value, effective_record.content,
+             effective_record.content_sha256, effective_record.domain, effective_record.mode, effective_record.truth_status.value,
+             effective_record.confidence, effective_record.importance, iso(effective_record.created_at_utc),
+             iso(effective_record.updated_at_utc), json_text(effective_record.tags), json_text(payload),
+             int(not isinstance(effective_record, LongTermMemoryRecord) or effective_record.active)),
+        )
+        evidence_written = 0
+        for item in effective_record.evidence:
+            cursor = self.con.execute(
+                """INSERT OR IGNORE INTO memory_evidence(
+                   memory_id,evidence_key,source_type,source_id,evidence_json) VALUES(?,?,?,?,?)""",
+                (effective_record.memory_id, item.evidence_key, item.source_type, item.source_id,
+                 json_text(item.to_dict())),
+            )
+            evidence_written += max(0, cursor.rowcount)
+        if isinstance(effective_record, WorkingMemoryRecord):
+            self.con.execute(
+                """INSERT INTO working_memory_index(
+                   memory_id,session_id,turn_id,active_goal,expires_on_session_end,checkpoint_allowed)
+                   VALUES(?,?,?,?,?,?) ON CONFLICT(memory_id) DO UPDATE SET
+                   session_id=excluded.session_id,turn_id=excluded.turn_id,
+                   active_goal=excluded.active_goal,expires_on_session_end=excluded.expires_on_session_end,
+                   checkpoint_allowed=excluded.checkpoint_allowed""",
+                (effective_record.memory_id, effective_record.session_id, effective_record.turn_id, effective_record.active_goal,
+                 int(effective_record.expires_on_session_end), int(effective_record.checkpoint_allowed)),
+            )
+        elif isinstance(effective_record, ShortTermMemoryRecord):
+            self.con.execute(
+                """INSERT INTO short_term_memory_index(
+                   memory_id,expires_at_utc,reinforcement_count,last_reinforced_at_utc,
+                   reinforcement_evidence_keys_json,promotion_status) VALUES(?,?,?,?,?,?)
+                   ON CONFLICT(memory_id) DO UPDATE SET expires_at_utc=excluded.expires_at_utc,
+                   reinforcement_count=excluded.reinforcement_count,
+                   last_reinforced_at_utc=excluded.last_reinforced_at_utc,
+                   reinforcement_evidence_keys_json=excluded.reinforcement_evidence_keys_json,
+                   promotion_status=excluded.promotion_status""",
+                (effective_record.memory_id, iso(effective_record.expires_at_utc), effective_record.reinforcement_count,
+                 iso(effective_record.last_reinforced_at_utc) if effective_record.last_reinforced_at_utc else None,
+                 json_text(effective_record.reinforcement_evidence_keys), effective_record.promotion_status.value),
+            )
+        elif isinstance(effective_record, LongTermMemoryRecord):
+            self.con.execute(
+                """INSERT INTO long_term_memory_index(
+                   memory_id,promoted_at_utc,promoted_from_memory_id,promotion_decision_id,
+                   approved_by,promotion_reason,revision,invalidated_at_utc,invalidation_reason)
+                   VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(memory_id) DO UPDATE SET
+                   revision=excluded.revision,invalidated_at_utc=excluded.invalidated_at_utc,
+                   invalidation_reason=excluded.invalidation_reason""",
+                (effective_record.memory_id, iso(effective_record.promoted_at_utc), effective_record.promoted_from_memory_id,
+                 effective_record.promotion_decision_id, effective_record.approved_by, effective_record.promotion_reason,
+                 effective_record.revision, iso(effective_record.invalidated_at_utc) if effective_record.invalidated_at_utc else None,
+                 effective_record.invalidation_reason),
+            )
+        else:
+            raise TypeError(f"unsupported memory record type: {type(effective_record).__name__}")
+        return WriteSummary(records_written=1, evidence_written=evidence_written)
+
+    def enforce_working_budget(self, session_id: str, budget: WorkingMemoryBudget) -> int:
+        self._require_transaction()
+        oversized = self.con.execute(
+            """SELECT r.memory_id FROM memory_records r JOIN working_memory_index w ON w.memory_id=r.memory_id
+               WHERE w.session_id=? AND length(r.content)>?""",
+            (session_id, budget.max_record_chars),
+        ).fetchall()
+        if oversized:
+            raise ValueError("working-memory record exceeds max_record_chars")
+        rows = self.con.execute(
+            """SELECT r.memory_id,length(r.content) AS chars,r.importance,r.updated_at_utc,
+                      w.active_goal,r.record_json
+               FROM memory_records r JOIN working_memory_index w ON w.memory_id=r.memory_id
+               WHERE w.session_id=? AND r.active=1
+               ORDER BY r.memory_id ASC""",
+            (session_id,),
+        ).fetchall()
+        count = len(rows)
+        total_chars = sum(int(row["chars"]) for row in rows)
+        pinned_ids = set(budget.pinned_memory_ids)
+        anchor_counts: dict[str, int] = {}
+        record_goals: dict[str, tuple[str, ...]] = {}
+        for row in rows:
+            try:
+                record_payload = json.loads(str(row["record_json"]))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                record_payload = {}
+            anchors = record_payload.get("cognitive_anchor_ids")
+            anchor_counts[str(row["memory_id"])] = (
+                len(anchors) if isinstance(anchors, list) else 0
+            )
+            serialized_goals = record_payload.get("active_goal_ids")
+            goals = (
+                tuple(str(item).strip() for item in serialized_goals if str(item).strip())
+                if isinstance(serialized_goals, list)
+                else ()
+            )
+            indexed_goal = str(row["active_goal"] or "").strip()
+            record_goals[str(row["memory_id"])] = tuple(dict.fromkeys((
+                *((indexed_goal,) if indexed_goal else ()),
+                *goals,
+            )))
+        if budget.preserve_one_per_active_goal:
+            representatives: dict[str, sqlite3.Row] = {}
+            for row in rows:
+                for goal in record_goals[str(row["memory_id"])]:
+                    previous = representatives.get(goal)
+                    rank = (
+                        float(row["importance"] or 0.0),
+                        anchor_counts[str(row["memory_id"])],
+                        str(row["updated_at_utc"] or ""),
+                        str(row["memory_id"]),
+                    )
+                    if previous is None:
+                        representatives[goal] = row
+                        continue
+                    previous_rank = (
+                        float(previous["importance"] or 0.0),
+                        anchor_counts[str(previous["memory_id"])],
+                        str(previous["updated_at_utc"] or ""),
+                        str(previous["memory_id"]),
+                    )
+                    if rank > previous_rank:
+                        representatives[goal] = row
+            pinned_ids.update(str(row["memory_id"]) for row in representatives.values())
+        ordered = sorted(
+            rows,
+            key=lambda row: (
+                float(row["importance"] or 0.0),
+                anchor_counts[str(row["memory_id"])],
+                str(row["updated_at_utc"] or ""),
+                str(row["memory_id"]),
+            ),
+        )
+        evict: list[str] = []
+        for row in ordered:
+            if count <= budget.max_records_per_session and total_chars <= budget.max_total_chars_per_session:
+                break
+            if str(row["memory_id"]) in pinned_ids:
+                continue
+            evict.append(str(row["memory_id"]))
+            count -= 1
+            total_chars -= int(row["chars"])
+        if count > budget.max_records_per_session or total_chars > budget.max_total_chars_per_session:
+            raise ValueError(
+                "working-memory budget cannot preserve active goals and explicit graph anchors"
+            )
+        if evict:
+            placeholders = ",".join("?" for _ in evict)
+            self.con.execute(f"DELETE FROM memory_records WHERE memory_id IN ({placeholders})", evict)
+        return len(evict)
+
+    def end_session(self, session_id: str) -> int:
+        with self.transaction():
+            rows = self.con.execute(
+                "SELECT memory_id FROM working_memory_index WHERE session_id=? AND expires_on_session_end=1",
+                (session_id,),
+            ).fetchall()
+            ids = [str(row["memory_id"]) for row in rows]
+            if ids:
+                placeholders = ",".join("?" for _ in ids)
+                self.con.execute(f"DELETE FROM memory_records WHERE memory_id IN ({placeholders})", ids)
+            return len(ids)
+
+    def get_record(self, memory_id: str) -> MemoryRecord | None:
+        row = self.con.execute("SELECT record_json FROM memory_records WHERE memory_id=?", (memory_id,)).fetchone()
+        return record_from_dict(json.loads(row["record_json"])) if row else None
+
+    def list_records(self, *, tier: MemoryTier | None = None, session_id: str | None = None) -> list[MemoryRecord]:
+        if session_id is not None:
+            rows = self.con.execute(
+                """SELECT r.record_json FROM memory_records r JOIN working_memory_index w ON w.memory_id=r.memory_id
+                   WHERE w.session_id=? ORDER BY r.updated_at_utc,r.memory_id""", (session_id,),
+            ).fetchall()
+        elif tier is not None:
+            rows = self.con.execute(
+                "SELECT record_json FROM memory_records WHERE tier=? ORDER BY updated_at_utc,memory_id",
+                (tier.value,),
+            ).fetchall()
+        else:
+            rows = self.con.execute(
+                "SELECT record_json FROM memory_records ORDER BY tier,updated_at_utc,memory_id"
+            ).fetchall()
+        return [record_from_dict(json.loads(row["record_json"])) for row in rows]
+
+    def stats(self) -> dict[str, int]:
+        tables = (
+            "memory_records", "memory_evidence", "working_memory_index",
+            "short_term_memory_index", "long_term_memory_index", "promotion_requests",
+            "promotion_decisions", "promotion_ledger", "memory_outbox", "session_checkpoints",
+            "memory_sync_state", "memory_sync_envelopes", "memory_sync_receipts",
+            "memory_sync_inbox", "memory_sync_conflicts",
+        )
+        return {name: int(self.con.execute(f'SELECT COUNT(*) FROM "{name}"').fetchone()[0]) for name in tables}
+
+    def validate(self, *, full: bool = True) -> dict[str, Any]:
+        pragma = "integrity_check" if full else "quick_check"
+        integrity = str(self.con.execute(f"PRAGMA {pragma}").fetchone()[0])
+        foreign_keys = list(self.con.execute("PRAGMA foreign_key_check"))
+        auto_commit = int(self.con.execute(
+            "SELECT COUNT(*) FROM promotion_decisions WHERE automatic_commit_allowed<>0"
+        ).fetchone()[0])
+        return {"ok": integrity == "ok" and not foreign_keys and auto_commit == 0,
+                "integrity_check": integrity,
+                "foreign_key_error_count": len(foreign_keys),
+                "automatic_commit_violation_count": auto_commit,
+                "stats": self.stats(), "path": str(self.path)}
+
+    def _require_transaction(self) -> None:
+        if not self.con.in_transaction:
+            raise RuntimeError("write operation requires an active memory transaction")

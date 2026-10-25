@@ -1,0 +1,323 @@
+from __future__ import annotations
+
+"""Single source of truth for Memory Rebuild Test00-04 and Final presentation.
+
+The specs are descriptive contracts shared by Studio, CLI and protocol runners.
+They deliberately distinguish *running* a protocol from the existing read-only
+``test_profiles.py`` validators.
+"""
+
+from dataclasses import dataclass
+from enum import Enum
+
+
+class TestOutcome(str, Enum):
+    NOT_RUN = "NOT RUN"
+    RUNNING = "RUNNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    LOSSY = "LOSSY"
+    BLOCKED = "BLOCKED"
+
+
+@dataclass(frozen=True, slots=True)
+class TestSpec:
+    profile: str
+    label: str
+    goal: str
+    inputs: tuple[str, ...]
+    readiness: tuple[str, ...]
+    phases: tuple[str, ...]
+    checks: tuple[str, ...]
+    outputs: tuple[str, ...]
+    truth_boundary: tuple[str, ...]
+    owner_layer: str
+    required_predecessors: tuple[str, ...]
+    gate_kind: str
+    writes_test_artifacts: bool
+    validator_profile: str | None = None
+
+
+TEST_SPECS: tuple[TestSpec, ...] = (
+    TestSpec(
+        profile="test00",
+        owner_layer="source_fidelity_and_union",
+        required_predecessors=(),
+        gate_kind="source_contract",
+        label="Test 00 — Source Fidelity + domknięcie snapshotów",
+        goal=(
+            "Udowadnia, że każde źródło można zachować/odczytać bezstratnie oraz że wszystkie "
+            "dostępne snapshoty rozmów tworzą jawny, niezależny od kolejności source union bez "
+            "założenia, że najnowszy lub największy eksport jest nadzbiorem wcześniejszych."
+        ),
+        inputs=(
+            "HTML/HTM, JSON lub ZIP eksportu",
+            "opcjonalnie sidecary pełnego eksportu jako osobne źródła metadanych",
+            "wszystkie dostępne snapshoty eksportów, jeśli operator je posiada",
+        ),
+        readiness=(
+            "źródło istnieje i jest zwykłym plikiem",
+            "kodowanie/JSON są czytelne albo błąd jest jawnie raportowany",
+            "ZIP przechodzi bezpieczną inspekcję ścieżek i CRC",
+        ),
+        phases=(
+            "raw mirror",
+            "pełny odczyt / parse",
+            "inventory ról i content_type",
+            "porównanie raw ↔ parsed",
+            "round-trip SHA-256",
+            "source-set union po conversation_id + semantic_tree_sha256",
+            "deterministyczny variant cover",
+            "integrity report",
+        ),
+        checks=(
+            "surowe bajty są zapisane do osobnej source-mirror SQLite",
+            "SHA-256 BLOB po odczycie jest identyczny ze źródłem",
+            "każdy obserwowany node/message ma odpowiednik po parsowaniu",
+            "role user/assistant/system/tool oraz nieznane role są zachowywane, nie filtrowane",
+            "content_type są zinwentaryzowane bez allowlistowego odrzucania",
+            "parent/children, current path i branch points pozostają policzalne",
+            "każdy członek ZIP jest odczytany do końca i ma SHA-256/CRC metadata",
+            "conversations.json i numerowane conversation JSON są źródłami kanonicznego grafu",
+            "embedded jsonData HTML może być kontrolą; rendered HTML fallback jest LOSSY",
+            "unikalne warianty rozmowy z wielu snapshotów są zachowane w unionie",
+            "nazwa pliku, rozmiar pliku i kolejność importu nie rozstrzygają prawdy",
+            "branch_union bez zmiany wspólnego node payload/parent jest zachowywalną divergence",
+            "ten sam node_id z inną treścią lub parent pozostaje konfliktem projekcji do decyzji",
+            "Test00 nie tworzy L1/L2/L3 ani decyzji promocji",
+        ),
+        outputs=(
+            "memory/rebuild_tests/test_00/<run-id>/source_mirror.sqlite3",
+            "summary.private.json + summary.sanitized.json",
+            "source-union.private.json + source-union.sanitized.json",
+        ),
+        truth_boundary=(
+            "PASSED dowodzi wierności odczytu i domknięcia zestawu źródeł, nie prawdziwości ich treści.",
+            "Source union zachowuje warianty; nie wybiera automatycznie autobiograficznej prawdy.",
+            "Test00 jest artefaktem weryfikacyjnym, nie aktywną pamięcią; nie oznacza Recall ani gotowości Jaźni.",
+            "LOSSY oznacza, że źródło zachowano bajtowo, ale parser nie odtworzył pełnej struktury.",
+        ),
+        writes_test_artifacts=True,
+        validator_profile=None,
+    ),
+    TestSpec(
+        profile="test01",
+        owner_layer="canonical_l0",
+        required_predecessors=("test00",),
+        gate_kind="schema_and_l0_contract",
+        label="Test 01 — Kanoniczne, bezstratne L0 z source union",
+        goal="Buduje izolowane, źródłowe L0 z pełnego zestawu wariantów zaakceptowanych przez Test00.",
+        inputs=("zatwierdzony source union Test00", "manifest źródeł i ich SHA-256"),
+        readiness=(
+            "Test00 bez FAILED/BLOCKED dla wymaganych źródeł",
+            "source-union status=ready",
+            "konflikty projekcji są jawnie wskazane przed wyborem aktywnej rewizji",
+        ),
+        phases=("freeze inventory", "plan", "build L0", "verify provenance", "read-only validation"),
+        checks=(
+            "pełne grafy rozmów, branche, pełne warianty i raw payload pozostają dostępne jako L0",
+            "rewizje, assets, sidecary/embedded documents i dziennik mają proweniencję",
+            "bezpiecznie zachowana branch divergence nie jest liczona jako nierozwiązany konflikt",
+            "zmieniony payload/parent tego samego node_id pozostaje fail-closed do decyzji projekcji",
+            "FTS5 i foreign keys są spójne",
+            "brak automatycznej akceptacji doświadczeń oraz L2/L3",
+        ),
+        outputs=("izolowana memory_jazn.sqlite3", "manifest Test01", "raport walidacji"),
+        truth_boundary=("L0 jest archiwum dowodowym, nie aktywną pamięcią autobiograficzną.",),
+        writes_test_artifacts=True,
+        validator_profile="test01",
+    ),
+    TestSpec(
+        profile="test02",
+        owner_layer="derived_projections",
+        required_predecessors=("test01",),
+        gate_kind="projection_contract",
+        label="Test 02 — Normalizacja i projekcje",
+        goal="Buduje i sprawdza wyłącznie pochodne widoki/klasyfikacje bez zmiany surowego L0.",
+        inputs=("wynik Test01", "reguły normalizacji i indeksowania"),
+        readiness=("zaliczona integralność Test01",),
+        phases=("normalize", "classify", "index", "raw ↔ normalized reconciliation", "verify"),
+        checks=(
+            "visible/hidden/non-dialogue i role techniczne są rozdzielone",
+            "memory eligibility i sensitivity są pochodnymi z dowodem źródłowym",
+            "timestampy bez źródła nie są wymyślane",
+            "FTS nie indeksuje rekordów wyłączonych przez safety gate",
+            "raw source mirror i L0 pozostają byte/content-identical",
+        ),
+        outputs=("projekcje/indeksy Test02", "raport raw-normalized reconciliation"),
+        truth_boundary=("Normalizacja nie promuje interpretacji do faktu ani wspomnienia.",),
+        writes_test_artifacts=True,
+        validator_profile="test02",
+    ),
+    TestSpec(
+        profile="test03",
+        owner_layer="deterministic_reconstruction",
+        required_predecessors=("test02",),
+        gate_kind="reconstruction_integration",
+        label="Test 03 — Deterministyczny pełny rebuild integracyjny",
+        goal=(
+            "Wykonuje świeżą odbudowę jednej memory_jazn.sqlite3 oraz udowadnia, że source union i "
+            "stabilne klucze dają ten sam wynik semantyczny niezależnie od kolejności snapshotów."
+        ),
+        inputs=("zatwierdzony source union", "wyniki Test00/01/02 jako immutable baseline"),
+        readiness=("plan bez zapisu jest poprawny", "wszystkie wymagane źródła mają SHA-256"),
+        phases=(
+            "dry-run",
+            "fresh build A",
+            "fresh build B z odwróconą kolejnością źródeł",
+            "dedupe/merge",
+            "JSON↔HTML control",
+            "source-union reconciliation",
+            "verify",
+        ),
+        checks=(
+            "identical/subset/extends/divergent są jawnie rozróżniane",
+            "divergent nie powoduje utraty historycznej gałęzi ani pełnego wariantu",
+            "preserved_union nie blokuje testu jako nierozwiązany konflikt",
+            "changed payload/parent tego samego node_id pozostaje nierozwiązany do jawnej decyzji",
+            "manual HTML jest samodzielnym lossless źródłem tylko gdy ma pełne jsonData",
+            "A i B mają ten sam source-union fingerprint oraz te same stabilne rekordy L0",
+            "porównanie używa stabilnych kluczy oraz hashy treści, nie samych liczników",
+            "0 nierozwiązanych konfliktów wymagających decyzji operatora",
+        ),
+        outputs=("baseline Test03 memory_jazn.sqlite3", "manifest i reconciliation report"),
+        truth_boundary=("Zielony rebuild nie dowodzi jeszcze jakości Recall ani naturalności rozmowy.",),
+        writes_test_artifacts=True,
+        validator_profile="test03",
+    ),
+    TestSpec(
+        profile="test04",
+        owner_layer="private_recall_acceptance",
+        required_predecessors=("test03",),
+        gate_kind="private_system_acceptance",
+        label="Test 04 — Prywatna akceptacja pełnej bazy",
+        goal="Mierzy kompletność, reproducibility i Recall na rzeczywistych prywatnych danych.",
+        inputs=("zamrożony source union", "latest-export attestation", "prywatny benchmark Recall", "baseline Test03"),
+        readiness=("zamrożony manifest źródeł", "przypadki Recall pozostają poza Git", "Test03 zaliczony"),
+        phases=(
+            "fresh build A",
+            "same-target idempotence",
+            "fresh build B",
+            "reproducibility",
+            "Test03 reconciliation",
+            "Recall benchmark",
+            "manual multi-turn",
+            "restart continuity dla system acceptance",
+        ),
+        checks=(
+            "source completeness i exact provenance",
+            "A==B dla semantycznego wyniku odbudowy",
+            "Recall: direct/paraphrase/referential/temporal/update/conflict/negative/provenance",
+            "abstention przy braku dowodu",
+            "role/sensitive boundary bez wycieku credential/tool payload",
+            "multi-turn używa właściwego źródła, nie zgaduje",
+            "system acceptance wymaga restart continuity; developer może raportować ją oddzielnie",
+        ),
+        outputs=("developer_test04_passed albo jawny zestaw blockerów", "sanitized metrics", "private evidence report"),
+        truth_boundary=(
+            "Test04 nie aktywuje pamięci i nie autoryzuje L2/L3.",
+            "Syntetyczne CI nie zastępuje prywatnej akceptacji Recall.",
+        ),
+        writes_test_artifacts=True,
+        validator_profile="test04",
+    ),
+    TestSpec(
+        profile="final",
+        owner_layer="release_artifact",
+        required_predecessors=("test04",),
+        gate_kind="export_and_readiness",
+        label="Final — Freeze pełnej pamięci bazowej",
+        goal="Zamraża zweryfikowaną bazę i dowody jako wejście do osobnego Verified Memory Restore.",
+        inputs=("zaliczony Test04", "raporty Test00-04", "review/promotion ledgers"),
+        readiness=("wszystkie blocking checks Test04 PASSED", "brak niejawnych automatycznych promocji"),
+        phases=(
+            "SQLite Backup API snapshot",
+            "full validation",
+            "FTS5 integrity",
+            "runtime-native read-only probe",
+            "manifest sealing",
+            "sanitized export",
+        ),
+        checks=(
+            "snapshot SQLite jest spójny i powstaje przez API SQLite, nie surowe kopiowanie aktywnego WAL DB",
+            "PRAGMA integrity_check oraz foreign_key_check są czyste",
+            "FTS5 przechodzi własny integrity-check",
+            "finalny katalog nie wymaga źródłowych -wal/-shm do odtworzenia zatwierdzonego snapshotu",
+            "private + sanitized manifests zgadzają się po hashach",
+            "source manifest i database manifest są kompletne",
+            "promotion ledger pozostaje fail-closed bez jawnej decyzji",
+            "runtime-native probe potwierdza schema_identity i full_autobiographical_recall_ready=true",
+        ),
+        outputs=("final memory_jazn.sqlite3", "database/source/test manifests", "candidate/review ledger"),
+        truth_boundary=("Final jest gotowym wejściem do Verified Memory Restore, nie aktywną Jaźnią.",),
+        writes_test_artifacts=True,
+        validator_profile="final",
+    ),
+)
+
+TEST_SPEC_BY_PROFILE = {item.profile: item for item in TEST_SPECS}
+TEST_PROTOCOL_ORDER = tuple(item.profile for item in TEST_SPECS)
+
+
+
+def test_layer_contracts() -> tuple[dict[str, object], ...]:
+    return tuple(
+        {
+            "profile": item.profile,
+            "owner_layer": item.owner_layer,
+            "required_predecessors": item.required_predecessors,
+            "gate_kind": item.gate_kind,
+            "validator_profile": item.validator_profile,
+        }
+        for item in TEST_SPECS
+    )
+
+
+def validate_test_layer_contracts() -> dict[str, object]:
+    profiles = [item.profile for item in TEST_SPECS]
+    owners = [item.owner_layer for item in TEST_SPECS]
+    errors: list[str] = []
+    if len(set(profiles)) != len(profiles):
+        errors.append("duplicate_test_profile")
+    if len(set(owners)) != len(owners):
+        errors.append("duplicate_owner_layer")
+    index = {profile: position for position, profile in enumerate(profiles)}
+    for item in TEST_SPECS:
+        if not item.owner_layer:
+            errors.append(f"missing_owner_layer:{item.profile}")
+        if not item.gate_kind:
+            errors.append(f"missing_gate_kind:{item.profile}")
+        for predecessor in item.required_predecessors:
+            if predecessor not in index:
+                errors.append(f"unknown_predecessor:{item.profile}:{predecessor}")
+            elif index[predecessor] >= index[item.profile]:
+                errors.append(f"non_prior_predecessor:{item.profile}:{predecessor}")
+    if profiles and profiles[-1] != "final":
+        errors.append("final_not_last")
+    final = TEST_SPEC_BY_PROFILE.get("final")
+    if final is None or final.required_predecessors != ("test04",):
+        errors.append("final_must_depend_on_test04")
+    return {
+        "ok": not errors,
+        "profiles": profiles,
+        "owners": owners,
+        "contracts": test_layer_contracts(),
+        "errors": errors,
+    }
+
+def get_test_spec(profile: str) -> TestSpec:
+    try:
+        return TEST_SPEC_BY_PROFILE[profile]
+    except KeyError as exc:
+        raise ValueError(f"unknown Memory Rebuild test protocol: {profile}") from exc
+
+
+__all__ = [
+    "TEST_PROTOCOL_ORDER",
+    "TEST_SPECS",
+    "TestOutcome",
+    "TestSpec",
+    "get_test_spec",
+    "test_layer_contracts",
+    "validate_test_layer_contracts",
+]
