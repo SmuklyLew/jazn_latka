@@ -143,6 +143,7 @@ class Window(QMainWindow):
         self._diagnostics()
         self._studios()
         self._configuration()
+        self._version_studio()
         self._tests_catalog()
         self._local_acceptance()
         self._memory()
@@ -390,6 +391,16 @@ class Window(QMainWindow):
         )
         self.configuration_panel = ConfigurationPanel(self.core)
         layout.addWidget(self.configuration_panel)
+
+    def _version_studio(self) -> None:
+        from .version_view import VersionPanel
+        layout = self.page(
+            "Wersje Qt",
+            "Natywna kontrola wersji (odczyt bez zapisu). "
+            "Zmiany wydania i przywracanie metadanych nadal wymagają osobnego przeglądu.",
+        )
+        self.version_panel = VersionPanel(self.core)
+        layout.addWidget(self.version_panel)
 
     def _tests_catalog(self) -> None:
         from .test_catalog_view import TestCatalogPanel
@@ -707,6 +718,9 @@ class Window(QMainWindow):
                 else:
                     self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
+                if key == "helper:version-inspect:":
+                    self.version_panel.receive(value)
+                    continue
                 if key in {
                     "helper:profile-paths:", "helper:profile-validate:",
                     "helper:profile-preview:", "helper:profile-restore:",
@@ -759,6 +773,8 @@ class Window(QMainWindow):
                         self.profile_widgets[field["key"]] = widget
                         self.profile_form.addRow(field["title"], widget)
             elif kind == "state":
+                if key == "helper:version-inspect:":
+                    self.version_panel.receive_state(value)
                 if key.startswith("helper:profile-"):
                     self.configuration_panel.receive_state(key, value)
                 if value.get("state") in {"succeeded", "failed", "stopped"}:
