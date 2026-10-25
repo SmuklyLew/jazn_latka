@@ -4,6 +4,30 @@ Desktop operator for the canonical `run.py -> main.py` system. This branch is
 an implementation checkpoint, not a completed release candidate. The full
 acceptance scope and remaining work are recorded in `ACCEPTANCE.md`.
 
+## TPA — Testy przepuszczania aktualizacji (.86 checkpoint)
+
+The former **Odbiór lokalny** page is named **TPA**. All 22 manual acceptance
+cases, their version-scoped results and archival rules remain unchanged.
+The new asynchronous **Uruchom podtest zaznaczonego** and **Uruchom bezpieczne
+podtesty** actions execute only three curated isolated regression subsets:
+`smoke-isolation`, `config-persistence`, `ui-accessibility`.
+Their `PASS` means only that this regression subset ran successfully. It
+**never** marks a local acceptance gate PASS or supplies proof of actual daemon,
+Ollama, MEMORY, EXE, accessibility or full 12-Studio migration readiness.
+
+Subchecks run under a temporary workspace with the inherited JAZN environment
+removed, a fixed 120 s limit, bounded/redacted output and operator-only JSON
+evidence. The operator may cancel the child process; neither TPA nor an error
+handler may stop or adopt the existing Jaźń runtime. If selected Python or
+pytest is missing, the action fails closed. Only verified external interpreter
+paths are accepted; frozen Studio requires explicit Python configuration.
+
+Existing legacy studios remain **archiwalne / do przeglądu** until their
+functions, state/error handling and visual parity are independently verified.
+The native profile editor and color picker remain usable, but do not confer
+full Configuration Studio migration parity. Read
+`docs/plans/JAZN_TPA_11603486_STUDIO_MODERNIZATION.md` for the remaining gates.
+
 ## Install and launch
 
 Use Python 3.12 or later, with a Qt-supported interpreter/platform and a verified
