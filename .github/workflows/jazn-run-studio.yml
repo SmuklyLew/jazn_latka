@@ -2,9 +2,9 @@ name: jazn-run-studio
 
 on:
   push:
-    branches: ["fix/jazn-v11603494-system-studio-diagnostics-20261026", "codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024", "fix/jazn-studio-p4-p5-evidence-gates-20261024", "fix/jazn-studio-part2-verified-ui-20261024", "fix/jazn-tpa-workbench-v11603486-20261025", "upgrade/v16-3-25-5-116-0-34-88-native-studios"]
+    branches: ["fix/jazn-v11603494-5-heart-system-mcp-windows-acceptance-20261026", "fix/jazn-v11603494-system-studio-diagnostics-20261026", "codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024", "fix/jazn-studio-p4-p5-evidence-gates-20261024", "fix/jazn-studio-part2-verified-ui-20261024", "fix/jazn-tpa-workbench-v11603486-20261025", "upgrade/v16-3-25-5-116-0-34-88-native-studios"]
   pull_request:
-    branches: [master, fix/jazn-studio-local-acceptance-20261024]
+    branches: [master, fix/jazn-v11603494-system-studio-diagnostics-20261026, fix/jazn-studio-local-acceptance-20261024]
     paths:
       - "tools/jazn_run_studio/**"
       - "jazn_run_studio.py"
