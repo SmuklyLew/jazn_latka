@@ -29,7 +29,9 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--run", choices=sorted(ACTION_BY_KEY), help="Wykonaj komendę wspólnym backendem")
     mode.add_argument("--probe", choices=["ollama", "gateway", "cloudflare", "tunnel_service"], help="Odczyt rzeczywistej usługi wspólnym backendem")
     mode.add_argument("--gui-smoke", action="store_true", help="Test okna i zamknięcia; bez startu usług")
-    parser.add_argument("--isolated-acceptance", action="store_true",\n                        help="Izolowany runtime, MEMORY off, trwałe wyniki TPA poza SYSTEM")\n    parser.add_argument("--report", type=Path, help="Zapis raportu do nowego pliku")
+    parser.add_argument("--isolated-acceptance", action="store_true",
+                        help="Izolowany runtime, MEMORY off, trwałe wyniki TPA poza SYSTEM")
+    parser.add_argument("--report", type=Path, help="Zapis raportu do nowego pliku")
     args = parser.parse_args(argv)
     try:
         scope = acceptance_environment(args.root) if args.isolated_acceptance else nullcontext()
