@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-  "runtime_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-  "package_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-  "generated_at_utc": "2026-10-25T22:45:01+00:00",
-  "updated_at_utc": "2026-10-25T22:45:01+00:00",
+  "version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "runtime_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "package_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "generated_at_utc": "2026-10-26T04:20:20+00:00",
+  "updated_at_utc": "2026-10-26T04:20:20+00:00",
   "start_file": "run.py",
-  "file_count": 3406,
-  "static_file_count": 3406,
+  "file_count": 3407,
+  "static_file_count": 3407,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -399,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2999,
-      "sha256": "30bebd5772b69007a563fd51ab8d7da2994461014d6a7c87088bceb57524eb0f",
+      "size_bytes": 3005,
+      "sha256": "bfc0af96c91a98f656b9c80f898f80a91da8364e0cdfdb88d9102b5628833325",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1951,
-      "sha256": "9e8d2b49b7e24563fdc8da7b597cfa91ae5d4e4cc968373f66c31dcacf3d5757",
+      "size_bytes": 1952,
+      "sha256": "7bc31b1cb825db2ae54a5947838128dc7235bdd419ed4e4c06a1bf7da4484da1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2723,6 +2723,15 @@
       "path": "docs/reports/JAZN_V116_0_34_91_BUILD_SECURITY_PROFILE_CAS_WINDOWS_GATES.md",
       "size_bytes": 2803,
       "sha256": "d87c491045e03650e1cdad75af651d15c2e7f9e85151ab912a17f3cff81adbe1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_93_1_STARTUP_IDENTITY_SYNC.md",
+      "size_bytes": 1662,
+      "sha256": "a0bb28ac3dbca8a97fae63a812767573c17d8388ef17146509f4f0110bb2cdf8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9525,8 +9534,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7904,
-      "sha256": "80396d92e02a7dd394db2b5bd93ca2ee2bdf58b2e0274acb2e9b8337092efab7",
+      "size_bytes": 7906,
+      "sha256": "9a1e4ac8bb575e85de7142b3ad25ab330b1c4688945f4e99397f49d51772e8aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11028,8 +11037,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 17560,
-      "sha256": "bf6a316b866627b47080011a19b9f7942f4ab366dd1f3b6539b2b6a0af40ff3b",
+      "size_bytes": 17634,
+      "sha256": "777bb9946516a7699e9ac1b820cae5a5b2f07dbbee502d8cd90d6a8879fc2598",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30450,8 +30459,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2487403,
-      "sha256": "752cefc21101a99969da41d50806ec24e36b8aa7f1aedeb4d0634e9e36e40659",
+      "size_bytes": 2487405,
+      "sha256": "a206c4327ca781c74072ff6a43d3cac1be89cb6de64134f0d3be41f66f330cf3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31108,11 +31117,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
+  "release_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-    "package_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening",
-    "release_version": "16.3.25.5.116.0.34.93-system-studio-distribution-hardening"
+    "runtime_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+    "package_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+    "release_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync"
   },
   "legacy_aliases": {
     "version": "release_version"
