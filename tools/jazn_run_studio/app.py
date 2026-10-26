@@ -10,7 +10,7 @@ import sys
 
 from .core import ACTION_BY_KEY, Controller, discovery, load_settings
 from latka_jazn.core.system_config import apply_system_config
-from latka_jazn.core.acceptance_layout import acceptance_environment
+from latka_jazn.core.acceptance_layout import acceptance_environment, validate_resumed_daemon
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,9 +35,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         scope = acceptance_environment(args.root) if args.isolated_acceptance else nullcontext()
-        with scope:
+        with scope as layout:
             apply_system_config(args.root, os.environ)
             core = Controller(args.root)
+            if args.isolated_acceptance:
+                assert layout is not None
+                validate_resumed_daemon(layout, core.settings.daemon_url)
             if args.check:
                 print(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))
                 return 0
