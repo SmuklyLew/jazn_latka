@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ad1454371012863ade15c9a4b284af956c3590a5",
+  "base_merge_commit": "291e4740f56bd899b55db8ebf26354905182be83",
   "base_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-  "commit_date": "2026-10-26T02:15:31+01:00",
+  "commit_date": "2026-10-26T01:19:43Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-26T01:15:31+00:00",
+  "generated_at_utc": "2026-10-26T01:19:43+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "a1a262457cd49dde8a4542f26560f9f79b998b50",
+  "git_tree_sha": "72c981b6c0e7a78200e5530531ee0c06b64d2ffa",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "ad1454371012863ade15c9a4b284af956c3590a5",
+    "source_commit": "291e4740f56bd899b55db8ebf26354905182be83",
     "source_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "ad1454371012863ade15c9a4b284af956c3590a5",
+  "source_commit": "291e4740f56bd899b55db8ebf26354905182be83",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
   "tag": null,
