@@ -127,8 +127,8 @@ class Settings:
     tunnel_config: str = ""
     tunnel_id: str = ""
     model: str = ""
-    theme: str = "purple"
-    accent: str = "#9876d4"
+    theme: str = "violet-night"
+    accent: str = "#A783DB"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
     daemon_url: str = "http://127.0.0.1:8787"
@@ -142,7 +142,7 @@ class Settings:
         if any(not isinstance(v, str) or len(v) > 2048 or any(c in v for c in "\0\r\n") for v in data.values()):
             raise StudioError("Ustawienia muszą być krótkimi tekstami bez znaków sterujących")
         obj = cls(**data)
-        if obj.theme not in {"system", "light", "dark", "purple", "custom"}:
+        if obj.theme not in {"violet-night", "system", "light", "dark", "purple", "custom"}:
             raise StudioError("Nieznany motyw")
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", obj.accent):
             raise StudioError("Kolor wymaga formatu #RRGGBB")
@@ -378,6 +378,8 @@ class Controller:
         except KeyError:
             raise StudioError("Nieznana operacja") from None
         args = list(action.args)
+        if key == "mcp":
+            args[args.index("--url") + 1] = f"http://127.0.0.1:{self.settings.mcp_port}/mcp"
         if key in {"status", "doctor", "start", "stop", "restart"}:
             # Preserve unchanged default commands while routing configured
             # non-default endpoints through the public Jaźń control plane.
@@ -404,9 +406,17 @@ class Controller:
 
     def start_action(self, key: str) -> Job:
         argv = self.command(key)
-        job = self._reserve(key)
-        self._launch(job, argv, ACTION_BY_KEY[key].timeout)
-        return job
+        # Reuse an in-flight read under the same lock as reservation. Rapid
+        # clicks and batches observe one real result, never launch a duplicate.
+        # Mutations retain the strict lifecycle exclusion in _reserve.
+        with self.lock:
+            current = self.jobs.get(key)
+            if (not self.closed and not ACTION_BY_KEY[key].mutates
+                    and current is not None and not current.done.is_set()):
+                return current
+            job = self._reserve(key)
+            self._launch(job, argv, ACTION_BY_KEY[key].timeout)
+            return job
 
     def start_studio(self, key: str) -> Job:
         spec = next((s for s in STUDIOS if s.key == key), None)
@@ -462,7 +472,11 @@ class Controller:
                  "tunnel_service": lambda: probes.tunnel_service(self.root)}
         if key not in calls:
             raise StudioError("Nieznany test połączenia")
-        job = self._reserve("probe:" + key)
+        with self.lock:
+            current = self.jobs.get("probe:" + key)
+            if not self.closed and current is not None and not current.done.is_set():
+                return current
+            job = self._reserve("probe:" + key)
         def worker() -> None:
             try:
                 job.state = "running"
@@ -715,7 +729,11 @@ class Controller:
                         batch.state = "stopped"
                         return
                     job = self.start_action(key)
-                    job.done.wait()
+                    while not job.done.wait(0.1):
+                        if batch.cancel.is_set():
+                            # A batch owns its wait, not a shared read's lifetime.
+                            batch.state = "stopped"
+                            return
                     if job.state != "succeeded":
                         batch.state = "failed"
                         batch.error = "failed_step:" + key

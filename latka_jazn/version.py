@@ -1,3 +1,4 @@
+# v116.0.34.94.1: Heart System launcher, Violet Night and shared diagnostic jobs.
 # v116.0.34.94: Studio diagnostics preserve JSON after progress; readyz needs evidence.
 # v116.0.34.93 restores shipped Test Studio test inventory and protects short Studio Startu credentials.
 # v116.0.34.92 makes generated build path filtering case-insensitive across OSes and adds regression cases.
@@ -142,9 +143,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.1"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "system-studio-diagnostics-readiness"
+PACKAGE_RELEASE_NAME = "heart-system-launcher-diagnostics"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

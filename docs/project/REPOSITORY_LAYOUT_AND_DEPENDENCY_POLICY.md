@@ -56,6 +56,9 @@ read-only for backward compatibility until an explicit verified migration.
 
 ## 3. Publiczne entrypointy
 
+- aplikacja operatorska „Jaźń — Serce Systemu”: `python -X utf8 run_studio.py`; cienki launcher istniejącego Workbench Qt, bez własnego runtime;
+- zgodne wejścia migracyjne: `jazn_run_studio.py`, `tools/jazn_studio.py`;
+
 - `run.py` przekazuje każdą komendę do centralnego `main.py`;
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
 - domyślna rozmowa: `python -X utf8 run.py`;

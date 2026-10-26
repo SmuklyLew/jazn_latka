@@ -36,7 +36,7 @@ class Window(QMainWindow):
         self.smoke = smoke
         from .core import load_settings
         _, self.digest = load_settings(core.root)
-        self.setWindowTitle("Studio Jaźni — TPA / Panel operacyjny")
+        self.setWindowTitle("Jaźń — Serce Systemu")
         self.resize(1240, 840)
         self.setMinimumSize(860, 580)
         self.logs: dict[str, QPlainTextEdit] = {}
@@ -66,7 +66,7 @@ class Window(QMainWindow):
         sidebar_layout = QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(8, 14, 8, 10)
         sidebar_layout.setSpacing(8)
-        brand = QLabel("JAŹŃ  /  STUDIO  •  TPA")
+        brand = QLabel("JAŹŃ  /  SERCE SYSTEMU")
         brand.setObjectName("workbenchBrand")
         sidebar_layout.addWidget(brand)
         description = QLabel("PANEL OPERACYJNY")
@@ -532,7 +532,7 @@ class Window(QMainWindow):
             self.fields[key] = field
             form.addRow(label, field)
         self.theme = QComboBox()
-        self.theme.addItems(["system", "light", "dark", "purple", "custom"])
+        self.theme.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
         self.theme.setCurrentText(self.core.settings.theme)
         form.addRow("Motyw", self.theme)
         self.profile_mode = QComboBox()

@@ -271,3 +271,7 @@ It is a persisted *future launch* setting, not a running-daemon reconfigure.
 
 The original Tk Studio remains available while final operator acceptance
 is pending. See `STUDIO_MIGRATION.md` for full parity status.
+
+## Jaźń — Serce Systemu (.94.1)
+
+Main GUI launcher: `python -X utf8 run_studio.py`. The previous `jazn_run_studio.py` remains compatible. Default theme: **Jaźń Violet Night** (`violet-night`). main.py still owns CLI/TTY and runtime lifecycle. See `docs/reports/JAZN_HEART_SYSTEM_CHECKPOINT_1.md` for current evidence and outstanding gates.
