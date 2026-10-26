@@ -110,8 +110,14 @@ class SafeTPARunner(QObject):
         self.started = datetime.now(timezone.utc).isoformat()
         self.tmp = tempfile.TemporaryDirectory(prefix="jazn_tpa_")
         isolated = Path(self.tmp.name)
+        try:
+            child_environment = isolated_environment(isolated, self.root)
+        except (OSError, ValueError):
+            self.tmp.cleanup()
+            self.tmp = None
+            raise
         self.process.setWorkingDirectory(str(self.root.resolve()))
-        self.process.setProcessEnvironment(isolated_environment(isolated, self.root))
+        self.process.setProcessEnvironment(child_environment)
         self.process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         self.active = True
         self.progress.emit("TPA: uruchamianie izolowanych testów regresyjnych…")
