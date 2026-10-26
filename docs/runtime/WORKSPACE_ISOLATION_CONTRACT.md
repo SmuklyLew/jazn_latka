@@ -34,7 +34,7 @@ aktywnych plików master:
 
 Przełącznik jawnie ustawia na czas życia procesu:
 
-- `JAZN_RUNTIME_WORKSPACE_DIR` → `~/.jazn/acceptance/<hash-root>/runtime`
+- `JAZN_RUNTIME_WORKSPACE_DIR` → `~/.jazn/acceptance/<hash-root>/runtime/<session-id>`
 - `JAZN_OPERATOR_STATE_ROOT` → `~/.jazn/acceptance/<hash-root>/operator`
 - `JAZN_MEMORY_ROOT` → `<acceptance-runtime>/memory`
 - `JAZN_MEMORY_MODE=off`
