@@ -18,6 +18,7 @@ from typing import Any
 from PySide6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, Signal
 
 from latka_jazn.tools.application_shell.operator_paths import operator_file
+from latka_jazn.core.acceptance_layout import resolve_acceptance_layout
 from .core import Redactor
 from .local_acceptance import scope_version
 
@@ -48,16 +49,18 @@ def allowed_files(root: Path, case_ids: tuple[str, ...]) -> tuple[str, ...]:
     return files
 
 
-def isolated_environment(folder: Path) -> QProcessEnvironment:
+def isolated_environment(folder: Path, root: Path | None = None) -> QProcessEnvironment:
     """Never inherit Jaźń runtime/memory bindings into a TPA subprocess."""
+    layout = resolve_acceptance_layout(root or folder / "SYSTEM", base=folder)
     env = QProcessEnvironment.systemEnvironment()
     for key in env.keys():
         upper = key.upper()
         if (upper.startswith("JAZN_")
                 or any(term in upper for term in ("TOKEN", "SECRET", "PASSWORD", "API_KEY", "CREDENTIAL"))):
             env.remove(key)
-    env.insert("JAZN_RUNTIME_WORKSPACE_DIR", str(folder / "runtime"))
-    env.insert("JAZN_OPERATOR_STATE_ROOT", str(folder / "operator"))
+    env.insert("JAZN_RUNTIME_WORKSPACE_DIR", str(layout.runtime))
+    env.insert("JAZN_OPERATOR_STATE_ROOT", str(layout.operator))
+    env.insert("JAZN_MEMORY_ROOT", str(layout.memory))
     env.insert("JAZN_MEMORY_MODE", "off")
     env.insert("PYTHONUTF8", "1")
     env.insert("PYTHONDONTWRITEBYTECODE", "1")
@@ -108,7 +111,7 @@ class SafeTPARunner(QObject):
         self.tmp = tempfile.TemporaryDirectory(prefix="jazn_tpa_")
         isolated = Path(self.tmp.name)
         self.process.setWorkingDirectory(str(self.root.resolve()))
-        self.process.setProcessEnvironment(isolated_environment(isolated))
+        self.process.setProcessEnvironment(isolated_environment(isolated, self.root))
         self.process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         self.active = True
         self.progress.emit("TPA: uruchamianie izolowanych testów regresyjnych…")
