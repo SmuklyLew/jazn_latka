@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "78e2b4122e69ed82f29e5c6fd28bb3171f2c5958",
+  "base_merge_commit": "4fbb9915fe3c79855c24a33d860dfc895431049a",
   "base_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-  "commit_date": "2026-10-26T03:58:30+01:00",
+  "commit_date": "2026-10-26T04:19:58+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-26T02:58:30+00:00",
+  "generated_at_utc": "2026-10-26T03:19:58+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "81f1f569ce5605c226f1f28f17aa2e2fbe331d1e",
+  "git_tree_sha": "45b49ae23d8ce8a3dc8db08f1a522f31e3f2191a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "78e2b4122e69ed82f29e5c6fd28bb3171f2c5958",
+    "source_commit": "4fbb9915fe3c79855c24a33d860dfc895431049a",
     "source_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "78e2b4122e69ed82f29e5c6fd28bb3171f2c5958",
+  "source_commit": "4fbb9915fe3c79855c24a33d860dfc895431049a",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
   "tag": null,
