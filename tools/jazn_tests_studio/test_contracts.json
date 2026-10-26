@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6",
-  "active_definition_count": 2779,
+  "system_version": "16.3.25.5.116.0.34.94.6.1",
+  "active_definition_count": 2786,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -23870,6 +23870,140 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 221
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_profile_session_reused_without_autostart_or_prod_writes": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_profile_session_reused_without_autostart_or_prod_writes",
+      "purpose": "Profile session reused without autostart or prod writes",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_two_roots_use_disjoint_acceptance_sessions": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_two_roots_use_disjoint_acceptance_sessions",
+      "purpose": "Two roots use disjoint acceptance sessions",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_corrupt_profile_refuses_reuse": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_corrupt_profile_refuses_reuse",
+      "purpose": "Corrupt profile refuses reuse",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_persistent_studio_settings_live_outside_runtime": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_persistent_studio_settings_live_outside_runtime",
+      "purpose": "Persistent studio settings live outside runtime",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_resume_with_marker_rejects_unverified_identity": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_resume_with_marker_rejects_unverified_identity",
+      "purpose": "Resume with marker rejects unverified identity",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_resume_with_marker_requires_all_trust_gates": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_resume_with_marker_requires_all_trust_gates",
+      "purpose": "Resume with marker requires all trust gates",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_no_profile_override_for_normal_studio": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_no_profile_override_for_normal_studio",
+      "purpose": "No profile override for normal studio",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_jazn_archive_brotli_security_floor.py::test_archive_optional_dependencies_require_patched_brotli": {
       "path": "tests/test_jazn_archive_brotli_security_floor.py",
