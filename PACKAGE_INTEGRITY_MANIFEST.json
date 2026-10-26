@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
-  "runtime_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
-  "package_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
-  "generated_at_utc": "2026-10-26T08:00:06+00:00",
-  "updated_at_utc": "2026-10-26T08:00:06+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
+  "package_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
+  "generated_at_utc": "2026-10-26T08:08:37+00:00",
+  "updated_at_utc": "2026-10-26T08:08:37+00:00",
   "start_file": "run.py",
-  "file_count": 3435,
-  "static_file_count": 3435,
+  "file_count": 3436,
+  "static_file_count": 3436,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -192,8 +192,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 7467,
-      "sha256": "5daab4c5f78f66a91cfb1a70b40426dc53132d4c1f196a863cbe81ba72dbac65",
+      "size_bytes": 7512,
+      "sha256": "a3237016985fd243c4b01bbd5850303bf27f73dd9b50d047bf1a340a12a0e2ec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -399,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2927,
-      "sha256": "7a4868470d6af75ddbd1c5d67814f950d6bc5d3aa9d92c534bb4dda38c4f3ef5",
+      "size_bytes": 2964,
+      "sha256": "60752b709caf5480777826ac9cd906e13d74ea89522913caafadfac18b5f6090",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1939,
-      "sha256": "1ad22fb1fc90372d6ec2a83931391d0d27fc109571042f425968797c5506c7be",
+      "size_bytes": 1946,
+      "sha256": "d30bc2f301b7d5d39951fe64f45ace4accfe7d681140bfe57446a749485d0d63",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4026,8 +4026,8 @@
     },
     {
       "path": "docs/runtime/WORKSPACE_ISOLATION_CONTRACT.md",
-      "size_bytes": 4182,
-      "sha256": "b53c44a8da9a7c9a6f7c31bcacab505eb813a5b4d31b451d24cc4410da55e4c0",
+      "size_bytes": 5782,
+      "sha256": "be27287166b671c5777fd694ade12ee8a17739f6abbb41b7938f3721f5a044fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9624,8 +9624,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7906,
-      "sha256": "75ce557488c3f3daeaadcd75be615b2a6b7934d1b6fe76b8d359c3cb4235a945",
+      "size_bytes": 7908,
+      "sha256": "5f7d047b3615025decb2d321f27f2df2f2c13ca1bc4aac1b6574d39e8b5074f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11127,8 +11127,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18151,
-      "sha256": "9f82573d05d7e97f043240bbc45b535aefcbd418c40fee607c62d2fd94a91aa0",
+      "size_bytes": 18158,
+      "sha256": "499b95f5a5882d079bfaea32b0a11676c8327662f3ed367700791405c1e63491",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26948,6 +26948,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "size_bytes": 5772,
+      "sha256": "849b18c47dfecc2ab3a61535c60e28ff0c947950c6a4105e2a4d28235e80a6b8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_archive_brotli_security_floor.py",
       "size_bytes": 519,
       "sha256": "8fc99f9660d84a680d0e5d708241841de99af9f30eb9b75700b6d6b01cb6d598",
@@ -30297,8 +30306,8 @@
     },
     {
       "path": "tools/jazn_run_studio/README.md",
-      "size_bytes": 17270,
-      "sha256": "496a2738d0e390ead3479c7e4d464ae718e0b5152ffd89d1f3b0681e60912435",
+      "size_bytes": 17305,
+      "sha256": "94b75304c9e09e084cfa0810110edd4e779c5a39c16fedc7bcf08980f1bc4ec5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30333,8 +30342,8 @@
     },
     {
       "path": "tools/jazn_run_studio/app.py",
-      "size_bytes": 3271,
-      "sha256": "7ef2237f5551f0605b5c3768143b3fc8ea17a65adc927e1294e066e6fa453591",
+      "size_bytes": 3463,
+      "sha256": "ab3ae8841a11af325bb2aa800582e363dac9d444730642f870e95ee01ceac03c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30387,8 +30396,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 42805,
-      "sha256": "36abf4f5ded5b5be273d9c586759be761f5695a6b89535980515f1be4bcbdbcd",
+      "size_bytes": 43970,
+      "sha256": "a3624496d2006b6cd256c0e3d777d992a5bc7adf1ea48eeb1121abef39864e88",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30711,8 +30720,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2517339,
-      "sha256": "dd4f7bbe7bcc70a568d3cb271a403f75818ddea24228dd7ef554f1e94a5af6fe",
+      "size_bytes": 2522714,
+      "sha256": "eb444777a138c1ad3e65874e090ffa89433fa68a71ad38aa2387aab7bac1b861",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31369,11 +31378,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
+  "release_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
-    "package_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation",
-    "release_version": "16.3.25.5.116.0.34.94.6-worktree-tpa-isolation"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
+    "package_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume",
+    "release_version": "16.3.25.5.116.0.34.94.6.1-worktree-tpa-session-resume"
   },
   "legacy_aliases": {
     "version": "release_version"
