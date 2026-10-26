@@ -55,6 +55,29 @@ Nie ukończono pełnej migracji 12 aplikacji. Kryteria i rzeczywisty stan są w
 Windows, w szczególności rzeczywistego zapisu profilu z konfliktem CAS,
 ścieżek w prywatnym ROOT, DPI ani wybranego modelu Ollama.
 
+## Izolowany odbiór lokalny (.94.6)
+
+Nowa opcja `--isolated-acceptance` jest przeznaczona do GUI/TPA
+uruchamianego ze zweryfikowanego osobnego worktree:
+
+```text
+python -X utf8 run_studio.py --isolated-acceptance --gui-smoke
+python -X utf8 run_studio.py --isolated-acceptance
+```
+
+Zamiast odziedziczyć produkcyjny runtime/MEMORY, Studio używa
+wznawialnego katalogu runtime na każdy profil ROOT i wersji w
+`~/.jazn/acceptance/<root-hash>/runtime/<session-id>/`.
+Trwałe ustawienia Studio i wyniki TPA są w osobnym katalogu operatora
+`~/.jazn/acceptance/<root-hash>/operator/`.
+`JAZN_MEMORY_MODE=off` i przekierowanie MEMORY do testowej lokalizacji
+chronią przed przypadkowym użyciem aktywnej bazy. Kontekst zmiennych
+środowiskowych jest przywracany po zakończeniu procesu. Nie odbywa
+się migracja starych markerów ani automatyczny start usług.
+Akcje Start/Stop/Restart, MCP/Cloudflare oraz realny EXE/GUI pozostają
+niezależnymi bramkami manualnymi. Więcej: 
+`docs/runtime/WORKSPACE_ISOLATION_CONTRACT.md`.
+
 ## Install and launch
 
 Use Python 3.12 or later, with a Qt-supported interpreter/platform and a verified
