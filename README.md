@@ -161,3 +161,7 @@ Nowe capability otrzymuje status `working` dopiero na podstawie właściwego poz
 v16.6.0 jest **finalną konwergencją programu v16**, nie końcem rozwoju Jaźni. Ma domknąć runtime/host, pamięć, NLP, source monitoring, identity/continuity, affect/cognitive evidence, Rest/Dream i governance na podstawie rzeczywistych pomiarów.
 
 v17.0.0 jest planowane jako **measurement-driven architecture consolidation**: redukcja nakładających się modułów, jeden causal self-state contract, model-capability abstraction, context compiler, controlled forgetting/reconsolidation i dalsze retrieval hardening tylko wtedy, gdy v16 evidence wykaże potrzebę. v17 nie ma być kolejną warstwą antropomorficznych nazw.
+
+## Jaźń — Serce Systemu
+
+Aplikację operatorską uruchamia `python -X utf8 run_studio.py`. [Instrukcja Windows, kreator i przestrzeń pracy](docs/tools/JAZN_HEART_SYSTEM.md). `run.py` zachowuje CLI/TTY, a `main.py` pozostaje centralnym control plane.

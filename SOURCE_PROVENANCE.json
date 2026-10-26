@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d8b99718b53f898bd255d90d152212c7b89fca15",
-  "base_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
-  "commit_date": "2026-10-26T05:20:20+01:00",
+  "base_merge_commit": "9c808cb4c387bb8badd937eaeb015caec521d88c",
+  "base_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+  "commit_date": "2026-10-26T05:23:43+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-26T04:20:20+00:00",
+  "generated_at_utc": "2026-10-26T04:23:43+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6ce7b684e53bb9e5694e0d39f290e95dd7335b52",
+  "git_tree_sha": "3870d66f006d055a96fb5673970dc060a9e98ffe",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d8b99718b53f898bd255d90d152212c7b89fca15",
-    "source_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync"
+    "source_commit": "9c808cb4c387bb8badd937eaeb015caec521d88c",
+    "source_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "release_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "runtime_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d8b99718b53f898bd255d90d152212c7b89fca15",
+  "source_commit": "9c808cb4c387bb8badd937eaeb015caec521d88c",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "source_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.93.1-system-studio-startup-identity-sync",
+  "update_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "version_source": "latka_jazn/version.py"
 }

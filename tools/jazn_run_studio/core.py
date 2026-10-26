@@ -127,8 +127,8 @@ class Settings:
     tunnel_config: str = ""
     tunnel_id: str = ""
     model: str = ""
-    theme: str = "purple"
-    accent: str = "#9876d4"
+    theme: str = "violet-night"
+    accent: str = "#A783DB"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
     daemon_url: str = "http://127.0.0.1:8787"
@@ -142,7 +142,7 @@ class Settings:
         if any(not isinstance(v, str) or len(v) > 2048 or any(c in v for c in "\0\r\n") for v in data.values()):
             raise StudioError("Ustawienia muszą być krótkimi tekstami bez znaków sterujących")
         obj = cls(**data)
-        if obj.theme not in {"system", "light", "dark", "purple", "custom"}:
+        if obj.theme not in {"violet-night", "system", "light", "dark", "purple", "custom"}:
             raise StudioError("Nieznany motyw")
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", obj.accent):
             raise StudioError("Kolor wymaga formatu #RRGGBB")
@@ -299,6 +299,7 @@ class Job:
     cancel: threading.Event = field(default_factory=threading.Event, repr=False)
     output: bytearray = field(default_factory=bytearray, repr=False)
     input_data: bytes | None = field(default=None, repr=False)
+    request_fingerprint: str = field(default="", repr=False)
 
     def snapshot(self) -> dict[str, Any]:
         return {k: getattr(self, k) for k in ("key", "state", "pid", "returncode", "error", "started", "finished")}
@@ -347,6 +348,7 @@ class Controller:
         self.closed = False
         self.chat: Any = None
         self.memory_observations: dict[str, Any] = {}
+        self.setup_observation: dict[str, Any] = {}
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -378,13 +380,17 @@ class Controller:
         except KeyError:
             raise StudioError("Nieznana operacja") from None
         args = list(action.args)
+        if key == "mcp":
+            args[args.index("--url") + 1] = f"http://127.0.0.1:{self.settings.mcp_port}/mcp"
         if key in {"status", "doctor", "start", "stop", "restart"}:
             # Preserve unchanged default commands while routing configured
             # non-default endpoints through the public Jaźń control plane.
             if self.settings.daemon_url != "http://127.0.0.1:8787":
                 target = daemon_cli_options(self.settings)
-                if key in {"start", "stop", "restart"}:
-                    args.append("--")  # argparse.REMAINDER on lifecycle verbs.
+                if key in {"start", "stop"}:
+                    args.append("--")  # These compatibility verbs use REMAINDER.
+                # restart is parsed directly by main.py; its options must not
+                # be hidden behind the compatibility separator.
                 args.extend(target)
         return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
 
@@ -404,9 +410,41 @@ class Controller:
 
     def start_action(self, key: str) -> Job:
         argv = self.command(key)
-        job = self._reserve(key)
-        self._launch(job, argv, ACTION_BY_KEY[key].timeout)
-        return job
+        fingerprint = sha256(json.dumps([argv, asdict(self.settings)], sort_keys=True).encode()).hexdigest()
+        # Reuse an in-flight read under the same lock as reservation. Rapid
+        # clicks and batches observe one real result, never launch a duplicate.
+        # Mutations retain the strict lifecycle exclusion in _reserve.
+        with self.lock:
+            current = self.jobs.get(key)
+            if (not self.closed and not ACTION_BY_KEY[key].mutates
+                    and current is not None and not current.done.is_set()):
+                if current.request_fingerprint != fingerprint:
+                    raise StudioError("Trwa diagnostyka z poprzednią konfiguracją; poczekaj na jej wynik.")
+                return current
+            job = self._reserve(key)
+            job.request_fingerprint = fingerprint
+            self._launch(job, argv, ACTION_BY_KEY[key].timeout)
+            return job
+
+    def check_setup(self) -> Job:
+        with self.lock:
+            current = self.jobs.get("setup:requirements")
+            if not self.closed and current is not None and not current.done.is_set():
+                return current
+            job = self._reserve("setup:requirements")
+            self.setup_observation = {}
+            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
+                               "tools.jazn_run_studio.requirements_worker"], 600)
+            return job
+
+    def git_status(self) -> Job:
+        with self.lock:
+            current = self.jobs.get("developer:git")
+            if not self.closed and current is not None and not current.done.is_set():
+                return current
+            job = self._reserve("developer:git")
+            self._launch(job, [executable("", "git"), "status", "--short", "--branch"], 15)
+            return job
 
     def start_studio(self, key: str) -> Job:
         spec = next((s for s in STUDIOS if s.key == key), None)
@@ -456,13 +494,22 @@ class Controller:
 
     def probe(self, key: str) -> Job:
         from . import probes
-        calls = {"ollama": lambda: probes.ollama(self.settings.model),
-                 "gateway": lambda: probes.gateway(self.settings.mcp_port),
-                 "cloudflare": lambda: probes.cloudflare(self.settings.cloudflare_url),
+        settings = self.settings
+        fingerprint = sha256(json.dumps(asdict(settings), sort_keys=True).encode()).hexdigest()
+        calls = {"ollama": lambda: probes.ollama(settings.model),
+                 "gateway": lambda: probes.gateway(settings.mcp_port),
+                 "cloudflare": lambda: probes.cloudflare(settings.cloudflare_url),
                  "tunnel_service": lambda: probes.tunnel_service(self.root)}
         if key not in calls:
             raise StudioError("Nieznany test połączenia")
-        job = self._reserve("probe:" + key)
+        with self.lock:
+            current = self.jobs.get("probe:" + key)
+            if not self.closed and current is not None and not current.done.is_set():
+                if current.request_fingerprint != fingerprint:
+                    raise StudioError("Trwa test połączenia z poprzednią konfiguracją; poczekaj na wynik.")
+                return current
+            job = self._reserve("probe:" + key)
+            job.request_fingerprint = fingerprint
         def worker() -> None:
             try:
                 job.state = "running"
@@ -528,13 +575,20 @@ class Controller:
             raise StudioError("Nieznana operacja Studio")
         if mode in {"schema", "preview", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
             raise StudioError("Nieznane Studio")
-        job = self._reserve("helper:" + mode + ":" + key)
+        # Reject malformed input before reserving an operator job.
+        # Invalid JSON must not leave an uncompleted "starting" job.
+        payload: bytes | None = None
         if data is not None:
-            job.input_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
-            if len(job.input_data) > 65536:
-                job.done.set()
-                job.state = "failed"
+            if not isinstance(data, dict):
+                raise StudioError("Nieprawidłowe dane operacji")
+            try:
+                payload = json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
+            except (TypeError, ValueError, RecursionError):
+                raise StudioError("Nieprawidłowe dane operacji") from None
+            if len(payload) > 65536:
                 raise StudioError("Zbyt duże dane operacji")
+        job = self._reserve("helper:" + mode + ":" + key)
+        job.input_data = payload
         argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
         if key:
             argv.append(key)
@@ -634,6 +688,8 @@ class Controller:
             job.returncode = proc.returncode
             if reader.is_alive():
                 job.error = "output_pipe_not_closed"
+            if proc.returncode not in (None, 0) and not job.cancel.is_set() and job.error is None:
+                job.error = "process_exit:" + str(proc.returncode)
             job.state = ("failed" if job.error else "stopped" if job.cancel.is_set()
                          else "succeeded" if proc.returncode == 0 else "failed")
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
@@ -645,6 +701,16 @@ class Controller:
             # Raw diagnostic stdout is never retained after completion.
             raw = bytes(job.output)
             job.output.clear()
+            if job.key == "setup:requirements" and raw:
+                try:
+                    observation = json.loads(raw)
+                    if not isinstance(observation, dict) or observation.get("schema") != "jazn_studio_setup/v1":
+                        raise ValueError("setup_shape")
+                    with self.lock:
+                        self.setup_observation = observation
+                    self.emit(job.key, "setup", observation)
+                except ValueError:
+                    job.state, job.error = "failed", "invalid_setup_json"
             if job.key.startswith("memory:p1:") and job.state in {"succeeded", "failed"} and raw:
                 try:
                     observation = json.loads(raw)
@@ -665,15 +731,22 @@ class Controller:
                         job.state, job.error = "failed", "runtime_operation_rejected"
                 except ValueError:
                     job.state, job.error = "failed", "invalid_operation_json"
-            if job.state == "succeeded" and job.key == "status":
+            if job.key == "status":
+                # A canonical negative status is still an observation. Publish
+                # it even on exit 1; malformed output must invalidate old green
+                # evidence instead of leaving a stale readiness claim visible.
+                from .status_summary import status_summary
                 try:
                     value = json.loads(raw)
                     if not isinstance(value, dict):
                         raise ValueError("status_shape")
-                    self.emit(job.key, "evidence", daemon_evidence(value))
                 except ValueError:
+                    value = {}
                     job.state = "failed"
-                    job.error = "invalid_status_json"
+                    if job.error is None or job.error.startswith("process_exit:"):
+                        job.error = "invalid_status_json"
+                self.emit(job.key, "evidence", daemon_evidence(value))
+                self.emit(job.key, "status_summary", status_summary(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
                     self.emit(job.key, "helper", json.loads(raw))
@@ -715,7 +788,11 @@ class Controller:
                         batch.state = "stopped"
                         return
                     job = self.start_action(key)
-                    job.done.wait()
+                    while not job.done.wait(0.1):
+                        if batch.cancel.is_set():
+                            # A batch owns its wait, not a shared read's lifetime.
+                            batch.state = "stopped"
+                            return
                     if job.state != "succeeded":
                         batch.state = "failed"
                         batch.error = "failed_step:" + key

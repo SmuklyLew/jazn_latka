@@ -28,8 +28,10 @@ def test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics(system: 
     target = ["--daemon-host", "127.0.0.1", "--daemon-port", "8877"]
     for key in ("status", "doctor"):
         assert controller.command(key)[-4:] == target
-    for key in ("start", "stop", "restart"):
+    for key in ("start", "stop"):
         assert controller.command(key)[-5:] == ["--", *target]
+    assert controller.command("restart")[-4:] == target
+    assert "--" not in controller.command("restart")
     assert "8787" not in " ".join(controller.command("start"))
 
 

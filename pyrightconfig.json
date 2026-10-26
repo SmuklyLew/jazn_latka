@@ -8,7 +8,9 @@
     "CHATGPT_BOOTSTRAP.py",
     "jazn_runtime_bootstrap.py",
     "main.py",
-    "run.py"
+    "run.py",
+    "run_studio.py",
+    "jazn_run_studio.py"
   ],
   "exclude": [
     "**/archive/**"
