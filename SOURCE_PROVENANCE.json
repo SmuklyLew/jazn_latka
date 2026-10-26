@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "41d0f4c51eb071687e6b2bb062c49d8a66e5175f",
+  "base_merge_commit": "5cb9529cb32138259049122bea92f0f70d3d709d",
   "base_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
-  "commit_date": "2026-10-26T03:41:01Z",
+  "commit_date": "2026-10-26T04:43:23+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-26T03:41:01+00:00",
+  "generated_at_utc": "2026-10-26T03:43:23+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "5426fd163cbff1ef5f30106c3cf57220fa75b0a7",
+  "git_tree_sha": "4e18d54a2311aae9add25b2be923b1040c6172f4",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "41d0f4c51eb071687e6b2bb062c49d8a66e5175f",
+    "source_commit": "5cb9529cb32138259049122bea92f0f70d3d709d",
     "source_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "41d0f4c51eb071687e6b2bb062c49d8a66e5175f",
+  "source_commit": "5cb9529cb32138259049122bea92f0f70d3d709d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "tag": null,
