@@ -724,15 +724,22 @@ class Controller:
                         job.state, job.error = "failed", "runtime_operation_rejected"
                 except ValueError:
                     job.state, job.error = "failed", "invalid_operation_json"
-            if job.state == "succeeded" and job.key == "status":
+            if job.key == "status":
+                # A canonical negative status is still an observation. Publish
+                # it even on exit 1; malformed output must invalidate old green
+                # evidence instead of leaving a stale readiness claim visible.
+                from .status_summary import status_summary
                 try:
                     value = json.loads(raw)
                     if not isinstance(value, dict):
                         raise ValueError("status_shape")
-                    self.emit(job.key, "evidence", daemon_evidence(value))
                 except ValueError:
+                    value = {}
                     job.state = "failed"
-                    job.error = "invalid_status_json"
+                    if job.error is None or job.error.startswith("process_exit:"):
+                        job.error = "invalid_status_json"
+                self.emit(job.key, "evidence", daemon_evidence(value))
+                self.emit(job.key, "status_summary", status_summary(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
                     self.emit(job.key, "helper", json.loads(raw))

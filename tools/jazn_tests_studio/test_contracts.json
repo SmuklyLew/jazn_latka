@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.3",
-  "active_definition_count": 2761,
+  "system_version": "16.3.25.5.116.0.34.94.4",
+  "active_definition_count": 2768,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19762,6 +19762,117 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 11
+    },
+    "tests/test_heart_system_dashboard.py::test_summary_separates_integrity_memory_and_null_model": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_summary_separates_integrity_memory_and_null_model",
+      "purpose": "Summary separates integrity memory and null model",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_heart_system_dashboard.py::test_integrity_flag_requires_actual_manifest_result": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_integrity_flag_requires_actual_manifest_result",
+      "purpose": "Integrity flag requires actual manifest result",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_system_dashboard.py::test_available_configured_model_is_not_verified_generation": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_available_configured_model_is_not_verified_generation",
+      "purpose": "Available configured model is not verified generation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_heart_system_dashboard.py::test_malformed_shapes_remain_unknown": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_malformed_shapes_remain_unknown",
+      "purpose": "Malformed shapes remain unknown",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_heart_system_dashboard.py::test_real_negative_child_status_emits_observation_and_keeps_failure": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_real_negative_child_status_emits_observation_and_keeps_failure",
+      "purpose": "Real negative child status emits observation and keeps failure",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_heart_system_dashboard_qt.py::test_dashboard_updates_canonical_summary_and_invalidates_old_green": {
+      "path": "tests/test_heart_system_dashboard_qt.py",
+      "name": "test_dashboard_updates_canonical_summary_and_invalidates_old_green",
+      "purpose": "Dashboard updates canonical summary and invalidates old green",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_heart_system_dashboard_qt.py::test_dashboard_uses_plain_text_for_selected_system_values": {
+      "path": "tests/test_heart_system_dashboard_qt.py",
+      "name": "test_dashboard_uses_plain_text_for_selected_system_values",
+      "purpose": "Dashboard uses plain text for selected system values",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_heart_system_diagnostics.py::test_rapid_clicks_launch_one_read": {
       "path": "tests/test_heart_system_diagnostics.py",

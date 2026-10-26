@@ -234,6 +234,23 @@ class Window(QMainWindow):
     def _dashboard(self) -> None:
         layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
         self.button("Kreator konfiguracji…", self.open_setup, layout)
+        self.dashboard_summary: dict[str, QLabel] = {}
+        summary = QFormLayout()
+        for key, title in (("version", "Wersja SYSTEM"), ("integrity", "Integralność SYSTEM"),
+                           ("provenance", "Pochodzenie źródeł"), ("memory", "MEMORY"),
+                           ("model", "Adapter językowy")):
+            field = QLabel("Nie wykonano kontroli statusu.")
+            field.setTextFormat(Qt.TextFormat.PlainText)
+            field.setWordWrap(True)
+            field.setAccessibleName("Pulpit: " + title)
+            self.dashboard_summary[key] = field
+            summary.addRow(title, field)
+        layout.addLayout(summary)
+        self.dashboard_last_operation = QLabel("Ostatnia operacja: brak wykonanych zadań.")
+        self.dashboard_last_operation.setTextFormat(Qt.TextFormat.PlainText)
+        self.dashboard_last_operation.setWordWrap(True)
+        layout.addWidget(self.dashboard_last_operation)
+        self.button("Problemy i ostrzeżenia", lambda: self.workspace.show(0), layout)
         self.evidence = QLabel("Runtime: jeszcze nie sprawdzono. Gotowość rozmowy wymaga osobnego potwierdzenia.")
         self.evidence.setWordWrap(True)
         layout.addWidget(self.evidence)
@@ -760,6 +777,9 @@ class Window(QMainWindow):
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "memory_report":
                 self.memory_panel.receive(key, value)
+            elif kind == "status_summary":
+                for name, label in self.dashboard_summary.items():
+                    label.setText(self.core.redactor.text(str(value.get(name, "niezweryfikowane"))))
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
                 ready = all(value.get(flag) is True for flag in (
@@ -869,6 +889,7 @@ class Window(QMainWindow):
                               else "Zatrzymano" if value["state"] == "stopped" else "BŁĄD")
                     reason = self.core.redactor.text(str(value.get("error") or ""))
                     line = key + " • " + result + ((" • " + reason) if reason else "")
+                    self.dashboard_last_operation.setText("Ostatnia operacja: " + line)
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)

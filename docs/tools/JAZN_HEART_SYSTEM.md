@@ -1,6 +1,6 @@
 # Jaźń — Serce Systemu
 
-Jedna aplikacja operatorska rozwija istniejący Workbench Qt. `main.py` nadal zarządza komendami, runtime i finalizacją. CLI oraz rozmowa TTY korzystają ze zgodnego `run.py`. Wersja `.94.2` jest checkpointem rozwojowym; zakres niezakończonego odbioru opisuje raport etapu.
+Jedna aplikacja operatorska rozwija istniejący Workbench Qt. `main.py` nadal zarządza komendami, runtime i finalizacją. CLI oraz rozmowa TTY korzystają ze zgodnego `run.py`. Wersja `.94.4` jest checkpointem rozwojowym; zakres niezakończonego odbioru opisuje raport etapu.
 
 ## Uruchomienie na Windows
 
@@ -29,6 +29,8 @@ Splash pokazuje rzeczywisty etap budowy interfejsu. Kreator A/B/C sprawdza zadek
 Zakończenie wymaga zgody na zapis. Wynik kontroli jest powiązany z rootem, interpreterem i deklaracjami zależności. Po zmianie tego zakresu kontrola jest ponawiana. Menu **Konfiguracja → Kreator pierwszego uruchomienia** pozwala uruchomić go ponownie. Wybór modelu w Studio nie zmienia automatycznie adaptera działającego daemona; pełny profil ustawia Konfiguracja Qt.
 
 ## Przestrzeń pracy
+
+Pulpit pokazuje wersję wybranego SYSTEM, niezależne wyniki integralności i pochodzenia, techniczny stan MEMORY oraz wybrany adapter/model. Pola aktualizuje publiczna komenda statusu. Brak kontroli pozostaje jawny. `null_model_adapter` nie oznacza działającego backendu, a dostępna konfiguracja Ollama nie oznacza sprawdzonej generacji. Status MEMORY nie potwierdza recall ani ciągłości autobiograficznej. Niepoprawna odpowiedź unieważnia wcześniejsze pozytywne wskazania. Poprawny negatywny status aktualizuje widok również po niezerowym kodzie komendy. Przycisk problemów otwiera istniejący panel, a ostatnia operacja wskazuje rzeczywiste zakończone zadanie.
 
 - Domyślny motyw **Jaźń Violet Night**, zgodne wcześniejsze motywy i wybór własnego akcentu.
 - Wyszukiwanie sekcji w górnym pasku. Enter otwiera pierwsze dopasowanie.
