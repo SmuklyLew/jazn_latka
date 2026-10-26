@@ -66,9 +66,9 @@ python -X utf8 run_studio.py --isolated-acceptance
 ```
 
 Zamiast odziedziczyć produkcyjny runtime/MEMORY, Studio używa
-unikalnego katalogu runtime na każdą sesję w
+wznawialnego katalogu runtime na każdy profil ROOT i wersji w
 `~/.jazn/acceptance/<root-hash>/runtime/<session-id>/`.
-Trwałe wyniki TPA są w osobnym katalogu operatora
+Trwałe ustawienia Studio i wyniki TPA są w osobnym katalogu operatora
 `~/.jazn/acceptance/<root-hash>/operator/`.
 `JAZN_MEMORY_MODE=off` i przekierowanie MEMORY do testowej lokalizacji
 chronią przed przypadkowym użyciem aktywnej bazy. Kontekst zmiennych
