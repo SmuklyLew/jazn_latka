@@ -53,6 +53,35 @@ połączenia z Ollamą, MCP i Cloudflare wymagają osobnych testów ownership,
 portów, tożsamości i jawnej decyzji operatora. Sam GUI smoke albo
 TPA podtest nie stanowi accepted turn ani produkcyjnej gotowości.
 
+## Wznawianie profilu izolowanego odbioru (.94.6.1)
+
+Pod `~/.jazn/acceptance/<hash-root>/operator/acceptance_profile.json`
+przechowywany jest **niezależny od procesu** identyfikator profilu:
+`system_root`, `runtime_version`, `session_id`, wersja schematu.
+Pierwszy start zapisuje go ekskluzywnie; kolejne uruchomienia tego samego
+rootu/wersji odzyskują tę samą sesję. Inny ROOT, inna wersja, uszkodzony
+profil i dowiązania są odrzucane; nie ma automatycznego przenoszenia
+produkcji ani legacy sesji. Żaden wpis profilu nie dowodzi gotowości
+daemona.
+
+Jeśli znacznik runtime `JAZN_ACTIVE_RUNTIME.json` istnieje, przed
+ponownym otwarciem GUI przeprowadzana jest **wyłącznie odczytowa**
+walidacja `status_daemon` na zapisanym lokalnym URL: `active_trusted`,
+zgodność ROOT/instancji/PID, świeży heartbeat i integralność/provenance.
+Brak dowodu kończy się odmową wznawiania, bez Start/Stop i bez kasowania
+markera. Operator może wykonać odrębną diagnostykę kanonicznego CLI.
+
+Konfiguracja Studia (`settings.json`) znajduje się stale pod
+`operator/jazn_run_studio/`, a nie w `runtime/<session-id>/`.
+W trybie izolowanym `Zapisz i zastosuj` zapisuje właśnie tę
+konfigurację, **nie nadpisuje** `$ROOTDIR/jazn_system_config.json`.
+Produkcja bez `--isolated-acceptance` zachowuje poprzedni kontrakt.
+
+Zrzuty błędów walidacji Studia podają bezpieczne, ograniczone długością
+komunikaty, lecz nie ujawniają tekstu błędów systemowych, stdout ani
+tokenów. `StudioError` i prawdziwy `process_exit:1` pozostają
+rozróżnialne.
+
 ## TPA i wyniki testów
 
 `SafeTPARunner` uruchamia trzy dozwolone podtesty pytest w jednorazowym
@@ -69,7 +98,7 @@ SQLite/WAL/SHM, markerów, PID, ustawień produkcji i sekretów.
 ## Walidacja
 
 ```text
-python -X utf8 -m pytest -q tests/test_jazn_workspace_layout_isolation.py tests/test_jazn_tpa_safe_executor.py
+python -X utf8 -m pytest -q tests/test_jazn_acceptance_resume_profile.py tests/test_jazn_workspace_layout_isolation.py tests/test_jazn_tpa_safe_executor.py
 python -X utf8 -m pytest -q -m "not live_model and not live_mcp"
 python -X utf8 -m compileall -q -x 'tests[\\/]archive[\\/]' latka_jazn tests main.py run.py
 python -X utf8 run.py doctor --json
