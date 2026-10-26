@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.5",
-  "active_definition_count": 2770,
+  "system_version": "16.3.25.5.116.0.34.94.6",
+  "active_definition_count": 2779,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -27656,6 +27656,192 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 12
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_linked_worktree_default_is_root_local_without_moving_data": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_linked_worktree_default_is_root_local_without_moving_data",
+      "purpose": "Linked worktree default is root local without moving data",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_main_checkout_and_legacy_nonworktree_defaults_unchanged": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_main_checkout_and_legacy_nonworktree_defaults_unchanged",
+      "purpose": "Main checkout and legacy nonworktree defaults unchanged",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_explicit_override_still_precedes_worktree_default": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_explicit_override_still_precedes_worktree_default",
+      "purpose": "Explicit override still precedes worktree default",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_layout_separates_system_memory_runtime_and_operator": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_layout_separates_system_memory_runtime_and_operator",
+      "purpose": "Acceptance layout separates system memory runtime and operator",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_protected_locations": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_protected_locations",
+      "purpose": "Acceptance rejects protected locations",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_external_active_memory": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_external_active_memory",
+      "purpose": "Acceptance rejects external active memory",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_symlink_into_system": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_symlink_into_system",
+      "purpose": "Acceptance rejects symlink into system",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_environment_is_explicit_and_restores_state": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_environment_is_explicit_and_restores_state",
+      "purpose": "Acceptance environment is explicit and restores state",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_tpa_process_environment_is_isolated": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_tpa_process_environment_is_isolated",
+      "purpose": "Tpa process environment is isolated",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
