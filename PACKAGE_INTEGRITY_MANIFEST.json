@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-  "runtime_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-  "package_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-  "generated_at_utc": "2026-10-26T03:19:58+00:00",
-  "updated_at_utc": "2026-10-26T03:19:58+00:00",
+  "version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+  "runtime_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+  "package_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+  "generated_at_utc": "2026-10-26T03:41:01+00:00",
+  "updated_at_utc": "2026-10-26T03:41:01+00:00",
   "start_file": "run.py",
-  "file_count": 3429,
-  "static_file_count": 3429,
+  "file_count": 3431,
+  "static_file_count": 3431,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -192,8 +192,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 7015,
-      "sha256": "2c01a746c16f0a909fd1fb63415a6d4ebaf49193e7454e2376c66c277534a24a",
+      "size_bytes": 7057,
+      "sha256": "b0d7c5e74966de46bfdf8138b61e3ff577779dce9ea8d2742e04b63fcbd44583",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -399,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "1bb7f46bd0eaf229842e248901a477b91a78405d80ceceb81e94ba7d1b49c578",
+      "size_bytes": 3018,
+      "sha256": "84f64f7ac7cd0033fb9480e2314f06d391d197e3b591a3bbb3dc538397968d6e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "7f4e34785ce766e3fdd56a903a994168258a228060942f591b0091231d1fba33",
+      "size_bytes": 1955,
+      "sha256": "a65cdf210fe8413ca59e896ab4defdbc22542a3e889c10dbac6759e07a914a9f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2444,6 +2444,15 @@
       "path": "docs/reports/JAZN_HEART_SYSTEM_94_4_TO_94_5_HANDOFF_20261026.md",
       "size_bytes": 5594,
       "sha256": "d86f3ac56ad99a36e6d44f940cbe9871d31e25e12e8ac7347863ec092075ac8b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_HEART_SYSTEM_94_5_HELPER_INPUT_FIX.md",
+      "size_bytes": 1192,
+      "sha256": "3db02e64717a3a063256a0e624ed6366398f9ee836bb225aee604db7e5c09e9f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9589,7 +9598,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7906,
-      "sha256": "3bedcc0bce4388edf179dbd75ff7593756dfdf8c0bb4fde8c93e3950a5810175",
+      "sha256": "c084636f5ab5be99f3f1f6c5894d466b3440390f3855449cd0a0da6c0e40a0dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11091,8 +11100,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 17989,
-      "sha256": "8ef72316066aa2cce30d775012763a865d4999ebff6894cce6b0f8d5c2de1467",
+      "size_bytes": 18072,
+      "sha256": "2ac8f2956c1a90cca2be26486a6ab80a78584665228e043618081e64102faead",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26606,6 +26615,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_heart_system_helper_payload.py",
+      "size_bytes": 1619,
+      "sha256": "e8a4f3d46475227441ca6ebda8ea5b476d6ddb0027dedf1df01d1303f5b7bda4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_heart_system_public_restart.py",
       "size_bytes": 1505,
       "sha256": "1e5dddad7e10a9b8f8ac0d9585cde1b72c45a39d7a38a6154a3a048533b56008",
@@ -30315,8 +30333,8 @@
     },
     {
       "path": "tools/jazn_run_studio/check_types.py",
-      "size_bytes": 1291,
-      "sha256": "8e010908be3c44d8c9cacba82ebaf1b0b913d605249951b47fab418b1d22b514",
+      "size_bytes": 1336,
+      "sha256": "f4a8efab552b3b5576babead016a642706d3d1d72c80f73ea82c385dccb746f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30333,8 +30351,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 42398,
-      "sha256": "3292154d6d14a9aba6feb2c8209e5a2e5a21a016b64b14c42174cebe5c8112ca",
+      "size_bytes": 42805,
+      "sha256": "36abf4f5ded5b5be273d9c586759be761f5695a6b89535980515f1be4bcbdbcd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30657,8 +30675,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2508076,
-      "sha256": "f2c257c5fa1c42f3aca041e1558fd8a2625b8e4d21dd08c3672f020cad57df83",
+      "size_bytes": 2509553,
+      "sha256": "48978ed09161d6cd2cf5e7c352af0d95173be791172452dd9e99febd869904b5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31315,11 +31333,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
+  "release_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-    "package_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence",
-    "release_version": "16.3.25.5.116.0.34.94.4-heart-system-dashboard-evidence"
+    "runtime_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+    "package_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation",
+    "release_version": "16.3.25.5.116.0.34.94.5-heart-system-helper-payload-validation"
   },
   "legacy_aliases": {
     "version": "release_version"
