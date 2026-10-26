@@ -187,7 +187,13 @@ def daemon_cli_options(settings: Settings) -> list[str]:
 
 
 def settings_path(root: Path) -> Path:
-    # A local operator profile, not runtime or private MEMORY configuration.
+    # Acceptance settings survive GUI reopens independently of session markers.
+    # Ordinary production Studio preserves its existing configuration contract.
+    if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated":
+        operator = os.environ.get("JAZN_OPERATOR_STATE_ROOT", "").strip()
+        if not operator:
+            raise StudioError("Brak odizolowanego katalogu operatora")
+        return _path_without_links(Path(operator).resolve() / "jazn_run_studio" / "settings.json")
     return _path_without_links(workspace_runtime_path(root) / "jazn_run_studio" / "settings.json")
 
 
@@ -202,7 +208,9 @@ def load_settings(root: Path) -> tuple[Settings, str | None]:
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise StudioError("Nieprawidłowy format ustawień Studio")
-    return Settings.validate({**data, **canonical.studio}), sha256(raw).hexdigest()
+    merged = ({**canonical.studio, **data} if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
+              else {**data, **canonical.studio})
+    return Settings.validate(merged), sha256(raw).hexdigest()
 
 
 def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
@@ -217,7 +225,8 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
         ("python", settings.python), ("model", settings.model),
         ("daemon_url", settings.daemon_url),
     ) if val}
-    write_system_config(root, canonical.values, shared, expected_digest=canonical.digest)
+    if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") != "isolated":
+        write_system_config(root, canonical.values, shared, expected_digest=canonical.digest)
     data = (json.dumps(asdict(settings), ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     fd, name = tempfile.mkstemp(dir=target.parent, prefix=".settings-")
     try:
@@ -694,8 +703,17 @@ class Controller:
                          else "succeeded" if proc.returncode == 0 else "failed")
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
             job.state = "failed"
-            job.error = type(exc).__name__
-            self.emit(job.key, "log", "Nie udało się wykonać operacji: " + type(exc).__name__)
+            # StudioError messages are bounded; untrusted OS errors stay generic.
+            if isinstance(exc, StudioError):
+                explanation = str(exc).strip()
+                if not explanation or len(explanation) > 220 or any(
+                    marker in explanation for marker in ("\\", "/", "=", "\n", "\r", "\x00")
+                ):
+                    explanation = "Nieprawidłowe ustawienia uruchomienia; sprawdź profil i ustawienia"
+                job.error = "StudioError: " + explanation
+            else:
+                job.error = type(exc).__name__
+            self.emit(job.key, "log", "Nie udało się wykonać operacji: " + job.error)
         finally:
             job.finished = time.time()
             # Raw diagnostic stdout is never retained after completion.
