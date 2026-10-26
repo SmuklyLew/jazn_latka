@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.2",
-  "active_definition_count": 2758,
+  "system_version": "16.3.25.5.116.0.34.94.3",
+  "active_definition_count": 2761,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14402,15 +14402,16 @@
       "path": "tests/test_configuration_studio_gui_windows.py",
       "name": "test_real_gui_navigation_and_profile_fields",
       "purpose": "Real gui navigation and profile fields",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
         "skipif"
       ],
-      "assertion_count": 6,
+      "assertion_count": 0,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio",
@@ -14418,21 +14419,22 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 14
+      "line": 83
     },
     "tests/test_configuration_studio_gui_windows.py::test_gui_refuses_to_discard_unsaved_edits": {
       "path": "tests/test_configuration_studio_gui_windows.py",
       "name": "test_gui_refuses_to_discard_unsaved_edits",
       "purpose": "Gui refuses to discard unsaved edits",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
         "skipif"
       ],
-      "assertion_count": 3,
+      "assertion_count": 0,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio",
@@ -14440,7 +14442,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 88
     },
     "tests/test_configuration_studio_hardening.py::test_reject_memory_sqlite_cache_collision": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -19742,6 +19744,25 @@
       "description_source": "source_identity",
       "line": 143
     },
+    "tests/test_heart_system_coverage_encoding.py::test_audit_cli_json_has_lossless_unicode_with_legacy_stdio": {
+      "path": "tests/test_heart_system_coverage_encoding.py",
+      "name": "test_audit_cli_json_has_lossless_unicode_with_legacy_stdio",
+      "purpose": "Audit cli json has lossless unicode with legacy stdio",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
     "tests/test_heart_system_diagnostics.py::test_rapid_clicks_launch_one_read": {
       "path": "tests/test_heart_system_diagnostics.py",
       "name": "test_rapid_clicks_launch_one_read",
@@ -19901,6 +19922,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 111
+    },
+    "tests/test_heart_system_public_restart.py::test_selected_endpoint_reaches_central_restart_parser": {
+      "path": "tests/test_heart_system_public_restart.py",
+      "name": "test_selected_endpoint_reaches_central_restart_parser",
+      "purpose": "Selected endpoint reaches central restart parser",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_heart_system_public_restart.py::test_real_child_exit_code_has_public_failure_reason": {
+      "path": "tests/test_heart_system_public_restart.py",
+      "name": "test_real_child_exit_code_has_public_failure_reason",
+      "purpose": "Real child exit code has public failure reason",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
     },
     "tests/test_heart_system_workspace_qt.py::test_search_navigation_and_settings_do_not_save": {
       "path": "tests/test_heart_system_workspace_qt.py",
@@ -25312,11 +25367,11 @@
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
       "name": "test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics",
       "purpose": "Selected daemon endpoint is used for lifecycle and diagnostics",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn"
@@ -25340,7 +25395,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 38
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_chat_checkpoint_keeps_session_request_and_daemon_target": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25359,7 +25414,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 51
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_daemon_route_rejects_noncanonical_target": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25380,7 +25435,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_default_studio_route_remains_backward_compatible": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25397,7 +25452,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 80
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_no_automatic_replay_after_pending_request": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25416,7 +25471,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 86
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_restart_reuses_selected_endpoint_and_does_not_fall_back_to_8787": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25433,7 +25488,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 95
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_accepted_final_remains_pending_until_gui_ack_and_is_not_emitted_twice": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",

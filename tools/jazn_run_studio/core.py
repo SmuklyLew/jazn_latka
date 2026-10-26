@@ -387,8 +387,10 @@ class Controller:
             # non-default endpoints through the public Jaźń control plane.
             if self.settings.daemon_url != "http://127.0.0.1:8787":
                 target = daemon_cli_options(self.settings)
-                if key in {"start", "stop", "restart"}:
-                    args.append("--")  # argparse.REMAINDER on lifecycle verbs.
+                if key in {"start", "stop"}:
+                    args.append("--")  # These compatibility verbs use REMAINDER.
+                # restart is parsed directly by main.py; its options must not
+                # be hidden behind the compatibility separator.
                 args.extend(target)
         return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
 
@@ -679,6 +681,8 @@ class Controller:
             job.returncode = proc.returncode
             if reader.is_alive():
                 job.error = "output_pipe_not_closed"
+            if proc.returncode not in (None, 0) and not job.cancel.is_set() and job.error is None:
+                job.error = "process_exit:" + str(proc.returncode)
             job.state = ("failed" if job.error else "stopped" if job.cancel.is_set()
                          else "succeeded" if proc.returncode == 0 else "failed")
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
