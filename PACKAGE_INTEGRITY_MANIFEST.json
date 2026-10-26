@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-  "generated_at_utc": "2026-10-26T01:15:31+00:00",
-  "updated_at_utc": "2026-10-26T01:15:31+00:00",
+  "version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
+  "runtime_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
+  "package_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
+  "generated_at_utc": "2026-10-26T01:38:26+00:00",
+  "updated_at_utc": "2026-10-26T01:38:26+00:00",
   "start_file": "run.py",
-  "file_count": 3411,
-  "static_file_count": 3411,
+  "file_count": 3419,
+  "static_file_count": 3419,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -192,8 +192,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 6502,
-      "sha256": "bf42a815388727fd84708223bf4492ed28559333e016178e1a581d8fbf2380b2",
+      "size_bytes": 6851,
+      "sha256": "109454ea15d9aecfa1f6dc2f84e526f80f9bec7625e3995a66a0797fee94fa66",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -390,8 +390,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 10556,
-      "sha256": "bef7a9a7314a90e6baf7e9564a1e2d0e99dd982363d0d67e94be6dc23740d69e",
+      "size_bytes": 10812,
+      "sha256": "868ec7e5e9f6d7f438844cac9996f1482bd288aabf90cd27b74bb8290841acf5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -399,8 +399,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2993,
-      "sha256": "2c652a6d7245bee44c9c525260dcbab4e3ce53e0f56c3dc45035275fdcd945fc",
+      "size_bytes": 2981,
+      "sha256": "f399697a45dbdce568226fa3c0528b33aa71269813d500c390b40f00db0ac005",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -435,8 +435,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1950,
-      "sha256": "4489f21e1fa19b266f3a9bd2a01d7f7f2d851047f0fcedac9c813b8b7a80dbfa",
+      "size_bytes": 1948,
+      "sha256": "e9b5ee52a7f13342b5c2cd18bfd94a27563d49f0515585581211b31162edf77b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2450,6 +2450,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_HEART_SYSTEM_CHECKPOINT_2.md",
+      "size_bytes": 5423,
+      "sha256": "3cd0a96d388a8834a0718b400f05db4325ac186717d00391bf93e0142c0a139d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_MASTER_PROMOTION_V116_0_34_87_GATES.md",
       "size_bytes": 2792,
       "sha256": "6dbd6fdebccd64ca411641bc31f2539f51b7558807ae020400d6dad796ead769",
@@ -4019,6 +4028,15 @@
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
       "size_bytes": 13673,
       "sha256": "b1bf7385457ca8757863151ea1141d2c1387694b16a04199317402fcbefe1464",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/tools/JAZN_HEART_SYSTEM.md",
+      "size_bytes": 5706,
+      "sha256": "361c019df6e435b6af20abbc2d48fd878ad866ac9d526e33b1107785d3c610c3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9489,8 +9507,8 @@
     },
     {
       "path": "latka_jazn/resources/package_manifest_profiles.json",
-      "size_bytes": 2698,
-      "sha256": "1f998e510697a7b14d82740c911824f5cab596f273f6a406ca1ce738a6e1e2cd",
+      "size_bytes": 2753,
+      "sha256": "ea77ce3318b0a9c8dab5107d751a9802b696c01b3b0e5d187cb8b05bb73cbc49",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9543,8 +9561,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7904,
-      "sha256": "ba0642127c7a0935b5acb07d4cea8a35510c1704297812d3e57b9aa3fcdcdfdb",
+      "size_bytes": 7906,
+      "sha256": "9648e4432d3a91f7fe3330252041af4b2a3388907373f55850acdc61e189db07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9570,8 +9588,8 @@
     },
     {
       "path": "latka_jazn/resources/zip_package_profiles.json",
-      "size_bytes": 3488,
-      "sha256": "7caadadf757c36d23441aa4c30f4e934ae9e268c9a040a0bf0eb362f183b772d",
+      "size_bytes": 3638,
+      "sha256": "21c1b1a33e87f58f20e4d251c857a4d9be4fd29151460dabe57ee8e6aec1fa2e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11046,8 +11064,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 17729,
-      "sha256": "3f343e09ccb61c6ab7362c9f0e01fda7a490f2bfaea847ab33b540d1d11bd624",
+      "size_bytes": 17811,
+      "sha256": "4983a94822b7d99c598e71e772a04d6c937f1e63e155df4f63b556b52054adc8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11172,8 +11190,8 @@
     },
     {
       "path": "pyrightconfig.json",
-      "size_bytes": 296,
-      "sha256": "22659d600df11ff9699849ad3636eebc3b8f914350744d54d74b2b984533d4dd",
+      "size_bytes": 343,
+      "sha256": "d3b905873ffb0f00686b857c30fd31504e1ed3c27905e0678f2a23aef4bc1535",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23159,6 +23177,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.1-heart-system/test_heart_system_diagnostics.py",
+      "size_bytes": 4015,
+      "sha256": "0d401fcecd641024631afe94483ac53f8c2270b344395420d95fd2ee8c3ed701",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -26499,8 +26526,17 @@
     },
     {
       "path": "tests/test_heart_system_diagnostics.py",
-      "size_bytes": 4015,
-      "sha256": "0d401fcecd641024631afe94483ac53f8c2270b344395420d95fd2ee8c3ed701",
+      "size_bytes": 5136,
+      "sha256": "fea22f49b7686200216a980f08e03e534b30d0e6d10e843e0c8bdcad0dc10ac3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "size_bytes": 5650,
+      "sha256": "f50448421fbdf3b6912a1b78cf3016ce6cd46a7361b2fee9b7b6ee9ea1befa1a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30162,8 +30198,8 @@
     },
     {
       "path": "tools/jazn_run_studio/app.py",
-      "size_bytes": 2669,
-      "sha256": "f3296cb5c3fbd46f4a3612aff3d8ff94f5b2b9e9e4cd5d9d18b3ca3d926964ed",
+      "size_bytes": 2810,
+      "sha256": "f845e1f8ce4002b8c6f2914e06eb2ec966f2346c6d6e3394549f03a818521f7e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30198,8 +30234,8 @@
     },
     {
       "path": "tools/jazn_run_studio/check_types.py",
-      "size_bytes": 1052,
-      "sha256": "2f5b6d89adfe42b99a38dda55c45e3b2c30ec3276c7822b60c7ee25afb3486d8",
+      "size_bytes": 1163,
+      "sha256": "fe7f3e32327ffea29076c3ba2dc104cac55a644801107a1ac046b3d9d181c75f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30216,8 +30252,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 39384,
-      "sha256": "862f4db2a25338bb3fdc624d7392c5f83f2b1b3eced614dbe2cd6000966cac70",
+      "size_bytes": 41641,
+      "sha256": "e92d082550b03b6368277d64fa8e5ef64abd45ba01ee1012818eedbca061a628",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30227,6 +30263,15 @@
       "path": "tools/jazn_run_studio/external.py",
       "size_bytes": 2619,
       "sha256": "2c09040c129c70b31dd2824ed4d02a315357a7880b944350823f394c7b9a0253",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/first_run.py",
+      "size_bytes": 8153,
+      "sha256": "43a2c08ef3232ccd1a351ba5263def7c3b00e16352565ecc66a106839d70039c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30269,6 +30314,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/operator_workspace.py",
+      "size_bytes": 11326,
+      "sha256": "0935c7b29618c7c2b3d8fd109c31aa92ee5712df55660dd029f5557cd596aef6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_run_studio/p5_artifact_evidence.py",
       "size_bytes": 6406,
       "sha256": "2f6c531dbe1a0b6f612865f99cef287a0baf0051d439a5b5e5aab6105d85c4ea",
@@ -30290,6 +30344,15 @@
       "path": "tools/jazn_run_studio/requirements.txt",
       "size_bytes": 220,
       "sha256": "88af67014fb994614c4498d336412e06a47e1e99aa57be3e1cd02ea4539756d0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/requirements_worker.py",
+      "size_bytes": 4025,
+      "sha256": "3223cdcbec466c3d8cc23bb5fc1bb1c3fa8217ee7c9571d709be9efeb132f1bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30342,8 +30405,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 44645,
-      "sha256": "9fe55d83039014ef68619ecb0a485e655b861682e5aa00c7ec92ab30d7241de4",
+      "size_bytes": 63402,
+      "sha256": "a3e7b3258d447700ef894bc2fa795e279d0adc12f586ff5803b635e7ca38343c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30351,8 +30414,17 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
-      "size_bytes": 5601,
-      "sha256": "ddf6f4e82b694a02ff7ec5bb480a54f38f7b082ac5d7bb37cf07b88781e3d98e",
+      "size_bytes": 5647,
+      "sha256": "701e45b4939464ad9819ec74ce6c3dbbe6e47c516b1a98e9e0aca7849d9d8f14",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/workspace_layout.py",
+      "size_bytes": 2397,
+      "sha256": "73d238a91ccc8206f658c9ef11d59201efae7227a20ecfeb1191b5bea226e3fa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30360,8 +30432,8 @@
     },
     {
       "path": "tools/jazn_start_studio.py",
-      "size_bytes": 28102,
-      "sha256": "326e462359499717e20d16dccbbc99d73d9262af456ab73d4a49da28850ae0e1",
+      "size_bytes": 28298,
+      "sha256": "122d16f497dd258adf7b2137b3e51f9099ef2b82f60d0862ed6c8f215f040c87",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30495,8 +30567,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2488944,
-      "sha256": "44a53981e3b606c4b552fb2a2b610131e16538e79965a3e6ca94c5bc061da322",
+      "size_bytes": 2500993,
+      "sha256": "f07e21829632d6c03142dad2c7d7d4b0f0f5a7e2f0f404e450049358d4960f33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31153,11 +31225,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.1-heart-system-launcher-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
+    "package_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace",
+    "release_version": "16.3.25.5.116.0.34.94.2-heart-system-operator-workspace"
   },
   "legacy_aliases": {
     "version": "release_version"
