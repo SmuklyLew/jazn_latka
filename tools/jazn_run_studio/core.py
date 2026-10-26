@@ -299,6 +299,7 @@ class Job:
     cancel: threading.Event = field(default_factory=threading.Event, repr=False)
     output: bytearray = field(default_factory=bytearray, repr=False)
     input_data: bytes | None = field(default=None, repr=False)
+    request_fingerprint: str = field(default="", repr=False)
 
     def snapshot(self) -> dict[str, Any]:
         return {k: getattr(self, k) for k in ("key", "state", "pid", "returncode", "error", "started", "finished")}
@@ -347,6 +348,7 @@ class Controller:
         self.closed = False
         self.chat: Any = None
         self.memory_observations: dict[str, Any] = {}
+        self.setup_observation: dict[str, Any] = {}
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -406,6 +408,7 @@ class Controller:
 
     def start_action(self, key: str) -> Job:
         argv = self.command(key)
+        fingerprint = sha256(json.dumps([argv, asdict(self.settings)], sort_keys=True).encode()).hexdigest()
         # Reuse an in-flight read under the same lock as reservation. Rapid
         # clicks and batches observe one real result, never launch a duplicate.
         # Mutations retain the strict lifecycle exclusion in _reserve.
@@ -413,9 +416,32 @@ class Controller:
             current = self.jobs.get(key)
             if (not self.closed and not ACTION_BY_KEY[key].mutates
                     and current is not None and not current.done.is_set()):
+                if current.request_fingerprint != fingerprint:
+                    raise StudioError("Trwa diagnostyka z poprzednią konfiguracją; poczekaj na jej wynik.")
                 return current
             job = self._reserve(key)
+            job.request_fingerprint = fingerprint
             self._launch(job, argv, ACTION_BY_KEY[key].timeout)
+            return job
+
+    def check_setup(self) -> Job:
+        with self.lock:
+            current = self.jobs.get("setup:requirements")
+            if not self.closed and current is not None and not current.done.is_set():
+                return current
+            job = self._reserve("setup:requirements")
+            self.setup_observation = {}
+            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
+                               "tools.jazn_run_studio.requirements_worker"], 600)
+            return job
+
+    def git_status(self) -> Job:
+        with self.lock:
+            current = self.jobs.get("developer:git")
+            if not self.closed and current is not None and not current.done.is_set():
+                return current
+            job = self._reserve("developer:git")
+            self._launch(job, [executable("", "git"), "status", "--short", "--branch"], 15)
             return job
 
     def start_studio(self, key: str) -> Job:
@@ -466,17 +492,22 @@ class Controller:
 
     def probe(self, key: str) -> Job:
         from . import probes
-        calls = {"ollama": lambda: probes.ollama(self.settings.model),
-                 "gateway": lambda: probes.gateway(self.settings.mcp_port),
-                 "cloudflare": lambda: probes.cloudflare(self.settings.cloudflare_url),
+        settings = self.settings
+        fingerprint = sha256(json.dumps(asdict(settings), sort_keys=True).encode()).hexdigest()
+        calls = {"ollama": lambda: probes.ollama(settings.model),
+                 "gateway": lambda: probes.gateway(settings.mcp_port),
+                 "cloudflare": lambda: probes.cloudflare(settings.cloudflare_url),
                  "tunnel_service": lambda: probes.tunnel_service(self.root)}
         if key not in calls:
             raise StudioError("Nieznany test połączenia")
         with self.lock:
             current = self.jobs.get("probe:" + key)
             if not self.closed and current is not None and not current.done.is_set():
+                if current.request_fingerprint != fingerprint:
+                    raise StudioError("Trwa test połączenia z poprzednią konfiguracją; poczekaj na wynik.")
                 return current
             job = self._reserve("probe:" + key)
+            job.request_fingerprint = fingerprint
         def worker() -> None:
             try:
                 job.state = "running"
@@ -659,6 +690,16 @@ class Controller:
             # Raw diagnostic stdout is never retained after completion.
             raw = bytes(job.output)
             job.output.clear()
+            if job.key == "setup:requirements" and raw:
+                try:
+                    observation = json.loads(raw)
+                    if not isinstance(observation, dict) or observation.get("schema") != "jazn_studio_setup/v1":
+                        raise ValueError("setup_shape")
+                    with self.lock:
+                        self.setup_observation = observation
+                    self.emit(job.key, "setup", observation)
+                except ValueError:
+                    job.state, job.error = "failed", "invalid_setup_json"
             if job.key.startswith("memory:p1:") and job.state in {"succeeded", "failed"} and raw:
                 try:
                     observation = json.loads(raw)

@@ -12,6 +12,8 @@
         "jazn",
         "jazn_runtime_bootstrap.py",
         "run.py",
+        "run_studio.py",
+        "jazn_run_studio.py",
         "latka_jazn/**",
         "tests/**",
         "tools/**",

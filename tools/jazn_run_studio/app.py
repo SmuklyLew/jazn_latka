@@ -18,6 +18,8 @@ def main(argv: list[str] | None = None) -> int:
         if callable(reconfigure):
             reconfigure(encoding="utf-8", errors="strict")
     parser = argparse.ArgumentParser(description="Jaźń — Serce Systemu", allow_abbrev=False)
+    from latka_jazn.version import PACKAGE_VERSION_FULL
+    parser.add_argument("--version", action="version", version=PACKAGE_VERSION_FULL)
     default_root = Path.cwd() if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[2]
     parser.add_argument("--root", type=Path, default=Path(os.environ.get("JAZN_ROOT", default_root)))
     mode = parser.add_mutually_exclusive_group()

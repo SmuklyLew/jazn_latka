@@ -61,6 +61,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
     c = workbench_colors(theme, accent, system_dark=system_dark)
     return f"""
         QWidget {{ background: {c.background}; color: {c.text}; font-size: 13px; }}
+        QLabel {{ background: transparent; }}
         QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 2px solid {c.border}; }}
         QWidget#workbenchTopbar {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {c.editor}, stop:1 {c.sidebar}); border-bottom: 1px solid {c.border}; }}
         QLabel#workbenchBrand {{ color: {c.accent}; font-size: 17px; font-weight: 700; }}

@@ -8,11 +8,11 @@ import queue
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QKeySequence
+from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QColorDialog, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
-    QLineEdit, QListWidget, QMainWindow, QMessageBox, QPlainTextEdit,
-    QPushButton, QScrollArea, QSplitter, QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem,
+    QApplication, QCheckBox, QColorDialog, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QListWidget, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
+    QPushButton, QScrollArea, QSplashScreen, QSplitter, QStackedWidget, QTabWidget, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
 )
 
@@ -68,6 +68,7 @@ class Window(QMainWindow):
         sidebar_layout.setSpacing(8)
         brand = QLabel("JAŹŃ  /  SERCE SYSTEMU")
         brand.setObjectName("workbenchBrand")
+        brand.setWordWrap(True)
         sidebar_layout.addWidget(brand)
         description = QLabel("PANEL OPERACYJNY")
         description.setObjectName("workbenchCaption")
@@ -92,6 +93,14 @@ class Window(QMainWindow):
         self.current_section = QLabel("Pulpit")
         self.current_section.setObjectName("workbenchSection")
         header_layout.addWidget(self.current_section)
+        self.section_search = QLineEdit()
+        self.section_search.setPlaceholderText("Szukaj sekcji…")
+        self.section_search.setAccessibleName("Wyszukiwanie sekcji Studio")
+        self.section_search.setMaximumWidth(230)
+        self.section_search.setMinimumWidth(90)
+        self.section_search.textChanged.connect(self.filter_navigation)
+        self.section_search.returnPressed.connect(self.select_search_result)
+        header_layout.addWidget(self.section_search, 1)
         header_layout.addStretch(1)
         self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
         self.workbench_status.setObjectName("workbenchStatus")
@@ -151,6 +160,20 @@ class Window(QMainWindow):
         # workspaces. New native pages are appended, never inserted mid-list.
         self._configuration()
         self._version_studio()
+        self._models()
+        self._connections()
+        self._developer()
+        self.operator_status = QPushButton("Problemy: nie sprawdzono")
+        self.operator_status.setFlat(True)
+        self.statusBar().addPermanentWidget(self.operator_status, 1)
+        from .operator_workspace import OperatorWorkspace
+        self.workspace = OperatorWorkspace(self)
+        self.operator_status.clicked.connect(lambda: self.workspace.show(0))
+        self._workspace_menu()
+        self.settings_baseline = self.settings_draft()
+        self.setup_wizard = None
+        self.layout_state = {}
+        self.restore_layout()
         self.log_toggle = QPushButton("Pokaż logi")
         self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
         self.log_toggle.clicked.connect(self.toggle_logs)
@@ -163,6 +186,11 @@ class Window(QMainWindow):
         self.timer.start(100)
         # Discovery is read-only and local. Network probes require explicit actions.
         self.render_discovery()
+        if not smoke:
+            from .requirements_worker import setup_scope
+            from .core import python_executable
+            if self.layout_state.get("setup_scope") != setup_scope(self.core.root, python_executable(self.core.settings)):
+                QTimer.singleShot(0, self.open_setup)
         if isinstance(app := QApplication.instance(), QApplication):
             app.styleHints().colorSchemeChanged.connect(lambda _scheme: self.apply_theme())
 
@@ -205,6 +233,7 @@ class Window(QMainWindow):
 
     def _dashboard(self) -> None:
         layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
+        self.button("Kreator konfiguracji…", self.open_setup, layout)
         self.evidence = QLabel("Runtime: jeszcze nie sprawdzono. Gotowość rozmowy wymaga osobnego potwierdzenia.")
         self.evidence.setWordWrap(True)
         layout.addWidget(self.evidence)
@@ -245,31 +274,54 @@ class Window(QMainWindow):
         self.setup.resizeColumnsToContents()
 
     def _services(self) -> None:
-        layout = self.page("Usługi i procesy", "Stop i restart usług zewnętrznych dotyczą wyłącznie procesów uruchomionych przez to Studio. Proces działający nie oznacza gotowości funkcji.")
-        for service, title in (("runtime", "Runtime Jaźni"), ("ollama", "Ollama"),
-                               ("gateway", "Lokalna brama MCP"), ("cloudflare", "Cloudflare Tunnel")):
-            layout.addWidget(QLabel(title))
-            row = QHBoxLayout()
+        layout = self.page("Usługi i procesy", "Status, własność procesu i gotowość są niezależnymi dowodami. Start/Stop/Restart korzystają z kanonicznych kontrolerów.")
+        self.services_table = QTableWidget(4, 6)
+        self.services_table.setHorizontalHeaderLabels(["Usługa", "Status", "PID", "Port", "Readiness", "Akcje"])
+        self.services_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.services_table.horizontalHeader().setStretchLastSection(False)
+        self.services_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.services_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.services_table.setMinimumWidth(0)
+        self.services_table.setMinimumHeight(230)
+        self.service_rows = {}
+        for row, (service, title) in enumerate((("runtime", "Jaźń"), ("ollama", "Ollama"), ("gateway", "MCP"), ("cloudflare", "Tunel"))):
+            self.service_rows[service] = row
+            self.services_table.setItem(row, 0, QTableWidgetItem(title))
             status = QLabel("Nie sprawdzono")
             status.setWordWrap(True)
-            status.setAccessibleName("Stan usługi " + title)
+            status.setMinimumWidth(0)
             self.statuses[service] = status
-            layout.addWidget(status)
-            for operation, label in (("start", "Uruchom"), ("stop", "Zatrzymaj"), ("restart", "Restart")):
-                if operation == "restart":
-                    layout.addLayout(row)
-                    row = QHBoxLayout()
-                self.button(label, lambda s=service, op=operation: self.service(s, op), row)
-            if service != "runtime":
-                self.button("Sprawdź połączenie", lambda s=service: self.core.probe(s), row)
-            layout.addLayout(row)
-        self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
+            self.services_table.setCellWidget(row, 1, status)
+            for column in (2, 3, 4):
+                self.services_table.setItem(row, column, QTableWidgetItem("—"))
+            button = QPushButton("Akcje ▾")
+            menu = QMenu(button)
+            for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
+                action = menu.addAction(label)
+                action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
+            config = menu.addAction("Konfiguracja")
+            config.triggered.connect(lambda: self.navigate("Ustawienia"))
+            logs = menu.addAction("Logi")
+            logs.triggered.connect(lambda _checked=False, s=service: self.log_view("status" if s == "runtime" else "service:" + s))
+            details = menu.addAction("Szczegóły / odśwież")
+            details.triggered.connect(lambda _checked=False, s=service: self.guard(lambda: self.core.start_action("status") if s == "runtime" else self.core.probe(s)))
+            button.setMenu(menu)
+            self.services_table.setCellWidget(row, 5, button)
+        self.services_table.setColumnWidth(0, 65)
+        self.services_table.setColumnWidth(1, 190)
+        self.services_table.setColumnWidth(2, 45)
+        self.services_table.setColumnWidth(3, 55)
+        self.services_table.setColumnWidth(5, 85)
+        self.services_table.verticalHeader().setDefaultSectionSize(90)
+        layout.addWidget(self.services_table)
         self.button("Odśwież status usług", self.refresh_services, layout)
-        remote_note = QLabel("ChatGPT: host zdalny. Katalog MCP i HTTP to osobne testy; nie potwierdzają zaakceptowanej tury.\nOpenAI API: planowane rozszerzenie.")
+        self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
+        remote_note = QLabel("Cloudflare jest opcjonalny. Start tunelu wymaga jawnej zgody; Studio nie przejmuje obcych PID. Zamknięcie Studio nie zatrzymuje trwałego daemona.")
         remote_note.setWordWrap(True)
         layout.addWidget(remote_note)
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
+        self.processes.setMaximumHeight(150)
         layout.addWidget(self.processes)
 
     def refresh_services(self) -> None:
@@ -322,9 +374,10 @@ class Window(QMainWindow):
         if service == "runtime":
             self.action(op)
             return
-        if op in {"stop", "restart"} and QMessageBox.question(self, "Zmiana usługi",
-                "Wykonać " + op + " dla " + service + "?") != QMessageBox.StandardButton.Yes:
-            return
+        if op in {"stop", "restart"} or service == "cloudflare":
+            if QMessageBox.question(self, "Zmiana usługi",
+                    "Wykonać " + op + " dla " + service + "?") != QMessageBox.StandardButton.Yes:
+                return
         if op == "start":
             self.core.start_service(service)
         elif op == "stop":
@@ -377,8 +430,13 @@ class Window(QMainWindow):
         layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
         for item in STUDIOS:
             row = QHBoxLayout()
-            self.button("Archiwalne / do przeglądu: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
-            note = QLabel(item.description)
+            launch = self.button("Archiwalne / do przeglądu: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
+            entry = (self.core.root / (item.entry[1].replace(".", "/") + ".py")
+                     if item.entry[0] == "-m" else self.core.root / item.entry[0])
+            available = entry.is_file()
+            launch.setEnabled(available)
+            launch.setToolTip("Wymagany plik: " + str(entry))
+            note = QLabel(item.description + (" • plik dostępny" if available else " • brak pliku w tym SYSTEM"))
             note.setWordWrap(True)
             row.addWidget(note, 2)
             layout.addLayout(row)
@@ -518,7 +576,17 @@ class Window(QMainWindow):
 
     def _settings(self) -> None:
         layout = self.page("Ustawienia", "Profil lokalny Studio jest ignorowany przez Git. Sekrety nie są polami tego profilu. Zmiana ścieżek nie przejmuje działających procesów.")
+        self.settings_search = QLineEdit()
+        self.settings_search.setPlaceholderText("Szukaj ustawienia…")
+        layout.addWidget(self.settings_search)
+        self.settings_category = QComboBox()
+        self.settings_category.addItems(["Wszystkie", "Środowisko", "Runtime", "Modele", "MCP", "Cloudflare", "Bezpieczeństwo", "Wygląd"])
+        layout.addWidget(self.settings_category)
+        self.settings_hint = QLabel("Zmiany dotyczą przyszłych uruchomień. Nie uruchamiają usług.")
+        self.settings_hint.setWordWrap(True)
+        layout.addWidget(self.settings_hint)
         form = QFormLayout()
+        self.settings_form = form
         labels = {"python": "Interpreter Python", "mcp_python": "Python MCP (opcjonalny, z mcp/uvicorn)", "ollama": "Plik Ollama", "cloudflared": "Plik cloudflared",
                   "tunnel_config": "Konfiguracja tunelu (plik)", "tunnel_id": "Nazwa / UUID tunelu",
                   "model": "Model Ollama", "accent": "Kolor własny (#RRGGBB)"}
@@ -544,6 +612,13 @@ class Window(QMainWindow):
         self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
         self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
+        self.button("Przywróć domyślne w formularzu", self.reset_settings_draft, layout)
+        self.settings_search.textChanged.connect(self.filter_settings)
+        self.settings_category.currentIndexChanged.connect(self.filter_settings)
+        for field in self.fields.values():
+            field.textChanged.connect(self.settings_changed)
+        self.theme.currentTextChanged.connect(self.settings_changed)
+        self.profile_mode.currentIndexChanged.connect(self.settings_changed)
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
         self.button("Wczytaj profil środowiska runtime", lambda: self.core.studio_helper("profile-read"), layout)
@@ -592,9 +667,18 @@ class Window(QMainWindow):
         data["theme"] = self.theme.currentText()
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
+        self.apply_settings(settings)
+
+    def apply_settings(self, settings: Settings) -> None:
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
+        for key, field in self.fields.items():
+            field.setText(str(getattr(settings, key)))
+        self.theme.setCurrentText(settings.theme)
+        self.profile_mode.setCurrentIndex(1 if settings.runtime_profile == "operator" else 0)
         self.apply_theme()
+        self.settings_baseline = self.settings_draft()
+        self.settings_hint.setText("Zapisano. Konfiguracja usług obowiązuje przy ich kolejnym uruchomieniu.")
         self.statusBar().showMessage("Zapisano ustawienia Studio")
 
     def apply_theme(self) -> None:
@@ -671,6 +755,7 @@ class Window(QMainWindow):
                     key, kind, value = self.core.events.get_nowait()
                 except queue.Empty:
                     break
+            self.workspace.observe(key, kind, value)
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "memory_report":
@@ -813,6 +898,212 @@ class Window(QMainWindow):
         with self.core.lock:
             snapshots = [j.snapshot() for j in self.core.jobs.values()]
         self.processes.setPlainText(json.dumps(snapshots, ensure_ascii=False, indent=2))
+        self.workspace.refresh()
+        self.refresh_service_table()
+        if self.pages.currentWidget() is self.developer_page:
+            public = {"jobs": snapshots, "services": self.workspace.observations,
+                      "accepted_visible_turn": False}
+            self.developer_details.setPlainText(self.core.redactor.text(json.dumps(public, ensure_ascii=False, indent=2)))
+
+    def navigate(self, title: str) -> None:
+        self.section_search.clear()
+        for row in range(self.nav.count()):
+            if self.nav.item(row).text() == title:
+                self.nav.setCurrentRow(row)
+                return
+
+    def filter_navigation(self, query: str) -> None:
+        for row in range(self.nav.count()):
+            item = self.nav.item(row)
+            item.setHidden(query.casefold().strip() not in item.text().casefold())
+
+    def select_search_result(self) -> None:
+        for row in range(self.nav.count()):
+            if not self.nav.item(row).isHidden():
+                self.nav.setCurrentRow(row)
+                return
+
+    def _workspace_menu(self) -> None:
+        view = self.menuBar().addMenu("Widok")
+        view.addAction(self.workspace.dock.toggleViewAction())
+        for label, callback in (("Problemy", lambda: self.workspace.show(0)),
+                                ("Output / Logi", lambda: self.workspace.show(1)),
+                                ("Terminal / Konsole", lambda: self.workspace.show(2)),
+                                ("Nawigacja po lewej / prawej", self.switch_sidebar),
+                                ("Przywróć bezpieczny układ", self.reset_layout)):
+            action = view.addAction(label)
+            action.triggered.connect(callback)
+        setup = self.menuBar().addMenu("Konfiguracja")
+        action = setup.addAction("Kreator pierwszego uruchomienia…")
+        action.triggered.connect(self.open_setup)
+
+    def switch_sidebar(self) -> None:
+        right = self.shell_splitter.indexOf(self.sidebar) == 0
+        self.shell_splitter.insertWidget(1 if right else 0, self.sidebar)
+        self.sidebar.show()
+
+    def reset_layout(self) -> None:
+        from .core import Settings
+        self.shell_splitter.insertWidget(0, self.sidebar)
+        self.sidebar.show()
+        self.shell_splitter.setSizes([214, 1026])
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.workspace.dock)
+        self.workspace.dock.setFloating(False)
+        self.workspace.dock.hide()
+        self.logs_user_hidden = True
+        self.tabs.hide()
+        # Restoring the visual theme is a draft; no runtime settings are changed.
+        self.theme.setCurrentText(Settings().theme)
+        self.setStyleSheet(workbench_stylesheet(Settings().theme, Settings().accent))
+
+    def restore_layout(self) -> None:
+        if self.smoke:
+            return
+        from .workspace_layout import load_layout
+        try:
+            data = load_layout(self.core.root)
+        except (OSError, ValueError) as exc:
+            self.statusBar().showMessage("Układ odrzucony; użyto domyślnego: " + type(exc).__name__)
+            return
+        self.layout_state = data
+        geometry = self.screen().availableGeometry()
+        self.resize(min(data.get("width", 1240), geometry.width()), min(data.get("height", 840), geometry.height()))
+        if data.get("sidebar_right"):
+            self.switch_sidebar()
+        self.sidebar.setVisible(data.get("sidebar_visible", True))
+        areas = [Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea,
+                 Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
+        self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
+        self.workspace.dock.setVisible(data.get("dock_visible", False))
+
+    def persist_layout(self) -> None:
+        from .workspace_layout import SCHEMA, save_layout
+        areas = [Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea,
+                 Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
+        area = self.dockWidgetArea(self.workspace.dock)
+        self.layout_state = {"schema": SCHEMA, "width": self.width(), "height": self.height(),
+                             "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
+                             "sidebar_visible": self.sidebar.isVisible(),
+                             "dock_visible": self.workspace.dock.isVisible(),
+                             "dock_area": areas.index(area) if area in areas else 3,
+                             "setup_scope": self.layout_state.get("setup_scope", "")}
+        save_layout(self.core.root, self.layout_state)
+
+    def setup_completed(self, scope: str) -> None:
+        self.layout_state["setup_scope"] = scope
+        self.persist_layout()
+
+    def open_setup(self) -> None:
+        from .first_run import SetupWizard
+        if self.setup_wizard is None or not self.setup_wizard.isVisible():
+            self.setup_wizard = SetupWizard(self.core, self.apply_settings, self.setup_completed, self)
+        self.setup_wizard.show()
+        self.setup_wizard.raise_()
+
+    def settings_draft(self) -> dict[str, str]:
+        values = {key: field.text().strip() for key, field in self.fields.items()}
+        values["theme"] = self.theme.currentText()
+        values["runtime_profile"] = str(self.profile_mode.currentData())
+        return values
+
+    def settings_changed(self, *_args: object) -> None:
+        if hasattr(self, "settings_baseline"):
+            dirty = self.settings_draft() != self.settings_baseline
+            self.settings_hint.setText("Niezapisane zmiany. Ustawienia usług wymagają ponownego uruchomienia usługi." if dirty else
+                                       "Formularz zgodny z ostatnio zapisanym profilem.")
+
+    def reset_settings_draft(self) -> None:
+        defaults = Settings()
+        for key, field in self.fields.items():
+            field.setText(str(getattr(defaults, key)))
+        self.theme.setCurrentText(defaults.theme)
+        self.profile_mode.setCurrentIndex(0)
+
+    def filter_settings(self, *_args: object) -> None:
+        categories = {"python": "Środowisko", "mcp_python": "Środowisko", "ollama": "Modele",
+                      "model": "Modele", "daemon_url": "Runtime", "mcp_port": "MCP",
+                      "cloudflared": "Cloudflare", "tunnel_config": "Cloudflare", "tunnel_id": "Cloudflare",
+                      "cloudflare_url": "Cloudflare", "secrets_file": "Bezpieczeństwo", "accent": "Wygląd"}
+        query = self.settings_search.text().casefold().strip()
+        category = self.settings_category.currentText()
+        widgets = {**self.fields, "theme": self.theme, "runtime_profile": self.profile_mode}
+        categories.update({"theme": "Wygląd", "runtime_profile": "Runtime"})
+        for key, widget in widgets.items():
+            label = self.settings_form.labelForField(widget)
+            title = label.text() if isinstance(label, QLabel) else key
+            visible = (category == "Wszystkie" or categories.get(key) == category) and query in (key + " " + title).casefold()
+            widget.setVisible(visible)
+            if label is not None:
+                label.setVisible(visible)
+
+    def _models(self) -> None:
+        layout = self.page("Modele AI", "Adapter generacyjny i daemon są osobnymi składnikami. null_model_adapter nie generuje odpowiedzi modelu.")
+        self.models_summary = QLabel("Nie sprawdzono listy modeli ani zdolności generowania.")
+        self.models_summary.setWordWrap(True)
+        layout.addWidget(self.models_summary)
+        self.button("Wykryj modele Ollama", lambda: self.core.probe("ollama"), layout)
+        self.button("Sprawdź konfigurację adaptera", lambda: self.action("model"), layout)
+        self.button("Wybierz model w ustawieniach", lambda: self.navigate("Ustawienia"), layout)
+        self.button("Przejdź do rzeczywistej rozmowy runtime", lambda: self.navigate("Czat lokalny"), layout)
+        layout.addStretch()
+
+    def _connections(self) -> None:
+        layout = self.page("MCP i ChatGPT", "Oddzielne warstwy: runtime → MCP → transport zdalny → uwierzytelnienie → autoryzacja narzędzi → zaakceptowana tura hosta.")
+        self.connection_summary = QLabel("Połączenie z ChatGPT: niezweryfikowane. Katalog narzędzi, HTTP i /readyz nie potwierdzają zaakceptowanej odpowiedzi.")
+        self.connection_summary.setWordWrap(True)
+        layout.addWidget(self.connection_summary)
+        self.button("Sprawdź lokalny endpoint MCP", lambda: self.core.probe("gateway"), layout)
+        self.button("Zweryfikuj katalog narzędzi MCP", lambda: self.action("mcp"), layout)
+        self.button("Sprawdź skonfigurowany Worker Cloudflare", lambda: self.core.probe("cloudflare"), layout)
+        self.button("Konfiguracja transportu i usług", lambda: self.navigate("Ustawienia"), layout)
+        note = QLabel("Cloudflare Tunnel jest opcjonalny i wymaga jawnej zgody przed uruchomieniem. Subskrypcja ChatGPT nie zapewnia automatycznie klucza ani rozliczenia OpenAI API. Gotowość zewnętrznego hosta musi potwierdzić rzeczywisty test połączenia.")
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        layout.addStretch()
+
+    def _developer(self) -> None:
+        layout = self.page("Developer", "Publiczny audyt: dowody, stany, identyfikatory i wyniki operacji. Bez prywatnego toku rozumowania i sekretów.")
+        self.developer_page = self.pages.widget(self.pages.count() - 1)
+        for label, callback in (("Stan Git", lambda: self.core.git_status()),
+                                ("Diagnostyka runtime / NLP / routingu", lambda: self.action("doctor")),
+                                ("Konfiguracja i mapa ścieżek", lambda: self.navigate("Konfiguracja Qt")),
+                                ("Testy i oczekiwania", lambda: self.navigate("Katalog testów")),
+                                ("Konsole i terminal", lambda: self.workspace.show(2)),
+                                ("Problemy i wyjątki operacji", lambda: self.workspace.show(0)),
+                                ("Eksportuj redagowany raport…", self.export)):
+            self.button(label, callback, layout)
+        self.developer_details = QPlainTextEdit()
+        self.developer_details.setReadOnly(True)
+        self.developer_details.setPlaceholderText("Wykonaj diagnostykę, aby otrzymać publiczne dowody.")
+        layout.addWidget(self.developer_details)
+
+    def refresh_service_table(self) -> None:
+        from urllib.parse import urlsplit
+        ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": "11434",
+                 "gateway": self.core.settings.mcp_port, "cloudflare": "zdalny"}
+        for service, row in self.service_rows.items():
+            observed = self.workspace.observations.get(service, {})
+            pid = observed.get("pid")
+            with self.core.lock:
+                job = self.core.jobs.get("service:" + service)
+                if job is not None and job.proc is not None and job.proc.poll() is None:
+                    pid = job.pid
+            if service == "runtime":
+                ready = all(observed.get(flag) is True for flag in ("endpoint_reachable", "process_identity_confirmed", "endpoint_identity_matches", "heartbeat_fresh", "conversation_ready"))
+            else:
+                ready = observed.get("ready") is True
+            readiness = "potwierdzona" if ready else "niezweryfikowana"
+            if service == "ollama" and observed.get("endpoint_reachable"):
+                readiness = "API; brak testu generacji"
+            for column, value in ((2, str(pid or "—")), (3, ports[service]), (4, readiness)):
+                item = self.services_table.item(row, column)
+                if item is not None and item.text() != value:
+                    item.setText(value)
+                    item.setToolTip(value)
+            self.statuses[service].setToolTip(self.statuses[service].text())
+        models = self.workspace.observations.get("ollama", {})
+        if models:
+            self.models_summary.setText("Modele: " + ", ".join(models.get("models", [])) + "\nGeneracja: " + ("potwierdzona" if models.get("generation_verified") else "niezweryfikowana"))
 
     def export(self) -> None:
         name, _ = QFileDialog.getSaveFileName(self, "Nowy raport diagnostyczny", "studio-report.json", "JSON (*.json)")
@@ -821,6 +1112,10 @@ class Window(QMainWindow):
             self.statusBar().showMessage("Zapisano raport: " + name)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        if not self.smoke and self.settings_draft() != self.settings_baseline:
+            if QMessageBox.question(self, "Niezapisane ustawienia", "Zamknąć i odrzucić niezapisane zmiany ustawień?") != QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
         if not self.smoke and not self.configuration_panel.may_discard():
             event.ignore()
             return
@@ -838,6 +1133,11 @@ class Window(QMainWindow):
             event.ignore()
             QTimer.singleShot(100, self.close)
             return
+        if not self.smoke:
+            try:
+                self.persist_layout()
+            except (OSError, ValueError) as exc:
+                self.statusBar().showMessage("Nie zapisano układu: " + type(exc).__name__)
         self.timer.stop()
         event.accept()
 
@@ -846,8 +1146,21 @@ def run_window(core: Controller, *, smoke: bool = False) -> int:
     app = QApplication.instance() or QApplication([])
     if not isinstance(app, QApplication):
         raise StudioError("Istniejąca instancja Qt nie jest aplikacją GUI")
+    splash = None
+    if not smoke:
+        from .workbench_theme import workbench_colors
+        colors = workbench_colors(core.settings.theme, core.settings.accent)
+        pixmap = QPixmap(540, 180)
+        pixmap.fill(QColor(colors.background))
+        splash = QSplashScreen(pixmap)
+        splash.showMessage("Jaźń — Serce Systemu\n\nRoot sprawdzony • przygotowywanie interfejsu…",
+                           Qt.AlignmentFlag.AlignCenter, QColor(colors.text))
+        splash.show()
+        app.processEvents()
     window = Window(core, smoke=smoke)
     window.show()
+    if splash is not None:
+        splash.finish(window)
     if smoke:
         QTimer.singleShot(250, window.close)
     return app.exec()

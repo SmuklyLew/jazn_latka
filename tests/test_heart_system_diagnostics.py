@@ -28,7 +28,8 @@ def test_rapid_clicks_launch_one_read(core, monkeypatch):
         core._reserve("status")
 
 def test_batch_waits_for_existing_status_and_keeps_failure(core, monkeypatch):
-    status = core._reserve("status")
+    monkeypatch.setattr(core, "_launch", lambda *args: None)
+    status = core.start_action("status")
     batch = core.run_batch(("status",))
     assert not batch.done.wait(0.05)
     status.state, status.error = "failed", "invalid_status_json"
@@ -37,8 +38,9 @@ def test_batch_waits_for_existing_status_and_keeps_failure(core, monkeypatch):
     assert batch.state == "failed" and batch.error == "failed_step:status"
     assert core.jobs["status"] is status
 
-def test_cancel_batch_does_not_cancel_shared_read(core):
-    status = core._reserve("status")
+def test_cancel_batch_does_not_cancel_shared_read(core, monkeypatch):
+    monkeypatch.setattr(core, "_launch", lambda *args: None)
+    status = core.start_action("status")
     batch = core.run_batch(("status",))
     batch.cancel.set()
     assert batch.done.wait(3) and batch.state == "stopped"
@@ -95,3 +97,29 @@ def test_violet_night_text_and_control_contrast():
         assert ratio(c.muted, background) >= 4.5
         assert ratio(c.border, background) >= 3
     assert ratio(c.selected_text, c.accent) >= 4.5
+
+
+def test_changed_configuration_does_not_reuse_old_read(core, monkeypatch):
+    monkeypatch.setattr(core, "_launch", lambda *args: None)
+    original = core.start_action("status")
+    core.settings = Settings(daemon_url="http://127.0.0.1:19001")
+    with pytest.raises(StudioError, match="poprzednią konfiguracją"):
+        core.start_action("status")
+    assert core.jobs["status"] is original
+
+
+def test_changed_model_does_not_adopt_running_probe(core, monkeypatch):
+    from tools.jazn_run_studio import probes
+    release = threading.Event()
+    def slow(model):
+        release.wait(3)
+        return {"models": [model], "generation_verified": False}
+    monkeypatch.setattr(probes, "ollama", slow)
+    job = core.probe("ollama")
+    try:
+        core.settings = Settings(model="different:latest")
+        with pytest.raises(StudioError, match="poprzednią konfiguracją"):
+            core.probe("ollama")
+    finally:
+        release.set()
+    assert job.done.wait(3)
