@@ -575,13 +575,20 @@ class Controller:
             raise StudioError("Nieznana operacja Studio")
         if mode in {"schema", "preview", "execute"} and key not in {"memory", "rebuild", "tests", "packages", "dependencies", "python"}:
             raise StudioError("Nieznane Studio")
-        job = self._reserve("helper:" + mode + ":" + key)
+        # Reject malformed input before reserving an operator job.
+        # Invalid JSON must not leave an uncompleted "starting" job.
+        payload: bytes | None = None
         if data is not None:
-            job.input_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
-            if len(job.input_data) > 65536:
-                job.done.set()
-                job.state = "failed"
+            if not isinstance(data, dict):
+                raise StudioError("Nieprawidłowe dane operacji")
+            try:
+                payload = json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
+            except (TypeError, ValueError, RecursionError):
+                raise StudioError("Nieprawidłowe dane operacji") from None
+            if len(payload) > 65536:
                 raise StudioError("Zbyt duże dane operacji")
+        job = self._reserve("helper:" + mode + ":" + key)
+        job.input_data = payload
         argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
         if key:
             argv.append(key)
