@@ -201,6 +201,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      # Full regression instantiates real Qt widgets on a runner without X11.
+      QT_QPA_PLATFORM: offscreen
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
     steps:
@@ -288,6 +290,14 @@ jobs:
           tests/test_host_operation_memory_converge_retry.py
           tests/test_memory_sentinel_recall.py
           tests/test_autobiographical_memory_readiness_convergence.py
+
+      - name: Verify headless Qt platform before full regression
+        run: >-
+          python -X utf8 -c
+          "from PySide6.QtWidgets import QApplication;
+          app = QApplication([]);
+          assert app.platformName() == 'offscreen', app.platformName();
+          print('Qt platform verified:', app.platformName())"
 
       - name: Full deterministic test suite
         run: >-

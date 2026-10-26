@@ -35,6 +35,8 @@ run.py                 # cienki starter użytkownika
 -> moduły runtime
 ```
 
+`run_studio.py` jest cienkim głównym launcherem GUI „Jaźń — Serce Systemu”, delegującym do istniejącego Workbench. `jazn_run_studio.py` i `tools/jazn_studio.py` pozostają zgodnymi wejściami. GUI korzysta z kanonicznych usług; `main.py` pozostaje jedynym control plane.
+
 Nie dodawaj logiki domenowej, lifecycle ani drugiego parsera do `run.py`. Użytkownik może startować system przez `run.py`, ale wszystkie komendy i rozmowa muszą wejść do `main.py` z tym samym argv.
 
 Jeżeli modyfikujesz `run.py`, `latka_jazn/cli.py` albo `main.py`, sprawdź po zmianie:

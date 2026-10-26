@@ -212,7 +212,19 @@ def _invoke(args: list[str], *, cwd: Path, timeout: int = 15) -> dict[str, Any]:
     try:
         parsed = json.loads(stdout)
     except json.JSONDecodeError:
-        parsed = {"stdout_tail": stdout[-1400:]}
+        # Some diagnostic CLI commands emit progress before their final JSON.
+        # Parse only a complete top-level object ending at stdout's end.
+        parsed = None
+        for match in re.finditer(r"(?m)^[{]", stdout):
+            try:
+                candidate = json.loads(stdout[match.start():])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(candidate, dict):
+                parsed = candidate
+                break
+        if parsed is None:
+            parsed = {"stdout_tail": stdout[-1400:]}
     return {
         "ok": result.returncode == 0, "returncode": result.returncode,
         "result": parsed,
@@ -297,7 +309,10 @@ def probe_http(url: str, *, timeout: int = 8) -> dict[str, Any]:
     # only stable non-sensitive fields; never include headers, tokens or arbitrary contents
     allowed = ("status", "ready", "gateway_live", "mcp_available", "reason", "error",
                "runtime_version", "gateway_instance_id")
-    return {"ok": code == 200, "http_status": code, "endpoint": address,
+    http_ok = code == 200
+    readiness_ok = payload.get("ready") is True if parts.path == "/readyz" else True
+    return {"ok": http_ok and readiness_ok, "http_ok": http_ok,
+            "http_status": code, "endpoint": address,
             "status": {k: payload.get(k) for k in allowed if k in payload}}
 
 

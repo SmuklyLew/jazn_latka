@@ -203,7 +203,9 @@ def main(argv: list[str] | None = None) -> int:
         result = audit_turn_coverage(_read_array(args.expected), _read_array(args.observed))
     except (OSError, ValueError, UnicodeError) as exc:
         result = _report(f"input_unavailable_or_invalid:{type(exc).__name__}")
-    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    # Machine JSON must survive a Windows child using a legacy stdio code page.
+    # Escaping preserves Unicode values without changing global host streams.
+    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0 if result["ok"] else 2
 
 

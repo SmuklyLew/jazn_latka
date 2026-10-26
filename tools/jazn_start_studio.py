@@ -509,7 +509,10 @@ class StudioCore:
             if WINDOWS:
                 proc.terminate()  # Windows ends only this process, not the detached daemon.
             else:
-                os.killpg(proc.pid, signal.SIGTERM)
+                kill_group = getattr(os, "killpg", None)
+                if not callable(kill_group):
+                    raise RuntimeError("Host does not support POSIX process-group shutdown")
+                kill_group(proc.pid, signal.SIGTERM)
         self.emit(key, "STOP", "Zażądano zatrzymania zadania Studio (bez wymuszania)")
 
     def active(self) -> list[str]:

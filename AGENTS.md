@@ -77,7 +77,8 @@ Dla Projektu ChatGPT instrukcja projektu ma być cienkim loaderem prowadzącym d
 - wersja: `latka_jazn/version.py`
 - integralność paczki: `PACKAGE_INTEGRITY_MANIFEST.json`
 - pochodzenie wydania: `SOURCE_PROVENANCE.json`
-- starter użytkownika: `run.py`
+- launcher aplikacji operatorskiej: `run_studio.py` (Jaźń — Serce Systemu);
+- zgodny starter CLI/TTY: `run.py`
 - centralny control plane i główny dispatcher: `main.py`
 - indeks kontraktów tury, narzędzi i finalizacji: [`docs/runtime/TURN_FINALIZATION_CONTRACTS.md`](docs/runtime/TURN_FINALIZATION_CONTRACTS.md)
 - parser/usługi komend: `latka_jazn/cli.py`

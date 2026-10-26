@@ -8,7 +8,8 @@ def main() -> int:
     root = Path(__file__).resolve().parents[2]
     return subprocess.run(
         [sys.executable, "-m", "pyright", "--pythonpath", sys.executable,
-         "tools/jazn_run_studio", "jazn_run_studio.py", "tests/test_jazn_run_studio.py",
+         "tools/jazn_run_studio", "jazn_run_studio.py", "run_studio.py",
+         "tests/test_heart_system_dashboard.py", "tests/test_heart_system_dashboard_qt.py", "tests/test_heart_system_diagnostics.py", "tests/test_heart_system_workspace_qt.py", "tests/test_heart_system_public_restart.py", "tests/test_jazn_run_studio.py",
          "tests/test_jazn_run_studio_integrations.py", "tests/test_jazn_run_studio_env_guard.py",
          "tests/test_jazn_run_studio_chat_contract.py", "tests/test_jazn_run_studio_lifecycle_results.py",
          "tests/test_jazn_run_studio_http_framing.py", "tests/test_jazn_run_studio_layout.py", "tests/test_jazn_run_studio_utf8.py",
