@@ -153,8 +153,13 @@ def create_release_staging(
             raise SourceProvenanceError(f"release staging rejects non-regular Git entry: {relative}")
         # Never materialize generated copies or local-private canonical source
         # from a tracked Git blob, even if .gitignore was bypassed.
-        if relative.casefold().startswith("build/") or relative.casefold().endswith(
-            "/local_private_canon_extension.py"
+        if (
+            relative.casefold().startswith("build/")
+            or relative.casefold() == ".settings_local"
+            or relative.casefold().startswith(".settings_local/")
+            or relative.casefold().endswith(
+                "/local_private_canon_extension.py"
+            )
         ):
             raise SourceProvenanceError(
                 f"release staging forbids generated/private source path: {relative}"

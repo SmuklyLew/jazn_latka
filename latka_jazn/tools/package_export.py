@@ -25,6 +25,7 @@ from latka_jazn.tools.safe_paths import (
 from latka_jazn.version import PACKAGE_VERSION
 
 SYSTEM_EXCLUDE_PREFIXES = (
+    ".settings_local/",
     "memory/",
     "workspace_runtime/",
     "exports/",
@@ -38,6 +39,7 @@ NLP_INCLUDE_PREFIXES = (
 NLP_INCLUDE_EXACT: set[str] = set()
 
 GITHUB_SAFE_EXCLUDE_PREFIXES = (
+    ".settings_local/",
     "memory/",
     "workspace_runtime/",
     "exports/",
@@ -54,6 +56,7 @@ _PRIVATE_MARKER_PARTS = (
     ("raw_conversation", "embedded_source"),
 )
 COMMON_EXCLUDE_PARTS = {
+    ".settings_local",
     "build",
     "__pycache__",
     ".pytest_cache",
@@ -74,6 +77,7 @@ COMMON_EXCLUDE_SUFFIXES = (
     "-shm",
 )
 FORBIDDEN_PACKAGE_PREFIXES = (
+    ".settings_local/",
     ".archives/",
     "workspace_runtime/",
     "backups/",
@@ -271,6 +275,8 @@ def forbidden_package_reason(rel: str) -> str | None:
     # case-insensitive Windows, including explicitly supplied package plans.
     if rel.casefold() == "build" or rel.casefold().startswith("build/"):
         return "generated build directory must never enter a source package"
+    if rel.casefold() == ".settings_local" or rel.casefold().startswith(".settings_local/"):
+        return "private operator settings cannot enter SYSTEM packages"
     parts = set(Path(rel).parts)
     if "__pycache__" in parts:
         return "__pycache__ is never packaged"

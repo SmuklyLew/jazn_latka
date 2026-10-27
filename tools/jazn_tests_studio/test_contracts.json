@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.1",
-  "active_definition_count": 2786,
+  "system_version": "16.3.25.5.116.0.34.94.6.3",
+  "active_definition_count": 2808,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28668,6 +28668,375 @@
       "description_source": "source_identity",
       "line": 33
     },
+    "tests/test_local_settings_layout_convergence.py::test_versioned_settings_enables_local_layout": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_versioned_settings_enables_local_layout",
+      "purpose": "Versioned settings enables local layout",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_local_settings_layout_convergence.py::test_acceptance_and_studio_are_owned_by_worktree": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_acceptance_and_studio_are_owned_by_worktree",
+      "purpose": "Acceptance and studio are owned by worktree",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_local_settings_layout_convergence.py::test_legacy_root_remains_separate": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_legacy_root_remains_separate",
+      "purpose": "Legacy root remains separate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_local_settings_layout_convergence.py::test_redirected_local_root_is_rejected": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_redirected_local_root_is_rejected",
+      "purpose": "Redirected local root is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_local_settings_security_3e.py::test_unprivileged_operator_write_denied": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_unprivileged_operator_write_denied",
+      "purpose": "Unprivileged operator write denied",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_local_settings_security_3e.py::test_regular_operator_write_allowed": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_regular_operator_write_allowed",
+      "purpose": "Regular operator write allowed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_local_settings_security_3e.py::test_acceptance_requires_explicit_scope": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_acceptance_requires_explicit_scope",
+      "purpose": "Acceptance requires explicit scope",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_local_settings_security_3e.py::test_isolated_acceptance_keeps_operator_access": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_isolated_acceptance_keeps_operator_access",
+      "purpose": "Isolated acceptance keeps operator access",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_local_settings_security_3e.py::test_worktrees_have_distinct_settings": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_worktrees_have_distinct_settings",
+      "purpose": "Worktrees have distinct settings",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_local_settings_security_3e.py::test_redirected_operator_directory_rejected": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_redirected_operator_directory_rejected",
+      "purpose": "Redirected operator directory rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_local_settings_security_3e.py::test_windows_junction_rejected": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_windows_junction_rejected",
+      "purpose": "Windows junction rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
+    },
+    "tests/test_local_settings_security_3e.py::test_legacy_settings_are_preserved": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_legacy_settings_are_preserved",
+      "purpose": "Legacy settings are preserved",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 159
+    },
+    "tests/test_local_settings_transaction_3f.py::test_serial_writes_reject_stale_digest": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_serial_writes_reject_stale_digest",
+      "purpose": "Serial writes reject stale digest",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_local_settings_transaction_3f.py::test_two_processes_cannot_both_commit_stale_none": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_two_processes_cannot_both_commit_stale_none",
+      "purpose": "Two processes cannot both commit stale none",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_local_settings_transaction_3f.py::test_replace_failure_does_not_corrupt_previous_file": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_replace_failure_does_not_corrupt_previous_file",
+      "purpose": "Replace failure does not corrupt previous file",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_local_settings_transaction_3f.py::test_lock_symlink_refused": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_lock_symlink_refused",
+      "purpose": "Lock symlink refused",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SettingsLockError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_local_settings_transaction_3f.py::test_lock_sidecar_is_not_deleted_after_save": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_lock_sidecar_is_not_deleted_after_save",
+      "purpose": "Lock sidecar is not deleted after save",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_local_settings_transaction_3f.py::test_distinct_worktrees_use_distinct_locks": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_distinct_worktrees_use_distinct_locks",
+      "purpose": "Distinct worktrees use distinct locks",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
     "tests/test_loopback_proxy_bypass.py::test_loopback_proxy_bypass_preserves_existing_entries_and_case_variants": {
       "path": "tests/test_loopback_proxy_bypass.py",
       "name": "test_loopback_proxy_bypass_preserves_existing_entries_and_case_variants",
@@ -45497,6 +45866,98 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 28
+    },
+    "tests/test_private_package_boundary_3i.py::test_private_paths_forbidden": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_private_paths_forbidden",
+      "purpose": "Private paths forbidden",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "PackagePlanValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_private_package_boundary_3i.py::test_versioned_settings_remain_packagable": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_versioned_settings_remain_packagable",
+      "purpose": "Versioned settings remain packagable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_private_package_boundary_3i.py::test_local_settings_excluded_from_export": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_local_settings_excluded_from_export",
+      "purpose": "Local settings excluded from export",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_private_package_boundary_3i.py::test_tracked_private_git_entry_is_rejected": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_tracked_private_git_entry_is_rejected",
+      "purpose": "Tracked private git entry is rejected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SourceProvenanceError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
     },
     "tests/test_process_identity.py::test_process_fingerprint_binds_current_pid_to_creation_identity": {
       "path": "tests/test_process_identity.py",

@@ -194,51 +194,107 @@ def settings_path(root: Path) -> Path:
         if not operator:
             raise StudioError("Brak odizolowanego katalogu operatora")
         return _path_without_links(Path(operator).resolve() / "jazn_run_studio" / "settings.json")
+    from latka_jazn.core.local_settings_layout import (
+        local_settings_enabled, resolve_local_settings_layout,
+    )
+    if local_settings_enabled(root):
+        layout = resolve_local_settings_layout(root)
+        return _path_without_links(layout.operator / "jazn_run_studio" / "settings.json")
     return _path_without_links(workspace_runtime_path(root) / "jazn_run_studio" / "settings.json")
 
 
 def load_settings(root: Path) -> tuple[Settings, str | None]:
     canonical = read_system_config(root)
     target = settings_path(root)
-    if not target.exists():
+    legacy = _path_without_links(Path(root).resolve() / "workspace_runtime" / "jazn_run_studio" / "settings.json")
+    source = target
+    if (
+        os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") != "isolated"
+        and not target.exists()
+        and target != legacy
+        and legacy.is_file()
+    ):
+        source = legacy
+    if not source.exists():
         return Settings.validate(dict(canonical.studio)), None
-    raw = target.read_bytes()
+    raw = source.read_bytes()
     if len(raw) > 32768:
         raise StudioError("Zbyt duży plik ustawień")
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise StudioError("Nieprawidłowy format ustawień Studio")
-    merged = ({**canonical.studio, **data} if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
-              else {**data, **canonical.studio})
+    from latka_jazn.core.local_settings_layout import (
+        local_settings_enabled,
+    )
+    local_owned = local_settings_enabled(root)
+    merged = (
+        {**canonical.studio, **data}
+        if local_owned or os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
+        else {**data, **canonical.studio}
+    )
     return Settings.validate(merged), sha256(raw).hexdigest()
 
 
 def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
+    """Serialize cooperating writers; reject stale digests before replacement.
+
+    Legacy settings remain a read-only import source for new local roots.
+    """
+    from latka_jazn.core.local_settings_layout import local_settings_enabled
+    from latka_jazn.core.operator_settings_transaction import exclusive_settings_lock
+
     settings = Settings.validate(asdict(settings))
     target = settings_path(root)
-    current = sha256(target.read_bytes()).hexdigest() if target.exists() else None
-    if current != expected:
-        raise StudioError("Ustawienia zmieniły się na dysku; wczytaj je ponownie")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    canonical = read_system_config(root)
-    shared = {key: val for key, val in (
-        ("python", settings.python), ("model", settings.model),
-        ("daemon_url", settings.daemon_url),
-    ) if val}
-    if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") != "isolated":
-        write_system_config(root, canonical.values, shared, expected_digest=canonical.digest)
-    data = (json.dumps(asdict(settings), ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-    fd, name = tempfile.mkstemp(dir=target.parent, prefix=".settings-")
-    try:
-        with os.fdopen(fd, "wb") as stream:
-            stream.write(data)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(name, target)
-    finally:
-        Path(name).unlink(missing_ok=True)
-    return sha256(data).hexdigest()
+    _path_without_links(target)
 
+    with exclusive_settings_lock(target):
+        _path_without_links(target)
+        legacy = _path_without_links(
+            Path(root).resolve() / "workspace_runtime" / "jazn_run_studio" / "settings.json"
+        )
+        previous = target
+        if (
+            os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") != "isolated"
+            and not target.exists()
+            and target != legacy
+            and legacy.is_file()
+        ):
+            previous = legacy
+        current = sha256(previous.read_bytes()).hexdigest() if previous.exists() else None
+        if current != expected:
+            raise StudioError("Ustawienia zmieniły się na dysku; wczytaj je ponownie")
+
+        canonical = read_system_config(root)
+        shared = {
+            key: val for key, val in (
+                ("python", settings.python),
+                ("model", settings.model),
+                ("daemon_url", settings.daemon_url),
+            ) if val
+        }
+        if (
+            os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") != "isolated"
+            and not local_settings_enabled(root)
+        ):
+            write_system_config(
+                root, canonical.values, shared, expected_digest=canonical.digest
+            )
+
+        data = (json.dumps(asdict(settings), ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+        fd, name = tempfile.mkstemp(dir=target.parent, prefix=".settings-")
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(data)
+                stream.flush()
+                os.fsync(stream.fileno())
+            _path_without_links(target)
+            _path_without_links(Path(name))
+            if target.parent.resolve() != Path(name).parent.resolve():
+                raise StudioError("Zmiana katalogu ustawień podczas zapisu")
+            os.replace(name, target)
+        finally:
+            Path(name).unlink(missing_ok=True)
+        return sha256(data).hexdigest()
 
 def python_executable(settings: Settings) -> str:
     explicit = settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")

@@ -36,7 +36,14 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
     """Compute and validate paths only; never move existing data or start services."""
     system = Path(system_root).expanduser().resolve()
     identity = sha256(os.path.normcase(str(system)).encode("utf-8")).hexdigest()[:20]
+    from latka_jazn.core.local_settings_layout import (
+        local_settings_enabled, resolve_local_settings_layout,
+    )
+    local_layout = (resolve_local_settings_layout(system)
+                    if base is None and local_settings_enabled(system)
+                    else None)
     parent = (Path(base).expanduser() if base is not None
+              else local_layout.acceptance if local_layout is not None
               else Path.home() / ".jazn" / "acceptance" / identity).resolve()
     if session_id is not None and not re.fullmatch(r"[0-9a-f]{32}", session_id):
         raise ValueError("Nieprawidłowy identyfikator testowej sesji runtime")
@@ -56,13 +63,27 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
         candidate = Path(configured_memory).expanduser()
         protected.add(candidate.resolve() if candidate.is_absolute()
                       else (workspace_runtime_path(system) / candidate).resolve())
+    # A narrowly owned .settings_local/acceptance path is allowed within
+    # SYSTEM; MEMORY and workspace paths remain forbidden.
+    if local_layout is not None and parent == local_layout.acceptance:
+        protected.discard(system)
     for forbidden in protected:
         resolved = forbidden.resolve()
         if _overlaps(runtime, resolved) or _overlaps(operator, resolved):
             raise ValueError("Izolacja odbioru nachodzi na SYSTEM, MEMORY lub aktywny workspace")
     if _overlaps(runtime, operator):
         raise ValueError("Runtime i stan operatora nie mogą się nakładać")
-    validate_operator_path(operator, system, directory=True)
+    if local_layout is not None:
+        from latka_jazn.core.local_settings_layout import (
+            verify_local_descendant,
+        )
+        for candidate in (parent, runtime, operator, memory):
+            verify_local_descendant(candidate, local_layout)
+
+    validate_operator_path(
+        operator, system, directory=True,
+        allow_acceptance_operator=local_layout is not None,
+    )
     return AcceptanceLayout(system, runtime, operator, memory)
 
 
