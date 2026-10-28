@@ -67,6 +67,11 @@ def test_configured_gateway_start_uses_explicit_local_mode(
     monkeypatch.setattr(studio_core.socket, "socket", lambda: socket)
     launches: list[tuple[list[str], object]] = []
     monkeypatch.setattr(controller, "_launch", lambda job, argv, timeout: launches.append((argv, timeout)))
+    # The gateway must pass its exact-interpreter import gate before spawning.
+    # Keep this test focused on CLI argv while preflight failures are tested separately.
+    monkeypatch.setattr(studio_core, "mcp_dependency_preflight", lambda *_args: {
+        "mcp": True, "uvicorn": True, "starlette": True, "pydantic": True,
+    })
 
     job = controller.start_service("gateway")
     assert job.key == "service:gateway"
