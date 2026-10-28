@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3ab8ecf7e3ebfe9c7822abe690476c37784a6351",
-  "base_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-  "commit_date": "2026-10-28T22:09:42+01:00",
+  "base_merge_commit": "151d91d364818d35a7d2a2275e85e3496b35e3f1",
+  "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+  "commit_date": "2026-10-28T22:09:38Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T21:09:42+00:00",
+  "generated_at_utc": "2026-10-28T22:09:38+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6321a80bc713f8a38aa345de052aa4497ed73150",
+  "git_tree_sha": "caba59aee26de6232ce33a0edc634306e3c9ca9c",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "3ab8ecf7e3ebfe9c7822abe690476c37784a6351",
-    "source_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery"
+    "source_commit": "151d91d364818d35a7d2a2275e85e3496b35e3f1",
+    "source_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "release_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "3ab8ecf7e3ebfe9c7822abe690476c37784a6351",
+  "source_commit": "151d91d364818d35a7d2a2275e85e3496b35e3f1",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "source_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "update_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "version_source": "latka_jazn/version.py"
 }

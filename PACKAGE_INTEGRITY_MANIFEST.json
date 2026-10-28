@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-  "package_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-  "generated_at_utc": "2026-10-28T21:09:42+00:00",
-  "updated_at_utc": "2026-10-28T21:09:42+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+  "package_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+  "generated_at_utc": "2026-10-28T22:09:38+00:00",
+  "updated_at_utc": "2026-10-28T22:09:38+00:00",
   "start_file": "run.py",
-  "file_count": 3468,
-  "static_file_count": 3468,
+  "file_count": 3472,
+  "static_file_count": 3472,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2992,
-      "sha256": "a8afa07b74b30aeb9dff2d9798a7d11ab9dfe3ff02d7794cab8240fa4ae879e5",
+      "size_bytes": 3047,
+      "sha256": "8c7f3e2bfd893f56b05b05ed46c740770041652d0cc5ced61fa2240e18b95590",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1949,
-      "sha256": "c99d0612b6a1ea9dcf4985d94408cc221b6bcd96e7e948630083fd04a9e56111",
+      "size_bytes": 1959,
+      "sha256": "c2ad3dcb34a9c470662b249821283f08eb33c00e41b81983f2e04ec4766468e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2877,6 +2877,15 @@
       "path": "docs/reports/JAZN_V116_0_34_94_6_11_RUN_STUDIO_DUAL_CHAT_RECOVERY.md",
       "size_bytes": 5107,
       "sha256": "dc8b13c8692383b46e94ef06c58ea80fad0883f1257dbd5cfe2c54b0fc0ec3fc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_94_6_12_STUDIO_FIRST_RUN_MCP_TUNNEL_ANALYSIS.md",
+      "size_bytes": 7021,
+      "sha256": "02a9fec1669fe989aa83a815b6222351e33465877f4a659636d909536129e90f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9734,7 +9743,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "68922754c9e5b675ac286ce8067bee1bd4f19037cbfa995ea007601f48fe08a5",
+      "sha256": "68ff6fe807c42d25cd5d9ca1193582d7ee0e0f044c1011356d26bfc94f4082c2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11236,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18587,
-      "sha256": "3b21b744738e4f199fc03733ad622d3f2c6ce336af3df2c5d4ebf5bf2a6d6134",
+      "size_bytes": 18710,
+      "sha256": "a6f10f639826d88a0d8c80c0a3f64c54250afa7a03389ac2e92637d9d2061496",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23457,6 +23466,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.11/test_jazn_run_studio_mcp_events_original.py",
+      "size_bytes": 6452,
+      "sha256": "b40b27001bf8805c0efb8b8aa58dad5b7256034c911abdf5aa0b0f82017b29ec",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -26850,9 +26868,27 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "size_bytes": 4223,
+      "sha256": "baee4bef207eb3a55d21d6e382d8bff8e36814767fa14f4ba781804f6601b2d6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_heart_system_helper_payload.py",
       "size_bytes": 1619,
       "sha256": "e8a4f3d46475227441ca6ebda8ea5b476d6ddb0027dedf1df01d1303f5b7bda4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_heart_system_memory_and_tunnel_gate.py",
+      "size_bytes": 3092,
+      "sha256": "297544a185a3f9ae5e09c4ac07446a86363f60327b72e473024b9dd7b0495c7a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27454,8 +27490,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
-      "size_bytes": 6452,
-      "sha256": "b40b27001bf8805c0efb8b8aa58dad5b7256034c911abdf5aa0b0f82017b29ec",
+      "size_bytes": 6784,
+      "sha256": "aad4ace7136de88d7b03c0193021f8a7ba9186ba2c52cb9a9b1f546b57be98e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30667,8 +30703,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 49408,
-      "sha256": "d7fafa6c363bd404df2a874d539e8b892208faff201f1e462230104a82370cb4",
+      "size_bytes": 50346,
+      "sha256": "3029635c254e862d88ee71afa583e21f37c8ea2a2df7e258c7233f730e748b1d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30793,8 +30829,8 @@
     },
     {
       "path": "tools/jazn_run_studio/status_summary.py",
-      "size_bytes": 2222,
-      "sha256": "c8710ab5e449bcbee65e587423271ddcb7ab7e8f18a7938a5db83579dee19e28",
+      "size_bytes": 2868,
+      "sha256": "63d67d080c477de82684f19f51f343af246f66be7280579ff8ef99422bbecaec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30847,8 +30883,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 71114,
-      "sha256": "55ccb3c9d371005375fe665b7444a141fe8615948d1f5da3838fb50eac608c25",
+      "size_bytes": 75825,
+      "sha256": "1a53237417cb983be5519db416afebf678e3737b28aba51cac2e49f3f67012d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31009,8 +31045,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2562918,
-      "sha256": "408974de261969093307e5932cb2b4e31e52fdf0917797ebfa06ccb5ee53b528",
+      "size_bytes": 2568990,
+      "sha256": "baaa1d84eb78018bbc01940a656c57c8fcb3a5dd04bb350476a3a239b55f0f64",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31667,11 +31703,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "release_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-    "package_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-    "release_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+    "package_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+    "release_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety"
   },
   "legacy_aliases": {
     "version": "release_version"
