@@ -63,6 +63,39 @@ def ollama(model: str = "") -> dict[str, Any]:
             "generation_verified": False, "accepted_visible_turn": False}
 
 
+def ollama_generation(model: str) -> dict[str, Any]:
+    """Explicit bounded local generation test, never a Jaźń finalization."""
+    if not isinstance(model, str) or not re.fullmatch(r"[\\w./:@-]{1,200}", model) or model.startswith("-"):
+        raise ValueError("Wybierz poprawną nazwę modelu Ollama")
+    evidence = ollama(model)
+    if evidence["selected_model_present"] is not True:
+        return {**evidence, "generation_verified": False, "reason": "model_not_visible"}
+    request = Request(
+        "http://127.0.0.1:11434/api/chat",
+        data=json.dumps({
+            "model": model, "messages": [{"role": "user", "content": "Odpowiedz: OK"}],
+            "stream": False, "options": {"num_predict": 12},
+        }).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+    # A local fixed endpoint, no proxies, no redirects and no raw prompt/response logs.
+    with build_opener(ProxyHandler({}), NoRedirect()).open(request, timeout=60) as response:
+        if response.status != 200:
+            raise ValueError("Ollama generation HTTP status was not 200")
+        raw = response.read(262145)
+    if len(raw) > 262144:
+        raise ValueError("Ollama generation response too large")
+    payload = json.loads(raw)
+    message = payload.get("message") if isinstance(payload, dict) else None
+    verified = (isinstance(payload, dict) and payload.get("done") is True
+                and isinstance(message, dict)
+                and isinstance(message.get("content"), str)
+                and bool(message["content"].strip()))
+    return {**evidence, "generation_verified": bool(verified),
+            "generation_basis": "bounded_local_api_chat" if verified else "invalid_generation_response"}
+
+
 def gateway(port: str = "8080") -> dict[str, Any]:
     if not isinstance(port, str) or not re.fullmatch(r"[0-9]{4,5}", port) or not 1024 <= int(port) <= 65535:
         raise ValueError("Invalid local MCP gateway port")
