@@ -12,6 +12,15 @@ Nie wywołuje `memory-recover`, `memory-converge`, `memory-attach`,
   `.runtime-write.lock` nie są kopiowane jako stan trwały.
   Niepusty rollback journal oznacza odmowę.
 - Zwykłe pliki kopiowane są strumieniowo i sprawdzane SHA-256.
+- Manifesty `runtime_*_shards.json` są sprawdzane przeciw rzeczywistym
+  plikom baz. Po SQLite Backup API wolno skorygować **wyłącznie**
+  `size_bytes` shardu `active_write`, w **stagingu**. Zachowujemy
+  w evidence oryginalne SHA-256 zmienionego manifestu; SEALED wymaga
+  niezmienionego SHA-256 i rozmiaru. Nie ma automatycznej promocji.
+- GitHubowe `PACKAGE_INTEGRITY_MANIFEST.json` i `SOURCE_PROVENANCE.json`
+  są osobnymi, **kanonicznymi metadanymi SYSTEM**, synchronizowanymi
+  przez `release-hardening` po pushu, a nie przez ten snapshot MEMORY.
+  Przy przejściu PR do Ready for review wymagana jest ich świeżość.
 - Docelowy katalog nie może istnieć i nie może nakładać się na źródło.
   Dowiązania/reparse points są odrzucane.
 - Zmiana rozmiaru lub mtime któregokolwiek z inwentaryzowanych plików

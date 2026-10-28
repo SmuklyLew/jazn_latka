@@ -11,6 +11,8 @@ on:
       - "release/**"
       - "tools/upgrade-*"
   pull_request:
+    # Re-run release metadata verification when Draft becomes reviewable.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
   workflow_dispatch:
@@ -68,6 +70,15 @@ jobs:
         run: |
           git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git remote get-url origin
+
+      - name: Verify committed release metadata at review gate
+        if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --check
+          --json
 
       - name: Synchronize active Test Studio catalog before release metadata
         if: github.event_name != 'pull_request'

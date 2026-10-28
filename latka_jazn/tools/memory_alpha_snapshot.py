@@ -121,6 +121,89 @@ def _copy_file(source: Path, destination: Path, *, emit: Emit) -> str:
     return expected
 
 
+def _check_shard_manifests(
+    snapshot: Path, *, normalize_active: bool = False
+) -> list[dict[str, object]]:
+    """Check shard references against actual backed-up database files.
+
+    The SQLite Backup API can produce a different main-file size after WAL
+    consolidation. Only active shard size metadata may be rebased inside the
+    isolated staging tree; sealed digests and shard identity never change.
+    """
+    normalized: list[dict[str, object]] = []
+    base = snapshot / "sqlite" / "runtime_write_v1"
+    for name in ("runtime_audit_shards.json", "runtime_memory_shards.json"):
+        manifest = base / name
+        if not manifest.exists():
+            continue
+        _safe_item(manifest)
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            shards = data["shards"]
+            active_id = data["active_write_shard"]
+        except (OSError, UnicodeError, ValueError, KeyError, TypeError) as exc:
+            raise AlphaSnapshotError(f"invalid shard manifest: {name}") from exc
+        if not isinstance(shards, list) or not shards:
+            raise AlphaSnapshotError(f"invalid shard list: {name}")
+        ids: set[str] = set()
+        active_count = 0
+        changed = False
+        for shard in shards:
+            if not isinstance(shard, dict):
+                raise AlphaSnapshotError(f"invalid shard entry: {name}")
+            ident = shard.get("shard_id")
+            role = shard.get("role")
+            relative = shard.get("path")
+            if not isinstance(ident, str) or not ident or ident in ids:
+                raise AlphaSnapshotError(f"duplicate/invalid shard id: {name}")
+            ids.add(ident)
+            if role not in ("sealed", "active_write"):
+                raise AlphaSnapshotError(f"invalid shard role: {name}")
+            if role == "active_write":
+                active_count += 1
+                if ident != active_id:
+                    raise AlphaSnapshotError(f"active shard identity mismatch: {name}")
+            if not isinstance(relative, str):
+                raise AlphaSnapshotError(f"invalid shard path: {name}")
+            spec = PurePosixPath(relative.replace("\\", "/"))
+            if (spec.is_absolute() or ".." in spec.parts or
+                    ":" in relative or spec.suffix.lower() not in SQLITE_EXTENSIONS or
+                    not relative.startswith(("sqlite/", "sqlite\\"))):
+                raise AlphaSnapshotError(f"unsafe shard reference: {relative}")
+            path = snapshot.joinpath(*spec.parts)
+            _safe_ancestors(path)
+            if not path.is_file() or not path.resolve().is_relative_to(snapshot):
+                raise AlphaSnapshotError(f"missing shard reference: {relative}")
+            size = path.stat().st_size
+            expected_hash = shard.get("sha256")
+            if role == "sealed" and not expected_hash:
+                raise AlphaSnapshotError(f"sealed shard missing SHA256: {relative}")
+            if expected_hash and (
+                not isinstance(expected_hash, str) or
+                _sha(path).lower() != expected_hash.lower()
+            ):
+                raise AlphaSnapshotError(f"shard SHA256 mismatch: {relative}")
+            if shard.get("size_bytes") != size:
+                if role != "active_write" or not normalize_active:
+                    raise AlphaSnapshotError(f"shard size mismatch: {relative}")
+                normalized.append({
+                    "manifest": name, "shard_id": ident,
+                    "previous_size_bytes": shard.get("size_bytes"),
+                    "snapshot_size_bytes": size,
+                })
+                shard["size_bytes"] = size
+                changed = True
+        if active_count != 1 or active_id not in ids:
+            raise AlphaSnapshotError(f"missing/duplicate active shard: {name}")
+        if changed:
+            with manifest.open("w", encoding="utf-8", newline="\n") as handle:
+                json.dump(data, handle, ensure_ascii=False, indent=2)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+    return normalized
+
+
 def _read_evidence(snapshot: Path) -> dict[str, object]:
     evidence = snapshot / EVIDENCE
     _safe_item(evidence)
@@ -187,6 +270,7 @@ def verify_snapshot(snapshot_root: str | Path, *, emit: Emit = print) -> dict[st
             actual.add(path.relative_to(snapshot).as_posix())
     if actual != expected:
         raise AlphaSnapshotError("snapshot contains missing or unlisted files")
+    _check_shard_manifests(snapshot)
     return {
         "ok": True, "schema_version": SCHEMA,
         "file_count": len(records), "sqlite_passed": db_count,
@@ -279,8 +363,23 @@ def create_snapshot(
             current = path.stat()
             if current.st_size != size or current.st_mtime_ns != mtime:
                 raise AlphaSnapshotError(f"source changed during snapshot: {path.name}")
+        # Online SQLite backup may checkpoint WAL into the cloned main file.
+        # Rebase only ACTIVE shard sizes in staging; sealed SHA stays immutable.
+        normalized = _check_shard_manifests(stage, normalize_active=True)
+        by_path = {entry["path"]: entry for entry in records}
+        for name in ("runtime_audit_shards.json", "runtime_memory_shards.json"):
+            rel = "sqlite/runtime_write_v1/" + name
+            if rel in by_path:
+                item = by_path[rel]
+                updated_path = stage / rel
+                updated_sha = _sha(updated_path)
+                if updated_sha != item["sha256"]:
+                    item["source_sha256"] = item["sha256"]
+                    item["sha256"] = updated_sha
+                    item["size_bytes"] = updated_path.stat().st_size
         evidence = {
             "schema_version": SCHEMA,
+            "normalized_active_shards": normalized,
             "snapshot_id": str(uuid.uuid4()),
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
             "created_with_runtime": PACKAGE_VERSION,

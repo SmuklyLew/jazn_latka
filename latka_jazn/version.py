@@ -1,3 +1,4 @@
+# v116.0.34.94.6.5: Verify snapshot shard contracts and gate review on fresh canonical release metadata.
 # v116.0.34.94.6.4: Explicit offline alpha MEMORY snapshot with SQLite Backup API, verification and operator gating.
 # v116.0.34.94.6.2: Local settings ownership, operator boundaries and transactional persistence.
 # v116.0.34.94.6: Isolate worktree runtime and operator TPA layouts without moving live state.
@@ -150,9 +151,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.4"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.5"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "memory-alpha-snapshot-gate"
+PACKAGE_RELEASE_NAME = "memory-alpha-snapshot-manifest-consistency"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
