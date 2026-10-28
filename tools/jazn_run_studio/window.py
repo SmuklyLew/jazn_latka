@@ -408,7 +408,7 @@ class Window(QMainWindow):
         self.button("Zapisz wybór", self.select_local_model, model_row)
         layout.addLayout(model_row)
         row = QHBoxLayout()
-        self.button("Połącz", self.core.connect_chat, row)
+        self.button("Połącz", self.connect_local_chat, row)
         self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), row)
         self.button("Wznów wynik", self.resume_chat, row)
         layout.addLayout(row)
@@ -434,6 +434,16 @@ class Window(QMainWindow):
             raise StudioError("Zakończ lub rozłącz obecną rozmowę przed zmianą modelu; nie porzucaj request_id")
         self.apply_settings(replace(self.core.settings, model=chosen))
         self.chat_state.setText("Wybrano model " + chosen + ". Połącz czat, aby sprawdzić rzeczywistą generację.")
+
+    def connect_local_chat(self) -> None:
+        """Never bypass the first-run model and matching daemon evidence via sidebar."""
+        if not (self.quick_runtime_ready and self.quick_generation_ready
+                and self.core.settings.model):
+            raise StudioError(
+                "Najpierw w Pulpicie sprawdź zgodność runtime oraz uruchom "
+                "test generacji wybranego modelu Ollama."
+            )
+        self.core.connect_chat()
 
     def send_chat(self) -> None:
         if self.core.chat is None:
@@ -1007,6 +1017,9 @@ class Window(QMainWindow):
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)
+                if key.startswith("service:ollama"):
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
                 if key in {"start", "stop", "restart"}:
                     # A lifecycle transition invalidates previously observed readiness.
                     self.quick_runtime_ready = False
