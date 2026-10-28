@@ -851,11 +851,12 @@ class Window(QMainWindow):
                 )
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                ready = all(value.get(flag) is True for flag in (
+                ready = (all(value.get(flag) is True for flag in (
                     "endpoint_reachable", "process_identity_confirmed",
                     "endpoint_identity_matches", "heartbeat_fresh",
                     "conversation_ready",
-                ))
+                )) and value.get("root_matches") is not False
+                    and value.get("version_matches") is not False)
                 state = str(value.get("active_state") or "niepotwierdzony")
                 heading = ("Pracuje — zweryfikowany runtime" if ready else
                            "Zatrzymane — runtime nieaktywny" if state in {"dead", "stopped", "inactive"} else
@@ -867,6 +868,10 @@ class Window(QMainWindow):
                 if not self.quick_runtime_ready:
                     self.quick_generation_ready = False
                 self.refresh_quick_start()
+                if value.get("root_matches") is False:
+                    detail += " • BŁĄD: daemon należy do innego katalogu (np. aktywnego master)"
+                if value.get("version_matches") is False:
+                    detail += " • BŁĄD: uruchomiony daemon ma inną wersję SYSTEM"
                 self.evidence.setText("Runtime: " + detail)
                 self.update_service_summary("runtime", detail)
                 # Header and sidebar show the *same* most recent runtime observation.
