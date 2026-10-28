@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "4da58230432c8efb13cf27779c5c7631a6eff296",
+  "base_merge_commit": "6bd69d4c295aebc2aca5b39a29b09fe7a177ea4e",
   "base_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
-  "commit_date": "2026-10-28T20:59:04+01:00",
+  "commit_date": "2026-10-28T21:13:14+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T19:59:04+00:00",
+  "generated_at_utc": "2026-10-28T20:13:14+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "713dbcfdb1128dda425d5146ac55ee293a21b0c7",
+  "git_tree_sha": "5ccec98b214e4d0784d98df39fa6bb1ef88ee813",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "4da58230432c8efb13cf27779c5c7631a6eff296",
+    "source_commit": "6bd69d4c295aebc2aca5b39a29b09fe7a177ea4e",
     "source_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "4da58230432c8efb13cf27779c5c7631a6eff296",
+  "source_commit": "6bd69d4c295aebc2aca5b39a29b09fe7a177ea4e",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
   "tag": null,
