@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-  "package_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-  "generated_at_utc": "2026-10-28T06:44:52+00:00",
-  "updated_at_utc": "2026-10-28T06:44:52+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "package_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "generated_at_utc": "2026-10-28T07:24:45+00:00",
+  "updated_at_utc": "2026-10-28T07:24:45+00:00",
   "start_file": "run.py",
   "file_count": 3454,
   "static_file_count": 3454,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3050,
-      "sha256": "3684380806bd92d2562ccd15d2bb7b8582f57018e828e86b2f6a880c73960f54",
+      "size_bytes": 3032,
+      "sha256": "7453a9063e63cb0b56ceead791b7adde850359dde3bfcbd86f3bf6c0520e798e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1960,
-      "sha256": "3c3829f56167c331b2f966e2de8df4fe1c56a484bd9ce691b8879e95180deeec",
+      "size_bytes": 1957,
+      "sha256": "a2b03dc31a2ef7432521530077b29e53af44219220e53414ce8521826f9ca26f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1462,8 +1462,8 @@
     },
     {
       "path": "docs/memory/MEMORY_ALPHA_SNAPSHOT_OPERATOR.md",
-      "size_bytes": 4398,
-      "sha256": "19c16d2d876fbdf29c5c80517b06262d49db679a2d54487b4dde245fb464b14b",
+      "size_bytes": 4614,
+      "sha256": "4b0ad99825a83098bae72fcca39cbdc01df6d6449d99ee99eb7ee80da764e664",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9734,7 +9734,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7908,
-      "sha256": "f78eec16c7d6d961ceded95576c52512c8fd675ba8daadab1d7559ad6bacbe10",
+      "sha256": "924ef640cdc47b7fee5b4b749aadd4bb010498a513155e092b0f80072f4e97ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10174,8 +10174,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_alpha_snapshot.py",
-      "size_bytes": 18790,
-      "sha256": "daa323e3b9e7b7f6dec4f289cb24056114c6236b931d2ab9d73a0bea3c11b711",
+      "size_bytes": 20176,
+      "sha256": "d464a0fbc40bee0f5c9313347cf2a8cc7e1d79d0fb77b0bd0344fa21a1994ae3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11245,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18596,
-      "sha256": "c5d29395608cc49d5ee885e9833306c65a178618dea2b516728a8a36b8bd5521",
+      "size_bytes": 18704,
+      "sha256": "13d5d32ab4b2bcef98329be6c30c0273d1fa0ecf82b24480cf52af36142ec9f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27958,8 +27958,8 @@
     },
     {
       "path": "tests/test_memory_alpha_snapshot.py",
-      "size_bytes": 8020,
-      "sha256": "033b6cc2a266f1d2bf0e1c13786ab5292432e84665fdc82d0acb61f870e61a0c",
+      "size_bytes": 9362,
+      "sha256": "115b4287e90a2bf954745a3581d8b46b030d5f54573cc64c632b83be1a00cb0b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30883,8 +30883,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2547937,
-      "sha256": "fbb1d0092b37a716311493f6aedfec07fcba59153b5f70e1147572bdebdc6eca",
+      "size_bytes": 2548792,
+      "sha256": "5ead8342974e2b673f07d8b7a6b146d3dbbf38a1a5a512ba4930d3bee560344f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31541,11 +31541,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "release_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-    "package_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-    "release_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+    "package_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+    "release_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight"
   },
   "legacy_aliases": {
     "version": "release_version"

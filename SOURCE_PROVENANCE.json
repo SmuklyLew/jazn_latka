@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "8e3322383f96bdd072495aca940a1e9487be551e",
-  "base_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
-  "commit_date": "2026-10-28T06:44:52Z",
+  "base_merge_commit": "68c123472f8839d44e846c2ab198de378c89016f",
+  "base_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "commit_date": "2026-10-28T07:24:45Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T06:44:52+00:00",
+  "generated_at_utc": "2026-10-28T07:24:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "6a26bb3e08dbcdac911141d9ff0ad4fc72526a2b",
+  "git_tree_sha": "fa5cf8952fb0fe286e0c66bdf7d25968dbe4aed2",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "8e3322383f96bdd072495aca940a1e9487be551e",
-    "source_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix"
+    "source_commit": "68c123472f8839d44e846c2ab198de378c89016f",
+    "source_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "release_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "8e3322383f96bdd072495aca940a1e9487be551e",
+  "source_commit": "68c123472f8839d44e846c2ab198de378c89016f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "source_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "update_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "version_source": "latka_jazn/version.py"
 }
