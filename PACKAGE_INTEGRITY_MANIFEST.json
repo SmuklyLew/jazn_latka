@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
-  "package_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
-  "generated_at_utc": "2026-10-28T05:54:04+00:00",
-  "updated_at_utc": "2026-10-28T05:54:04+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+  "package_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+  "generated_at_utc": "2026-10-28T06:27:50+00:00",
+  "updated_at_utc": "2026-10-28T06:27:50+00:00",
   "start_file": "run.py",
   "file_count": 3454,
   "static_file_count": 3454,
@@ -283,8 +283,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 21456,
-      "sha256": "07ac16549c73141262c878fe7470f6d524b4c9653173c7df758b84d35c88624b",
+      "size_bytes": 21916,
+      "sha256": "12db91e8c61da90d48f9ac6f4d055af34a1f2fc5eafd95579fcc24e5ce70225b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2965,
-      "sha256": "a140a9dbd100ed52e24b4b486e2c36c5583715c97cc5dc632c44d1b26cf64adb",
+      "size_bytes": 3056,
+      "sha256": "8dca58eca541bb7b5d4fcb07cb86c3d2b7567fac5111cce2090956b283af8b39",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1945,
-      "sha256": "6c1f1967feabcf5d300b589eac9c0889b3f3d22c860eb9c90d41138ad1847d53",
+      "size_bytes": 1961,
+      "sha256": "656655fa90df08c978de15c8cb0807e26dcb407def78ee33904b7f6a50a54081",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1462,8 +1462,8 @@
     },
     {
       "path": "docs/memory/MEMORY_ALPHA_SNAPSHOT_OPERATOR.md",
-      "size_bytes": 3767,
-      "sha256": "06ed6cb6ea3301019bc3b17b84c5635198fae3af1291a2155f53ccc8ddc0a2ee",
+      "size_bytes": 4398,
+      "sha256": "19c16d2d876fbdf29c5c80517b06262d49db679a2d54487b4dde245fb464b14b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9734,7 +9734,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7908,
-      "sha256": "6664bc083aec44bd61201bcb613ca1bc95fe49e1fd38c40e36790f13a3dcb26a",
+      "sha256": "70d83d853d1c0443f9fd066387bc4bb0c9c2cc9b1a117a15224cdb37ed0a5260",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10174,8 +10174,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_alpha_snapshot.py",
-      "size_bytes": 13748,
-      "sha256": "0fdbf6ce69e5711c494f44858c7be2ca92ed9837fd2cd38fa945f3d38901223d",
+      "size_bytes": 18790,
+      "sha256": "daa323e3b9e7b7f6dec4f289cb24056114c6236b931d2ab9d73a0bea3c11b711",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11245,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18371,
-      "sha256": "fa34fd8b087ff3484a581ea5a2a2992d9cf80cb19c27edb4f907e6e131c19f7f",
+      "size_bytes": 18492,
+      "sha256": "7e386da789f83fa07535337b19ac2ddd5a5409fc2be6f02d9f3fd91271c9eb35",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27958,8 +27958,8 @@
     },
     {
       "path": "tests/test_memory_alpha_snapshot.py",
-      "size_bytes": 4940,
-      "sha256": "a46b0b39edf87103f35d36a101fe896cc4897b81d77d41ae980d9ccb044f7ee3",
+      "size_bytes": 8020,
+      "sha256": "033b6cc2a266f1d2bf0e1c13786ab5292432e84665fdc82d0acb61f870e61a0c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30883,8 +30883,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2545597,
-      "sha256": "fb2e80340cea8d23559ac501729deec4d156b1d49e6f26fb90a401a4d0794e89",
+      "size_bytes": 2547937,
+      "sha256": "924da9b7e54a63fad159d4a13ce03d67f7c91969b5357cda86a2eb55c1078713",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31541,11 +31541,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
+  "release_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
-    "package_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate",
-    "release_version": "16.3.25.5.116.0.34.94.6.4-memory-alpha-snapshot-gate"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+    "package_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+    "release_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency"
   },
   "legacy_aliases": {
     "version": "release_version"
