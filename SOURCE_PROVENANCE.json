@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "0f83b6cda97ba0a14df539b8c2815387563936c1",
-    "base_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
+    "base_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+    "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
