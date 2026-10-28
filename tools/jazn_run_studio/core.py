@@ -570,10 +570,15 @@ class Controller:
                     raise StudioError("Port Ollama jest zajęty; Studio nie przejmuje istniejącego procesu")
             argv = [executable(self.settings.ollama, "ollama"), "serve"]
         elif service == "cloudflare":
-            if not self.settings.tunnel_config or not self.settings.tunnel_id:
-                raise StudioError("Wskaż istniejącą konfigurację i nazwę/UUID tunelu w ustawieniach")
-            argv = [executable(self.settings.cloudflared, "cloudflared"), "tunnel", "--config",
-                    self.settings.tunnel_config, "run", self.settings.tunnel_id]
+            # Studio starts the gateway in --loopback-dev/noauth mode. A generic
+            # cloudflared tunnel could publish that endpoint without authentication.
+            # File presence and a local /readyz probe do not establish OAuth.
+            raise StudioError(
+                "Nie publikuj lokalnej bramy --loopback-dev przez Cloudflare Tunnel. "
+                "Wdroż osobny gateway --public-oauth przez deploy/chatgpt_mcp, "
+                "zweryfikuj OAuth i tunel w trybie operatora. Studio może wykonać "
+                "kontrole odczytowe, ale nie ma dowodu pozwalającego uruchomić publiczny tunel."
+            )
         elif service == "gateway":
             port = int(self.settings.mcp_port)
             with socket.socket() as probe:
