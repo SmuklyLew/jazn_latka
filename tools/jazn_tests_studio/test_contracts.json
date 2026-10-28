@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.3",
-  "active_definition_count": 2808,
+  "system_version": "16.3.25.5.116.0.34.94.6.9",
+  "active_definition_count": 2830,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -49169,6 +49169,381 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 64
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_inspection_uses_canonical_profiles_without_requiring_optional": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_inspection_uses_canonical_profiles_without_requiring_optional",
+      "purpose": "Inspection uses canonical profiles without requiring optional",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_missing_essential_is_reported": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_missing_essential_is_reported",
+      "purpose": "Missing essential is reported",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_no_venv_never_spawns_pip": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_no_venv_never_spawns_pip",
+      "purpose": "No venv never spawns pip",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_declined_install_never_spawns_pip": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_declined_install_never_spawns_pip",
+      "purpose": "Declined install never spawns pip",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_allowed_install_uses_only_pypi_with_guardrails": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_allowed_install_uses_only_pypi_with_guardrails",
+      "purpose": "Allowed install uses only pypi with guardrails",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_noninteractive_missing_environment_does_not_install": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_noninteractive_missing_environment_does_not_install",
+      "purpose": "Noninteractive missing environment does not install",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_user_can_confirm_lowercase_tak": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_user_can_confirm_lowercase_tak",
+      "purpose": "User can confirm lowercase tak",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_compact_report_hides_optional_package_details": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_compact_report_hides_optional_package_details",
+      "purpose": "Compact report hides optional package details",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_optional_install_stays_in_menu": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_optional_install_stays_in_menu",
+      "purpose": "Optional install stays in menu",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 125
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_auto_tui_selection_and_forced_text": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_auto_tui_selection_and_forced_text",
+      "purpose": "Auto tui selection and forced text",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 144
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_numeric_text_menu_has_validation_and_cancel": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_numeric_text_menu_has_validation_and_cancel",
+      "purpose": "Numeric text menu has validation and cancel",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 153
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_cursor_menu_uses_prompt_toolkit_radio": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_cursor_menu_uses_prompt_toolkit_radio",
+      "purpose": "Cursor menu uses prompt toolkit radio",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_text_ui_does_not_need_optional_tui_dependency": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_text_ui_does_not_need_optional_tui_dependency",
+      "purpose": "Text ui does not need optional tui dependency",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 179
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_tui_cancel_logs_reason": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_tui_cancel_logs_reason",
+      "purpose": "Tui cancel logs reason",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 184
+    },
+    "tests/test_run_studio_dependency_preflight.py::test_tui_selection_logs_chosen_option": {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "name": "test_tui_selection_logs_chosen_option",
+      "purpose": "Tui selection logs chosen option",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 197
+    },
+    "tests/test_run_studio_qt_recovery.py::test_unrelated_import_error_never_offers_install": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_unrelated_import_error_never_offers_install",
+      "purpose": "Unrelated import error never offers install",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_run_studio_qt_recovery.py::test_ci_and_smoke_never_prompt": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_ci_and_smoke_never_prompt",
+      "purpose": "Ci and smoke never prompt",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_run_studio_qt_recovery.py::test_cancel_never_installs": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_cancel_never_installs",
+      "purpose": "Cancel never installs",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_run_studio_qt_recovery.py::test_no_virtualenv_fails_closed": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_no_virtualenv_fails_closed",
+      "purpose": "No virtualenv fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_run_studio_qt_recovery.py::test_approved_install_uses_pypi_and_same_python": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_approved_install_uses_pypi_and_same_python",
+      "purpose": "Approved install uses pypi and same python",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_run_studio_qt_recovery.py::test_explicit_denial_never_installs": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_explicit_denial_never_installs",
+      "purpose": "Explicit denial never installs",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_run_studio_qt_recovery.py::test_qt_installer_accepts_tak_without_uppercase": {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "name": "test_qt_installer_accepts_tak_without_uppercase",
+      "purpose": "Qt installer accepts tak without uppercase",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
     },
     "tests/test_run_version_fastpath.py::test_canonical_run_version_matches_full_release_identity": {
       "path": "tests/test_run_version_fastpath.py",
