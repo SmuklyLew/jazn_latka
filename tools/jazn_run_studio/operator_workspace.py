@@ -103,6 +103,9 @@ class OperatorWorkspace:
         self.problem_details.setWordWrap(True)
         self.problem_details.setMinimumHeight(56)
         layout.addWidget(self.problem_details)
+        open_logs = QPushButton("Pokaż logi wybranego zadania")
+        open_logs.clicked.connect(self.show_selected_logs)
+        layout.addWidget(open_logs)
         self.tabs.addTab(panel, "Problemy")
 
     def _output(self) -> None:
@@ -221,6 +224,7 @@ class OperatorWorkspace:
             item.setData(0, Qt.ItemDataRole.UserRole, target)
             item.setData(1, Qt.ItemDataRole.UserRole, guide.remedy)
             item.setData(2, Qt.ItemDataRole.UserRole, reason)
+            item.setData(3, Qt.ItemDataRole.UserRole, key)
         self.problems.expandAll()
         self.problem_summary.setText(f"Problemy: {len(self.failures)} • wykonane kontrole: {self.completed}" if self.failures else
                                     "Nie wykryto problemów w wykonanych kontrolach." if self.completed else
@@ -236,6 +240,23 @@ class OperatorWorkspace:
             + str(item.data(2, Qt.ItemDataRole.UserRole) or "nieznany")
             + "\nCo zrobić: " + str(item.data(1, Qt.ItemDataRole.UserRole) or "Sprawdź logi.")
         )
+
+    def show_selected_logs(self) -> None:
+        item = self.problems.currentItem()
+        if item is None or item.parent() is None:
+            raise StudioError("Najpierw wybierz konkretny problem z listy")
+        key = str(item.data(3, Qt.ItemDataRole.UserRole) or "")
+        index = self.source.findData(key)
+        if index < 0:
+            # Events are already in core logs; refresh adds newly observed sources.
+            self.refresh()
+            index = self.source.findData(key)
+        if index >= 0:
+            self.source.setCurrentIndex(index)
+        else:
+            self.source.setCurrentIndex(0)
+        self.show(1)
+        self.refresh()
 
     def open_problem(self, item: QTreeWidgetItem, _column: int) -> None:
         if item.parent() is None:
