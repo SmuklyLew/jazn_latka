@@ -73,7 +73,7 @@ def test_approved_install_uses_pypi_and_same_python(
     assert "--only-binary=:all:" in cmd
     assert seen["cwd"] == tmp_path
     assert seen["shell"] is False
-    assert seen["env"]["PIP_CONFIG_FILE"] == recovery.os.devnull
+    assert isinstance((env := seen["env"]), dict) and env["PIP_CONFIG_FILE"] == recovery.os.devnull
 
 
 def test_explicit_denial_never_installs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
