@@ -202,8 +202,8 @@ diff --git a/tools/jazn_run_studio/dependency_preflight.py b/tools/jazn_run_stud
 +    if not _interactive():
 +        return False
 +    try:
-+        from importlib.util import find_spec
-+        return find_spec("prompt_toolkit") is not None
++        from prompt_toolkit.shortcuts import radiolist_dialog, button_dialog
++        return callable(radiolist_dialog) and callable(button_dialog)
 +    except (ImportError, AttributeError, ValueError):
 +        return False
 +
