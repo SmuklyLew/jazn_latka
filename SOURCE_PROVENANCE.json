@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "759014304bfa5b38c0502ec33345e27fe96f5f5d",
-    "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+    "base_commit": "6aac92db151d6d7fa39825b459f4c9486d6de280",
+    "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "6aac92db151d6d7fa39825b459f4c9486d6de280",
