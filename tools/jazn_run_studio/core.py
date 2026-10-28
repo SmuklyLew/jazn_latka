@@ -573,6 +573,18 @@ class Controller:
         self._launch(job, [python_executable(self.settings), "-X", "utf8", *entry], None)
         return job
 
+    def ensure_ollama(self) -> Job:
+        """Start only if the loopback port is free; otherwise verify existing API.
+
+        Never adopt an external process just because the port is occupied.
+        """
+        with socket.socket() as probe:
+            probe.settimeout(0.25)
+            occupied = probe.connect_ex(("127.0.0.1", 11434)) == 0
+        if occupied:
+            return self.probe("ollama")  # HTTP identity and model evidence follow.
+        return self.start_service("ollama")
+
     def start_service(self, service: str) -> Job:
         if service == "ollama":
             # Fail closed if another service already occupies the API port.
