@@ -6,8 +6,8 @@ from typing import Callable
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
-    QCheckBox, QFormLayout, QLabel, QLineEdit, QMessageBox, QProgressBar,
-    QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWizard, QWizardPage, QWidget,
+    QCheckBox, QComboBox, QFormLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QProgressBar,
+    QPushButton, QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWizard, QWizardPage, QWidget,
 )
 
 from .core import Controller, Settings, StudioError
@@ -78,20 +78,78 @@ class SetupWizard(QWizard):
         self.addPage(self.integrations)
 
         self.configuration = QWizardPage()
-        self.configuration.setTitle("C • Profil i zakończenie")
+        self.configuration.setTitle("C • Ustawienia lokalne i ogólne")
         config = QVBoxLayout(self.configuration)
-        config.addWidget(QLabel("Konfiguracja pełnego backendu, katalogów i profili jest dostępna w Konfiguracji Qt. Zapis dotyczy przyszłych uruchomień."))
-        form = QFormLayout()
-        self.model = QLineEdit(core.settings.model)
-        self.model.setPlaceholderText("np. gemma3:latest — wybierz model widoczny w Ollama")
-        form.addRow("Model Ollama", self.model)
-        config.addLayout(form)
-        self.consent = QCheckBox("Zapisz sprawdzoną konfigurację Studio i zakończ kreator")
+        note = QLabel(
+            "Sprawdź ustawienia Studio i przyszłych usług. Puste pola opcjonalne są dozwolone. "
+            "Pamięć kanoniczna jest przyłączana przez runtime, nie kopiowana przez kreator. "
+            "Zapis nie uruchamia usług ani nie zmienia aktywnego daemona."
+        )
+        note.setWordWrap(True)
+        config.addWidget(note)
+        self.setting_fields: dict[str, QLineEdit] = {}
+        self.theme_choice = QComboBox()
+        self.theme_choice.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
+        self.theme_choice.setCurrentText(core.settings.theme)
+        self.runtime_profile_choice = QComboBox()
+        self.runtime_profile_choice.addItem("Bez profilu", "off")
+        self.runtime_profile_choice.addItem("Walidowany profil operatora", "operator")
+        self.runtime_profile_choice.setCurrentIndex(
+            1 if core.settings.runtime_profile == "operator" else 0
+        )
+        group_fields = (
+            ("Lokalne uruchomienie", (
+                ("python", "Python dla Jaźni"), ("ollama", "Plik Ollama"),
+                ("model", "Nazwa modelu Ollama"),
+                ("daemon_url", "Adres daemona (loopback)"),
+            )),
+            ("Integracja ChatGPT — ustawienia opcjonalne", (
+                ("mcp_python", "Python dla MCP"),
+                ("mcp_port", "Port lokalnego MCP"),
+                ("cloudflared", "Plik cloudflared"),
+                ("tunnel_config", "Konfiguracja tunelu"),
+                ("tunnel_id", "Nazwa lub UUID tunelu"),
+                ("cloudflare_url", "Publiczny HTTPS (tylko do testu)"),
+            )),
+            ("Bezpieczeństwo i wygląd", (
+                ("secrets_file", "Ścieżka do prywatnego pliku sekretów"),
+                ("accent", "Akcent (#RRGGBB)"),
+            )),
+        )
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setMinimumHeight(230)
+        surface = QWidget()
+        surface_layout = QVBoxLayout(surface)
+        for title, items in group_fields:
+            box = QGroupBox(title)
+            form = QFormLayout(box)
+            for key, label in items:
+                field = QLineEdit(str(getattr(core.settings, key)))
+                field.setAccessibleName(label)
+                if key in {"secrets_file", "tunnel_config"}:
+                    field.setToolTip("Podaj ścieżkę absolutną do istniejącego pliku; nie wprowadzaj tokenu.")
+                self.setting_fields[key] = field
+                form.addRow(label, field)
+            surface_layout.addWidget(box)
+        appearance = QGroupBox("Profil i motyw")
+        appearance_form = QFormLayout(appearance)
+        appearance_form.addRow("Motyw", self.theme_choice)
+        appearance_form.addRow("Przyszłe uruchomienia", self.runtime_profile_choice)
+        surface_layout.addWidget(appearance)
+        surface_layout.addStretch()
+        scroll.setWidget(surface)
+        config.addWidget(scroll, 1)
+        self.model = self.setting_fields["model"]  # Existing public wizard field.
+        self.model.setPlaceholderText("np. gemma3:latest — model widoczny w Ollama")
+        suggest = QPushButton("Uzupełnij dostępne programy w pustych polach (bez zapisu)")
+        suggest.clicked.connect(self.suggest_paths)
+        config.addWidget(suggest)
+        self.consent = QCheckBox("Zapisz zweryfikowane ustawienia lokalne i ogólne Studio")
         config.addWidget(self.consent)
         self.notice = QLabel("Usługi i modele nie są automatycznie uruchamiane ani instalowane.")
         self.notice.setWordWrap(True)
         config.addWidget(self.notice)
-        config.addStretch()
         self.addPage(self.configuration)
         self.finished_setup = False
         self.report: dict = {}
@@ -143,6 +201,24 @@ class SetupWizard(QWizard):
             job, self.probe_job = self.probe_job, None
             self.probe_result.setText(job.key + ": " + job.state + " / " + str(job.error or "test wykonany; gotowość generacji wymaga osobnego testu"))
 
+    def suggest_paths(self) -> None:
+        """Discover installed executable paths without installation or implicit writes."""
+        from .core import discovery
+        from pathlib import Path
+        found = discovery(self.core.settings)
+        updated: list[str] = []
+        for key in ("python", "ollama", "cloudflared"):
+            candidate = found.get(key)
+            field = self.setting_fields[key]
+            if (not field.text().strip() and isinstance(candidate, str)
+                    and Path(candidate).is_file()):
+                field.setText(candidate)
+                updated.append(key)
+        self.notice.setText(
+            "Propozycje w formularzu, bez zapisu: " +
+            (", ".join(updated) if updated else "brak wykrytych programów")
+        )
+
     def accept(self) -> None:
         if not self.report.get("required_ok") or not self.consent.isChecked():
             self.notice.setText("Wymagana pozytywna kontrola Studio i zgoda na zapis konfiguracji.")
@@ -153,7 +229,9 @@ class SetupWizard(QWizard):
             if self.report.get("scope") != setup_scope(self.core.root, python_executable(self.core.settings)):
                 raise StudioError("Interpreter lub wymagania zmieniły się; ponów kontrolę.")
             data = asdict(self.core.settings)
-            data["model"] = self.model.text().strip()
+            data.update({key: field.text().strip() for key, field in self.setting_fields.items()})
+            data["theme"] = self.theme_choice.currentText()
+            data["runtime_profile"] = str(self.runtime_profile_choice.currentData())
             self.save(Settings.validate(data))
             self.completed(str(self.report["scope"]))
         except (OSError, ValueError, RuntimeError) as exc:
