@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "682fab59c8fcab6eba13007f7f924d046d88b12d",
+  "base_merge_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
   "base_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
-  "commit_date": "2026-10-28T21:54:33Z",
+  "commit_date": "2026-10-29T00:32:44+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T21:54:33+00:00",
+  "generated_at_utc": "2026-10-28T23:32:44+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "4af361ccdb324dcdde1a408d9d29c59346483b65",
+  "git_tree_sha": "51d9845a94b58faf7c8879368973b1971c42339d",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "759014304bfa5b38c0502ec33345e27fe96f5f5d",
-    "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+    "base_commit": "e5e22a87abdbeb51591e0d95a889a885b7725265",
+    "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "682fab59c8fcab6eba13007f7f924d046d88b12d",
+    "source_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
     "source_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "682fab59c8fcab6eba13007f7f924d046d88b12d",
+  "source_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
   "tag": null,
