@@ -1,0 +1,267 @@
+diff --git a/tools/jazn_run_studio/dependency_preflight.py b/tools/jazn_run_studio/dependency_preflight.py
+--- a/tools/jazn_run_studio/dependency_preflight.py
++++ b/tools/jazn_run_studio/dependency_preflight.py
+@@ -230,96 +230,104 @@
+     if ui == "tui":
+         from prompt_toolkit.shortcuts import radiolist_dialog
+         try:
+-            return radiolist_dialog(
+-                title=title, text=description, values=options,
+-                ok_text="Wybierz", cancel_text="Wróć",
+-            ).run()
+-        except (KeyboardInterrupt, EOFError):
+-            return None
+-
+-    print("\n" + "-" * 56)
+-    print(title)
+-    print(description)
+-    for value, label in options:
+-        print(f"  [{value}] {label}")
+-    allowed = {value for value, _ in options}
+-    while True:
+-        try:
+-            selected = input("Wybierz numer (Enter = powrót): ").strip()
+-        except (KeyboardInterrupt, EOFError):
+-            return None
+-        if not selected:
+-            return None
+-        if selected in allowed:
+-            return selected
+-        print("Wpisz numer jednej z widocznych opcji.")
+-
+-
+-def _menu(root: Path, report: dict, *, explicit: bool, ui: str = "text") -> bool:
+-    """One lifecycle-free menu, with numeric and cursor-driven frontends."""
+-    if not _interactive():
+-        print("Brak interaktywnego terminala: niczego nie instalowano.")
+-        return not report["required_issues"]
+-    while True:
+-        count = len(report["required_issues"])
+-        heading = (
+-            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
+-            f"Python: {report['interpreter']}\n"
+-            "Strzałki / Enter / Tab" if ui == "tui" else
+-            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
+-            f"Python: {report['interpreter']}\n"
+-            "Wpisz numer opcji i naciśnij Enter"
+-        )
+-        choice = _choose(
+-            ui, "JAŹŃ | BIBLIOTEKI", heading,
+-            [("1", "Napraw wymagane biblioteki GUI"),
+-             ("2", "Wybierz dodatkowy profil do instalacji"),
+-             ("3", "Wyświetl listę pakietów i wymaganych wersji"),
+-             ("4", "Odśwież diagnostykę"),
+-             ("0", "Zakończ" if explicit else "Anuluj start")],
+-        )
+-        if choice in (None, "0"):
+-            print("Diagnostyka zakończona, bez dodatkowej instalacji.")
+-            return not report["required_issues"] if explicit else False
+-        if choice == "3":
+-            show(report, full=True)
+-            continue
+-        if choice == "4":
+-            report = inspect(root)
+-            show(report, full=False)
+-            continue
+-        if choice == "1":
+-            selected = list(ESSENTIAL)
+-        elif choice == "2":
+-            candidates = [(name, rows) for name, rows in report["profiles"].items()
+-                          if name not in ESSENTIAL]
+-            options = [
+-                (str(i), f"{PROFILE_LABELS.get(name, name)} ({name})"
+-                 f"  {sum(row['state'] == 'PASS' for row in rows)}/{len(rows)} OK")
+-                for i, (name, rows) in enumerate(candidates, 1)
+-            ]
+-            opt = _choose(
+-                ui, "JAŹŃ | FUNKCJE DODATKOWE",
+-                "Zaznacz funkcję. Brak pakietu opcjonalnego nie blokuje GUI.",
+-                options + [("0", "Powrót")],
+-            )
+-            if opt in (None, "0"):
+-                continue
+-            selected = [candidates[int(opt) - 1][0]]
+-        else:
+-            continue
+-
+-        success = (_install(root, selected, ui="tui") if ui == "tui"
+-                   else _install(root, selected))
+-        if not success:
+-            print("Instalacja anulowana lub nieudana.")
+-            continue
+-        report = inspect(root)
+-        show(report, full=False)
+-        outstanding = [row for name in selected for row in report["profiles"].get(name, [])
+-                       if row["state"] != "PASS"]
+-        print(f"[{'WYMAGA NAPRAWY' if outstanding else 'GOTOWE'}] " +
+-              f"{', '.join(selected)}: {len(outstanding)} pozostałych problemów.")
++            decision = radiolist_dialog(
++                title=title, text=description, values=options,
++                ok_text="Wybierz", cancel_text="Wróć",
++            ).run()
++        except (KeyboardInterrupt, EOFError):
++            print("[TUI] Dialog został przerwany. Niczego nie wybrano.")
++            return None
++        if decision is None:
++            print("[TUI] Dialog zamknięty bez wyboru.")
++        else:
++            print(f"[TUI] Wybrano opcję: {decision}.")
++        return decision
++
++    print("\n" + "-" * 56)
++    print(title)
++    print(description)
++    for value, label in options:
++        print(f"  [{value}] {label}")
++    allowed = {value for value, _ in options}
++    while True:
++        try:
++            selected = input("Wybierz numer (Enter = powrót): ").strip()
++        except (KeyboardInterrupt, EOFError):
++            return None
++        if not selected:
++            return None
++        if selected in allowed:
++            return selected
++        print("Wpisz numer jednej z widocznych opcji.")
++
++
++def _menu(root: Path, report: dict, *, explicit: bool, ui: str = "text") -> bool:
++    """One lifecycle-free menu, with numeric and cursor-driven frontends."""
++    if not _interactive():
++        print("Brak interaktywnego terminala: niczego nie instalowano.")
++        return not report["required_issues"]
++    while True:
++        count = len(report["required_issues"])
++        heading = (
++            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
++            f"Python: {report['interpreter']}\n"
++            "Strzałki / Enter / Tab" if ui == "tui" else
++            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
++            f"Python: {report['interpreter']}\n"
++            "Wpisz numer opcji i naciśnij Enter"
++        )
++        choice = _choose(
++            ui, "JAŹŃ | BIBLIOTEKI", heading,
++            [("1", "Napraw wymagane biblioteki GUI"),
++             ("2", "Wybierz dodatkowy profil do instalacji"),
++             ("3", "Wyświetl listę pakietów i wymaganych wersji"),
++             ("4", "Odśwież diagnostykę"),
++             ("0", "Zakończ" if explicit else "Anuluj start")],
++        )
++        if choice in (None, "0"):
++            print("Diagnostyka zakończona, bez dodatkowej instalacji.")
++            return not report["required_issues"] if explicit else False
++        if choice == "3":
++            show(report, full=True)
++            continue
++        if choice == "4":
++            report = inspect(root)
++            show(report, full=False)
++            continue
++        if choice == "1":
++            selected = list(ESSENTIAL)
++        elif choice == "2":
++            candidates = [(name, rows) for name, rows in report["profiles"].items()
++                          if name not in ESSENTIAL]
++            options = [
++                (str(i), f"{PROFILE_LABELS.get(name, name)} ({name})"
++                 f"  {sum(row['state'] == 'PASS' for row in rows)}/{len(rows)} OK")
++                for i, (name, rows) in enumerate(candidates, 1)
++            ]
++            opt = _choose(
++                ui, "JAŹŃ | FUNKCJE DODATKOWE",
++                "Zaznacz funkcję. Brak pakietu opcjonalnego nie blokuje GUI.",
++                options + [("0", "Powrót")],
++            )
++            if opt in (None, "0"):
++                continue
++            selected = [candidates[int(opt) - 1][0]]
++        else:
++            continue
++
++        success = (_install(root, selected, ui="tui") if ui == "tui"
++                   else _install(root, selected))
++        if not success:
++            print("Instalacja anulowana lub nieudana.")
++            continue
++        report = inspect(root)
++        show(report, full=False)
++        outstanding = [row for name in selected for row in report["profiles"].get(name, [])
++                       if row["state"] != "PASS"]
++        if outstanding:
++            print(f"[WYMAGA NAPRAWY] {', '.join(selected)}: {len(outstanding)} problemów.")
++        else:
++            print(f"[GOTOWE] Zainstalowany profil: {', '.join(selected)}.")
+         if not explicit and not report["required_issues"]:
+             print("Uruchamiam Serce Systemu.")
+             return True
+diff --git a/tests/test_run_studio_dependency_preflight.py b/tests/test_run_studio_dependency_preflight.py
+--- a/tests/test_run_studio_dependency_preflight.py
++++ b/tests/test_run_studio_dependency_preflight.py
+@@ -179,3 +179,29 @@
+ def test_text_ui_does_not_need_optional_tui_dependency(monkeypatch):
+     monkeypatch.setattr(preflight, "_tui_available", lambda: False)
+     assert preflight._ui_mode("text") == "text"
++
++
++def test_tui_cancel_logs_reason(monkeypatch, capsys):
++    import sys
++    from types import ModuleType
++    fake = ModuleType("prompt_toolkit.shortcuts")
++    class CancelDialog:
++        def run(self):
++            return None
++    fake.radiolist_dialog = lambda **kwargs: CancelDialog()
++    monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
++    assert preflight._choose("tui", "Menu", "Opis", [("0", "Zakończ")]) is None
++    assert "[TUI] Dialog zamknięty bez wyboru." in capsys.readouterr().out
++
++
++def test_tui_selection_logs_chosen_option(monkeypatch, capsys):
++    import sys
++    from types import ModuleType
++    fake = ModuleType("prompt_toolkit.shortcuts")
++    class PickDialog:
++        def run(self):
++            return "2"
++    fake.radiolist_dialog = lambda **kwargs: PickDialog()
++    monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
++    assert preflight._choose("tui", "Menu", "Opis", [("2", "Profil")]) == "2"
++    assert "[TUI] Wybrano opcję: 2." in capsys.readouterr().out
+diff --git a/latka_jazn/version.py b/latka_jazn/version.py
+--- a/latka_jazn/version.py
++++ b/latka_jazn/version.py
+@@ -149,9 +149,9 @@
+ # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
+ # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
+ # No private MEMORY contents or active daemon data are included.
+-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.7"
+-DISTRIBUTION_VERSION = PACKAGE_VERSION
+-PACKAGE_RELEASE_NAME = "run-studio-text-cursor-diagnostics"
++PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.8"
++DISTRIBUTION_VERSION = PACKAGE_VERSION
++PACKAGE_RELEASE_NAME = "run-studio-tui-log-and-regression-repair"
+ PACKAGE_VERSION_FULL = (
+     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
+ )
+diff --git a/tools/jazn_run_studio/README.md b/tools/jazn_run_studio/README.md
+--- a/tools/jazn_run_studio/README.md
++++ b/tools/jazn_run_studio/README.md
+@@ -176,6 +176,16 @@
+ with PyPI HTTPS and operator consent. For hash-locked offline installs use
+ Dependency Studio. Audit PASS does not certify daemon/model readiness.
+ 
++## Diagnostyka TUI: regresja i zapis wyboru (.6.8)
++
++Przywrócono publiczny komunikat `[GOTOWE] Zainstalowany profil: studio.`
++zgodny z istniejącym testem `test_optional_install_stays_in_menu`.
++Po zamknięciu dialogu kursorowego pozostaje w terminalu informacja, czy
++anulowano dialog, czy wybrano opcję. Interfejs prompt-toolkit może korzystać
++z alternatywnego bufora ekranu, więc jego obraz nie zawsze pozostaje
++w historii PowerShell. Żaden komunikat nie oznacza zgody na instalację;
++instalator nadal wymaga osobnego potwierdzenia operatora.
++
+ ## Operations
+ 
+ - Runtime commands use the public launcher; lifecycle, identity verification and

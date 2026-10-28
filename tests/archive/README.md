@@ -29,3 +29,5 @@ Additional append-only provenance:
 | --- | --- | --- |
 | `tests/test_release_metadata_semantics_v163253.py` from master release `16.3.25.3.4` | `test_release_metadata_semantics_v163253_v16_3_25_3_4.py` | `280fe1dbfc838fe4afe36666f4b81c0a3831a46b` |
 | `tests/test_version_consistency_audit_v163254.py` from target release `16.3.25.4` before current-master integration follow-up | `test_version_consistency_audit_v163254_v16_3_25_4.py` | `dab2b6cd1a429064752a04808d1c5fcb935ec010` |
+| `tests/test_run_studio_dependency_preflight.py` from Run Studio release `16.3.25.5.116.0.34.94.6.9` | `test_run_studio_dependency_preflight_v16_3_25_5_116_0_34_94_6_9.py` | `e914e9b3726a3d073343342400ca944a831ddef1` |
+| `tests/test_run_studio_qt_recovery.py` from Run Studio release `16.3.25.5.116.0.34.94.6.9` | `test_run_studio_qt_recovery_v16_3_25_5_116_0_34_94_6_9.py` | `421f5b4dcbc55f697b77f8df355b3aa567736661` |

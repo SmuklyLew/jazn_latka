@@ -1,0 +1,448 @@
+diff --git a/tools/jazn_run_studio/dependency_preflight.py b/tools/jazn_run_studio/dependency_preflight.py
+--- a/tools/jazn_run_studio/dependency_preflight.py
++++ b/tools/jazn_run_studio/dependency_preflight.py
+@@ -144,138 +144,225 @@
+     return bool(sys.stdin and sys.stdout and sys.stdin.isatty() and sys.stdout.isatty())
+ 
+ 
+-def _install(root: Path, profiles: list[str]) -> bool:
+-    if getattr(sys, "frozen", False) or sys.prefix == sys.base_prefix:
+-        print("Odmowa: instalacja do środowiska globalnego/frozen jest niedozwolona.")
+-        return False
+-    common = _common()
+-    requirements = common.resolve_profile_requirements(root, profiles)
+-    statuses = common.inspect_current_requirements(root, requirements)
+-    wanted = [s.requirement for s in statuses if not s.ready]
+-    if not wanted:
+-        print("Brak pakietów do instalacji w wybranym profilu.")
+-        return True
+-    print("\nInterpreter: " + sys.executable)
+-    print("Oficjalny indeks: " + INDEX)
+-    print("Do instalacji / uzgodnienia wersji:")
+-    for item in wanted:
+-        print("  - " + item)
+-    print("Pip rozwiąże również zależności pośrednie w tym samym venv.")
+-    print("Uwaga: PyPI przez HTTPS nie oznacza instalacji z hash-locked wheelhouse.")
+-    print("Profil 'polish-nlp' może być duży. Nie instaluj go, jeśli nie jest potrzebny.")
+-    try:
+-        accepted = input("Wpisz TAK, aby uruchomić pip dla tej listy: ").strip()
+-    except (EOFError, KeyboardInterrupt):
+-        return False
+-    if accepted.casefold() != "tak":
+-        print("Anulowano — pip nie został uruchomiony.")
+-        return False
+-    cmd = [sys.executable, "-m", "pip", "--isolated", "--require-virtualenv",
+-           "install", "--index-url", INDEX, "--only-binary=:all:",
+-           "--no-input", *wanted]
+-    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("PIP_")}
+-    env["PIP_CONFIG_FILE"] = os.devnull
+-    try:
+-        result = subprocess.run(cmd, cwd=root, env=env, shell=False,
+-                                check=False, timeout=1800)
+-    except (OSError, subprocess.TimeoutExpired) as exc:
+-        print("Instalacja nieudana: " + type(exc).__name__)
+-        return False
+-    if result.returncode:
+-        print("pip zwrócił kod " + str(result.returncode))
+-        return False
+-    importlib.invalidate_caches()
+-    return True
+-
+-
+-def _menu(root: Path, report: dict, *, explicit: bool) -> bool:
+-    """Persistent operator menu; selecting optional profile never exits early."""
+-    if not _interactive():
+-        print("Brak interaktywnego terminala: niczego nie instalowano.")
+-        return not report["required_issues"]
+-    while True:
+-        print("\nCO CHCESZ ZROBIĆ?")
+-        print("  [1] Napraw biblioteki wymagane do uruchomienia GUI")
+-        print("  [2] Wybierz opcjonalną funkcję do instalacji")
+-        print("  [3] Pokaż pełną listę pakietów i wersji")
+-        print("  [4] Sprawdź ponownie")
+-        print("  [0] Zakończ diagnostykę" if explicit else "  [0] Anuluj uruchomienie")
+-        try:
+-            action = input("Wybór [0-4]: ").strip()
+-        except (KeyboardInterrupt, EOFError):
+-            return False
+-        if action in ("", "0"):
+-            print("Zakończono bez dodatkowej instalacji.")
+-            return not report["required_issues"] if explicit else False
+-        if action == "3":
+-            show(report, full=True)
+-            continue
+-        if action == "4":
+-            report = inspect(root)
+-            show(report, full=False)
+-            continue
+-        if action == "1":
+-            selected = list(ESSENTIAL)
+-        elif action == "2":
+-            options = [name for name in report["profiles"] if name not in ESSENTIAL]
+-            print("\nFUNKCJE OPCJONALNE:")
+-            for i, name in enumerate(options, 1):
+-                rows = report["profiles"][name]
+-                failed = sum(row["state"] != "PASS" for row in rows)
+-                print(f"  [{i}] {PROFILE_LABELS.get(name, name)} ({name})"
+-                      f" — {'gotowe' if not failed else f'brakuje {failed} z {len(rows)}'}")
+-            try:
+-                choice = input("Numer funkcji (Enter = powrót): ").strip()
+-            except (KeyboardInterrupt, EOFError):
+-                return False
+-            if not choice.isdigit() or not 1 <= int(choice) <= len(options):
+-                print("Powrót do menu; niczego nie zainstalowano.")
+-                continue
+-            selected = [options[int(choice) - 1]]
+-        else:
+-            print("Nieznana opcja. Wybierz numer od 0 do 4.")
+-            continue
+-        if not _install(root, selected):
+-            print("Instalacja nie została potwierdzona albo nie powiodła się.")
+-            continue
+-        report = inspect(root)
+-        show(report, full=False)
+-        outstanding = [
+-            row for name in selected for row in report["profiles"].get(name, [])
+-            if row["state"] != "PASS"
+-        ]
+-        if outstanding:
+-            print(f"[WYMAGA NAPRAWY] {', '.join(selected)}: {len(outstanding)} problemów.")
+-        else:
+-            print(f"[GOTOWE] Zainstalowany profil: {', '.join(selected)}.")
+-        if not explicit and not report["required_issues"]:
+-            print("Uruchamiam interfejs Serce Systemu.")
+-            return True
+-
+-def dispatch(argv: list[str] | None = None) -> int:
+-    args = list(sys.argv[1:] if argv is None else argv)
+-    explicit = "--dependencies" in args
+-    if explicit:
+-        args.remove("--dependencies")
+-        if args:
+-            print("--dependencies akceptuje tylko opcjonalne --root PATH.", file=sys.stderr)
+-            if len(args) != 2 or args[0] != "--root":
+-                return 2
+-    if not explicit and any(value in HELP for value in args):
+-        from .app import main
+-        return main(args)
+-    root = _root(args)
+-    try:
+-        report = inspect(root)
+-        show(report, full=False)
+-    except (OSError, ValueError, RuntimeError, KeyError) as exc:
+-        print("Nie można sprawdzić profili: " + type(exc).__name__ + ": " + str(exc),
+-              file=sys.stderr)
+-        return 2
+-    if explicit:
+-        _menu(root, report, explicit=True)
+-        return 0 if not inspect(root)["required_issues"] else 2
+-    if report["required_issues"] and not _menu(root, report, explicit=False):
++def _install(root: Path, profiles: list[str], *, ui: str = "text") -> bool:
++    if getattr(sys, "frozen", False) or sys.prefix == sys.base_prefix:
++        print("Odmowa: instalacja do środowiska globalnego/frozen jest niedozwolona.")
++        return False
++    common = _common()
++    requirements = common.resolve_profile_requirements(root, profiles)
++    statuses = common.inspect_current_requirements(root, requirements)
++    wanted = [s.requirement for s in statuses if not s.ready]
++    if not wanted:
++        print("Brak pakietów do instalacji w wybranym profilu.")
++        return True
++    print("\nInterpreter: " + sys.executable)
++    print("Oficjalny indeks: " + INDEX)
++    print("Do instalacji / uzgodnienia wersji:")
++    for item in wanted:
++        print("  - " + item)
++    print("Pip rozwiąże również zależności pośrednie w tym samym venv.")
++    print("Uwaga: PyPI przez HTTPS nie oznacza instalacji z hash-locked wheelhouse.")
++    print("Profil 'polish-nlp' może być duży. Nie instaluj go, jeśli nie jest potrzebny.")
++    if ui == "tui":
++        from prompt_toolkit.shortcuts import button_dialog
++        try:
++            decision = button_dialog(
++                title="Jaźń | Zgoda na instalację",
++                text=("Interpreter: " + sys.executable + "\nŹródło: " + INDEX +
++                      "\n\nWybrane wymagania:\n" + "\n".join(wanted) +
++                      "\n\nPip może doinstalować zależności pośrednie."),
++                buttons=[("TAK — instaluj", True), ("Nie, anuluj", False)],
++            ).run()
++        except (EOFError, KeyboardInterrupt):
++            return False
++        if decision is not True:
++            print("Anulowano — pip nie został uruchomiony.")
++            return False
++    else:
++        try:
++            accepted = input("Wpisz TAK, aby uruchomić pip dla tej listy: ").strip()
++        except (EOFError, KeyboardInterrupt):
++            return False
++        if accepted.casefold() != "tak":
++            print("Anulowano — pip nie został uruchomiony.")
++            return False
++    cmd = [sys.executable, "-m", "pip", "--isolated", "--require-virtualenv",
++           "install", "--index-url", INDEX, "--only-binary=:all:",
++           "--no-input", *wanted]
++    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("PIP_")}
++    env["PIP_CONFIG_FILE"] = os.devnull
++    try:
++        result = subprocess.run(cmd, cwd=root, env=env, shell=False,
++                                check=False, timeout=1800)
++    except (OSError, subprocess.TimeoutExpired) as exc:
++        print("Instalacja nieudana: " + type(exc).__name__)
++        return False
++    if result.returncode:
++        print("pip zwrócił kod " + str(result.returncode))
++        return False
++    importlib.invalidate_caches()
++    return True
++
++
++def _tui_available() -> bool:
++    """TUI is optional; diagnostic bootstrap also works without this package."""
++    if not _interactive():
++        return False
++    try:
++        from prompt_toolkit.shortcuts import radiolist_dialog, button_dialog
++        return callable(radiolist_dialog) and callable(button_dialog)
++    except (ImportError, AttributeError, ValueError):
++        return False
++
++
++def _ui_mode(requested: str = "auto") -> str:
++    if requested == "text":
++        return "text"
++    if _tui_available():
++        return "tui"
++    if requested == "tui":
++        print("Kursorowy TUI niedostępny: używam tekstowego menu.")
++    return "text"
++
++
++def _choose(ui: str, title: str, description: str, options: list[tuple[str, str]]) -> str | None:
++    """Return a stable option key; never perform an install inside the selector."""
++    if ui == "tui":
++        from prompt_toolkit.shortcuts import radiolist_dialog
++        try:
++            return radiolist_dialog(
++                title=title, text=description, values=options,
++                ok_text="Wybierz", cancel_text="Wróć",
++            ).run()
++        except (KeyboardInterrupt, EOFError):
++            return None
++
++    print("\n" + "-" * 56)
++    print(title)
++    print(description)
++    for value, label in options:
++        print(f"  [{value}] {label}")
++    allowed = {value for value, _ in options}
++    while True:
++        try:
++            selected = input("Wybierz numer (Enter = powrót): ").strip()
++        except (KeyboardInterrupt, EOFError):
++            return None
++        if not selected:
++            return None
++        if selected in allowed:
++            return selected
++        print("Wpisz numer jednej z widocznych opcji.")
++
++
++def _menu(root: Path, report: dict, *, explicit: bool, ui: str = "text") -> bool:
++    """One lifecycle-free menu, with numeric and cursor-driven frontends."""
++    if not _interactive():
++        print("Brak interaktywnego terminala: niczego nie instalowano.")
++        return not report["required_issues"]
++    while True:
++        count = len(report["required_issues"])
++        heading = (
++            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
++            f"Python: {report['interpreter']}\n"
++            "Strzałki / Enter / Tab" if ui == "tui" else
++            f"GUI: {'GOTOWE' if not count else 'WYMAGA NAPRAWY (' + str(count) + ')'}\n"
++            f"Python: {report['interpreter']}\n"
++            "Wpisz numer opcji i naciśnij Enter"
++        )
++        choice = _choose(
++            ui, "JAŹŃ | BIBLIOTEKI", heading,
++            [("1", "Napraw wymagane biblioteki GUI"),
++             ("2", "Wybierz dodatkowy profil do instalacji"),
++             ("3", "Wyświetl listę pakietów i wymaganych wersji"),
++             ("4", "Odśwież diagnostykę"),
++             ("0", "Zakończ" if explicit else "Anuluj start")],
++        )
++        if choice in (None, "0"):
++            print("Diagnostyka zakończona, bez dodatkowej instalacji.")
++            return not report["required_issues"] if explicit else False
++        if choice == "3":
++            show(report, full=True)
++            continue
++        if choice == "4":
++            report = inspect(root)
++            show(report, full=False)
++            continue
++        if choice == "1":
++            selected = list(ESSENTIAL)
++        elif choice == "2":
++            candidates = [(name, rows) for name, rows in report["profiles"].items()
++                          if name not in ESSENTIAL]
++            options = [
++                (str(i), f"{PROFILE_LABELS.get(name, name)} ({name})"
++                 f"  {sum(row['state'] == 'PASS' for row in rows)}/{len(rows)} OK")
++                for i, (name, rows) in enumerate(candidates, 1)
++            ]
++            opt = _choose(
++                ui, "JAŹŃ | FUNKCJE DODATKOWE",
++                "Zaznacz funkcję. Brak pakietu opcjonalnego nie blokuje GUI.",
++                options + [("0", "Powrót")],
++            )
++            if opt in (None, "0"):
++                continue
++            selected = [candidates[int(opt) - 1][0]]
++        else:
++            continue
++
++        success = (_install(root, selected, ui="tui") if ui == "tui"
++                   else _install(root, selected))
++        if not success:
++            print("Instalacja anulowana lub nieudana.")
++            continue
++        report = inspect(root)
++        show(report, full=False)
++        outstanding = [row for name in selected for row in report["profiles"].get(name, [])
++                       if row["state"] != "PASS"]
++        print(f"[{'WYMAGA NAPRAWY' if outstanding else 'GOTOWE'}] " +
++              f"{', '.join(selected)}: {len(outstanding)} pozostałych problemów.")
++        if not explicit and not report["required_issues"]:
++            print("Uruchamiam Serce Systemu.")
++            return True
++
++def dispatch(argv: list[str] | None = None) -> int:
++    args = list(sys.argv[1:] if argv is None else argv)
++    explicit = "--dependencies" in args
++    requested_ui = "auto"
++    if explicit:
++        args.remove("--dependencies")
++        for index, value in enumerate(list(args)):
++            if value == "--ui":
++                if index + 1 >= len(args):
++                    print("Oczekiwano --ui auto, text albo tui.", file=sys.stderr)
++                    return 2
++                requested_ui = args[index + 1]
++                del args[index:index + 2]
++                break
++            if value.startswith("--ui="):
++                requested_ui = value.split("=", 1)[1]
++                args.remove(value)
++                break
++        if requested_ui not in {"auto", "text", "tui"}:
++            print("Dozwolone: --ui auto, text, tui.", file=sys.stderr)
++            return 2
++        if args and (len(args) != 2 or args[0] != "--root"):
++            print("Z --dependencies używaj --ui MODE i ewentualnie --root PATH.", file=sys.stderr)
++            return 2
++    if not explicit and any(value in HELP for value in args):
++        from .app import main
++        return main(args)
++    root = _root(args)
++    try:
++        report = inspect(root)
++        show(report, full=False)
++    except (OSError, ValueError, RuntimeError, KeyError) as exc:
++        print("Nie można sprawdzić profili: " + type(exc).__name__ + ": " + str(exc),
++              file=sys.stderr)
++        return 2
++    if explicit:
++        _menu(root, report, explicit=True, ui=_ui_mode(requested_ui))
++        return 0 if not inspect(root)["required_issues"] else 2
++    if report["required_issues"] and not _menu(root, report, explicit=False, ui=_ui_mode()):
+         print("Brak gotowości zależności GUI. Studio nie zostanie uruchomione.", file=sys.stderr)
+         return 2
+     # Control plane remains unchanged; bootstrap does not own runtime lifecycle.
+diff --git a/tests/test_run_studio_dependency_preflight.py b/tests/test_run_studio_dependency_preflight.py
+--- a/tests/test_run_studio_dependency_preflight.py
++++ b/tests/test_run_studio_dependency_preflight.py
+@@ -139,3 +139,43 @@
+     monkeypatch.setattr(preflight, "_pip_check", lambda: ("PASS", ""))
+     assert preflight._menu(Path("."), report, explicit=True) is True
+     assert "[GOTOWE] Zainstalowany profil: studio" in capsys.readouterr().out
++
++
++def test_auto_tui_selection_and_forced_text(monkeypatch):
++    monkeypatch.setattr(preflight, "_tui_available", lambda: True)
++    assert preflight._ui_mode() == "tui"
++    assert preflight._ui_mode("text") == "text"
++    monkeypatch.setattr(preflight, "_tui_available", lambda: False)
++    assert preflight._ui_mode() == "text"
++    assert preflight._ui_mode("tui") == "text"
++
++
++def test_numeric_text_menu_has_validation_and_cancel(monkeypatch):
++    choices = iter(["99", "2"])
++    monkeypatch.setattr("builtins.input", lambda _: next(choices))
++    assert preflight._choose("text", "Title", "Desc", [("1", "A"), ("2", "B")]) == "2"
++    monkeypatch.setattr("builtins.input", lambda _: "")
++    assert preflight._choose("text", "Title", "Desc", [("0", "Exit")]) is None
++
++
++def test_cursor_menu_uses_prompt_toolkit_radio(monkeypatch):
++    import sys
++    from types import ModuleType
++    fake = ModuleType("prompt_toolkit.shortcuts")
++    seen = {}
++    class Dialog:
++        def run(self):
++            return "2"
++    def radio(**kw):
++        seen.update(kw)
++        return Dialog()
++    fake.radiolist_dialog = radio
++    monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
++    assert preflight._choose("tui", "TUI", "Choices", [("1", "A"), ("2", "B")]) == "2"
++    assert seen["title"] == "TUI"
++    assert seen["values"][1][0] == "2"
++
++
++def test_text_ui_does_not_need_optional_tui_dependency(monkeypatch):
++    monkeypatch.setattr(preflight, "_tui_available", lambda: False)
++    assert preflight._ui_mode("text") == "text"
+diff --git a/latka_jazn/version.py b/latka_jazn/version.py
+--- a/latka_jazn/version.py
++++ b/latka_jazn/version.py
+@@ -149,9 +149,9 @@
+ # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
+ # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
+ # No private MEMORY contents or active daemon data are included.
+-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.6"
+-DISTRIBUTION_VERSION = PACKAGE_VERSION
+-PACKAGE_RELEASE_NAME = "run-studio-readable-dependency-diagnostics"
++PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.7"
++DISTRIBUTION_VERSION = PACKAGE_VERSION
++PACKAGE_RELEASE_NAME = "run-studio-text-cursor-diagnostics"
+ PACKAGE_VERSION_FULL = (
+     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
+ )
+diff --git a/tools/jazn_run_studio/README.md b/tools/jazn_run_studio/README.md
+--- a/tools/jazn_run_studio/README.md
++++ b/tools/jazn_run_studio/README.md
+@@ -162,6 +162,20 @@
+ wyłączono kontroli integralności. `pip check: PASS` oznacza spójność
+ pakietów już zainstalowanych, a nie komplet opcjonalnych profili.
+ 
++## Text/TUI for dependency recovery (.6.7)
++
++The default for `run_studio.py --dependencies` is **auto**. On an interactive
++terminal with installed `prompt-toolkit`, this opens arrow-key dialogs
++(Up/Down, Enter, Tab) for menu choice, profile choice and explicit install
++approval. Otherwise a numbered, clearly labeled **text** menu is used.
++Both modes show the same canonical profile audit. You may force the UI with
++`--dependencies --ui text` or `--dependencies --ui tui`; the unavailable
++TUI gracefully falls back to text. Normal GUI startup does not require
++`prompt-toolkit`. No changes to MEMORY, runtime ownership or package sources.
++The approved install still uses the active venv and pinned profile requirements,
++with PyPI HTTPS and operator consent. For hash-locked offline installs use
++Dependency Studio. Audit PASS does not certify daemon/model readiness.
++
+ ## Operations
+ 
+ - Runtime commands use the public launcher; lifecycle, identity verification and
