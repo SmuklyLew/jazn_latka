@@ -1,6 +1,6 @@
 # AGENTS_CODEX_OPERATIONAL_REFERENCE.md — szczegółowa referencja operacyjna
 
-To szczegółowa referencja procedur dla zmian kodu, testów, dokumentacji, konfiguracji i Git. Bieżący routing należy do `AGENTS.md`, a podstawowe zasady programowania do `AGENTS.codex.md`. Czytaj właściwe części tego dokumentu **tylko gdy dotyczą zadania**; nie jest drugim konkurencyjnym zestawem instrukcji, pamięcią ani runtime Jaźni.
+To szczegółowa referencja procedur dla zmian kodu, testów, dokumentacji, konfiguracji i Git. Bieżący routing należy do `AGENTS.md`, a podstawowe zasady programowania do `AGENTS.codex.md`. Wczytaj ten dokument **w całości tylko wtedy, gdy zadanie wymaga szczegółowych procedur**, a stosuj wyłącznie właściwe sekcje; nie jest drugim konkurencyjnym zestawem instrukcji, pamięcią ani runtime Jaźni.
 
 Jeżeli zadanie dotyczy także hostowania lub weryfikacji runtime w ChatGPT, `AGENTS.chatgpt.md` obowiązuje równolegle wyłącznie dla tej odpowiedzialności. Jeżeli dotyczy integracji Ollamy, `AGENTS.ollama.md` jest źródłem kontraktu backendu, ale zmiany repozytoryjne nadal wykonuj według tego pliku.
 
