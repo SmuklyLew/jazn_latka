@@ -863,8 +863,8 @@ class Window(QMainWindow):
                 detail = (heading + " • endpoint: " + yes(value.get("endpoint_reachable")) +
                     " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
                     " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
-                self.quick_runtime_ready = ready
-                if not ready:
+                self.quick_runtime_ready = ready and state == "active_trusted"
+                if not self.quick_runtime_ready:
                     self.quick_generation_ready = False
                 self.refresh_quick_start()
                 self.evidence.setText("Runtime: " + detail)
