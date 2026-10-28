@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "68c123472f8839d44e846c2ab198de378c89016f",
+  "base_merge_commit": "9c3432599ae9d59dd9fe0aedae95513eda899b3c",
   "base_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
-  "commit_date": "2026-10-28T07:24:45Z",
+  "commit_date": "2026-10-28T08:30:20+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T07:24:45+00:00",
+  "generated_at_utc": "2026-10-28T07:30:20+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "fa5cf8952fb0fe286e0c66bdf7d25968dbe4aed2",
+  "git_tree_sha": "f4a202449f5f15ab2e7a8e5750c2600549a2fda3",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "68c123472f8839d44e846c2ab198de378c89016f",
+    "source_commit": "9c3432599ae9d59dd9fe0aedae95513eda899b3c",
     "source_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "68c123472f8839d44e846c2ab198de378c89016f",
+  "source_commit": "9c3432599ae9d59dd9fe0aedae95513eda899b3c",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "tag": null,
