@@ -656,8 +656,10 @@ class Controller:
                 else:
                     job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
-                job.state, job.error = "failed", type(exc).__name__
-                self.emit(job.key, "log", "Test połączenia nie powiódł się: " + type(exc).__name__)
+                from .problem_guidance import probe_failure_code, explain_failure
+                job.state, job.error = "failed", probe_failure_code(exc)
+                guidance = explain_failure(job.key, job.error)
+                self.emit(job.key, "log", guidance.title + ". " + guidance.remedy)
             finally:
                 job.finished = time.time()
                 job.done.set()
