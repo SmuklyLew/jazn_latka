@@ -186,8 +186,11 @@ def _check_shard_manifests(
                 any(ch not in "0123456789abcdefABCDEF" for ch in expected_hash)
             ):
                 raise AlphaSnapshotError(f"invalid shard SHA256: {relative}")
-            if role == "sealed" and _sha(path).lower() != expected_hash.lower():
-                raise AlphaSnapshotError(f"shard SHA256 mismatch: {relative}")
+            if role == "sealed":
+                if not isinstance(expected_hash, str):
+                    raise AlphaSnapshotError(f"sealed shard missing SHA256: {relative}")
+                if _sha(path).lower() != expected_hash.lower():
+                    raise AlphaSnapshotError(f"shard SHA256 mismatch: {relative}")
             if role == "active_write" and normalize_active and expected_hash:
                 cloned_hash = _sha(path)
                 if cloned_hash.lower() != expected_hash.lower():
