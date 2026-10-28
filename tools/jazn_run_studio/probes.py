@@ -65,7 +65,7 @@ def ollama(model: str = "") -> dict[str, Any]:
 
 def ollama_generation(model: str) -> dict[str, Any]:
     """Explicit bounded local generation test, never a Jaźń finalization."""
-    if not isinstance(model, str) or not re.fullmatch(r"[\\w./:@-]{1,200}", model) or model.startswith("-"):
+    if not isinstance(model, str) or not re.fullmatch(r"[\w./:@-]{1,200}", model) or model.startswith("-"):
         raise ValueError("Wybierz poprawną nazwę modelu Ollama")
     evidence = ollama(model)
     if evidence["selected_model_present"] is not True:
