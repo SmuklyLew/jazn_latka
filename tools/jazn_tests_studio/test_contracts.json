@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.12",
-  "active_definition_count": 2849,
+  "active_definition_count": 2850,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19907,18 +19907,35 @@
       "path": "tests/test_heart_system_dashboard.py",
       "name": "test_summary_separates_integrity_memory_and_null_model",
       "purpose": "Summary separates integrity memory and null model",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
       "line": 20
+    },
+    "tests/test_heart_system_dashboard.py::test_searchable_memory_never_claims_autobiographical_continuity": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_searchable_memory_never_claims_autobiographical_continuity",
+      "purpose": "Searchable memory never claims autobiographical continuity",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
     },
     "tests/test_heart_system_dashboard.py::test_integrity_flag_requires_actual_manifest_result": {
       "path": "tests/test_heart_system_dashboard.py",
@@ -19935,7 +19952,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 48
     },
     "tests/test_heart_system_dashboard.py::test_available_configured_model_is_not_verified_generation": {
       "path": "tests/test_heart_system_dashboard.py",
@@ -19950,7 +19967,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 53
     },
     "tests/test_heart_system_dashboard.py::test_malformed_shapes_remain_unknown": {
       "path": "tests/test_heart_system_dashboard.py",
@@ -19965,7 +19982,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 61
     },
     "tests/test_heart_system_dashboard.py::test_real_negative_child_status_emits_observation_and_keeps_failure": {
       "path": "tests/test_heart_system_dashboard.py",
@@ -19982,7 +19999,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 68
     },
     "tests/test_heart_system_dashboard_qt.py::test_dashboard_updates_canonical_summary_and_invalidates_old_green": {
       "path": "tests/test_heart_system_dashboard_qt.py",
