@@ -1210,7 +1210,7 @@ class Window(QMainWindow):
         self.button("Zatrzymaj własną bramę MCP", lambda: self.service("gateway", "stop"), operations)
         layout.addLayout(operations)
         tunnel_operations = QHBoxLayout()
-        self.button("Uruchom tunel (po potwierdzeniu)", lambda: self.service("cloudflare", "start"), tunnel_operations)
+        self.button("Bezpieczny tunel: konfiguracja OAuth", lambda: self.navigate("Ustawienia"), tunnel_operations)
         self.button("Zatrzymaj własny tunel", lambda: self.service("cloudflare", "stop"), tunnel_operations)
         layout.addLayout(tunnel_operations)
         self.button("Odśwież lokalne stany połączenia", self.refresh_services, layout)
@@ -1218,7 +1218,13 @@ class Window(QMainWindow):
         self.button("Zweryfikuj katalog narzędzi MCP", lambda: self.action("mcp"), layout)
         self.button("Sprawdź skonfigurowany Worker Cloudflare", lambda: self.core.probe("cloudflare"), layout)
         self.button("Konfiguracja transportu i usług", lambda: self.navigate("Ustawienia"), layout)
-        note = QLabel("Cloudflare Tunnel jest opcjonalny i wymaga jawnej zgody przed uruchomieniem. Subskrypcja ChatGPT nie zapewnia automatycznie klucza ani rozliczenia OpenAI API. Gotowość zewnętrznego hosta musi potwierdzić rzeczywisty test połączenia.")
+        note = QLabel(
+            "Publiczne MCP wymaga osobnej, uwierzytelnionej bramy --public-oauth "
+            "(deploy/chatgpt_mcp). Studio uruchamia wyłącznie lokalne --loopback-dev, "
+            "którego NIE należy wystawiać przez tunel. Tunel uruchom przez zatwierdzony "
+            "proces deploymentu po weryfikacji OAuth, zakresów i hosta. "
+            "Sama subskrypcja ChatGPT nie zapewnia klucza OpenAI API."
+        )
         note.setWordWrap(True)
         layout.addWidget(note)
         layout.addStretch()
