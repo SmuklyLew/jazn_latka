@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import closing
 import json
 import shutil
 import sqlite3
@@ -63,7 +64,7 @@ def test_sqlite_wal_and_raw_round_trip_without_promotion(tmp_path: Path) -> None
         assert not list(target.rglob("*-wal"))
         assert not list(target.rglob("*-shm"))
         db = target / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3"
-        with sqlite3.connect(db) as restored:
+        with closing(sqlite3.connect(db)) as restored:
             assert restored.execute("SELECT content FROM entries").fetchone()[0] == "committed memory"
         assert verify_snapshot(target, emit=lambda _: None)["ok"] is True
         assert (source / "raw" / "dziennik.json").is_file()
