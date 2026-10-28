@@ -57,7 +57,7 @@ class Window(QMainWindow):
         self.tabs.setTabsClosable(False)
         self.tabs.setMinimumHeight(140)
         self.tabs.hide()
-        self.logs_user_hidden = False
+        self.logs_user_hidden = True
 
         self.sidebar = QWidget()
         self.sidebar.setObjectName("workbenchSidebar")
@@ -249,6 +249,8 @@ class Window(QMainWindow):
         self.button("2. Uruchom Ollama", lambda: self.service("ollama", "start"), steps)
         self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), steps)
         layout.addLayout(steps)
+        self.button("Sprawdź gotowość lokalną (bez uruchamiania usług)",
+                    self.check_local_readiness, layout)
         chat_steps = QHBoxLayout()
         self.quick_chat_button = self.button(
             "3. Przejdź do rozmowy", lambda: self.navigate("Czat lokalny"), chat_steps
@@ -304,6 +306,15 @@ class Window(QMainWindow):
             self.button("Instalacja: " + name, lambda u=url: QDesktopServices.openUrl(QUrl(u)), links)
         layout.addLayout(links)
         self.button("Odśwież wykrywanie", self.render_discovery, layout)
+
+    def check_local_readiness(self) -> None:
+        """Read-only checks, never starts a second daemon or downloads a model."""
+        self.core.start_action("status")
+        self.core.probe("ollama")
+        self.quick_start_status.setText(
+            "Sprawdzam osobno status daemona i listę modeli Ollama. "
+            "Nie uruchamiam usług ani nie zmieniam MEMORY."
+        )
 
     def refresh_quick_start(self) -> None:
         """Only actual runtime identity and explicit Ollama generation unlock chat."""
@@ -815,6 +826,7 @@ class Window(QMainWindow):
         self.tabs.setVisible(visible)
         self.log_toggle.setText("Ukryj logi" if visible else "Pokaż logi")
         if visible and self.tabs.count():
+            self.workspace.dock.hide()
             self.tabs.setFocus()
 
     def update_service_summary(self, service: str, detail: str) -> None:
@@ -832,7 +844,7 @@ class Window(QMainWindow):
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
             self.tabs.addTab(view, key)
-            if not self.logs_user_hidden:
+            if not self.logs_user_hidden and not self.workspace.dock.isVisible():
                 self.tabs.show()
                 self.log_toggle.setText("Ukryj logi")
         return self.logs[key]
