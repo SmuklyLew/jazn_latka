@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.11",
-  "active_definition_count": 2841,
+  "system_version": "16.3.25.5.116.0.34.94.6.13",
+  "active_definition_count": 2859,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19744,6 +19744,160 @@
       "description_source": "source_identity",
       "line": 143
     },
+    "tests/test_heart_studio_operator_diagnostics.py::test_connection_refused_and_timeout_are_not_generic_urlerror": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_connection_refused_and_timeout_are_not_generic_urlerror",
+      "purpose": "Connection refused and timeout are not generic urlerror",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_heart_studio_operator_diagnostics.py::test_ollama_failure_has_actionable_local_loopback_guidance": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_ollama_failure_has_actionable_local_loopback_guidance",
+      "purpose": "Ollama failure has actionable local loopback guidance",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_heart_studio_operator_diagnostics.py::test_runtime_failure_must_warn_about_different_master_daemon": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_runtime_failure_must_warn_about_different_master_daemon",
+      "purpose": "Runtime failure must warn about different master daemon",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_heart_studio_operator_diagnostics.py::test_mcp_guidance_does_not_publish_dev_gateway": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_mcp_guidance_does_not_publish_dev_gateway",
+      "purpose": "Mcp guidance does not publish dev gateway",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_studio_operator_diagnostics.py::test_unknown_job_remains_honest_not_false_success": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_unknown_job_remains_honest_not_false_success",
+      "purpose": "Unknown job remains honest not false success",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_heart_studio_operator_diagnostics.py::test_ensure_ollama_reuses_existing_api_probe_instead_of_start": {
+      "path": "tests/test_heart_studio_operator_diagnostics.py",
+      "name": "test_ensure_ollama_reuses_existing_api_probe_instead_of_start",
+      "purpose": "Ensure ollama reuses existing api probe instead of start",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_heart_studio_operator_diagnostics_qt.py::test_read_only_startup_check_runs_status_and_model_discovery": {
+      "path": "tests/test_heart_studio_operator_diagnostics_qt.py",
+      "name": "test_read_only_startup_check_runs_status_and_model_discovery",
+      "purpose": "Read only startup check runs status and model discovery",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_heart_studio_operator_diagnostics_qt.py::test_only_one_log_panel_visible_at_once": {
+      "path": "tests/test_heart_studio_operator_diagnostics_qt.py",
+      "name": "test_only_one_log_panel_visible_at_once",
+      "purpose": "Only one log panel visible at once",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_heart_studio_operator_diagnostics_qt.py::test_problem_has_remedy_not_just_exception_class": {
+      "path": "tests/test_heart_studio_operator_diagnostics_qt.py",
+      "name": "test_problem_has_remedy_not_just_exception_class",
+      "purpose": "Problem has remedy not just exception class",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_studio_operator_diagnostics_qt.py::test_long_raw_logs_are_truncated_only_in_view": {
+      "path": "tests/test_heart_studio_operator_diagnostics_qt.py",
+      "name": "test_long_raw_logs_are_truncated_only_in_view",
+      "purpose": "Long raw logs are truncated only in view",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
     "tests/test_heart_system_connection_panels_qt.py::test_separate_navigation_and_host_truth_boundary": {
       "path": "tests/test_heart_system_connection_panels_qt.py",
       "name": "test_separate_navigation_and_host_truth_boundary",
@@ -20174,6 +20328,72 @@
       "description_source": "source_identity",
       "line": 111
     },
+    "tests/test_heart_system_guided_onboarding_qt.py::test_first_run_has_all_studio_settings_and_saves_validated_draft": {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "name": "test_first_run_has_all_studio_settings_and_saves_validated_draft",
+      "purpose": "First run has all studio settings and saves validated draft",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_heart_system_guided_onboarding_qt.py::test_chat_step_requires_trusted_runtime_and_explicit_generation": {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "name": "test_chat_step_requires_trusted_runtime_and_explicit_generation",
+      "purpose": "Chat step requires trusted runtime and explicit generation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_heart_system_guided_onboarding_qt.py::test_memory_continuity_label_does_not_unlock_chat": {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "name": "test_memory_continuity_label_does_not_unlock_chat",
+      "purpose": "Memory continuity label does not unlock chat",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_heart_system_guided_onboarding_qt.py::test_sidebar_chat_connect_cannot_bypass_guided_readiness": {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "name": "test_sidebar_chat_connect_cannot_bypass_guided_readiness",
+      "purpose": "Sidebar chat connect cannot bypass guided readiness",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
     "tests/test_heart_system_helper_payload.py::test_helper_rejects_invalid_payload_before_reservation": {
       "path": "tests/test_heart_system_helper_payload.py",
       "name": "test_helper_rejects_invalid_payload_before_reservation",
@@ -20209,6 +20429,85 @@
       "status": "current",
       "description_source": "native_docstring",
       "line": 30
+    },
+    "tests/test_heart_system_memory_and_tunnel_gate.py::test_stale_wake_state_never_claims_autobiographical_continuity": {
+      "path": "tests/test_heart_system_memory_and_tunnel_gate.py",
+      "name": "test_stale_wake_state_never_claims_autobiographical_continuity",
+      "purpose": "Stale wake state never claims autobiographical continuity",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_heart_system_memory_and_tunnel_gate.py::test_verified_continuity_requires_claim_and_wake_state": {
+      "path": "tests/test_heart_system_memory_and_tunnel_gate.py",
+      "name": "test_verified_continuity_requires_claim_and_wake_state",
+      "purpose": "Verified continuity requires claim and wake state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_system_memory_and_tunnel_gate.py::test_studio_refuses_to_publish_loopback_noauth_gateway_as_public_mcp": {
+      "path": "tests/test_heart_system_memory_and_tunnel_gate.py",
+      "name": "test_studio_refuses_to_publish_loopback_noauth_gateway_as_public_mcp",
+      "purpose": "Studio refuses to publish loopback noauth gateway as public mcp",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_heart_system_memory_and_tunnel_gate.py::test_worktree_cannot_adopt_master_daemon_identity": {
+      "path": "tests/test_heart_system_memory_and_tunnel_gate.py",
+      "name": "test_worktree_cannot_adopt_master_daemon_identity",
+      "purpose": "Worktree cannot adopt master daemon identity",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_heart_system_ollama_generation.py::test_missing_model_does_not_generate": {
       "path": "tests/test_heart_system_ollama_generation.py",
@@ -26683,7 +26982,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 90
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_gateway_probe_uses_selected_port_and_keeps_truth_boundary": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -26700,7 +26999,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 95
+      "line": 100
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_read_json_refuses_non_probe_local_paths": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -26719,7 +27018,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 117
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_selected_port_survives_settings_round_trip": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -26736,7 +27035,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 126
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_overflow_drops_logs_but_never_a_validated_final_or_state": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -26755,7 +27054,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 132
+      "line": 137
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_gui_drains_critical_events_even_with_full_log_queue": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -26772,7 +27071,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 154
     },
     "tests/test_jazn_run_studio_memory_view.py::test_memory_page_fits_minimum_viewport": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
