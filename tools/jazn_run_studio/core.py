@@ -606,6 +606,7 @@ class Controller:
         settings = self.settings
         fingerprint = sha256(json.dumps(asdict(settings), sort_keys=True).encode()).hexdigest()
         calls = {"ollama": lambda: probes.ollama(settings.model),
+                 "ollama_generate": lambda: probes.ollama_generation(settings.model),
                  "gateway": lambda: probes.gateway(settings.mcp_port),
                  "cloudflare": lambda: probes.cloudflare(settings.cloudflare_url),
                  "tunnel_service": lambda: probes.tunnel_service(self.root)}
@@ -630,9 +631,11 @@ class Controller:
                 # the operator job red when the selected capability is absent.
                 if key in {"gateway", "cloudflare"} and evidence.get("ready") is not True:
                     job.state, job.error = "failed", "service_not_ready"
-                elif key == "ollama" and evidence.get("selected_model_present") is False:
+                elif key in {"ollama", "ollama_generate"} and evidence.get("selected_model_present") is False:
                     job.state, job.error = ("failed", "ollama_models_empty" if not evidence.get("models")
                                              else "selected_model_missing")
+                elif key == "ollama_generate" and evidence.get("generation_verified") is not True:
+                    job.state, job.error = "failed", "ollama_generation_unverified"
                 else:
                     job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
