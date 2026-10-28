@@ -127,11 +127,16 @@ Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych.
 Dla samych instrukcji i dokumentacji:
 
 ```bash
-python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
 git diff --check
 ```
 
-Limit 5000 znaków sprawdzaj przy zmianach loadera ChatGPT, jego generatora lub routingu, a nie bezwarunkowo przy każdej aktualizacji dokumentacji. To celowo ostrzejszy compatibility/headroom gate; nie zwiększaj go tylko dlatego, że interfejs może przyjąć więcej.
+Dodatkowo przy zmianach loadera ChatGPT, jego generatora lub routingu sprawdź limit tekstu:
+
+```bash
+python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
+```
+
+Nie uruchamiaj tej kontroli bezwarunkowo przy każdej aktualizacji dokumentacji. To celowo ostrzejszy compatibility/headroom gate; nie zwiększaj go tylko dlatego, że interfejs może przyjąć więcej.
 
 Sprawdź także:
 - czy router wskazuje wyłącznie istniejące pliki;
