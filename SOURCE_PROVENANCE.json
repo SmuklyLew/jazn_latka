@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "9e388555dbba2dc973987270c130e80a3ef806f2",
-    "base_version": "16.3.25.5.116.0.34.92-secure-build-casefold-regressions",
+    "base_commit": "35a3f7eade7064d2b29d0da6c717f019530da3be",
+    "base_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "35a3f7eade7064d2b29d0da6c717f019530da3be",
