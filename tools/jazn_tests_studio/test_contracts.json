@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.6",
-  "active_definition_count": 2818,
+  "system_version": "16.3.25.5.116.0.34.94.6.7",
+  "active_definition_count": 2819,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31324,17 +31324,17 @@
       "description_source": "source_identity",
       "line": 118
     },
-    "tests/test_memory_alpha_snapshot.py::test_active_shard_size_rebased_only_in_staging": {
+    "tests/test_memory_alpha_snapshot.py::test_active_shard_metadata_rebased_only_after_valid_source": {
       "path": "tests/test_memory_alpha_snapshot.py",
-      "name": "test_active_shard_size_rebased_only_in_staging",
-      "purpose": "Active shard size rebased only in staging",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_active_shard_metadata_rebased_only_after_valid_source",
+      "purpose": "Active shard metadata rebased only after valid source",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.cli",
@@ -31344,17 +31344,17 @@
       "description_source": "source_identity",
       "line": 128
     },
-    "tests/test_memory_alpha_snapshot.py::test_invalid_sealed_shard_never_promoted": {
+    "tests/test_memory_alpha_snapshot.py::test_source_shard_size_mismatch_rejected_before_staging": {
       "path": "tests/test_memory_alpha_snapshot.py",
-      "name": "test_invalid_sealed_shard_never_promoted",
-      "purpose": "Invalid sealed shard never promoted",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_source_shard_size_mismatch_rejected_before_staging",
+      "purpose": "Source shard size mismatch rejected before staging",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 2,
       "expected_exceptions": [
         "AlphaSnapshotError"
       ],
@@ -31364,7 +31364,29 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 163
+    },
+    "tests/test_memory_alpha_snapshot.py::test_invalid_sealed_shard_never_promoted": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_invalid_sealed_shard_never_promoted",
+      "purpose": "Invalid sealed shard never promoted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 184
     },
     "tests/test_memory_alpha_snapshot.py::test_verify_shard_metadata_inconsistent_fails_closed": {
       "path": "tests/test_memory_alpha_snapshot.py",
@@ -31386,7 +31408,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 180
+      "line": 206
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",
