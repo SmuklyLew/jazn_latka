@@ -6,6 +6,7 @@ the caller must independently quiesce all writers before invoking create.
 """
 from __future__ import annotations
 
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable
@@ -161,7 +162,7 @@ def verify_snapshot(snapshot_root: str | Path, *, emit: Emit = print) -> dict[st
             if entry.get("method") != "sqlite_online_backup_api":
                 raise AlphaSnapshotError(f"untrusted SQLite snapshot method: {relative}")
             uri = path.resolve().as_uri() + "?mode=ro&immutable=1"
-            with sqlite3.connect(uri, uri=True, timeout=10) as db:
+            with closing(sqlite3.connect(uri, uri=True, timeout=10)) as db:
                 db.execute("PRAGMA query_only=ON")
                 if db.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
                     raise AlphaSnapshotError(f"SQLite integrity failed: {relative}")
@@ -217,6 +218,12 @@ def create_snapshot(
         raise AlphaSnapshotError("destination parent must exist")
     files, dirs, excluded = _inventory(source)
     stamp = [(source / rel, size, mtime) for rel, size, mtime in files]
+    # WAL and SHM are transient, but changes to them during the capture are a
+    # strong signal that the operator did not actually quiesce every writer.
+    for relative in excluded:
+        path = source.joinpath(*PurePosixPath(relative).parts)
+        info = _safe_item(path)
+        stamp.append((path, info.st_size, info.st_mtime_ns))
     started = time.monotonic()
     stage = dest.with_name(dest.name + ".incomplete-" + uuid.uuid4().hex)
     stage.mkdir(mode=0o700)
