@@ -67,7 +67,7 @@ def ollama_generation(model: str) -> dict[str, Any]:
     """Explicit bounded local generation test, never a Jaźń finalization."""
     if not isinstance(model, str) or not re.fullmatch(r"[\w./:@-]{1,200}", model) or model.startswith("-"):
         raise ValueError("Wybierz poprawną nazwę modelu Ollama")
-    evidence = ollama(model)
+    evidence = {**ollama(model), "accepted_visible_turn": False}
     if evidence["selected_model_present"] is not True:
         return {**evidence, "generation_verified": False, "reason": "model_not_visible"}
     request = Request(
