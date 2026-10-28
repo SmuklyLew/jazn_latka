@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
-  "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-  "commit_date": "2026-10-28T17:34:41+01:00",
+  "base_merge_commit": "6aac92db151d6d7fa39825b459f4c9486d6de280",
+  "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+  "commit_date": "2026-10-28T22:34:27Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T16:34:41+00:00",
+  "generated_at_utc": "2026-10-28T22:34:27+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "d0db8d059e3d0fd5581bdd7273a72ef6cb0ea05d",
+  "git_tree_sha": "0ff8873802ab3c7e5f52184a85aabb6d6e3e0b11",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+    "base_commit": "759014304bfa5b38c0502ec33345e27fe96f5f5d",
     "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
-    "source_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair"
+    "source_commit": "6aac92db151d6d7fa39825b459f4c9486d6de280",
+    "source_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "release_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+  "source_commit": "6aac92db151d6d7fa39825b459f4c9486d6de280",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "source_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "update_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
   "version_source": "latka_jazn/version.py"
 }

@@ -104,6 +104,7 @@ class ChatClient:
                         for payload in frames(output):
                             self.receive(payload)
                     except (OSError, ValueError, subprocess.SubprocessError):
+                        job.error = "chat_protocol_error"
                         self.core.emit("chat", "chat_state", "Błąd transportu. Zachowano request_id; użyj Wznów wynik.")
                         job.cancel.set()
                 thread = threading.Thread(target=reader, daemon=True)
@@ -123,7 +124,9 @@ class ChatClient:
                 thread.join(3)
                 stderr.join(3)
                 job.returncode = proc.returncode
-                job.state = "stopped" if job.cancel.is_set() else "failed"
+                if not job.cancel.is_set() and job.error is None:
+                    job.error = "chat_transport_exit:" + str(proc.returncode)
+                job.state = "failed" if job.error else "stopped" if job.cancel.is_set() else "failed"
             except (OSError, ValueError) as exc:
                 job.state, job.error = "failed", type(exc).__name__
             finally:
@@ -217,9 +220,20 @@ class ChatClient:
                 done = run(argv, cwd=self.core.root, timeout=30)
                 if len(done.stdout) > 2097152:
                     raise ValueError("poll_output_limit")
-                self.receive(json.loads(done.stdout))
-                job.state = "succeeded" if (self.pending is None or self._awaiting_gui_ack == request) else "failed"
+                payload = json.loads(done.stdout)
+                if not isinstance(payload, dict):
+                    raise ValueError("invalid_resume_payload")
+                self.receive(payload)
                 job.returncode = done.returncode
+                if done.returncode:
+                    job.state, job.error = "failed", "resume_exit:" + str(done.returncode)
+                elif self.pending is None or self._awaiting_gui_ack == request:
+                    job.state = "succeeded"
+                elif payload.get("done") is False or payload.get("phase_result_ready") is False:
+                    job.state = "succeeded"  # Successful poll; pending request is not a failure.
+                    self.core.emit("chat:resume", "chat_state", "Wynik nadal oczekuje. Zachowano request_id; wznów tę samą turę.")
+                else:
+                    job.state, job.error = "failed", "resume_result_unaccepted"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
                 job.state, job.error = "failed", type(exc).__name__
             finally:

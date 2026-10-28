@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 import queue
 from typing import Callable
@@ -104,7 +104,7 @@ class Window(QMainWindow):
         header_layout.addStretch(1)
         self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
         self.workbench_status.setObjectName("workbenchStatus")
-        self.workbench_status.setAccessibleName("Informacja o trybie Studio, nie o gotowości daemona")
+        self.workbench_status.setAccessibleName("Ostatnio sprawdzona gotowość lokalnego runtime; nie oznacza zaakceptowanej odpowiedzi")
         header_layout.addWidget(self.workbench_status)
 
         self.content_splitter = QSplitter(Qt.Orientation.Vertical)
@@ -235,10 +235,36 @@ class Window(QMainWindow):
         layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
         self.button("Kreator konfiguracji…", self.open_setup, layout)
         self.dashboard_summary: dict[str, QLabel] = {}
+        self.quick_runtime_ready = False
+        self.quick_generation_ready = False
+        self.quick_start_status = QLabel(
+            "Krok 1: runtime niezweryfikowany. Krok 2: model niezweryfikowany. "
+            "Krok 3: rozmowa zostanie odblokowana po dwóch testach."
+        )
+        self.quick_start_status.setWordWrap(True)
+        layout.addWidget(self.quick_start_status)
+        steps = QHBoxLayout()
+        self.button("1. Uruchom runtime", lambda: self.action("start"), steps)
+        self.button("Sprawdź runtime", lambda: self.action("status"), steps)
+        self.button("2. Uruchom Ollama", lambda: self.service("ollama", "start"), steps)
+        self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), steps)
+        layout.addLayout(steps)
+        chat_steps = QHBoxLayout()
+        self.quick_chat_button = self.button(
+            "3. Przejdź do rozmowy", lambda: self.navigate("Czat lokalny"), chat_steps
+        )
+        self.quick_chat_button.setEnabled(False)
+        self.button("Status pamięci i ciągłości", lambda: self.navigate("Dowody MEMORY"), chat_steps)
+        layout.addLayout(chat_steps)
+        self.quick_memory_status = QLabel(
+            "MEMORY: sprawdź status runtime; obecność bazy nie potwierdza ciągłości."
+        )
+        self.quick_memory_status.setWordWrap(True)
+        layout.addWidget(self.quick_memory_status)
         summary = QFormLayout()
         for key, title in (("version", "Wersja SYSTEM"), ("integrity", "Integralność SYSTEM"),
                            ("provenance", "Pochodzenie źródeł"), ("memory", "MEMORY"),
-                           ("model", "Adapter językowy")):
+                           ("continuity", "Ciągłość / wake-state"), ("model", "Adapter językowy")):
             field = QLabel("Nie wykonano kontroli statusu.")
             field.setTextFormat(Qt.TextFormat.PlainText)
             field.setWordWrap(True)
@@ -278,6 +304,18 @@ class Window(QMainWindow):
             self.button("Instalacja: " + name, lambda u=url: QDesktopServices.openUrl(QUrl(u)), links)
         layout.addLayout(links)
         self.button("Odśwież wykrywanie", self.render_discovery, layout)
+
+    def refresh_quick_start(self) -> None:
+        """Only actual runtime identity and explicit Ollama generation unlock chat."""
+        ready = (self.quick_runtime_ready and self.quick_generation_ready
+                 and bool(self.core.settings.model))
+        self.quick_chat_button.setEnabled(ready)
+        self.quick_start_status.setText(
+            "1. Runtime: " + ("potwierdzony" if self.quick_runtime_ready else "niezweryfikowany") +
+            "  •  2. Model: " + ("generacja potwierdzona" if self.quick_generation_ready
+                                 else "brak potwierdzonej generacji") +
+            "  •  3. Czat: " + ("możesz połączyć" if ready else "wymaga obu etapów")
+        )
 
     def render_discovery(self) -> None:
         data = discovery(self.core.settings)
@@ -356,8 +394,21 @@ class Window(QMainWindow):
         self.chat_state = QLabel("Rozłączony. Wybierz model w ustawieniach, uruchom runtime i Ollamę, a następnie połącz.")
         self.chat_state.setWordWrap(True)
         layout.addWidget(self.chat_state)
+        model_row = QHBoxLayout()
+        self.chat_model_selector = QComboBox()
+        self.chat_model_selector.setAccessibleName("Model dla czatu lokalnego Ollama")
+        self.chat_model_selector.addItem("Wykryj modele Ollama…", "")
+        if self.core.settings.model:
+            self.chat_model_selector.addItem(self.core.settings.model + " (z ustawień, niezweryfikowany)",
+                                             self.core.settings.model)
+            self.chat_model_selector.setCurrentIndex(1)
+        model_row.addWidget(self.chat_model_selector, 1)
+        self.button("Wykryj modele", lambda: self.core.probe("ollama"), model_row)
+        self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), model_row)
+        self.button("Zapisz wybór", self.select_local_model, model_row)
+        layout.addLayout(model_row)
         row = QHBoxLayout()
-        self.button("Połącz", self.core.connect_chat, row)
+        self.button("Połącz", self.connect_local_chat, row)
         self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), row)
         self.button("Wznów wynik", self.resume_chat, row)
         layout.addLayout(row)
@@ -371,6 +422,28 @@ class Window(QMainWindow):
         self.message.setMaximumHeight(100)
         layout.addWidget(self.message)
         self.button("Wyślij", self.send_chat, layout)
+
+    def select_local_model(self) -> None:
+        """Only change future chat configuration, never an outstanding request."""
+        chosen = self.chat_model_selector.currentData()
+        if not isinstance(chosen, str) or not chosen:
+            raise StudioError("Wybierz model z listy dostępnych modeli Ollama")
+        chat = self.core.chat
+        if chat is not None and (chat.pending or
+                (chat.job is not None and not chat.job.done.is_set())):
+            raise StudioError("Zakończ lub rozłącz obecną rozmowę przed zmianą modelu; nie porzucaj request_id")
+        self.apply_settings(replace(self.core.settings, model=chosen))
+        self.chat_state.setText("Wybrano model " + chosen + ". Połącz czat, aby sprawdzić rzeczywistą generację.")
+
+    def connect_local_chat(self) -> None:
+        """Never bypass the first-run model and matching daemon evidence via sidebar."""
+        if not (self.quick_runtime_ready and self.quick_generation_ready
+                and self.core.settings.model):
+            raise StudioError(
+                "Najpierw w Pulpicie sprawdź zgodność runtime oraz uruchom "
+                "test generacji wybranego modelu Ollama."
+            )
+        self.core.connect_chat()
 
     def send_chat(self) -> None:
         if self.core.chat is None:
@@ -689,6 +762,9 @@ class Window(QMainWindow):
     def apply_settings(self, settings: Settings) -> None:
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
+        self.quick_runtime_ready = False
+        self.quick_generation_ready = False
+        self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
         self.theme.setCurrentText(settings.theme)
@@ -780,13 +856,17 @@ class Window(QMainWindow):
             elif kind == "status_summary":
                 for name, label in self.dashboard_summary.items():
                     label.setText(self.core.redactor.text(str(value.get(name, "niezweryfikowane"))))
+                self.quick_memory_status.setText(
+                    "MEMORY: " + self.core.redactor.text(str(value.get("continuity", "niezweryfikowana")))
+                )
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                ready = all(value.get(flag) is True for flag in (
+                ready = (all(value.get(flag) is True for flag in (
                     "endpoint_reachable", "process_identity_confirmed",
                     "endpoint_identity_matches", "heartbeat_fresh",
                     "conversation_ready",
-                ))
+                )) and value.get("root_matches") is not False
+                    and value.get("version_matches") is not False)
                 state = str(value.get("active_state") or "niepotwierdzony")
                 heading = ("Pracuje — zweryfikowany runtime" if ready else
                            "Zatrzymane — runtime nieaktywny" if state in {"dead", "stopped", "inactive"} else
@@ -794,9 +874,32 @@ class Window(QMainWindow):
                 detail = (heading + " • endpoint: " + yes(value.get("endpoint_reachable")) +
                     " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
                     " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
+                self.quick_runtime_ready = ready and state == "active_trusted"
+                if not self.quick_runtime_ready:
+                    self.quick_generation_ready = False
+                self.refresh_quick_start()
+                if value.get("root_matches") is False:
+                    detail += " • BŁĄD: daemon należy do innego katalogu (np. aktywnego master)"
+                if value.get("version_matches") is False:
+                    detail += " • BŁĄD: uruchomiony daemon ma inną wersję SYSTEM"
                 self.evidence.setText("Runtime: " + detail)
                 self.update_service_summary("runtime", detail)
+                # Header and sidebar show the *same* most recent runtime observation.
+                self.sidebar_footnote.setText(
+                    "Runtime • zweryfikowany; odpowiedź wymaga akceptacji"
+                    if ready else "Runtime • gotowość niezweryfikowana"
+                )
+                self.workbench_status.setText(
+                    "Lokalne Studio • runtime zweryfikowany"
+                    if ready else "Lokalne Studio • status niezweryfikowany"
+                )
             elif kind == "probe":
+                if key == "probe:ollama_generate":
+                    self.quick_generation_ready = (
+                        value.get("generation_verified") is True
+                        and value.get("selected_model_present") is True
+                    )
+                    self.refresh_quick_start()
                 service = value.get("service")
                 if service in self.statuses:
                     if value.get("ready") is True:
@@ -804,12 +907,32 @@ class Window(QMainWindow):
                     elif value.get("ready") is False:
                         detail = "BŁĄD • usługa nie zgłasza gotowości"
                     elif service == "ollama":
-                        detail = "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana"
+                        detail = ("Ollama API • generacja modelu potwierdzona; finalizacja Jaźni osobno"
+                                  if value.get("generation_verified") is True else
+                                  "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana")
                     else:
                         detail = "Odpowiedź testu • gotowość niezweryfikowana"
                     self.update_service_summary(str(service), detail)
                 if service == "ollama":
-                    self.chat_state.setText("Modele Ollama: " + ", ".join(value.get("models", [])) + ". Wybierz nazwę w ustawieniach.")
+                    names = value.get("models", [])
+                    if isinstance(names, list):
+                        self.chat_model_selector.blockSignals(True)
+                        self.chat_model_selector.clear()
+                        self.chat_model_selector.addItem("Wybierz dostępny model…", "")
+                        for name in names:
+                            if isinstance(name, str):
+                                self.chat_model_selector.addItem(name, name)
+                        index = self.chat_model_selector.findData(self.core.settings.model)
+                        self.chat_model_selector.setCurrentIndex(index if index >= 0 else 0)
+                        self.chat_model_selector.blockSignals(False)
+                    if not names:
+                        self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
+                    else:
+                        self.chat_state.setText(
+                            "Modele Ollama: " + ", ".join(names) + ". Generacja: " +
+                            ("potwierdzona w API (nie jest to odpowiedź Jaźni)." if value.get("generation_verified") is True
+                             else "niezweryfikowana.")
+                        )
             elif kind == "chat_state":
                 self.chat_state.setText(str(value))
             elif kind == "chat_final":
@@ -823,6 +946,7 @@ class Window(QMainWindow):
                 except (OSError, StudioError):
                     self.chat_state.setText("Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
                 else:
+                    self.core.confirm_visible_turn(value)
                     self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
                 if key == "helper:version-inspect:":
@@ -893,6 +1017,17 @@ class Window(QMainWindow):
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)
+                if key.startswith("service:ollama"):
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
+                if key in {"start", "stop", "restart"}:
+                    # A lifecycle transition invalidates previously observed readiness.
+                    self.quick_runtime_ready = False
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
+                if key.startswith("probe:ollama_generate") and value.get("state") == "failed":
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
                 if key.startswith("memory:p1:"):
                     self.memory_panel.receive_state(key, value)
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
@@ -921,12 +1056,15 @@ class Window(QMainWindow):
         self.processes.setPlainText(json.dumps(snapshots, ensure_ascii=False, indent=2))
         self.workspace.refresh()
         self.refresh_service_table()
+        self.refresh_connection_checks()
         if self.pages.currentWidget() is self.developer_page:
             public = {"jobs": snapshots, "services": self.workspace.observations,
-                      "accepted_visible_turn": False}
+                      "accepted_visible_turn": True if self.core.accepted_turn_proof else None}
             self.developer_details.setPlainText(self.core.redactor.text(json.dumps(public, ensure_ascii=False, indent=2)))
 
     def navigate(self, title: str) -> None:
+        if title == "MCP i ChatGPT":  # Legacy navigation callers.
+            title = "Połączenie z ChatGPT"
         self.section_search.clear()
         for row in range(self.nav.count()):
             if self.nav.item(row).text() == title:
@@ -1063,24 +1201,67 @@ class Window(QMainWindow):
         self.models_summary.setWordWrap(True)
         layout.addWidget(self.models_summary)
         self.button("Wykryj modele Ollama", lambda: self.core.probe("ollama"), layout)
+        self.button("Sprawdź krótką generację modelu", lambda: self.core.probe("ollama_generate"), layout)
         self.button("Sprawdź konfigurację adaptera", lambda: self.action("model"), layout)
         self.button("Wybierz model w ustawieniach", lambda: self.navigate("Ustawienia"), layout)
         self.button("Przejdź do rzeczywistej rozmowy runtime", lambda: self.navigate("Czat lokalny"), layout)
         layout.addStretch()
 
     def _connections(self) -> None:
-        layout = self.page("MCP i ChatGPT", "Oddzielne warstwy: runtime → MCP → transport zdalny → uwierzytelnienie → autoryzacja narzędzi → zaakceptowana tura hosta.")
-        self.connection_summary = QLabel("Połączenie z ChatGPT: niezweryfikowane. Katalog narzędzi, HTTP i /readyz nie potwierdzają zaakceptowanej odpowiedzi.")
+        layout = self.page("Połączenie z ChatGPT", "Osobny panel połączenia, nie drugi czat. Runtime → MCP → tunel → uwierzytelnienie → narzędzia bieżącej rozmowy → zaakceptowana tura.")
+        self.connection_summary = QLabel("Połączenie z ChatGPT: niezweryfikowane. Sam tunel, HTTP i /readyz nie potwierdzają dostępności narzędzi ani odpowiedzi.")
         self.connection_summary.setWordWrap(True)
         layout.addWidget(self.connection_summary)
+        self.connection_checks: dict[str, QLabel] = {}
+        for key, title in (
+            ("runtime", "Runtime Jaźni"), ("gateway", "Brama MCP"),
+            ("cloudflare", "Tunel"), ("auth", "Uwierzytelnienie"),
+            ("toolset", "Narzędzia w ChatGPT"), ("turn", "Zaakceptowana tura ChatGPT"),
+        ):
+            label = QLabel(title + ": wymaga potwierdzenia")
+            label.setAccessibleName("Stan połączenia: " + title)
+            label.setWordWrap(True)
+            self.connection_checks[key] = label
+            layout.addWidget(label)
+        operations = QHBoxLayout()
+        self.button("Uruchom lokalną bramę MCP", lambda: self.service("gateway", "start"), operations)
+        self.button("Zatrzymaj własną bramę MCP", lambda: self.service("gateway", "stop"), operations)
+        layout.addLayout(operations)
+        tunnel_operations = QHBoxLayout()
+        self.button("Bezpieczny tunel: konfiguracja OAuth", lambda: self.navigate("Ustawienia"), tunnel_operations)
+        self.button("Zatrzymaj własny tunel", lambda: self.service("cloudflare", "stop"), tunnel_operations)
+        layout.addLayout(tunnel_operations)
+        self.button("Odśwież lokalne stany połączenia", self.refresh_services, layout)
         self.button("Sprawdź lokalny endpoint MCP", lambda: self.core.probe("gateway"), layout)
         self.button("Zweryfikuj katalog narzędzi MCP", lambda: self.action("mcp"), layout)
         self.button("Sprawdź skonfigurowany Worker Cloudflare", lambda: self.core.probe("cloudflare"), layout)
         self.button("Konfiguracja transportu i usług", lambda: self.navigate("Ustawienia"), layout)
-        note = QLabel("Cloudflare Tunnel jest opcjonalny i wymaga jawnej zgody przed uruchomieniem. Subskrypcja ChatGPT nie zapewnia automatycznie klucza ani rozliczenia OpenAI API. Gotowość zewnętrznego hosta musi potwierdzić rzeczywisty test połączenia.")
+        note = QLabel(
+            "Publiczne MCP wymaga osobnej, uwierzytelnionej bramy --public-oauth "
+            "(deploy/chatgpt_mcp). Studio uruchamia wyłącznie lokalne --loopback-dev, "
+            "którego NIE należy wystawiać przez tunel. Tunel uruchom przez zatwierdzony "
+            "proces deploymentu po weryfikacji OAuth, zakresów i hosta. "
+            "Sama subskrypcja ChatGPT nie zapewnia klucza OpenAI API."
+        )
         note.setWordWrap(True)
         layout.addWidget(note)
         layout.addStretch()
+
+    def refresh_connection_checks(self) -> None:
+        """Mirror local evidence. Never promote it to a ChatGPT host capability."""
+        for key in ("runtime", "gateway", "cloudflare"):
+            self.connection_checks[key].setText({
+                "runtime": "Runtime Jaźni: ",
+                "gateway": "Brama MCP: ",
+                "cloudflare": "Tunel: ",
+            }[key] + self.statuses[key].text())
+        self.connection_checks["auth"].setText("Uwierzytelnienie: wymaga niezależnego potwierdzenia dla publicznej trasy")
+        self.connection_checks["toolset"].setText("Narzędzia w ChatGPT: wymagają wywołania jazn_status, generate, resume i finalize w bieżącej rozmowie")
+        self.connection_checks["turn"].setText("Zaakceptowana tura ChatGPT: brak dowodu w lokalnym Studio")
+        self.connection_summary.setText(
+            "Połączenie w ChatGPT pozostaje niezweryfikowane bez testu po stronie hosta. "
+            "Rozłączenie czatu lokalnego nie wyłącza bramy MCP ani tunelu."
+        )
 
     def _developer(self) -> None:
         layout = self.page("Developer", "Publiczny audyt: dowody, stany, identyfikatory i wyniki operacji. Bez prywatnego toku rozumowania i sekretów.")
@@ -1115,7 +1296,8 @@ class Window(QMainWindow):
                 ready = observed.get("ready") is True
             readiness = "potwierdzona" if ready else "niezweryfikowana"
             if service == "ollama" and observed.get("endpoint_reachable"):
-                readiness = "API; brak testu generacji"
+                readiness = ("API; generacja potwierdzona" if observed.get("generation_verified") is True
+                             else "API; brak testu generacji")
             for column, value in ((2, str(pid or "—")), (3, ports[service]), (4, readiness)):
                 item = self.services_table.item(row, column)
                 if item is not None and item.text() != value:
