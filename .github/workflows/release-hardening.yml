@@ -72,7 +72,7 @@ jobs:
           git remote get-url origin
 
       - name: Verify committed release metadata at review gate
-        if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'ready_for_review' }}
         run: >-
           python -X utf8 -m latka_jazn.tools.release_metadata_sync
           --root .
