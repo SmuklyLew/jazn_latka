@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-  "package_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-  "generated_at_utc": "2026-10-28T19:50:24+00:00",
-  "updated_at_utc": "2026-10-28T19:50:24+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "package_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+  "generated_at_utc": "2026-10-28T19:58:01+00:00",
+  "updated_at_utc": "2026-10-28T19:58:01+00:00",
   "start_file": "run.py",
-  "file_count": 3464,
-  "static_file_count": 3464,
+  "file_count": 3468,
+  "static_file_count": 3468,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3016,
-      "sha256": "ce913c2a659a2a1339007aaf798d33e1d2dc63566efd46cdf447600835294f06",
+      "size_bytes": 2987,
+      "sha256": "8b1b362e8fb9509666368efc5056da4d55d3a55f4013e798a5cb31c43e2e53e4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2868,6 +2868,15 @@
       "path": "docs/reports/JAZN_V116_0_34_93_SYSTEM_STUDIO_HARDENING.md",
       "size_bytes": 1438,
       "sha256": "e907595edf8df645bae8928c629576be8e77058b8d75b5c16a5522f1a6bc8e89",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V116_0_34_94_6_11_RUN_STUDIO_DUAL_CHAT_RECOVERY.md",
+      "size_bytes": 5107,
+      "sha256": "dc8b13c8692383b46e94ef06c58ea80fad0883f1257dbd5cfe2c54b0fc0ec3fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11227,8 +11236,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18466,
-      "sha256": "0515a7f48b6ad05b78763f9ebd8b14d69345be77a20b7f1fa04d405338cd518c",
+      "size_bytes": 18587,
+      "sha256": "3b21b744738e4f199fc03733ad622d3f2c6ce336af3df2c5d4ebf5bf2a6d6134",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26787,6 +26796,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_heart_system_connection_panels_qt.py",
+      "size_bytes": 2144,
+      "sha256": "d079cdcc8cb89e03e3acafbdc3e169275c875da3cb5945f1bea42fa51eced0bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "size_bytes": 4191,
+      "sha256": "43b188cb052bfe7d53cc506ab99c4617babf355abcaa96261902c486826c6ead",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_heart_system_coverage_encoding.py",
       "size_bytes": 1123,
       "sha256": "e9629f7255fb4f901fdf301191b9ab8d6fc5755a440766170596cdb711df8793",
@@ -26826,6 +26853,15 @@
       "path": "tests/test_heart_system_helper_payload.py",
       "size_bytes": 1619,
       "sha256": "e8a4f3d46475227441ca6ebda8ea5b476d6ddb0027dedf1df01d1303f5b7bda4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_heart_system_ollama_generation.py",
+      "size_bytes": 2313,
+      "sha256": "984ec714f7ba0eadc8f293cee922a059728ba012025ce963b9178beddf810fe7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30631,8 +30667,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 49118,
-      "sha256": "eb6a169f7adfef9ab43fe42c0a74d3f0350d5660c74108ab3a20ee761f01ea3f",
+      "size_bytes": 49408,
+      "sha256": "d7fafa6c363bd404df2a874d539e8b892208faff201f1e462230104a82370cb4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30721,8 +30757,8 @@
     },
     {
       "path": "tools/jazn_run_studio/probes.py",
-      "size_bytes": 4544,
-      "sha256": "2b23b44f3d3130d0feef929b2d9cd6a3419d09482d112e39cdb726bb287ea0c4",
+      "size_bytes": 6333,
+      "sha256": "2825c3b9f36da995655e370b7898e868ee7b6277f57f735f2573b1dd54400733",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30811,8 +30847,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 64737,
-      "sha256": "cbf696e90446de185c89762b55d1efc729945c7696cd31dcf0883341957a76f5",
+      "size_bytes": 71114,
+      "sha256": "55ccb3c9d371005375fe665b7444a141fe8615948d1f5da3838fb50eac608c25",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30973,8 +31009,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2555064,
-      "sha256": "0b2d642ad9e5149c3f4950586b8d93598796dd5d726187fedacd623733e6e322",
+      "size_bytes": 2562918,
+      "sha256": "408974de261969093307e5932cb2b4e31e52fdf0917797ebfa06ccb5ee53b528",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31631,11 +31667,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "release_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-    "package_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-    "release_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+    "package_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery",
+    "release_version": "16.3.25.5.116.0.34.94.6.11-run-studio-dual-chat-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
