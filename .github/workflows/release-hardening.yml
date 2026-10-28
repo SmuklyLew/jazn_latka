@@ -531,6 +531,54 @@ jobs:
             --profile mcp-http --platform current \
             --python-version "${{ matrix.python }}" --dry-run
 
+
+  pr_final_head_gate:
+    name: PR final HEAD metadata and lineage
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: [manifest_sync, verify_ubuntu, verify_windows, dependency_contract_matrix]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout exact PR source SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.14"
+
+      - name: Require canonical committed metadata on exact PR SHA
+        run: >-
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync
+          --root .
+          --base-branch master
+          --check
+          --json
+
+      - name: Reject PR head movement during required validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .head.sha)"
+          echo "CI source SHA: ${EXPECTED_PR_HEAD}"
+          echo "Current PR SHA: ${current_head}"
+          if [ "${current_head}" != "${EXPECTED_PR_HEAD}" ]; then
+            echo "PR head moved during CI. Re-run all mandatory checks on its final SHA." >&2
+            exit 1
+          fi
+
   finalization:
     name: release finalization
     if: github.event_name != 'pull_request'

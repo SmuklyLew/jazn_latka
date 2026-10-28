@@ -96,3 +96,30 @@ Nie usuwaj wcześniejszych kopii OLD/NEW ani prywatnych źródeł.
 - https://www.sqlite.org/backup.html
 - https://www.sqlite.org/wal.html
 - https://www.sqlite.org/lang_attach.html
+
+## Bramka finalnego SHA PR
+
+Workflow `release-hardening` weryfikuje kanoniczne manifesty na
+**dokładnym `pull_request.head.sha`** po testach Ubuntu i Windows.
+Porównuje go również z aktualnym HEAD PR przez GitHub API.
+Nie oznacza starszego, zielonego commita jako akceptacji nowego HEAD.
+
+Aktualny mechanizm push generuje metadata-only commit z `[skip ci]`;
+`GITHUB_TOKEN` nie może z niego wywołać kolejnej rundy Actions.
+Po jego zakończeniu operator musi wykonać **nowy commit bez zmian
+w drzewie plików** z wiadomością bez `skip ci` (np. `git commit
+--allow-empty -m "ci: verify final synchronized HEAD"`) i wypchnąć
+go normalnym tokenem użytkownika. Kanoniczny synchronizator nadal
+rozpoznaje pierwotny commit kodu, ponieważ drzewo nie zawiera innych
+zmian niż kontrolowane metadane. Ta procedura jest jawna i nie wymaga
+dodatkowego sekretu GitHub App.
+
+Nie omijaj wymaganego checka `PR final HEAD metadata and lineage`.
+Aby w pełni zautomatyzować taki końcowy trigger w przyszłości,
+potrzebna jest osobna uwierzytelniona integracja (np. GitHub App)
+lub automatyczne generowanie obu manifestów *przed* zwykłym pushem
+użytkownika. Samo usunięcie `[skip ci]` nie usuwa ograniczenia
+`GITHUB_TOKEN`.
+
+Źródła: https://docs.github.com/en/actions/concepts/security/github_token
+https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs
