@@ -295,7 +295,7 @@ def _menu(root: Path, report: dict, *, explicit: bool, ui: str = "text") -> bool
             show(report, full=False)
             continue
         if choice == "1":
-            selected = list(ESSENTIAL)
+            selected: list[str] = list(ESSENTIAL)
         elif choice == "2":
             candidates = [(name, rows) for name, rows in report["profiles"].items()
                           if name not in ESSENTIAL]
