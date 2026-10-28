@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
-  "generated_at_utc": "2026-10-28T16:05:08+00:00",
-  "updated_at_utc": "2026-10-28T16:05:08+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "package_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+  "generated_at_utc": "2026-10-28T16:34:41+00:00",
+  "updated_at_utc": "2026-10-28T16:34:41+00:00",
   "start_file": "run.py",
-  "file_count": 3462,
-  "static_file_count": 3462,
+  "file_count": 3464,
+  "static_file_count": 3464,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3043,
-      "sha256": "bc2549aabf384f766a281db0d009c1ea0c08d5b86e242540a6de419b320dd0c9",
+      "size_bytes": 3013,
+      "sha256": "403b2fb754cb3ea63b905e061f086bd517ffd10069e92c9f46157d8edc00e9c5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1958,
-      "sha256": "100e0051f5f409fa740d50e128fc47c1ca2250676c908826ee82b2613038a1f0",
+      "size_bytes": 1953,
+      "sha256": "79bffecdd10737faf3746f7b209f3ca7dfef3035c69d6007bc0cb8079c20a959",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9724,8 +9724,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7908,
-      "sha256": "08874a74017b63be49bc3678b8eb47dfc14ac00a65a10f8b470ca5cc6ebad5bc",
+      "size_bytes": 7909,
+      "sha256": "ed534c3eececfe6c9f0f67da9a36db48dacc4ba97f232c45921aeb441bbe2e4a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11227,8 +11227,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18369,
-      "sha256": "536edd3246e6c6436888f5868a7d842730f38d03aba2f692f9ad80bfd0605741",
+      "size_bytes": 18466,
+      "sha256": "0515a7f48b6ad05b78763f9ebd8b14d69345be77a20b7f1fa04d405338cd518c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11479,8 +11479,8 @@
     },
     {
       "path": "tests/archive/README.md",
-      "size_bytes": 1978,
-      "sha256": "dd94fc07562a69e9616de3b617a4f5145b689a55c01ed6048a29ae26c18d71d2",
+      "size_bytes": 2400,
+      "sha256": "95f402b8f7b5a3a627478e2f2cad3f7b3dfc055943e92a0dd0973ee4f4650c88",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18798,6 +18798,24 @@
       "path": "tests/archive/test_release_workflow_hardening_v16_3_25_5_29.py",
       "size_bytes": 5739,
       "sha256": "1cf814d3aeefe2d98c7f755d26304cce692692c42c5f57e378a1ea8997125a85",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_run_studio_dependency_preflight_v16_3_25_5_116_0_34_94_6_9.py",
+      "size_bytes": 9879,
+      "sha256": "0487473c2c1852614db50ff4686e430ec07d009bdd2b66de732a800628030f89",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_run_studio_qt_recovery_v16_3_25_5_116_0_34_94_6_9.py",
+      "size_bytes": 5205,
+      "sha256": "07dc88320d78b4bdcc04a1e5a99f8f8063631863b5a3d683d437c0ec26b4b3ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29416,8 +29434,8 @@
     },
     {
       "path": "tests/test_run_studio_dependency_preflight.py",
-      "size_bytes": 9879,
-      "sha256": "0487473c2c1852614db50ff4686e430ec07d009bdd2b66de732a800628030f89",
+      "size_bytes": 9912,
+      "sha256": "c158d22931e47804a332a91fc8999f7deb352fe96220b1aa42dde0c2a6524618",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29425,8 +29443,8 @@
     },
     {
       "path": "tests/test_run_studio_qt_recovery.py",
-      "size_bytes": 5205,
-      "sha256": "07dc88320d78b4bdcc04a1e5a99f8f8063631863b5a3d683d437c0ec26b4b3ea",
+      "size_bytes": 5240,
+      "sha256": "1212f0e3e2dbd240e20b5aaecd4069cfc7891cfcfabbf3b83b7604ad0389737f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30622,8 +30640,8 @@
     },
     {
       "path": "tools/jazn_run_studio/dependency_preflight.py",
-      "size_bytes": 15810,
-      "sha256": "7f42497ab00e0d54c8e8dcbdd5ad754a546dd2cb5674797bd83a84b27726e6e4",
+      "size_bytes": 15821,
+      "sha256": "23569b7361a6b5b2b26b0f8fd326f2471dbb8c47cbf8077897fbebc2985cbe2e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30955,8 +30973,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2555063,
-      "sha256": "48af6cf5b5923b5dbe7f33ac75156cd6bdab52757d1e6820f08620b2021c28e8",
+      "size_bytes": 2555064,
+      "sha256": "0b2d642ad9e5149c3f4950586b8d93598796dd5d726187fedacd623733e6e322",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31613,11 +31631,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+    "package_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
+    "release_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair"
   },
   "legacy_aliases": {
     "version": "release_version"
