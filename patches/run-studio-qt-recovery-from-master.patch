@@ -73,7 +73,7 @@ diff --git a/tools/jazn_run_studio/qt_recovery.py b/tools/jazn_run_studio/qt_rec
 new file mode 100644
 --- /dev/null
 +++ b/tools/jazn_run_studio/qt_recovery.py
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,128 @@
 +"""Opt-in, terminal-only recovery for missing Qt GUI dependencies.
 +
 +No code in this module starts/stops the Jaźń runtime or accesses MEMORY.
@@ -82,6 +82,7 @@ new file mode 100644
 +from __future__ import annotations
 +
 +import importlib
++import os
 +from pathlib import Path
 +import subprocess
 +import sys
@@ -158,6 +159,16 @@ new file mode 100644
 +        if not req.is_file() or req.is_symlink() or not project.is_file() or project.is_symlink():
 +            print("Odmowa: brak kanonicznego profilu zależności w repozytorium.")
 +            return False
++        try:
++            profile_lines = [
++                line.strip() for line in req.read_text(encoding="utf-8").splitlines()
++                if line.strip() and not line.lstrip().startswith("#")
++            ]
++        except (OSError, UnicodeError):
++            return False
++        if profile_lines != [".[run-studio]"]:
++            print("Odmowa: nieoczekiwany zapis profilu run-studio.")
++            return False
 +
 +        print("\nCel: " + sys.executable)
 +        print("Instalacja: tylko pakiety binarne, PyPI HTTPS; zgodnie z profilem run-studio.")
@@ -170,9 +181,11 @@ new file mode 100644
 +            print("Anulowano.")
 +            return False
 +
++        pip_env = {key: value for key, value in os.environ.items() if not key.startswith("PIP_")}
++        pip_env["PIP_CONFIG_FILE"] = os.devnull
 +        try:
 +            result = subprocess.run(
-+                _install_command(), cwd=PROJECT_ROOT, shell=False,
++                _install_command(), cwd=PROJECT_ROOT, shell=False, env=pip_env,
 +                timeout=600, check=False,
 +            )
 +        except (OSError, subprocess.TimeoutExpired) as exc:
@@ -193,7 +206,7 @@ diff --git a/tests/test_run_studio_qt_recovery.py b/tests/test_run_studio_qt_rec
 new file mode 100644
 --- /dev/null
 +++ b/tests/test_run_studio_qt_recovery.py
-@@ -0,0 +1,89 @@
+@@ -0,0 +1,90 @@
 +"""Regression coverage for opt-in Qt dependency recovery (no network)."""
 +from __future__ import annotations
 +
@@ -269,6 +282,7 @@ new file mode 100644
 +    assert "--only-binary=:all:" in cmd
 +    assert seen["cwd"] == tmp_path
 +    assert seen["shell"] is False
++    assert seen["env"]["PIP_CONFIG_FILE"] == recovery.os.devnull
 +
 +
 +def test_explicit_denial_never_installs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
