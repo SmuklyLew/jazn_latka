@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "package_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "generated_at_utc": "2026-10-27T23:05:55+00:00",
-  "updated_at_utc": "2026-10-27T23:05:55+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+  "generated_at_utc": "2026-10-28T16:05:08+00:00",
+  "updated_at_utc": "2026-10-28T16:05:08+00:00",
   "start_file": "run.py",
-  "file_count": 3451,
-  "static_file_count": 3451,
+  "file_count": 3462,
+  "static_file_count": 3462,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "3ec2d9863746edf2f367a83affd097a6d439d085a9828e0717d4288679abf93b",
+      "size_bytes": 3043,
+      "sha256": "bc2549aabf384f766a281db0d009c1ea0c08d5b86e242540a6de419b320dd0c9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1950,
-      "sha256": "a40d95d2bac542565e1cd87ae1bbc64e8caf58db56a926f8bf5692628bd31776",
+      "size_bytes": 1958,
+      "sha256": "100e0051f5f409fa740d50e128fc47c1ca2250676c908826ee82b2613038a1f0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4297,8 +4297,8 @@
     },
     {
       "path": "jazn_run_studio.py",
-      "size_bytes": 198,
-      "sha256": "36edf10163aebb83ca209ae80daad238ffec59980e42aeb63e1f5e08f9dc01d1",
+      "size_bytes": 223,
+      "sha256": "099a13454322ac498b054e194b4bd2e78cea8925db760ce66d514a6830b3bdc1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9725,7 +9725,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7908,
-      "sha256": "516c79fb22f5666cc89ce284a9d59b488bc1fbff7207df79e499644879e4358f",
+      "sha256": "08874a74017b63be49bc3678b8eb47dfc14ac00a65a10f8b470ca5cc6ebad5bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11227,8 +11227,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18259,
-      "sha256": "7209df6f0548d78da49432ba21e42f3ad06b63854372b21e01ed8f6ecbbee937",
+      "size_bytes": 18369,
+      "sha256": "536edd3246e6c6436888f5868a7d842730f38d03aba2f692f9ad80bfd0605741",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11343,6 +11343,69 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "patches/run-studio-complete-v6.8-from-master.patch",
+      "size_bytes": 45842,
+      "sha256": "e5425b47456071a2904980cc32ebb9c814b989fdab126819201259cc361d253f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-full-dependency-preflight-after-v1.patch",
+      "size_bytes": 18581,
+      "sha256": "2fcaa2c3a4774bd5853847f13a4b6254fb19b8130b0e354d6064e5ea2c3a54d1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-qt-recovery-from-master.patch",
+      "size_bytes": 14002,
+      "sha256": "e784e548d32f7d6e71bd057e001d2dfccd89dbef182a11973269a8856e2625fd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-readable-diagnostics-after-v2.patch",
+      "size_bytes": 21270,
+      "sha256": "1b1f554281a4243d066b87f255f29c84f5024fdeeec37d2b3a1a726f18e9e5bf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-release-identity-v6.9-after-v6.8.patch",
+      "size_bytes": 30297,
+      "sha256": "03ffc8ecfaf3b92c4d0e8cd7f178c587cfe02f860c2fbf7287ef54e21079741a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-text-tui-after-v3.patch",
+      "size_bytes": 20279,
+      "sha256": "79a9ce33c83a8b2554a52c8ad364167766117bfd15643f5875e66c13f619f12d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "patches/run-studio-tui-log-and-test-regression-after-v4.patch",
+      "size_bytes": 11693,
+      "sha256": "948f406aab8d9273b13d51c121e1e715052b64e57b4cb98fc8f60bd0aa785ba2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "pyproject.toml",
       "size_bytes": 2427,
       "sha256": "011e89913bec2b113fee2d59988a4ca4271ab108f4750be98d2bf320ce9e2289",
@@ -11380,8 +11443,8 @@
     },
     {
       "path": "run_studio.py",
-      "size_bytes": 197,
-      "sha256": "727acb00e8cc1efaf6696f5ce3ef6f832d4860ed14a3149cc4a2164eca308685",
+      "size_bytes": 222,
+      "sha256": "45e5686425f1a2dc3f57659a586a8a817ea6cfbd4110ff4f637bc77080e32c41",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29352,6 +29415,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_run_studio_dependency_preflight.py",
+      "size_bytes": 9879,
+      "sha256": "0487473c2c1852614db50ff4686e430ec07d009bdd2b66de732a800628030f89",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_run_studio_qt_recovery.py",
+      "size_bytes": 5205,
+      "sha256": "07dc88320d78b4bdcc04a1e5a99f8f8063631863b5a3d683d437c0ec26b4b3ea",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_run_version_fastpath.py",
       "size_bytes": 1913,
       "sha256": "6e583b23d0f1aa25dfd3001c5de2a26f93735c1ad4fa29d50c62a09436411ba0",
@@ -30442,8 +30523,8 @@
     },
     {
       "path": "tools/jazn_run_studio/README.md",
-      "size_bytes": 17305,
-      "sha256": "94b75304c9e09e084cfa0810110edd4e779c5a39c16fedc7bcf08980f1bc4ec5",
+      "size_bytes": 21928,
+      "sha256": "668cca0c9195f846322fb263034abfebcc6bc5de9359cddc6b681ca4df80adfb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30478,8 +30559,8 @@
     },
     {
       "path": "tools/jazn_run_studio/app.py",
-      "size_bytes": 3463,
-      "sha256": "ab3ae8841a11af325bb2aa800582e363dac9d444730642f870e95ee01ceac03c",
+      "size_bytes": 3917,
+      "sha256": "444d22db55d15e39e13773ad6d7b8c4b86e77baba2cdbeb8cc236f9202cc47e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30534,6 +30615,15 @@
       "path": "tools/jazn_run_studio/core.py",
       "size_bytes": 46040,
       "sha256": "dddd59f599dc7775eadfcafe883eabd47407d7daba937b656e5d018183fe2135",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/dependency_preflight.py",
+      "size_bytes": 15810,
+      "sha256": "7f42497ab00e0d54c8e8dcbdd5ad754a546dd2cb5674797bd83a84b27726e6e4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30615,6 +30705,15 @@
       "path": "tools/jazn_run_studio/probes.py",
       "size_bytes": 4544,
       "sha256": "2b23b44f3d3130d0feef929b2d9cd6a3419d09482d112e39cdb726bb287ea0c4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/qt_recovery.py",
+      "size_bytes": 5195,
+      "sha256": "fb506ae257aee9834bcd0ef67a14fc6538073d02f52eedb7cdd7f1058642a28b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30856,8 +30955,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2540162,
-      "sha256": "3ae8648107036cc7b16c2c2106dc7923a38a981a09142b186f75c78fd810b7e0",
+      "size_bytes": 2555063,
+      "sha256": "48af6cf5b5923b5dbe7f33ac75156cd6bdab52757d1e6820f08620b2021c28e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31514,11 +31613,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
+  "release_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-    "package_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-    "release_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.9-run-studio-release-identity-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
