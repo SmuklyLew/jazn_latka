@@ -55,8 +55,16 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 from .window import run_window
             except ImportError as exc:
-                print("Brak zależności GUI Qt: " + str(exc) + "\nZainstaluj opcjonalny profil run-studio; instrukcja w tools/jazn_run_studio/README.md.", file=sys.stderr)
-                return 2
+                from .qt_recovery import offer_qt_install
+                if offer_qt_install(exc, allow_install=not (args.gui_smoke or args.isolated_acceptance)):
+                    try:
+                        from .window import run_window
+                    except ImportError as retry_error:
+                        print("Qt nadal nie działa: " + str(retry_error), file=sys.stderr)
+                        return 2
+                else:
+                    print("Brak zależności GUI Qt: " + str(exc) + "\nZainstaluj opcjonalny profil run-studio; instrukcja w tools/jazn_run_studio/README.md.", file=sys.stderr)
+                    return 2
             return run_window(core, smoke=args.gui_smoke)
     except (OSError, ValueError, RuntimeError) as exc:
         print("Studio Jaźni: " + type(exc).__name__ + ": " + str(exc), file=sys.stderr)
