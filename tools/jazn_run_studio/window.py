@@ -246,7 +246,7 @@ class Window(QMainWindow):
         steps = QHBoxLayout()
         self.button("1. Uruchom runtime", lambda: self.action("start"), steps)
         self.button("Sprawdź runtime", lambda: self.action("status"), steps)
-        self.button("2. Uruchom Ollama", lambda: self.service("ollama", "start"), steps)
+        self.button("2. Uruchom / sprawdź Ollama", self.core.ensure_ollama, steps)
         self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), steps)
         layout.addLayout(steps)
         self.button("Sprawdź gotowość lokalną (bez uruchamiania usług)",
