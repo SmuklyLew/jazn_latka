@@ -45,6 +45,12 @@ def test_problem_has_remedy_not_just_exception_class(window) -> None:
     workspace.problems.setCurrentItem(problem)
     assert "Co zrobić:" in workspace.problem_details.text()
     assert "/api/tags" in workspace.problem_details.text()
+    window.core.emit("probe:ollama", "log", "Test połączenia nie powiódł się")
+    window.poll()
+    workspace.show_selected_logs()
+    assert workspace.tabs.currentIndex() == 1
+    assert workspace.source.currentData() == "probe:ollama"
+
 
 
 def test_long_raw_logs_are_truncated_only_in_view(window) -> None:
