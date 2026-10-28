@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.jazn_run_studio.core import Controller, Settings, StudioError
+from tools.jazn_run_studio.core import Controller, Settings, StudioError, daemon_evidence
 from tools.jazn_run_studio.status_summary import status_summary
 
 
@@ -47,3 +47,29 @@ def test_studio_refuses_to_publish_loopback_noauth_gateway_as_public_mcp(tmp_pat
     with pytest.raises(StudioError, match="--loopback-dev"):
         controller.start_service("cloudflare")
     assert "service:cloudflare" not in controller.jobs
+
+
+def test_worktree_cannot_adopt_master_daemon_identity(tmp_path: Path) -> None:
+    from latka_jazn.version import PACKAGE_VERSION_FULL
+
+    active_master = tmp_path / "master"
+    candidate_worktree = tmp_path / "pr429"
+    active_master.mkdir()
+    candidate_worktree.mkdir()
+    status = {
+        "resolved_active_root": str(active_master),
+        "runtime_version": PACKAGE_VERSION_FULL,
+        "daemon": {"ping": {"runtime_version": PACKAGE_VERSION_FULL}},
+    }
+    wrong = daemon_evidence(status, expected_root=candidate_worktree)
+    assert wrong["root_matches"] is False
+    assert wrong["version_matches"] is True
+    status["resolved_active_root"] = str(candidate_worktree)
+    status["daemon"]["ping"]["runtime_version"] = "older-runtime-version"
+    older = daemon_evidence(status, expected_root=candidate_worktree)
+    assert older["root_matches"] is True
+    assert older["version_matches"] is False
+    status["daemon"]["ping"]["runtime_version"] = PACKAGE_VERSION_FULL
+    matched = daemon_evidence(status, expected_root=candidate_worktree)
+    assert matched["root_matches"] is True
+    assert matched["version_matches"] is True
