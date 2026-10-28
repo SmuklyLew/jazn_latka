@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
-  "package_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
-  "generated_at_utc": "2026-10-28T06:27:50+00:00",
-  "updated_at_utc": "2026-10-28T06:27:50+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "package_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+  "generated_at_utc": "2026-10-28T06:44:52+00:00",
+  "updated_at_utc": "2026-10-28T06:44:52+00:00",
   "start_file": "run.py",
   "file_count": 3454,
   "static_file_count": 3454,
@@ -283,8 +283,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 21916,
-      "sha256": "12db91e8c61da90d48f9ac6f4d055af34a1f2fc5eafd95579fcc24e5ce70225b",
+      "size_bytes": 21923,
+      "sha256": "26df2b7289dd328e1cc976e23dd8d4f18b45ec426e7df4a62f3dce33ff7358f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3056,
-      "sha256": "8dca58eca541bb7b5d4fcb07cb86c3d2b7567fac5111cce2090956b283af8b39",
+      "size_bytes": 3050,
+      "sha256": "3684380806bd92d2562ccd15d2bb7b8582f57018e828e86b2f6a880c73960f54",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1961,
-      "sha256": "656655fa90df08c978de15c8cb0807e26dcb407def78ee33904b7f6a50a54081",
+      "size_bytes": 1960,
+      "sha256": "3c3829f56167c331b2f966e2de8df4fe1c56a484bd9ce691b8879e95180deeec",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9734,7 +9734,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7908,
-      "sha256": "70d83d853d1c0443f9fd066387bc4bb0c9c2cc9b1a117a15224cdb37ed0a5260",
+      "sha256": "f78eec16c7d6d961ceded95576c52512c8fd675ba8daadab1d7559ad6bacbe10",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11245,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18492,
-      "sha256": "7e386da789f83fa07535337b19ac2ddd5a5409fc2be6f02d9f3fd91271c9eb35",
+      "size_bytes": 18596,
+      "sha256": "c5d29395608cc49d5ee885e9833306c65a178618dea2b516728a8a36b8bd5521",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30884,7 +30884,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2547937,
-      "sha256": "924da9b7e54a63fad159d4a13ce03d67f7c91969b5357cda86a2eb55c1078713",
+      "sha256": "fbb1d0092b37a716311493f6aedfec07fcba59153b5f70e1147572bdebdc6eca",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31541,11 +31541,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
+  "release_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
-    "package_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency",
-    "release_version": "16.3.25.5.116.0.34.94.6.5-memory-alpha-snapshot-manifest-consistency"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+    "package_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix",
+    "release_version": "16.3.25.5.116.0.34.94.6.6-memory-alpha-snapshot-review-workflow-fix"
   },
   "legacy_aliases": {
     "version": "release_version"
