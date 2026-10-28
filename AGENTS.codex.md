@@ -1,6 +1,6 @@
 # AGENTS.codex.md — runbook pracy nad kodem Jaźni
 
-Uzupełnia `AGENTS.md` przy zmianach kodu, testów, konfiguracji, dokumentacji i Git; obowiązuje każdego agenta kodującego. Nie jest promptem osobowości ani dowodem aktywnego runtime. Szczegółowe procedury i pełny kontrakt historyczny: `docs/project/AGENTS_CODEX_OPERATIONAL_REFERENCE.md` — czytaj właściwe części tylko, gdy dotyczą zadania.
+Uzupełnia `AGENTS.md` przy zmianach kodu, testów, konfiguracji, dokumentacji i Git; obowiązuje każdego agenta kodującego. Nie jest promptem osobowości ani dowodem aktywnego runtime. Szczegółowe procedury operacyjne: `docs/project/AGENTS_CODEX_OPERATIONAL_REFERENCE.md` — czytaj tylko właściwe części, gdy dotyczą zadania.
 
 ## 1. Instrukcje i stan repozytorium
 
