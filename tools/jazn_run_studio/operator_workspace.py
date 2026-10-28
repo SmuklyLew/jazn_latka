@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 from .core import ACTIONS, python_executable, StudioError
+from .problem_guidance import explain_failure
 
 if TYPE_CHECKING:
     from .window import Window
@@ -94,7 +95,14 @@ class OperatorWorkspace:
         self.problems.setColumnCount(4)
         self.problems.setHeaderLabels(["Poziom / źródło", "Powód", "Czas lokalny", "Moduł"])
         self.problems.itemActivated.connect(self.open_problem)
+        self.problems.itemSelectionChanged.connect(self.show_problem_guidance)
         layout.addWidget(self.problems)
+        self.problem_details = QLabel(
+            "Wybierz problem, aby zobaczyć przyczynę i bezpieczny następny krok."
+        )
+        self.problem_details.setWordWrap(True)
+        self.problem_details.setMinimumHeight(56)
+        layout.addWidget(self.problem_details)
         self.tabs.addTab(panel, "Problemy")
 
     def _output(self) -> None:
@@ -117,6 +125,11 @@ class OperatorWorkspace:
         self.output = QPlainTextEdit()
         self.output.setReadOnly(True)
         self.output.setMaximumBlockCount(2500)
+        self.output.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        self.output.setPlaceholderText(
+            "Zredagowane zdarzenia z bieżącej sesji. Długie linie są skracane "
+            "wyłącznie w widoku; pełny raport możesz wyeksportować."
+        )
         layout.addWidget(self.output)
         self.tabs.addTab(panel, "Output / Logi")
 
@@ -166,6 +179,10 @@ class OperatorWorkspace:
         self.dock.show()
         self.dock.raise_()
         self.tabs.setCurrentIndex(tab)
+        # Do not stack two independent log panes across the entire viewport.
+        self.host.tabs.hide()
+        self.host.logs_user_hidden = True
+        self.host.log_toggle.setText("Pokaż logi")
         self.host.resizeDocks([self.dock], [max(240, self.host.height() // 3)], Qt.Orientation.Vertical)
 
     def observe(self, key: str, kind: str, value: Any) -> None:
@@ -185,7 +202,8 @@ class OperatorWorkspace:
         groups: dict[str, QTreeWidgetItem] = {}
         for key, value in sorted(self.failures.items()):
             reason = self.host.core.redactor.text(str(value.get("error") or "niepowodzenie operacji"))
-            if query and query not in (key + " " + reason).casefold():
+            guide = explain_failure(key, reason)
+            if query and query not in (key + " " + reason + " " + guide.title + " " + guide.remedy).casefold():
                 continue
             category = "Usługi opcjonalne" if key.startswith("probe:") else "Runtime" if key in {"status", "start", "stop", "restart"} else "Operacje"
             if category not in groups:
@@ -198,14 +216,30 @@ class OperatorWorkspace:
                 stamp = "nieprawidłowy czas"
             level = "Ostrzeżenie" if category == "Usługi opcjonalne" else "Błąd"
             target = "Usługi i procesy" if category in {"Runtime", "Usługi opcjonalne"} else "Diagnostyka"
-            item = QTreeWidgetItem(groups[category], [level + " • " + key, reason, stamp, target])
+            item = QTreeWidgetItem(groups[category], [level + " • " + key, guide.title, stamp, guide.module])
+            item.setToolTip(1, guide.remedy)
             item.setData(0, Qt.ItemDataRole.UserRole, target)
+            item.setData(1, Qt.ItemDataRole.UserRole, guide.remedy)
+            item.setData(2, Qt.ItemDataRole.UserRole, reason)
         self.problems.expandAll()
         self.problem_summary.setText(f"Problemy: {len(self.failures)} • wykonane kontrole: {self.completed}" if self.failures else
                                     "Nie wykryto problemów w wykonanych kontrolach." if self.completed else
                                     "Nie wykonano kontroli. Brak potwierdzonej diagnozy.")
 
+    def show_problem_guidance(self) -> None:
+        item = self.problems.currentItem()
+        if item is None or item.parent() is None:
+            self.problem_details.setText("Wybierz konkretny problem, aby zobaczyć rozwiązanie.")
+            return
+        self.problem_details.setText(
+            "Problem: " + item.text(1) + "  •  Kod: "
+            + str(item.data(2, Qt.ItemDataRole.UserRole) or "nieznany")
+            + "\nCo zrobić: " + str(item.data(1, Qt.ItemDataRole.UserRole) or "Sprawdź logi.")
+        )
+
     def open_problem(self, item: QTreeWidgetItem, _column: int) -> None:
+        if item.parent() is None:
+            return
         target = item.data(0, Qt.ItemDataRole.UserRole)
         if target:
             self.host.navigate(str(target))
@@ -230,7 +264,10 @@ class OperatorWorkspace:
         query, source = self.output_search.text().casefold(), str(self.source.currentData() or "")
         lines = [f"[{key}] {line}" for key, values in logs.items() if not source or key == source
                  for line in values if not query or query in line.casefold()]
-        text = "\n".join(lines[-2500:])
+        # Truncation is presentation-only; source logs and export_report stay untouched.
+        preview = [line if len(line) <= 600 else line[:600] + " … [skrócono w widoku]"
+                   for line in lines[-2500:]]
+        text = "\n".join(preview)
         if text != self.last_output:
             self.last_output = text
             position = self.output.verticalScrollBar().value()
