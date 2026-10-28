@@ -327,6 +327,40 @@ def discovery(settings: Settings) -> dict[str, Any]:
     }
 
 
+def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
+    """Inspect imports in the *actual gateway interpreter*, before process ownership.
+
+    -I isolates Python from cwd/PYTHONPATH; the installed SDK is still visible.
+    This is a bounded read-only import check, never an installer.
+    """
+    script = (
+        "import importlib, json\n"
+        "names = ('mcp', 'uvicorn', 'starlette', 'pydantic')\n"
+        "result = {}\n"
+        "for name in names:\n"
+        "    try:\n"
+        "        importlib.import_module(name)\n"
+        "    except Exception:\n"
+        "        result[name] = False\n"
+        "    else:\n"
+        "        result[name] = True\n"
+        "print(json.dumps(result))\n"
+    )
+    try:
+        result = run_external([interpreter, "-I", "-c", script], cwd=root, timeout=15)
+        if result.returncode or len(result.stdout) > 1024:
+            raise StudioError("Interpreter MCP nie przeszedł kontroli importów")
+        checks = json.loads(result.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        raise StudioError("Nie można zweryfikować zależności wybranego interpretera MCP") from exc
+    names = ("mcp", "uvicorn", "starlette", "pydantic")
+    if not isinstance(checks, dict) or set(checks) != set(names) or any(
+        not isinstance(checks[name], bool) for name in names
+    ):
+        raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
+    return {name: checks[name] for name in names}
+
+
 def daemon_evidence(data: dict[str, Any]) -> dict[str, Any]:
     """Preserve evidence levels without upgrading a listening port to readiness."""
     daemon = data.get("daemon")
@@ -414,6 +448,8 @@ class Controller:
         self.chat: Any = None
         self.memory_observations: dict[str, Any] = {}
         self.setup_observation: dict[str, Any] = {}
+        # Only a validated final, shown in Qt and durably acknowledged, sets this.
+        self.accepted_turn_proof: dict[str, str] | None = None
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -548,6 +584,14 @@ class Controller:
             # Studio owns only a local developer listener; public OAuth must be
             # configured through the separately validated deployment workflow.
             mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python))
+            imports = mcp_dependency_preflight(mcp_interpreter, self.root)
+            missing = [name for name, available in imports.items() if not available]
+            if missing:
+                raise StudioError(
+                    "Brama MCP: brak lub błąd importu w wybranym interpreterze ("
+                    + Path(mcp_interpreter).name + "): " + ", ".join(missing)
+                    + ". Zainstaluj oficjalny profil .[mcp-http] w tym interpreterze."
+                )
             argv = [mcp_interpreter, "-X", "utf8", str(self.root / "run.py"),
                     "mcp-http", "--loopback-dev", "--host", "127.0.0.1",
                     "--port", str(port), "--daemon-url", self.settings.daemon_url]
@@ -587,7 +631,8 @@ class Controller:
                 if key in {"gateway", "cloudflare"} and evidence.get("ready") is not True:
                     job.state, job.error = "failed", "service_not_ready"
                 elif key == "ollama" and evidence.get("selected_model_present") is False:
-                    job.state, job.error = "failed", "selected_model_missing"
+                    job.state, job.error = ("failed", "ollama_models_empty" if not evidence.get("models")
+                                             else "selected_model_missing")
                 else:
                     job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
@@ -882,6 +927,18 @@ class Controller:
         threading.Thread(target=worker, daemon=True).start()
         return batch
 
+    def confirm_visible_turn(self, result: dict[str, Any]) -> None:
+        """Record evidence only after the GUI has shown and acknowledged the final."""
+        fields = ("request_id", "turn_id", "trace_id")
+        if not all(isinstance(result.get(key), str) and 0 < len(result[key]) <= 128 for key in fields):
+            raise StudioError("Niekompletny dowód zaakceptowanej tury")
+        with self.lock:
+            self.accepted_turn_proof = {
+                **{key: result[key] for key in fields},
+                "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+                "basis": "gui_display_and_checkpoint_ack",
+            }
+
     def report(self) -> dict[str, Any]:
         with self.lock:
             return {"schema": "jazn_run_studio_report/v1", "observed_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -889,7 +946,8 @@ class Controller:
                     "logs": {k: list(lines) for k, lines in self.logs.items()},
                     "memory_observations": dict(self.memory_observations),
                     "memory_observation_boundary": "Separate historical read-only observations; not an atomic cross-database snapshot or activation authority.",
-                    "accepted_visible_turn": False}
+                    "accepted_visible_turn": True if self.accepted_turn_proof else None,
+                    "accepted_visible_turn_evidence": dict(self.accepted_turn_proof) if self.accepted_turn_proof else None}
 
     def export_report(self, path: Path) -> None:
         path = _path_without_links(path.absolute())
