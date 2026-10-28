@@ -235,10 +235,36 @@ class Window(QMainWindow):
         layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
         self.button("Kreator konfiguracji…", self.open_setup, layout)
         self.dashboard_summary: dict[str, QLabel] = {}
+        self.quick_runtime_ready = False
+        self.quick_generation_ready = False
+        self.quick_start_status = QLabel(
+            "Krok 1: runtime niezweryfikowany. Krok 2: model niezweryfikowany. "
+            "Krok 3: rozmowa zostanie odblokowana po dwóch testach."
+        )
+        self.quick_start_status.setWordWrap(True)
+        layout.addWidget(self.quick_start_status)
+        steps = QHBoxLayout()
+        self.button("1. Uruchom runtime", lambda: self.action("start"), steps)
+        self.button("Sprawdź runtime", lambda: self.action("status"), steps)
+        self.button("2. Uruchom Ollama", lambda: self.service("ollama", "start"), steps)
+        self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), steps)
+        layout.addLayout(steps)
+        chat_steps = QHBoxLayout()
+        self.quick_chat_button = self.button(
+            "3. Przejdź do rozmowy", lambda: self.navigate("Czat lokalny"), chat_steps
+        )
+        self.quick_chat_button.setEnabled(False)
+        self.button("Status pamięci i ciągłości", lambda: self.navigate("Dowody MEMORY"), chat_steps)
+        layout.addLayout(chat_steps)
+        self.quick_memory_status = QLabel(
+            "MEMORY: sprawdź status runtime; obecność bazy nie potwierdza ciągłości."
+        )
+        self.quick_memory_status.setWordWrap(True)
+        layout.addWidget(self.quick_memory_status)
         summary = QFormLayout()
         for key, title in (("version", "Wersja SYSTEM"), ("integrity", "Integralność SYSTEM"),
                            ("provenance", "Pochodzenie źródeł"), ("memory", "MEMORY"),
-                           ("model", "Adapter językowy")):
+                           ("continuity", "Ciągłość / wake-state"), ("model", "Adapter językowy")):
             field = QLabel("Nie wykonano kontroli statusu.")
             field.setTextFormat(Qt.TextFormat.PlainText)
             field.setWordWrap(True)
@@ -278,6 +304,18 @@ class Window(QMainWindow):
             self.button("Instalacja: " + name, lambda u=url: QDesktopServices.openUrl(QUrl(u)), links)
         layout.addLayout(links)
         self.button("Odśwież wykrywanie", self.render_discovery, layout)
+
+    def refresh_quick_start(self) -> None:
+        """Only actual runtime identity and explicit Ollama generation unlock chat."""
+        ready = (self.quick_runtime_ready and self.quick_generation_ready
+                 and bool(self.core.settings.model))
+        self.quick_chat_button.setEnabled(ready)
+        self.quick_start_status.setText(
+            "1. Runtime: " + ("potwierdzony" if self.quick_runtime_ready else "niezweryfikowany") +
+            "  •  2. Model: " + ("generacja potwierdzona" if self.quick_generation_ready
+                                 else "brak potwierdzonej generacji") +
+            "  •  3. Czat: " + ("możesz połączyć" if ready else "wymaga obu etapów")
+        )
 
     def render_discovery(self) -> None:
         data = discovery(self.core.settings)
@@ -714,6 +752,9 @@ class Window(QMainWindow):
     def apply_settings(self, settings: Settings) -> None:
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
+        self.quick_runtime_ready = False
+        self.quick_generation_ready = False
+        self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
         self.theme.setCurrentText(settings.theme)
@@ -805,6 +846,9 @@ class Window(QMainWindow):
             elif kind == "status_summary":
                 for name, label in self.dashboard_summary.items():
                     label.setText(self.core.redactor.text(str(value.get(name, "niezweryfikowane"))))
+                self.quick_memory_status.setText(
+                    "MEMORY: " + self.core.redactor.text(str(value.get("continuity", "niezweryfikowana")))
+                )
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
                 ready = all(value.get(flag) is True for flag in (
@@ -819,6 +863,10 @@ class Window(QMainWindow):
                 detail = (heading + " • endpoint: " + yes(value.get("endpoint_reachable")) +
                     " • tożsamość procesu: " + yes(value.get("process_identity_confirmed")) +
                     " • gotowość rozmowy: " + yes(value.get("conversation_ready")))
+                self.quick_runtime_ready = ready
+                if not ready:
+                    self.quick_generation_ready = False
+                self.refresh_quick_start()
                 self.evidence.setText("Runtime: " + detail)
                 self.update_service_summary("runtime", detail)
                 # Header and sidebar show the *same* most recent runtime observation.
@@ -831,6 +879,12 @@ class Window(QMainWindow):
                     if ready else "Lokalne Studio • status niezweryfikowany"
                 )
             elif kind == "probe":
+                if key == "probe:ollama_generate":
+                    self.quick_generation_ready = (
+                        value.get("generation_verified") is True
+                        and value.get("selected_model_present") is True
+                    )
+                    self.refresh_quick_start()
                 service = value.get("service")
                 if service in self.statuses:
                     if value.get("ready") is True:
@@ -948,6 +1002,14 @@ class Window(QMainWindow):
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)
+                if key in {"start", "stop", "restart"}:
+                    # A lifecycle transition invalidates previously observed readiness.
+                    self.quick_runtime_ready = False
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
+                if key.startswith("probe:ollama_generate") and value.get("state") == "failed":
+                    self.quick_generation_ready = False
+                    self.refresh_quick_start()
                 if key.startswith("memory:p1:"):
                     self.memory_panel.receive_state(key, value)
                 self.statusBar().showMessage(key + ": " + value["state"] + (" / " + value["error"] if value["error"] else ""))
