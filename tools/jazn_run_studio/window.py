@@ -366,6 +366,7 @@ class Window(QMainWindow):
             self.chat_model_selector.setCurrentIndex(1)
         model_row.addWidget(self.chat_model_selector, 1)
         self.button("Wykryj modele", lambda: self.core.probe("ollama"), model_row)
+        self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), model_row)
         self.button("Zapisz wybór", self.select_local_model, model_row)
         layout.addLayout(model_row)
         row = QHBoxLayout()
@@ -856,7 +857,11 @@ class Window(QMainWindow):
                     if not names:
                         self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
                     else:
-                        self.chat_state.setText("Modele Ollama: " + ", ".join(names) + ". Generacja nadal niezweryfikowana.")
+                        self.chat_state.setText(
+                            "Modele Ollama: " + ", ".join(names) + ". Generacja: " +
+                            ("potwierdzona w API (nie jest to odpowiedź Jaźni)." if value.get("generation_verified") is True
+                             else "niezweryfikowana.")
+                        )
             elif kind == "chat_state":
                 self.chat_state.setText(str(value))
             elif kind == "chat_final":
@@ -1114,6 +1119,7 @@ class Window(QMainWindow):
         self.models_summary.setWordWrap(True)
         layout.addWidget(self.models_summary)
         self.button("Wykryj modele Ollama", lambda: self.core.probe("ollama"), layout)
+        self.button("Sprawdź krótką generację modelu", lambda: self.core.probe("ollama_generate"), layout)
         self.button("Sprawdź konfigurację adaptera", lambda: self.action("model"), layout)
         self.button("Wybierz model w ustawieniach", lambda: self.navigate("Ustawienia"), layout)
         self.button("Przejdź do rzeczywistej rozmowy runtime", lambda: self.navigate("Czat lokalny"), layout)
