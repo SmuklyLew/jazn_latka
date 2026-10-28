@@ -303,7 +303,7 @@ new file mode 100644
 +        return 2
 +    if explicit:
 +        _menu(root, report, explicit=True)
-+        return 0
++        return 0 if not inspect(root)["required_issues"] else 2
 +    if report["required_issues"] and not _menu(root, report, explicit=False):
 +        print("Brak gotowości zależności GUI. Studio nie zostanie uruchomione.", file=sys.stderr)
 +        return 2
@@ -339,7 +339,7 @@ new file mode 100644
 +                installed_version=None if missing else "99",
 +                version_satisfies=not missing, import_available=not missing, ready=not missing, import_name="test",
 +            )]
-+    monkeypatch.setattr(preflight, "_common", Common)
++    monkeypatch.setattr(preflight, "_common", lambda: Common())
 +    result = preflight.inspect(tmp_path)
 +    assert result["required_issues"] == []
 +    assert result["profiles"]["polish-nlp"][0]["state"] == "MISSING"
@@ -354,7 +354,7 @@ new file mode 100644
 +            return [SimpleNamespace(distribution="pyside6-essentials", requirement=reqs[0],
 +                                    installed_version=None, version_satisfies=False,
 +                                    import_available=False, ready=False, import_name="PySide6")]
-+    monkeypatch.setattr(preflight, "_common", Common)
++    monkeypatch.setattr(preflight, "_common", lambda: Common())
 +    assert preflight.inspect(tmp_path)["required_issues"]
 +
 +
@@ -372,7 +372,7 @@ new file mode 100644
 +        def resolve_profile_requirements(self, root, names): return ["packaging>=24"]
 +        def inspect_current_requirements(self, root, reqs):
 +            return [SimpleNamespace(requirement=reqs[0], ready=False)]
-+    monkeypatch.setattr(preflight, "_common", Common)
++    monkeypatch.setattr(preflight, "_common", lambda: Common())
 +    monkeypatch.setattr("builtins.input", lambda _prompt: "NIE")
 +    monkeypatch.setattr(preflight.subprocess, "run", lambda *_a, **_kw: pytest.fail("pip was run"))
 +    assert preflight._install(tmp_path, ["core"]) is False
@@ -385,7 +385,7 @@ new file mode 100644
 +        def resolve_profile_requirements(self, root, names): return ["packaging>=24"]
 +        def inspect_current_requirements(self, root, reqs):
 +            return [SimpleNamespace(requirement=reqs[0], ready=False)]
-+    monkeypatch.setattr(preflight, "_common", Common)
++    monkeypatch.setattr(preflight, "_common", lambda: Common())
 +    monkeypatch.setattr("builtins.input", lambda _prompt: "TAK")
 +    seen = {}
 +    def fake_run(args, **kw):
