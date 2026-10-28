@@ -838,7 +838,9 @@ class Window(QMainWindow):
                     elif value.get("ready") is False:
                         detail = "BŁĄD • usługa nie zgłasza gotowości"
                     elif service == "ollama":
-                        detail = "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana"
+                        detail = ("Ollama API • generacja modelu potwierdzona; finalizacja Jaźni osobno"
+                                  if value.get("generation_verified") is True else
+                                  "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana")
                     else:
                         detail = "Odpowiedź testu • gotowość niezweryfikowana"
                     self.update_service_summary(str(service), detail)
@@ -1208,7 +1210,8 @@ class Window(QMainWindow):
                 ready = observed.get("ready") is True
             readiness = "potwierdzona" if ready else "niezweryfikowana"
             if service == "ollama" and observed.get("endpoint_reachable"):
-                readiness = "API; brak testu generacji"
+                readiness = ("API; generacja potwierdzona" if observed.get("generation_verified") is True
+                             else "API; brak testu generacji")
             for column, value in ((2, str(pid or "—")), (3, ports[service]), (4, readiness)):
                 item = self.services_table.item(row, column)
                 if item is not None and item.text() != value:
