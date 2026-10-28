@@ -169,7 +169,7 @@ def test_cursor_menu_uses_prompt_toolkit_radio(monkeypatch):
     def radio(**kw):
         seen.update(kw)
         return Dialog()
-    fake.radiolist_dialog = radio
+    setattr(fake, "radiolist_dialog", radio)
     monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
     assert preflight._choose("tui", "TUI", "Choices", [("1", "A"), ("2", "B")]) == "2"
     assert seen["title"] == "TUI"
@@ -188,7 +188,7 @@ def test_tui_cancel_logs_reason(monkeypatch, capsys):
     class CancelDialog:
         def run(self):
             return None
-    fake.radiolist_dialog = lambda **kwargs: CancelDialog()
+    setattr(fake, "radiolist_dialog", lambda **kwargs: CancelDialog())
     monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
     assert preflight._choose("tui", "Menu", "Opis", [("0", "Zakończ")]) is None
     assert "[TUI] Dialog zamknięty bez wyboru." in capsys.readouterr().out
@@ -201,7 +201,7 @@ def test_tui_selection_logs_chosen_option(monkeypatch, capsys):
     class PickDialog:
         def run(self):
             return "2"
-    fake.radiolist_dialog = lambda **kwargs: PickDialog()
+    setattr(fake, "radiolist_dialog", lambda **kwargs: PickDialog())
     monkeypatch.setitem(sys.modules, "prompt_toolkit.shortcuts", fake)
     assert preflight._choose("tui", "Menu", "Opis", [("2", "Profil")]) == "2"
     assert "[TUI] Wybrano opcję: 2." in capsys.readouterr().out
