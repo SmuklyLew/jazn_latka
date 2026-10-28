@@ -21,10 +21,27 @@ def test_summary_separates_integrity_memory_and_null_model() -> None:
     result = status_summary(observation())
     assert result["version"] == "16.3-test"
     assert result["integrity"] == result["provenance"] == "zweryfikowane"
-    assert "wyłączona" in result["memory"] and "recall i ciągłość" in result["memory"]
+    assert "wyłączona" in result["memory"] and "recall wymaga osobnego potwierdzenia" in result["memory"]
+    assert "ciągłość niezweryfikowana" in result["continuity"]
     assert "brak backendu generacyjnego" in result["model"]
     assert "/private/database" not in json.dumps(result)
-    assert set(result) == {"version", "integrity", "provenance", "memory", "model"}
+    assert set(result) == {"version", "integrity", "provenance", "memory", "continuity", "model"}
+
+
+
+def test_searchable_memory_never_claims_autobiographical_continuity() -> None:
+    data = observation()
+    data["memory_availability"] = {"status": "available", "mode": "optional"}
+    data["startup"]["memory_continuity_status"] = {
+        "status": "partial_unverified", "wake_context_ready": False,
+        "continuity_claim_allowed": False,
+    }
+    result = status_summary(data)
+    assert "dostępna technicznie" in result["memory"]
+    assert "ciągłość niepotwierdzona" in result["continuity"]
+    assert "partial_unverified" in result["continuity"]
+    assert "zweryfikowana ciągłość" not in result["continuity"]
+
 
 
 @pytest.mark.parametrize("proof, expected", [(True, "niezweryfikowane"), ("true", "niezweryfikowane"), (False, "błąd weryfikacji")])
