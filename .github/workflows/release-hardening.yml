@@ -534,7 +534,7 @@ jobs:
 
   pr_final_head_gate:
     name: PR final HEAD metadata and lineage
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ always() && github.event_name == 'pull_request' }}
     needs: [manifest_sync, verify_ubuntu, verify_windows, dependency_contract_matrix]
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -548,6 +548,22 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
     steps:
+      - name: Require all upstream release validations to have passed
+        shell: bash
+        env:
+          MANIFEST_RESULT: ${{ needs.manifest_sync.result }}
+          UBUNTU_RESULT: ${{ needs.verify_ubuntu.result }}
+          WINDOWS_RESULT: ${{ needs.verify_windows.result }}
+          DEPENDENCY_RESULT: ${{ needs.dependency_contract_matrix.result }}
+        run: |
+          set -euo pipefail
+          for result in "$MANIFEST_RESULT" "$UBUNTU_RESULT" "$WINDOWS_RESULT" "$DEPENDENCY_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "A required upstream release validation did not pass: $result" >&2
+              exit 1
+            fi
+          done
+
       - name: Checkout exact PR source SHA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
