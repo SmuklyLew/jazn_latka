@@ -8,7 +8,7 @@ import pytest
 pytest.importorskip("PySide6")
 
 from tests.test_jazn_run_studio_layout import window  # noqa: F401
-from tools.jazn_run_studio.core import Settings
+from tools.jazn_run_studio.core import Settings, StudioError
 from tools.jazn_run_studio.first_run import SetupWizard
 from tools.jazn_run_studio.requirements_worker import setup_scope
 from tools.jazn_run_studio.core import python_executable
@@ -83,3 +83,22 @@ def test_memory_continuity_label_does_not_unlock_chat(window) -> None:
     window.poll()
     assert "normalization_stale" in window.quick_memory_status.text()
     assert window.quick_chat_button.isEnabled() is False
+
+
+def test_sidebar_chat_connect_cannot_bypass_guided_readiness(window, monkeypatch) -> None:
+    with pytest.raises(StudioError, match="test generacji"):
+        window.connect_local_chat()
+    window.core.settings = replace(window.core.settings, model="gemma3:latest")
+    window.quick_runtime_ready = True
+    window.quick_generation_ready = True
+    calls: list[bool] = []
+    monkeypatch.setattr(window.core, "connect_chat", lambda: calls.append(True))
+    window.connect_local_chat()
+    assert calls == [True]
+    window.core.emit("service:ollama", "state", {
+        "key": "service:ollama", "state": "stopped", "error": None, "pid": None,
+    })
+    window.poll()
+    assert window.quick_generation_ready is False
+    with pytest.raises(StudioError):
+        window.connect_local_chat()
