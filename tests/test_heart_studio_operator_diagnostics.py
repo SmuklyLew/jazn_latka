@@ -37,3 +37,42 @@ def test_mcp_guidance_does_not_publish_dev_gateway() -> None:
 def test_unknown_job_remains_honest_not_false_success() -> None:
     guide = explain_failure("helper:custom", "unknown")
     assert "nie została ukończona" in guide.title
+
+
+def test_ensure_ollama_reuses_existing_api_probe_instead_of_start(tmp_path, monkeypatch) -> None:
+    from tools.jazn_run_studio.core import Controller, Settings
+    from tools.jazn_run_studio import core as studio_core
+
+    (tmp_path / "latka_jazn").mkdir()
+    (tmp_path / "latka_jazn/version.py").touch()
+    (tmp_path / "run.py").touch()
+    (tmp_path / "main.py").touch()
+    controller = Controller(tmp_path, Settings())
+    calls = []
+
+    class ProbeSocket:
+        def __init__(self, result: int):
+            self.result = result
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def settimeout(self, _seconds):
+            return None
+
+        def connect_ex(self, address):
+            assert address == ("127.0.0.1", 11434)
+            return self.result
+
+    monkeypatch.setattr(studio_core.socket, "socket", lambda: ProbeSocket(0))
+    monkeypatch.setattr(controller, "probe", lambda key: calls.append(("probe", key)))
+    monkeypatch.setattr(controller, "start_service", lambda key: calls.append(("start", key)))
+    controller.ensure_ollama()
+    assert calls == [("probe", "ollama")]
+
+    monkeypatch.setattr(studio_core.socket, "socket", lambda: ProbeSocket(1))
+    controller.ensure_ollama()
+    assert calls[-1] == ("start", "ollama")
