@@ -49,20 +49,23 @@ def _sha(path: Path, *, announce: Emit | None = None) -> str:
     digest = hashlib.sha256()
     total = path.stat().st_size
     processed = 0
-    last = time.monotonic()
+    started = last = time.monotonic()
     with path.open("rb") as handle:
         while block := handle.read(4 * 1024 * 1024):
             digest.update(block)
             processed += len(block)
             now = time.monotonic()
             if announce is not None and now - last >= 2:
-                announce(f"  [HASH] {processed}/{total} bytes")
+                rate = processed / max(0.001, now-started)
+                eta = (total-processed) / max(1.0, rate)
+                announce(f"  [HASH] {processed}/{total} bytes | {rate/1048576:.1f} MiB/s | ETA {eta:.0f}s")
                 last = now
     return digest.hexdigest()
 
 
 def _inventory(source: Path) -> tuple[list[tuple[Path, int, int]], list[str], list[str]]:
     files: list[tuple[Path, int, int]] = []
+    seen_casefold: set[str] = set()
     directories: list[str] = []
     excluded: list[str] = []
     for base, dirnames, filenames in os.walk(source, followlinks=False):
@@ -77,6 +80,10 @@ def _inventory(source: Path) -> tuple[list[tuple[Path, int, int]], list[str], li
             if not stat.S_ISREG(info.st_mode):
                 raise AlphaSnapshotError(f"non-regular file refused: {path}")
             relative = path.relative_to(source).as_posix()
+            folded = relative.casefold()
+            if folded in seen_casefold:
+                raise AlphaSnapshotError(f"casefold-colliding MEMORY path: {relative}")
+            seen_casefold.add(folded)
             if relative == EVIDENCE:
                 raise AlphaSnapshotError("source already contains alpha snapshot evidence")
             if filename.lower().endswith(TRANSIENT_SUFFIXES):
@@ -94,7 +101,7 @@ def _copy_file(source: Path, destination: Path, *, emit: Emit) -> str:
     digest = hashlib.sha256()
     total = source.stat().st_size
     processed = 0
-    last = time.monotonic()
+    started = last = time.monotonic()
     with source.open("rb") as inp, destination.open("xb") as out:
         while block := inp.read(4 * 1024 * 1024):
             out.write(block)
@@ -102,7 +109,9 @@ def _copy_file(source: Path, destination: Path, *, emit: Emit) -> str:
             processed += len(block)
             now = time.monotonic()
             if now - last >= 2:
-                emit(f"  [COPY] {processed}/{total} bytes")
+                rate = processed / max(0.001, now-started)
+                eta = (total-processed) / max(1.0, rate)
+                emit(f"  [COPY] {processed}/{total} bytes | {rate/1048576:.1f} MiB/s | ETA {eta:.0f}s")
                 last = now
         out.flush()
         os.fsync(out.fileno())
@@ -237,10 +246,18 @@ def create_snapshot(
             target = stage / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             label = rel.as_posix()
+            _safe_item(path)
+            if not path.resolve().is_relative_to(source):
+                raise AlphaSnapshotError(f"source path escaped MEMORY: {label}")
             emit(f"[{index}/{len(files)}] {label}")
             if path.suffix.lower() in SQLITE_EXTENSIONS:
+                last_sqlite_progress = [0.0]
+
                 def progress(done: int, total: int) -> None:
-                    emit(f"  [SQLITE] {done}/{total} pages") if done == total else None
+                    now = time.monotonic()
+                    if done == total or now - last_sqlite_progress[0] >= 1:
+                        emit(f"  [SQLITE] {done}/{total} pages | elapsed {now-started:.1f}s")
+                        last_sqlite_progress[0] = now
                 snapshot = create_sqlite_snapshot(
                     path, target, progress=progress, full_integrity_check=True
                 )
@@ -249,6 +266,7 @@ def create_snapshot(
             else:
                 digest = _copy_file(path, target, emit=emit)
                 method = "verified_copy"
+            _safe_item(path)
             current = path.stat()
             if current.st_size != size or current.st_mtime_ns != mtime:
                 raise AlphaSnapshotError(f"source changed during capture: {label}")
