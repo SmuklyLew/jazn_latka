@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+  "base_merge_commit": "503b36c44d28451ba7e34bf4f88fadbbc2afeba0",
   "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
-  "commit_date": "2026-10-28T17:34:41+01:00",
+  "commit_date": "2026-10-28T20:50:24+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T16:34:41+00:00",
+  "generated_at_utc": "2026-10-28T19:50:24+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "d0db8d059e3d0fd5581bdd7273a72ef6cb0ea05d",
+  "git_tree_sha": "8ca2686d4352a4005edbc71f4c4a79fba4e117d0",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+    "base_commit": "759014304bfa5b38c0502ec33345e27fe96f5f5d",
     "base_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+    "source_commit": "503b36c44d28451ba7e34bf4f88fadbbc2afeba0",
     "source_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "390c1ae48961725999184bffbb98c4d9f661cd92",
+  "source_commit": "503b36c44d28451ba7e34bf4f88fadbbc2afeba0",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.10-run-studio-pyright-ci-type-repair",
   "tag": null,
