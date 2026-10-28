@@ -122,13 +122,15 @@ def _copy_file(source: Path, destination: Path, *, emit: Emit) -> str:
 
 
 def _check_shard_manifests(
-    snapshot: Path, *, normalize_active: bool = False
+    snapshot: Path, *, normalize_active: bool = False, source_preflight: bool = False
 ) -> list[dict[str, object]]:
     """Check shard references against actual backed-up database files.
 
-    The SQLite Backup API can produce a different main-file size after WAL
-    consolidation. Only active shard size metadata may be rebased inside the
-    isolated staging tree; sealed digests and shard identity never change.
+    Source preflight validates the declared physical main-file size BEFORE
+    staging exists. The active shard SHA is advisory (writers may update it
+    independently from the manifest); sealed shard SHA is authoritative.
+    An SQLite backup can produce a different file size/hash by applying WAL.
+    Rebase only active metadata in the isolated staging tree, with evidence.
     """
     normalized: list[dict[str, object]] = []
     base = snapshot / "sqlite" / "runtime_write_v1"
@@ -178,18 +180,34 @@ def _check_shard_manifests(
             expected_hash = shard.get("sha256")
             if role == "sealed" and not expected_hash:
                 raise AlphaSnapshotError(f"sealed shard missing SHA256: {relative}")
-            if expected_hash and (
+            if expected_hash is not None and (
                 not isinstance(expected_hash, str) or
-                _sha(path).lower() != expected_hash.lower()
+                len(expected_hash) != 64 or
+                any(ch not in "0123456789abcdefABCDEF" for ch in expected_hash)
             ):
+                raise AlphaSnapshotError(f"invalid shard SHA256: {relative}")
+            if role == "sealed" and _sha(path).lower() != expected_hash.lower():
                 raise AlphaSnapshotError(f"shard SHA256 mismatch: {relative}")
+            if role == "active_write" and normalize_active and expected_hash:
+                cloned_hash = _sha(path)
+                if cloned_hash.lower() != expected_hash.lower():
+                    normalized.append({
+                        "manifest": name, "shard_id": ident,
+                        "field": "sha256", "source_value": expected_hash,
+                        "snapshot_value": cloned_hash,
+                    })
+                    shard["sha256"] = cloned_hash
+                    changed = True
+            elif role == "active_write" and not source_preflight and expected_hash:
+                if _sha(path).lower() != expected_hash.lower():
+                    raise AlphaSnapshotError(f"shard SHA256 mismatch: {relative}")
             if shard.get("size_bytes") != size:
                 if role != "active_write" or not normalize_active:
                     raise AlphaSnapshotError(f"shard size mismatch: {relative}")
                 normalized.append({
                     "manifest": name, "shard_id": ident,
-                    "previous_size_bytes": shard.get("size_bytes"),
-                    "snapshot_size_bytes": size,
+                    "field": "size_bytes", "source_value": shard.get("size_bytes"),
+                    "snapshot_value": size,
                 })
                 shard["size_bytes"] = size
                 changed = True
@@ -310,6 +328,9 @@ def create_snapshot(
     if not dest.parent.is_dir():
         raise AlphaSnapshotError("destination parent must exist")
     files, dirs, excluded = _inventory(source)
+    # Mandatory before any staging directory is created: an inconsistent
+    # source manifest is never silently "repaired" by the SQLite backup.
+    _check_shard_manifests(source, source_preflight=True)
     stamp = [(source / rel, size, mtime) for rel, size, mtime in files]
     # WAL and SHM are transient, but changes to them during the capture are a
     # strong signal that the operator did not actually quiesce every writer.

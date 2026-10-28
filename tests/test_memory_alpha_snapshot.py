@@ -125,16 +125,18 @@ def test_cli_exposes_canonical_alpha_snapshot_command() -> None:
     assert args.as_json is True
 
 
-def test_active_shard_size_rebased_only_in_staging(tmp_path: Path) -> None:
+def test_active_shard_metadata_rebased_only_after_valid_source(tmp_path: Path) -> None:
     source, connection = _source(tmp_path, wal=True)
     try:
+        database = source / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3"
         manifest = source / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json"
         manifest.write_text(json.dumps({
             "active_write_shard": "0001",
             "shards": [{
                 "shard_id": "0001", "role": "active_write",
                 "path": "sqlite/runtime_write_v1/runtime_memory.sqlite3",
-                "size_bytes": 0,
+                "size_bytes": database.stat().st_size,
+                "sha256": "0" * 64,  # Active hashes are advisory until sealed.
             }]
         }), encoding="utf-8")
         original = manifest.read_bytes()
@@ -145,13 +147,36 @@ def test_active_shard_size_rebased_only_in_staging(tmp_path: Path) -> None:
         staged_manifest = json.loads(
             (target / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json").read_text()
         )
-        staged_size = (
-            target / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3"
-        ).stat().st_size
-        assert staged_manifest["shards"][0]["size_bytes"] == staged_size
+        staged_db = target / "sqlite" / "runtime_write_v1" / "runtime_memory.sqlite3"
+        assert staged_manifest["shards"][0]["size_bytes"] == staged_db.stat().st_size
+        import hashlib
+        assert staged_manifest["shards"][0]["sha256"] == hashlib.sha256(
+            staged_db.read_bytes()
+        ).hexdigest()
         evidence = json.loads((target / EVIDENCE).read_text(encoding="utf-8"))
         assert evidence["normalized_active_shards"]
         assert verify_snapshot(target, emit=lambda _: None)["ok"] is True
+    finally:
+        connection.close()
+
+
+def test_source_shard_size_mismatch_rejected_before_staging(tmp_path: Path) -> None:
+    source, connection = _source(tmp_path, wal=True)
+    try:
+        manifest = source / "sqlite" / "runtime_write_v1" / "runtime_memory_shards.json"
+        manifest.write_text(json.dumps({
+            "active_write_shard": "0001",
+            "shards": [{
+                "shard_id": "0001", "role": "active_write",
+                "path": "sqlite/runtime_write_v1/runtime_memory.sqlite3",
+                "size_bytes": 0,  # Intentionally invalid source baseline.
+            }]
+        }), encoding="utf-8")
+        target = tmp_path / "snapshot"
+        with pytest.raises(AlphaSnapshotError, match="shard size mismatch"):
+            create_snapshot(source, target, writer_confirmation="WRITERS_PAUSED", emit=lambda _: None)
+        assert not target.exists()
+        assert not list(tmp_path.glob("snapshot.incomplete-*"))
     finally:
         connection.close()
 
@@ -175,6 +200,7 @@ def test_invalid_sealed_shard_never_promoted(tmp_path: Path) -> None:
     with pytest.raises(AlphaSnapshotError, match="shard SHA256 mismatch"):
         create_snapshot(source, target, writer_confirmation="WRITERS_PAUSED", emit=lambda _: None)
     assert not target.exists()
+    assert not list(tmp_path.glob("snapshot.incomplete-*"))
 
 
 def test_verify_shard_metadata_inconsistent_fails_closed(tmp_path: Path) -> None:

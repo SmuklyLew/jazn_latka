@@ -1,3 +1,4 @@
+# v116.0.34.94.6.7: Block stale source shard sizes prior to staging; track WAL-only normalization in evidence.
 # v116.0.34.94.6.6: Preserve release review gate without changing existing exact workflow test contract.
 # v116.0.34.94.6.5: Verify snapshot shard contracts and gate review on fresh canonical release metadata.
 # v116.0.34.94.6.4: Explicit offline alpha MEMORY snapshot with SQLite Backup API, verification and operator gating.
@@ -152,9 +153,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.6"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.7"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "memory-alpha-snapshot-review-workflow-fix"
+PACKAGE_RELEASE_NAME = "memory-alpha-source-manifest-preflight"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
