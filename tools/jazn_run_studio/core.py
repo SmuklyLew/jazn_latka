@@ -361,14 +361,24 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
     return {name: checks[name] for name in names}
 
 
-def daemon_evidence(data: dict[str, Any]) -> dict[str, Any]:
-    """Preserve evidence levels without upgrading a listening port to readiness."""
+def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
+    """Keep separate proof of process, runtime root and package identity."""
+    from latka_jazn.version import PACKAGE_VERSION_FULL
     daemon = data.get("daemon")
     daemon = daemon if isinstance(daemon, dict) else {}
     ping = daemon.get("ping")
     ping = ping if isinstance(ping, dict) else {}
     matrix = data.get("capability_matrix")
     matrix = matrix if isinstance(matrix, dict) else {}
+    root = data.get("resolved_active_root") or data.get("root")
+    root_matches = (
+        isinstance(root, str) and bool(root)
+        and Path(root).resolve() == expected_root.resolve()
+    ) if expected_root is not None else None
+    version_matches = (
+        data.get("runtime_version") == PACKAGE_VERSION_FULL
+        and ping.get("runtime_version") == PACKAGE_VERSION_FULL
+    ) if expected_root is not None else None
     return {
         "system_version": data.get("runtime_version"),
         "daemon_version": ping.get("runtime_version"),
@@ -380,6 +390,8 @@ def daemon_evidence(data: dict[str, Any]) -> dict[str, Any]:
         "heartbeat_fresh": daemon.get("endpoint_heartbeat_fresh") is True,
         "active_state": daemon.get("active_state"),
         "conversation_ready": matrix.get("conversation_ready") is True,
+        "root_matches": root_matches,
+        "version_matches": version_matches,
         "accepted_visible_turn": False,
     }
 
@@ -872,7 +884,7 @@ class Controller:
                     job.state = "failed"
                     if job.error is None or job.error.startswith("process_exit:"):
                         job.error = "invalid_status_json"
-                self.emit(job.key, "evidence", daemon_evidence(value))
+                self.emit(job.key, "evidence", daemon_evidence(value, expected_root=self.root))
                 self.emit(job.key, "status_summary", status_summary(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
