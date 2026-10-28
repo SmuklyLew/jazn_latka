@@ -388,7 +388,7 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "process_identity_confirmed": daemon.get("process_identity_confirmed") is True,
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,
         "heartbeat_fresh": daemon.get("endpoint_heartbeat_fresh") is True,
-        "active_state": daemon.get("active_state"),
+        "active_state": daemon.get("active_state") or data.get("runtime_active_state"),
         "conversation_ready": matrix.get("conversation_ready") is True,
         "root_matches": root_matches,
         "version_matches": version_matches,
