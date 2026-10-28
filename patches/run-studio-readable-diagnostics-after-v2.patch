@@ -1,0 +1,444 @@
+diff --git a/tools/jazn_run_studio/dependency_preflight.py b/tools/jazn_run_studio/dependency_preflight.py
+--- a/tools/jazn_run_studio/dependency_preflight.py
++++ b/tools/jazn_run_studio/dependency_preflight.py
+@@ -90,133 +90,184 @@
+     return ("PASS" if result.returncode == 0 else "BROKEN"), message[:5000]
+ 
+ 
+-def show(report: dict, *, full: bool) -> None:
+-    print("\n=== JAŹŃ | DIAGNOSTYKA ZALEŻNOŚCI ===")
+-    print("Python: " + report["interpreter"])
+-    for name, rows in report["profiles"].items():
+-        problems = [row for row in rows if row["state"] != "PASS"]
+-        print(f"[{'PASS' if not problems else 'ISSUES'}] {name}: {len(rows)-len(problems)}/{len(rows)} zgodnych")
+-        if full or name in ESSENTIAL:
+-            for row in rows:
+-                print("    [" + row["state"] + "] " + row["requirement"] +
+-                      (" (installed: " + row["version"] + ")" if row["version"] else ""))
+-    state, message = _pip_check()
+-    print(f"pip check: [{state}]" + (" " + message if message else ""))
+-    print("Sprawdzenie pakietów nie dowodzi działania daemona, OS/DLL ani pamięci.")
+-
+-
+-def _interactive() -> bool:
+-    return bool(sys.stdin and sys.stdout and sys.stdin.isatty() and sys.stdout.isatty())
+-
+-
+-def _install(root: Path, profiles: list[str]) -> bool:
+-    if getattr(sys, "frozen", False) or sys.prefix == sys.base_prefix:
+-        print("Odmowa: instalacja do środowiska globalnego/frozen jest niedozwolona.")
+-        return False
+-    common = _common()
+-    requirements = common.resolve_profile_requirements(root, profiles)
+-    statuses = common.inspect_current_requirements(root, requirements)
+-    wanted = [s.requirement for s in statuses if not s.ready]
+-    if not wanted:
+-        print("Brak pakietów do instalacji w wybranym profilu.")
+-        return True
+-    print("\nInterpreter: " + sys.executable)
+-    print("Oficjalny indeks: " + INDEX)
+-    print("Do instalacji / uzgodnienia wersji:")
+-    for item in wanted:
+-        print("  - " + item)
+-    print("Pip rozwiąże również zależności pośrednie w tym samym venv.")
+-    print("Uwaga: PyPI przez HTTPS nie oznacza instalacji z hash-locked wheelhouse.")
+-    print("Profil 'polish-nlp' może być duży. Nie instaluj go, jeśli nie jest potrzebny.")
+-    try:
+-        accepted = input("Wpisz TAK, aby uruchomić pip dla tej listy: ").strip()
+-    except (EOFError, KeyboardInterrupt):
+-        return False
+-    if accepted != "TAK":
+-        print("Odmowa/anulowano.")
+-        return False
+-    cmd = [sys.executable, "-m", "pip", "--isolated", "--require-virtualenv",
+-           "install", "--index-url", INDEX, "--only-binary=:all:",
+-           "--no-input", *wanted]
+-    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("PIP_")}
+-    env["PIP_CONFIG_FILE"] = os.devnull
+-    try:
+-        result = subprocess.run(cmd, cwd=root, env=env, shell=False,
+-                                check=False, timeout=1800)
+-    except (OSError, subprocess.TimeoutExpired) as exc:
+-        print("Instalacja nieudana: " + type(exc).__name__)
+-        return False
+-    if result.returncode:
+-        print("pip zwrócił kod " + str(result.returncode))
+-        return False
+-    importlib.invalidate_caches()
+-    return True
+-
+-
+-def _menu(root: Path, report: dict, *, explicit: bool) -> bool:
+-    """Return True only if all GUI-required profiles pass (or audit-only exits)."""
+-    if not _interactive():
+-        print("Brak interaktywnego terminala: niczego nie instalowano.")
+-        return not report["required_issues"]
+-    while True:
+-        print("\n[1] Zainstaluj/napraw core + run-studio")
+-        print("[2] Wybierz dowolny profil opcjonalny do sprawdzenia i naprawy")
+-        print("[3] Pełna diagnostyka ponownie (bez instalacji)")
+-        print("[0] Zamknij diagnostykę" if explicit else "[0] Anuluj start")
+-        try:
+-            action = input("Wybierz [0-3]: ").strip()
+-        except (KeyboardInterrupt, EOFError):
+-            return False
+-        if action in ("", "0"):
+-            return not report["required_issues"] if explicit else False
+-        if action == "3":
+-            report = inspect(root)
+-            show(report, full=True)
+-            continue
+-        if action == "1":
+-            selected = list(ESSENTIAL)
+-        elif action == "2":
+-            options = [name for name in report["profiles"] if name not in ESSENTIAL]
+-            for i, name in enumerate(options, 1):
+-                rows = report["profiles"][name]
+-                missing = sum(r["state"] != "PASS" for r in rows)
+-                print(f"[{i}] {name} — problemy: {missing}/{len(rows)}")
+-            try:
+-                choice = input("Numer profilu (Enter = powrót): ").strip()
+-            except (KeyboardInterrupt, EOFError):
+-                return False
+-            if not choice.isdigit() or not 1 <= int(choice) <= len(options):
+-                continue
+-            selected = [options[int(choice) - 1]]
+-        else:
+-            print("Nieznana opcja.")
+-            continue
+-
+-        if _install(root, selected):
+-            report = inspect(root)
+-            show(report, full=False)
+-            if not report["required_issues"]:
+-                print("Wszystkie zależności wymagane do uruchomienia GUI: PASS.")
+-                return True
+-        print("Nie potwierdzono gotowości środowiska. Można ponowić diagnostykę.")
+-
+-
+-def dispatch(argv: list[str] | None = None) -> int:
+-    args = list(sys.argv[1:] if argv is None else argv)
+-    explicit = "--dependencies" in args
+-    if explicit:
+-        args.remove("--dependencies")
+-        if args:
+-            print("--dependencies akceptuje tylko opcjonalne --root PATH.", file=sys.stderr)
+-            if len(args) != 2 or args[0] != "--root":
+-                return 2
+-    if not explicit and any(value in HELP for value in args):
+-        from .app import main
+-        return main(args)
+-    root = _root(args)
+-    try:
+-        report = inspect(root)
+-        show(report, full=explicit)
++PROFILE_LABELS = {
++    "core": "Podstawowy silnik",
++    "run-studio": "Graficzne Serce Systemu",
++    "archive": "Archiwa",
++    "studio": "Interfejs tekstowy",
++    "memory-cloud": "Pamięć chmurowa (klient)",
++    "memory-cloud-server": "Pamięć chmurowa (serwer)",
++    "polish-nlp": "Polskie NLP",
++    "mcp-http": "Połączenie MCP/HTTP",
++    "pdf": "Dokumenty PDF",
++}
++STATUS_LABELS = {
++    "PASS": "OK", "MISSING": "BRAK", "INCOMPATIBLE": "ZŁA WERSJA",
++    "IMPORT_MISSING": "BRAK IMPORTU", "UNKNOWN": "NIEUSTALONE",
++}
++
++
++def show(report: dict, *, full: bool) -> None:
++    """Plain-text accessible overview; package details only when requested."""
++    profiles = report["profiles"]
++    print("\n" + "=" * 56)
++    print(" JAŹŃ — SPRAWDZANIE BIBLIOTEK")
++    print("=" * 56)
++    print("Interpreter: " + report["interpreter"])
++    print("\nA. WYMAGANE DO URUCHOMIENIA STUDIO")
++    print("  " + ("[GOTOWE] Można uruchomić GUI." if not report["required_issues"]
++          else "[NAPRAWA] Brakuje lub nie pasują biblioteki niezbędne dla GUI."))
++    for mandatory in (True, False):
++        if not mandatory:
++            print("\nB. DODATKOWE FUNKCJE — NIE BLOKUJĄ GUI")
++        for name, rows in profiles.items():
++            if (name in ESSENTIAL) != mandatory:
++                continue
++            good = sum(row["state"] == "PASS" for row in rows)
++            print(f"  [{'OK' if good == len(rows) else 'BRAKI'}] "
++                  f"{PROFILE_LABELS.get(name, name)} ({name}): {good}/{len(rows)}")
++            if full or (mandatory and good != len(rows)):
++                for row in rows:
++                    if full or row["state"] != "PASS":
++                        version = f"  (zainstalowano: {row['version']})" if row["version"] else ""
++                        print(f"      [{STATUS_LABELS.get(row['state'], row['state'])}] "
++                              f"{row['requirement']}{version}")
++    state, message = _pip_check()
++    print("\nC. SPÓJNOŚĆ JUŻ ZAINSTALOWANYCH PAKIETÓW")
++    print(f"  pip check: [{state}]"
++          + (f" {message}" if state != "PASS" else " Brak wykrytych konfliktów."))
++    print("  To nie potwierdza instalacji opcjonalnych profili.")
++    print("  Szczegóły pakietów: opcja [3] w menu.")
++    print("  To nie jest test działania daemona, MEMORY, DLL ani modelu.")
++
++def _interactive() -> bool:
++    return bool(sys.stdin and sys.stdout and sys.stdin.isatty() and sys.stdout.isatty())
++
++
++def _install(root: Path, profiles: list[str]) -> bool:
++    if getattr(sys, "frozen", False) or sys.prefix == sys.base_prefix:
++        print("Odmowa: instalacja do środowiska globalnego/frozen jest niedozwolona.")
++        return False
++    common = _common()
++    requirements = common.resolve_profile_requirements(root, profiles)
++    statuses = common.inspect_current_requirements(root, requirements)
++    wanted = [s.requirement for s in statuses if not s.ready]
++    if not wanted:
++        print("Brak pakietów do instalacji w wybranym profilu.")
++        return True
++    print("\nInterpreter: " + sys.executable)
++    print("Oficjalny indeks: " + INDEX)
++    print("Do instalacji / uzgodnienia wersji:")
++    for item in wanted:
++        print("  - " + item)
++    print("Pip rozwiąże również zależności pośrednie w tym samym venv.")
++    print("Uwaga: PyPI przez HTTPS nie oznacza instalacji z hash-locked wheelhouse.")
++    print("Profil 'polish-nlp' może być duży. Nie instaluj go, jeśli nie jest potrzebny.")
++    try:
++        accepted = input("Wpisz TAK, aby uruchomić pip dla tej listy: ").strip()
++    except (EOFError, KeyboardInterrupt):
++        return False
++    if accepted.casefold() != "tak":
++        print("Anulowano — pip nie został uruchomiony.")
++        return False
++    cmd = [sys.executable, "-m", "pip", "--isolated", "--require-virtualenv",
++           "install", "--index-url", INDEX, "--only-binary=:all:",
++           "--no-input", *wanted]
++    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("PIP_")}
++    env["PIP_CONFIG_FILE"] = os.devnull
++    try:
++        result = subprocess.run(cmd, cwd=root, env=env, shell=False,
++                                check=False, timeout=1800)
++    except (OSError, subprocess.TimeoutExpired) as exc:
++        print("Instalacja nieudana: " + type(exc).__name__)
++        return False
++    if result.returncode:
++        print("pip zwrócił kod " + str(result.returncode))
++        return False
++    importlib.invalidate_caches()
++    return True
++
++
++def _menu(root: Path, report: dict, *, explicit: bool) -> bool:
++    """Persistent operator menu; selecting optional profile never exits early."""
++    if not _interactive():
++        print("Brak interaktywnego terminala: niczego nie instalowano.")
++        return not report["required_issues"]
++    while True:
++        print("\nCO CHCESZ ZROBIĆ?")
++        print("  [1] Napraw biblioteki wymagane do uruchomienia GUI")
++        print("  [2] Wybierz opcjonalną funkcję do instalacji")
++        print("  [3] Pokaż pełną listę pakietów i wersji")
++        print("  [4] Sprawdź ponownie")
++        print("  [0] Zakończ diagnostykę" if explicit else "  [0] Anuluj uruchomienie")
++        try:
++            action = input("Wybór [0-4]: ").strip()
++        except (KeyboardInterrupt, EOFError):
++            return False
++        if action in ("", "0"):
++            print("Zakończono bez dodatkowej instalacji.")
++            return not report["required_issues"] if explicit else False
++        if action == "3":
++            show(report, full=True)
++            continue
++        if action == "4":
++            report = inspect(root)
++            show(report, full=False)
++            continue
++        if action == "1":
++            selected = list(ESSENTIAL)
++        elif action == "2":
++            options = [name for name in report["profiles"] if name not in ESSENTIAL]
++            print("\nFUNKCJE OPCJONALNE:")
++            for i, name in enumerate(options, 1):
++                rows = report["profiles"][name]
++                failed = sum(row["state"] != "PASS" for row in rows)
++                print(f"  [{i}] {PROFILE_LABELS.get(name, name)} ({name})"
++                      f" — {'gotowe' if not failed else f'brakuje {failed} z {len(rows)}'}")
++            try:
++                choice = input("Numer funkcji (Enter = powrót): ").strip()
++            except (KeyboardInterrupt, EOFError):
++                return False
++            if not choice.isdigit() or not 1 <= int(choice) <= len(options):
++                print("Powrót do menu; niczego nie zainstalowano.")
++                continue
++            selected = [options[int(choice) - 1]]
++        else:
++            print("Nieznana opcja. Wybierz numer od 0 do 4.")
++            continue
++        if not _install(root, selected):
++            print("Instalacja nie została potwierdzona albo nie powiodła się.")
++            continue
++        report = inspect(root)
++        show(report, full=False)
++        outstanding = [
++            row for name in selected for row in report["profiles"].get(name, [])
++            if row["state"] != "PASS"
++        ]
++        if outstanding:
++            print(f"[WYMAGA NAPRAWY] {', '.join(selected)}: {len(outstanding)} problemów.")
++        else:
++            print(f"[GOTOWE] Zainstalowany profil: {', '.join(selected)}.")
++        if not explicit and not report["required_issues"]:
++            print("Uruchamiam interfejs Serce Systemu.")
++            return True
++
++def dispatch(argv: list[str] | None = None) -> int:
++    args = list(sys.argv[1:] if argv is None else argv)
++    explicit = "--dependencies" in args
++    if explicit:
++        args.remove("--dependencies")
++        if args:
++            print("--dependencies akceptuje tylko opcjonalne --root PATH.", file=sys.stderr)
++            if len(args) != 2 or args[0] != "--root":
++                return 2
++    if not explicit and any(value in HELP for value in args):
++        from .app import main
++        return main(args)
++    root = _root(args)
++    try:
++        report = inspect(root)
++        show(report, full=False)
+     except (OSError, ValueError, RuntimeError, KeyError) as exc:
+         print("Nie można sprawdzić profili: " + type(exc).__name__ + ": " + str(exc),
+               file=sys.stderr)
+diff --git a/tests/test_run_studio_dependency_preflight.py b/tests/test_run_studio_dependency_preflight.py
+--- a/tests/test_run_studio_dependency_preflight.py
++++ b/tests/test_run_studio_dependency_preflight.py
+@@ -87,3 +87,55 @@
+     monkeypatch.setattr(preflight, "_interactive", lambda: False)
+     report = {"required_issues": [{"distribution": "pyside6-essentials"}]}
+     assert preflight._menu(Path("."), report, explicit=False) is False
++
++
++def test_user_can_confirm_lowercase_tak(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
++    monkeypatch.setattr(preflight.sys, "prefix", "/venv")
++    monkeypatch.setattr(preflight.sys, "base_prefix", "/base")
++    class Common:
++        def resolve_profile_requirements(self, root, names):
++            return ["prompt-toolkit>=3"]
++        def inspect_current_requirements(self, root, reqs):
++            return [SimpleNamespace(requirement=reqs[0], ready=False)]
++    monkeypatch.setattr(preflight, "_common", lambda: Common())
++    monkeypatch.setattr("builtins.input", lambda _prompt: " tak ")
++    calls = []
++    def fake_run(cmd, **kwargs):
++        calls.append(cmd)
++        return SimpleNamespace(returncode=0)
++    monkeypatch.setattr(preflight.subprocess, "run", fake_run)
++    assert preflight._install(tmp_path, ["studio"]) is True
++    assert len(calls) == 1
++
++
++def test_compact_report_hides_optional_package_details(monkeypatch, capsys):
++    report = {"interpreter": "python.exe", "required_issues": [],
++              "profiles": {"core": [], "run-studio": [],
++                           "polish-nlp": [{"state": "MISSING", "version": None,
++                                           "requirement": "spacy>=3"}]}}
++    monkeypatch.setattr(preflight, "_pip_check", lambda: ("PASS", ""))
++    preflight.show(report, full=False)
++    output = capsys.readouterr().out
++    assert "NIE BLOKUJĄ GUI" in output
++    assert "spacy>=3" not in output
++    preflight.show(report, full=True)
++    assert "spacy>=3" in capsys.readouterr().out
++
++
++def test_optional_install_stays_in_menu(monkeypatch, capsys):
++    report = {"interpreter": "python.exe", "required_issues": [],
++              "profiles": {"core": [], "run-studio": [],
++                           "studio": [{"state": "MISSING", "version": None,
++                                       "requirement": "prompt-toolkit>=3"}]}}
++    ready = {"interpreter": "python.exe", "required_issues": [],
++             "profiles": {"core": [], "run-studio": [],
++                          "studio": [{"state": "PASS", "version": "3.1",
++                                      "requirement": "prompt-toolkit>=3"}]}}
++    choices = iter(["2", "1", "0"])
++    monkeypatch.setattr("builtins.input", lambda _prompt: next(choices))
++    monkeypatch.setattr(preflight, "_interactive", lambda: True)
++    monkeypatch.setattr(preflight, "_install", lambda root, names: names == ["studio"])
++    monkeypatch.setattr(preflight, "inspect", lambda root: ready)
++    monkeypatch.setattr(preflight, "_pip_check", lambda: ("PASS", ""))
++    assert preflight._menu(Path("."), report, explicit=True) is True
++    assert "[GOTOWE] Zainstalowany profil: studio" in capsys.readouterr().out
+diff --git a/tools/jazn_run_studio/qt_recovery.py b/tools/jazn_run_studio/qt_recovery.py
+--- a/tools/jazn_run_studio/qt_recovery.py
++++ b/tools/jazn_run_studio/qt_recovery.py
+@@ -101,7 +101,7 @@
+             approved = input("Wpisz TAK, aby wykonać instalację: ").strip()
+         except (EOFError, KeyboardInterrupt):
+             return False
+-        if approved != "TAK":
++        if approved.casefold() != "tak":
+             print("Anulowano.")
+             return False
+ 
+diff --git a/tests/test_run_studio_qt_recovery.py b/tests/test_run_studio_qt_recovery.py
+--- a/tests/test_run_studio_qt_recovery.py
++++ b/tests/test_run_studio_qt_recovery.py
+@@ -88,3 +88,18 @@
+     monkeypatch.setattr(builtins, "input", lambda _prompt: next(choices))
+     monkeypatch.setattr(recovery.subprocess, "run", lambda *_a, **_kw: pytest.fail("pip ran"))
+     assert recovery.offer_qt_install(missing(), allow_install=True) is False
++
++
++def test_qt_installer_accepts_tak_without_uppercase(monkeypatch, tmp_path: Path):
++    profile = tmp_path / recovery.REQUIREMENTS
++    profile.parent.mkdir(parents=True)
++    profile.write_text(".[run-studio]\n", encoding="utf-8")
++    (tmp_path / "pyproject.toml").write_text("[project]\nname='latka-jazn'\n", encoding="utf-8")
++    monkeypatch.setattr(recovery, "PROJECT_ROOT", tmp_path)
++    monkeypatch.setattr(recovery, "_interactive", lambda: True)
++    monkeypatch.setattr(recovery, "_virtualenv", lambda: True)
++    replies = iter(("1", "Tak"))
++    monkeypatch.setattr(builtins, "input", lambda _prompt: next(replies))
++    monkeypatch.setattr(recovery.subprocess, "run", lambda *args, **kwargs: SimpleNamespace(returncode=0))
++    monkeypatch.setattr(recovery.importlib, "import_module", lambda _name: object())
++    assert recovery.offer_qt_install(missing(), allow_install=True) is True
+diff --git a/latka_jazn/version.py b/latka_jazn/version.py
+--- a/latka_jazn/version.py
++++ b/latka_jazn/version.py
+@@ -149,9 +149,9 @@
+ # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
+ # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
+ # No private MEMORY contents or active daemon data are included.
+-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.5"
+-DISTRIBUTION_VERSION = PACKAGE_VERSION
+-PACKAGE_RELEASE_NAME = "run-studio-profile-dependency-preflight"
++PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.6"
++DISTRIBUTION_VERSION = PACKAGE_VERSION
++PACKAGE_RELEASE_NAME = "run-studio-readable-dependency-diagnostics"
+ PACKAGE_VERSION_FULL = (
+     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
+ )
+diff --git a/tools/jazn_run_studio/README.md b/tools/jazn_run_studio/README.md
+--- a/tools/jazn_run_studio/README.md
++++ b/tools/jazn_run_studio/README.md
+@@ -152,6 +152,16 @@
+ ani daemona Jaźni. Opcjonalne profile obejmują duże zależności i mogą
+ wymagać osobnych interpreterów zgodnie z kontraktem usługi.
+ 
++## Czytelniejszy raport i potwierdzenie instalacji (v3)
++
++Domyślnie raport pokazuje osobno zależności wymagane do uruchomienia GUI
++oraz opcjonalne profile. Szczegółowy wykaz pakietów wyświetla opcja [3],
++a [4] odświeża raport. Po instalacji opcjonalnego profilu pozostajemy
++w menu. Zgoda przez `tak`, `Tak` lub `TAK` jest traktowana identycznie;
++inne odpowiedzi nie uruchamiają pip. Nie dodano zależności do TUI i nie
++wyłączono kontroli integralności. `pip check: PASS` oznacza spójność
++pakietów już zainstalowanych, a nie komplet opcjonalnych profili.
++
+ ## Operations
+ 
+ - Runtime commands use the public launcher; lifecycle, identity verification and
