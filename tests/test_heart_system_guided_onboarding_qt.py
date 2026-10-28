@@ -1,7 +1,7 @@
 """First-run settings and three-step chat unlock remain evidence-based."""
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 import pytest
 
@@ -41,7 +41,7 @@ def test_first_run_has_all_studio_settings_and_saves_validated_draft(window) -> 
 
 
 def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> None:
-    window.core.settings.model = "gemma3:latest"
+    window.core.settings = replace(window.core.settings, model="gemma3:latest")
     assert window.quick_chat_button.isEnabled() is False
     window.core.emit("status", "evidence", {
         "endpoint_reachable": True,
