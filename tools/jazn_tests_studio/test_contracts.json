@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.3",
-  "active_definition_count": 2808,
+  "system_version": "16.3.25.5.116.0.34.94.6.7",
+  "active_definition_count": 2819,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31174,6 +31174,241 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 40
+    },
+    "tests/test_memory_alpha_snapshot.py::test_operator_confirmation_required_before_any_write": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_operator_confirmation_required_before_any_write",
+      "purpose": "Operator confirmation required before any write",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_memory_alpha_snapshot.py::test_sqlite_wal_and_raw_round_trip_without_promotion": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_sqlite_wal_and_raw_round_trip_without_promotion",
+      "purpose": "Sqlite wal and raw round trip without promotion",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_memory_alpha_snapshot.py::test_tamper_is_detected": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_tamper_is_detected",
+      "purpose": "Tamper is detected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_memory_alpha_snapshot.py::test_existing_destination_is_never_replaced": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_existing_destination_is_never_replaced",
+      "purpose": "Existing destination is never replaced",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_memory_alpha_snapshot.py::test_source_target_overlap_is_rejected": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_source_target_overlap_is_rejected",
+      "purpose": "Source target overlap is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_memory_alpha_snapshot.py::test_isolated_clone_can_be_verified_without_runtime_start": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_isolated_clone_can_be_verified_without_runtime_start",
+      "purpose": "Isolated clone can be verified without runtime start",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_memory_alpha_snapshot.py::test_cli_exposes_canonical_alpha_snapshot_command": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_cli_exposes_canonical_alpha_snapshot_command",
+      "purpose": "Cli exposes canonical alpha snapshot command",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_memory_alpha_snapshot.py::test_active_shard_metadata_rebased_only_after_valid_source": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_active_shard_metadata_rebased_only_after_valid_source",
+      "purpose": "Active shard metadata rebased only after valid source",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_memory_alpha_snapshot.py::test_source_shard_size_mismatch_rejected_before_staging": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_source_shard_size_mismatch_rejected_before_staging",
+      "purpose": "Source shard size mismatch rejected before staging",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 163
+    },
+    "tests/test_memory_alpha_snapshot.py::test_invalid_sealed_shard_never_promoted": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_invalid_sealed_shard_never_promoted",
+      "purpose": "Invalid sealed shard never promoted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 184
+    },
+    "tests/test_memory_alpha_snapshot.py::test_verify_shard_metadata_inconsistent_fails_closed": {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "name": "test_verify_shard_metadata_inconsistent_fails_closed",
+      "purpose": "Verify shard metadata inconsistent fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "AlphaSnapshotError"
+      ],
+      "targets": [
+        "latka_jazn.cli",
+        "latka_jazn.tools.memory_alpha_snapshot"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 206
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",

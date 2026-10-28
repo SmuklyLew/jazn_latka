@@ -299,6 +299,16 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common(child)
     child.add_argument("--destination-parent", type=Path, required=True)
 
+    child = sub.add_parser("memory-alpha-snapshot", allow_abbrev=False)
+    _add_common(child)
+    child.add_argument("--mode", choices=("create", "verify"), required=True)
+    child.add_argument("--source", type=Path, help="Explicit MEMORY source (create only).")
+    child.add_argument("--destination", type=Path, required=True)
+    child.add_argument(
+        "--confirm-writers-paused",
+        help="Exact WRITERS_PAUSED operator attestation; not a daemon stop.",
+    )
+
     child = sub.add_parser("memory-validate", allow_abbrev=False)
     _add_common(child)
     child.add_argument("--full", action="store_true", help="Użyj PRAGMA integrity_check zamiast quick_check.")
@@ -469,7 +479,7 @@ def main(
         "host-op-id", "host-op-submit", "host-op-status", "supervisor-run", "supervisor-status", "supervisor-plan",
         "memory-repack-legacy", "memory-converge", "memory-attach", "self-test", "memory-prepare", "memory-status", "memory-sentinel", "memory-recover", "memory-import-html",
         "memory-inspection", "memory-sync-status", "memory-sync-once", "memory-cloud-snapshot-plan", "memory-cloud-snapshot",
-        "memory-cloud-restore", "memory-validate", "memory-plan", "model-status",
+        "memory-cloud-restore", "memory-alpha-snapshot", "memory-validate", "memory-plan", "model-status",
     }
     if args and args[0].startswith("--") and args[0] not in {"--version", "--help", "-h"}:
         return dispatch_legacy(_legacy_args_with_canonical_root(args))
@@ -482,6 +492,33 @@ def main(
         parser.print_help()
         return 0
     root = Path(ns.root).resolve()
+
+    if ns.command == "memory-alpha-snapshot":
+        from latka_jazn.tools.memory_alpha_snapshot import (
+            AlphaSnapshotError, create_snapshot, verify_snapshot,
+        )
+
+        def report_progress(message: str) -> None:
+            print(message, file=sys.stderr if ns.as_json else sys.stdout, flush=True)
+
+        try:
+            if ns.mode == "create":
+                if ns.source is None:
+                    raise AlphaSnapshotError("create requires explicit --source")
+                payload = create_snapshot(
+                    ns.source,
+                    ns.destination,
+                    writer_confirmation=ns.confirm_writers_paused or "",
+                    emit=report_progress,
+                )
+            else:
+                if ns.source is not None or ns.confirm_writers_paused is not None:
+                    raise AlphaSnapshotError("verify accepts only --destination")
+                payload = verify_snapshot(ns.destination, emit=report_progress)
+        except (AlphaSnapshotError, OSError, sqlite3.Error, ValueError) as exc:
+            payload = {"ok": False, "status": "blocked", "reason": str(exc)}
+        _emit(payload, as_json=ns.as_json)
+        return 0 if payload.get("ok") is True else 2
 
     if ns.command == "memory-inspection":
         from latka_jazn.tools.memory_rebuild_app.p1_operator_report import build_operator_report

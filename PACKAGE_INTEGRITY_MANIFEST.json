@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "package_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-  "generated_at_utc": "2026-10-27T23:05:55+00:00",
-  "updated_at_utc": "2026-10-27T23:05:55+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "package_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+  "generated_at_utc": "2026-10-28T07:30:20+00:00",
+  "updated_at_utc": "2026-10-28T07:30:20+00:00",
   "start_file": "run.py",
-  "file_count": 3451,
-  "static_file_count": 3451,
+  "file_count": 3454,
+  "static_file_count": 3454,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -283,8 +283,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 21456,
-      "sha256": "07ac16549c73141262c878fe7470f6d524b4c9653173c7df758b84d35c88624b",
+      "size_bytes": 24296,
+      "sha256": "8eabcf0c05fd690fe53f27259ee1ca3f5f5f4711ab7d4a0b81ea3256da0f5f8c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "3ec2d9863746edf2f367a83affd097a6d439d085a9828e0717d4288679abf93b",
+      "size_bytes": 3037,
+      "sha256": "1c307975c49c15c9da8f425f75535cd61207b037dfe6afbc2c5337fb0c956db6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -490,8 +490,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1950,
-      "sha256": "a40d95d2bac542565e1cd87ae1bbc64e8caf58db56a926f8bf5692628bd31776",
+      "size_bytes": 1957,
+      "sha256": "a2b03dc31a2ef7432521530077b29e53af44219220e53414ce8521826f9ca26f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1455,6 +1455,15 @@
       "path": "docs/memory/HTML_MEMORY_INGEST.md",
       "size_bytes": 3823,
       "sha256": "9a17dd54699c2693a1403737872eb2019e76f75fdd42fafcbe9bb476129fd9ab",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/memory/MEMORY_ALPHA_SNAPSHOT_OPERATOR.md",
+      "size_bytes": 6001,
+      "sha256": "6ce9958d42212ba498a5a71e75b6863781d3067f45135cb0d502885c8fb257bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4630,8 +4639,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 51206,
-      "sha256": "239468cd37bd5f5e06a3086819d038581285407faf2e2cebe9aff4344140dea8",
+      "size_bytes": 52958,
+      "sha256": "b396734e36580f98a1e80a376ddb140420a238301a2d3548b41caac4d97b9844",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9725,7 +9734,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7908,
-      "sha256": "516c79fb22f5666cc89ce284a9d59b488bc1fbff7207df79e499644879e4358f",
+      "sha256": "924ef640cdc47b7fee5b4b749aadd4bb010498a513155e092b0f80072f4e97ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10158,6 +10167,15 @@
       "path": "latka_jazn/tools/jazn_studio/ui.py",
       "size_bytes": 18123,
       "sha256": "582fc7c773c97a53e9b38b78f80e72356916eaa4a0060db8560e746a4ed02df8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/tools/memory_alpha_snapshot.py",
+      "size_bytes": 20340,
+      "sha256": "ac008831ff5b9464e9b868014bfc974f737229f2c2858ed7b52a43566ada862e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11227,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18259,
-      "sha256": "7209df6f0548d78da49432ba21e42f3ad06b63854372b21e01ed8f6ecbbee937",
+      "size_bytes": 18704,
+      "sha256": "13d5d32ab4b2bcef98329be6c30c0273d1fa0ecf82b24480cf52af36142ec9f2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27939,6 +27957,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_alpha_snapshot.py",
+      "size_bytes": 9362,
+      "sha256": "115b4287e90a2bf954745a3581d8b46b030d5f54573cc64c632b83be1a00cb0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_attach_preflight_version.py",
       "size_bytes": 911,
       "sha256": "5de1090653c5410c98775a17a54fb1630eba2cfbbe3fad28627384727dfd7281",
@@ -30856,8 +30883,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2540162,
-      "sha256": "3ae8648107036cc7b16c2c2106dc7923a38a981a09142b186f75c78fd810b7e0",
+      "size_bytes": 2548792,
+      "sha256": "5ead8342974e2b673f07d8b7a6b146d3dbbf38a1a5a512ba4930d3bee560344f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31514,11 +31541,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
+  "release_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-    "package_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary",
-    "release_version": "16.3.25.5.116.0.34.94.6.3-local-settings-package-boundary"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+    "package_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight",
+    "release_version": "16.3.25.5.116.0.34.94.6.7-memory-alpha-source-manifest-preflight"
   },
   "legacy_aliases": {
     "version": "release_version"
