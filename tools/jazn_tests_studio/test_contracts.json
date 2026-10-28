@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.10",
-  "active_definition_count": 2830,
+  "system_version": "16.3.25.5.116.0.34.94.6.11",
+  "active_definition_count": 2841,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19744,6 +19744,146 @@
       "description_source": "source_identity",
       "line": 143
     },
+    "tests/test_heart_system_connection_panels_qt.py::test_separate_navigation_and_host_truth_boundary": {
+      "path": "tests/test_heart_system_connection_panels_qt.py",
+      "name": "test_separate_navigation_and_host_truth_boundary",
+      "purpose": "Separate navigation and host truth boundary",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_heart_system_connection_panels_qt.py::test_runtime_evidence_updates_header_and_sidebar_together": {
+      "path": "tests/test_heart_system_connection_panels_qt.py",
+      "name": "test_runtime_evidence_updates_header_and_sidebar_together",
+      "purpose": "Runtime evidence updates header and sidebar together",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_heart_system_connection_panels_qt.py::test_empty_ollama_model_list_does_not_invent_generation": {
+      "path": "tests/test_heart_system_connection_panels_qt.py",
+      "name": "test_empty_ollama_model_list_does_not_invent_generation",
+      "purpose": "Empty ollama model list does not invent generation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_heart_system_connection_recovery.py::test_mcp_imports_use_exact_gateway_interpreter": {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "name": "test_mcp_imports_use_exact_gateway_interpreter",
+      "purpose": "Mcp imports use exact gateway interpreter",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_heart_system_connection_recovery.py::test_mcp_start_fails_before_job_reservation_when_dependencies_missing": {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "name": "test_mcp_start_fails_before_job_reservation_when_dependencies_missing",
+      "purpose": "Mcp start fails before job reservation when dependencies missing",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_heart_system_connection_recovery.py::test_report_requires_gui_ack_for_accepted_turn": {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "name": "test_report_requires_gui_ack_for_accepted_turn",
+      "purpose": "Report requires gui ack for accepted turn",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_heart_system_connection_recovery.py::test_resume_nonzero_exit_preserves_request_and_error": {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "name": "test_resume_nonzero_exit_preserves_request_and_error",
+      "purpose": "Resume nonzero exit preserves request and error",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_heart_system_connection_recovery.py::test_resume_pending_is_successful_poll_not_false_final": {
+      "path": "tests/test_heart_system_connection_recovery.py",
+      "name": "test_resume_pending_is_successful_poll_not_false_final",
+      "purpose": "Resume pending is successful poll not false final",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
     "tests/test_heart_system_coverage_encoding.py::test_audit_cli_json_has_lossless_unicode_with_legacy_stdio": {
       "path": "tests/test_heart_system_coverage_encoding.py",
       "name": "test_audit_cli_json_has_lossless_unicode_with_legacy_stdio",
@@ -20069,6 +20209,53 @@
       "status": "current",
       "description_source": "native_docstring",
       "line": 30
+    },
+    "tests/test_heart_system_ollama_generation.py::test_missing_model_does_not_generate": {
+      "path": "tests/test_heart_system_ollama_generation.py",
+      "name": "test_missing_model_does_not_generate",
+      "purpose": "Missing model does not generate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_heart_system_ollama_generation.py::test_explicit_probe_requires_done_and_nonempty_message": {
+      "path": "tests/test_heart_system_ollama_generation.py",
+      "name": "test_explicit_probe_requires_done_and_nonempty_message",
+      "purpose": "Explicit probe requires done and nonempty message",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_heart_system_ollama_generation.py::test_invalid_model_rejected_before_transport": {
+      "path": "tests/test_heart_system_ollama_generation.py",
+      "name": "test_invalid_model_rejected_before_transport",
+      "purpose": "Invalid model rejected before transport",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
     },
     "tests/test_heart_system_public_restart.py::test_selected_endpoint_reaches_central_restart_parser": {
       "path": "tests/test_heart_system_public_restart.py",
