@@ -108,6 +108,84 @@ The first screen detects executables and import availability. It never installs
 programs, starts services, or tests a user turn automatically. Installation links
 point to the official publishers. Missing dependencies are explicit errors.
 
+## Terminalowe odzyskiwanie GUI — profil run-studio
+
+Gdy zwykły start `run_studio.py` lub `jazn_run_studio.py` kończy się
+`ModuleNotFoundError` dotyczącym PySide6, Studio oferuje **tekstowe menu**.
+Opcja [1] pokazuje interpreter i źródło, wymaga istniejącego venv oraz
+jawnego wpisania `TAK`. Dopiero wtedy uruchamia `sys.executable -m pip`
+z `--isolated --require-virtualenv` i jedynym indeksem
+`https://pypi.org/simple`, instalując profil z
+`tools/jazn_run_studio/requirements.txt` (wersje w `pyproject.toml`).
+Pobierane są tylko koła binarne zależności zewnętrznych; lokalny projekt
+jest budowany z aktualnego checkoutu. Użytkownik może pokazać polecenie
+([2]) albo anulować ([0]); błędów niezwiązanych z PySide6 nie naprawia
+automatycznie. W trybie bez TTY, `--gui-smoke`, `--isolated-acceptance`
+i w bundlowanym EXE menu nie wykonuje instalacji. Brak venv również
+blokuje instalowanie. Operacja nie uruchamia usług ani nie dotyka MEMORY.
+
+Online: https://pypi.org/; dokumentacja Qt:
+https://doc.qt.io/qtforpython-6/gettingstarted.html.
+Dla rygorystycznej weryfikacji hashy / offline nadal używaj istniejącego
+Dependency Studio i zatwierdzonego wheelhouse. Sam PyPI nie zapewnia
+hash-locked instalacji. Po wprowadzeniu patcha wydaniowego wykonaj
+kanoniczną synchronizację metadanych i testy przed release.
+
+## Preflight wszystkich profili — rozszerzenie .6.5
+
+Oba publiczne launchery przed importem GUI sprawdzają profile deklarowane
+przez kanoniczne `latka_jazn/resources/dependencies/profiles.json` i
+`pyproject.toml`, w tym core/run-studio i wszystkie wymienione dodatki.
+Przy starcie GUI braki core/run-studio blokują start i oferują tekstowe
+menu operatora; opcjonalne profile są raportowane, ale nie blokują GUI.
+Uruchom `python -X utf8 run_studio.py --dependencies`, aby zobaczyć pełne
+PASS/MISSING/INCOMPATIBLE/UNKNOWN/IMPORT_MISSING oraz wybrać profil do
+jawnej instalacji. Wariant `--dependencies --root PATH` używa danego ROOT.
+Sprawdzenie używa `pip check` do oceny zależności pośrednich. Skrypt nie
+instaluje niczego bez wpisania `TAK`; odmawia instalacji poza venv,
+używa wyłącznie HTTPS PyPI i dystrybucji binarnych. Tryby --check,
+--run, --probe, --version, --gui-smoke oraz --isolated-acceptance zachowują
+istniejącą semantykę bez automatycznego menu. Dla hash-locked instalacji
+nadal użyj zweryfikowanego wheelhouse przez Dependency Studio.
+
+Sama gotowość pakietów nie dowodzi działania DLL, usług, modelu, MEMORY
+ani daemona Jaźni. Opcjonalne profile obejmują duże zależności i mogą
+wymagać osobnych interpreterów zgodnie z kontraktem usługi.
+
+## Czytelniejszy raport i potwierdzenie instalacji (v3)
+
+Domyślnie raport pokazuje osobno zależności wymagane do uruchomienia GUI
+oraz opcjonalne profile. Szczegółowy wykaz pakietów wyświetla opcja [3],
+a [4] odświeża raport. Po instalacji opcjonalnego profilu pozostajemy
+w menu. Zgoda przez `tak`, `Tak` lub `TAK` jest traktowana identycznie;
+inne odpowiedzi nie uruchamiają pip. Nie dodano zależności do TUI i nie
+wyłączono kontroli integralności. `pip check: PASS` oznacza spójność
+pakietów już zainstalowanych, a nie komplet opcjonalnych profili.
+
+## Text/TUI for dependency recovery (.6.7)
+
+The default for `run_studio.py --dependencies` is **auto**. On an interactive
+terminal with installed `prompt-toolkit`, this opens arrow-key dialogs
+(Up/Down, Enter, Tab) for menu choice, profile choice and explicit install
+approval. Otherwise a numbered, clearly labeled **text** menu is used.
+Both modes show the same canonical profile audit. You may force the UI with
+`--dependencies --ui text` or `--dependencies --ui tui`; the unavailable
+TUI gracefully falls back to text. Normal GUI startup does not require
+`prompt-toolkit`. No changes to MEMORY, runtime ownership or package sources.
+The approved install still uses the active venv and pinned profile requirements,
+with PyPI HTTPS and operator consent. For hash-locked offline installs use
+Dependency Studio. Audit PASS does not certify daemon/model readiness.
+
+## Diagnostyka TUI: regresja i zapis wyboru (.6.8)
+
+Przywrócono publiczny komunikat `[GOTOWE] Zainstalowany profil: studio.`
+zgodny z istniejącym testem `test_optional_install_stays_in_menu`.
+Po zamknięciu dialogu kursorowego pozostaje w terminalu informacja, czy
+anulowano dialog, czy wybrano opcję. Interfejs prompt-toolkit może korzystać
+z alternatywnego bufora ekranu, więc jego obraz nie zawsze pozostaje
+w historii PowerShell. Żaden komunikat nie oznacza zgody na instalację;
+instalator nadal wymaga osobnego potwierdzenia operatora.
+
 ## Operations
 
 - Runtime commands use the public launcher; lifecycle, identity verification and
