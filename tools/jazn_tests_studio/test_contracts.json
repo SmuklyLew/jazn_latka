@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.92",
-  "active_definition_count": 2734,
+  "system_version": "16.3.25.5.116.0.34.94.6.3",
+  "active_definition_count": 2808,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14402,15 +14402,16 @@
       "path": "tests/test_configuration_studio_gui_windows.py",
       "name": "test_real_gui_navigation_and_profile_fields",
       "purpose": "Real gui navigation and profile fields",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
         "skipif"
       ],
-      "assertion_count": 6,
+      "assertion_count": 0,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio",
@@ -14418,21 +14419,22 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 14
+      "line": 83
     },
     "tests/test_configuration_studio_gui_windows.py::test_gui_refuses_to_discard_unsaved_edits": {
       "path": "tests/test_configuration_studio_gui_windows.py",
       "name": "test_gui_refuses_to_discard_unsaved_edits",
       "purpose": "Gui refuses to discard unsaved edits",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
+        "repository",
         "windows"
       ],
       "markers": [
         "skipif"
       ],
-      "assertion_count": 3,
+      "assertion_count": 0,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio",
@@ -14440,7 +14442,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 88
     },
     "tests/test_configuration_studio_hardening.py::test_reject_memory_sqlite_cache_collision": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -19742,6 +19744,490 @@
       "description_source": "source_identity",
       "line": 143
     },
+    "tests/test_heart_system_coverage_encoding.py::test_audit_cli_json_has_lossless_unicode_with_legacy_stdio": {
+      "path": "tests/test_heart_system_coverage_encoding.py",
+      "name": "test_audit_cli_json_has_lossless_unicode_with_legacy_stdio",
+      "purpose": "Audit cli json has lossless unicode with legacy stdio",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_heart_system_dashboard.py::test_summary_separates_integrity_memory_and_null_model": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_summary_separates_integrity_memory_and_null_model",
+      "purpose": "Summary separates integrity memory and null model",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_heart_system_dashboard.py::test_integrity_flag_requires_actual_manifest_result": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_integrity_flag_requires_actual_manifest_result",
+      "purpose": "Integrity flag requires actual manifest result",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_system_dashboard.py::test_available_configured_model_is_not_verified_generation": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_available_configured_model_is_not_verified_generation",
+      "purpose": "Available configured model is not verified generation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_heart_system_dashboard.py::test_malformed_shapes_remain_unknown": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_malformed_shapes_remain_unknown",
+      "purpose": "Malformed shapes remain unknown",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_heart_system_dashboard.py::test_real_negative_child_status_emits_observation_and_keeps_failure": {
+      "path": "tests/test_heart_system_dashboard.py",
+      "name": "test_real_negative_child_status_emits_observation_and_keeps_failure",
+      "purpose": "Real negative child status emits observation and keeps failure",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_heart_system_dashboard_qt.py::test_dashboard_updates_canonical_summary_and_invalidates_old_green": {
+      "path": "tests/test_heart_system_dashboard_qt.py",
+      "name": "test_dashboard_updates_canonical_summary_and_invalidates_old_green",
+      "purpose": "Dashboard updates canonical summary and invalidates old green",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_heart_system_dashboard_qt.py::test_dashboard_uses_plain_text_for_selected_system_values": {
+      "path": "tests/test_heart_system_dashboard_qt.py",
+      "name": "test_dashboard_uses_plain_text_for_selected_system_values",
+      "purpose": "Dashboard uses plain text for selected system values",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_heart_system_diagnostics.py::test_rapid_clicks_launch_one_read": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_rapid_clicks_launch_one_read",
+      "purpose": "Rapid clicks launch one read",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_heart_system_diagnostics.py::test_batch_waits_for_existing_status_and_keeps_failure": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_batch_waits_for_existing_status_and_keeps_failure",
+      "purpose": "Batch waits for existing status and keeps failure",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_heart_system_diagnostics.py::test_cancel_batch_does_not_cancel_shared_read": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_cancel_batch_does_not_cancel_shared_read",
+      "purpose": "Cancel batch does not cancel shared read",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_heart_system_diagnostics.py::test_lifecycle_mutations_still_exclude_each_other": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_lifecycle_mutations_still_exclude_each_other",
+      "purpose": "Lifecycle mutations still exclude each other",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_heart_system_diagnostics.py::test_mcp_diagnostic_uses_selected_local_port": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_mcp_diagnostic_uses_selected_local_port",
+      "purpose": "Mcp diagnostic uses selected local port",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_heart_system_diagnostics.py::test_probe_unavailable_is_failed_and_safe": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_probe_unavailable_is_failed_and_safe",
+      "purpose": "Probe unavailable is failed and safe",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_heart_system_diagnostics.py::test_duplicate_probe_shares_observation": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_duplicate_probe_shares_observation",
+      "purpose": "Duplicate probe shares observation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_heart_system_diagnostics.py::test_violet_night_text_and_control_contrast": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_violet_night_text_and_control_contrast",
+      "purpose": "Violet night text and control contrast",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_heart_system_diagnostics.py::test_changed_configuration_does_not_reuse_old_read": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_changed_configuration_does_not_reuse_old_read",
+      "purpose": "Changed configuration does not reuse old read",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_heart_system_diagnostics.py::test_changed_model_does_not_adopt_running_probe": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_changed_model_does_not_adopt_running_probe",
+      "purpose": "Changed model does not adopt running probe",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_heart_system_helper_payload.py::test_helper_rejects_invalid_payload_before_reservation": {
+      "path": "tests/test_heart_system_helper_payload.py",
+      "name": "test_helper_rejects_invalid_payload_before_reservation",
+      "purpose": "Invalid JSON inputs must not reserve a ghost operator job.",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 23
+    },
+    "tests/test_heart_system_helper_payload.py::test_helper_accepts_valid_payload_after_rejection": {
+      "path": "tests/test_heart_system_helper_payload.py",
+      "name": "test_helper_accepts_valid_payload_after_rejection",
+      "purpose": "A valid input can start immediately after a rejected helper request.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 30
+    },
+    "tests/test_heart_system_public_restart.py::test_selected_endpoint_reaches_central_restart_parser": {
+      "path": "tests/test_heart_system_public_restart.py",
+      "name": "test_selected_endpoint_reaches_central_restart_parser",
+      "purpose": "Selected endpoint reaches central restart parser",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_heart_system_public_restart.py::test_real_child_exit_code_has_public_failure_reason": {
+      "path": "tests/test_heart_system_public_restart.py",
+      "name": "test_real_child_exit_code_has_public_failure_reason",
+      "purpose": "Real child exit code has public failure reason",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_heart_system_workspace_qt.py::test_search_navigation_and_settings_do_not_save": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_search_navigation_and_settings_do_not_save",
+      "purpose": "Search navigation and settings do not save",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_heart_system_workspace_qt.py::test_docks_can_move_hide_reopen_and_layout_is_primitive_json": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_docks_can_move_hide_reopen_and_layout_is_primitive_json",
+      "purpose": "Docks can move hide reopen and layout is primitive json",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_heart_system_workspace_qt.py::test_untrusted_layout_rejected": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_untrusted_layout_rejected",
+      "purpose": "Untrusted layout rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_heart_system_workspace_qt.py::test_service_evidence_is_not_invented_from_pid": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_service_evidence_is_not_invented_from_pid",
+      "purpose": "Service evidence is not invented from pid",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_heart_system_workspace_qt.py::test_optional_service_failure_visible_and_searchable": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_optional_service_failure_visible_and_searchable",
+      "purpose": "Optional service failure visible and searchable",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_heart_system_workspace_qt.py::test_wizard_is_nonblocking_and_does_not_complete_failed_requirements": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_wizard_is_nonblocking_and_does_not_complete_failed_requirements",
+      "purpose": "Wizard is nonblocking and does not complete failed requirements",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_heart_system_workspace_qt.py::test_wizard_success_requires_explicit_save_consent": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_wizard_success_requires_explicit_save_consent",
+      "purpose": "Wizard success requires explicit save consent",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 103
+    },
+    "tests/test_heart_system_workspace_qt.py::test_outputs_redacted_before_operator_view": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_outputs_redacted_before_operator_view",
+      "purpose": "Outputs redacted before operator view",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
     "tests/test_host_bridge_and_ollama_first_attempt_regressions.py::test_model_executor_allows_configured_ollama_first_attempt": {
       "path": "tests/test_host_bridge_and_ollama_first_attempt_regressions.py",
       "name": "test_model_executor_allows_configured_ollama_first_attempt",
@@ -23385,6 +23871,140 @@
       "description_source": "source_identity",
       "line": 221
     },
+    "tests/test_jazn_acceptance_resume_profile.py::test_profile_session_reused_without_autostart_or_prod_writes": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_profile_session_reused_without_autostart_or_prod_writes",
+      "purpose": "Profile session reused without autostart or prod writes",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_two_roots_use_disjoint_acceptance_sessions": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_two_roots_use_disjoint_acceptance_sessions",
+      "purpose": "Two roots use disjoint acceptance sessions",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_corrupt_profile_refuses_reuse": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_corrupt_profile_refuses_reuse",
+      "purpose": "Corrupt profile refuses reuse",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_persistent_studio_settings_live_outside_runtime": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_persistent_studio_settings_live_outside_runtime",
+      "purpose": "Persistent studio settings live outside runtime",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_resume_with_marker_rejects_unverified_identity": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_resume_with_marker_rejects_unverified_identity",
+      "purpose": "Resume with marker rejects unverified identity",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_resume_with_marker_requires_all_trust_gates": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_resume_with_marker_requires_all_trust_gates",
+      "purpose": "Resume with marker requires all trust gates",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_jazn_acceptance_resume_profile.py::test_no_profile_override_for_normal_studio": {
+      "path": "tests/test_jazn_acceptance_resume_profile.py",
+      "name": "test_no_profile_override_for_normal_studio",
+      "purpose": "No profile override for normal studio",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.acceptance_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
+    },
     "tests/test_jazn_archive_brotli_security_floor.py::test_archive_optional_dependencies_require_patched_brotli": {
       "path": "tests/test_jazn_archive_brotli_security_floor.py",
       "name": "test_archive_optional_dependencies_require_patched_brotli",
@@ -25028,11 +25648,11 @@
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
       "name": "test_selected_daemon_endpoint_is_used_for_lifecycle_and_diagnostics",
       "purpose": "Selected daemon endpoint is used for lifecycle and diagnostics",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn"
@@ -25056,7 +25676,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 36
+      "line": 38
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_chat_checkpoint_keeps_session_request_and_daemon_target": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25075,7 +25695,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 51
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_daemon_route_rejects_noncanonical_target": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25096,7 +25716,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_default_studio_route_remains_backward_compatible": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25113,7 +25733,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 80
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_no_automatic_replay_after_pending_request": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25132,7 +25752,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 86
     },
     "tests/test_jazn_run_studio_daemon_routing.py::test_restart_reuses_selected_endpoint_and_does_not_fall_back_to_8787": {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
@@ -25149,7 +25769,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 95
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_accepted_final_remains_pending_until_gui_ack_and_is_not_emitted_twice": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -25214,6 +25834,55 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 89
+    },
+    "tests/test_jazn_run_studio_env_guard.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_external_secret_file_only_enters_child_environment_and_redactor",
+      "purpose": "External secret file only enters child environment and redactor",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_jazn_run_studio_env_guard.py::test_secret_file_cannot_override_paths_or_arbitrary_environment": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_secret_file_cannot_override_paths_or_arbitrary_environment",
+      "purpose": "Secret file cannot override paths or arbitrary environment",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jazn_run_studio_env_guard.py::test_nonignored_secret_inside_system_is_rejected": {
+      "path": "tests/test_jazn_run_studio_env_guard.py",
+      "name": "test_nonignored_secret_inside_system_is_rejected",
+      "purpose": "Nonignored secret inside system is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
     },
     "tests/test_jazn_run_studio_http_framing.py::test_catalog_malformed_http_returns_structured_failure_without_body": {
       "path": "tests/test_jazn_run_studio_http_framing.py",
@@ -26590,55 +27259,6 @@
       "description_source": "source_identity",
       "line": 50
     },
-    "tests/test_jazn_run_studio_secrets.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_external_secret_file_only_enters_child_environment_and_redactor",
-      "purpose": "External secret file only enters child environment and redactor",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 18
-    },
-    "tests/test_jazn_run_studio_secrets.py::test_secret_file_cannot_override_paths_or_arbitrary_environment": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_secret_file_cannot_override_paths_or_arbitrary_environment",
-      "purpose": "Secret file cannot override paths or arbitrary environment",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 0,
-      "expected_exceptions": [
-        "StudioError"
-      ],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 29
-    },
-    "tests/test_jazn_run_studio_secrets.py::test_nonignored_secret_inside_system_is_rejected": {
-      "path": "tests/test_jazn_run_studio_secrets.py",
-      "name": "test_nonignored_secret_inside_system_is_rejected",
-      "purpose": "Nonignored secret inside system is rejected",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "security",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 0,
-      "expected_exceptions": [
-        "StudioError"
-      ],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 38
-    },
     "tests/test_jazn_run_studio_utf8.py::test_redirected_headless_output_is_utf8": {
       "path": "tests/test_jazn_run_studio_utf8.py",
       "name": "test_redirected_headless_output_is_utf8",
@@ -26866,6 +27486,91 @@
       "description_source": "source_identity",
       "line": 31
     },
+    "tests/test_jazn_start_studio_output_redaction.py::test_operator_output_masks_credential_text": {
+      "path": "tests/test_jazn_start_studio_output_redaction.py",
+      "name": "test_operator_output_masks_credential_text",
+      "purpose": "Operator output masks credential text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_jazn_start_studio_output_redaction.py::test_studio_output_keeps_nonsecret_boolean_and_plain_diagnostics": {
+      "path": "tests/test_jazn_start_studio_output_redaction.py",
+      "name": "test_studio_output_keeps_nonsecret_boolean_and_plain_diagnostics",
+      "purpose": "Studio output keeps nonsecret boolean and plain diagnostics",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jazn_start_studio_output_redaction.py::test_studio_output_keeps_token_counters_and_nonsecret_metrics": {
+      "path": "tests/test_jazn_start_studio_output_redaction.py",
+      "name": "test_studio_output_keeps_token_counters_and_nonsecret_metrics",
+      "purpose": "Studio output keeps token counters and nonsecret metrics",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_jazn_studio_console_diagnostics.py::test_studio_console_progress_keeps_doctor_json": {
+      "path": "tests/test_jazn_studio_console_diagnostics.py",
+      "name": "test_studio_console_progress_keeps_doctor_json",
+      "purpose": "Progress on stdout must not hide the trailing canonical doctor payload.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.jazn_studio"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 10
+    },
+    "tests/test_jazn_studio_console_diagnostics.py::test_studio_readyz_http_200_is_not_readiness": {
+      "path": "tests/test_jazn_studio_console_diagnostics.py",
+      "name": "test_studio_readyz_http_200_is_not_readiness",
+      "purpose": "HTTP liveness is distinct from a negative runtime readiness payload.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.jazn_studio"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 25
+    },
     "tests/test_jazn_studio_gui_windows.py::test_studio_window_navigation_and_configuration": {
       "path": "tests/test_jazn_studio_gui_windows.py",
       "name": "test_studio_window_navigation_and_configuration",
@@ -27085,6 +27790,192 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 12
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_linked_worktree_default_is_root_local_without_moving_data": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_linked_worktree_default_is_root_local_without_moving_data",
+      "purpose": "Linked worktree default is root local without moving data",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_main_checkout_and_legacy_nonworktree_defaults_unchanged": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_main_checkout_and_legacy_nonworktree_defaults_unchanged",
+      "purpose": "Main checkout and legacy nonworktree defaults unchanged",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_explicit_override_still_precedes_worktree_default": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_explicit_override_still_precedes_worktree_default",
+      "purpose": "Explicit override still precedes worktree default",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_layout_separates_system_memory_runtime_and_operator": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_layout_separates_system_memory_runtime_and_operator",
+      "purpose": "Acceptance layout separates system memory runtime and operator",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_protected_locations": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_protected_locations",
+      "purpose": "Acceptance rejects protected locations",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_external_active_memory": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_external_active_memory",
+      "purpose": "Acceptance rejects external active memory",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_rejects_symlink_into_system": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_rejects_symlink_into_system",
+      "purpose": "Acceptance rejects symlink into system",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_acceptance_environment_is_explicit_and_restores_state": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_acceptance_environment_is_explicit_and_restores_state",
+      "purpose": "Acceptance environment is explicit and restores state",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_jazn_workspace_layout_isolation.py::test_tpa_process_environment_is_isolated": {
+      "path": "tests/test_jazn_workspace_layout_isolation.py",
+      "name": "test_tpa_process_environment_is_isolated",
+      "purpose": "Tpa process environment is isolated",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
@@ -27776,6 +28667,375 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_local_settings_layout_convergence.py::test_versioned_settings_enables_local_layout": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_versioned_settings_enables_local_layout",
+      "purpose": "Versioned settings enables local layout",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_local_settings_layout_convergence.py::test_acceptance_and_studio_are_owned_by_worktree": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_acceptance_and_studio_are_owned_by_worktree",
+      "purpose": "Acceptance and studio are owned by worktree",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_local_settings_layout_convergence.py::test_legacy_root_remains_separate": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_legacy_root_remains_separate",
+      "purpose": "Legacy root remains separate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_local_settings_layout_convergence.py::test_redirected_local_root_is_rejected": {
+      "path": "tests/test_local_settings_layout_convergence.py",
+      "name": "test_redirected_local_root_is_rejected",
+      "purpose": "Redirected local root is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.local_settings_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_local_settings_security_3e.py::test_unprivileged_operator_write_denied": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_unprivileged_operator_write_denied",
+      "purpose": "Unprivileged operator write denied",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_local_settings_security_3e.py::test_regular_operator_write_allowed": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_regular_operator_write_allowed",
+      "purpose": "Regular operator write allowed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_local_settings_security_3e.py::test_acceptance_requires_explicit_scope": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_acceptance_requires_explicit_scope",
+      "purpose": "Acceptance requires explicit scope",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_local_settings_security_3e.py::test_isolated_acceptance_keeps_operator_access": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_isolated_acceptance_keeps_operator_access",
+      "purpose": "Isolated acceptance keeps operator access",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_local_settings_security_3e.py::test_worktrees_have_distinct_settings": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_worktrees_have_distinct_settings",
+      "purpose": "Worktrees have distinct settings",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_local_settings_security_3e.py::test_redirected_operator_directory_rejected": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_redirected_operator_directory_rejected",
+      "purpose": "Redirected operator directory rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_local_settings_security_3e.py::test_windows_junction_rejected": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_windows_junction_rejected",
+      "purpose": "Windows junction rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
+    },
+    "tests/test_local_settings_security_3e.py::test_legacy_settings_are_preserved": {
+      "path": "tests/test_local_settings_security_3e.py",
+      "name": "test_legacy_settings_are_preserved",
+      "purpose": "Legacy settings are preserved",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 159
+    },
+    "tests/test_local_settings_transaction_3f.py::test_serial_writes_reject_stale_digest": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_serial_writes_reject_stale_digest",
+      "purpose": "Serial writes reject stale digest",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_local_settings_transaction_3f.py::test_two_processes_cannot_both_commit_stale_none": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_two_processes_cannot_both_commit_stale_none",
+      "purpose": "Two processes cannot both commit stale none",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_local_settings_transaction_3f.py::test_replace_failure_does_not_corrupt_previous_file": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_replace_failure_does_not_corrupt_previous_file",
+      "purpose": "Replace failure does not corrupt previous file",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_local_settings_transaction_3f.py::test_lock_symlink_refused": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_lock_symlink_refused",
+      "purpose": "Lock symlink refused",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SettingsLockError"
+      ],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_local_settings_transaction_3f.py::test_lock_sidecar_is_not_deleted_after_save": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_lock_sidecar_is_not_deleted_after_save",
+      "purpose": "Lock sidecar is not deleted after save",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_local_settings_transaction_3f.py::test_distinct_worktrees_use_distinct_locks": {
+      "path": "tests/test_local_settings_transaction_3f.py",
+      "name": "test_distinct_worktrees_use_distinct_locks",
+      "purpose": "Distinct worktrees use distinct locks",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.operator_settings_transaction"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
     },
     "tests/test_loopback_proxy_bypass.py::test_loopback_proxy_bypass_preserves_existing_entries_and_case_variants": {
       "path": "tests/test_loopback_proxy_bypass.py",
@@ -44607,6 +45867,98 @@
       "description_source": "source_identity",
       "line": 28
     },
+    "tests/test_private_package_boundary_3i.py::test_private_paths_forbidden": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_private_paths_forbidden",
+      "purpose": "Private paths forbidden",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "PackagePlanValidationError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_private_package_boundary_3i.py::test_versioned_settings_remain_packagable": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_versioned_settings_remain_packagable",
+      "purpose": "Versioned settings remain packagable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_private_package_boundary_3i.py::test_local_settings_excluded_from_export": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_local_settings_excluded_from_export",
+      "purpose": "Local settings excluded from export",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_private_package_boundary_3i.py::test_tracked_private_git_entry_is_rejected": {
+      "path": "tests/test_private_package_boundary_3i.py",
+      "name": "test_tracked_private_git_entry_is_rejected",
+      "purpose": "Tracked private git entry is rejected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SourceProvenanceError"
+      ],
+      "targets": [
+        "latka_jazn.tools",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
     "tests/test_process_identity.py::test_process_fingerprint_binds_current_pid_to_creation_identity": {
       "path": "tests/test_process_identity.py",
       "name": "test_process_fingerprint_binds_current_pid_to_creation_identity",
@@ -56417,6 +57769,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 13
+    },
+    "tests/test_system_distribution_test_inventory.py::test_studio_contract_sources_are_present_and_allowed_in_system_package": {
+      "path": "tests/test_system_distribution_test_inventory.py",
+      "name": "test_studio_contract_sources_are_present_and_allowed_in_system_package",
+      "purpose": "Studio contract sources are present and allowed in system package",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_system_package_canonical_integrity.py::test_system_export_uses_canonical_manifest_bytes_and_exact_inventory": {
       "path": "tests/test_system_package_canonical_integrity.py",

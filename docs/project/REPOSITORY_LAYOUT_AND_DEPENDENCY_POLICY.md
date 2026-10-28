@@ -54,7 +54,30 @@ workspace. SQLite/WAL/SHM, logs, PIDs, heartbeat, secrets and staging are not
 release assets. Preexisting `workspace_runtime/memory/` may be selected
 read-only for backward compatibility until an explicit verified migration.
 
+### Rozdzielenie linked worktree i TPA (od .94.6)
+
+`jazn_latka_master` zachowuje domyślne
+`$ROOTDIR/workspace_runtime`; istniejące instalacje bez markerów Git
+zachowują swoje historyczne reguły. Git linked worktree rozpoznawany
+przez plik `.git` (zamiast katalogu głównego checkoutu) dostaje własny
+`$ROOTDIR/workspace_runtime` i nie korzysta niejawnie z markerów
+produkcyjnego daemona we wspólnym katalogu rodzeństwa.
+Jawne `JAZN_RUNTIME_WORKSPACE_DIR` nadal wygrywa nad domyślnym
+wyborem. Nie przenosi się istniejących baz, checkpointów ani PID.
+
+TPA przez `run_studio.py --isolated-acceptance` korzysta z odrębnego
+lokalnego runtime na sesję i trwałego stanu operatora poza SYSTEM.
+MEMORY ma tryb `off` oraz osobną testową lokalizację; sekrety
+MEMORY/MCP nie są dziedziczone. Próba nałożenia ścieżek z SYSTEM,
+MEMORY lub aktywnym workspace musi skończyć się jawnie błędem.
+Kod tymczasowych wersji, checkout Git i build-y nie trafiają do
+`workspace_runtime`.
+Pełny kontrakt: `docs/runtime/WORKSPACE_ISOLATION_CONTRACT.md`.
+
 ## 3. Publiczne entrypointy
+
+- aplikacja operatorska „Jaźń — Serce Systemu”: `python -X utf8 run_studio.py`; cienki launcher istniejącego Workbench Qt, bez własnego runtime;
+- zgodne wejścia migracyjne: `jazn_run_studio.py`, `tools/jazn_studio.py`;
 
 - `run.py` przekazuje każdą komendę do centralnego `main.py`;
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;

@@ -76,7 +76,7 @@ def default_runtime_workspace_path(root: Path) -> Path:
     """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
 
     The named editable jazn_latka_master checkout uses ROOT/workspace_runtime.
-    All other roots retain the shared host-level default for compatibility.
+    Git linked worktrees use their own ROOT/workspace_runtime without migration.\n    Other roots retain the shared host-level default for compatibility.
     Host-managed runtime layouts reuse their existing parent workspace.
     """
 
@@ -89,7 +89,11 @@ def default_runtime_workspace_path(root: Path) -> Path:
     # Only the established editable master checkout changes its implicit
     # layout. All other (including versioned/host-managed) roots retain their
     # historical shared workspace, protecting daemon and memory continuity.
-    if runtime_root.name.casefold() == "jazn_latka_master":
+    # Git linked worktrees have a .git *file*, not the main checkout's .git
+    # directory. Never let an unconfigured worktree attach to a sibling's
+    # daemon markers, sessions or MEMORY by choosing the shared host workspace.
+    # Explicit JAZN_RUNTIME_WORKSPACE_DIR still takes precedence; no data moves.
+    if runtime_root.name.casefold() == "jazn_latka_master" or (runtime_root / ".git").is_file():
         return (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
     return (parent / WORKSPACE_RUNTIME_DIR_NAME).resolve()
 

@@ -1,31 +1,96 @@
-# Python/cache
-# Build outputs are reproducible and never belong in Git/SYSTEM.
-/build/
-**/local_private_canon_extension.py
+
+# ============================================================
+# JAŹŃ — GIT IGNORE
+# ============================================================
+#
+# Repository: SmuklyLew/jazn_latka
+#
+# VERSIONED:
+#   .settings/          Shared configuration and templates
+#   latka_jazn/         Canonical SYSTEM source
+#   tools/              Applications and tools
+#   tests/              Tests and source evidence
+#   docs/               Documentation
+#
+# LOCAL / PRIVATE:
+#   .settings_local/    Local settings and environments
+#   memory/             Private MEMORY
+#   workspace_runtime/  Runtime and daemon state
+#
+# Git worktrees are stored separately:
+#   D:\.AI\jazn_branches\
+#
+# ============================================================
+
+
+# ------------------------------------------------------------
+# 1. Local settings and configuration
+# ------------------------------------------------------------
+
+# /.settings/ is intentionally versioned.
+/.settings_local/
+
+# Legacy locations — retain until migration is complete.
+/.local_settings/
+/.jazn_local/
+
+# Legacy mutable SYSTEM configuration.
+/jazn_system_config.json
+/jazn_system_config.previous.json
+
+# Personal workspaces at repository root.
+# Shared workspaces belong inside .settings/.
+/*.code-workspace
+
+
+# ------------------------------------------------------------
+# 2. Python cache, environments and builds
+# ------------------------------------------------------------
+
 __pycache__/
 *.py[cod]
-*.pyo
+
 .pytest_cache/
 .pytest-tmp/
 .mypy_cache/
 .ruff_cache/
 
-# JavaScript/Node tooling (source and lockfiles stay tracked; installs do not)
+.venv/
+venv/
+
+/build/
+/dist/
+
+*.egg-info/
+*.egg
+
+
+# ------------------------------------------------------------
+# 3. JavaScript and Node
+# ------------------------------------------------------------
+
 node_modules/
 .npm/
 npm-debug.log*
 
-# Local SYSTEM config; never commit private operator settings
-/jazn_system_config.json
-/jazn_system_config.previous.json
 
-# Runtime/private state at repository root
+# ------------------------------------------------------------
+# 4. Environment files and secrets
+# ------------------------------------------------------------
+
 .env
-.env.*
 **/*.env
-/ACTIVE_RUNTIME_CACHE_CONTRACT.json
-/BOOTSTRAP_JAZN_CURRENT.json
-/RUNTIME_STATE.json
+.env.*
+*.env
+
+# Reviewed, versioned templates should use safe names
+# such as env.example or config.example.json.
+
+
+# ------------------------------------------------------------
+# 5. Runtime and private MEMORY
+# ------------------------------------------------------------
+
 /workspace_runtime/
 /memory/
 /processed/
@@ -33,109 +98,208 @@ npm-debug.log*
 /responses/
 /status/
 
-# Private/runtime databases anywhere
+# Generated runtime state snapshots.
+/ACTIVE_RUNTIME_CACHE_CONTRACT.json
+/BOOTSTRAP_JAZN_CURRENT.json
+/RUNTIME_STATE.json
+
+
+# ------------------------------------------------------------
+# 6. Local databases and transaction files
+# ------------------------------------------------------------
+
+*.sqlite
 *.sqlite3
+
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+
 *.sqlite3-wal
 *.sqlite3-shm
+*.sqlite3-journal
+
 *.db
 *.db-wal
 *.db-shm
+*.db-journal
 
-# Archives / split packages / raw exports
+
+# ------------------------------------------------------------
+# 7. Archives, exports and generated packages
+# ------------------------------------------------------------
+
 /exports/
+
 *.zip
 *.zip.*
 *.7z
 *.rar
 *.tar
 *.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tgz
+
 *.part_*
-*.sha256
-*.parts.sha256
-*.source_files.sha256
 *.join.ps1
 
-# Patch/recovery artifacts generated during ChatGPT/Codex update work
+# Generated archive checksum sidecars.
+*.sha256
 
-# Keep source, tests and docs in Git; keep ad-hoc patch bundles outside the repo.
+# Locally generated Python wheels.
+*.whl
+
+
+# ------------------------------------------------------------
+# 8. Temporary patches and backups
+# ------------------------------------------------------------
+
 /*.patch
 /*.rej
 /*.orig
 /*.BAD.patch
 /*_PATCH_REPORT.md
-/LATKA_*_COMMANDS.ps1
 
-# Local root inventory reports
-/docs/.root/
-_root_list.py
-
-# Local packaging helper scripts
-/split_zip_sha.py
-
-# Codex/editor local state. Keep only the shared type-checker parity settings.
-.codex/
-.vscode/*
-!.vscode/settings.json
-
-# Backups/temp
 /backups/
 /backups_git/
 /tmp/
 /temp/
+
 *.tmp
 *.bak
 *.bad
 *.corrupt
 
-# Logs generated during runtime
-*.log
 
-# Local/private canon extraction outputs
-latka_jazn/core/canon/local_private_canon_extension.py
+# ------------------------------------------------------------
+# 9. Local inventory and helper artifacts
+# ------------------------------------------------------------
 
-# Heavy local documentation artifacts / generated reports
+# Legacy inventory reports.
+/docs/.root/
+/_root_list.py
+
+# Legacy local ZIP helper.
+/split_zip_sha.py
+
+# Generated reports.
 *.bundle
 *_stdout.txt
 
-# Local generated pack helper scripts
-tools/__jazn_pack_generator.lock.json
-__jazn_pack_generator_settings.json
-tools/__jazn_pack_generator_settings.json
-tools/_jazn_pack_generator.py
-tools/jazn_pack_generator_settings.json
-tools/jazn_pack_generator_app/jazn_pack_generator_settings.json
-tools/jazn_pack_generator_app/jazn_pack_generator_settings.json.tmp
 
-# Local Memory Rebuild operator settings (mutable, never release/source data)
-memory_rebuild_settings.json
+# ------------------------------------------------------------
+# 10. Codex and editor state
+# ------------------------------------------------------------
 
-# Local runtime state / parent checkpoint safety
-/CHECKPOINTS/
-CHECKPOINTS/
-*.checkpoint/
-*_checkpoint/
-branch_*/
-branches/
-/build/
+.codex/
 
-# Versioned test snapshots are source evidence, not local branch workspaces.
-!tests/archive/branches/
-!tests/archive/branches/**
-
-# Python packaging metadata
-*.egg-info/
-PACKAGE_INTEGRITY_MANIFEST.json
-
-# Persistent local NLP models/data and Python wheelhouses/environments.
-/latka_jazn/local_resources/
+# Shared VS Code parity settings remain versioned.
+.vscode/*
+!.vscode/settings.json
 
 
-# Local pytest integration workspaces
-/.pytest-p1b/
+# ------------------------------------------------------------
+# 11. Logs and runtime traces
+# ------------------------------------------------------------
+
+*.log
+
 tools/jazn_pack_generator_app/runtime/jazn-pack-generator.jsonl
 
 
-# OAuth staging configuration is generated from a reviewed template with a separate KV ID.
+# ------------------------------------------------------------
+# 12. Local private canon
+# ------------------------------------------------------------
+
+**/local_private_canon_extension.py
+
+
+# ------------------------------------------------------------
+# 13. Generator Paczek — legacy local state
+# ------------------------------------------------------------
+
+# Retain until Generator settings are migrated
+# to .settings_local/.
+
+tools/__jazn_pack_generator.lock.json
+
+__jazn_pack_generator_settings.json
+tools/__jazn_pack_generator_settings.json
+
+tools/_jazn_pack_generator.py
+
+tools/jazn_pack_generator_settings.json
+tools/jazn_pack_generator_app/jazn_pack_generator_settings.json
+
+
+# ------------------------------------------------------------
+# 14. MEMORY Rebuild — local operator settings
+# ------------------------------------------------------------
+
+memory_rebuild_settings.json
+
+
+# ------------------------------------------------------------
+# 15. Local checkpoints
+# ------------------------------------------------------------
+
+/CHECKPOINTS/
+
+*.checkpoint/
+*_checkpoint/
+
+# Worktrees belong in D:\.AI\jazn_branches\,
+# outside the main SYSTEM repository.
+#
+# Do not ignore branches/ or branch_*/ here.
+
+
+# ------------------------------------------------------------
+# 16. Local models and downloaded resources
+# ------------------------------------------------------------
+
+# Legacy NLP and local model resources.
+# Retain until the canonical resource resolver
+# is migrated to .settings_local/.
+/latka_jazn/local_resources/
+
+
+# ------------------------------------------------------------
+# 17. Local pytest integration state
+# ------------------------------------------------------------
+
+/.pytest-p1b/
+
+
+# ------------------------------------------------------------
+# 18. OAuth / Cloudflare staging
+# ------------------------------------------------------------
+
+# Generated operator-specific staging configuration.
 /deploy/chatgpt_mcp/workers_github_oauth/wrangler.staging.jsonc
 
-/build/
+
+# ------------------------------------------------------------
+# 19. Versioned SYSTEM and release evidence
+# ------------------------------------------------------------
+
+# These paths are intentionally NOT ignored:
+#
+# /.settings/
+# /pyproject.toml
+# /requirements.txt
+# /PACKAGE_INTEGRITY_MANIFEST.json
+# /SOURCE_PROVENANCE.json
+#
+# Release integrity and provenance metadata must be
+# updated through the canonical repository process.
+#
+# .gitignore is not a security boundary.
+# Package generation must independently validate
+# included files and exclude private runtime data.
+
+
+# ============================================================
+# END — JAŹŃ GIT IGNORE
+# ============================================================

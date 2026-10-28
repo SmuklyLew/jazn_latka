@@ -1,0 +1,14 @@
+{
+  "schema_version": "jazn_first_install_preferences/v1",
+  "python": {
+    "selection": "detect",
+    "create_isolated_environment": true
+  },
+  "dependencies": {
+    "profile": "core",
+    "installation_mode": "verified_offline"
+  },
+  "runtime": {
+    "start_automatically": false
+  }
+}
