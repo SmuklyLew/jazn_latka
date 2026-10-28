@@ -1,3 +1,4 @@
+# v116.0.34.94.6.12: configure first-run Studio, guide actual LLM chat, and separate authenticated MCP exposure.
 # v116.0.34.94.6.11: split local chat from ChatGPT ingress, preflight MCP interpreter and preserve truthful Studio evidence.
 # v116.0.34.94.6.10: repair precise Run Studio Pyright contracts without changing installer behavior.
 # v116.0.34.94.6.9: synchronize startup/deployment runtime identity with Run Studio recovery release.
@@ -152,9 +153,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.11"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.12"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "run-studio-dual-chat-recovery"
+PACKAGE_RELEASE_NAME = "run-studio-guided-onboarding-mcp-safety"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
