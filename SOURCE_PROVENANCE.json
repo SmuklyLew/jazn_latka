@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
-  "base_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
-  "commit_date": "2026-10-29T00:32:44+01:00",
+  "base_merge_commit": "cbc3dc0182a67fa22d8bb925816e6ab83f50bc15",
+  "base_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
+  "commit_date": "2026-10-29T01:40:45+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-28T23:32:44+00:00",
+  "generated_at_utc": "2026-10-29T00:40:45+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "51d9845a94b58faf7c8879368973b1971c42339d",
+  "git_tree_sha": "8461a8ff265d437e1376808dba75746ba836c0a4",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "e5e22a87abdbeb51591e0d95a889a885b7725265",
+    "base_commit": "f7364ac5462e607c0079d2c9a5f04adc7d43b03d",
     "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
-    "source_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics"
+    "source_commit": "cbc3dc0182a67fa22d8bb925816e6ab83f50bc15",
+    "source_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "caf0462310269b6be049e333cbe1e4b06ec143b2",
+  "source_commit": "cbc3dc0182a67fa22d8bb925816e6ab83f50bc15",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
+  "source_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.13-run-studio-operator-diagnostics",
+  "update_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
   "version_source": "latka_jazn/version.py"
 }
