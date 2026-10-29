@@ -87,3 +87,7 @@ spójny panel, a nie kopiowanie procesu systemowych usług Apache.
 Szczegółowe formularze OAuth, wdrożenia, mapy zależności i odbiór
 funkcjonalny pozostałych studiów wymagają dalszych etapów. Nie są
 potwierdzone przez samą obecność konsoli.
+
+## Regresja odświeżania usług (.94.6.20)
+
+Odczyt statusu supervisora w `refresh_services()` jest jawnie tylko do odczytu, tak jak kanoniczny status runtime i sondy sieciowe. Test Qt z poprzedniej wersji pomijał `action:supervisor`, dlatego został zaktualizowany bez usuwania funkcji. Historyczny test .19 zachowano bajt w bajt w `tests/archive/`. Pełny odbiór GUI i działania usług na rzeczywistym Windows nadal wymaga osobnej obserwacji operatora.
