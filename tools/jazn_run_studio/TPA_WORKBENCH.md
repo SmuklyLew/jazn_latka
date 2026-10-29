@@ -7,6 +7,8 @@ zależności blokuje tylko odpowiednie pozycje. Każdy przebieg ma nowy identyfi
 **Zatrzymaj** anuluje własne wykonanie; **Ponów nieudane / blokady** tworzy nowy
 przebieg. Nie ma instalacji pakietów w tle. Studio Zależności otwiera kanoniczny
 workflow wymagający podglądu i potwierdzenia instalacji do testowego środowiska.
+Wybór Pythona i modelu jest w rozwijanej sekcji **Środowisko i model…**;
+podsumowanie pozostaje widoczne, a tabela nie ustępuje miejsca formularzom.
 
 Tabela pokazuje wynik wykonania, przyczynę i tryb. Szczegóły zawierają kryteria,
 polecenie, czas i kod wyjścia. **Pokaż log** wybiera plik wskazanego scenariusza

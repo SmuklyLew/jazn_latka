@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.15",
-  "active_definition_count": 2888,
+  "active_definition_count": 2889,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28291,6 +28291,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 72
+    },
+    "tests/test_jazn_tpa_compact_layout_qt.py::test_minimum_window_exposes_queue_and_expandable_setup_from_keyboard": {
+      "path": "tests/test_jazn_tpa_compact_layout_qt.py",
+      "name": "test_minimum_window_exposes_queue_and_expandable_setup_from_keyboard",
+      "purpose": "Minimum window exposes queue and expandable setup from keyboard",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_jazn_tpa_evidence.py::test_each_of_22_cases_has_execution_resources_and_honest_limits": {
       "path": "tests/test_jazn_tpa_evidence.py",

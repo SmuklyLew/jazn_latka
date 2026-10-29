@@ -202,16 +202,18 @@ class Window(QMainWindow):
         if isinstance(app := QApplication.instance(), QApplication):
             app.styleHints().colorSchemeChanged.connect(lambda _scheme: self.apply_theme())
 
-    def page(self, title: str, description: str) -> QVBoxLayout:
+    def page(self, title: str, description: str, *, compact: bool = False) -> QVBoxLayout:
         pane = QWidget()
         layout = QVBoxLayout(pane)
         layout.setContentsMargins(24, 20, 24, 16)
         heading = QLabel(title)
         heading.setObjectName("heading")
-        layout.addWidget(heading)
+        if not compact:
+            layout.addWidget(heading)
         subtitle = QLabel(description)
         subtitle.setWordWrap(True)
-        layout.addWidget(subtitle)
+        if not compact:
+            layout.addWidget(subtitle)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(pane)
@@ -585,6 +587,7 @@ class Window(QMainWindow):
         layout = self.page(
             "TPA",
             "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
+            compact=True,
         )
         self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
         self.local_acceptance_panel.model.setText(self.core.settings.model)
