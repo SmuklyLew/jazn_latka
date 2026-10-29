@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "352bf5203dd44f33bba672aa048dc15ecf3cd9ae",
+  "base_merge_commit": "2830169663d92a4e3d86ac2dc51e3f155a6117ef",
   "base_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
-  "commit_date": "2026-10-29T01:53:51+01:00",
+  "commit_date": "2026-10-29T02:01:28+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-29T00:53:51+00:00",
+  "generated_at_utc": "2026-10-29T01:01:28+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "653ee9847df20e6880184865e8ee508abc32afa9",
+  "git_tree_sha": "6276e168004856d8026b0b08dcf29670b90fc9a8",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "f7364ac5462e607c0079d2c9a5f04adc7d43b03d",
+    "base_commit": "3f8756be4c36f3fab8fa1e426319d8df72b100e5",
     "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "352bf5203dd44f33bba672aa048dc15ecf3cd9ae",
+    "source_commit": "2830169663d92a4e3d86ac2dc51e3f155a6117ef",
     "source_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "352bf5203dd44f33bba672aa048dc15ecf3cd9ae",
+  "source_commit": "2830169663d92a4e3d86ac2dc51e3f155a6117ef",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
   "tag": null,
