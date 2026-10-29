@@ -60,6 +60,7 @@ def test_real_pytest_result_persistence_and_junit(system, body, status):
     runner = TPARunner(root, sys.executable)
     runner.start_selection(("smoke-isolation",))
     wait_until(lambda: not runner.active)
+    assert runner.report is not None
     row = runner.report["results"][0]
     assert row["status"] == status
     assert row["full_gate"] == "NOT_RUN"
@@ -87,6 +88,7 @@ def test_cancel_timeout_and_gui_responsiveness(system, cancel, expected):
         runner.stop()
     wait_until(lambda: not runner.active)
     timer.stop()
+    assert runner.report is not None
     assert runner.report["results"][0]["status"] == expected
     if cancel:
         assert runner.report["results"][1]["status"] == "CANCELLED"
@@ -99,6 +101,7 @@ def test_invalid_python_is_durable_blocked_and_missing_files_do_not_abort_queue(
     runner = TPARunner(root, "")
     runner.start_selection(("smoke-isolation",))
     wait_until(lambda: not runner.active)
+    assert runner.report is not None
     assert runner.report["results"][0]["status"] == "BLOCKED"
     runner.python = sys.executable
     (root / "tests/test_package_smoke_workspace_isolation.py").unlink()
@@ -123,12 +126,14 @@ def test_panel_preserves_selection_history_filters_and_routes_correct_log(system
     panel.search.clear()
     panel.start((selected,))
     wait_until(lambda: not panel.runner.active)
+    assert panel.report is not None
     run_id = panel.report["run_id"]
     panel.show_log()
     assert "test_synthetic" in panel.auto_log.toPlainText()
     assert panel.runner.store.load(run_id)["results"][0]["status"] == "PASS"
     panel.close()
     restored = TPAPanel(root, python=sys.executable)
+    assert restored.report is not None
     assert restored.report["run_id"] == run_id
     restored.table.selectRow(0)
     restored.attempt(restored.show_log)
@@ -152,6 +157,7 @@ def test_real_process_start_error_is_blocked_not_a_hanging_run(system):
     runner = TPARunner(root, str(wrong_exe))
     runner.start_selection(("smoke-isolation",))
     wait_until(lambda: not runner.active)
+    assert runner.report is not None
     assert runner.report["results"][0]["status"] == "BLOCKED"
     assert runner.process.processId() == 0
 
@@ -173,6 +179,7 @@ def test_panel_keeps_guide_draft_and_defers_close_until_owned_process_stops(syst
     wait_until(lambda: panel.runner.phase == "tests")
     panel.close()
     wait_until(lambda: not panel.runner.active and not panel.isVisible())
+    assert panel.report is not None
     assert panel.report["results"][0]["status"] == "CANCELLED"
 
 
@@ -184,6 +191,7 @@ def test_report_write_failure_is_visible_and_never_silently_passes(system, monke
         raise OSError("synthetic disk full")
     monkeypatch.setattr(runner.store, "save", disk_full)
     wait_until(lambda: not runner.active)
+    assert runner.report is not None
     assert "Nie zapisano raportu" in runner.report["persistence_error"]
     assert runner.report["results"][0]["status"] == "CANCELLED"
 

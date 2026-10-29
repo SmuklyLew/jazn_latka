@@ -26,6 +26,7 @@ class TPAPanel(QWidget):
         self.attached: dict[str, list[str]] = {}
         self.guide_drafts: dict[tuple[str, str], dict] = {}
         self._guide_key = ("", "")
+        self._log_selection: tuple[str, str] | None = None
         self._guide_id, self._started = "", 0.0
         self.runner = TPARunner(root, python or ("" if getattr(sys, "frozen", False) else sys.executable), self)
         self.runner.progress.connect(self._progress)
@@ -270,6 +271,7 @@ class TPAPanel(QWidget):
         self.runner.python = self.python_field.text().strip()
         self._started = time.monotonic()
         self.auto_log.clear()
+        self._log_selection = None
         self.runner.start_selection(ids, execution=execution, model=self.model.text().strip())
         self.attached.clear()
         if execution != "regression":
@@ -294,6 +296,14 @@ class TPAPanel(QWidget):
         self.refresh_view()
 
     def _progress(self, text: str) -> None:
+        current = self.runner.report
+        running = next((r["case_id"] for r in current["results"] if r["status"] == "RUNNING"), "") if current else ""
+        key = (current["run_id"], running) if current else ("", "")
+        if text.startswith("Zaakceptowana odpowiedź testowa:") and self._log_selection not in {None, key}:
+            self.auto_log.clear()
+            self._log_selection = key
+        if self._log_selection is not None and self._log_selection != key:
+            return  # A selected completed test must not receive another test's output.
         self.auto_log.appendPlainText(self.runner.redactor.text(text))
         if text.startswith("Zaakceptowana odpowiedź testowa:"):
             self.tabs.setCurrentWidget(self.auto_log)
@@ -442,6 +452,11 @@ class TPAPanel(QWidget):
             raise ValueError("Wybierz przebieg z historii lub uruchom testy")
         key = self.chosen()
         row = next((r for r in self.report["results"] if r["case_id"] == key), {})
+        self._log_selection = (self.report["run_id"], key)
+        if self.runner.active and self.report is self.runner.report and row.get("status") == "RUNNING":
+            self.auto_log.setPlainText(self.runner.buffer)
+            self.tabs.setCurrentWidget(self.auto_log)
+            return
         if not row.get("log"):
             raise ValueError("Test nie ma logu w tym przebiegu: nie uruchomiono go lub zapis się nie udał.")
         path = safe_child(self.runner.store.folder(self.report["run_id"]), row["log"])

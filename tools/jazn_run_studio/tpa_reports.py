@@ -93,7 +93,10 @@ def junit_result(path: Path, exit_code: int, redactor: Redactor) -> tuple[dict, 
     raw = path.read_bytes()
     if b"<!DOCTYPE" in raw.upper() or b"<!ENTITY" in raw.upper():
         raise ValueError("Niedozwolona deklaracja XML")
-    tree = ET.fromstring(raw)
+    try:
+        tree = ET.fromstring(raw)
+    except ET.ParseError as exc:
+        raise ValueError("Niepoprawny XML raportu JUnit") from exc
     tests = list(tree.iter("testcase"))
     counts = Counter({"passed": 0, "failed": 0, "errors": 0, "skipped": 0})
     details = []
@@ -149,7 +152,8 @@ def readable_report(report: dict) -> str:
                   "Dalej: " + result.get("next_step", "Otwórz log i raport JUnit."), ""]
     lines += ["POKRYCIE 22 SCENARIUSZY"]
     for item in report["coverage_map"]:
-        lines += [item["id"] + " • " + item["title"], item["limitations"]]
+        lines += [item["id"] + " • " + item["title"],
+                  "Wykonanie: " + item.get("execution_status", "NOT_RUN") + " • pełny odbiór: " + item.get("full_gate", "NOT_RUN"), item["limitations"]]
     lines += ["", "Podsumowanie:", json.dumps(summary(report), ensure_ascii=False, indent=2)]
     return "\n".join(lines)
 
@@ -189,6 +193,12 @@ class RunStore:
 
     def save(self, report: dict) -> None:
         folder = self.folder(report["run_id"])
+        results = {r["case_id"]: r for r in report["results"]}
+        for case in report["coverage_map"]:
+            row = results.get(case["id"], {})
+            case.update(execution_status=row.get("status", "NOT_RUN"),
+                        full_gate=row.get("full_gate", "NOT_RUN"),
+                        executed_scope=row.get("coverage", "NOT_RUN"))
         clean = redact(report, self.redactor)
         clean["summary"] = summary(clean)
         for name, content in (("report.json", json.dumps(clean, ensure_ascii=False, indent=2)),
@@ -213,9 +223,12 @@ class RunStore:
                 or report.get("run_id") != run_id or not isinstance(report.get("results"), list)
                 or not isinstance(report.get("source"), dict) or not isinstance(report["source"].get("version"), str)
                 or not isinstance(report.get("started_utc"), str) or not isinstance(report.get("artifacts"), list)
+                or any(not isinstance(n, str) for n in report["artifacts"])
                 or not isinstance(report.get("coverage_map"), list)
+                or any(not isinstance(c, dict) or not all(isinstance(c.get(k), str) for k in ("id", "title", "limitations")) for c in report["coverage_map"])
                 or any(not isinstance(r, dict) or r.get("status") not in STATES
-                       or not all(isinstance(r.get(k), str) for k in ("case_id", "title", "expected")) for r in report["results"])):
+                       or not all(isinstance(r.get(k), str) for k in ("case_id", "title", "expected", "reason"))
+                       or not isinstance(r.get("command", []), list) or any(not isinstance(a, str) for a in r.get("command", [])) for r in report["results"])):
             raise ValueError("Nieprawidłowy raport TPA")
         return report
 
@@ -273,7 +286,10 @@ class RunStore:
             if path.suffix.lower() == ".json":
                 content[name] = json.dumps(redact(json.loads(text), self.redactor), ensure_ascii=False, indent=2)
             elif path.suffix.lower() == ".xml":
-                tree = ET.fromstring(text)
+                try:
+                    tree = ET.fromstring(text)
+                except ET.ParseError as exc:
+                    raise ValueError("Uszkodzony XML dowodu; eksport nie został wykonany") from exc
                 for node in tree.iter():
                     node.text = self.redactor.text(node.text) if node.text else node.text
                     node.tail = self.redactor.text(node.tail) if node.tail else node.tail
