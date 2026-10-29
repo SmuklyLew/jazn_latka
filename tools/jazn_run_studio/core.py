@@ -78,6 +78,7 @@ ACTIONS = (
     Action("doctor", "Pełna diagnostyka", ("doctor", "--json"), "Kanoniczna diagnoza systemu.", 120),
     Action("model", "Adapter i model", ("model-status", "--json"), "Konfiguracja adaptera językowego."),
     Action("memory", "Status pamięci", ("memory-status", "--json"), "Stan pamięci bez edycji danych."),
+    Action("supervisor", "Status supervisora", ("supervisor-status", "--json"), "Tożsamość, heartbeat i aktywność nadzorcy; tylko odczyt."),
     Action("start", "Uruchom runtime", ("start",), "Start przez centralny control plane.", 90, True),
     Action("stop", "Zatrzymaj runtime", ("stop",), "Weryfikowany stop przez runtime; bez zabijania PID.", 45, True),
     Action("restart", "Restart runtime", ("restart", "--json"), "Kanoniczny restart z kontrolą tożsamości.", 120, True),
@@ -884,6 +885,18 @@ class Controller:
                         job.state, job.error = "failed", "runtime_operation_rejected"
                 except ValueError:
                     job.state, job.error = "failed", "invalid_operation_json"
+            if job.key == "supervisor":
+                # Public fields only: raw supervisor output can contain operator paths.
+                from .status_summary import supervisor_summary
+                try:
+                    supervisor = json.loads(raw)
+                    if not isinstance(supervisor, dict):
+                        raise ValueError("supervisor_shape")
+                except ValueError:
+                    supervisor = {}
+                    job.state, job.error = "failed", "invalid_supervisor_status_json"
+                self.emit(job.key, "supervisor_evidence",
+                          supervisor_summary(supervisor, command_ok=job.state == "succeeded"))
             if job.key == "status":
                 # A canonical negative status is still an observation. Publish
                 # it even on exit 1; malformed output must invalidate old green
