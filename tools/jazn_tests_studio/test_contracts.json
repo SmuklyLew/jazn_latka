@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.18",
-  "active_definition_count": 2895,
+  "system_version": "16.3.25.5.116.0.34.94.6.19",
+  "active_definition_count": 2900,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20764,6 +20764,85 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 121
+    },
+    "tests/test_heart_system_xampp_console.py::test_supervisor_uses_only_the_canonical_readonly_command": {
+      "path": "tests/test_heart_system_xampp_console.py",
+      "name": "test_supervisor_uses_only_the_canonical_readonly_command",
+      "purpose": "Supervisor uses only the canonical readonly command",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_heart_system_xampp_console.py::test_supervisor_needs_identity_heartbeat_and_successful_status": {
+      "path": "tests/test_heart_system_xampp_console.py",
+      "name": "test_supervisor_needs_identity_heartbeat_and_successful_status",
+      "purpose": "Supervisor needs identity heartbeat and successful status",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_heart_system_xampp_console_qt.py::test_heart_console_modules_and_readonly_actions": {
+      "path": "tests/test_heart_system_xampp_console_qt.py",
+      "name": "test_heart_console_modules_and_readonly_actions",
+      "purpose": "Heart console modules and readonly actions",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_heart_system_xampp_console_qt.py::test_unverified_supervisor_cannot_be_green": {
+      "path": "tests/test_heart_system_xampp_console_qt.py",
+      "name": "test_unverified_supervisor_cannot_be_green",
+      "purpose": "Unverified supervisor cannot be green",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_heart_system_xampp_console_qt.py::test_memory_is_technical_status_without_lifecycle": {
+      "path": "tests/test_heart_system_xampp_console_qt.py",
+      "name": "test_memory_is_technical_status_without_lifecycle",
+      "purpose": "Memory is technical status without lifecycle",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
     },
     "tests/test_host_bridge_and_ollama_first_attempt_regressions.py::test_model_executor_allows_configured_ollama_first_attempt": {
       "path": "tests/test_host_bridge_and_ollama_first_attempt_regressions.py",
