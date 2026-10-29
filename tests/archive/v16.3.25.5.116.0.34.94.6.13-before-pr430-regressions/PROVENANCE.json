@@ -1,0 +1,22 @@
+{
+  "source_commit": "b1e117da2fe617ad2cc7805692575b65a74ba299",
+  "source_version": "16.3.25.5.116.0.34.94.6.13",
+  "snapshots": [
+    {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "sha256": "fea22f49b7686200216a980f08e03e534b30d0e6d10e843e0c8bdcad0dc10ac3"
+    },
+    {
+      "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
+      "sha256": "e5a93fe2cb4c74607a31dfe3f3e728bd9f6ce3253afb35fb7bb549ab7fb1f207"
+    },
+    {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "sha256": "4d9358586fbc15051f1680e97a8278a32a6da180a74613556ec643a0fe8bbac1"
+    },
+    {
+      "path": "tests/test_jazn_run_studio_workbench_qt.py",
+      "sha256": "2711a5ef96de9ca3333171922120443b7deb2a33e26630f66caa4aa57c13eea6"
+    }
+  ]
+}

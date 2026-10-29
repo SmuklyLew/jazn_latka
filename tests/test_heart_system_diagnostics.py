@@ -66,7 +66,7 @@ def test_probe_unavailable_is_failed_and_safe(core, monkeypatch):
     monkeypatch.setattr(probes, "ollama", unavailable)
     job = core.probe("ollama")
     assert job.done.wait(3)
-    assert job.state == "failed" and job.error == "URLError"
+    assert job.state == "failed" and job.error == "transport_unreachable"
     assert "private-endpoint-error" not in str(core.report())
 
 def test_duplicate_probe_shares_observation(core, monkeypatch):
@@ -123,3 +123,54 @@ def test_changed_model_does_not_adopt_running_probe(core, monkeypatch):
     finally:
         release.set()
     assert job.done.wait(3)
+
+
+@pytest.mark.parametrize("probe_name", ["ollama", "ollama_generate"])
+@pytest.mark.parametrize("reason,code", [
+    (ConnectionRefusedError(111, "http://10.23.45.67:11434 token=private-value"), "connection_refused"),
+    (OSError(10061, "private-value"), "connection_refused"),
+    (TimeoutError("private-value"), "connection_timeout"),
+    (OSError(10060, "private-value"), "connection_timeout"),
+    ("http://10.23.45.67:11434 token=private-value", "transport_unreachable"),
+])
+def test_ollama_transport_failure_reports_safe_codes(core, monkeypatch, tmp_path, probe_name, reason, code):
+    from tools.jazn_run_studio import probes
+    from tools.jazn_run_studio.problem_guidance import explain_failure
+    import json
+    def unavailable(*args):
+        raise URLError(reason)
+    monkeypatch.setattr(probes, "ollama" if probe_name == "ollama" else "ollama_generation", unavailable)
+    job = core.probe(probe_name)
+    assert job.done.wait(3)
+    assert (job.state, job.error) == ("failed", code)
+    # Wait for the terminal event too: it follows the persisted error record.
+    while True:
+        key, kind, value = core.events.get(timeout=3)
+        if key == job.key and kind == "state":
+            assert value["state"] == "failed" and value["error"] == code
+            break
+    report = core.report()
+    assert report["jobs"][0]["error"] == code
+    target = tmp_path / "report.json"
+    core.export_report(target)
+    journal = (tmp_path / "workspace_runtime/jazn_run_studio/errors_jazn_studio.log").read_text(encoding="utf-8")
+    public = json.dumps(report) + target.read_text(encoding="utf-8") + journal
+    assert "private-value" not in public and "10.23.45.67" not in public
+    guide = explain_failure(job.key, code)
+    assert guide.module == "Ollama" and "/api/tags" in guide.remedy
+    assert "nie pobieraj" in guide.remedy
+
+
+@pytest.mark.parametrize("probe_name,evidence,state,error", [
+    ("ollama", {"models": ["model"], "selected_model_present": True, "generation_verified": False}, "succeeded", None),
+    ("ollama_generate", {"models": ["model"], "selected_model_present": True, "generation_verified": True}, "succeeded", None),
+    ("ollama_generate", {"models": ["model"], "selected_model_present": True, "generation_verified": False}, "failed", "ollama_generation_unverified"),
+    ("ollama", {"models": [], "selected_model_present": False}, "failed", "ollama_models_empty"),
+])
+def test_ollama_observations_keep_generation_and_model_gates(core, monkeypatch, probe_name, evidence, state, error):
+    from tools.jazn_run_studio import probes
+    monkeypatch.setattr(probes, "ollama" if probe_name == "ollama" else "ollama_generation", lambda *args: evidence)
+    job = core.probe(probe_name)
+    assert job.done.wait(3)
+    assert (job.state, job.error) == (state, error)
+    assert core.report()["accepted_visible_turn"] is None
