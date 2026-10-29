@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.17",
-  "active_definition_count": 2894,
+  "system_version": "16.3.25.5.116.0.34.94.6.18",
+  "active_definition_count": 2895,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28729,6 +28729,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 186
+    },
+    "tests/test_jazn_tpa_live_full_gate.py::test_live_result_requires_zero_child_exit_and_separate_human_gate": {
+      "path": "tests/test_jazn_tpa_live_full_gate.py",
+      "name": "test_live_result_requires_zero_child_exit_and_separate_human_gate",
+      "purpose": "Live result requires zero child exit and separate human gate",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
     },
     "tests/test_jazn_tpa_log_scope_qt.py::test_log_button_keeps_selected_completed_test_separate_from_live_output": {
       "path": "tests/test_jazn_tpa_log_scope_qt.py",
