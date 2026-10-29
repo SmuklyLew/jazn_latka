@@ -81,6 +81,11 @@ class OperatorWorkspace:
         self._terminal()
         self.last_output = ""
         self._last_jobs = ""
+        self.dock.visibilityChanged.connect(self.dock_visibility_changed)
+
+    def dock_visibility_changed(self, visible: bool) -> None:
+        if visible:
+            self.host.set_logs_visible(False)
 
     def _problems(self) -> None:
         panel = QWidget()
@@ -183,9 +188,7 @@ class OperatorWorkspace:
         self.dock.raise_()
         self.tabs.setCurrentIndex(tab)
         # Do not stack two independent log panes across the entire viewport.
-        self.host.tabs.hide()
-        self.host.logs_user_hidden = True
-        self.host.log_toggle.setText("Pokaż logi")
+        self.host.set_logs_visible(False)
         self.host.resizeDocks([self.dock], [max(240, self.host.height() // 3)], Qt.Orientation.Vertical)
 
     def observe(self, key: str, kind: str, value: Any) -> None:
@@ -264,6 +267,9 @@ class OperatorWorkspace:
         target = item.data(0, Qt.ItemDataRole.UserRole)
         if target:
             self.host.navigate(str(target))
+        self.problems.setCurrentItem(item)
+        self.show_problem_guidance()
+        self.show_selected_logs()
 
     def export_output(self) -> None:
         name, _ = QFileDialog.getSaveFileName(self.host, "Nowy redagowany log", "studio-output.txt", "Tekst (*.txt)")
@@ -271,7 +277,16 @@ class OperatorWorkspace:
             from .core import _path_without_links
             target = _path_without_links(Path(name).absolute())
             with target.open("x", encoding="utf-8") as stream:
-                stream.write(self.host.core.redactor.text(self.output.toPlainText()))
+                stream.write(self.host.core.redactor.text("\n".join(self.output_lines())))
+
+    def output_lines(self, logs: dict[str, tuple[str, ...]] | None = None) -> list[str]:
+        """Filter source data before presentation truncation or exclusive export."""
+        if logs is None:
+            with self.host.core.lock:
+                logs = {key: tuple(lines) for key, lines in self.host.core.logs.items()}
+        query, source = self.output_search.text().casefold(), str(self.source.currentData() or "")
+        return [f"[{key}] {line}" for key, values in logs.items() if not source or key == source
+                for line in values if not query or query in line.casefold()]
 
     def refresh(self) -> None:
         core = self.host.core
@@ -282,9 +297,7 @@ class OperatorWorkspace:
         for key in sorted(logs):
             if key not in existing:
                 self.source.addItem(key, key)
-        query, source = self.output_search.text().casefold(), str(self.source.currentData() or "")
-        lines = [f"[{key}] {line}" for key, values in logs.items() if not source or key == source
-                 for line in values if not query or query in line.casefold()]
+        lines = self.output_lines(logs)
         # Truncation is presentation-only; source logs and export_report stay untouched.
         preview = [line if len(line) <= 600 else line[:600] + " … [skrócono w widoku]"
                    for line in lines[-2500:]]

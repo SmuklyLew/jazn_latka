@@ -173,11 +173,11 @@ class Window(QMainWindow):
         self.settings_baseline = self.settings_draft()
         self.setup_wizard = None
         self.layout_state = {}
-        self.restore_layout()
         self.log_toggle = QPushButton("Pokaż logi")
         self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
         self.log_toggle.clicked.connect(self.toggle_logs)
         self.statusBar().addPermanentWidget(self.log_toggle)
+        self.restore_layout()
         self.nav.setCurrentRow(0)
         self.statusBar().showMessage(str(core.root))
         self.apply_theme()
@@ -229,7 +229,7 @@ class Window(QMainWindow):
                 item.description + "\nWykonać tę operację?") != QMessageBox.StandardButton.Yes:
             return
         self.core.start_action(key)
-        self.log_view(key)
+        self.show_log(key)
 
     def _dashboard(self) -> None:
         layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
@@ -368,7 +368,7 @@ class Window(QMainWindow):
             config = menu.addAction("Konfiguracja")
             config.triggered.connect(lambda: self.navigate("Ustawienia"))
             logs = menu.addAction("Logi")
-            logs.triggered.connect(lambda _checked=False, s=service: self.log_view("status" if s == "runtime" else "service:" + s))
+            logs.triggered.connect(lambda _checked=False, s=service: self.show_log("status" if s == "runtime" else "service:" + s))
             details = menu.addAction("Szczegóły / odśwież")
             details.triggered.connect(lambda _checked=False, s=service: self.guard(lambda: self.core.start_action("status") if s == "runtime" else self.core.probe(s)))
             button.setMenu(menu)
@@ -485,7 +485,7 @@ class Window(QMainWindow):
             self.core.stop_owned("service:" + service)
         else:
             self.core.restart_service(service)
-        self.log_view("service:" + service)
+        self.show_log("service:" + service)
 
     def _diagnostics(self) -> None:
         layout = self.page("Diagnostyka", "Każdy krok ma osobny wynik, log i kod zakończenia. Pakiet zatrzymuje się przy błędzie.")
@@ -820,14 +820,29 @@ class Window(QMainWindow):
         if visible:
             self.nav.setFocus()
 
-    def toggle_logs(self) -> None:
-        visible = not self.tabs.isVisible()
+    def set_logs_visible(self, visible: bool) -> None:
+        """Apply operator intent independently of ancestor/window visibility."""
         self.logs_user_hidden = not visible
+        if visible:
+            self.workspace.dock.hide()
+            if not self.tabs.count():
+                self.log_view("Zdarzenia")
         self.tabs.setVisible(visible)
         self.log_toggle.setText("Ukryj logi" if visible else "Pokaż logi")
-        if visible and self.tabs.count():
-            self.workspace.dock.hide()
-            self.tabs.setFocus()
+        if visible:
+            self.content_splitter.setSizes([max(1, self.height() * 2 // 3),
+                                            max(140, self.height() // 3)])
+            self.tabs.currentWidget().setFocus()
+
+    def toggle_logs(self) -> None:
+        self.set_logs_visible(self.tabs.isHidden())
+
+    def show_log(self, key: str) -> QPlainTextEdit:
+        """An explicit operator request opens and selects even an existing log."""
+        view = self.log_view(key)
+        self.tabs.setCurrentWidget(view)
+        self.set_logs_visible(True)
+        return view
 
     def update_service_summary(self, service: str, detail: str) -> None:
         """Mirror the same observed state; never infer readiness from a PID."""
@@ -837,6 +852,7 @@ class Window(QMainWindow):
             self.dashboard_statuses[service].setText(service.upper() + ": " + detail)
 
     def log_view(self, key: str) -> QPlainTextEdit:
+        """Register a data sink; incoming events never change panel visibility."""
         if key not in self.logs:
             view = QPlainTextEdit()
             view.setReadOnly(True)
@@ -844,9 +860,6 @@ class Window(QMainWindow):
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
             self.tabs.addTab(view, key)
-            if not self.logs_user_hidden and not self.workspace.dock.isVisible():
-                self.tabs.show()
-                self.log_toggle.setText("Ukryj logi")
         return self.logs[key]
 
     def poll(self) -> None:
@@ -1121,8 +1134,7 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.workspace.dock)
         self.workspace.dock.setFloating(False)
         self.workspace.dock.hide()
-        self.logs_user_hidden = True
-        self.tabs.hide()
+        self.set_logs_visible(False)
         # Restoring the visual theme is a draft; no runtime settings are changed.
         self.theme.setCurrentText(Settings().theme)
         self.setStyleSheet(workbench_stylesheet(Settings().theme, Settings().accent))

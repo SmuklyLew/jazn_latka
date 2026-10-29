@@ -44,7 +44,7 @@ def test_runtime_ready_requires_explicit_evidence(window) -> None:
 
 
 def test_lower_logs_panel_can_be_hidden_and_restored(window) -> None:
-    window.log_view("status")
+    window.show_log("status")
     assert window.tabs.isVisible()
     window.toggle_logs()
     assert not window.tabs.isVisible()

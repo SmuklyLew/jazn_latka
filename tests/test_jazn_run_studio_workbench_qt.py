@@ -41,7 +41,7 @@ def test_sidebar_and_contextual_panel_are_keyboard_accessible(window) -> None:
     assert window.sidebar.isVisible()
 
     assert not window.tabs.isVisible()
-    window.log_view("diagnostics:manual")
+    window.show_log("diagnostics:manual")
     assert window.tabs.isVisible()
     assert window.tabs.count() >= 1
     assert window.tabs.tabText(window.tabs.indexOf(window.logs["diagnostics:manual"])) == "diagnostics:manual"
