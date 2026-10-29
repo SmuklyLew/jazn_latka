@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.13",
-  "active_definition_count": 2860,
+  "system_version": "16.3.25.5.116.0.34.94.6.14",
+  "active_definition_count": 2865,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20345,6 +20345,40 @@
       "description_source": "source_identity",
       "line": 111
     },
+    "tests/test_heart_system_diagnostics.py::test_ollama_transport_failure_reports_safe_codes": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_ollama_transport_failure_reports_safe_codes",
+      "purpose": "Ollama transport failure reports safe codes",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 136
+    },
+    "tests/test_heart_system_diagnostics.py::test_ollama_observations_keep_generation_and_model_gates": {
+      "path": "tests/test_heart_system_diagnostics.py",
+      "name": "test_ollama_observations_keep_generation_and_model_gates",
+      "purpose": "Ollama observations keep generation and model gates",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 170
+    },
     "tests/test_heart_system_guided_onboarding_qt.py::test_first_run_has_all_studio_settings_and_saves_validated_draft": {
       "path": "tests/test_heart_system_guided_onboarding_qt.py",
       "name": "test_first_run_has_all_studio_settings_and_saves_validated_draft",
@@ -27382,6 +27416,51 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 10
+    },
+    "tests/test_jazn_run_studio_part2_collapsed_qt.py::test_incoming_logs_stay_collapsed_until_explicit_repeated_requests": {
+      "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
+      "name": "test_incoming_logs_stay_collapsed_until_explicit_repeated_requests",
+      "purpose": "Incoming logs stay collapsed until explicit repeated requests",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jazn_run_studio_part2_collapsed_qt.py::test_dock_and_legacy_logs_remain_exclusive_through_menu_and_close": {
+      "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
+      "name": "test_dock_and_legacy_logs_remain_exclusive_through_menu_and_close",
+      "purpose": "Dock and legacy logs remain exclusive through menu and close",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_jazn_run_studio_part2_collapsed_qt.py::test_problem_activation_opens_matching_source_and_full_export": {
+      "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
+      "name": "test_problem_activation_opens_matching_source_and_full_export",
+      "purpose": "Problem activation opens matching source and full export",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
     },
     "tests/test_jazn_run_studio_part2_error_journal.py::test_failure_journal_redacts_secret_values": {
       "path": "tests/test_jazn_run_studio_part2_error_journal.py",
