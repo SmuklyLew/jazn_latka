@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3f8756be4c36f3fab8fa1e426319d8df72b100e5",
-    "base_version": "16.3.25.5.116.0.34.94.6.12-run-studio-guided-onboarding-mcp-safety",
+    "base_commit": "2830169663d92a4e3d86ac2dc51e3f155a6117ef",
+    "base_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "2830169663d92a4e3d86ac2dc51e3f155a6117ef",
