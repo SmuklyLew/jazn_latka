@@ -98,3 +98,16 @@ conflict and unsaved-input regressions are collected in the Qt suite.
 The .88 migration inventory and full application parity gates remain open:
 no claim of full parity for all twelve Studios and no deprecation of the
 original Tk Configuration Studio without accepted Windows operator tests.
+
+## .94.6.15 — executable TPA workbench
+
+TPA now provides per-interpreter preflight, a background queue, durable run
+history, JUnit interpretation, logs and redacted report export for all 22
+catalogue rows. Five runtime/chat rows additionally have real isolated
+acceptance clients over the canonical Controller/ChatClient. Each Studio row
+can open a fresh synthetic Studio sandbox with a concrete procedure and collect
+human evidence. See [TPA_WORKBENCH.md](TPA_WORKBENCH.md) for the complete map.
+
+These executors do not complete the open migration rows above. Regression
+status and full acceptance are distinct report fields; missing native
+workflows, unavailable models and untested offline EXEs remain explicit gates.

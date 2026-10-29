@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.14",
-  "active_definition_count": 2865,
+  "system_version": "16.3.25.5.116.0.34.94.6.15",
+  "active_definition_count": 2888,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26965,13 +26965,13 @@
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
       "name": "test_qt_acceptance_page_renders_without_live_runtime",
       "purpose": "Qt acceptance page renders without live runtime",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -28291,6 +28291,376 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 72
+    },
+    "tests/test_jazn_tpa_evidence.py::test_each_of_22_cases_has_execution_resources_and_honest_limits": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_each_of_22_cases_has_execution_resources_and_honest_limits",
+      "purpose": "Each of 22 cases has execution resources and honest limits",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jazn_tpa_evidence.py::test_junit_and_process_exit_must_both_support_result": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_junit_and_process_exit_must_both_support_result",
+      "purpose": "Junit and process exit must both support result",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_jazn_tpa_evidence.py::test_exit_zero_without_junit_is_not_pass": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_exit_zero_without_junit_is_not_pass",
+      "purpose": "Exit zero without junit is not pass",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jazn_tpa_evidence.py::test_reports_history_export_and_redaction_are_run_scoped": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_reports_history_export_and_redaction_are_run_scoped",
+      "purpose": "Reports history export and redaction are run scoped",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "FileExistsError",
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_jazn_tpa_evidence.py::test_export_does_not_walk_runtime_or_allow_foreign_artifact": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_export_does_not_walk_runtime_or_allow_foreign_artifact",
+      "purpose": "Export does not walk runtime or allow foreign artifact",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_jazn_tpa_evidence.py::test_interrupted_run_never_turns_pass_after_application_disappears": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_interrupted_run_never_turns_pass_after_application_disappears",
+      "purpose": "Interrupted run never turns pass after application disappears",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_jazn_tpa_evidence.py::test_subcheck_does_not_authorize_real_turn_or_12_studio_acceptance": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_subcheck_does_not_authorize_real_turn_or_12_studio_acceptance",
+      "purpose": "Subcheck does not authorize real turn or 12 studio acceptance",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_jazn_tpa_evidence.py::test_human_observation_keeps_regression_result_and_append_only_evidence": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_human_observation_keeps_regression_result_and_append_only_evidence",
+      "purpose": "Human observation keeps regression result and append only evidence",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
+    "tests/test_jazn_tpa_evidence.py::test_version_change_preserves_history_and_refuses_transferred_acceptance": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_version_change_preserves_history_and_refuses_transferred_acceptance",
+      "purpose": "Version change preserves history and refuses transferred acceptance",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_jazn_tpa_evidence.py::test_structured_secret_values_are_redacted_without_corrupting_json": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_structured_secret_values_are_redacted_without_corrupting_json",
+      "purpose": "Structured secret values are redacted without corrupting json",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_jazn_tpa_evidence.py::test_damaged_history_is_visible_and_does_not_hide_other_runs": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_damaged_history_is_visible_and_does_not_hide_other_runs",
+      "purpose": "Damaged history is visible and does not hide other runs",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 146
+    },
+    "tests/test_jazn_tpa_evidence.py::test_gui_and_exe_acceptance_requires_human_evidence_not_just_junit": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_gui_and_exe_acceptance_requires_human_evidence_not_just_junit",
+      "purpose": "Gui and exe acceptance requires human evidence not just junit",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 155
+    },
+    "tests/test_jazn_tpa_evidence.py::test_live_service_refusal_is_blocked_before_creating_runtime": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_live_service_refusal_is_blocked_before_creating_runtime",
+      "purpose": "Live service refusal is blocked before creating runtime",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 167
+    },
+    "tests/test_jazn_tpa_evidence.py::test_cleanup_refuses_foreign_root_before_any_canonical_command": {
+      "path": "tests/test_jazn_tpa_evidence.py",
+      "name": "test_cleanup_refuses_foreign_root_before_any_canonical_command",
+      "purpose": "Cleanup refuses foreign root before any canonical command",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 181
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_actual_selected_interpreter_preflight_and_partially_ready_set": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_actual_selected_interpreter_preflight_and_partially_ready_set",
+      "purpose": "Actual selected interpreter preflight and partially ready set",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_real_pytest_result_persistence_and_junit": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_real_pytest_result_persistence_and_junit",
+      "purpose": "Real pytest result persistence and junit",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_cancel_timeout_and_gui_responsiveness": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_cancel_timeout_and_gui_responsiveness",
+      "purpose": "Cancel timeout and gui responsiveness",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_invalid_python_is_durable_blocked_and_missing_files_do_not_abort_queue": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_invalid_python_is_durable_blocked_and_missing_files_do_not_abort_queue",
+      "purpose": "Invalid python is durable blocked and missing files do not abort queue",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_panel_preserves_selection_history_filters_and_routes_correct_log": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_panel_preserves_selection_history_filters_and_routes_correct_log",
+      "purpose": "Panel preserves selection history filters and routes correct log",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_main_window_problem_log_without_selection": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_main_window_problem_log_without_selection",
+      "purpose": "Main window problem log without selection",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_real_process_start_error_is_blocked_not_a_hanging_run": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_real_process_start_error_is_blocked_not_a_hanging_run",
+      "purpose": "Real process start error is blocked not a hanging run",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 148
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_panel_keeps_guide_draft_and_defers_close_until_owned_process_stops": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_panel_keeps_guide_draft_and_defers_close_until_owned_process_stops",
+      "purpose": "Panel keeps guide draft and defers close until owned process stops",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 159
+    },
+    "tests/test_jazn_tpa_execution_qt.py::test_report_write_failure_is_visible_and_never_silently_passes": {
+      "path": "tests/test_jazn_tpa_execution_qt.py",
+      "name": "test_report_write_failure_is_visible_and_never_silently_passes",
+      "purpose": "Report write failure is visible and never silently passes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 179
     },
     "tests/test_jazn_tpa_safe_executor.py::test_all_22_operator_cases_remain_manual_gates": {
       "path": "tests/test_jazn_tpa_safe_executor.py",

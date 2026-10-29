@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
@@ -186,6 +187,13 @@ class Window(QMainWindow):
         self.timer.start(100)
         # Discovery is read-only and local. Network probes require explicit actions.
         self.render_discovery()
+        if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated":
+            target = os.environ.get("JAZN_TPA_TARGET_SECTION", "")
+            if target:
+                self.navigate(target)
+            studio = self.studio_choice.findData(os.environ.get("JAZN_TPA_TARGET_STUDIO", ""))
+            if studio >= 0:
+                self.studio_choice.setCurrentIndex(studio)
         if not smoke:
             from .requirements_worker import setup_scope
             from .core import python_executable
@@ -579,7 +587,17 @@ class Window(QMainWindow):
             "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
         )
         self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
+        self.local_acceptance_panel.model.setText(self.core.settings.model)
+        self.local_acceptance_panel.dependency_requested.connect(self.open_tpa_dependencies)
         layout.addWidget(self.local_acceptance_panel)
+
+    def open_tpa_dependencies(self) -> None:
+        self.navigate("Studia Jaźni")
+        index = self.studio_choice.findData("dependencies")
+        if index >= 0:
+            self.studio_choice.setCurrentIndex(index)
+            self.load_studio_operations()
+        self.statusBar().showMessage("Przygotuj profil testowy dla Pythona: " + self.local_acceptance_panel.python_field.text() + "; instalacja wymaga podglądu i potwierdzenia.")
 
     def _memory(self) -> None:
         from .memory_view import MemoryPanel
@@ -1339,6 +1357,10 @@ class Window(QMainWindow):
             self.statusBar().showMessage("Zapisano raport: " + name)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        if not self.local_acceptance_panel.shutdown():
+            event.ignore()
+            QTimer.singleShot(100, self.close)
+            return
         if not self.smoke and self.settings_draft() != self.settings_baseline:
             if QMessageBox.question(self, "Niezapisane ustawienia", "Zamknąć i odrzucić niezapisane zmiany ustawień?") != QMessageBox.StandardButton.Yes:
                 event.ignore()

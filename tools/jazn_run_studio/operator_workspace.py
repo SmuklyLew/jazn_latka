@@ -247,7 +247,8 @@ class OperatorWorkspace:
     def show_selected_logs(self) -> None:
         item = self.problems.currentItem()
         if item is None or item.parent() is None:
-            raise StudioError("Najpierw wybierz konkretny problem z listy")
+            self.problem_details.setText("Najpierw wybierz konkretny problem z listy. Nie otwarto logu innego zadania.")
+            return
         key = str(item.data(3, Qt.ItemDataRole.UserRole) or "")
         index = self.source.findData(key)
         if index < 0:
