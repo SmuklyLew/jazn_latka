@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-29T20:40:01+00:00",
-  "updated_at_utc": "2026-10-29T20:40:01+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
+  "generated_at_utc": "2026-10-29T22:13:20+00:00",
+  "updated_at_utc": "2026-10-29T22:13:20+00:00",
   "start_file": "run.py",
-  "file_count": 3500,
-  "static_file_count": 3500,
+  "file_count": 3501,
+  "static_file_count": 3501,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "aa19775bd4133806bdfec7e16404f6ff830914e1fee68530c7c973aca832c815",
+      "size_bytes": 2997,
+      "sha256": "52677a6d8d956887edec596cd5bbae436a069afb08338901920558999f5c7bb3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -491,7 +491,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1951,
-      "sha256": "82af5eb121539a32fe01c7fb7d43094daae444c5ff97303a4e8d3112f65237d8",
+      "sha256": "a295e5415d78fc27da20b7ffed81a5f7c763ead6a15be7e9bdec2b964e1ee2cc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9752,7 +9752,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "fe6df38e917a387080b1ac90fdbf7c6695ac1aaa6ca544c39eb09e02fa488bb9",
+      "sha256": "7d407c12f53306c3daa7caa3f6131ec317195017ad28d9e2fc40f6e813f34a5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11254,8 +11254,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 18908,
-      "sha256": "fbc46778031f50733c85630ee00cd8840f8f8c747801d911622999f58d1c0568",
+      "size_bytes": 19031,
+      "sha256": "8ec085af0545506809cef35ad5ed4f37be256fd5bd9b8593a523ff3fef10acaa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27849,6 +27849,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_tpa_live_full_gate.py",
+      "size_bytes": 2565,
+      "sha256": "4e2666dbae8faec853b79320c57811218600b9b61445d91f7706c5bab0db7af4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_tpa_log_scope_qt.py",
       "size_bytes": 1843,
       "sha256": "5917cd1040432e53bf15df21943118a9c70e63e548ff5113b3546dfdf61459de",
@@ -31054,8 +31063,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_engine.py",
-      "size_bytes": 21736,
-      "sha256": "b569ecf97ac3515802a242a15d00901e744087df577032795c5938906b4a9f01",
+      "size_bytes": 21879,
+      "sha256": "cdbad3c3da17f78dd43634ccaaf029b49d77dc8618b3c3679002eea1c63e0c20",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31297,8 +31306,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2600909,
-      "sha256": "3798a66abca106a7771b532f04980a897822a9620325622bc0fd225b7cce0c45",
+      "size_bytes": 2601676,
+      "sha256": "af720fbbd125766b5dba6e715bd212283353c8c117b2d81d2d5928acd88e42a3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31955,11 +31964,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.17-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.18-run-studio-operator-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
