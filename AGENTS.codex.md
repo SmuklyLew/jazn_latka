@@ -26,7 +26,7 @@ Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralno
 - Wprowadzaj najmniejszą kompletną poprawkę usuwającą przyczynę problemu. Przy zmianach wielomodułowych ustal zależności, kryteria odbioru, etapy i sposób wycofania; przy drobnych zmianach unikaj zbędnej procedury.
 - Przy zmianach struktury, zależności lub publicznych wejść czytaj `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`; przy zmianach tożsamości, pamięci lub continuity — `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 - `AGENTS.chatgpt.md` stosuj dla hosta i transportu ChatGPT, `AGENTS.ollama.md` dla backendu Ollama; nie ładuj ich bez związku z zadaniem.
-- `run.py` jest cienkim starterem, `main.py` jedynym control plane, `latka_jazn/cli.py` właścicielem parsera i usług komend; Studio jest klientem. Nie dodawaj równoległego lifecycle, parsera ani finalizatora.
+- `run.py` jest cienkim starterem, `main.py` jedynym centralnym punktem sterowania (control plane), `latka_jazn/cli.py` właścicielem parsera i usług komend; Studio jest klientem. Nie dodawaj równoległego lifecycle, parsera ani finalizatora.
 - Zmiana kodu, modelu lub promptu nie aktywuje Jaźni. Zachowuj truth, turn-authority, lineage i accepted finalization; nie przypisuj odpowiedzi runtime bez dowodu.
 
 ## 4. Dane i implementacja
