@@ -1,3 +1,4 @@
+# v116.0.34.94.6.18: TPA live execution does not auto-approve the human full gate and rejects contradictory nonzero exits.
 # v116.0.34.94.6.14: separate log registration from explicit panel requests and preserve full exports.
 # v116.0.34.94.6.13: operator-friendly diagnostics, no-surprise log panels, safe local readiness scan.
 # v116.0.34.94.6.12: configure first-run Studio, guide actual LLM chat, and separate authenticated MCP exposure.
@@ -155,7 +156,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.17"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.18"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (

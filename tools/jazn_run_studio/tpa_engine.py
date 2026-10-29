@@ -338,11 +338,13 @@ class TPARunner(QObject):
         if self.reason in {"cancelled", "timeout"}:
             status = "CANCELLED" if self.reason == "cancelled" else "TIMEOUT"
         reason = result.get("reason", "Proces odbioru zakończył się bez poprawnego dowodu.")
+        if status == "PASS" and getattr(self, "live_exit_code", -1) != 0:
+            status, reason = "FAIL", "Proces odbioru zakończył się niezerowym kodem wyjścia; wynik PASS nie jest wiarygodny."
         if code or self.cleanup_result.get("ok") is not True:
             status, reason = "BLOCKED", "Nie potwierdzono bezpiecznego sprzątnięcia. Zachowano własny staging i dowód właściciela."
         row.update(status=status, reason=reason, exit_code=getattr(self, "live_exit_code", -1), cleanup_exit_code=code,
                    duration_seconds=round(time.monotonic() - self.started, 3),
-                   finished_utc=utc(), full_gate="PASS" if status == "PASS" and self.execution == "live" else "NOT_RUN", log=self.log_name)
+                   finished_utc=utc(), full_gate="NOT_RUN", log=self.log_name)
         folder = self.store.folder(self.report["run_id"])
         try:
             safe_child(folder, self.log_name).write_text(self.buffer, encoding="utf-8")
