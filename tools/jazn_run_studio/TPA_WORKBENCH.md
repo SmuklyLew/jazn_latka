@@ -1,4 +1,4 @@
-# TPA — wykonanie i granice dowodów (.94.6.16)
+# TPA — wykonanie i granice dowodów (.94.6.17)
 
 TPA uruchamia podtesty w wybranym zewnętrznym Pythonie, poza wątkiem GUI.
 Wybierz **Sprawdź gotowość**, zaznacz wiersze i **Uruchom zaznaczone** albo

@@ -66,7 +66,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py run_studio.py
       - run: python -m pytest -q tests/test_jazn_acceptance_resume_profile.py tests/test_jazn_workspace_layout_isolation.py tests/test_jazn_tpa_safe_executor.py
-      - run: python -m pytest -q tests/test_jazn_tpa_evidence.py tests/test_jazn_tpa_execution_qt.py tests/test_jazn_tpa_compact_layout_qt.py tests/test_jazn_tpa_log_scope_qt.py tests/test_jazn_tpa_corrupt_evidence.py
+      - run: python -m pytest -q tests/test_jazn_tpa_evidence.py tests/test_jazn_tpa_execution_qt.py tests/test_jazn_tpa_compact_layout_qt.py tests/test_jazn_tpa_log_scope_qt.py tests/test_jazn_tpa_corrupt_evidence.py tests/test_jazn_tpa_action_evidence.py
       - run: python -m pytest -q tests/test_heart_system_helper_payload.py tests/test_heart_system_dashboard.py tests/test_heart_system_dashboard_qt.py tests/test_heart_system_diagnostics.py tests/test_heart_system_workspace_qt.py tests/test_heart_system_public_restart.py tests/test_heart_system_coverage_encoding.py
       - run: python -m pytest -q tests/test_jazn_run_studio_configuration_native_qt.py tests/test_jazn_run_studio_version_native_qt.py tests/test_jazn_run_studio_config_root_migration_qt.py tests/test_jazn_operator_profile_migration_toctou.py
       - run: python -m pytest -q tests/test_jazn_tpa_workbench_layout_diagnostics.py

@@ -72,6 +72,39 @@ def drain(core: Controller) -> list[tuple]:
     return events
 
 
+def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dict:
+    """Consume public events while the controller still owns its raw buffer.
+
+    Controller deliberately clears Job.output before publishing completion.
+    Retain redacted event evidence, never depend on that private buffer.
+    """
+    job = core.start_action(key)
+    seen: list[tuple] = []
+
+    def collect() -> None:
+        for event in drain(core):
+            seen.append(event)
+            source, kind, value = event
+            if source == job.key and kind == "log":
+                frame({"event": "progress", "text": core.redactor.text(str(value))})
+
+    while not job.done.wait(0.1):
+        collect()
+        tick()
+    time.sleep(0.03)
+    collect()
+    raw = "\n".join(str(v) for source, kind, v in seen if source == job.key and kind == "log")
+    try:
+        diagnostic = redact(json.loads(raw), core.redactor)
+    except ValueError:
+        diagnostic = core.redactor.text(raw[-8000:])
+    records.append({"action": key, "state": job.state, "exit_code": job.returncode, "observed": diagnostic})
+    if job.state != "succeeded":
+        raise ValueError("Kanoniczna operacja " + key + ": " + str(job.error)
+                         + "; " + (core.redactor.text(raw[-1200:]) or "nie ustalono szczegółów; sprawdź log własnego daemona"))
+    return next((v for _, kind, v in seen if kind == "evidence"), {})
+
+
 def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) -> dict:
     if case_id not in LIVE_CASES or folder.is_symlink() or any(folder.iterdir()):
         raise ValueError("Odbiór wymaga nowego własnego katalogu i znanego scenariusza")
@@ -111,24 +144,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
             raise TimeoutError("Przekroczono limit odbioru.")
 
     def action(key: str) -> dict:
-        job = core.start_action(key)
-        while not job.done.wait(0.1):
-            tick()
-        # The worker emits terminal events immediately after setting done.
-        time.sleep(0.03)
-        seen = drain(core)
-        raw = bytes(job.output).decode("utf-8", errors="replace")
-        try:
-            diagnostic = redact(json.loads(raw), core.redactor)
-        except ValueError:
-            diagnostic = core.redactor.text(raw[-8000:])
-        evidence.setdefault("actions", []).append({"action": key, "state": job.state,
-                                                  "exit_code": job.returncode, "observed": diagnostic})
-        if job.state != "succeeded":
-            frame({"event": "progress", "text": "Błąd kanonicznego " + key + ": " + json.dumps(diagnostic, ensure_ascii=False)[:8000]})
-        if job.state != "succeeded":
-            raise ValueError("Kanoniczna operacja " + key + ": " + str(job.error))
-        return next((v for _, kind, v in seen if kind == "evidence"), {})
+        return capture_action(core, key, tick, evidence.setdefault("actions", []))
 
     def connected() -> ChatClient:
         client = ChatClient(core)
