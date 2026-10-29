@@ -1,6 +1,6 @@
-# AGENTS.codex.md — runbook zmian kodu i repozytorium
+# AGENTS_CODEX_OPERATIONAL_REFERENCE.md — szczegółowa referencja operacyjna
 
-Ten plik uzupełnia nadrzędny `AGENTS.md` dla każdej operacji zmieniającej kod, testy, dokumentację, konfigurację albo historię repozytorium. Obowiązuje niezależnie od tego, czy wykonawcą jest Codex, ChatGPT czy inny agent kodujący. Nie jest pamięcią, kanonem osobowości ani runtime Jaźni.
+To szczegółowa referencja procedur dla zmian kodu, testów, dokumentacji, konfiguracji i Git. Bieżący routing należy do `AGENTS.md`, a podstawowe zasady programowania do `AGENTS.codex.md`. Wczytaj ten dokument **w całości tylko wtedy, gdy zadanie wymaga szczegółowych procedur**, a stosuj wyłącznie właściwe sekcje; nie jest drugim konkurencyjnym zestawem instrukcji, pamięcią ani runtime Jaźni.
 
 Jeżeli zadanie dotyczy także hostowania lub weryfikacji runtime w ChatGPT, `AGENTS.chatgpt.md` obowiązuje równolegle wyłącznie dla tej odpowiedzialności. Jeżeli dotyczy integracji Ollamy, `AGENTS.ollama.md` jest źródłem kontraktu backendu, ale zmiany repozytoryjne nadal wykonuj według tego pliku.
 
@@ -9,14 +9,24 @@ Jeżeli zadanie dotyczy także hostowania lub weryfikacji runtime w ChatGPT, `AG
 Przed zmianą:
 
 1. wczytaj nadrzędny `AGENTS.md`;
-2. znajdź wszystkie głębiej położone `AGENTS.md` obejmujące modyfikowane pliki;
+2. znajdź i odczytaj odpowiednie, głębiej położone `AGENTS.md` oraz `AGENTS.override.md` obejmujące modyfikowane pliki;
 3. ustal jawny zakres zadania;
 4. nie rozszerzaj zmian na sąsiednie moduły bez potrzeby lub zgody użytkownika;
 5. jeżeli modyfikujesz `AGENTS*.md`, zachowaj rozdział odpowiedzialności: `AGENTS.md` pozostaje krótkim routerem, a szczegółowe procedury należą do właściwych runbooków;
 6. jeżeli zmieniasz strukturę repozytorium, publiczne entrypointy albo zależności, wczytaj `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`;
 7. jeżeli zmiana dotyka tożsamości, pamięci, afektu, continuity, self-state albo sposobu autorstwa odpowiedzi, wczytaj `docs/project/PROJECT_ASSUMPTIONS_AND_SCIENTIFIC_BOUNDARIES.md`.
 
-Bezpośrednie instrukcje systemowe, deweloperskie i użytkownika mają pierwszeństwo. Głębiej położone `AGENTS.md` mają pierwszeństwo w swoim poddrzewie.
+Bezpośrednie instrukcje systemowe, deweloperskie i użytkownika mają pierwszeństwo. Głębiej położone `AGENTS.md` i `AGENTS.override.md` mają pierwszeństwo w swoim poddrzewie.
+
+### 1.1. Selektywny odczyt repozytorium
+
+Najpierw **lokalizuj**, dopiero potem **wczytuj**. Oszczędzanie kontekstu nie może osłabiać kompletności analizy:
+
+1. Zidentyfikuj istotne ścieżki, symbole i zależności przez `git ls-files`, `rg --files`, `rg -n` lub GitHub Code Search. Przy discovery nie pobieraj pełnej treści wszystkich trafień.
+2. Wybierz najmniejszy kompletny zbiór: implementację, kontrakty, bezpośrednie zależności, konfigurację i odpowiednie testy. Rozszerz go w razie ujawnienia nowych zależności albo ryzyka regresji.
+3. Wybrane do analizy lub edycji pliki odczytaj **w całości, bez skrótów i przekształcania ich treści**. Gdy narzędzie obcina wynik, pobierz kolejne zakresy przed edycją. W raporcie pokaż tylko potrzebne wnioski i źródła, nie duplikuj długich logów narzędziowych.
+4. Nie ładuj zbiorczo historii Git, MEMORY, `workspace_runtime/`, baz, archiwów, binariów, eksportów i logów. Wczytaj je tylko, gdy są rzeczywiście wymagane i dozwolone. Nie powtarzaj odczytów niezmienionych plików.
+5. Nie ograniczaj liczby plików ani testów kosztem poprawności, integralności, continuity lub bezpieczeństwa. Przy nowym HEAD i zmienionych kontraktach odśwież wcześniej uzyskane dowody.
 
 ### Ważne dla Codex
 
@@ -56,9 +66,9 @@ git branch --show-current
 git rev-parse HEAD
 ```
 
-Pracuj na wskazanym branchu. Nie twórz, nie przełączaj ani nie usuwaj brancha bez potrzeby wynikającej z zadania. Utwórz backup albo bezpieczny punkt przywracania przed zmianą plików.
+Pracuj na wskazanym branchu. Nie twórz, nie przełączaj ani nie usuwaj brancha bez potrzeby wynikającej z zadania. Przy operacji niosącej ryzyko utraty danych lub historii przygotuj punkt przywracania; nie wykonuj zbędnych kopii przy rutynowych zmianach dokumentacji.
 
-Jeżeli zadanie dotyczy runtime, aktywacji, pamięci lub odpowiedzi Jaźni, wykonaj także, gdy lokalny executor jest dostępny:
+Jeżeli zadanie rzeczywiście wymaga oceny aktywnego runtime, MEMORY lub finalizacji, wykonaj właściwe kontrole odczytowe, o ile lokalny executor i instancja są zweryfikowane:
 
 ```bash
 python -X utf8 run.py status --snapshot --json
@@ -101,7 +111,7 @@ python -X utf8 -m latka_jazn.tools.release_metadata_sync \
   --root . --base-branch master --write --json
 ```
 
-Na pushu do `master`, `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może commitować wyłącznie `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` na ten sam branch. Pull request do `master` materializuje metadane do walidacji bez samodzielnego przesuwania headu PR. Nie commituj ręcznie samodzielnie obliczonych hashy. Po pushu sprawdź faktyczny wynik `manifest_sync`, idempotencję oraz wymagane CI; niesynchronizowany albo niezielony branch nie jest gotowym release candidate.
+Na pushu do `master`, `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgrade-*` job `manifest_sync` w workflow `release-hardening` może commitować wyłącznie `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` na ten sam branch. Pull request do `master` materializuje metadane do walidacji bez samodzielnego przesuwania headu PR. Nie commituj ręcznie samodzielnie obliczonych hashy. Po pushu sprawdź faktyczny wynik `manifest_sync`, idempotencję oraz wymagane CI **dla końcowego HEAD**, nie tylko poprzedniego commita. Gdy synchronizator zapisuje metadane z `[skip ci]`, required checks mogą pozostać `Pending`; świadomie uruchom kontrolę dla aktualnego SHA bez instrukcji pominięcia. Niesynchronizowany albo niezielony branch nie jest gotowym release candidate.
 
 ### Historyczne snapshoty testów
 
@@ -117,11 +127,16 @@ Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych.
 Dla samych instrukcji i dokumentacji:
 
 ```bash
-python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
 git diff --check
-
-Repo utrzymuje celowo ostrzejszy limit 5000 znaków dla tej instrukcji jako compatibility/headroom gate; nie zwiększaj go tylko dlatego, że bieżący interfejs może przyjąć więcej.
 ```
+
+Dodatkowo przy zmianach loadera ChatGPT, jego generatora lub routingu sprawdź limit tekstu:
+
+```bash
+python -X utf8 -c "from pathlib import Path; p=Path('docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt'); assert len(p.read_text(encoding='utf-8')) <= 5000"
+```
+
+Nie uruchamiaj tej kontroli bezwarunkowo przy każdej aktualizacji dokumentacji. To celowo ostrzejszy compatibility/headroom gate; nie zwiększaj go tylko dlatego, że interfejs może przyjąć więcej.
 
 Sprawdź także:
 - czy router wskazuje wyłącznie istniejące pliki;
