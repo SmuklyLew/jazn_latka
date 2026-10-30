@@ -99,3 +99,21 @@ def test_live_cli_exit_code_matches_reported_status(
         "--run-id", "run-synthetic", "--case", "chat-resume", "--model", "gemma3:latest",
     ])
     assert tpa_live.main() == exit_code
+
+
+@pytest.mark.parametrize(("verified", "exit_code"), [(True, 0), (False, 1)])
+def test_cleanup_cli_exit_code_matches_verified_inactivity(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+    verified: bool, exit_code: int,
+) -> None:
+    """The standalone cleanup uses `ok`, not a scenario `status` field."""
+    monkeypatch.setattr(tpa_live, "validate_staging", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(tpa_live, "cleanup", lambda *args, **kwargs: {
+        "ok": verified,
+        "reason": "own_daemon_inactive" if verified else "own_daemon_active",
+    })
+    monkeypatch.setattr(tpa_live.sys, "argv", [
+        "tpa_live", "--root", str(tmp_path), "--folder", str(tmp_path),
+        "--run-id", "run-synthetic", "--case", "chat-resume", "--cleanup",
+    ])
+    assert tpa_live.main() == exit_code
