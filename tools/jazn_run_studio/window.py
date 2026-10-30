@@ -363,7 +363,7 @@ class Window(QMainWindow):
         self.services_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.services_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.services_table.setMinimumWidth(0)
-        self.services_table.setMinimumHeight(230)
+        self.services_table.setMinimumHeight(350)
         self.service_rows = {}
         self.supervisor_observation: dict = {}
         self.memory_observed = False
@@ -423,7 +423,14 @@ class Window(QMainWindow):
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         self.processes.setMaximumHeight(150)
-        layout.addWidget(self.processes)
+        if self.unified_operator_mode:
+            # Raw JSON belongs in the bottom Technical pane, not among
+            # service actions. Keep this existing read-only sink for compatibility.
+            self.processes.hide()
+            self.button("Dane techniczne i historia usług w dolnym panelu",
+                        lambda: self.workspace.show(4), layout)
+        else:
+            layout.addWidget(self.processes)
 
     def selected_service(self) -> str:
         row = self.services_table.currentRow()
@@ -610,19 +617,31 @@ class Window(QMainWindow):
         self.execute_button = self.button("Wykonaj wybraną operację", self.execute_operation, layout)
         self.execute_button.setEnabled(False)
         self.studio_choice.currentIndexChanged.connect(self.reset_studio_operations)
-        layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
+        # Keep legacy tools available without occupying twelve vertical rows.
+        # Availability is explicit; launching is still the existing controller.
+        classic = QLabel("Klasyczne Studia (natywna migracja w toku)")
+        classic.setObjectName("workbenchCaption")
+        layout.addWidget(classic)
+        classic_row = QHBoxLayout()
+        self.classic_studio_choice = QComboBox()
+        self.classic_studio_choice.setAccessibleName("Wybór klasycznego Studio")
         for item in STUDIOS:
-            row = QHBoxLayout()
-            launch = self.button("Archiwalne / do przeglądu: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
             entry = (self.core.root / (item.entry[1].replace(".", "/") + ".py")
                      if item.entry[0] == "-m" else self.core.root / item.entry[0])
-            available = entry.is_file()
-            launch.setEnabled(available)
-            launch.setToolTip("Wymagany plik: " + str(entry))
-            note = QLabel(item.description + (" • plik dostępny" if available else " • brak pliku w tym SYSTEM"))
-            note.setWordWrap(True)
-            row.addWidget(note, 2)
-            layout.addLayout(row)
+            if entry.is_file():
+                self.classic_studio_choice.addItem(item.label, item.key)
+                self.classic_studio_choice.setItemData(
+                    self.classic_studio_choice.count() - 1, item.description,
+                    Qt.ItemDataRole.ToolTipRole,
+                )
+        classic_row.addWidget(self.classic_studio_choice, 1)
+        launch = self.button(
+            "Otwórz klasyczne Studio",
+            lambda: self.core.start_studio(str(self.classic_studio_choice.currentData())),
+            classic_row,
+        )
+        launch.setEnabled(self.classic_studio_choice.count() > 0)
+        layout.addLayout(classic_row)
         layout.addStretch()
 
     def _configuration(self) -> None:
