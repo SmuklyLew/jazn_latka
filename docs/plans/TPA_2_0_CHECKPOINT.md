@@ -2,6 +2,11 @@
 
 ## A. Tożsamość
 
+**Stan końcowy checkpointu: P0–P2 wdrożone; cały TPA 2.0 NIEUKOŃCZONY.**
+Brakuje kreatora P3 i rzeczywistych odbiorów opisanych poniżej. Kończymy nowe
+funkcje w celu zachowania rezerwy budżetu. Ostatni odczyt: 63% puli 300 minut,
+64% tygodnia. Nie utożsamiać tych wartości z limitem następnej sesji.
+
 - Repozytorium: SmuklyLew/jazn_latka.
 - Branch: `latka_work/tpa-2-auto-acceptance-history`.
 - Worktree: `D:\.AI\jazn_branchs\tpa-2-auto-acceptance-history`.
@@ -52,6 +57,10 @@ Etap II wypchnięty jako `13bd41bd` (kod) / `0cfd879bc8d67a4f66d6ab1a79eb650bbea
 (metadane); potwierdzono zgodność lokalnego i zdalnego SHA.
 Integracja CI .45: `88cd8639` (kod) / `b2b205cfae14fda4a037503b6b1c682be1520441`
 (metadane), również wypchnięte i potwierdzone.
+Etap III .46: `d4ff35b23178a070d26cf80b6218455f3264ed09` (kod) /
+`a9972b164256eaa3b513011c9f69103cf31c1170` (metadane), wypchnięte; lokalny
+i zdalny SHA sprawdzone jako zgodne. Następne commity obejmują raport checkpointu
+i jego kanoniczne metadane, bez zmian kodu wykonawczego.
 
 Naprawy integracyjne po odczycie rzeczywistego CI etapu I: zaktualizowano
 runtime_version kontraktu wdrożenia i version kontraktu startowego, wygenerowano
@@ -101,6 +110,53 @@ Oryginalne ręczne wyniki v1 pozostają w istniejącym „Starsze wyniki” i ni
 promowane do automatycznych wyników v2. Nie wymyślono migracji nieznanych schematów.
 
 ## C. Walidacja
+
+### Końcowe dowody kodu .46
+
+- **PASS: 149 passed, 1 skipped**, 67.68 s, TPA_EXIT=0, wszystkie aktywne
+  `test_jazn_tpa*.py` i `test_tpa_2*.py`, bez tests/archive. JUnit:
+  `D:\.AI\codex_tasks\tpa-2-committed-stage3-junit.xml`.
+  Wywołanie: jawny QApplication(offscreen), pytest -q <pliki> --tb=short,
+  własny --basetemp; PYTEST_DISABLE_PLUGIN_AUTOLOAD=1.
+- **PASS: Pyright Studio, 0 errors, 0 warnings**; osobno sprawdzono nowe testy.
+- **PASS: compileall aktywnego drzewa**, z wykluczeniem historycznego archive.
+- **PASS: doctor --json**, exit 0, ok=true; własny runtime/operator/MEMORY off.
+  Nie oznacza gotowości rozmowy ani uruchomionego daemona: system_fully_ready
+  pozostawało false w izolowanej diagnostyce. Raport:
+  `D:\.AI\codex_tasks\tpa-2-final-doctor.json`.
+- **PASS: package-smoke --profile system**, 15/15 kontroli, exit 0, ok=true.
+  Raport: `D:\.AI\codex_tasks\tpa-2-system-smoke.json`.
+- **PASS: niezależny metadata --check** dla a9972b16: synchronized=true,
+  manifest_matches=true, provenance_matches=true, source_commit=d4ff35b2.
+  Raport: `D:\.AI\codex_tasks\tpa-2-stage3-metadata-check.json`.
+- **PASS: docs_truth_audit i sync_contract_catalog --check**.
+- Pierwsza próba szerszej regresji: **FAIL, 10 failed, 578 passed, 4 skipped**,
+  zatrzymana przez --maxfail=10 po 26.45 s. 8 awarii: brak jawnie załadowanego
+  anyio.pytest_plugin przy wyłączonym autoload; 2 awarie syntetycznej MEMORY
+  spowodowane wymuszonym MEMORY=off w wywołaniu testów. Nie zmieniano testów
+  w celu ukrycia tych wyników. Poprawione wywołanie tych modułów:
+  **32 passed**, 12.04 s (`tpa-2-broad-corrected-junit.xml`).
+- Ostatnia szersza regresja z -p anyio.pytest_plugin, bez odziedziczonego
+  JAZN_MEMORY_MODE/ROOT, bez live_model/live_mcp/private_data, --maxfail=10:
+  **FAIL: 1 failed, 3539 passed, 31 skipped, 5 warnings**, 459.24 s,
+  BROAD_FINAL_EXIT=1; zestaw doszedł do końca. Nie osiągnięto limitu 10 awarii.
+  Awaria: `tests/test_mcp_http_cli_process_smoke.py::test_real_runpy_mcp_http_listener_and_catalog_are_responsive`
+  (linia 118), probe zwrócił `mcp_catalog_invalid_http_framing`, metadata_verified=false
+  i tool_catalog_verified=false. Nie wyłączono testu ani bramki. Nie ustalono,
+  czy jest to błąd bazowego master w tym środowisku; nie deklarować tego bez
+  porównania na izolowanym master z tym samym interpreterem i zależnościami.
+  Kod transportu MCP nie był zmieniany w tej gałęzi; kontrakt wersji był.
+  Log: `D:\.AI\codex_tasks\tpa-2-broad-final.log`;
+  JUnit: `D:\.AI\codex_tasks\tpa-2-broad-final-junit.xml`.
+  Ostrzeżenia: 4 historyczne deallocatory tkinter/Qt oraz celowy duplikat ZIP
+  w teście tamper. Nie traktować ostrzeżeń jako oddzielnie zaliczonych kontroli.
+- CI a9972b16 w ostatnim odczycie: 8 SUCCESS, 34 jeszcze bez końcowego wyniku,
+  brak zakończonego FAIL. Końcowy HEAD raportu wymaga osobnego odczytu CI.
+- **NOT RUN**: pełny plan na rzeczywistej Ollamie, fizyczne DPI/klawiatura,
+  offline EXE i pełny odbiór operatora. Istniejące testy Qt nie zastępują ich.
+
+Poniżej zachowano historię wcześniejszych etapów; jej wyniki dotyczą wskazanych
+stanów, nie stanowią automatycznej walidacji późniejszego SHA.
 
 - Etap III przed ostatnim utwardzeniem: **144 passed, 1 skipped**, 64.13 s.
 - Etap III z kontrolą kompletnych dowodów live: **148 passed, 1 skipped**,
@@ -160,15 +216,17 @@ wyłącznie do nowego venv. Nie instalowano nic do środowiska Jaźni.
   0 warnings**. Kontrakty runtime/PTY/wersji: **27 passed, 4 skipped**, 6.08 s.
   docs_truth_audit: **PASS**; sync_contract_catalog --check: **PASS**.
   CI końcowego SHA wymaga ponownego odczytu po pushu, wcześniejszy FAIL zachowano.
-- Pełne pytest, doctor, package-smoke i końcowe CI: jeszcze NOT RUN / CI w toku
+- Na etapie II pełne pytest, doctor, package-smoke i końcowe CI: NOT RUN / CI w toku
   dla wcześniejszego SHA. Nie stanowi to dowodu dla końcowego etapu II.
 - Fizyczne Windows/DPI/EXE, rzeczywista Ollama i pełny odbiór operatorski:
   NOT RUN; testy Qt offscreen nie zastępują tych odbiorów.
 
 ## D. Pozostałe prace
 
-1. Domknąć commit/push .46, metadane i ich niezależne sprawdzenie; odczytać
-   CI wyłącznie dla końcowego SHA. P0–P2 są wdrożone z opisanymi granicami.
+1. Zweryfikować końcowy HEAD tego raportu i jego metadane oraz CI. P0–P2 są
+   wdrożone z opisanymi granicami. Zdiagnozować FAIL framingu HTTP MCP:
+   najpierw powtórzyć wskazany pojedynczy test na izolowanym master i tej gałęzi
+   w tym samym venv; nie przypisywać go automatycznie zmianom TPA ani bazie.
 2. Rzeczywisty pełny plan live z lokalną Ollamą: NOT RUN. Brak testowego modelu
    oznacza BLOCKED poszczególnych live, a nie PASS. Nie ruszać obcej Ollamy/daemona.
 3. P3: kreator kolejnych półautomatycznych odbiorów,
@@ -190,7 +248,7 @@ cudzych zasobów. Pozostawiono testowy venv i raporty poza Git.
 Nie wykonywano reset/rebase/force-push/merge. Wymagane uprawnienia Git i
 testu dowiązań uzyskano przez mechanizm hosta, zgodnie z autoryzacją zadania.
 
-Ostatni odczyt: 48% całej puli 300 minut, 62% tygodnia. Minimum 30% puli musi
+Ostatni odczyt: 63% całej puli 300 minut, 64% tygodnia. Minimum 30% puli musi
 pozostać niewykorzystane. Sprawdź aktualny licznik przed wznowieniem; historyczny
 odczyt nie dowodzi stanu następnej sesji. Nie używano płatnych API ani agentów.
 
@@ -224,9 +282,15 @@ D:\.AI\jazn_branchs\tpa-2-auto-acceptance-history. Najpierw sprawdź licznik
 wykorzystania 300-minutowej puli i tygodnia; nie przekraczaj 70% całej puli,
 zostaw minimum 30%. Odczytaj AGENTS.md, AGENTS.codex.md, plan i checkpoint
 docs/plans/TPA_2_0_*.md. Potwierdź HEAD, czystość, zdalny SHA, PR i CI.
-Zachowaj wdrożoną trwałą historię i zbiorczy stan 22 scenariuszy. Implementuj
-następne etapy w kolejności P1 izolowane źródło master/SHA, P2 plan zależności
-i timeouty, P3 półautomatyczny kreator, następnie regresje i Draft PR do master.
+Zachowaj wdrożone P0–P2: trwałą historię, zbiorczy stan 22 scenariuszy,
+izolowane źródła master/SHA oraz trwałe plany zależności i timeouty.
+Nie implementuj ich ponownie. Odczytaj końcowe CI i wyniki regresji.
+Zapisana szersza regresja ma 3539 PASS, 31 SKIPPED i 1 FAIL:
+test_mcp_http_cli_process_smoke.py::test_real_runpy_mcp_http_listener_and_catalog_are_responsive,
+reason mcp_catalog_invalid_http_framing. Porównaj pojedynczy test na izolowanym
+master i tej gałęzi przed diagnozą; nie osłabiaj testu ani fail-closed.
+Następny etap funkcjonalny to brakujący półautomatyczny kreator P3, a potem
+rzeczywiste odbiory i końcowe bramki release. Draft PR #443 już istnieje do master.
 Używaj kanonicznego run.py → main.py i Controller/ChatClient; nie dodawaj
 lifecycle ani finalizatora. Nierozstrzygniętą turę wznawiaj z tym samym
 request_id. Nie dotykaj prywatnej MEMORY, aktywnych markerów i obcego daemona.

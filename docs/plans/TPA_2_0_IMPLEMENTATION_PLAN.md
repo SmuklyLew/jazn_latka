@@ -4,6 +4,12 @@
 Branch: `latka_work/tpa-2-auto-acceptance-history`.
 Praca wyłącznie w osobnym worktree; prywatna MEMORY i aktywne procesy pozostają poza zakresem.
 
+Stan checkpointu .94.6.46: etapy I–III / P0–P2 zaimplementowane i wypchnięte.
+TPA: 149 passed, 1 skipped; package-smoke system: 15/15; metadane sprawdzone
+niezależnie. Szersza regresja: 3539 passed, 31 skipped, 1 failed (HTTP MCP
+framing). Etap IV / kreator P3 oraz rzeczywiste odbiory pozostają nieukończone.
+Szczegółowe dowody i prompt wznowienia zawiera TPA_2_0_CHECKPOINT.md.
+
 1. **P0 / etap I**: niezmienne rewizje raportów, odzyskanie po przerwaniu zapisu,
    odbudowywalny zbiorczy stan 22 scenariuszy, oddzielna regresja/live/pełny odbiór,
    aktualność źródeł i weryfikacja dowodów. Domyślny widok zbiorczy, wybór run_id
