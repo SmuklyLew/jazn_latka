@@ -375,4 +375,9 @@ is pending. See `STUDIO_MIGRATION.md` for full parity status.
 
 ## Jaźń — Serce Systemu (.94.1)
 
-Main GUI launcher: `python -X utf8 run_studio.py`. The previous `jazn_run_studio.py` remains compatible. Default theme: **Jaźń Violet Night** (`violet-night`). main.py still owns CLI/TTY and runtime lifecycle. See `docs/reports/JAZN_HEART_SYSTEM_CHECKPOINT_1.md` for current evidence and outstanding gates.
+Main GUI launcher: `python -X utf8 run_studio.py`. The previous `jazn_run_studio.py` remains compatible. Default appearance: **Ciemny** (`dark`), with **Jasny** (`light`) as the other operator-facing profile. Older `violet-night`/`purple`/`custom`/`system` settings remain loadable; the GUI presents them as dark until an explicit save. Legacy theme names are not new selectable profiles. main.py still owns CLI/TTY and runtime lifecycle. See `docs/reports/JAZN_HEART_SYSTEM_CHECKPOINT_1.md` for current evidence and outstanding gates.
+
+
+## Dwa domyślne motywy operatora (WIP)
+
+Nowy interfejs operatora udostępnia **Ciemny** i **Jasny** z neutralnym tłem, wysokim kontrastem tekstu i ograniczonym akcentem sterowania. Dotyczy natywnego JSS i kreatora pierwszego uruchomienia. Historyczne nazwy w profilu są odczytywane bez jego automatycznego nadpisania; ręczny zapis przez operatora zapisuje jeden z dwóch obecnych wariantów. Klasyczne samodzielne okna nadal wymagają indywidualnego odbioru UI i parytetu funkcjonalnego. Zmiana motywu nie jest dowodem gotowości runtime ani TPA.
