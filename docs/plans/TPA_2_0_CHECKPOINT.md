@@ -1,5 +1,29 @@
 # TPA 2.0 — checkpoint
 
+## Aktualizacja 2026-10-30 — naprawa CI i rozdział odbiorów przed/po merge
+
+- Wysłano poprawkę P2: `PlanStore` wiąże checkpoint z SYSTEM przez
+  niejawny SHA-256 kanonicznej ścieżki, nie przez niezamaskowaną ścieżkę.
+  Redagowanie wartości operatora nie modyfikuje strukturalnych pól
+  `schema`, `plan_id`, `source_request.kind`, identyfikatorów i zależności kroków.
+  Starsze, prawidłowe checkpointy z pełną ścieżką nadal są czytane dla
+  zgodnego SYSTEM; nie akceptuje się checkpointu z innym rootem.
+- Dodano cztery **syntetyczne** testy regresyjne kolizji sekretów, uszkodzenia
+  identyfikatora SYSTEM, poufnych notatek i odczytu starszego formatu.
+  Samo dodanie testów nie dowodzi PASS. Poprzedni job Windows miał 2 FAIL
+  w `tests/test_tpa_2_execution_plan.py`; wymaga ponownego, rzeczywistego CI.
+- Wersja kodu patcha: `16.3.25.5.116.0.34.94.6.47-tpa-checkpoint-redaction-integrity`.
+  Wersję powiązano ze startup i deployment contract. Finalna synchronizacja
+  `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` wymaga
+  kanonicznego generatora; **nie wolno ręcznie fabrykować hashy**.
+- Na decyzję użytkownika rzeczywisty test **co najmniej dwóch tur Ollama** oraz
+  dalsze odbiory zależne od prawdziwego modelu/daemona wykonuje się
+  **po merge**. Przed merge należy skończyć kreator P3 i uzyskać możliwe
+  regresje/CI; odroczone odbiory pozostają NOT_RUN, nie PASS.
+- Patch jest stanem rozwojowym Draft PR, nie zielonym release i nie upoważnia
+  do merge. Pamięć prywatna, aktywny runtime oraz daemon pozostają nietknięte.
+
+
 ## A. Tożsamość
 
 **Stan końcowy checkpointu: P0–P2 wdrożone; cały TPA 2.0 NIEUKOŃCZONY.**
