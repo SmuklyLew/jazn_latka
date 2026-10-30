@@ -326,6 +326,10 @@ def main() -> int:
     else:
         result = exercise(args.root, folder, args.case, sys.executable, args.model)
     frame({"event": "result", **result})
+    # The cleanup contract reports {"ok": bool}, not {"status": "PASS"}.
+    # Keep process exit codes aligned with their respective result schemas.
+    if args.cleanup:
+        return 0 if result.get("ok") is True else 1
     return 0 if result.get("status") == "PASS" else 1
 
 
