@@ -1586,6 +1586,8 @@ class Window(QMainWindow):
             except (OSError, ValueError) as exc:
                 self.statusBar().showMessage("Nie zapisano układu: " + type(exc).__name__)
         self.timer.stop()
+        if hasattr(self, "visual_system"):
+            self.visual_system.shutdown()
         event.accept()
 
 

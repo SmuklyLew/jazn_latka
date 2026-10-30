@@ -183,6 +183,8 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                 window.resize(860, 580)
                 QTest.qWait(95)
                 page = window.pages.currentWidget()
+                if not isinstance(page, QScrollArea):
+                    raise AssertionError("minimum_viewport_not_scrollable:" + theme)
                 if (window.width() != 860 or window.height() != 580
                         or page.horizontalScrollBar().maximum() > 0):
                     raise AssertionError("minimum_viewport_overflow:" + theme)

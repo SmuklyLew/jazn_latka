@@ -86,3 +86,22 @@ i nie mogą być symulowane jako zaliczone.
 - https://pyinstaller.org/en/stable/
 - AGENTS.md, AGENTS.codex.md, docs/uiux/JSS_SCREEN_CONTRACTS.md
 - tools/jazn_run_studio/ACCEPTANCE.md
+
+
+## CI .40 — poprawki po diagnozie PR #442
+
+- Usunięto segment `../` z katalogu PNG: bezwzględna ścieżka na
+  katalog sąsiadujący z checkout jest obsługiwana przez `upload-artifact`.
+  Brak jakiegokolwiek raportu jest błędem uploadu, nie pozornym PASS.
+- `VisualSystem` używa jednorazowego timera należącego do instancji Qt.
+  Po **zaakceptowanym** zamknięciu `Window` zatrzymuje timer i usuwa
+  filtr zdarzeń z globalnego `QApplication`, ograniczając ryzyko wywołań
+  `reflow` po zniszczeniu widgetów. Dodano test cyklu życia GUI.
+- `visual_ci.py` sprawdza typ `QScrollArea` przed dostępem do
+  `horizontalScrollBar()`. Pełny Pyright pozostaje wymagany.
+- Twardy próg 5 sekund dla zdrowia runtime nie został poluzowany.
+  Problem wydajności Windows wymaga oddzielnego profilowania i
+  potwierdzonej poprawy, nie omijania testu.
+
+Zielony CI bieżącego HEAD jest wymagany przed uznaniem poprawki za
+zweryfikowaną. Te zmiany nie ingerują w MEMORY ani produkcyjny daemon.

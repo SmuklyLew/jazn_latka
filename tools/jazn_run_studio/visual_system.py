@@ -18,22 +18,43 @@ class VisualSystem(QObject):
         self.root = root
         self.metrics = METRICS
         self.reflow_pending = False
+        self._closed = False
+        # The queued callback belongs to this QObject, not an unscoped
+        # singleShot that could outlive the GUI test window.
+        self._reflow_timer = QTimer(self)
+        self._reflow_timer.setSingleShot(True)
+        self._reflow_timer.timeout.connect(self.reflow)
         app = QApplication.instance()
         if isinstance(app, QApplication):
             app.installEventFilter(self)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if self._closed:
+            return False
         if (event.type() in (QEvent.Type.Resize, QEvent.Type.Show)
                 and isinstance(watched, QWidget) and (watched is self.root or self.root.isAncestorOf(watched))
                 and not self.reflow_pending):
             self.reflow_pending = True
-            QTimer.singleShot(0, self.reflow)
+            self._reflow_timer.start(0)
         if (event.type() == QEvent.Type.Polish and isinstance(watched, QWidget)
                 and (watched is self.root or self.root.isAncestorOf(watched))):
             self.polish(watched)
         return False
 
+    def shutdown(self) -> None:
+        """Detach the global filter and cancel pending Qt work on accepted close."""
+        if self._closed:
+            return
+        self._closed = True
+        self._reflow_timer.stop()
+        self.reflow_pending = False
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            app.removeEventFilter(self)
+
     def reflow(self) -> None:
+        if self._closed:
+            return
         self.reflow_pending = False
         for form in self.root.findChildren(QFormLayout):
             form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
