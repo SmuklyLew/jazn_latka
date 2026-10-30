@@ -8,6 +8,8 @@ def visual_state(service: str, evidence: dict[str, Any]) -> str:
     if service == "runtime":
         if evidence.get("root_matches") is False or evidence.get("version_matches") is False:
             return "error"
+        if evidence.get("root_matches") is not True or evidence.get("version_matches") is not True:
+            return "unknown"
         if evidence.get("active_state") == "active_trusted" and all(
             evidence.get(k) is True for k in (
                 "endpoint_reachable", "process_identity_confirmed",

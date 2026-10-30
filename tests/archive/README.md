@@ -35,3 +35,5 @@ Additional append-only provenance:
 | `tests/test_jazn_tpa_staging_authority.py` from `16.3.25.5.116.0.34.94.6.26` before the BLOCKED exit-code contract update | `test_jazn_tpa_staging_authority_v16_3_25_5_116_0_34_94_6_26.py` | `f331d4233f30391d4c62b23546f09c4b0749a05a` |
 
 | `tests/test_heart_unified_operator_dock_qt.py` from `16.3.25.5.116.0.34.94.6.30` prior to sixth terminal tab | `test_heart_unified_operator_dock_qt_v16_3_25_5_116_0_34_94_6_30.py` | `2b005c6c824a09d0de0691faa9dfa05fb1d19103` |
+
+| `tests/test_jazn_service_visual_state.py` before ROOT/version truth-gate hardening in `16.3.25.5.116.0.34.94.6.33` | `test_jazn_service_visual_state_v16_3_25_5_116_0_34_94_6_33.py` | `cbc658ddf359089c8af94d44a4a00846c1d83390` |

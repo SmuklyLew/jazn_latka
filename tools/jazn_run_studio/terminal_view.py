@@ -20,6 +20,10 @@ class TerminalScreen(QPlainTextEdit):
         mono.setStyleHint(QFont.StyleHint.Monospace)
         self.setFont(mono)
 
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self.session.resize_terminal()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if self.session.pty.process is None:
             return super().keyPressEvent(event)
@@ -62,11 +66,31 @@ class InteractiveTerminal(QWidget):
         self.clock = QTimer(self)
         self.clock.timeout.connect(self.drain)
         self.clock.start(80)
+        self._dimensions: tuple[int, int] | None = None
+
+    def preferred_dimensions(self) -> tuple[int, int]:
+        return (
+            max(10, min(200, self.terminal_output.height() // 17)),
+            max(20, min(400, self.terminal_output.width() // 9)),
+        )
+
+    def resize_terminal(self) -> None:
+        if self.pty.process is None or self.pty.done:
+            return
+        dimensions = self.preferred_dimensions()
+        if dimensions == self._dimensions:
+            return
+        try:
+            self.pty.resize(*dimensions)
+        except (OSError, RuntimeError, ValueError) as exc:
+            self.status.setText("Zmiana rozmiaru PTY: " + type(exc).__name__)
+        else:
+            self._dimensions = dimensions
 
     def start(self) -> None:
         try:
-            self.pty.start(rows=max(10, min(200, self.terminal_output.height() // 17)),
-                           cols=max(20, min(400, self.terminal_output.width() // 9)))
+            self._dimensions = self.preferred_dimensions()
+            self.pty.start(rows=self._dimensions[0], cols=self._dimensions[1])
         except (OSError, RuntimeError, ValueError) as exc:
             self.status.setText("Nie uruchomiono: " + str(exc))
             return
@@ -95,6 +119,10 @@ class InteractiveTerminal(QWidget):
 
     def stop(self) -> None:
         self.pty.close()
+        # A new session is created only on the next explicit operator click.
+        self.pty = PtySession(self.pty.root)
+        self._dimensions = None
+        self.launch.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.status.setText("Zamknięto własny terminal; daemon pozostaje nietknięty")
 

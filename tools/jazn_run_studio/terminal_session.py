@@ -53,6 +53,8 @@ class PtySession:
             import pty
             self.master, slave = pty.openpty()
             try:
+                import termios
+                termios.tcsetwinsize(slave, (rows, cols))
                 self.process = subprocess.Popen(cmd, stdin=slave, stdout=slave, stderr=slave,
                                                 cwd=self.root, env=safe_env(self.root), shell=False,
                                                 close_fds=True, start_new_session=True)
@@ -86,6 +88,23 @@ class PtySession:
             self.error = type(exc).__name__
         finally:
             self.done = True
+
+    def resize(self, rows: int, cols: int) -> None:
+        """Resize only this operator-owned pseudo-terminal; never the daemon."""
+        if not (10 <= rows <= 200 and 20 <= cols <= 400):
+            raise ValueError("Niepoprawne wymiary PTY")
+        if self.process is None or self.done:
+            raise StudioError("Brak aktywnej sesji PTY")
+        if sys.platform == "win32":
+            setter = getattr(self.process, "setwinsize", None)
+            if not callable(setter):
+                raise StudioError("Backend WinPTY nie obsługuje zmiany rozmiaru")
+            setter(rows, cols)
+        else:
+            import termios
+            if self.master is None:
+                raise StudioError("Brak aktywnej sesji PTY")
+            termios.tcsetwinsize(self.master, (rows, cols))
 
     def read_available(self) -> list[str]:
         chunks = []
