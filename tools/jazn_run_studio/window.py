@@ -813,16 +813,18 @@ class Window(QMainWindow):
             self.fields[key] = field
             form.addRow(label, field)
         self.theme = QComboBox()
-        self.theme.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
-        self.theme.setCurrentText(self.core.settings.theme)
-        form.addRow("Motyw", self.theme)
+        self.theme.addItem("Ciemny", "dark")
+        self.theme.addItem("Jasny", "light")
+        self.theme.setCurrentIndex(max(0, self.theme.findData(self.core.settings.theme)))
+        form.addRow("Wygląd aplikacji", self.theme)
         self.profile_mode = QComboBox()
         self.profile_mode.addItem("Bez dodatkowego profilu", "off")
         self.profile_mode.addItem("Walidowany profil operator", "operator")
         self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
         form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
-        self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
+        # Two operator-facing defaults; older accent stays readable for compatibility.
+        self.theme.setToolTip("Dwa motywy: Ciemny i Jasny. Starsze profile migrują do Ciemnego.")
         self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
         self.button("Przywróć domyślne w formularzu", self.reset_settings_draft, layout)
@@ -864,7 +866,7 @@ class Window(QMainWindow):
         selected = QColorDialog.getColor(initial, self, "Kolor akcentu Jaźni")
         if selected.isValid():
             self.fields["accent"].setText(selected.name())
-            self.theme.setCurrentText("custom")
+            # Legacy accent stays within the chosen two-theme profile.
 
     def save_profile(self) -> None:
         if not self.profile_widgets:
@@ -877,7 +879,7 @@ class Window(QMainWindow):
 
     def save(self) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
-        data["theme"] = self.theme.currentText()
+        data["theme"] = str(self.theme.currentData())
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
         self.apply_settings(settings)
@@ -890,7 +892,7 @@ class Window(QMainWindow):
         self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
-        self.theme.setCurrentText(settings.theme)
+        self.theme.setCurrentIndex(max(0, self.theme.findData(settings.theme)))
         self.profile_mode.setCurrentIndex(1 if settings.runtime_profile == "operator" else 0)
         self.apply_theme()
         self.settings_baseline = self.settings_draft()
@@ -904,7 +906,8 @@ class Window(QMainWindow):
         from .visual_system import VisualSystem
         if not hasattr(self, "visual_system"):
             self.visual_system = VisualSystem(self)
-        self.visual_system.apply(self.core.settings.theme, self.core.settings.accent, system_dark=system_dark)
+        from .core import preferred_theme
+        self.visual_system.apply(preferred_theme(self.core.settings.theme), self.core.settings.accent, system_dark=system_dark)
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
@@ -1329,7 +1332,7 @@ class Window(QMainWindow):
 
     def settings_draft(self) -> dict[str, str]:
         values = {key: field.text().strip() for key, field in self.fields.items()}
-        values["theme"] = self.theme.currentText()
+        values["theme"] = str(self.theme.currentData())
         values["runtime_profile"] = str(self.profile_mode.currentData())
         return values
 
@@ -1343,7 +1346,7 @@ class Window(QMainWindow):
         defaults = Settings()
         for key, field in self.fields.items():
             field.setText(str(getattr(defaults, key)))
-        self.theme.setCurrentText(defaults.theme)
+        self.theme.setCurrentIndex(max(0, self.theme.findData(defaults.theme)))
         self.profile_mode.setCurrentIndex(0)
 
     def filter_settings(self, *_args: object) -> None:
@@ -1526,7 +1529,8 @@ def run_window(core: Controller, *, smoke: bool = False) -> int:
     splash = None
     if not smoke:
         from .workbench_theme import workbench_colors
-        colors = workbench_colors(core.settings.theme, core.settings.accent)
+        from .core import preferred_theme
+        colors = workbench_colors(preferred_theme(core.settings.theme), core.settings.accent)
         pixmap = QPixmap(540, 180)
         pixmap.fill(QColor(colors.background))
         splash = QSplashScreen(pixmap)
