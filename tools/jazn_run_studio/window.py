@@ -787,9 +787,21 @@ class Window(QMainWindow):
         labels["secrets_file"] = "Plik sekretów JSON (ignorowany przez Git)"
         for key, label in labels.items():
             field = QLineEdit(str(getattr(self.core.settings, key)))
+            if key == "model":
+                field.setReadOnly(True)
+                field.setToolTip("Nazwa tylko z listy wykrytych lokalnie modeli Ollama; nie wpisuj jej ręcznie.")
             field.setAccessibleName(label)
             self.fields[key] = field
             form.addRow(label, field)
+        self.settings_model_selector = QComboBox()
+        self.settings_model_selector.setEditable(False)
+        self.settings_model_selector.addItem("Wykryj zainstalowane modele…", "")
+        self.settings_model_selector.setAccessibleName("Wybierz zainstalowany model Ollama")
+        self.settings_model_selector.currentIndexChanged.connect(self.settings_model_selected)
+        form.addRow("Wybierz model z Ollamy", self.settings_model_selector)
+        model_refresh = QPushButton("Wykryj modele Ollama")
+        model_refresh.clicked.connect(lambda _checked=False: self.core.probe("ollama"))
+        form.addRow("Odśwież modele", model_refresh)
         self.theme = QComboBox()
         self.theme.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
         self.theme.setCurrentText(self.core.settings.theme)
@@ -819,6 +831,23 @@ class Window(QMainWindow):
         layout.addLayout(self.profile_form)
         self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
+
+    def settings_model_selected(self, _index: int) -> None:
+        selected = self.settings_model_selector.currentData()
+        if isinstance(selected, str) and selected:
+            self.fields["model"].setText(selected)
+
+    def set_settings_installed_models(self, names: object) -> None:
+        items = sorted({name for name in names if isinstance(name, str) and name.strip()}) if isinstance(names, list) else []
+        selected = self.fields["model"].text().strip()
+        self.settings_model_selector.blockSignals(True)
+        self.settings_model_selector.clear()
+        self.settings_model_selector.addItem("Wybierz zainstalowany model…" if items else "Brak dostępnych modeli", "")
+        for name in items:
+            self.settings_model_selector.addItem(name, name)
+        idx = self.settings_model_selector.findData(selected)
+        self.settings_model_selector.setCurrentIndex(idx if idx >= 0 else 0)
+        self.settings_model_selector.blockSignals(False)
 
     def fill_discovered_defaults(self) -> None:
         """Suggest detected executables only in empty draft fields; never start services."""
@@ -1053,6 +1082,9 @@ class Window(QMainWindow):
                         self.chat_model_selector.blockSignals(False)
                     if isinstance(names, list):
                         self.local_acceptance_panel.set_installed_models(names, self.core.settings.model)
+                        self.set_settings_installed_models(names)
+                        if self.setup_wizard is not None:
+                            self.setup_wizard.set_installed_models(names)
                     if not names:
                         self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
                     else:
@@ -1306,15 +1338,16 @@ class Window(QMainWindow):
             field.setText(str(getattr(defaults, key)))
         self.theme.setCurrentText(defaults.theme)
         self.profile_mode.setCurrentIndex(0)
+        self.settings_model_selector.setCurrentIndex(0)
 
     def filter_settings(self, *_args: object) -> None:
-        categories = {"python": "Środowisko", "mcp_python": "Środowisko", "ollama": "Modele",
+        categories = {"model_selector": "Modele", "python": "Środowisko", "mcp_python": "Środowisko", "ollama": "Modele",
                       "model": "Modele", "daemon_url": "Runtime", "mcp_port": "MCP",
                       "cloudflared": "Cloudflare", "tunnel_config": "Cloudflare", "tunnel_id": "Cloudflare",
                       "cloudflare_url": "Cloudflare", "secrets_file": "Bezpieczeństwo", "accent": "Wygląd"}
         query = self.settings_search.text().casefold().strip()
         category = self.settings_category.currentText()
-        widgets = {**self.fields, "theme": self.theme, "runtime_profile": self.profile_mode}
+        widgets = {**self.fields, "model_selector": self.settings_model_selector, "theme": self.theme, "runtime_profile": self.profile_mode}
         categories.update({"theme": "Wygląd", "runtime_profile": "Runtime"})
         for key, widget in widgets.items():
             label = self.settings_form.labelForField(widget)
