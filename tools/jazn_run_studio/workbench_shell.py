@@ -94,9 +94,10 @@ class WorkbenchShell(QObject):
         self.command("Widok", "Historia TPA i zadań", lambda: host.workspace.show(3))
         self.command("Widok", "Dane techniczne", lambda: host.workspace.show(4))
         self.command("Terminal", "Konsole zadań w dolnym panelu", lambda: host.workspace.show(2))
-        self.command("Terminal", "Otwórz interaktywną konsolę systemu", host.workspace.open_tty)
+        self.command("Terminal", "Otwórz PowerShell w osobnym oknie", host.workspace.open_system_terminal)
+        self.command("Terminal", "Otwórz lokalny czat Jaźni (run.py)", host.workspace.open_tty)
         self.command("Terminal", "Obsługa PTY / ConPTY", lambda: QMessageBox.information(
-            host, "Terminal", "Wbudowane konsole zadań nie obsługują TTY. Uruchom prawdziwą konsolę systemową z menu Terminal. Osadzone ConPTY/PTY wymaga jeszcze implementacji i testów P2."))
+            host, "Terminal", "Konsole zadań nie emulują terminala TTY. PowerShell uruchamia się w osobnym oknie. Wbudowany ConPTY/PTY wymaga osobnej implementacji oraz testów na Windows i Linux."))
         self.command("Usługi", "Panel usług", lambda: host.navigate("Usługi i procesy"))
         self.command("Usługi", "Sprawdź wszystkie usługi", host.refresh_services)
         for operation, label in (("start", "Start wybranej usługi"), ("stop", "Stop wybranej usługi"), ("restart", "Restart wybranej usługi")):
