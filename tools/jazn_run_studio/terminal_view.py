@@ -30,10 +30,10 @@ class TerminalScreen(QPlainTextEdit):
         if ctrl and key == Qt.Key.Key_V:
             self.session.send(QApplication.clipboard().text()[:8192])
             return
-        specials = {Qt.Key.Key_Enter: "\r", Qt.Key.Key_Return: "\r",
-                    Qt.Key.Key_Backspace: "\x7f", Qt.Key.Key_Up: "\x1b[A",
-                    Qt.Key.Key_Down: "\x1b[B", Qt.Key.Key_Left: "\x1b[D",
-                    Qt.Key.Key_Right: "\x1b[C", Qt.Key.Key_Tab: "\t"}
+        specials: dict[int, str] = {int(Qt.Key.Key_Enter): "\r", int(Qt.Key.Key_Return): "\r",
+                    int(Qt.Key.Key_Backspace): "\x7f", int(Qt.Key.Key_Up): "\x1b[A",
+                    int(Qt.Key.Key_Down): "\x1b[B", int(Qt.Key.Key_Left): "\x1b[D",
+                    int(Qt.Key.Key_Right): "\x1b[C", int(Qt.Key.Key_Tab): "\t"}
         if ctrl and key in (Qt.Key.Key_C, Qt.Key.Key_D):
             self.session.send("\x03" if key == Qt.Key.Key_C else "\x04")
         elif key in specials:
@@ -56,24 +56,24 @@ class InteractiveTerminal(QWidget):
         for widget in (self.launch, self.stop_button, self.status):
             actions.addWidget(widget)
         layout.addLayout(actions)
-        self.screen = TerminalScreen(self)
-        self.screen.setAccessibleName("Interaktywne wyjście lokalnego PTY")
-        layout.addWidget(self.screen)
+        self.terminal_output = TerminalScreen(self)
+        self.terminal_output.setAccessibleName("Interaktywne wyjście lokalnego PTY")
+        layout.addWidget(self.terminal_output)
         self.clock = QTimer(self)
         self.clock.timeout.connect(self.drain)
         self.clock.start(80)
 
     def start(self) -> None:
         try:
-            self.pty.start(rows=max(10, min(200, self.screen.height() // 17)),
-                           cols=max(20, min(400, self.screen.width() // 9)))
+            self.pty.start(rows=max(10, min(200, self.terminal_output.height() // 17)),
+                           cols=max(20, min(400, self.terminal_output.width() // 9)))
         except (OSError, RuntimeError, ValueError) as exc:
             self.status.setText("Nie uruchomiono: " + str(exc))
             return
         self.launch.setEnabled(False)
         self.stop_button.setEnabled(True)
         self.status.setText("PTY aktywne — pełny renderer VT/ANSI wymaga dalszych testów")
-        self.screen.setFocus()
+        self.terminal_output.setFocus()
 
     def send(self, text: str) -> None:
         try:
@@ -85,11 +85,11 @@ class InteractiveTerminal(QWidget):
         chunks = self.pty.read_available()
         if chunks:
             text = _ANSI.sub("", "".join(chunks)).replace("\r", "\n")
-            cursor = self.screen.textCursor()
+            cursor = self.terminal_output.textCursor()
             cursor.movePosition(QTextCursor.MoveOperation.End)
             cursor.insertText(text)
-            self.screen.setTextCursor(cursor)
-            self.screen.ensureCursorVisible()
+            self.terminal_output.setTextCursor(cursor)
+            self.terminal_output.ensureCursorVisible()
         if self.pty.error:
             self.status.setText(self.pty.error)
 

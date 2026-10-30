@@ -1,3 +1,4 @@
+# v116.0.34.94.6.32: Avoid QWidget.screen collision and type terminal Qt keys correctly.
 # v116.0.34.94.6.31: Persist sixth operator PTY tab safely in bounded layout v3.
 # v116.0.34.94.6.30: Local opt-in owned PTY/ConPTY panel, no daemon ownership changes.
 # v116.0.34.94.6.29: Shared operator dock, history and unified logs; no runtime authority changes.
@@ -168,7 +169,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.31"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.32"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (
