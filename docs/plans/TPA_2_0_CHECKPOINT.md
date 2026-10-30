@@ -1,5 +1,44 @@
 # TPA 2.0 — checkpoint
 
+## Aktualizacja 2026-10-30 — naprawa szerokości TPA i profilowanie SLA .94.6.49
+
+- Na podstawie CI dla SHA `3e8cfdd39fa644c60eeea8172f6cc1e08d6d0833`
+  stwierdzono 3 czerwone workflowy: `jazn-run-studio`,
+  `JSS Visual & Integration CI` oraz `powershell-terminal-regressions`.
+  Dwa pierwsze wskazują na ten sam kontrakt: Windows 860×580,
+  poziomy zakres scrolla TPA 264 px (wymagane 0). Trzeci: izolowany
+  health-check trwał 5.3566 s przy niezmienionej asercji `< 5 s`.
+- Przeniesiono przełącznik świadomego włączenia Ollama/live do
+  **domyślnie ukrytej sekcji "Środowisko i model…"**, bez trzeciej
+  kolumny i bez trzeciego wiersza akcji głównego panelu.
+  Domyślny plan nadal nie uruchamia prawdziwego modelu.
+- Dodano test Qt dostępności przełącznika poprzez klawiaturę,
+  z zachowaniem stanu po zwinięciu ustawień. **Nie zmieniano istniejących
+  asercji** dla szerokości, wysokości ani obsługi klawiatury.
+- Przeanalizowano historyczne pomiary: `total_execution_time` 4969 ms
+  przy 5356,6 ms całego testu; krótkie oznaczone etapy nie
+  tłumaczą około 5 s całej tury. Analogiczne przekroczenia były
+  zgłaszane także we wcześniejszych release bez zmian health path.
+  **Źródło opóźnienia nadal nie jest potwierdzone.**
+- Wprowadzono *opt-in* `JAZN_TURN_LATENCY_DIAGNOSTICS=1` wyłącznie
+  w izolowanym Windows kroku health-check; pięć numerycznych etapów
+  potoku w telemetrii ma pomóc określić koszt przygotowania, routingu,
+  generowania, walidacji i finalizacji. Żadnych tekstów użytkownika,
+  prywatnej MEMORY ani identyfikatorów/ścieżek. Asercja `<5 s`,
+  finalizacja i semantyczne zapisy bez zmian.
+- Dodano syntetyczny test włączonej i wyłączonej telemetrii.
+  Wersja bieżącego patcha:
+  `16.3.25.5.116.0.34.94.6.49-tpa-compact-health-profiling`.
+- Na tym hoście dwie ograniczone próby uruchomienia procesu
+  zakończyły się `ClientError` **przed startem**: brak lokalnego
+  uruchomienia pytest i **brak kanonicznej synchronizacji manifestu
+  i provenance w branchu**. Nie wolno zastępować ich ręcznymi hashami;
+  PR CI aktualizuje metadane tylko w tymczasowym checkoutcie.
+- CI nowego SHA wymaga rzeczywistego potwierdzenia. PR Draft;
+  rzeczywiste tury Ollama i operatorowe odbiory live pozostają
+  do wykonania dopiero po merge.
+
+
 ## Aktualizacja 2026-10-30 — naprawa 4 nieudanych checków Windows
 
 - Sprawdzono rzeczywiste logi dla PR #443 / SHA `ecd2536e1747030d4dde8f7edc25fb3f4636681c`:
