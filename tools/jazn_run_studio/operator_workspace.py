@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox, QComboBox, QDockWidget, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
     QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTabWidget, QTreeWidget, QTreeWidgetItem,
-    QVBoxLayout, QWidget,
+    QVBoxLayout, QWidget, QHeaderView,
 )
 from .core import ACTIONS, python_executable, StudioError
 from .problem_guidance import explain_failure
@@ -79,12 +79,14 @@ class OperatorWorkspace:
         self._problems()
         self._output()
         self._terminal()
+        self._history()
+        self._technical()
         self.last_output = ""
         self._last_jobs = ""
         self.dock.visibilityChanged.connect(self.dock_visibility_changed)
 
     def dock_visibility_changed(self, visible: bool) -> None:
-        if visible:
+        if visible and not self.host.unified_operator_mode:
             self.host.set_logs_visible(False)
 
     def _problems(self) -> None:
@@ -144,7 +146,7 @@ class OperatorWorkspace:
     def _terminal(self) -> None:
         panel = QWidget()
         layout = QVBoxLayout(panel)
-        note = QLabel("Konsole zadań korzystają z istniejących poleceń Jaźni. Pełny terminal TTY otwiera osobne okno Windows.")
+        note = QLabel("Konsole zadań uruchamiają istniejące operacje. Nie są emulatorem PTY; prawdziwa konsola systemowa uruchamia się osobno.")
         note.setWordWrap(True)
         layout.addWidget(note)
         row = QHBoxLayout()
@@ -156,22 +158,20 @@ class OperatorWorkspace:
         preset.clicked.connect(self.three_consoles)
         row.addWidget(preset)
         layout.addLayout(row)
-        self.consoles_splitter = QSplitter(Qt.Orientation.Vertical)
+        # Independent full-height tabs avoid stacking three cramped outputs.
+        # A true ConPTY/PTY widget is a distinct lifecycle feature.
+        self.consoles_splitter = QTabWidget()
+        self.consoles_splitter.setAccessibleName("Konsole zadań")
         self.consoles: list[TaskConsole] = []
         self.three_consoles()
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(self.consoles_splitter)
-        scroll.setMinimumHeight(100)
-        layout.addWidget(scroll)
-        self.tabs.addTab(panel, "Terminal / Konsole")
+        layout.addWidget(self.consoles_splitter)
+        self.tabs.addTab(panel, "Konsole zadań")
 
     def three_consoles(self) -> None:
         while len(self.consoles) < 3:
             console = TaskConsole(self.host, len(self.consoles) + 1)
             self.consoles.append(console)
-            self.consoles_splitter.addWidget(console)
-        self.consoles_splitter.setSizes([160, 160, 160])
+            self.consoles_splitter.addTab(console, f"Konsola {len(self.consoles)}")
 
     def open_tty(self) -> None:
         if os.name != "nt":
@@ -188,8 +188,13 @@ class OperatorWorkspace:
         self.dock.raise_()
         self.tabs.setCurrentIndex(tab)
         # Do not stack two independent log panes across the entire viewport.
-        self.host.set_logs_visible(False)
+        if not self.host.unified_operator_mode:
+            self.host.set_logs_visible(False)
         self.host.resizeDocks([self.dock], [max(240, self.host.height() // 3)], Qt.Orientation.Vertical)
+        if tab == 3:
+            self.refresh_history()
+        elif tab == 4:
+            self.refresh_technical()
 
     def observe(self, key: str, kind: str, value: Any) -> None:
         if kind in {"evidence", "probe"} and isinstance(value, dict):
