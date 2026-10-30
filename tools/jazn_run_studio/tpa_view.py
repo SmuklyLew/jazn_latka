@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import time
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFileDialog, QGridLayout,
+from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFileDialog, QGridLayout,
     QHeaderView, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
     QPlainTextEdit, QProgressBar, QPushButton, QSplitter, QTableWidget,
     QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget)
@@ -126,6 +126,10 @@ class TPAPanel(QWidget):
         self.auto_cancel = self.button("Zatrzymaj", self.stop_work)
         for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
             actions.addWidget(widget, i // 2, i % 2)
+        self.live_plan = QCheckBox("Włącz rzeczywiste testy live (dopiero po merge)")
+        self.live_plan.setAccessibleName("Jawna zgoda na uruchomienie izolowanych testów live")
+        self.live_plan.setToolTip("Domyślnie plan wykonuje tylko syntetyczne regresje; bez Ollama i startu daemona.")
+        actions.addWidget(self.live_plan, 2, 0, 1, 2)
         layout.addLayout(actions)
         self.auto_status = QLabel("PASS podtestu potwierdza zakres regresji. Pełny odbiór ma osobny wynik.")
         self.auto_status.setWordWrap(True)
@@ -371,9 +375,12 @@ class TPAPanel(QWidget):
     def run_automatic_plan(self) -> None:
         self.runner.python = self.python_field.text().strip()
         self.history_mode = False
+        live_requested = self.live_plan.isChecked()
+        if live_requested and not self.model.currentData():
+            raise ValueError("Dla rzeczywistego planu live wybierz zainstalowany model Ollama.")
         self.plan_runner.start(tuple(r["id"] for r in self.rows),
             source={"kind": self.source_kind.currentData(), "value": self.source_value.text().strip()},
-            model=self.model.currentData() or "")
+            model=self.model.currentData() or "", regression_only=not live_requested)
         self.tabs.setCurrentIndex(self.tabs.indexOf(self.plan_page))
         self.plan_changed()
 
@@ -514,7 +521,7 @@ class TPAPanel(QWidget):
         self.auto_cancel.setEnabled(active)
         self.resume_plan_button.setEnabled(not active and bool(self.plan_history.currentData()))
         self.checkpoint_button.setEnabled(self.plan_runner.plan is not None)
-        for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value):
+        for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value, self.live_plan):
             widget.setEnabled(not active)
         for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
             button.setEnabled(not active and self.report is not None and bool(self.report.get("finished_utc")))
