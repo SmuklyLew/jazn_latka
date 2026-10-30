@@ -67,3 +67,45 @@ def test_pass_of_isolated_scenario_does_not_promote_manual_gate(panel):
     assert panel.full_gate_description("PASS") == "PASS"
     # Display helper does not mutate stored status or any acceptance report.
     assert panel.report is None
+
+
+from tests.test_jazn_run_studio_layout import window  # noqa: E402
+
+
+def test_settings_model_must_be_chosen_from_discovered_list(window):
+    assert window.fields["model"].isReadOnly()
+    assert not window.settings_model_selector.isEditable()
+    window.set_settings_installed_models(["gemma3:latest", "mistral:latest"])
+    assert window.settings_model_selector.findData("gemma3:latest") >= 0
+    window.settings_model_selector.setCurrentIndex(
+        window.settings_model_selector.findData("gemma3:latest")
+    )
+    assert window.fields["model"].text() == "gemma3:latest"
+    window.set_settings_installed_models([])
+    assert window.settings_model_selector.currentData() == ""
+
+
+def test_readable_report_distinguishes_passed_execution_and_unperformed_full_gate():
+    from tools.jazn_run_studio.tpa_reports import readable_report
+
+    report = {
+        "run_id": "run-" + "a" * 32,
+        "source": {"version": "synthetic"},
+        "python": sys.executable,
+        "started_utc": "2026-10-30T00:00:00Z",
+        "finished_utc": "2026-10-30T00:01:00Z",
+        "results": [{
+            "status": "PASS", "title": "Wznowienie tury",
+            "expected": "Exactly one final", "reason": "accepted and acknowledged",
+            "full_gate": "NOT_RUN",
+        }],
+        "coverage_map": [{
+            "id": "chat-resume", "title": "Wznowienie tury",
+            "execution_status": "PASS", "full_gate": "NOT_RUN",
+            "limitations": "Synthetic fixture.",
+        }],
+    }
+    text = readable_report(report)
+    assert "PASS • Wznowienie tury" in text
+    assert "Pełna bramka: NOT_RUN — osobny odbiór operatorski do wykonania" in text
+    assert report["results"][0]["full_gate"] == "NOT_RUN"
