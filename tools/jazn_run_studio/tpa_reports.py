@@ -128,11 +128,14 @@ def junit_result(path: Path, exit_code: int, redactor: Redactor) -> tuple[dict, 
 
 def summary(report: dict) -> dict:
     counts = dict(Counter(row["status"] for row in report["results"]))
-    good = [r["title"] for r in report["results"] if r["status"] == "PASS"]
+    good = [r["title"] for r in report["results"] if r.get("full_gate") == "PASS"]
+    subsets = [r["title"] for r in report["results"] if r["status"] == "PASS" and r.get("full_gate") != "PASS"]
     bad = [r["title"] for r in report["results"] if r["status"] in {"FAIL", "TIMEOUT"}]
     unknown = [r["title"] + ": " + r.get("reason", "nie ustalono") for r in report["results"]
                if r["status"] not in {"PASS", "FAIL", "TIMEOUT"}]
-    return {"counts": counts, "dziala": good, "nie_dziala": bad, "nie_sprawdzono": unknown,
+    return {"counts": counts, "full_gate_counts": dict(Counter(r.get("full_gate", "NOT_RUN") for r in report["results"])),
+            "dziala": good, "zaliczony_zakres_bez_pelnego_odbioru": subsets,
+            "nie_dziala": bad, "nie_sprawdzono": unknown,
             "co_dalej": "Otwórz szczegóły blokad, przygotuj wskazane zasoby i uruchom ponownie wybrane pozycje. Podtest PASS nie zalicza pełnego odbioru."}
 
 

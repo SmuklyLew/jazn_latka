@@ -20,6 +20,8 @@ from .core import Controller, Settings
 from .probes import ollama
 from .tpa_catalog import LIVE_CASES, TARGETS, scenario
 from .tpa_reports import redact
+from .tpa_reports import safe_child
+from .tpa_paths import TOKEN_ENV, validate_staging
 
 
 def frame(value: dict) -> None:
@@ -28,14 +30,16 @@ def frame(value: dict) -> None:
 
 def cleanup(folder: Path, python: str) -> dict:
     """Read-only identity observation before stopping only a run-owned staging."""
-    owner = folder / "owner.json"
+    owner = safe_child(folder, "owner.json")
+    for name in ("SYSTEM", "runtime", "memory", "operator"):
+        safe_child(folder, name)
     if not owner.exists():
         return {"ok": True, "reason": "daemon_not_started"}
-    if owner.is_symlink() or owner.stat().st_size > 4096:
+    if not owner.is_file() or owner.stat().st_size > 4096:
         raise ValueError("Nieprawidłowy dowód własności testowego daemona")
     saved = json.loads(owner.read_text(encoding="utf-8"))
     stage = folder / "SYSTEM"
-    if saved.get("root") != str(stage.resolve()) or not stage.is_dir() or stage.is_symlink():
+    if not isinstance(saved, dict) or saved.get("root") != str(stage.resolve()) or not stage.is_dir():
         raise ValueError("Niezgodny katalog właściciela daemona")
     os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"),
                       JAZN_MEMORY_ROOT=str(folder / "memory"), JAZN_MEMORY_MODE="off",
@@ -53,7 +57,8 @@ def cleanup(folder: Path, python: str) -> dict:
                 and evidence.get("endpoint_identity_matches") is True
                 and evidence.get("version_matches") is True and evidence.get("heartbeat_fresh") is True
                 and isinstance(evidence.get("instance_id"), str) and bool(evidence["instance_id"])
-                and (saved.get("instance_id") is None or evidence.get("instance_id") == saved.get("instance_id"))):
+                and isinstance(saved.get("instance_id"), str) and bool(saved["instance_id"])
+                and evidence.get("instance_id") == saved["instance_id"]):
             return {"ok": False, "reason": "Nie potwierdzono własnej instancji; odmowa stop obcego daemona."}
         stopped = core.start_action("stop")
         return {"ok": stopped.done.wait(45) and stopped.state == "succeeded", "reason": stopped.error or "canonical_stop"}
@@ -253,7 +258,8 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
             clean = {"ok": False, "reason": type(exc).__name__}
         evidence["cleanup"] = clean
         if not clean["ok"]:
-            status, reason = "BLOCKED", "Nie potwierdzono sprzątnięcia własnego daemona: " + clean["reason"]
+            status = "BLOCKED"
+            reason += " Nie potwierdzono sprzątnięcia własnego daemona: " + clean["reason"]
     return {"status": status, "reason": reason, "evidence": evidence}
 
 
@@ -261,14 +267,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--folder", required=True, type=Path)
-    parser.add_argument("--case")
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--case", required=True)
     parser.add_argument("--model", default="")
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--sandbox", action="store_true")
     args = parser.parse_args()
-    folder = args.folder.resolve()
-    if not folder.is_dir() or folder == args.root.resolve() or folder.is_relative_to(args.root.resolve()):
-        raise ValueError("Niepoprawny katalog odbioru")
+    try:
+        folder = validate_staging(args.root, args.folder, args.run_id, args.case,
+                                  os.environ.get(TOKEN_ENV, ""), cleaning=args.cleanup)
+    except (OSError, ValueError) as exc:
+        frame({"event": "result", "status": "BLOCKED", "reason": "Odmowa walidacji katalogu odbioru: " + str(exc),
+               "pre_start_rejected": not args.cleanup,
+               "evidence": {"cleanup": {"ok": not args.cleanup, "reason": "daemon_not_started" if not args.cleanup else "validation_rejected"}}})
+        return 1
     if args.cleanup:
         result = cleanup(folder, sys.executable)
     elif args.sandbox:

@@ -1,4 +1,32 @@
-# TPA — wykonanie i granice dowodów (.94.6.17)
+# TPA — wykonanie i granice dowodów (.94.6.21)
+
+## Uprawnienia stagingu P0
+
+Katalog `.settings_local/acceptance/operator/.../run-.../live-CASE` jest
+dozwolony wyłącznie przez istniejący walidator ścieżek operatora i świeże,
+jednorazowe uprawnienie TPA związane z ROOT, run_id, scenariuszem i dokładnym
+katalogiem. Kolejka przekazuje run_id oraz case w argumentach; losowe uprawnienie
+trafia wyłącznie do środowiska procesu, poza logowanym poleceniem i eksportem.
+Start wymaga pustego katalogu i uprawnienia nie starszego niż 15 minut.
+Cleanup dopuszcza wznowienie tego samego uprawnienia przez 24 godziny; później
+odmawia automatycznej operacji. Odmowa zachowuje staging do diagnostyki.
+Dowiązania/junction, traversal, cudze przebiegi i ponowne użycie katalogu
+są odrzucane. Brak owner.json oznacza, że nie ma daemona do zatrzymania.
+Zatrzymanie aktywnej instancji wymaga także zapisanego, zgodnego instance_id
+oraz kanonicznych dowodów ROOT/procesu/endpointu/wersji/heartbeat.
+
+`live` uruchamia rzeczywisty odbiór daemona bez `--sandbox`.
+`sandbox` otwiera izolowany interfejs z `--sandbox`; jego zakres jest zapisany
+jako `isolated_studio_workflow`, a nie odbiór runtime. Błąd walidacji przed
+startem zachowuje pierwotną przyczynę i nie uruchamia zbędnego cleanup.
+Przy późniejszym błędzie cleanup dopisuje własną blokadę do pierwotnej przyczyny.
+Historyczne stagingi nie są kasowane ani automatycznie przejmowane.
+
+Podsumowanie raportu rozdziela licznik wykonania i `full_gate_counts`.
+Pole `dziala` wymaga `full_gate=PASS`; sam PASS wykonanego zakresu trafia do
+`zaliczony_zakres_bez_pelnego_odbioru`. Żaden podtest nie zatwierdza sam pełnej
+funkcjonalności. Nowy kontrakt chronią testy `test_jazn_tpa_staging_authority.py`
+na Windows/Linux w macierzy CI. Dotychczasowe testy pozostają bez zmian.
 
 TPA uruchamia podtesty w wybranym zewnętrznym Pythonie, poza wątkiem GUI.
 Wybierz **Sprawdź gotowość**, zaznacz wiersze i **Uruchom zaznaczone** albo

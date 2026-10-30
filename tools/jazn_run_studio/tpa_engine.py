@@ -16,6 +16,7 @@ from .core import Redactor
 from .external import environment
 from .tpa_catalog import LIVE_CASES, execution_map, scenario
 from .tpa_reports import RunStore, junit_result, redact, safe_child, utc
+from .tpa_paths import TOKEN_ENV, issue_staging
 
 TIMEOUT_MS = 180_000
 MAX_OUTPUT = 4 * 1024 * 1024
@@ -233,15 +234,26 @@ class TPARunner(QObject):
         assert self.temp is not None
         if self.execution in {"live", "sandbox"}:
             self.phase, self.live_result = "live", {}
-            self.live_folder = safe_child(self.store.folder(self.report["run_id"]), "live-" + row["case_id"])
-            self.live_folder.mkdir(exist_ok=False)
+            try:
+                self.live_folder, token = issue_staging(self.root, self.store.folder(self.report["run_id"]), row["case_id"])
+            except (OSError, ValueError) as exc:
+                row.update(status="BLOCKED", reason="Odmowa przygotowania katalogu TPA: " + self.redactor.text(str(exc)))
+                self._save()
+                self.changed.emit()
+                QTimer.singleShot(0, self._next)
+                return
+            child_env = self.process.processEnvironment()
+            child_env.insert(TOKEN_ENV, token)
+            self.process.setProcessEnvironment(child_env)
             self.log_name = row["case_id"] + ".log"
             args = ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.root),
-                    "--folder", str(self.live_folder), "--case", row["case_id"], "--model", self.model]
+                    "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
+                    "--case", row["case_id"], "--model", self.model]
             if self.execution == "sandbox":
                 args.append("--sandbox")
             row.update(status="RUNNING", reason="Rzeczywisty odbiór w nowym stagingu; nie dotyka aktywnego daemona.",
-                       started_utc=utc(), command=[self.python, *args], coverage="real_runtime_acceptance")
+                       started_utc=utc(), command=[self.python, *args],
+                       coverage="isolated_studio_workflow" if self.execution == "sandbox" else "real_runtime_acceptance")
             if not self._save():
                 self.stop()
                 QTimer.singleShot(0, self._next)
@@ -316,12 +328,18 @@ class TPARunner(QObject):
             self._probe_done(probe)
             return
         if self.phase == "live":
+            assert self.report is not None
             self.live_exit_code = code
+            if self.live_result.get("pre_start_rejected") is True:
+                self.cleanup_result = {"ok": True, "reason": "daemon_not_started"}
+                self._live_done(0)
+                return
             self.phase, self.cleanup_result = "cleanup", {}
             self.progress.emit("Weryfikuję sprzątnięcie wyłącznie własnego daemona testowego…")
             self.timer.start(100_000)
             self.process.start(self.python, ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.root),
-                                             "--folder", str(self.live_folder), "--cleanup"])
+                                             "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
+                                             "--case", self.report["results"][self.index]["case_id"], "--cleanup"])
             return
         if self.phase == "cleanup":
             self._live_done(code)
@@ -341,7 +359,8 @@ class TPARunner(QObject):
         if status == "PASS" and getattr(self, "live_exit_code", -1) != 0:
             status, reason = "FAIL", "Proces odbioru zakończył się niezerowym kodem wyjścia; wynik PASS nie jest wiarygodny."
         if code or self.cleanup_result.get("ok") is not True:
-            status, reason = "BLOCKED", "Nie potwierdzono bezpiecznego sprzątnięcia. Zachowano własny staging i dowód właściciela."
+            status = "BLOCKED"
+            reason += " Nie potwierdzono bezpiecznego sprzątnięcia. Zachowano własny staging i dowód właściciela."
         row.update(status=status, reason=reason, exit_code=getattr(self, "live_exit_code", -1), cleanup_exit_code=code,
                    duration_seconds=round(time.monotonic() - self.started, 3),
                    finished_utc=utc(), full_gate="NOT_RUN", log=self.log_name)
