@@ -39,7 +39,7 @@ jobs:
       JAZN_ALLOW_NETWORK: "0"
       JAZN_DICTIONARY_ALLOW_NETWORK: "0"
       JAZN_MODEL_ADAPTER: "null"
-      JSS_VISUAL_DIR: ${{ runner.temp }}/jss-visual-evidence
+      JSS_VISUAL_DIR: ${{ github.workspace }}/../jss-visual-evidence
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
