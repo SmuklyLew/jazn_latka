@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.25",
-  "active_definition_count": 2922,
+  "system_version": "16.3.25.5.116.0.34.94.6.26",
+  "active_definition_count": 2927,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19743,6 +19743,83 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 143
+    },
+    "tests/test_heart_light_dark_operator_qt.py::test_two_operator_defaults_and_safe_legacy_presentation": {
+      "path": "tests/test_heart_light_dark_operator_qt.py",
+      "name": "test_two_operator_defaults_and_safe_legacy_presentation",
+      "purpose": "Two operator defaults and safe legacy presentation",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_heart_light_dark_operator_qt.py::test_light_and_dark_visual_contracts_keep_text_readable": {
+      "path": "tests/test_heart_light_dark_operator_qt.py",
+      "name": "test_light_and_dark_visual_contracts_keep_text_readable",
+      "purpose": "Light and dark visual contracts keep text readable",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_heart_light_dark_operator_qt.py::test_window_only_offers_two_named_appearances": {
+      "path": "tests/test_heart_light_dark_operator_qt.py",
+      "name": "test_window_only_offers_two_named_appearances",
+      "purpose": "Window only offers two named appearances",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_heart_light_dark_operator_qt.py::test_operator_tab_and_height_are_bounded_and_backward_compatible": {
+      "path": "tests/test_heart_light_dark_operator_qt.py",
+      "name": "test_operator_tab_and_height_are_bounded_and_backward_compatible",
+      "purpose": "Operator tab and height are bounded and backward compatible",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_heart_light_dark_operator_qt.py::test_selected_service_cell_widget_keeps_contrast_in_both_modes": {
+      "path": "tests/test_heart_light_dark_operator_qt.py",
+      "name": "test_selected_service_cell_widget_keeps_contrast_in_both_modes",
+      "purpose": "Selected service cell widget keeps contrast in both modes",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
     },
     "tests/test_heart_service_visual_readability_qt.py::test_selected_service_labels_remain_readable_and_rows_are_compact": {
       "path": "tests/test_heart_service_visual_readability_qt.py",
