@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.19",
-  "active_definition_count": 2900,
+  "system_version": "16.3.25.5.116.0.34.94.6.24",
+  "active_definition_count": 2919,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19744,6 +19744,23 @@
       "description_source": "source_identity",
       "line": 143
     },
+    "tests/test_heart_service_visual_readability_qt.py::test_selected_service_labels_remain_readable_and_rows_are_compact": {
+      "path": "tests/test_heart_service_visual_readability_qt.py",
+      "name": "test_selected_service_labels_remain_readable_and_rows_are_compact",
+      "purpose": "Selected service labels remain readable and rows are compact",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
     "tests/test_heart_studio_operator_diagnostics.py::test_connection_refused_and_timeout_are_not_generic_urlerror": {
       "path": "tests/test_heart_studio_operator_diagnostics.py",
       "name": "test_connection_refused_and_timeout_are_not_generic_urlerror",
@@ -20843,6 +20860,102 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 40
+    },
+    "tests/test_heart_visual_system_qt.py::test_all_profiles_have_readable_text_selection_status_and_focus": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_all_profiles_have_readable_text_selection_status_and_focus",
+      "purpose": "All profiles have readable text selection status and focus",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_heart_visual_system_qt.py::test_theme_covers_all_pages_tables_and_new_parented_dialogs": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_theme_covers_all_pages_tables_and_new_parented_dialogs",
+      "purpose": "Theme covers all pages tables and new parented dialogs",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_heart_visual_system_qt.py::test_menus_palette_tabs_and_keyboard_use_existing_navigation": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_menus_palette_tabs_and_keyboard_use_existing_navigation",
+      "purpose": "Menus palette tabs and keyboard use existing navigation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_heart_visual_system_qt.py::test_layout_migrates_bounded_splitters_and_rejects_untrusted_fields": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_layout_migrates_bounded_splitters_and_rejects_untrusted_fields",
+      "purpose": "Layout migrates bounded splitters and rejects untrusted fields",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_heart_visual_system_qt.py::test_minimum_window_retains_operational_pages_and_keyboard_focus": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_minimum_window_retains_operational_pages_and_keyboard_focus",
+      "purpose": "Minimum window retains operational pages and keyboard focus",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_heart_visual_system_qt.py::test_reflow_preserves_dynamic_labels_and_sidebar_preference": {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "name": "test_reflow_preserves_dynamic_labels_and_sidebar_preference",
+      "purpose": "Reflow preserves dynamic labels and sidebar preference",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
     },
     "tests/test_host_bridge_and_ollama_first_attempt_regressions.py::test_model_executor_allows_configured_ollama_first_attempt": {
       "path": "tests/test_host_bridge_and_ollama_first_attempt_regressions.py",
@@ -27673,11 +27786,11 @@
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
       "name": "test_refresh_uses_only_read_only_status_and_probe_contracts",
       "purpose": "Refresh uses only read only status and probe contracts",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -27697,7 +27810,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 20
+      "line": 22
     },
     "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_propagates_failure_without_making_up_ready_state": {
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
@@ -27714,7 +27827,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 32
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
@@ -28923,6 +29036,214 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 54
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_local_acceptance_is_fresh_single_use_and_cleanup_can_resume": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_local_acceptance_is_fresh_single_use_and_cleanup_can_resume",
+      "purpose": "Local acceptance is fresh single use and cleanup can resume",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "FileExistsError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_refuses_foreign_stale_or_nonfresh_staging": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_refuses_foreign_stale_or_nonfresh_staging",
+      "purpose": "Refuses foreign stale or nonfresh staging",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_protected_paths_are_never_authorized": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_protected_paths_are_never_authorized",
+      "purpose": "Protected paths are never authorized",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_junction_is_rejected_even_when_target_stays_in_acceptance": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_junction_is_rejected_even_when_target_stays_in_acceptance",
+      "purpose": "Junction is rejected even when target stays in acceptance",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_real_child_arguments_enter_live_mode_without_model_or_memory_mutation": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_real_child_arguments_enter_live_mode_without_model_or_memory_mutation",
+      "purpose": "Real child arguments enter live mode without model or memory mutation",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_entrypoint_dispatch_and_structured_validation_failure": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_entrypoint_dispatch_and_structured_validation_failure",
+      "purpose": "Entrypoint dispatch and structured validation failure",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_cleanup_only_stops_the_recorded_verified_instance": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_cleanup_only_stops_the_recorded_verified_instance",
+      "purpose": "Cleanup only stops the recorded verified instance",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_cleanup_before_start_does_not_create_a_controller": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_cleanup_before_start_does_not_create_a_controller",
+      "purpose": "Cleanup before start does not create a controller",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 151
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_qt_queue_passes_run_authority_and_correct_mode": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_qt_queue_passes_run_authority_and_correct_mode",
+      "purpose": "Qt queue passes run authority and correct mode",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_summary_separates_execution_pass_from_full_acceptance": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_summary_separates_execution_pass_from_full_acceptance",
+      "purpose": "Summary separates execution pass from full acceptance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 189
+    },
+    "tests/test_jazn_tpa_staging_authority.py::test_qt_result_preserves_original_refusal_with_or_without_cleanup_failure": {
+      "path": "tests/test_jazn_tpa_staging_authority.py",
+      "name": "test_qt_result_preserves_original_refusal_with_or_without_cleanup_failure",
+      "purpose": "Qt result preserves original refusal with or without cleanup failure",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 200
     },
     "tests/test_jazn_tpa_workbench_layout_diagnostics.py::test_service_page_and_stack_fit_minimum_width": {
       "path": "tests/test_jazn_tpa_workbench_layout_diagnostics.py",
@@ -61277,6 +61598,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 295
+    },
+    "tests/test_version_bound_contract_fields.py::test_version_contract_checks_exact_field_without_exempting_file": {
+      "path": "tests/test_version_bound_contract_fields.py",
+      "name": "test_version_contract_checks_exact_field_without_exempting_file",
+      "purpose": "Version contract checks exact field without exempting file",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.version_consistency_audit",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
     },
     "tests/test_version_consistency_audit.py::test_generated_metadata_audit_uses_stable_contract_schema": {
       "path": "tests/test_version_consistency_audit.py",
