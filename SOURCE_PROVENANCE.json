@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "215335571864bb5602cc18087ad12861b456e6b4",
-  "base_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans",
-  "commit_date": "2026-10-30T20:15:09+01:00",
+  "base_merge_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
+  "base_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "commit_date": "2026-10-30T22:33:11Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-30T19:15:09+00:00",
+  "generated_at_utc": "2026-10-30T22:33:11+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "ef7edc5f8db029b670d8862f1170eae7520d5a9d",
+  "git_tree_sha": "26330323e41aabe6a834b7a00df9bfc44ce7b995",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "215335571864bb5602cc18087ad12861b456e6b4",
-    "source_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans"
+    "source_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
+    "source_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans",
+  "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "215335571864bb5602cc18087ad12861b456e6b4",
+  "source_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans",
+  "source_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans",
+  "update_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
   "version_source": "latka_jazn/version.py"
 }
