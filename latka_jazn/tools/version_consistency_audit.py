@@ -92,7 +92,27 @@ SKIP_PREFIXES = (
     "latka_jazn/tools/memory_rebuild_app/__init__.py",
 )
 MAX_SCAN_BYTES = 4 * 1024 * 1024
+VERSION_BOUND_CONTRACTS = {
+    "latka_jazn/resources/startup_contract.json": ("version", "package_version"),
+    "deploy/chatgpt_mcp/deployment.contract.json": ("runtime_version", "package_version_full"),
+}
 VERSION_PATTERN = re.compile(r"v\d+\.\d+(?:\.\d+)*(?:[-_][A-Za-z0-9_.-]+)?|\d+\.\d+(?:\.\d+)+")
+
+
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate contract field: " + key)
+        result[key] = value
+    return result
+
+
+def _version_bound_contract(text: str) -> dict[str, Any]:
+    value = json.loads(text, object_pairs_hook=_unique_object)
+    if not isinstance(value, dict):
+        raise ValueError("Contract must be a JSON object")
+    return value
 
 
 def classify_version_mention(
@@ -231,10 +251,21 @@ def scan_forbidden_current_literals(
         except (OSError, UnicodeError):
             continue
         rel = path.relative_to(root).as_posix()
+        scanned = text
+        if rel in VERSION_BOUND_CONTRACTS:
+            field, attribute = VERSION_BOUND_CONTRACTS[rel]
+            try:
+                contract = _version_bound_contract(text)
+                if contract.get(field) == getattr(metadata, attribute):
+                    # Only this declared top-level value is generated from
+                    # version.py. Other fields remain subject to literal scan.
+                    contract.pop(field)
+                    scanned = json.dumps(contract, ensure_ascii=False)
+            except (ValueError, TypeError):
+                pass  # The structural gate below reports malformed contracts.
         for token in sorted(tokens, key=len, reverse=True):
-            lines = _line_hits(text, token)
-            if lines:
-                violations.append({"path": rel, "token": token, "lines": lines[:20]})
+            if token in scanned:
+                violations.append({"path": rel, "token": token, "lines": _line_hits(text, token)[:20]})
                 break
     return violations
 
@@ -252,6 +283,17 @@ def _load_json(path: Path) -> dict[str, Any]:
 def _generated_metadata_errors(root: Path) -> list[dict[str, Any]]:
     metadata = read_version_metadata_from_version_py(root)
     errors: list[dict[str, Any]] = []
+
+    for relative, (field, attribute) in VERSION_BOUND_CONTRACTS.items():
+        path = root / relative
+        if not path.exists():
+            continue  # Minimal historical fixtures need not ship deployment.
+        try:
+            contract = _version_bound_contract(path.read_text(encoding="utf-8-sig"))
+            if contract.get(field) != getattr(metadata, attribute):
+                errors.append({"kind": "version_bound_contract_mismatch", "path": relative, "field": field})
+        except (OSError, UnicodeError, ValueError, TypeError):
+            errors.append({"kind": "version_bound_contract_invalid", "path": relative})
 
     if (root / "VERSION.txt").exists():
         errors.append({"kind": "forbidden_legacy_version_checkpoint_present", "path": "VERSION.txt"})
