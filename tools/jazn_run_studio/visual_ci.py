@@ -6,13 +6,11 @@ program never starts Jaźń, Ollama, a tunnel, or an MCP service.
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 from hashlib import sha256
 import html
 import json
 import os
 from pathlib import Path
-import sys
 from typing import Any
 
 PROFILES = ("technical-workbench", "operations-studio", "fluent-studio")
@@ -120,17 +118,21 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
     # Set all sandbox boundaries before any Qt or Jaźń runtime import.
     root = isolate_environment(output)
     from unittest.mock import patch
+    from PySide6 import __version__ as pyside_version
     from PySide6.QtCore import Qt
+    from PySide6.QtGui import QPalette
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QScrollArea
     from .core import Controller, Settings, load_settings
     from .window import Window
     from .workspace_layout import load_layout
+    from .workbench_theme import workbench_colors
 
     app = QApplication.instance() or QApplication([])
     if not isinstance(app, QApplication) or app.platformName() != "offscreen":
         raise AssertionError("non_offscreen_qt_backend")
     report["qt_platform"] = app.platformName()
+    report["pyside_version"] = pyside_version
     core = Controller(root, Settings())
     if core.settings.theme != PROFILES[0]:
         raise AssertionError("default_not_technical_workbench")
@@ -153,16 +155,21 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             if not window.isVisible():
                 raise AssertionError("main_window_hidden")
             for theme in PROFILES:
+                report["phase"] = "theme:" + theme
                 window.select_style(theme)
                 QTest.qWait(50)
                 saved, _digest = load_settings(root)
                 if (window.core.settings.theme != theme or saved.theme != theme
                         or window.style_selector.currentData() != theme):
                     raise AssertionError("theme_not_saved:" + theme)
+                colors = workbench_colors(theme, core.settings.accent)
+                if window.palette().color(QPalette.ColorRole.Window).name().lower() != colors.background.lower():
+                    raise AssertionError("theme_palette_not_applied:" + theme)
                 report["checks"]["theme_and_settings:" + theme] = True
                 if window.services_table.rowCount() != 6:
                     raise AssertionError("service_rows_missing")
                 for slug, title in SCREENS:
+                    report["phase"] = "capture:" + theme + ":" + slug
                     window.navigate(title)
                     QTest.qWait(35)
                     if window.current_section.text() != title:
@@ -185,6 +192,16 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                 QTest.qWait(70)
                 report["checks"]["minimum_viewport:" + theme] = True
 
+            report["phase"] = "distinct_visual_palettes"
+            for slug, _title in SCREENS:
+                hashes = [next(c["sha256"] for c in report["captures"]
+                               if c["file"] == theme + "/" + slug + "-1240x840.png")
+                          for theme in PROFILES]
+                if len(set(hashes)) != len(PROFILES):
+                    raise AssertionError("duplicate_theme_pixels:" + slug)
+            report["checks"]["distinct_rendered_theme_images"] = True
+
+            report["phase"] = "navigation_layout"
             # Keyboard navigation, splitters and dock controls.
             window.navigate("Pulpit")
             window.section_search.setText("Katalog testów")
@@ -206,6 +223,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             window.reset_layout()
             report["checks"]["keyboard_sidebar_splitters_layout"] = True
 
+            report["phase"] = "unsaved_settings"
             # Preserve an unsaved settings draft when attempting style changes.
             previous = window.core.settings.theme
             original_port = window.fields["mcp_port"].text()
@@ -218,6 +236,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             window.fields["mcp_port"].setText(original_port)
             report["checks"]["unsaved_settings_guard"] = True
 
+            report["phase"] = "synthetic_failure"
             # Synthetic failure must be visible and not imply daemon readiness.
             core.emit("status", "state", {"state": "failed", "error": "invalid_status_json"})
             window.poll()
@@ -247,6 +266,7 @@ def main(argv: list[str] | None = None) -> int:
         "schema": "jss_visual_ci/v1", "status": "FAIL", "qt_platform": "unknown",
         "profiles": list(PROFILES), "checks": {}, "captures": [],
         "errors": [], "synthetic_only": True, "memory_mode": "off",
+        "phase": "startup", "source_sha": os.environ.get("GITHUB_SHA", ""),
         "golden_baselines_verified": False,
     }
     try:
@@ -258,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
         report["status"] = "PASS"
     except Exception as exc:
         # Do not export potentially private paths, settings, tokens or raw traces.
-        report["errors"].append(type(exc).__name__ + ":visual_ci_failure")
+        report["errors"].append(type(exc).__name__ + ":visual_ci_failure:" + report["phase"])
     finally:
         emit_reports(output, report)
     print(json.dumps({"status": report["status"], "captures": len(report["captures"]),
