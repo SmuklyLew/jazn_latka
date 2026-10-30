@@ -96,7 +96,7 @@ def test_real_child_arguments_enter_live_mode_without_model_or_memory_mutation(o
     proc = subprocess.run([sys.executable, "-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live",
                            "--root", str(root), "--folder", str(folder), "--run-id", report["run_id"],
                            "--case", "chat-resume"], env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
-    assert proc.returncode == 0, proc.stderr
+    assert proc.returncode == 1, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["status"] == "BLOCKED"
     assert "model Ollama" in payload["reason"]

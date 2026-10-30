@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import Protocol
 import queue
 import socket
 import sys
@@ -111,7 +112,16 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     return next((v for _, kind, v in seen if kind == "evidence"), {})
 
 
-def await_daemon_receipt(core: Controller, client: ChatClient, request_id: str, tick, *, timeout_seconds: float = 45.0) -> dict:
+class ReceiptCore(Protocol):
+    @property
+    def root(self) -> Path: ...
+
+
+class ReceiptClient(Protocol):
+    def resume_command(self, request_id: str) -> list[str]: ...
+
+
+def await_daemon_receipt(core: ReceiptCore, client: ReceiptClient, request_id: str, tick, *, timeout_seconds: float = 45.0) -> dict:
     """Prove daemon-side admission before intentionally killing the transport.
 
     A flushed stdin pipe is not an acknowledgement that a request exists in the

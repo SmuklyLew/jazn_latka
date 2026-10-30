@@ -6,6 +6,19 @@ import json
 import os
 from pathlib import Path
 import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .tpa_view import TPAPanel
+
+
+def select_existing_model(panel: TPAPanel, requested: str, installed: list[str]) -> None:
+    """Select only a model returned by the verified local Ollama inventory."""
+    panel.set_installed_models(installed)
+    index = panel.model.findData(requested)
+    if index < 0:
+        raise ValueError("Wskazany model Ollama nie jest zainstalowany lokalnie: " + requested)
+    panel.model.setCurrentIndex(index)
 
 
 def main() -> int:
@@ -41,8 +54,13 @@ def main() -> int:
     window.navigate("TPA")
     QTest.qWait(150)
     panel = window.local_acceptance_panel
-    panel.model.setText(args.model)
     ids = tuple(args.case or [c["id"] for c in execution_map()])
+    if args.live and args.model:
+        from .probes import ollama
+        evidence = ollama(args.model)
+        installed = evidence["models"]
+        assert isinstance(installed, list)
+        select_existing_model(panel, args.model, installed)
     beats = []
     from PySide6.QtCore import QTimer
     timer = QTimer()

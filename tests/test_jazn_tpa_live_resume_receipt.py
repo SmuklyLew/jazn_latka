@@ -4,11 +4,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from subprocess import CompletedProcess
-from types import SimpleNamespace
+from dataclasses import dataclass
 
 import pytest
 
 from tools.jazn_run_studio import tpa_live
+
+
+@dataclass(frozen=True)
+class _ReceiptCore:
+    root: Path
 
 
 class _Client:
@@ -43,7 +48,7 @@ def test_receipt_waits_for_daemon_job_without_replaying_user_text(
     monkeypatch.setattr(tpa_live.time, "sleep", lambda _: None)
     client = _Client()
     result = tpa_live.await_daemon_receipt(
-        SimpleNamespace(root=tmp_path), client, request, lambda: None,
+        _ReceiptCore(root=tmp_path), client, request, lambda: None,
     )
     assert result == {"request_id": request, "job_status": "queued",
                       "confirmed": True, "probe_attempts": 2}
@@ -63,7 +68,7 @@ def test_receipt_rejects_foreign_or_failed_request(
                             lambda *a, **kw: _result(payload))
         with pytest.raises(ValueError):
             tpa_live.await_daemon_receipt(
-                SimpleNamespace(root=tmp_path), client, "studio-turn-original", lambda: None,
+                _ReceiptCore(root=tmp_path), client, "studio-turn-original", lambda: None,
             )
 
 
@@ -79,7 +84,7 @@ def test_receipt_timeout_does_not_fake_admission(
     monkeypatch.setattr(tpa_live.time, "sleep", lambda _: None)
     with pytest.raises(TimeoutError, match="nie potwierdził"):
         tpa_live.await_daemon_receipt(
-            SimpleNamespace(root=tmp_path), _Client(), "studio-turn-original",
+            _ReceiptCore(root=tmp_path), _Client(), "studio-turn-original",
             lambda: None, timeout_seconds=2.0,
         )
 
