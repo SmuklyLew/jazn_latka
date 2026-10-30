@@ -5,6 +5,16 @@ Branch: `latka_work/tpa-2-auto-acceptance-history`.
 Praca wyłącznie w osobnym worktree; prywatna MEMORY i aktywne procesy pozostają poza zakresem.
 
 Stan checkpointu .94.6.46: etapy I–III / P0–P2 zaimplementowane i wypchnięte.
+Aktualizacja .94.6.47: dodano poprawkę serializacji checkpointów P2 (stabilny
+hash tożsamości SYSTEM, oddzielenie danych redagowanych od pól strukturalnych)
+oraz nowe testy kolizji redaktora. Wyniki CI tej poprawki nie są jeszcze dowodem
+PASS; metadane wydania wymagają ostatecznej kanonicznej synchronizacji.
+
+Decyzja operatorska: **rzeczywiste dwie tury Ollama oraz pełne próby
+Ollama/reconnect/resume/restart wykonać po merge do master**, nie jako warunek
+wcześniejszego ukończenia P3 i poprawek kodu. Przed merge wymagane są testy
+syntetyczne, GUI tam gdzie dostępne, regresje, audyt źródeł, dowody CI oraz
+jawny wykaz odroczonych odbiorów jako NOT_RUN/BLOCKED (nigdy PASS).
 TPA: 149 passed, 1 skipped; package-smoke system: 15/15; metadane sprawdzone
 niezależnie. Szersza regresja: 3539 passed, 31 skipped, 1 failed (HTTP MCP
 framing). Etap IV / kreator P3 oraz rzeczywiste odbiory pozostają nieukończone.
