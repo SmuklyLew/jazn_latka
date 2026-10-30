@@ -53,3 +53,18 @@ def test_operator_tab_and_height_are_bounded_and_backward_compatible() -> None:
     for bad in (179, 3001, -4, 200.4, True, "500"):
         with pytest.raises(ValueError):
             validate({"schema": SCHEMA, "dock_height": bad})
+
+
+def test_selected_service_cell_widget_keeps_contrast_in_both_modes(window) -> None:
+    from dataclasses import replace
+    for theme in ("dark", "light"):
+        window.core.settings = replace(window.core.settings, theme=theme)
+        window.apply_theme()
+        window.services_table.selectRow(1)
+        window.refresh_service_controls()
+        colors = workbench_colors(theme, window.core.settings.accent)
+        selected_css = window.statuses["ollama"].styleSheet()
+        plain_css = window.statuses["runtime"].styleSheet()
+        assert f"background: {colors.accent}" in selected_css
+        assert f"color: {colors.selected_text}" in selected_css
+        assert f"color: {colors.text}" in plain_css
