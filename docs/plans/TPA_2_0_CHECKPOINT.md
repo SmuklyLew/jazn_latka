@@ -1,5 +1,18 @@
 # TPA 2.0 — checkpoint
 
+## Staging kanonicznej synchronizacji wydania .94.6.50
+
+- Źródłowy PR #443 ma zielone workflowy, ale metadane w plikach
+  `SOURCE_PROVENANCE.json` i `PACKAGE_INTEGRITY_MANIFEST.json` były
+  jeszcze historyczne. Zgodnie z `AGENTS.codex.md` wymagane jest uruchomienie
+  `latka_jazn.tools.release_metadata_sync`, bez ręcznej edycji hashy.
+- Wykorzystano autoryzowaną gałąź `fix/**` do kanonicznej automatyzacji
+  release-hardening; wynik musi być zgodny z najnowszą treścią źródeł.
+  Brak zaakceptowanej finalizacji generatora oznacza brak wydania.
+- Materiały operatorskie i testy rzeczywistej Ollamy nadal pozostają po merge.
+  Sam zielony CI nie stanowi odbioru produkcyjnego.
+
+
 ## Aktualizacja 2026-10-30 — Pyright hotfix .94.6.50
 
 - Weryfikacja CI dla SHA `2b4bef75ebd578e27cf69ea5c963ebb898bd19cc`:
