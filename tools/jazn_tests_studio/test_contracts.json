@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.26",
-  "active_definition_count": 2927,
+  "system_version": "16.3.25.5.116.0.34.94.6.27",
+  "active_definition_count": 2930,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19743,6 +19743,63 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 143
+    },
+    "tests/test_heart_external_terminal_actions_qt.py::test_operator_menu_keeps_system_shell_and_latka_chat_separate": {
+      "path": "tests/test_heart_external_terminal_actions_qt.py",
+      "name": "test_operator_menu_keeps_system_shell_and_latka_chat_separate",
+      "purpose": "Operator menu keeps system shell and latka chat separate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_heart_external_terminal_actions_qt.py::test_external_terminal_opens_system_powershell_without_run_py": {
+      "path": "tests/test_heart_external_terminal_actions_qt.py",
+      "name": "test_external_terminal_opens_system_powershell_without_run_py",
+      "purpose": "External terminal opens system powershell without run py",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_heart_external_terminal_actions_qt.py::test_missing_system_powershell_fails_closed": {
+      "path": "tests/test_heart_external_terminal_actions_qt.py",
+      "name": "test_missing_system_powershell_fails_closed",
+      "purpose": "Missing system powershell fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
     },
     "tests/test_heart_light_dark_operator_qt.py::test_two_operator_defaults_and_safe_legacy_presentation": {
       "path": "tests/test_heart_light_dark_operator_qt.py",
