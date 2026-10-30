@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-30T16:16:05+00:00",
-  "updated_at_utc": "2026-10-30T16:16:05+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+  "package_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+  "generated_at_utc": "2026-10-30T18:21:47+00:00",
+  "updated_at_utc": "2026-10-30T18:21:47+00:00",
   "start_file": "run.py",
-  "file_count": 3549,
-  "static_file_count": 3549,
+  "file_count": 3554,
+  "static_file_count": 3554,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2997,
-      "sha256": "8fc65fce74e2fd0ee110e7d4462c30125f09cb5bb2134956fa0c980aa84fd141",
+      "size_bytes": 2930,
+      "sha256": "191efd8489f8cf6b997741d8420e06e3f86e40c0be1bfd3e47b64f8cfc733d53",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1932,6 +1932,24 @@
       "path": "docs/plans/STUDIO_P1_TEST_HISTORY_11521_1.md",
       "size_bytes": 2114,
       "sha256": "c11019fdb8105f41a973c901b6c91745d837dae58f57067404e33102da7e21f0",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/TPA_2_0_CHECKPOINT.md",
+      "size_bytes": 7655,
+      "sha256": "2d2fc547d9b89f8445052ec3b69c91ee3086cd1440bae4b39eabd61544ca3fce",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/TPA_2_0_IMPLEMENTATION_PLAN.md",
+      "size_bytes": 1964,
+      "sha256": "a4a2b4ce2be50ed3d77dbefd7543a3e734ca55dfd2ed1ad1ee5d7a98020d7b0e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11344,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21309,
-      "sha256": "06a661d315e7d3f1ad9e2c3ae0730433048f1630cef39c1cf6ce8b5b578c88a1",
+      "size_bytes": 21297,
+      "sha256": "e6fd4bf5a6c5e9fab23cd31c4b35363bb0835b3cd92ba3d00f07f326c02c5996",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30567,6 +30585,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_tpa_2_current_state.py",
+      "size_bytes": 7100,
+      "sha256": "eca2bbe3a79a428892a313986311e698e0bfad04c59938b8ca269a6ba7b13e0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_tpa_2_history_qt.py",
+      "size_bytes": 2107,
+      "sha256": "d164f467606ebce6a1ee9ac17d3ef188005b2d08243010e05d7e15a4cd58116f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_transport_resilience_fault_injection.py",
       "size_bytes": 10429,
       "sha256": "ca04b1f428f9bf1b3c79de39608aa055c8883a823ced4611c32a9a75b3783e65",
@@ -31440,6 +31476,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/tpa_current_state.py",
+      "size_bytes": 7306,
+      "sha256": "b4b189843921aba7620ef7a09b753102dc88fa458931ef3527a0530868d26029",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_run_studio/tpa_engine.py",
       "size_bytes": 23570,
       "sha256": "2671eb5165ff9e9e441f450e35022eec277ab4d2259255c3d18fa854e0de40d1",
@@ -31486,8 +31531,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_reports.py",
-      "size_bytes": 17180,
-      "sha256": "b4d89cbed693cd060e22f7eaa189583073e841693c0b9b5f7e08d750ece157d6",
+      "size_bytes": 19799,
+      "sha256": "ce2b6124d581ea1904b40acb84e0b79e32bda89b6c9211eda0af942f4a315ee3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31522,8 +31567,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_view.py",
-      "size_bytes": 32108,
-      "sha256": "d8e1ec1bc4726cf1865c19c7248ea385e9c50b18fb0d42c665e295320f7487a9",
+      "size_bytes": 35578,
+      "sha256": "325421f0b9ad76d6e7f9f56fcbf4ff67035366bc038a202901cafe5f39c1612f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32396,11 +32441,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+    "package_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+    "release_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history"
   },
   "legacy_aliases": {
     "version": "release_version"
