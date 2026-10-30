@@ -128,7 +128,7 @@ class Settings:
     tunnel_config: str = ""
     tunnel_id: str = ""
     model: str = ""
-    theme: str = "violet-night"
+    theme: str = "dark"
     accent: str = "#A783DB"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
@@ -185,6 +185,16 @@ def daemon_cli_options(settings: Settings) -> list[str]:
     endpoint = urlsplit(checked.daemon_url)
     assert endpoint.port is not None  # Guaranteed by Settings.validate.
     return ["--daemon-host", "127.0.0.1", "--daemon-port", str(endpoint.port)]
+
+
+def preferred_theme(theme: str) -> str:
+    """Map legacy appearance profiles to the two operator-facing defaults.
+
+    The on-disk profile remains intact; the GUI presents a compatible
+    dark/light selection until the operator explicitly saves settings.  Historical
+    names remain valid to avoid blocking older installations.
+    """
+    return "light" if theme == "light" else "dark"
 
 
 def settings_path(root: Path) -> Path:

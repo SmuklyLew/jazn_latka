@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox, QComboBox, QDockWidget, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
     QPlainTextEdit, QPushButton, QScrollArea, QSplitter, QTabWidget, QTreeWidget, QTreeWidgetItem,
-    QVBoxLayout, QWidget,
+    QVBoxLayout, QWidget, QHeaderView,
 )
 from .core import ACTIONS, python_executable, StudioError
 from .problem_guidance import explain_failure
@@ -68,6 +68,7 @@ class OperatorWorkspace:
         self.observations: dict[str, dict[str, Any]] = {}
         self.failures: dict[str, dict[str, Any]] = {}
         self.completed = 0
+        self.dock_height = 300  # operator-resizable height, not a fixed pane
         self.dock = QDockWidget("Narzędzia operatora", window)
         self.dock.setObjectName("heartOperatorDock")
         self.dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
@@ -79,13 +80,17 @@ class OperatorWorkspace:
         self._problems()
         self._output()
         self._terminal()
+        self._history()
+        self._technical()
         self.last_output = ""
         self._last_jobs = ""
         self.dock.visibilityChanged.connect(self.dock_visibility_changed)
 
     def dock_visibility_changed(self, visible: bool) -> None:
-        if visible:
+        if visible and not self.host.unified_operator_mode:
             self.host.set_logs_visible(False)
+        if not visible and self.dock.height() >= 180:
+            self.dock_height = min(3000, self.dock.height())
 
     def _problems(self) -> None:
         panel = QWidget()
@@ -144,11 +149,11 @@ class OperatorWorkspace:
     def _terminal(self) -> None:
         panel = QWidget()
         layout = QVBoxLayout(panel)
-        note = QLabel("Konsole zadań korzystają z istniejących poleceń Jaźni. Pełny terminal TTY otwiera osobne okno Windows.")
+        note = QLabel("Konsole zadań uruchamiają istniejące operacje. Nie są emulatorem PTY; prawdziwa konsola systemowa uruchamia się osobno.")
         note.setWordWrap(True)
         layout.addWidget(note)
         row = QHBoxLayout()
-        tty = QPushButton("Otwórz czat TTY w terminalu Windows")
+        tty = QPushButton("Otwórz czat Jaźni w osobnym oknie")
         tty.setEnabled(os.name == "nt" and not self.host.smoke)
         tty.clicked.connect(lambda: self.host.guard(self.open_tty))
         row.addWidget(tty)
@@ -156,40 +161,195 @@ class OperatorWorkspace:
         preset.clicked.connect(self.three_consoles)
         row.addWidget(preset)
         layout.addLayout(row)
-        self.consoles_splitter = QSplitter(Qt.Orientation.Vertical)
+        # Independent full-height tabs avoid stacking three cramped outputs.
+        # A true ConPTY/PTY widget is a distinct lifecycle feature.
+        self.consoles_splitter = QTabWidget()
+        self.consoles_splitter.setAccessibleName("Konsole zadań")
         self.consoles: list[TaskConsole] = []
         self.three_consoles()
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(self.consoles_splitter)
-        scroll.setMinimumHeight(100)
-        layout.addWidget(scroll)
-        self.tabs.addTab(panel, "Terminal / Konsole")
+        layout.addWidget(self.consoles_splitter)
+        self.tabs.addTab(panel, "Konsole zadań")
 
     def three_consoles(self) -> None:
         while len(self.consoles) < 3:
             console = TaskConsole(self.host, len(self.consoles) + 1)
             self.consoles.append(console)
-            self.consoles_splitter.addWidget(console)
-        self.consoles_splitter.setSizes([160, 160, 160])
+            self.consoles_splitter.addTab(console, f"Konsola {len(self.consoles)}")
+
+    def _history(self) -> None:
+        """History reuses the canonical TPA store, never copies evidence."""
+        panel = QWidget()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(8, 8, 8, 8)
+        bar = QHBoxLayout()
+        self.history_summary = QLabel("Historia: nie odczytano")
+        self.history_summary.setWordWrap(True)
+        bar.addWidget(self.history_summary, 1)
+        refresh = QPushButton("Odśwież")
+        refresh.clicked.connect(self.refresh_history)
+        bar.addWidget(refresh)
+        layout.addLayout(bar)
+        self.history_tree = QTreeWidget()
+        self.history_tree.setAccessibleName("Historia zadań bieżących i zapisanych przebiegów TPA")
+        self.history_tree.setHeaderLabels(["Przebieg / źródło", "Wynik", "Czas", "Akcja"])
+        self.history_tree.setRootIsDecorated(False)
+        self.history_tree.setAlternatingRowColors(True)
+        header = self.history_tree.header()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.history_tree.itemActivated.connect(self.open_history_item)
+        layout.addWidget(self.history_tree)
+        self.tabs.addTab(panel, "Historia")
+
+    def refresh_history(self) -> None:
+        self.history_tree.clear()
+        with self.host.core.lock:
+            jobs = [job.snapshot() for job in self.host.core.jobs.values()]
+        for job in reversed(jobs[-100:]):
+            key = str(job.get("key") or job.get("action") or "zadanie")
+            state = str(job.get("state", "nieznany"))
+            item = QTreeWidgetItem(self.history_tree, [
+                "Zadanie: " + key, state, "bieżąca sesja", "Otwórz log",
+            ])
+            item.setData(0, Qt.ItemDataRole.UserRole, ("job", key))
+        reports: list[dict[str, Any]] = []
+        issue = ""
+        try:
+            store = self.host.local_acceptance_panel.runner.store
+            reports = store.history()[:100]
+            if store.history_errors:
+                issue = " • odczyt: " + "; ".join(str(x) for x in store.history_errors[:2])
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            issue = " • błąd odczytu " + type(exc).__name__
+        for report in reports:
+            run_id = str(report.get("run_id", ""))
+            if not run_id:
+                continue
+            rows = report.get("results") or []
+            states = [str(row.get("status", "NOT_RUN")) for row in rows if isinstance(row, dict)]
+            passed = states.count("PASS")
+            blocked = sum(state in {"FAIL", "BLOCKED", "TIMEOUT"} for state in states)
+            item = QTreeWidgetItem(self.history_tree, [
+                "TPA: " + run_id, f"{passed} PASS, {blocked} błędów/blokad",
+                str(report.get("started_utc", ""))[:19], "Otwórz raport TPA",
+            ])
+            item.setToolTip(1, "To wyniki podtestów; pełny odbiór jest osobną kontrolą.")
+            item.setData(0, Qt.ItemDataRole.UserRole, ("tpa", run_id))
+        self.history_summary.setText(
+            f"Zadania tej sesji: {len(jobs)} • historia TPA: {len(reports)}" + issue
+        )
+
+    def open_history_item(self, item: QTreeWidgetItem, _column: int) -> None:
+        identity = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(identity, tuple) or len(identity) != 2:
+            return
+        kind, key = identity
+        if kind == "job":
+            self.open_log_source(str(key))
+            return
+        if kind == "tpa":
+            self.host.navigate("TPA")
+            panel = self.host.local_acceptance_panel
+            index = panel.history.findData(key)
+            if index < 0:
+                panel.refresh()
+                index = panel.history.findData(key)
+            if index >= 0:
+                panel.history.setCurrentIndex(index)
+                panel.load_history(index)
+
+    def _technical(self) -> None:
+        panel = QWidget()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(8, 8, 8, 8)
+        refresh = QPushButton("Odśwież dane techniczne (tylko odczyt)")
+        refresh.clicked.connect(self.refresh_technical)
+        layout.addWidget(refresh)
+        self.technical = QPlainTextEdit()
+        self.technical.setReadOnly(True)
+        self.technical.setAccessibleName("Zredagowane dowody techniczne JSS")
+        self.technical.setPlaceholderText("Nie sprawdzono. Odśwież, aby wczytać bieżące dowody.")
+        layout.addWidget(self.technical)
+        self.tabs.addTab(panel, "Techniczne")
+
+    def refresh_technical(self) -> None:
+        with self.host.core.lock:
+            jobs = [job.snapshot() for job in self.host.core.jobs.values()]
+        payload = {
+            "scope": "local_studio_read_only",
+            "runtime_readiness": "not_verified_by_this_panel",
+            "services": self.observations,
+            "jobs": jobs,
+            "accepted_visible_turn": True if self.host.core.accepted_turn_proof else None,
+        }
+        self.technical.setPlainText(self.host.core.redactor.text(
+            json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+        ))
+
+    def open_log_source(self, key: str) -> None:
+        """Select one source in the shared output panel; no second log window."""
+        self.refresh()
+        index = self.source.findData(key)
+        self.source.setCurrentIndex(index if index >= 0 else 0)
+        self.show(1)
+        self.refresh()
 
     def open_tty(self) -> None:
+        """Open the existing canonical Jaźń CLI in a distinct Windows console.
+
+        This does not embed a terminal, claim ownership of an existing daemon,
+        or represent shell access. Keep it distinct from open_system_terminal.
+        """
         if os.name != "nt":
             raise StudioError("Ten przycisk wymaga terminala Windows")
-        # Explicit operator click opens a visible, genuine console. No shell
-        # command string, model text, inherited detached daemon, or PID adoption.
         core = self.host.core
         subprocess.Popen([python_executable(core.settings), "-X", "utf8", str(core.root / "run.py")],
                          cwd=core.root, env=core.child_environment(), shell=False,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 
+    def open_system_terminal(self) -> None:
+        """Launch an actual external PowerShell, not the Jaźń runtime CLI.
+
+        Use the Windows system shell by absolute path; never interpolate an
+        operator text string into a command, reuse daemon PID, or log secrets.
+        """
+        if os.name != "nt":
+            raise StudioError("Zewnętrzna konsola PowerShell jest dostępna tylko na Windows")
+        system_root = Path(os.environ.get("SystemRoot", r"C:\Windows"))
+        shell = system_root / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+        if not shell.is_file():
+            raise StudioError("Nie znaleziono systemowego PowerShell w katalogu Windows")
+        core = self.host.core
+        # External operator shells must not inherit optional secret-file
+        # credentials injected for canonical runtime children.
+        from .core import SECRET_NAME
+        safe_env = {key: value for key, value in os.environ.items()
+                    if not SECRET_NAME.search(key)}
+        safe_env["JAZN_ROOT"] = str(core.root)
+        subprocess.Popen([str(shell), "-NoLogo", "-NoProfile", "-NoExit"],
+                         cwd=core.root, env=safe_env, shell=False,
+                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+
     def show(self, tab: int = 0) -> None:
+        was_visible = self.dock.isVisible()
+        if was_visible and self.dock.height() >= 180:
+            self.dock_height = min(3000, self.dock.height())
         self.dock.show()
         self.dock.raise_()
         self.tabs.setCurrentIndex(tab)
-        # Do not stack two independent log panes across the entire viewport.
-        self.host.set_logs_visible(False)
-        self.host.resizeDocks([self.dock], [max(240, self.host.height() // 3)], Qt.Orientation.Vertical)
+        if not self.host.unified_operator_mode:
+            self.host.set_logs_visible(False)
+        # Only opening a hidden dock sets its remembered height.
+        # Tab switches must not override the operator's manual resize.
+        if not was_visible:
+            requested = min(self.dock_height, max(180, self.host.height() - 180))
+            self.host.resizeDocks([self.dock], [requested], Qt.Orientation.Vertical)
+        if tab == 3:
+            self.refresh_history()
+        elif tab == 4:
+            self.refresh_technical()
 
     def observe(self, key: str, kind: str, value: Any) -> None:
         if kind in {"evidence", "probe"} and isinstance(value, dict):

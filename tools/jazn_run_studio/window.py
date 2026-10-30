@@ -35,6 +35,9 @@ class Window(QMainWindow):
         super().__init__()
         self.core = core
         self.smoke = smoke
+        # Production shows one shared operator dock; smoke keeps the v2
+        # compatibility surface for established Qt regression contracts.
+        self.unified_operator_mode = not smoke
         from .core import load_settings
         _, self.digest = load_settings(core.root)
         self.setWindowTitle("Jaźń — Serce Systemu")
@@ -360,7 +363,7 @@ class Window(QMainWindow):
         self.services_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.services_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.services_table.setMinimumWidth(0)
-        self.services_table.setMinimumHeight(230)
+        self.services_table.setMinimumHeight(350)
         self.service_rows = {}
         self.supervisor_observation: dict = {}
         self.memory_observed = False
@@ -420,7 +423,14 @@ class Window(QMainWindow):
         self.processes = QPlainTextEdit()
         self.processes.setReadOnly(True)
         self.processes.setMaximumHeight(150)
-        layout.addWidget(self.processes)
+        if self.unified_operator_mode:
+            # Raw JSON belongs in the bottom Technical pane, not among
+            # service actions. Keep this existing read-only sink for compatibility.
+            self.processes.hide()
+            self.button("Dane techniczne i historia usług w dolnym panelu",
+                        lambda: self.workspace.show(4), layout)
+        else:
+            layout.addWidget(self.processes)
 
     def selected_service(self) -> str:
         row = self.services_table.currentRow()
@@ -465,6 +475,17 @@ class Window(QMainWindow):
             "memory": "oddzielna zdolność; stan techniczny nie potwierdza recall",
         }.get(service, "wybierz moduł")
         self.service_selected_label.setText(service.upper() + " — " + note if service else note)
+        # QWidget cell widgets do not inherit QTableWidget::item:selected
+        # foreground automatically. Match the selection brush explicitly.
+        from .workbench_theme import workbench_colors
+        from .core import preferred_theme
+        colors = workbench_colors(preferred_theme(self.core.settings.theme), self.core.settings.accent)
+        for key, row in self.service_rows.items():
+            label = self.statuses[key]
+            selected = row == self.services_table.currentRow()
+            background = colors.accent if selected else "transparent"
+            foreground = colors.selected_text if selected else colors.text
+            label.setStyleSheet(f"background: {background}; color: {foreground}; padding: 3px;")
 
     def refresh_services(self) -> None:
         """Explicit, read-only probes; no silent auto-start or PID adoption."""
@@ -607,19 +628,31 @@ class Window(QMainWindow):
         self.execute_button = self.button("Wykonaj wybraną operację", self.execute_operation, layout)
         self.execute_button.setEnabled(False)
         self.studio_choice.currentIndexChanged.connect(self.reset_studio_operations)
-        layout.addWidget(QLabel("Oddzielne klasyczne okna pozostają dostępne jako jawny wybór:"))
+        # Keep legacy tools available without occupying twelve vertical rows.
+        # Availability is explicit; launching is still the existing controller.
+        classic = QLabel("Klasyczne Studia (natywna migracja w toku)")
+        classic.setObjectName("workbenchCaption")
+        layout.addWidget(classic)
+        classic_row = QHBoxLayout()
+        self.classic_studio_choice = QComboBox()
+        self.classic_studio_choice.setAccessibleName("Wybór klasycznego Studio")
         for item in STUDIOS:
-            row = QHBoxLayout()
-            launch = self.button("Archiwalne / do przeglądu: " + item.label, lambda key=item.key: self.core.start_studio(key), row)
             entry = (self.core.root / (item.entry[1].replace(".", "/") + ".py")
                      if item.entry[0] == "-m" else self.core.root / item.entry[0])
-            available = entry.is_file()
-            launch.setEnabled(available)
-            launch.setToolTip("Wymagany plik: " + str(entry))
-            note = QLabel(item.description + (" • plik dostępny" if available else " • brak pliku w tym SYSTEM"))
-            note.setWordWrap(True)
-            row.addWidget(note, 2)
-            layout.addLayout(row)
+            if entry.is_file():
+                self.classic_studio_choice.addItem(item.label, item.key)
+                self.classic_studio_choice.setItemData(
+                    self.classic_studio_choice.count() - 1, item.description,
+                    Qt.ItemDataRole.ToolTipRole,
+                )
+        classic_row.addWidget(self.classic_studio_choice, 1)
+        launch = self.button(
+            "Otwórz klasyczne Studio",
+            lambda: self.core.start_studio(str(self.classic_studio_choice.currentData())),
+            classic_row,
+        )
+        launch.setEnabled(self.classic_studio_choice.count() > 0)
+        layout.addLayout(classic_row)
         layout.addStretch()
 
     def _configuration(self) -> None:
@@ -791,16 +824,18 @@ class Window(QMainWindow):
             self.fields[key] = field
             form.addRow(label, field)
         self.theme = QComboBox()
-        self.theme.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
-        self.theme.setCurrentText(self.core.settings.theme)
-        form.addRow("Motyw", self.theme)
+        self.theme.addItem("Ciemny", "dark")
+        self.theme.addItem("Jasny", "light")
+        self.theme.setCurrentIndex(max(0, self.theme.findData(self.core.settings.theme)))
+        form.addRow("Wygląd aplikacji", self.theme)
         self.profile_mode = QComboBox()
         self.profile_mode.addItem("Bez dodatkowego profilu", "off")
         self.profile_mode.addItem("Walidowany profil operator", "operator")
         self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
         form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
         layout.addLayout(form)
-        self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
+        # Two operator-facing defaults; older accent stays readable for compatibility.
+        self.theme.setToolTip("Dwa motywy: Ciemny i Jasny. Starsze profile migrują do Ciemnego.")
         self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
         self.button("Zapisz i zastosuj", self.save, layout)
         self.button("Przywróć domyślne w formularzu", self.reset_settings_draft, layout)
@@ -842,7 +877,7 @@ class Window(QMainWindow):
         selected = QColorDialog.getColor(initial, self, "Kolor akcentu Jaźni")
         if selected.isValid():
             self.fields["accent"].setText(selected.name())
-            self.theme.setCurrentText("custom")
+            # Legacy accent stays within the chosen two-theme profile.
 
     def save_profile(self) -> None:
         if not self.profile_widgets:
@@ -855,7 +890,7 @@ class Window(QMainWindow):
 
     def save(self) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
-        data["theme"] = self.theme.currentText()
+        data["theme"] = str(self.theme.currentData())
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
         self.apply_settings(settings)
@@ -868,7 +903,7 @@ class Window(QMainWindow):
         self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
-        self.theme.setCurrentText(settings.theme)
+        self.theme.setCurrentIndex(max(0, self.theme.findData(settings.theme)))
         self.profile_mode.setCurrentIndex(1 if settings.runtime_profile == "operator" else 0)
         self.apply_theme()
         self.settings_baseline = self.settings_draft()
@@ -882,7 +917,9 @@ class Window(QMainWindow):
         from .visual_system import VisualSystem
         if not hasattr(self, "visual_system"):
             self.visual_system = VisualSystem(self)
-        self.visual_system.apply(self.core.settings.theme, self.core.settings.accent, system_dark=system_dark)
+        from .core import preferred_theme
+        self.visual_system.apply(preferred_theme(self.core.settings.theme), self.core.settings.accent, system_dark=system_dark)
+        self.refresh_service_controls()
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
@@ -914,7 +951,15 @@ class Window(QMainWindow):
             self.nav.setFocus()
 
     def set_logs_visible(self, visible: bool) -> None:
-        """Apply operator intent independently of ancestor/window visibility."""
+        """Use one bottom dock in production; never open two log panels."""
+        if self.unified_operator_mode:
+            self.logs_user_hidden = not visible
+            if visible:
+                self.workspace.show(1)
+            else:
+                self.workspace.dock.hide()
+            self.log_toggle.setText("Ukryj panel" if visible else "Pokaż panel")
+            return
         self.logs_user_hidden = not visible
         if visible:
             self.workspace.dock.hide()
@@ -928,10 +973,17 @@ class Window(QMainWindow):
             self.tabs.currentWidget().setFocus()
 
     def toggle_logs(self) -> None:
-        self.set_logs_visible(self.tabs.isHidden())
+        if self.unified_operator_mode:
+            self.set_logs_visible(not self.workspace.dock.isVisible())
+        else:
+            self.set_logs_visible(self.tabs.isHidden())
 
     def show_log(self, key: str) -> QPlainTextEdit:
-        """An explicit operator request opens and selects even an existing log."""
+        """An explicit operator request selects the existing log source."""
+        if self.unified_operator_mode:
+            view = self.log_view(key)
+            self.workspace.open_log_source(key)
+            return view
         view = self.log_view(key)
         self.tabs.setCurrentWidget(view)
         self.set_logs_visible(True)
@@ -952,7 +1004,8 @@ class Window(QMainWindow):
             view.document().setMaximumBlockCount(2500)
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
-            self.tabs.addTab(view, key)
+            if not self.unified_operator_mode:
+                self.tabs.addTab(view, key)
         return self.logs[key]
 
     def poll(self) -> None:
@@ -1230,6 +1283,7 @@ class Window(QMainWindow):
         self.workspace.dock.setFloating(False)
         self.workspace.dock.hide()
         self.set_logs_visible(False)
+        self.workspace.tabs.setCurrentIndex(0)
         self.content_splitter.setSizes([max(1, self.height() - 140), 140])
         self.apply_theme()
 
@@ -1251,7 +1305,9 @@ class Window(QMainWindow):
         areas = [Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea,
                  Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
         self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
+        self.workspace.dock_height = data.get("dock_height", 300)
         self.workspace.dock.setVisible(data.get("dock_visible", False))
+        self.workspace.tabs.setCurrentIndex(min(data.get("operator_tab", 0), self.workspace.tabs.count() - 1))
         for title in data.get("open_sections", []):
             self.navigate(title)
         for key, splitter in (("shell_sizes", self.shell_splitter), ("content_sizes", self.content_splitter)):
@@ -1267,6 +1323,8 @@ class Window(QMainWindow):
                              "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
                              "sidebar_visible": self.sidebar.isVisible() if self.workbench.compact_sidebar is None else self.workbench.compact_sidebar,
                              "dock_visible": self.workspace.dock.isVisible(),
+                             "dock_height": max(180, min(3000, self.workspace.dock.height() if self.workspace.dock.isVisible() else self.workspace.dock_height)),
+                             "operator_tab": self.workspace.tabs.currentIndex(),
                              "dock_area": areas.index(area) if area in areas else 3,
                              "shell_sizes": self.shell_splitter.sizes(),
                              "content_sizes": self.content_splitter.sizes(),
@@ -1288,7 +1346,7 @@ class Window(QMainWindow):
 
     def settings_draft(self) -> dict[str, str]:
         values = {key: field.text().strip() for key, field in self.fields.items()}
-        values["theme"] = self.theme.currentText()
+        values["theme"] = str(self.theme.currentData())
         values["runtime_profile"] = str(self.profile_mode.currentData())
         return values
 
@@ -1302,7 +1360,7 @@ class Window(QMainWindow):
         defaults = Settings()
         for key, field in self.fields.items():
             field.setText(str(getattr(defaults, key)))
-        self.theme.setCurrentText(defaults.theme)
+        self.theme.setCurrentIndex(max(0, self.theme.findData(defaults.theme)))
         self.profile_mode.setCurrentIndex(0)
 
     def filter_settings(self, *_args: object) -> None:
@@ -1485,7 +1543,8 @@ def run_window(core: Controller, *, smoke: bool = False) -> int:
     splash = None
     if not smoke:
         from .workbench_theme import workbench_colors
-        colors = workbench_colors(core.settings.theme, core.settings.accent)
+        from .core import preferred_theme
+        colors = workbench_colors(preferred_theme(core.settings.theme), core.settings.accent)
         pixmap = QPixmap(540, 180)
         pixmap.fill(QColor(colors.background))
         splash = QSplashScreen(pixmap)
