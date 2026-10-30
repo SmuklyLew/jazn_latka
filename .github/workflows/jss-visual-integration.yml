@@ -1,6 +1,8 @@
 name: JSS Visual & Integration CI
 
 on:
+  push:
+    branches: ["update/jss-three-workbench-themes-uiux-20261030"]
   pull_request:
     branches: [master]
     paths:
