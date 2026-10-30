@@ -88,9 +88,12 @@ class WorkbenchShell(QObject):
         self.command("Widok", "Przywróć bezpieczny układ", host.reset_layout)
         self.command("Widok", "Problemy", lambda: host.workspace.show(0))
         self.command("Widok", "Output / Logi", lambda: host.workspace.show(1))
-        self.command("Terminal", "Konsole zadań i terminal zewnętrzny", lambda: host.workspace.show(2))
-        self.command("Terminal", "Możliwości terminala", lambda: QMessageBox.information(
-            host, "Terminal", "Wbudowane panele są konsolami zadań. Interaktywny TTY otwiera terminal zewnętrzny. ConPTY/PTY wewnątrz Studio pozostaje etapem P2."))
+        self.command("Widok", "Historia TPA i zadań", lambda: host.workspace.show(3))
+        self.command("Widok", "Dane techniczne", lambda: host.workspace.show(4))
+        self.command("Terminal", "Konsole zadań w dolnym panelu", lambda: host.workspace.show(2))
+        self.command("Terminal", "Otwórz interaktywną konsolę systemu", host.workspace.open_tty)
+        self.command("Terminal", "Obsługa PTY / ConPTY", lambda: QMessageBox.information(
+            host, "Terminal", "Wbudowane konsole zadań nie obsługują TTY. Uruchom prawdziwą konsolę systemową z menu Terminal. Osadzone ConPTY/PTY wymaga jeszcze implementacji i testów P2."))
         self.command("Usługi", "Panel usług", lambda: host.navigate("Usługi i procesy"))
         self.command("Usługi", "Sprawdź wszystkie usługi", host.refresh_services)
         for operation, label in (("start", "Start wybranej usługi"), ("stop", "Stop wybranej usługi"), ("restart", "Restart wybranej usługi")):
