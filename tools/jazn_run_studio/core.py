@@ -6,7 +6,7 @@ is a live Popen handle created here, never a PID imported from a settings file.
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import asdict, dataclass, field, replace
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from hashlib import sha256
 from importlib.util import find_spec
@@ -190,8 +190,8 @@ def daemon_cli_options(settings: Settings) -> list[str]:
 def preferred_theme(theme: str) -> str:
     """Map legacy appearance profiles to the two operator-facing defaults.
 
-    The on-disk profile is read as-is; only the in-memory presentation is
-    migrated until the operator explicitly saves settings.  Historical
+    The on-disk profile remains intact; the GUI presents a compatible
+    dark/light selection until the operator explicitly saves settings.  Historical
     names remain valid to avoid blocking older installations.
     """
     return "light" if theme == "light" else "dark"
@@ -227,7 +227,7 @@ def load_settings(root: Path) -> tuple[Settings, str | None]:
     ):
         source = legacy
     if not source.exists():
-        return replace(Settings.validate(dict(canonical.studio)), theme=preferred_theme(str(canonical.studio.get("theme", "dark")))), None
+        return Settings.validate(dict(canonical.studio)), None
     raw = source.read_bytes()
     if len(raw) > 32768:
         raise StudioError("Zbyt duży plik ustawień")
@@ -243,7 +243,7 @@ def load_settings(root: Path) -> tuple[Settings, str | None]:
         if local_owned or os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
         else {**data, **canonical.studio}
     )
-    return replace(Settings.validate(merged), theme=preferred_theme(str(merged.get("theme", "dark")))), sha256(raw).hexdigest()
+    return Settings.validate(merged), sha256(raw).hexdigest()
 
 
 def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
