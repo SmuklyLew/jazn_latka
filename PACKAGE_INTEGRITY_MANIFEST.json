@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-30T08:27:30+00:00",
-  "updated_at_utc": "2026-10-30T08:27:30+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
+  "generated_at_utc": "2026-10-30T08:42:59+00:00",
+  "updated_at_utc": "2026-10-30T08:42:59+00:00",
   "start_file": "run.py",
-  "file_count": 3539,
-  "static_file_count": 3539,
+  "file_count": 3543,
+  "static_file_count": 3543,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -454,8 +454,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "d761dff7c4f8f3294a97dfa9e4d4df0ae83e7e5fc7086e0be708279a070692b2",
+      "size_bytes": 2997,
+      "sha256": "72f3537596e08e99d1e434639dd0dbbf55ef1786bc7a518c91840f1354998f06",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -491,7 +491,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1951,
-      "sha256": "31c99c99dfd418f536cc5e9727a0fde030597cd0ae5671937cc710dcd1a11d60",
+      "sha256": "9652833a372552d2a2d380d1d8455c4f6261f50e0daeaefbe51a1d8e9c48bf6d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4308,6 +4308,24 @@
       "path": "docs/tools/README.md",
       "size_bytes": 1830,
       "sha256": "6013b360ed6590777d0187cd8a6e3051e4c6f908775f1fd17de81f879cc14994",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/uiux/JSS_SCREEN_CONTRACTS.md",
+      "size_bytes": 5260,
+      "sha256": "476e748810f7bfc84a8a42345234bf51da7518410f59a2e8cb68588037b3e3d4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/uiux/JSS_WORKBENCH_DESIGN_SYSTEM.md",
+      "size_bytes": 7731,
+      "sha256": "f9c0a0436829d2e368e5b4931bedde573a389104f26343c677bcbc23a3f5a0fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9806,7 +9824,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "0e50b0ca4b7ec199e24c1cfa81c21faf1896360a8a7eb072df3a2b439c3c5f6a",
+      "sha256": "0e12d84fe33575588543e2ccea7d8cf2f922c5cae3e77ea7150ec1b8993fef82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11308,8 +11326,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 20815,
-      "sha256": "05f2bc4ddaf97f1e6f62c5551811ff11959d828048f40d1ff9fa7b83c13c4595",
+      "size_bytes": 20917,
+      "sha256": "502497c6d84bdcf0e96a9e069495090400965ddb772e91a600f44a1f873f3649",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28146,6 +28164,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_uiux_profiles.py",
+      "size_bytes": 2884,
+      "sha256": "01072a8a1577e135322fdf6bc88f944ccffb9f0fc53adb6ffa8e420dfc4a4260",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_uiux_profiles_qt.py",
+      "size_bytes": 2652,
+      "sha256": "68d4e7443d73a514f6910eb26c9d782b46a5fc8ffce9e92ebab38f8439fc0f33",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_knowledge_fabric.py",
       "size_bytes": 1355,
       "sha256": "caf7ba370e1be1c97b0be6ee0a2d0162eef8496d69ee449016897a715d75df7f",
@@ -31154,7 +31190,7 @@
     {
       "path": "tools/jazn_run_studio/core.py",
       "size_bytes": 51835,
-      "sha256": "d6c3a420ad285ebf562271f0994368dcb493ed62abbd47e1511eabfa5ac0a0e7",
+      "sha256": "a1fb038a7d744e7b83e53f5cd4126b6bab996ec376d1c2fe13f25be31a950051",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31180,8 +31216,8 @@
     },
     {
       "path": "tools/jazn_run_studio/first_run.py",
-      "size_bytes": 13758,
-      "sha256": "95d302a02af9dd61953b6599d4dac7239480a603b13bf85b8da63dba65f3dd0c",
+      "size_bytes": 13834,
+      "sha256": "dd9ed4b0972b6b833befef82e8e390cfab91b319e968f280fe05e84b831b8e32",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31468,8 +31504,8 @@
     },
     {
       "path": "tools/jazn_run_studio/visual_system.py",
-      "size_bytes": 8170,
-      "sha256": "388ea46261bc3ba3b4248825a7ba39d5cab3911fe19c0593b59630decebad1fe",
+      "size_bytes": 8315,
+      "sha256": "f966e6e0eb76db9733e39709598f860b966a15cb3380c84663e20714e7ce0f0d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31477,8 +31513,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 88429,
-      "sha256": "82f0192c0f2a140f30f0dda548022a724b25c97d282d6140d3991779240ab74e",
+      "size_bytes": 90344,
+      "sha256": "012da719c768a5a0e1fd3821d658b3afc98743e69c5090453e21898229b94619",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31486,8 +31522,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_shell.py",
-      "size_bytes": 11560,
-      "sha256": "6681d609aced5e713584e17c6af3bd341cc548aacd366f36cc816e007ab41d41",
+      "size_bytes": 11796,
+      "sha256": "2e2708b64763ec5567b9a38d7c6d05569cab489a373471eb7a43936b801a318f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31496,7 +31532,7 @@
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
       "size_bytes": 12226,
-      "sha256": "d8cc046a92109171d0f789df85e4df8e215985a3a8979a8c7e6fd601535079dc",
+      "sha256": "18306ad68ce0d0a984f04d6c061ff8218521ac1fc5ad0bc18eb3e1f6752709b8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31648,8 +31684,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2650560,
-      "sha256": "bcd413b948ddd02deff8d8a0bc010bdbfc21852849c051e3059d5360d00ccfa1",
+      "size_bytes": 2655329,
+      "sha256": "545173da32745c3ee037bca91174155fc74c6b9aec3235c2c76921e7a231df34",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32306,11 +32342,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.37-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.38-run-studio-operator-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
