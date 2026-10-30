@@ -39,6 +39,18 @@ def _base_colors(theme: str, accent: str, *, system_dark: bool = False) -> Workb
             "#11101C", "#1B172A", "#1B172A", "#242034",
             "#302440", "#8D78A3", "#F0E9FA", "#BDB2CF", "#A783DB", "#11101C"
         )
+    # Two neutral, high-contrast operator themes; legacy variants remain
+    # parseable only for old callers and are not selectable in the GUI.
+    if theme == "light":
+        return WorkbenchColors(
+            "#F2F5F9", "#E8EEF5", "#FFFFFF", "#FFFFFF",
+            "#DFE8F4", "#C6D1DF", "#202B3C", "#52647A", "#3167B5", "#FFFFFF",
+        )
+    if theme == "dark":
+        return WorkbenchColors(
+            "#111720", "#19212C", "#151C27", "#222D3B",
+            "#2D3B4D", "#445166", "#E8EFF8", "#B2C1D2", "#6699EC", "#101820",
+        )
     chosen_accent = accent if theme == "custom" else "#9876d4"
     dark = theme in {"purple", "dark", "custom"} or (theme == "system" and system_dark)
     if not dark:
@@ -98,9 +110,9 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
     return f"""
         QWidget {{ background: {c.background}; color: {c.text}; font-size: {METRICS.body_points}pt; }}
         QLabel {{ background: transparent; }}
-        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 2px solid {c.border}; }}
-        QWidget#workbenchTopbar {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {c.editor}, stop:1 {c.sidebar}); border-bottom: 1px solid {c.border}; }}
-        QLabel#workbenchBrand {{ color: {c.accent}; font-size: 17px; font-weight: 700; }}
+        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 1px solid {c.border}; }}
+        QWidget#workbenchTopbar {{ background: {c.editor}; border-bottom: 1px solid {c.border}; }}
+        QLabel#workbenchBrand {{ color: {c.accent}; font-size: 15px; font-weight: 700; }}
         QLabel#workbenchCaption, QLabel#workbenchStatus, QLabel#workbenchFootnote {{
             color: {c.muted}; font-size: 12px;
         }}
@@ -128,7 +140,15 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
         QAbstractSpinBox:focus, QTableView:focus, QTreeView:focus {{
             border: 2px solid {c.focus}; outline: 0;
         }}
-        QPushButton:disabled {{ color: {c.muted}; }}
+        QPushButton:disabled {{ color: {c.muted}; border-color: {c.border}; }}
+        QPushButton:pressed {{ background: {c.hover}; }}
+        QComboBox::drop-down {{ border: 0; width: 20px; }}
+        QLineEdit, QComboBox {{ min-height: 25px; }}
+        QAbstractItemView {{ selection-background-color: {c.accent}; selection-color: {c.selected_text}; }}
+        QTreeView::item:hover, QTableView::item:hover {{ background: {c.hover}; }}
+        QTableWidget QLabel {{ background: transparent; color: {c.text}; }}
+        QToolButton:focus {{ border: 2px solid {c.focus}; }}
+        QDockWidget {{ border: 1px solid {c.border}; }}
         QPlainTextEdit, QLineEdit, QComboBox, QTextEdit, QTableView {{
             background: {c.surface}; border: 1px solid {c.border};
             border-radius: 3px; padding: 3px; selection-background-color: {c.accent};
@@ -151,7 +171,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             background: {c.editor}; alternate-background-color: {c.surface};
             gridline-color: {c.border};
         }}
-        QTableWidget QLabel {{ background: {c.editor}; color: {c.text}; padding: 3px; }}
+        QTableWidget QLabel {{ background: transparent; color: {c.text}; padding: 3px; }}
         QHeaderView::section {{
             background: {c.sidebar}; border: 0;
             border-bottom: 1px solid {c.border}; padding: 6px;
