@@ -41,7 +41,7 @@ Aktualne JSS już dysponuje paskiem aktywności, nawigacją, zakładkami, panele
 | Lewy panel | `#1B2430` | `#172931` | `#1F2938` |
 | Obszar treści | `#202A36` | `#1C3038` | `#253347` |
 | Karta/powierzchnia | `#263342` | `#25414B` | `#2D3F55` |
-| Ramki | `#465568` | `#47636B` | `#50657B` |
+| Ramki | `#8194AA` | `#8EA7B4` | `#8EA7B4` |
 | Tekst | `#F5F8FC` | `#F2FAFC` | `#F6F9FC` |
 | Tekst pomocniczy | `#BFCDD9` | `#BBD0D7` | `#C1CFDE` |
 | Akcent | `#5BA5F5` | `#5CD4C2` | `#86B6FF` |
