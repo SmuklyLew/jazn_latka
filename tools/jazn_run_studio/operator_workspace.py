@@ -173,6 +173,126 @@ class OperatorWorkspace:
             self.consoles.append(console)
             self.consoles_splitter.addTab(console, f"Konsola {len(self.consoles)}")
 
+    def _history(self) -> None:
+        """History reuses the canonical TPA store, never copies evidence."""
+        panel = QWidget()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(8, 8, 8, 8)
+        bar = QHBoxLayout()
+        self.history_summary = QLabel("Historia: nie odczytano")
+        self.history_summary.setWordWrap(True)
+        bar.addWidget(self.history_summary, 1)
+        refresh = QPushButton("Odśwież")
+        refresh.clicked.connect(self.refresh_history)
+        bar.addWidget(refresh)
+        layout.addLayout(bar)
+        self.history_tree = QTreeWidget()
+        self.history_tree.setAccessibleName("Historia zadań bieżących i zapisanych przebiegów TPA")
+        self.history_tree.setHeaderLabels(["Przebieg / źródło", "Wynik", "Czas", "Akcja"])
+        self.history_tree.setRootIsDecorated(False)
+        self.history_tree.setAlternatingRowColors(True)
+        header = self.history_tree.header()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.history_tree.itemActivated.connect(self.open_history_item)
+        layout.addWidget(self.history_tree)
+        self.tabs.addTab(panel, "Historia")
+
+    def refresh_history(self) -> None:
+        self.history_tree.clear()
+        with self.host.core.lock:
+            jobs = [job.snapshot() for job in self.host.core.jobs.values()]
+        for job in reversed(jobs[-100:]):
+            key = str(job.get("key") or job.get("action") or "zadanie")
+            state = str(job.get("state", "nieznany"))
+            item = QTreeWidgetItem(self.history_tree, [
+                "Zadanie: " + key, state, "bieżąca sesja", "Otwórz log",
+            ])
+            item.setData(0, Qt.ItemDataRole.UserRole, ("job", key))
+        reports: list[dict[str, Any]] = []
+        issue = ""
+        try:
+            store = self.host.local_acceptance_panel.runner.store
+            reports = store.history()[:100]
+            if store.history_errors:
+                issue = " • odczyt: " + "; ".join(str(x) for x in store.history_errors[:2])
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            issue = " • błąd odczytu " + type(exc).__name__
+        for report in reports:
+            run_id = str(report.get("run_id", ""))
+            if not run_id:
+                continue
+            rows = report.get("results") or []
+            states = [str(row.get("status", "NOT_RUN")) for row in rows if isinstance(row, dict)]
+            passed = states.count("PASS")
+            blocked = sum(state in {"FAIL", "BLOCKED", "TIMEOUT"} for state in states)
+            item = QTreeWidgetItem(self.history_tree, [
+                "TPA: " + run_id, f"{passed} PASS, {blocked} błędów/blokad",
+                str(report.get("started_utc", ""))[:19], "Otwórz raport TPA",
+            ])
+            item.setToolTip(1, "To wyniki podtestów; pełny odbiór jest osobną kontrolą.")
+            item.setData(0, Qt.ItemDataRole.UserRole, ("tpa", run_id))
+        self.history_summary.setText(
+            f"Zadania tej sesji: {len(jobs)} • historia TPA: {len(reports)}" + issue
+        )
+
+    def open_history_item(self, item: QTreeWidgetItem, _column: int) -> None:
+        identity = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(identity, tuple) or len(identity) != 2:
+            return
+        kind, key = identity
+        if kind == "job":
+            self.open_log_source(str(key))
+            return
+        if kind == "tpa":
+            self.host.navigate("TPA")
+            panel = self.host.local_acceptance_panel
+            index = panel.history.findData(key)
+            if index < 0:
+                panel.refresh()
+                index = panel.history.findData(key)
+            if index >= 0:
+                panel.history.setCurrentIndex(index)
+                panel.load_history(index)
+
+    def _technical(self) -> None:
+        panel = QWidget()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(8, 8, 8, 8)
+        refresh = QPushButton("Odśwież dane techniczne (tylko odczyt)")
+        refresh.clicked.connect(self.refresh_technical)
+        layout.addWidget(refresh)
+        self.technical = QPlainTextEdit()
+        self.technical.setReadOnly(True)
+        self.technical.setAccessibleName("Zredagowane dowody techniczne JSS")
+        self.technical.setPlaceholderText("Nie sprawdzono. Odśwież, aby wczytać bieżące dowody.")
+        layout.addWidget(self.technical)
+        self.tabs.addTab(panel, "Techniczne")
+
+    def refresh_technical(self) -> None:
+        with self.host.core.lock:
+            jobs = [job.snapshot() for job in self.host.core.jobs.values()]
+        payload = {
+            "scope": "local_studio_read_only",
+            "runtime_readiness": "not_verified_by_this_panel",
+            "services": self.observations,
+            "jobs": jobs,
+            "accepted_visible_turn": True if self.host.core.accepted_turn_proof else None,
+        }
+        self.technical.setPlainText(self.host.core.redactor.text(
+            json.dumps(payload, ensure_ascii=False, indent=2, default=str)
+        ))
+
+    def open_log_source(self, key: str) -> None:
+        """Select one source in the shared output panel; no second log window."""
+        self.refresh()
+        index = self.source.findData(key)
+        self.source.setCurrentIndex(index if index >= 0 else 0)
+        self.show(1)
+        self.refresh()
+
     def open_tty(self) -> None:
         if os.name != "nt":
             raise StudioError("Ten przycisk wymaga terminala Windows")
