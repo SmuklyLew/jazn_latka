@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.29",
-  "active_definition_count": 2940,
+  "system_version": "16.3.25.5.116.0.34.94.6.33",
+  "active_definition_count": 2946,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20937,11 +20937,11 @@
       "path": "tests/test_heart_unified_operator_dock_qt.py",
       "name": "test_shared_history_and_technical_panels_are_safe_read_only",
       "purpose": "Shared history and technical panels are safe read only",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -20952,18 +20952,18 @@
       "path": "tests/test_heart_unified_operator_dock_qt.py",
       "name": "test_layout_v3_restores_valid_prior_schemas_but_rejects_bad_tab",
       "purpose": "Layout v3 restores valid prior schemas but rejects bad tab",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [
         "ValueError"
       ],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_heart_visual_system_qt.py::test_all_profiles_have_readable_text_selection_status_and_focus": {
       "path": "tests/test_heart_visual_system_qt.py",
@@ -24955,6 +24955,55 @@
       "description_source": "source_identity",
       "line": 130
     },
+    "tests/test_jazn_operator_pty_session.py::test_env_redacts_runtime_credentials": {
+      "path": "tests/test_jazn_operator_pty_session.py",
+      "name": "test_env_redacts_runtime_credentials",
+      "purpose": "Env redacts runtime credentials",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_jazn_operator_pty_session.py::test_terminal_is_not_autostarted": {
+      "path": "tests/test_jazn_operator_pty_session.py",
+      "name": "test_terminal_is_not_autostarted",
+      "purpose": "Terminal is not autostarted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_jazn_operator_pty_session.py::test_posix_session_runs_only_owned_shell": {
+      "path": "tests/test_jazn_operator_pty_session.py",
+      "name": "test_posix_session_runs_only_owned_shell",
+      "purpose": "Posix session runs only owned shell",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
     "tests/test_jazn_operator_studio.py::test_studio_settings_roundtrip_and_compare_and_swap": {
       "path": "tests/test_jazn_operator_studio.py",
       "name": "test_studio_settings_roundtrip_and_compare_and_swap",
@@ -28312,6 +28361,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 52
+    },
+    "tests/test_jazn_service_visual_state.py::test_unknown_does_not_look_running": {
+      "path": "tests/test_jazn_service_visual_state.py",
+      "name": "test_unknown_does_not_look_running",
+      "purpose": "Unknown does not look running",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 4
+    },
+    "tests/test_jazn_service_visual_state.py::test_runtime_identity_and_heartbeat_required": {
+      "path": "tests/test_jazn_service_visual_state.py",
+      "name": "test_runtime_identity_and_heartbeat_required",
+      "purpose": "Runtime identity and heartbeat required",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_jazn_service_visual_state.py::test_optional_ollama_endpoint_only": {
+      "path": "tests/test_jazn_service_visual_state.py",
+      "name": "test_optional_ollama_endpoint_only",
+      "purpose": "Optional ollama endpoint only",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
