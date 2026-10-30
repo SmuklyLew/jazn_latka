@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import time
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFileDialog, QGridLayout,
     QHeaderView, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
     QPlainTextEdit, QProgressBar, QPushButton, QSplitter, QTableWidget,
@@ -15,6 +16,7 @@ from .tpa_catalog import LIVE_CASES, MODES, execution_map
 from .tpa_engine import TPARunner
 from .tpa_plan_runner import TPAPlanRunner
 from .tpa_execution_plan import plan_counts
+from .tpa_wizard import pending_cases, wizard_counts
 from .tpa_guidance import attach_evidence, record_observation
 from .tpa_current_state import current_state
 from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, source_identity, summary
@@ -39,6 +41,7 @@ class TPAPanel(QWidget):
         self._guide_key = ("", "")
         self._log_selection: tuple[str, str] | None = None
         self._guide_id, self._started = "", 0.0
+        self._wizard_active = False
         self.runner = TPARunner(root, python or ("" if getattr(sys, "frozen", False) else sys.executable), self)
         self.runner.progress.connect(self._progress)
         self.runner.changed.connect(self.refresh_view)
@@ -271,7 +274,22 @@ class TPAPanel(QWidget):
 
     def _guide(self) -> None:
         page = QWidget()
+        self.guide_page = page
         layout = QVBoxLayout(page)
+        self.wizard_status = QLabel(
+            "Kreator P3 — kolejno przechodź odbiory; bez osobnego dowodu nie ma PASS.")
+        self.wizard_status.setWordWrap(True)
+        self.wizard_status.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.wizard_status)
+        wizard_buttons = QHBoxLayout()
+        self.wizard_resume_button = self.button("Kreator: rozpocznij / wznów", self.wizard_start)
+        self.wizard_prev_button = self.button("Poprzedni krok", lambda: self.wizard_step(-1))
+        self.wizard_next_button = self.button("Następny krok", lambda: self.wizard_step(1))
+        self.wizard_prev_button.setShortcut(QKeySequence("Ctrl+Alt+P"))
+        self.wizard_next_button.setShortcut(QKeySequence("Ctrl+Alt+N"))
+        for button in (self.wizard_resume_button, self.wizard_prev_button, self.wizard_next_button):
+            wizard_buttons.addWidget(button)
+        layout.addLayout(wizard_buttons)
         row = QHBoxLayout()
         self.live_button = self.button("Wykonaj odbiór izolowany", lambda: self.start((self.chosen(),), "live"))
         self.sandbox_button = self.button("Otwórz izolowane Studio", lambda: self.start((self.chosen(),), "sandbox"))
@@ -297,6 +315,61 @@ class TPAPanel(QWidget):
         row.addWidget(self.observe_button)
         layout.addLayout(row)
         self.tabs.addTab(page, "Odbiór wspomagany")
+
+    def _wizard_queue(self) -> tuple[str, ...]:
+        return pending_cases(self.rows, self.case_state, include_live=self.live_plan.isChecked())
+
+    def _update_wizard_status(self) -> None:
+        accepted, total, deferred = wizard_counts(
+            self.rows, self.case_state, include_live=self.live_plan.isChecked())
+        current = self.rows[self.table.currentRow()]["title"] if 0 <= self.table.currentRow() < len(self.rows) else "—"
+        self.wizard_status.setText(
+            f"Kreator P3: pełne odbiory potwierdzone {accepted}/{total}. "
+            f"Odroczone live: {deferred}. Wybrany krok: {current}. "
+            "Wznowienie korzysta z zapisanych obserwacji i hashy dowodów; "
+            "przejście dalej nigdy nie nadaje PASS.")
+
+    def _wizard_focus(self, case_id: str) -> None:
+        # The operator must see the selected case even after applying filters.
+        self.search.clear()
+        for widget in (self.category, self.mode_filter, self.result_filter, self.triage_filter):
+            widget.setCurrentIndex(0)
+        row = next(i for i, item in enumerate(self.rows) if item["id"] == case_id)
+        self.table.setCurrentCell(row, 0)
+        self.table.selectRow(row)
+        self.tabs.setCurrentWidget(self.guide_page)
+        self._update_wizard_status()
+
+    def wizard_start(self) -> None:
+        if self.runner.active or self.plan_runner.active:
+            raise ValueError("Nie można wznowić kreatora w trakcie podtestu")
+        self._wizard_active = True
+        self.show_current()
+        pending = self._wizard_queue()
+        if pending:
+            self._wizard_focus(pending[0])
+        else:
+            self._update_wizard_status()
+            self.feedback.setText(
+                "Nie ma oczekujących odbiorów w wybranym zakresie. "
+                "Live pozostaje odroczone, jeśli nie włączono jawnej opcji.")
+
+    def wizard_step(self, direction: int) -> None:
+        if not self._wizard_active:
+            self.wizard_start()
+            return
+        pending = self._wizard_queue()
+        if not pending:
+            self._update_wizard_status()
+            self.feedback.setText("Brak kolejnych oczekujących odbiorów w tym zakresie.")
+            return
+        indices = {row["id"]: i for i, row in enumerate(self.rows)}
+        current = self.table.currentRow()
+        if direction > 0:
+            target = next((key for key in pending if indices[key] > current), pending[0])
+        else:
+            target = next((key for key in reversed(pending) if indices[key] < current), pending[-1])
+        self._wizard_focus(target)
 
     def set_installed_models(self, names: object, preferred: str = "") -> None:
         """Populate TPA choices only from the observed local Ollama model list."""
@@ -506,6 +579,7 @@ class TPAPanel(QWidget):
         self.selected(self.table.currentRow(), 0, -1, -1)
         self.update_controls()
         self.update_progress()
+        self._update_wizard_status()
 
     def update_controls(self) -> None:
         active = self.runner.active or self.plan_runner.active
@@ -523,6 +597,8 @@ class TPAPanel(QWidget):
         self.checkpoint_button.setEnabled(self.plan_runner.plan is not None)
         for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value, self.live_plan):
             widget.setEnabled(not active)
+        for button in (self.wizard_resume_button, self.wizard_prev_button, self.wizard_next_button):
+            button.setEnabled(not active)
         for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
             button.setEnabled(not active and self.report is not None and bool(self.report.get("finished_utc")))
         try:
@@ -730,6 +806,8 @@ class TPAPanel(QWidget):
                            pending["note"], pending["proofs"], pending["outcome"], verified_source=verified)
         self.feedback.setText("Zapisano odrębny odbiór człowieka z dowodami; wcześniejsze obserwacje zachowane.")
         self.refresh_view()
+        if self._wizard_active:
+            QTimer.singleShot(0, lambda: self.wizard_step(1))
 
     def shutdown(self) -> bool:
         if self.runner.active or self.plan_runner.active:
