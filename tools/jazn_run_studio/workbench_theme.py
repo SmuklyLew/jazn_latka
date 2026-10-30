@@ -37,17 +37,17 @@ def _base_colors(theme: str, accent: str, *, system_dark: bool = False) -> Workb
     if theme == "technical-workbench":
         return WorkbenchColors(
             "#141A23", "#1B2430", "#202A36", "#263342",
-            "#314053", "#465568", "#F5F8FC", "#BFCDD9", "#5BA5F5", "#0B1A2B"
+            "#314053", "#8194AA", "#F5F8FC", "#BFCDD9", "#5BA5F5", "#0B1A2B"
         )
     if theme == "operations-studio":
         return WorkbenchColors(
             "#111C21", "#172931", "#1C3038", "#25414B",
-            "#30535F", "#47636B", "#F2FAFC", "#BBD0D7", "#5CD4C2", "#071D22"
+            "#30535F", "#8EA7B4", "#F2FAFC", "#BBD0D7", "#5CD4C2", "#071D22"
         )
     if theme == "fluent-studio":
         return WorkbenchColors(
             "#171E2B", "#1F2938", "#253347", "#2D3F55",
-            "#38516B", "#50657B", "#F6F9FC", "#C1CFDE", "#86B6FF", "#122034"
+            "#38516B", "#8EA7B4", "#F6F9FC", "#C1CFDE", "#86B6FF", "#122034"
         )
     if theme == "violet-night":
         return WorkbenchColors(
