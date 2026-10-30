@@ -8,7 +8,7 @@
 - Baza: `origin/master`, `55948d3813664923ae64c6e24f345369632a1b24` (fetch wykonany).
 - HEAD: commit zawierający ten checkpoint; odczytaj `git rev-parse HEAD`.
   Nie wpisujemy samoodnoszącego się SHA do zawartości commita.
-- Wersja: `16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection`.
+- Wersja: `16.3.25.5.116.0.34.94.6.45-tpa-source-integration`.
 - Data: 2026-10-30 (Europe/Warsaw).
 
 ## B. Prace i mapa modułów
@@ -17,6 +17,14 @@ Checkpoint etapu I został wypchnięty i zweryfikowany na GitHub:
 `d79c2473839f76d88a59e6f2af5c9728a817ee70` (kod),
 `c1e177da4aad741c413b00e6820743efd64af33d` (metadane).
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/443 (base master).
+Etap II wypchnięty jako `13bd41bd` (kod) / `0cfd879bc8d67a4f66d6ab1a79eb650bbeacda6f`
+(metadane); potwierdzono zgodność lokalnego i zdalnego SHA.
+
+Naprawy integracyjne po odczycie rzeczywistego CI etapu I: zaktualizowano
+runtime_version kontraktu wdrożenia i version kontraktu startowego, wygenerowano
+kanoniczny katalog testów. POSIX pty_controlling_child importuje fcntl/termios
+wyłącznie na POSIX i jawnie odmawia startu na Windows; to usuwa zastany błąd
+typów Windows bez wyłączenia gate'u i bez zmiany sterowania daemonem.
 
 Etap II / P1: `tpa_sources.py` przygotowuje master/branch/PR/server merge-ref
 jako osobny detached worktree. Lokalny Git musi być czysty; eksport/ZIP
@@ -100,6 +108,12 @@ wyłącznie do nowego venv. Nie instalowano nic do środowiska Jaźni.
 - Niezależne metadata --check dla `c1e177da`: **PASS**, synchronized=true,
   manifest_matches=true, provenance_matches=true (3554 pliki).
   Raport: `D:\.AI\codex_tasks\tpa-2-stage1-metadata-check.json`.
+- Odczytano nieudane logi CI dla c1e177da: dwa nowe błędy typów naprawiono
+  w etapie II; zastane POSIX typy Windows i niespójne wersje deployment/startup
+  naprawiono w .45. Po poprawkach pełny Studio check_types.py: **0 errors,
+  0 warnings**. Kontrakty runtime/PTY/wersji: **27 passed, 4 skipped**, 6.08 s.
+  docs_truth_audit: **PASS**; sync_contract_catalog --check: **PASS**.
+  CI końcowego SHA wymaga ponownego odczytu po pushu, wcześniejszy FAIL zachowano.
 - Pełne pytest, doctor, package-smoke i końcowe CI: jeszcze NOT RUN / CI w toku
   dla wcześniejszego SHA. Nie stanowi to dowodu dla końcowego etapu II.
 - Fizyczne Windows/DPI/EXE, rzeczywista Ollama i pełny odbiór operatorski:
@@ -108,7 +122,7 @@ wyłącznie do nowego venv. Nie instalowano nic do środowiska Jaźni.
 ## D. Pozostałe prace
 
 1. P1: resolver, wykonanie w detached kopii i rzeczywista weryfikacja ZIP
-   są zaimplementowane i sprawdzone; domknąć metadane/push końcowego SHA.
+   są zaimplementowane i sprawdzone; domknąć metadane/push poprawek CI .45.
 2. P2: zależności preflight → regresja → daemon → dwie zaakceptowane tury →
    reconnect → resume tego samego nierozstrzygniętego request_id → własny restart.
    Oddzielne timeouty faz i jawne BLOCKED dla zależnych kroków.
