@@ -129,7 +129,7 @@ class Settings:
     tunnel_id: str = ""
     model: str = ""
     theme: str = "technical-workbench"
-    accent: str = "#5BA5F5"
+    accent: str = "#A783DB"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
     daemon_url: str = "http://127.0.0.1:8787"
