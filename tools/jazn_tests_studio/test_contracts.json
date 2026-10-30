@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.33",
-  "active_definition_count": 2946,
+  "system_version": "16.3.25.5.116.0.34.94.6.34",
+  "active_definition_count": 2950,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24955,6 +24955,79 @@
       "description_source": "source_identity",
       "line": 130
     },
+    "tests/test_jazn_operator_pty_resize.py::test_resize_before_start_refuses_to_take_over_a_process": {
+      "path": "tests/test_jazn_operator_pty_resize.py",
+      "name": "test_resize_before_start_refuses_to_take_over_a_process",
+      "purpose": "Resize before start refuses to take over a process",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError",
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
+    },
+    "tests/test_jazn_operator_pty_resize.py::test_posix_start_and_resize_report_actual_tty_geometry": {
+      "path": "tests/test_jazn_operator_pty_resize.py",
+      "name": "test_posix_start_and_resize_report_actual_tty_geometry",
+      "purpose": "Posix start and resize report actual tty geometry",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_jazn_operator_pty_resize.py::test_windows_backend_missing_resize_capability_fails_closed": {
+      "path": "tests/test_jazn_operator_pty_resize.py",
+      "name": "test_windows_backend_missing_resize_capability_fails_closed",
+      "purpose": "Windows backend missing resize capability fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_jazn_operator_pty_resize.py::test_windows_backend_resize_receives_rows_then_cols": {
+      "path": "tests/test_jazn_operator_pty_resize.py",
+      "name": "test_windows_backend_resize_receives_rows_then_cols",
+      "purpose": "Windows backend resize receives rows then cols",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
     "tests/test_jazn_operator_pty_session.py::test_env_redacts_runtime_credentials": {
       "path": "tests/test_jazn_operator_pty_session.py",
       "name": "test_env_redacts_runtime_credentials",
@@ -28381,13 +28454,13 @@
       "path": "tests/test_jazn_service_visual_state.py",
       "name": "test_runtime_identity_and_heartbeat_required",
       "purpose": "Runtime identity and heartbeat required",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -28407,7 +28480,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 17
+      "line": 20
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
