@@ -18,6 +18,7 @@ from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, summary
 
 class TPAPanel(QWidget):
     dependency_requested = Signal()
+    models_requested = Signal()
 
     def __init__(self, root: Path, parent: QWidget | None = None, *, python: str = ""):
         super().__init__(parent)
@@ -57,11 +58,14 @@ class TPAPanel(QWidget):
         for widget in (self.check_button, self.setup_toggle, self.dependencies_button):
             ready_bar.addWidget(widget)
         layout.addLayout(ready_bar)
-        self.model = QLineEdit()
-        self.model.setPlaceholderText("Model Ollama — do rzeczywistych tur")
-        self.model.setAccessibleName("Model do odbioru TPA")
+        self.model = QComboBox()
+        self.model.setEditable(False)
+        self.model.setAccessibleName("Zainstalowany model Ollama do odbioru TPA")
+        self.model.addItem("Wykryj zainstalowane modele…", "")
+        self.refresh_models_button = self.button("Wykryj modele", self.models_requested.emit)
         setup.addWidget(QLabel("Model Ollama"), 1, 0)
-        setup.addWidget(self.model, 1, 1, 1, 3)
+        setup.addWidget(self.model, 1, 1, 1, 2)
+        setup.addWidget(self.refresh_models_button, 1, 3)
         setup.setColumnStretch(2, 1)
         layout.addWidget(self.setup_details)
         self.setup_details.hide()
@@ -240,6 +244,26 @@ class TPAPanel(QWidget):
         layout.addLayout(row)
         self.tabs.addTab(page, "Odbiór wspomagany")
 
+    def set_installed_models(self, names: object, preferred: str = "") -> None:
+        """Populate TPA choices only from the observed local Ollama model list."""
+        previous = self.model.currentData()
+        installed = sorted({name for name in names if isinstance(name, str) and name.strip()}) if isinstance(names, list) else []
+        self.model.blockSignals(True)
+        self.model.clear()
+        self.model.addItem("Wybierz zainstalowany model…" if installed else "Brak modeli / Ollama niedostępna", "")
+        for name in installed:
+            self.model.addItem(name, name)
+        index = self.model.findData(previous or preferred)
+        self.model.setCurrentIndex(index if index >= 0 else 0)
+        self.model.blockSignals(False)
+        self.model.setToolTip("Lista modeli z lokalnego API Ollama; bez pobierania i bez ręcznego wpisywania.")
+
+    @staticmethod
+    def full_gate_description(value: str) -> str:
+        if value == "NOT_RUN":
+            return "NOT_RUN — osobny pełny odbiór operatorski nie został wykonany (test izolowany może mieć PASS)"
+        return value or "NOT_RUN — osobny pełny odbiór operatorski nie został wykonany"
+
     def selected_ids(self) -> tuple[str, ...]:
         rows = {i.row() for i in self.table.selectionModel().selectedRows()}
         rows.update(i for i in range(self.table.rowCount()) if self.cell(i, 0).checkState() == Qt.CheckState.Checked)
@@ -272,7 +296,10 @@ class TPAPanel(QWidget):
         self._started = time.monotonic()
         self.auto_log.clear()
         self._log_selection = None
-        self.runner.start_selection(ids, execution=execution, model=self.model.text().strip())
+        selected_model = self.model.currentData() or ""
+        if execution == "live" and any(case in LIVE_CASES for case in ids) and not selected_model:
+            raise ValueError("Najpierw kliknij Wykryj modele Ollama i wybierz zainstalowany model z listy.")
+        self.runner.start_selection(ids, execution=execution, model=selected_model)
         self.attached.clear()
         if execution != "regression":
             self.tabs.setCurrentWidget(self.auto_log)
@@ -325,7 +352,7 @@ class TPAPanel(QWidget):
             reason = result.get("reason") or self.runner.availability.get(case["id"], {}).get("reason") or "Użyj Sprawdź gotowość."
             for col, text in ((3, state), (4, reason)):
                 self.cell(i, col).setText(text)
-                self.cell(i, col).setToolTip(state + "\n" + reason + "\nPełny odbiór: " + result.get("full_gate", "NOT_RUN"))
+                self.cell(i, col).setToolTip("Wynik scenariusza: " + state + "\n" + reason + "\nPełny odbiór: " + self.full_gate_description(result.get("full_gate", "NOT_RUN")))
             self.cell(i, 0).setToolTip(case["title"] + "\nID: " + case["id"])
         ready = sum(v["ready"] for v in self.runner.availability.values())
         counters = summary(self.report)["counts"] if self.report else {}
@@ -353,7 +380,7 @@ class TPAPanel(QWidget):
         if not self.retry_button.isEnabled() and not active:
             self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
         self.auto_cancel.setEnabled(active)
-        for widget in (self.python_field, self.choose_python, self.history):
+        for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button):
             widget.setEnabled(not active)
         for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
             button.setEnabled(not active and self.report is not None and bool(self.report.get("finished_utc")))
@@ -394,7 +421,8 @@ class TPAPanel(QWidget):
         self.instructions.setPlainText("ID: " + case["id"] + "\nCEL: " + case["title"] + "\n\nKRYTERIA:\n" + case["expected"]
                                        + "\n\nWYKONAWCA: " + case["executor"] + "\n" + "\n".join(case["files"])
                                        + "\nZależności: " + ", ".join(case["requirements"]) + "\n\nZAOBSERWOWANO:\n" + result.get("reason", "nie ustalono")
-                                       + "\nPełny odbiór: " + result.get("full_gate", "NOT_RUN")
+                                       + "\nWynik scenariusza: " + result.get("status", "NOT_RUN")
+                                       + "\nPełny odbiór operatorski: " + self.full_gate_description(result.get("full_gate", "NOT_RUN"))
                                        + "\nCzas / kod wyjścia: " + str(result.get("duration_seconds", "nie ustalono")) + " s / " + str(result.get("exit_code", "nie ustalono"))
                                        + "\nWyniki z JUnit: " + json.dumps(result.get("counts", {}), ensure_ascii=False)
                                        + "\nUruchomiono: " + " ".join(result.get("command", []))
