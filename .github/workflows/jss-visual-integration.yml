@@ -68,13 +68,14 @@ jobs:
         run: python -X utf8 -m tools.jazn_run_studio.visual_ci --output "${{ env.JSS_VISUAL_DIR }}"
       - name: Publish report to job summary
         if: always()
-        shell: bash
+        shell: pwsh
         run: |
-          if test -f "${JSS_VISUAL_DIR}/report.md"; then
-            cat "${JSS_VISUAL_DIR}/report.md" >> "${GITHUB_STEP_SUMMARY}"
-          else
-            echo "Visual runner did not produce report.md; check logs." >> "${GITHUB_STEP_SUMMARY}"
-          fi
+          $report = Join-Path $env:JSS_VISUAL_DIR 'report.md'
+          if (Test-Path $report) {
+            Get-Content $report | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          } else {
+            'Visual runner did not produce report.md; check logs.' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
