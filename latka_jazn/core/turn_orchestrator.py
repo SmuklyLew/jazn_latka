@@ -45,7 +45,11 @@ class TurnOrchestrator:
         )
 
         def span(name: str):
-            return observed.stage(name) if measured else nullcontext()
+            # Narrow the optional context at its actual use, not via a
+            # separate bool: Pyright cannot infer this cross-variable invariant.
+            if measured and isinstance(observed, TurnExecutionContext):
+                return observed.stage(name)
+            return nullcontext()
 
         with span("pipeline_prepare"):
             self.context.build(state)
