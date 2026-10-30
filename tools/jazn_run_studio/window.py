@@ -659,7 +659,7 @@ class Window(QMainWindow):
             compact=True,
         )
         self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
-        self.local_acceptance_panel.model.setText(self.core.settings.model)
+        self.local_acceptance_panel.models_requested.connect(lambda: self.core.probe("ollama"))
         self.local_acceptance_panel.dependency_requested.connect(self.open_tpa_dependencies)
         layout.addWidget(self.local_acceptance_panel)
 
@@ -1051,6 +1051,8 @@ class Window(QMainWindow):
                         index = self.chat_model_selector.findData(self.core.settings.model)
                         self.chat_model_selector.setCurrentIndex(index if index >= 0 else 0)
                         self.chat_model_selector.blockSignals(False)
+                    if isinstance(names, list):
+                        self.local_acceptance_panel.set_installed_models(names, self.core.settings.model)
                     if not names:
                         self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
                     else:
