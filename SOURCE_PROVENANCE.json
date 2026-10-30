@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "21a7ce839620be235aee01b8c2c914329a11c956",
+  "base_merge_commit": "0baed3915c9c0639ee2175ee134399bcfb958fcf",
   "base_version": "16.3.25.5.116.0.34.94.6.26-run-studio-operator-diagnostics",
-  "commit_date": "2026-10-30T04:46:15Z",
+  "commit_date": "2026-10-30T04:56:25Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-30T04:46:15+00:00",
+  "generated_at_utc": "2026-10-30T04:56:25+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "72b553cc7604c7b8a8ae31610e5e9646089fde20",
+  "git_tree_sha": "6ce650ee815af19950acdded3f71a0b644b1d3b2",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "21a7ce839620be235aee01b8c2c914329a11c956",
+    "source_commit": "0baed3915c9c0639ee2175ee134399bcfb958fcf",
     "source_version": "16.3.25.5.116.0.34.94.6.26-run-studio-operator-diagnostics"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "21a7ce839620be235aee01b8c2c914329a11c956",
+  "source_commit": "0baed3915c9c0639ee2175ee134399bcfb958fcf",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.26-run-studio-operator-diagnostics",
   "tag": null,
