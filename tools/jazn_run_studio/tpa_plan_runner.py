@@ -25,10 +25,11 @@ class TPAPlanRunner(QObject):
         self.cancelled = False
         self.runner.completed.connect(self._completed)
 
-    def start(self, case_ids: tuple[str, ...], *, source: dict, model: str = "") -> None:
+    def start(self, case_ids: tuple[str, ...], *, source: dict, model: str = "",
+              regression_only: bool = False) -> None:
         if self.active or self.runner.active:
             raise ValueError("Poprzedni przebieg lub plan nadal trwa")
-        self.plan = build_plan(case_ids, source, model)
+        self.plan = build_plan(case_ids, source, model, include_live=not regression_only)
         self.plan["status"] = "RUNNING"
         self.store.save(self.plan)  # No test starts if checkpoint persistence fails.
         self.active, self.cancelled = True, False
