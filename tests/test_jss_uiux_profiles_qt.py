@@ -1,8 +1,6 @@
 """Qt integration for JSS theme selection; synthetic, not live runtime acceptance."""
 from __future__ import annotations
 
-from dataclasses import asdict
-
 import pytest
 
 pytest.importorskip("PySide6")
@@ -17,6 +15,8 @@ from tools.jazn_run_studio.workbench_theme import WORKBENCH_PROFILES, workbench_
 @pytest.mark.parametrize("theme", [p.key for p in WORKBENCH_PROFILES])
 def test_toolbar_selection_persists_and_does_not_operate_services(window, theme: str) -> None:
     expected_count = len(window.core.jobs)
+    window.quick_runtime_ready = True  # synthetic prior evidence; appearance must not erase it
+    window.quick_generation_ready = True
     index = window.style_selector.findData(theme)
     assert index >= 0
     window.style_selector.setCurrentIndex(index)
@@ -25,6 +25,8 @@ def test_toolbar_selection_persists_and_does_not_operate_services(window, theme:
     saved, _ = load_settings(window.core.root)
     assert saved.theme == theme
     assert len(window.core.jobs) == expected_count
+    assert window.quick_runtime_ready is True
+    assert window.quick_generation_ready is True
     assert "niezweryfikowany" in window.workbench_status.text()
     assert window.style_selector.accessibleName()
     assert window.current_section.text() == "Pulpit"
