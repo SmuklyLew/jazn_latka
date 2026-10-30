@@ -1,3 +1,4 @@
+# v116.0.34.94.6.37: Close owned PTY, controlling POSIX tty, verified release TPA source without Git.
 # v116.0.34.94.6.36: Fail-closed TPA triage proof requires matching immutable Git source identity.
 # v116.0.34.94.6.35: TPA read-only local operator triage (new/repeat/outdated) and explicit P2–P5 acceptance queue.
 # v116.0.34.94.6.34: PTY initial/resize and safe restart; runtime status requires verified ROOT and version.
@@ -173,7 +174,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.36"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.37"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (

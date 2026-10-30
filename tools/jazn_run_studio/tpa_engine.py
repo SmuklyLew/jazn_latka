@@ -28,13 +28,24 @@ for name in ("pytest", "PySide6", "tkinter", "prompt_toolkit", "pydantic"):
         result["imports"][name] = {"ok": True}
     except Exception as exc:
         result["imports"][name] = {"ok": False, "error": type(exc).__name__}
-for name, args in (("git_sha", ["rev-parse", "HEAD"]), ("git_dirty", ["status", "--porcelain"])):
+root = os.path.abspath(sys.argv[1])
+if os.path.exists(os.path.join(root, ".git")):
+    for name, args in (("git_sha", ["rev-parse", "HEAD"]), ("git_dirty", ["status", "--porcelain"])):
+        try:
+            p = subprocess.run(["git", "-C", root, *args], capture_output=True, timeout=5,
+                               creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+            result["source"][name] = (bool(p.stdout) if name == "git_dirty" else p.stdout.decode().strip()) if p.returncode == 0 else None
+        except (OSError, subprocess.SubprocessError):
+            result["source"][name] = None
+elif os.path.isfile(os.path.join(root, "PACKAGE_INTEGRITY_MANIFEST.json")):
+    # This runs only in the isolated preflight process, never on the Qt thread.
     try:
-        p = subprocess.run(["git", "-C", sys.argv[1], *args], capture_output=True, timeout=5,
-                           creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
-        result["source"][name] = (bool(p.stdout) if name == "git_dirty" else p.stdout.decode().strip()) if p.returncode == 0 else None
-    except (OSError, subprocess.SubprocessError):
-        result["source"][name] = None
+        sys.path.insert(0, root)
+        from tools.jazn_run_studio.tpa_release_identity import verified_release_source
+        result["source"].update(verified_release_source(root))
+    except Exception as exc:
+        result["source"]["release_verified"] = False
+        result["source"]["release_reason"] = type(exc).__name__
 print(json.dumps(result))
 '''
 
@@ -181,7 +192,7 @@ class TPARunner(QObject):
             return
         self.process.setWorkingDirectory(str(self.root))
         self.progress.emit("Sprawdzam rzeczywiste importy w wybranym interpreterze…")
-        self.timer.start(20_000)
+        self.timer.start(180_000 if not (self.root / ".git").exists() else 20_000)
         self.process.start(self.python, ["-I", "-X", "utf8", "-c", PROBE_SCRIPT, str(self.root)])
         self.changed.emit()
 

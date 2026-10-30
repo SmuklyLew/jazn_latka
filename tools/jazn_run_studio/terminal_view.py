@@ -117,15 +117,23 @@ class InteractiveTerminal(QWidget):
         if self.pty.error:
             self.status.setText(self.pty.error)
 
-    def stop(self) -> None:
-        self.pty.close()
-        # A new session is created only on the next explicit operator click.
+    def stop(self) -> bool:
+        try:
+            self.pty.close()
+        except (OSError, RuntimeError, ValueError) as exc:
+            self.status.setText("PTY: nie potwierdzono zamknięcia — " + type(exc).__name__)
+            return False
+        # Keep a fresh *unstarted* session; opening needs an explicit click.
         self.pty = PtySession(self.pty.root)
         self._dimensions = None
         self.launch.setEnabled(True)
         self.stop_button.setEnabled(False)
-        self.status.setText("Zamknięto własny terminal; daemon pozostaje nietknięty")
+        self.status.setText("Potwierdzono zamknięcie własnego PTY; daemon nietknięty")
+        return True
 
     def closeEvent(self, event) -> None:
-        self.stop()
+        if not self.stop():
+            event.ignore()
+            return
+        self.clock.stop()
         super().closeEvent(event)

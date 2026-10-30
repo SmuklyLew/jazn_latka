@@ -12,3 +12,5 @@ Zachowano 22 scenariusze TPA. Dodatkowa karta zawiera dziewięć instrukcji loka
 Nie przeprowadzono lokalnego odbioru Windows. Wymagana fizyczna maszyna, lokalna Ollama, izolowany daemon i środowisko odbioru. Żadna kontrola typu `full_gate` nie jest automatycznie promowana.
 
 Testy: `tests/test_jazn_tpa_local_triage.py`, `tests/test_jazn_tpa_local_triage_qt.py`; końcowy Pyright i regresja Windows/Linux — GitHub Actions. Manifest i provenance synchronizuje tylko canonical workflow.
+
+Poprawka .37: pakiet RC bez .git może uzyskać „Odebrane” tylko po pełnej weryfikacji kanonicznego manifestu i chronionego provenance w izolowanym preflight, przy zgodnych hashach i full_gate PASS. Niespójny pakiet fail-closed; weryfikacja nie jest wykonywana na wątku GUI.

@@ -9,3 +9,5 @@ QPlainTextEdit przekazuje klawisze wejściowe i pobiera wyjście w ograniczonych
 Poprawka .34: rzeczywiste rozmiary POSIX PTY są ustawiane przed uruchomieniem powłoki; operator może zmieniać rozmiar aktywnej sesji (Python `termios.tcsetwinsize` / opcjonalny `pywinpty.setwinsize`). Po zamknięciu możliwa jest nowa, osobna sesja na kliknięcie. Regresje obejmują odmowę zmiany rozmiaru nieaktywnej sesji, granice oraz geometrię POSIX. Nadal: niepełny VT/ANSI, manualne Windows ConPTY i fizyczne DPI NOT_RUN.
 
 TPA .35: karta „Odbiory lokalne” wymienia pozostałe próby Windows/Linux PTY/ConPTY. Brak automatycznego PASS bez wyników na rzeczywistych maszynach.
+
+Poprawka .37: operator-owned POSIX PTY startuje w nowej sesji z osobnym bootstrapem ustawiającym terminal sterujący bez preexec_fn; zamknięcie wysyła SIGTERM grupie własnego procesu i wykonuje bounded wait/reap (ewentualnie SIGKILL tylko własnej grupy). Okno JSS wymaga potwierdzonego cleanup PTY przed wyjściem. Windows nadal wymaga fizycznego testu pywinpty i Ctrl+C; pełny renderer VT nadal nieukończony.

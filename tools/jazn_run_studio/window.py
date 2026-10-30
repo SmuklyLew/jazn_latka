@@ -1535,6 +1535,11 @@ class Window(QMainWindow):
                 "Zakończyć zadania i procesy uruchomione przez Studio? Daemon jest zarządzany osobną komendą runtime.") != QMessageBox.StandardButton.Yes:
             event.ignore()
             return
+        # The interactive terminal is a separate operator-owned subprocess,
+        # not part of Controller.jobs; it must be reaped before closing JSS.
+        if not self.workspace.interactive_terminal.stop():
+            event.ignore()
+            return
         self.core.close()
         # Do not block Qt: let worker threads confirm termination first.
         with self.core.lock:

@@ -4,6 +4,7 @@ import importlib
 import os
 from pathlib import Path
 import queue
+import signal
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,7 @@ class PtySession:
         self.queue: queue.Queue[str] = queue.Queue(maxsize=1000)
         self.done = False
         self.error = ""
+        self._reader_thread: threading.Thread | None = None
 
     def start(self, rows: int = 30, cols: int = 100) -> None:
         if self.process is not None:
@@ -55,7 +57,9 @@ class PtySession:
             try:
                 import termios
                 termios.tcsetwinsize(slave, (rows, cols))
-                self.process = subprocess.Popen(cmd, stdin=slave, stdout=slave, stderr=slave,
+                bootstrap = Path(__file__).with_name("pty_controlling_child.py")
+                self.process = subprocess.Popen([sys.executable, "-I", str(bootstrap), *cmd],
+                                                stdin=slave, stdout=slave, stderr=slave,
                                                 cwd=self.root, env=safe_env(self.root), shell=False,
                                                 close_fds=True, start_new_session=True)
             except BaseException:
@@ -64,7 +68,8 @@ class PtySession:
                 raise
             finally:
                 os.close(slave)
-        threading.Thread(target=self._reader, name="jss-owned-pty", daemon=True).start()
+        self._reader_thread = threading.Thread(target=self._reader, name="jss-owned-pty", daemon=True)
+        self._reader_thread.start()
 
     def _reader(self) -> None:
         try:
@@ -127,13 +132,44 @@ class PtySession:
             os.write(self.master, data.encode("utf-8"))
 
     def close(self) -> None:
+        """Stop and reap only this PTY's child; never touch the Jaźń daemon."""
+        process = self.process
         self.done = True
-        if self.process is None:
+        if process is None:
             return
-        if sys.platform == "win32":
-            self.process.close(force=False)
-        elif self.process.poll() is None:
-            self.process.terminate()
-        if self.master is not None:
-            os.close(self.master)
-            self.master = None
+        try:
+            if sys.platform == "win32":
+                process.close(force=False)
+                # pywinpty close is not sufficient evidence if a backend reports
+                # a still-active child. Escalate only for our own spawned PTY.
+                alive = getattr(process, "isalive", None)
+                if callable(alive) and alive():
+                    process.close(force=True)
+                    if alive():
+                        raise StudioError("Proces PTY Windows nadal działa po zamknięciu")
+            else:
+                if process.poll() is None:
+                    try:
+                        os.killpg(process.pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                    try:
+                        process.wait(timeout=1.0)
+                    except subprocess.TimeoutExpired:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        process.wait(timeout=1.0)
+                else:
+                    process.wait(timeout=0.2)
+                if process.poll() is None:
+                    raise StudioError("Nie potwierdzono zakończenia PTY")
+        except (OSError, subprocess.SubprocessError) as exc:
+            self.error = "Nie potwierdzono zamknięcia PTY: " + type(exc).__name__
+            raise StudioError(self.error) from exc
+        finally:
+            if self.master is not None:
+                os.close(self.master)
+                self.master = None
+        self.process = None

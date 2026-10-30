@@ -26,6 +26,8 @@ LOCAL_GATES = (
     (NOWE, "P5 · Fizyczne DPI i dostępność", "Windows 100/150/200%, wszystkie motywy i dialogi, Tab/fokus, kontrast, min. 860×580."),
     (DO_POWTORZENIA, "P5 · chat-resume", "Ponów rzeczywistą turę Ollama na aktualnym SHA; ACK po wyświetleniu, jedna finalizacja, cleanup.ok=true."),
     (DO_POWTORZENIA, "P5 · daemon-restart", "Ponów odbiór z rzeczywistym lokalnym daemonem, zachowaniem session_id i nową tożsamością instancji."),
+    (NOWE, "P5 · Release Candidate bez .git", "Zweryfikuj pełny manifest i provenance, zachowaj hash, SHA źródła, wersję i wyniki; uszkodzony plik = BLOCKED."),
+    (DO_POWTORZENIA, "P2 · Sprzątanie PTY", "Po zamknięciu okna JSS potwierdź zakończenie i reaping własnej powłoki; nie dotykaj istniejącego daemona."),
     (NIEAKTUALNE, "Historyczne dowody poprzednich wydań", "Stare SHA/wersje i zrzuty nie stanowią odbioru aktualnej gałęzi. Zachowaj historię; nie przepisuj PASS."),
 )
 
@@ -38,6 +40,15 @@ def _source_relation(prior: dict[str, Any], current: dict[str, Any]) -> str:
         left, right = prior.get(field), current.get(field)
         if isinstance(left, str) and left and isinstance(right, str) and right and left != right:
             return "stale"
+    # A verified exported RC is allowed without .git, but ONLY when two
+    # independently verified manifest/provenance identities match exactly.
+    if prior.get("release_verified") is True and current.get("release_verified") is True:
+        fields = ("release_manifest_sha256", "release_source_commit", "release_runtime_version")
+        if all(isinstance(prior.get(k), str) and prior[k] and prior[k] == current.get(k) for k in fields):
+            return "same"
+        return "stale"
+    if prior.get("release_verified") or current.get("release_verified"):
+        return "uncertain"
     old_sha, new_sha = prior.get("git_sha"), current.get("git_sha")
     # A source hash of version.py alone cannot prove complete repo identity.
     # Never reuse full_gate PASS unless both immutable Git revisions are known.
