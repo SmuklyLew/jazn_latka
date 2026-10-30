@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.39",
-  "active_definition_count": 2975,
+  "system_version": "16.3.25.5.116.0.34.94.6.41",
+  "active_definition_count": 2976,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30365,6 +30365,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 52
+    },
+    "tests/test_jss_visual_lifecycle_qt.py::test_close_cancels_pending_reflow_and_detaches_global_event_filter": {
+      "path": "tests/test_jss_visual_lifecycle_qt.py",
+      "name": "test_close_cancels_pending_reflow_and_detaches_global_event_filter",
+      "purpose": "Close cancels pending reflow and detaches global event filter",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
