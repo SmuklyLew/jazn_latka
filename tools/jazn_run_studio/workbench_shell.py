@@ -88,6 +88,9 @@ class WorkbenchShell(QObject):
         self.command("Widok", "Przywróć bezpieczny układ", host.reset_layout)
         self.command("Widok", "Problemy", lambda: host.workspace.show(0))
         self.command("Widok", "Output / Logi", lambda: host.workspace.show(1))
+        self.command("Widok", "Ostatni panel narzędzi", lambda: host.workspace.show(
+            host.workspace.tabs.currentIndex()), "F12")
+        self.command("Widok", "Ukryj panel narzędzi", host.workspace.dock.hide, "Shift+Esc")
         self.command("Widok", "Historia TPA i zadań", lambda: host.workspace.show(3))
         self.command("Widok", "Dane techniczne", lambda: host.workspace.show(4))
         self.command("Terminal", "Konsole zadań w dolnym panelu", lambda: host.workspace.show(2))
