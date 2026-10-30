@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
 from .studio_worker import preview_fingerprint
-from .workbench_theme import THEME_CHOICES, theme_label, workbench_stylesheet
+from .workbench_theme import THEME_CHOICES, workbench_stylesheet
 
 INSTALL_LINKS = {
     "Python": "https://www.python.org/downloads/",
@@ -905,12 +905,13 @@ class Window(QMainWindow):
         settings = Settings.validate(data)
         self.apply_settings(settings)
 
-    def apply_settings(self, settings: Settings) -> None:
+    def apply_settings(self, settings: Settings, *, appearance_only: bool = False) -> None:
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
-        self.quick_runtime_ready = False
-        self.quick_generation_ready = False
-        self.refresh_quick_start()
+        if not appearance_only:
+            self.quick_runtime_ready = False
+            self.quick_generation_ready = False
+            self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
         self.theme.setCurrentIndex(self.theme.findData(settings.theme))
@@ -939,7 +940,7 @@ class Window(QMainWindow):
             self.style_selector.blockSignals(False)
             self.statusBar().showMessage("Najpierw zapisz lub odrzuć niezapisane ustawienia.", 5000)
             return
-        self.guard(lambda: self.apply_settings(replace(self.core.settings, theme=selected)))
+        self.guard(lambda: self.apply_settings(replace(self.core.settings, theme=selected), appearance_only=True))
 
     def apply_theme(self) -> None:
         app = QApplication.instance()
