@@ -60,6 +60,7 @@ jobs:
           tests/test_jss_uiux_profiles.py
           tests/test_jss_uiux_profiles_qt.py
           tests/test_jss_visual_lifecycle_qt.py
+          tests/test_jss_theme_switch_reflow_qt.py
           tests/test_jazn_run_studio_layout.py
           tests/test_heart_visual_system_qt.py
           tests/test_heart_system_dashboard_qt.py

@@ -89,21 +89,23 @@ class VisualSystem(QObject):
             parent = layout.parentWidget()
             if parent is None:
                 continue
-            available = self.available_width(parent)
-            widths = []
-            for index in range(layout.count()):
-                item = layout.itemAt(index)
-                if item is None:
-                    continue
-                widget = item.widget()
-                if widget is not None and not widget.isHidden():
-                    widths.append(max(widget.minimumWidth(), widget.minimumSizeHint().width()))
-                else:
-                    nested = item.layout()
-                    if nested is not None:
-                        widths.append(nested.minimumSize().width())
-            needed = sum(widths) + max(0, len(widths) - 1) * layout.spacing()
-            direction = QBoxLayout.Direction.TopToBottom if needed > available else QBoxLayout.Direction.LeftToRight
+            # Do not dereference itemAt(index).widget() here. Qt can
+            # invalidate QLayoutItem wrappers while stylesheet repolishing
+            # changes the geometry of a live workbench (Linux SIGSEGV).
+            # Ask Qt for its own horizontal size hint instead.
+            horizontal_width = layout.property("heartHorizontalHintWidth")
+            if layout.direction() == QBoxLayout.Direction.LeftToRight:
+                measured = max(layout.minimumSize().width(), layout.sizeHint().width())
+                if measured > 0:
+                    horizontal_width = measured
+                    layout.setProperty("heartHorizontalHintWidth", measured)
+            if not isinstance(horizontal_width, int) or horizontal_width <= 0:
+                continue
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if horizontal_width > self.available_width(parent)
+                else QBoxLayout.Direction.LeftToRight
+            )
             if layout.direction() != direction:
                 layout.setDirection(direction)
 

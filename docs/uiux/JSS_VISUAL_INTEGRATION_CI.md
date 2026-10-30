@@ -114,3 +114,15 @@ wypisuje jedynie bezpieczny znacznik `JSS_VISUAL_PHASE`, a interpreter
 jest uruchamiany z `-X faulthandler`, żeby wskazać stos natywnej awarii.
 Przebieg musi pozostać czerwony aż do rzeczywistej naprawy.
 Workflow `push` usunięto — PR wyzwala jeden przebieg zamiast duplikatu.
+
+
+## CI .42 — bezpieczny pomiar układów przy zmianie motywu
+
+Log Ubuntu z JSS Visual CI dla `.41` wskazał `SIGSEGV`
+w `VisualSystem.reflow()`, podczas `QLayoutItem.widget()` po
+przełączeniu z Technical Workbench na Operations Studio.
+Poprawka używa `QLayout.minimumSize()` i `QLayout.sizeHint()`,
+zamiast sięgać do nietrwałych wrapperów pojedynczych elementów.
+Wymagana jest regresja wielokrotnego przełączenia motywu na Ubuntu,
+Windows, sprawdzenie 22 PNG oraz poprawnego eksportu artefaktów.
+Pięciosekundowy próg zdrowia Windows pozostaje nienaruszony.
