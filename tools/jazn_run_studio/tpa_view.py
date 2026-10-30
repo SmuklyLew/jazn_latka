@@ -13,7 +13,8 @@ from . import local_acceptance as legacy
 from .tpa_catalog import LIVE_CASES, MODES, execution_map
 from .tpa_engine import TPARunner
 from .tpa_guidance import attach_evidence, record_observation
-from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, summary
+from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, source_identity, summary
+from .tpa_triage import TRIAGE_LABELS, triage_cases, local_queue_text
 
 
 class TPAPanel(QWidget):
@@ -24,6 +25,7 @@ class TPAPanel(QWidget):
         super().__init__(parent)
         self.root, self.rows = root.resolve(), execution_map()
         self.report: dict | None = None
+        self.triage: dict[str, dict[str, str]] = {}
         self.attached: dict[str, list[str]] = {}
         self.guide_drafts: dict[tuple[str, str], dict] = {}
         self._guide_key = ("", "")
@@ -73,9 +75,9 @@ class TPAPanel(QWidget):
         self.search = QLineEdit()
         self.search.setPlaceholderText("Szukaj nazwy, identyfikatora lub przyczyny…")
         self.search.setAccessibleName("Filtr nazwy TPA")
-        filters.addWidget(self.search, 0, 0, 1, 3)
-        self.category, self.mode_filter, self.result_filter = QComboBox(), QComboBox(), QComboBox()
-        for col, (widget, title) in enumerate(((self.category, "Kategoria"), (self.mode_filter, "Tryb"), (self.result_filter, "Wynik"))):
+        filters.addWidget(self.search, 0, 0, 1, 4)
+        self.category, self.mode_filter, self.result_filter, self.triage_filter = QComboBox(), QComboBox(), QComboBox(), QComboBox()
+        for col, (widget, title) in enumerate(((self.category, "Kategoria"), (self.mode_filter, "Tryb"), (self.result_filter, "Wynik"), (self.triage_filter, "Odbiór lokalny"))):
             widget.addItem(title + ": wszystkie", "")
             widget.setAccessibleName("Filtr TPA: " + title)
             widget.setMinimumWidth(60)
@@ -87,6 +89,8 @@ class TPAPanel(QWidget):
             self.mode_filter.addItem(label, key)
         for state in STATES:
             self.result_filter.addItem(state, state)
+        for key, label in TRIAGE_LABELS.items():
+            self.triage_filter.addItem(label, key)
         self.search.textChanged.connect(self.apply_filters)
         layout.addLayout(filters)
         actions = QGridLayout()
@@ -145,6 +149,8 @@ class TPAPanel(QWidget):
         self.tabs.addTab(self.report_view, "Raport")
         self.technical = self.text_view("Dane techniczne i starsze wyniki")
         self.tabs.addTab(self.technical, "Techniczne")
+        self.local_gates_view = self.text_view("Nowe, do powtórzenia i nieaktualne odbiory lokalne")
+        self.tabs.addTab(self.local_gates_view, "Odbiory lokalne")
         self.tabs.setMinimumHeight(180)
         self.splitter.addWidget(self.tabs)
         self.splitter.setStretchFactor(0, 3)
@@ -353,7 +359,8 @@ class TPAPanel(QWidget):
             for col, text in ((3, state), (4, reason)):
                 self.cell(i, col).setText(text)
                 self.cell(i, col).setToolTip("Wynik scenariusza: " + state + "\n" + reason + "\nPełny odbiór: " + self.full_gate_description(result.get("full_gate", "NOT_RUN")))
-            self.cell(i, 0).setToolTip(case["title"] + "\nID: " + case["id"])
+            triage = self.triage.get(case["id"], {"state": "NOWE", "reason": "Brak odbioru."})
+            self.cell(i, 0).setToolTip(case["title"] + "\nID: " + case["id"] + "\nOdbiór: " + TRIAGE_LABELS[triage["state"]] + "\n" + triage["reason"])
         ready = sum(v["ready"] for v in self.runner.availability.values())
         counters = summary(self.report)["counts"] if self.report else {}
         scope = " • historia: " + self.report["source"]["version"] if self.report and self.report["source"]["version"] != legacy.scope_version(self.root) else ""
@@ -363,6 +370,7 @@ class TPAPanel(QWidget):
         self.summary.setText("SYSTEM " + legacy.scope_version(self.root).split("-", 1)[0] + scope + "\nPython: " + python_label
                              + f" • gotowe podtesty: {ready}/22 • MEMORY: off\n" + " | ".join(f"{k}: {v}" for k, v in counters.items()))
         self.apply_filters()
+        self.local_gates_view.setPlainText(local_queue_text(self.triage))
         self.table.resizeRowsToContents()
         self.selected(self.table.currentRow(), 0, -1, -1)
         self.update_controls()
@@ -411,6 +419,7 @@ class TPAPanel(QWidget):
             visible = (not query or query in text) and (not self.category.currentData() or self.category.currentData() == case["category"])
             visible = visible and (not self.mode_filter.currentData() or self.mode_filter.currentData() == case["mode"])
             visible = visible and (not self.result_filter.currentData() or self.result_filter.currentData() == self.cell(i, 3).text())
+            visible = visible and (not self.triage_filter.currentData() or self.triage_filter.currentData() == self.triage.get(case["id"], {}).get("state", "NOWE"))
             self.table.setRowHidden(i, not visible)
 
     def selected(self, row: int, _col: int, _oldrow: int, _oldcol: int) -> None:
@@ -422,6 +431,8 @@ class TPAPanel(QWidget):
                                        + "\n\nWYKONAWCA: " + case["executor"] + "\n" + "\n".join(case["files"])
                                        + "\nZależności: " + ", ".join(case["requirements"]) + "\n\nZAOBSERWOWANO:\n" + result.get("reason", "nie ustalono")
                                        + "\nWynik scenariusza: " + result.get("status", "NOT_RUN")
+                                       + "\nOcena bieżącego odbioru: " + TRIAGE_LABELS[self.triage.get(case["id"], {"state": "NOWE"})["state"]]
+                                       + "\n" + self.triage.get(case["id"], {}).get("reason", "")
                                        + "\nPełny odbiór operatorski: " + self.full_gate_description(result.get("full_gate", "NOT_RUN"))
                                        + "\nCzas / kod wyjścia: " + str(result.get("duration_seconds", "nie ustalono")) + " s / " + str(result.get("exit_code", "nie ustalono"))
                                        + "\nWyniki z JUnit: " + json.dumps(result.get("counts", {}), ensure_ascii=False)
@@ -452,6 +463,11 @@ class TPAPanel(QWidget):
             self.history.clear()
             self.history.addItem("Historia — wybierz przebieg", "")
             history = self.runner.store.history()
+            current = source_identity(self.root)
+            probe_source = self.runner.probe.get("source")
+            if isinstance(probe_source, dict):
+                current.update(probe_source)
+            self.triage = triage_cases(self.rows, history, current)
             if self.runner.store.history_errors:
                 self.feedback.setText("Błąd odczytu historii: " + " | ".join(self.runner.store.history_errors))
             for report in history:
