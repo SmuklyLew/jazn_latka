@@ -67,3 +67,36 @@ Tk/cursor studios remain available and are not claimed to share the Qt theme
 or to satisfy native parity. Physical DPI, screen-reader review, every Studio
 workflow and operator acceptance are still open; automated renderings do not
 promote any full_gate to PASS.
+
+## Recovery after interrupted workstation session
+
+Recovered P1 source commit: `6a03284d`; last confirmed remote checkpoint:
+`4df4cda2`. No reset, cleaning, worktree recreation or source overwrite was
+needed. The retained JUnit report contains 230 tests: 229 passed, 1 skipped,
+zero failures/errors. Retained native Windows rendering reports cover six
+profiles at Qt scales 1.0/1.5/2.0 and all 15 section viewports at 860x580 with
+zero horizontal overflow. These are rendering evidence, not physical DPI signoff.
+Fresh recovery checks passed 46 tests including the unchanged isolated health
+SLA; additional service-selection readability tests cover all six profiles.
+Embedded status labels now keep a readable foreground/background even in a
+selected row, and service rows use 48 logical pixels instead of 90.
+
+### Windows latency gate: failed evidence remains valid
+
+Run `40987159933`, source `4df4cda2`, failed the isolated health-check step:
+wall time 5021.319 ms against the unchanged strict <5000 ms assertion. The full
+testcase took 25.70 seconds. Telemetry reported total_execution_time=4735 ms,
+canonical_persistence_commit=375 ms, audit_persistence=125 ms,
+route_classification=47 ms and host_visible_finalization=16 ms. Semantic counts
+were unchanged. Most of the latency is not attributed by this stage snapshot;
+there is insufficient evidence to name a specific blocking function or claim
+that runner load alone caused it. The full deterministic suite did not pass
+after this failed prerequisite.
+
+No core runtime, health test or PowerShell workflow changed between source
+`3fdeb176` (prior successful PowerShell run) and `4df4cda2`. The recovered P1
+does not alter that path either. The new local run passes the original test,
+but that does not overturn the failed Windows CI measurement. Keep the gate
+mandatory on the final source; do not raise the timeout, retry to manufacture
+PASS, warm up the measured operation or suppress failure. If it fails again,
+capture finer timing around the unaccounted interval before changing runtime.

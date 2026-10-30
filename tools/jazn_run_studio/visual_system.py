@@ -115,6 +115,8 @@ class VisualSystem(QObject):
             if isinstance(widget, QTableWidget):
                 widget.verticalHeader().setMinimumSectionSize(METRICS.row_height)
                 widget.verticalHeader().setDefaultSectionSize(max(METRICS.row_height, widget.verticalHeader().defaultSectionSize()))
+                if widget is getattr(self.root, "services_table", None):
+                    widget.verticalHeader().setDefaultSectionSize(48)
                 widget.setMouseTracking(True)
                 widget.cellEntered.connect(lambda row, column, table=widget: self.tooltip(table, row, column))
         layout = widget.layout()

@@ -151,6 +151,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             background: {c.editor}; alternate-background-color: {c.surface};
             gridline-color: {c.border};
         }}
+        QTableWidget QLabel {{ background: {c.editor}; color: {c.text}; padding: 3px; }}
         QHeaderView::section {{
             background: {c.sidebar}; border: 0;
             border-bottom: 1px solid {c.border}; padding: 6px;
