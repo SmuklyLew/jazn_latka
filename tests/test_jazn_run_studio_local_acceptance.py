@@ -100,12 +100,19 @@ def test_qt_acceptance_page_renders_without_live_runtime(roots, monkeypatch):
     panel = LocalAcceptancePanel(system)
     assert panel.table.rowCount() >= 10
     first = panel.table.item(0, 3)
-    assert first is not None and "DO WYKONANIA" in first.text()
-    panel.state.setCurrentIndex(1)
-    panel.note.setPlainText("Nie udało się uruchomić")
-    panel.evidence.setText("operator-log-01")
-    panel.save()
-    result = panel.table.item(0, 3)
-    assert result is not None and result.text() == "FAILED"
+    assert first is not None and first.text() == "NOT_RUN"
+    # Missing interpreter/files produce a durable BLOCKED execution record,
+    # instead of letting a manual declaration masquerade as a test result.
+    from PySide6.QtTest import QTest
+    panel.python_field.clear()
+    panel.start(("gui-daemon",))
+    for _ in range(100):
+        QTest.qWait(10)
+        if not panel.runner.active:
+            break
+    assert panel.report is not None
+    assert panel.report["results"][0]["status"] == "BLOCKED"
+    assert panel.report["results"][0]["full_gate"] == "NOT_RUN"
+    assert panel.runner.store.load(panel.report["run_id"])["results"][0]["status"] == "BLOCKED"
     panel.close()
     app.processEvents()

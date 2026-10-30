@@ -56,3 +56,21 @@ def status_summary(data: dict[str, Any]) -> dict[str, str]:
         "continuity": continuity_text,
         "model": model,
     }
+
+
+def supervisor_summary(data: dict[str, Any], *, command_ok: bool = True) -> dict[str, Any]:
+    """Verify only public identity and heartbeat flags; never expose owner paths."""
+    state = _object(data)
+    active = state.get("supervisor_active") is True
+    identity = state.get("supervisor_identity_confirmed") is True
+    heartbeat = state.get("supervisor_heartbeat_fresh") is True
+    pid = state.get("supervisor_pid")
+    return {
+        "service": "supervisor",
+        "ready": command_ok and state.get("ok") is True and active and identity and heartbeat,
+        "active": active,
+        "identity_confirmed": identity,
+        "heartbeat_fresh": heartbeat,
+        "pid": pid if type(pid) is int and pid > 0 else None,
+        "accepted_visible_turn": False,
+    }

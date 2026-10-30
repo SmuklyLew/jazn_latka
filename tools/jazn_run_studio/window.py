@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
@@ -178,7 +179,7 @@ class Window(QMainWindow):
         self.log_toggle.clicked.connect(self.toggle_logs)
         self.statusBar().addPermanentWidget(self.log_toggle)
         self.restore_layout()
-        self.nav.setCurrentRow(0)
+        self.navigate(self.layout_state.get("active_section", "Pulpit"))
         self.statusBar().showMessage(str(core.root))
         self.apply_theme()
         self.timer = QTimer(self)
@@ -186,6 +187,13 @@ class Window(QMainWindow):
         self.timer.start(100)
         # Discovery is read-only and local. Network probes require explicit actions.
         self.render_discovery()
+        if os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated":
+            target = os.environ.get("JAZN_TPA_TARGET_SECTION", "")
+            if target:
+                self.navigate(target)
+            studio = self.studio_choice.findData(os.environ.get("JAZN_TPA_TARGET_STUDIO", ""))
+            if studio >= 0:
+                self.studio_choice.setCurrentIndex(studio)
         if not smoke:
             from .requirements_worker import setup_scope
             from .core import python_executable
@@ -194,16 +202,20 @@ class Window(QMainWindow):
         if isinstance(app := QApplication.instance(), QApplication):
             app.styleHints().colorSchemeChanged.connect(lambda _scheme: self.apply_theme())
 
-    def page(self, title: str, description: str) -> QVBoxLayout:
+    def page(self, title: str, description: str, *, compact: bool = False) -> QVBoxLayout:
         pane = QWidget()
         layout = QVBoxLayout(pane)
-        layout.setContentsMargins(24, 20, 24, 16)
+        from .workbench_theme import METRICS
+        layout.setContentsMargins(METRICS.page_margin, 12, METRICS.page_margin, 12)
+        layout.setSpacing(METRICS.gap)
         heading = QLabel(title)
         heading.setObjectName("heading")
-        layout.addWidget(heading)
+        if not compact:
+            layout.addWidget(heading)
         subtitle = QLabel(description)
         subtitle.setWordWrap(True)
-        layout.addWidget(subtitle)
+        if not compact:
+            layout.addWidget(subtitle)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(pane)
@@ -341,7 +353,7 @@ class Window(QMainWindow):
 
     def _services(self) -> None:
         layout = self.page("Usługi i procesy", "Status, własność procesu i gotowość są niezależnymi dowodami. Start/Stop/Restart korzystają z kanonicznych kontrolerów.")
-        self.services_table = QTableWidget(4, 6)
+        self.services_table = QTableWidget(6, 6)
         self.services_table.setHorizontalHeaderLabels(["Usługa", "Status", "PID", "Port", "Readiness", "Akcje"])
         self.services_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.services_table.horizontalHeader().setStretchLastSection(False)
@@ -350,10 +362,13 @@ class Window(QMainWindow):
         self.services_table.setMinimumWidth(0)
         self.services_table.setMinimumHeight(230)
         self.service_rows = {}
-        for row, (service, title) in enumerate((("runtime", "Jaźń"), ("ollama", "Ollama"), ("gateway", "MCP"), ("cloudflare", "Tunel"))):
+        self.supervisor_observation: dict = {}
+        self.memory_observed = False
+        for row, (service, title) in enumerate((("runtime", "Jaźń"), ("ollama", "Ollama"), ("gateway", "MCP lokalne"), ("cloudflare", "MCP HTTPS"), ("supervisor", "Supervisor"), ("memory", "MEMORY"))):
             self.service_rows[service] = row
             self.services_table.setItem(row, 0, QTableWidgetItem(title))
             status = QLabel("Nie sprawdzono")
+            status.setTextFormat(Qt.TextFormat.PlainText)
             status.setWordWrap(True)
             status.setMinimumWidth(0)
             self.statuses[service] = status
@@ -362,27 +377,44 @@ class Window(QMainWindow):
                 self.services_table.setItem(row, column, QTableWidgetItem("—"))
             button = QPushButton("Akcje ▾")
             menu = QMenu(button)
-            for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
-                action = menu.addAction(label)
-                action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
+            if service in {"runtime", "ollama", "gateway"}:
+                for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
+                    action = menu.addAction(label)
+                    action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
             config = menu.addAction("Konfiguracja")
             config.triggered.connect(lambda: self.navigate("Ustawienia"))
             logs = menu.addAction("Logi")
-            logs.triggered.connect(lambda _checked=False, s=service: self.show_log("status" if s == "runtime" else "service:" + s))
+            logs.triggered.connect(lambda _checked=False, s=service: self.show_log("status" if s in {"runtime", "memory"} else "supervisor" if s == "supervisor" else "service:" + s))
             details = menu.addAction("Szczegóły / odśwież")
-            details.triggered.connect(lambda _checked=False, s=service: self.guard(lambda: self.core.start_action("status") if s == "runtime" else self.core.probe(s)))
+            details.triggered.connect(lambda _checked=False, s=service: self.guard(lambda: self.inspect_service(s)))
             button.setMenu(menu)
             self.services_table.setCellWidget(row, 5, button)
-        self.services_table.setColumnWidth(0, 65)
+        self.services_table.setColumnWidth(0, 105)
         self.services_table.setColumnWidth(1, 190)
         self.services_table.setColumnWidth(2, 45)
         self.services_table.setColumnWidth(3, 55)
         self.services_table.setColumnWidth(5, 85)
         self.services_table.verticalHeader().setDefaultSectionSize(90)
         layout.addWidget(self.services_table)
-        self.button("Odśwież status usług", self.refresh_services, layout)
+        self.service_selected_label = QLabel("Wybierz moduł i dostępną operację.")
+        self.service_selected_label.setWordWrap(True)
+        layout.addWidget(self.service_selected_label)
+        controls = QHBoxLayout()
+        self.service_start_button = self.button("Start", lambda: self.selected_service_action("start"), controls)
+        self.service_stop_button = self.button("Stop", lambda: self.selected_service_action("stop"), controls)
+        self.service_restart_button = self.button("Restart", lambda: self.selected_service_action("restart"), controls)
+        self.button("Status", lambda: self.selected_service_action("inspect"), controls)
+        self.button("Logi", lambda: self.show_log(
+            "status" if self.selected_service() in {"runtime", "memory"} else
+            "supervisor" if self.selected_service() == "supervisor" else
+            "service:" + self.selected_service()), controls)
+        layout.addLayout(controls)
+        self.services_table.itemSelectionChanged.connect(self.refresh_service_controls)
+        self.services_table.selectRow(0)
+        self.refresh_service_controls()
+        self.button("Odśwież stan wszystkich modułów", self.refresh_services, layout)
         self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
-        remote_note = QLabel("Cloudflare jest opcjonalny. Start tunelu wymaga jawnej zgody; Studio nie przejmuje obcych PID. Zamknięcie Studio nie zatrzymuje trwałego daemona.")
+        remote_note = QLabel("Cloudflare, supervisor i MEMORY: odczyt bez przejmowania procesów lub prywatnych danych. Lokalny MCP nie jest publikowany publicznie. Nie ma automatycznego Start All/Stop All; zamknięcie Studio nie zatrzymuje daemona.")
         remote_note.setWordWrap(True)
         layout.addWidget(remote_note)
         self.processes = QPlainTextEdit()
@@ -390,9 +422,54 @@ class Window(QMainWindow):
         self.processes.setMaximumHeight(150)
         layout.addWidget(self.processes)
 
+    def selected_service(self) -> str:
+        row = self.services_table.currentRow()
+        return next((key for key, index in self.service_rows.items() if index == row), "")
+
+    def inspect_service(self, service: str) -> None:
+        if service in {"runtime", "memory"}:
+            self.core.start_action("status")
+        elif service == "supervisor":
+            self.core.start_action("supervisor")
+        else:
+            self.core.probe(service)
+
+    def selected_service_action(self, operation: str) -> None:
+        service = self.selected_service()
+        if not service:
+            raise StudioError("Wybierz moduł")
+        if operation == "inspect":
+            self.inspect_service(service)
+        elif service in {"runtime", "ollama", "gateway"}:
+            self.service(service, operation)
+        else:
+            raise StudioError("Ten moduł ma tylko diagnostykę; nie przejmuj obcego procesu")
+
+    def refresh_service_controls(self) -> None:
+        service = self.selected_service()
+        with self.core.lock:
+            job = self.core.jobs.get("service:" + service)
+            owned = (job is not None and job.proc is not None and not job.done.is_set()
+                     and job.proc.poll() is None)
+        running = service == "runtime" and self.quick_runtime_ready
+        managed = service in {"ollama", "gateway"}
+        self.service_start_button.setEnabled((service == "runtime" and not running) or (managed and not owned))
+        self.service_stop_button.setEnabled(running or (managed and owned))
+        self.service_restart_button.setEnabled(running or (managed and owned))
+        note = {
+            "runtime": "kanoniczny daemon; Stop/Restart wymagają zweryfikowanej gotowości",
+            "ollama": "Stop dotyczy wyłącznie procesu uruchomionego przez Studio",
+            "gateway": "lokalny MCP 127.0.0.1, bez publicznej ekspozycji",
+            "cloudflare": "publiczny HTTPS, tylko diagnostyka; wdrożenie i OAuth osobno",
+            "supervisor": "tożsamość i heartbeat nadzorcy; bez przejmowania procesu",
+            "memory": "oddzielna zdolność; stan techniczny nie potwierdza recall",
+        }.get(service, "wybierz moduł")
+        self.service_selected_label.setText(service.upper() + " — " + note if service else note)
+
     def refresh_services(self) -> None:
         """Explicit, read-only probes; no silent auto-start or PID adoption."""
         self.core.start_action("status")
+        self.core.start_action("supervisor")
         self.core.probe("ollama")
         self.core.probe("gateway")
         if self.core.settings.cloudflare_url:
@@ -473,6 +550,8 @@ class Window(QMainWindow):
 
     def service(self, service: str, op: str) -> None:
         if service == "runtime":
+            if op in {"stop", "restart"} and QMessageBox.question(self, "Runtime Jaźni", "Potwierdzić kanoniczny " + op + " runtime Jaźni?") != QMessageBox.StandardButton.Yes:
+                return
             self.action(op)
             return
         if op in {"stop", "restart"} or service == "cloudflare":
@@ -577,9 +656,20 @@ class Window(QMainWindow):
         layout = self.page(
             "TPA",
             "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
+            compact=True,
         )
         self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
+        self.local_acceptance_panel.model.setText(self.core.settings.model)
+        self.local_acceptance_panel.dependency_requested.connect(self.open_tpa_dependencies)
         layout.addWidget(self.local_acceptance_panel)
+
+    def open_tpa_dependencies(self) -> None:
+        self.navigate("Studia Jaźni")
+        index = self.studio_choice.findData("dependencies")
+        if index >= 0:
+            self.studio_choice.setCurrentIndex(index)
+            self.load_studio_operations()
+        self.statusBar().showMessage("Przygotuj profil testowy dla Pythona: " + self.local_acceptance_panel.python_field.text() + "; instalacja wymaga podglądu i potwierdzenia.")
 
     def _memory(self) -> None:
         from .memory_view import MemoryPanel
@@ -789,9 +879,10 @@ class Window(QMainWindow):
         app = QApplication.instance()
         system_dark = (isinstance(app, QApplication)
                        and app.styleHints().colorScheme() == Qt.ColorScheme.Dark)
-        self.setStyleSheet(workbench_stylesheet(
-            self.core.settings.theme, self.core.settings.accent, system_dark=system_dark,
-        ))
+        from .visual_system import VisualSystem
+        if not hasattr(self, "visual_system"):
+            self.visual_system = VisualSystem(self)
+        self.visual_system.apply(self.core.settings.theme, self.core.settings.accent, system_dark=system_dark)
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
@@ -815,6 +906,8 @@ class Window(QMainWindow):
     def toggle_sidebar(self) -> None:
         visible = not self.sidebar.isVisible()
         self.sidebar.setVisible(visible)
+        if hasattr(self, "workbench") and self.workbench.compact_sidebar is not None:
+            self.workbench.compact_sidebar = visible
         self.menu_button.setToolTip("Ukryj boczną nawigację (Ctrl+B)" if visible
                                     else "Pokaż boczną nawigację (Ctrl+B)")
         if visible:
@@ -884,6 +977,8 @@ class Window(QMainWindow):
                 self.quick_memory_status.setText(
                     "MEMORY: " + self.core.redactor.text(str(value.get("continuity", "niezweryfikowana")))
                 )
+                self.memory_observed = True
+                self.update_service_summary("memory", str(value.get("memory", "niezweryfikowane")))
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
                 ready = (all(value.get(flag) is True for flag in (
@@ -918,6 +1013,12 @@ class Window(QMainWindow):
                     "Lokalne Studio • runtime zweryfikowany"
                     if ready else "Lokalne Studio • status niezweryfikowany"
                 )
+            elif kind == "supervisor_evidence":
+                self.supervisor_observation = dict(value) if isinstance(value, dict) else {}
+                detail = ("Pracuje • potwierdzona tożsamość i heartbeat"
+                          if self.supervisor_observation.get("ready") is True
+                          else "Niezweryfikowany • sprawdź tożsamość i heartbeat")
+                self.update_service_summary("supervisor", detail)
             elif kind == "probe":
                 if key == "probe:ollama_generate":
                     self.quick_generation_ready = (
@@ -1073,6 +1174,9 @@ class Window(QMainWindow):
                     else:
                         detail = "Operacja " + key + ": " + state + " • odśwież status, aby potwierdzić gotowość"
                     self.update_service_summary("runtime", detail)
+                elif key == "supervisor" and value["state"] == "failed":
+                    self.supervisor_observation = {}
+                    self.update_service_summary("supervisor", "BŁĄD odczytu • niezweryfikowany")
                 elif key.startswith("probe:") and value["state"] == "failed":
                     service = key.removeprefix("probe:")
                     self.update_service_summary(service, "BŁĄD testu • " + str(value.get("error") or "niepowodzenie"))
@@ -1081,6 +1185,7 @@ class Window(QMainWindow):
         self.processes.setPlainText(json.dumps(snapshots, ensure_ascii=False, indent=2))
         self.workspace.refresh()
         self.refresh_service_table()
+        self.refresh_service_controls()
         self.refresh_connection_checks()
         if self.pages.currentWidget() is self.developer_page:
             public = {"jobs": snapshots, "services": self.workspace.observations,
@@ -1108,18 +1213,8 @@ class Window(QMainWindow):
                 return
 
     def _workspace_menu(self) -> None:
-        view = self.menuBar().addMenu("Widok")
-        view.addAction(self.workspace.dock.toggleViewAction())
-        for label, callback in (("Problemy", lambda: self.workspace.show(0)),
-                                ("Output / Logi", lambda: self.workspace.show(1)),
-                                ("Terminal / Konsole", lambda: self.workspace.show(2)),
-                                ("Nawigacja po lewej / prawej", self.switch_sidebar),
-                                ("Przywróć bezpieczny układ", self.reset_layout)):
-            action = view.addAction(label)
-            action.triggered.connect(callback)
-        setup = self.menuBar().addMenu("Konfiguracja")
-        action = setup.addAction("Kreator pierwszego uruchomienia…")
-        action.triggered.connect(self.open_setup)
+        from .workbench_shell import WorkbenchShell
+        self.workbench = WorkbenchShell(self)
 
     def switch_sidebar(self) -> None:
         right = self.shell_splitter.indexOf(self.sidebar) == 0
@@ -1135,9 +1230,8 @@ class Window(QMainWindow):
         self.workspace.dock.setFloating(False)
         self.workspace.dock.hide()
         self.set_logs_visible(False)
-        # Restoring the visual theme is a draft; no runtime settings are changed.
-        self.theme.setCurrentText(Settings().theme)
-        self.setStyleSheet(workbench_stylesheet(Settings().theme, Settings().accent))
+        self.content_splitter.setSizes([max(1, self.height() - 140), 140])
+        self.apply_theme()
 
     def restore_layout(self) -> None:
         if self.smoke:
@@ -1158,6 +1252,11 @@ class Window(QMainWindow):
                  Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
         self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
         self.workspace.dock.setVisible(data.get("dock_visible", False))
+        for title in data.get("open_sections", []):
+            self.navigate(title)
+        for key, splitter in (("shell_sizes", self.shell_splitter), ("content_sizes", self.content_splitter)):
+            if key in data:
+                splitter.setSizes(data[key])
 
     def persist_layout(self) -> None:
         from .workspace_layout import SCHEMA, save_layout
@@ -1166,9 +1265,13 @@ class Window(QMainWindow):
         area = self.dockWidgetArea(self.workspace.dock)
         self.layout_state = {"schema": SCHEMA, "width": self.width(), "height": self.height(),
                              "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
-                             "sidebar_visible": self.sidebar.isVisible(),
+                             "sidebar_visible": self.sidebar.isVisible() if self.workbench.compact_sidebar is None else self.workbench.compact_sidebar,
                              "dock_visible": self.workspace.dock.isVisible(),
                              "dock_area": areas.index(area) if area in areas else 3,
+                             "shell_sizes": self.shell_splitter.sizes(),
+                             "content_sizes": self.content_splitter.sizes(),
+                             "active_section": self.current_section.text(),
+                             "open_sections": [self.workbench.section_tabs.tabText(i) for i in range(self.workbench.section_tabs.count())],
                              "setup_scope": self.layout_state.get("setup_scope", "")}
         save_layout(self.core.root, self.layout_state)
 
@@ -1306,9 +1409,9 @@ class Window(QMainWindow):
     def refresh_service_table(self) -> None:
         from urllib.parse import urlsplit
         ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": "11434",
-                 "gateway": self.core.settings.mcp_port, "cloudflare": "zdalny"}
+                 "gateway": self.core.settings.mcp_port, "cloudflare": "HTTPS", "supervisor": "—", "memory": "—"}
         for service, row in self.service_rows.items():
-            observed = self.workspace.observations.get(service, {})
+            observed = self.supervisor_observation if service == "supervisor" else self.workspace.observations.get(service, {})
             pid = observed.get("pid")
             with self.core.lock:
                 job = self.core.jobs.get("service:" + service)
@@ -1319,6 +1422,8 @@ class Window(QMainWindow):
             else:
                 ready = observed.get("ready") is True
             readiness = "potwierdzona" if ready else "niezweryfikowana"
+            if service == "memory":
+                readiness = "status techniczny" if self.memory_observed else "niezweryfikowana"
             if service == "ollama" and observed.get("endpoint_reachable"):
                 readiness = ("API; generacja potwierdzona" if observed.get("generation_verified") is True
                              else "API; brak testu generacji")
@@ -1339,6 +1444,10 @@ class Window(QMainWindow):
             self.statusBar().showMessage("Zapisano raport: " + name)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        if not self.local_acceptance_panel.shutdown():
+            event.ignore()
+            QTimer.singleShot(100, self.close)
+            return
         if not self.smoke and self.settings_draft() != self.settings_baseline:
             if QMessageBox.question(self, "Niezapisane ustawienia", "Zamknąć i odrzucić niezapisane zmiany ustawień?") != QMessageBox.StandardButton.Yes:
                 event.ignore()

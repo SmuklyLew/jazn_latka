@@ -1,0 +1,524 @@
+"""Operational TPA queue, guided acceptance and run-owned evidence."""
+from __future__ import annotations
+import json
+from pathlib import Path
+import sys
+import time
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFileDialog, QGridLayout,
+    QHeaderView, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
+    QPlainTextEdit, QProgressBar, QPushButton, QSplitter, QTableWidget,
+    QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget)
+from . import local_acceptance as legacy
+from .tpa_catalog import LIVE_CASES, MODES, execution_map
+from .tpa_engine import TPARunner
+from .tpa_guidance import attach_evidence, record_observation
+from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, summary
+
+
+class TPAPanel(QWidget):
+    dependency_requested = Signal()
+
+    def __init__(self, root: Path, parent: QWidget | None = None, *, python: str = ""):
+        super().__init__(parent)
+        self.root, self.rows = root.resolve(), execution_map()
+        self.report: dict | None = None
+        self.attached: dict[str, list[str]] = {}
+        self.guide_drafts: dict[tuple[str, str], dict] = {}
+        self._guide_key = ("", "")
+        self._log_selection: tuple[str, str] | None = None
+        self._guide_id, self._started = "", 0.0
+        self.runner = TPARunner(root, python or ("" if getattr(sys, "frozen", False) else sys.executable), self)
+        self.runner.progress.connect(self._progress)
+        self.runner.changed.connect(self.refresh_view)
+        self.runner.prepared.connect(self._prepared)
+        self.runner.completed.connect(self._completed)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.summary = QLabel("TPA — nie sprawdzono środowiska")
+        self.summary.setWordWrap(True)
+        self.summary.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.summary)
+        self.setup_details = QWidget()
+        setup = QGridLayout(self.setup_details)
+        setup.setContentsMargins(0, 0, 0, 0)
+        self.python_field = QLineEdit(self.runner.python)
+        self.python_field.setAccessibleName("Interpreter testów TPA")
+        setup.addWidget(self.python_field, 0, 0, 1, 3)
+        self.choose_python = self.button("Wybierz Python…", self.pick_python)
+        setup.addWidget(self.choose_python, 0, 3)
+        self.check_button = self.button("Sprawdź gotowość", self.check_ready)
+        self.dependencies_button = self.button("Studio Zależności", self.dependency_requested.emit)
+        ready_bar = QHBoxLayout()
+        self.setup_toggle = QPushButton("Środowisko i model…")
+        self.setup_toggle.setCheckable(True)
+        self.setup_toggle.setAccessibleName("Rozwiń wybór Pythona i modelu TPA")
+        self.setup_toggle.toggled.connect(self.setup_details.setVisible)
+        for widget in (self.check_button, self.setup_toggle, self.dependencies_button):
+            ready_bar.addWidget(widget)
+        layout.addLayout(ready_bar)
+        self.model = QLineEdit()
+        self.model.setPlaceholderText("Model Ollama — do rzeczywistych tur")
+        self.model.setAccessibleName("Model do odbioru TPA")
+        setup.addWidget(QLabel("Model Ollama"), 1, 0)
+        setup.addWidget(self.model, 1, 1, 1, 3)
+        setup.setColumnStretch(2, 1)
+        layout.addWidget(self.setup_details)
+        self.setup_details.hide()
+        filters = QGridLayout()
+        self.search = QLineEdit()
+        self.search.setPlaceholderText("Szukaj nazwy, identyfikatora lub przyczyny…")
+        self.search.setAccessibleName("Filtr nazwy TPA")
+        filters.addWidget(self.search, 0, 0, 1, 3)
+        self.category, self.mode_filter, self.result_filter = QComboBox(), QComboBox(), QComboBox()
+        for col, (widget, title) in enumerate(((self.category, "Kategoria"), (self.mode_filter, "Tryb"), (self.result_filter, "Wynik"))):
+            widget.addItem(title + ": wszystkie", "")
+            widget.setAccessibleName("Filtr TPA: " + title)
+            widget.setMinimumWidth(60)
+            widget.currentIndexChanged.connect(self.apply_filters)
+            filters.addWidget(widget, 1, col)
+        for category in sorted({r["category"] for r in self.rows}):
+            self.category.addItem(category, category)
+        for key, label in MODES.items():
+            self.mode_filter.addItem(label, key)
+        for state in STATES:
+            self.result_filter.addItem(state, state)
+        self.search.textChanged.connect(self.apply_filters)
+        layout.addLayout(filters)
+        actions = QGridLayout()
+        self.auto_one = self.button("Uruchom zaznaczone", self.run_selected_subcheck)
+        self.auto_safe = self.button("Uruchom dostępne automatyczne", self.run_safe_subchecks)
+        self.retry_button = self.button("Ponów nieudane / blokady", self.retry_failed)
+        self.auto_cancel = self.button("Zatrzymaj", self.runner.stop)
+        for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
+            actions.addWidget(widget, i // 2, i % 2)
+        layout.addLayout(actions)
+        self.auto_status = QLabel("PASS podtestu potwierdza zakres regresji. Pełny odbiór ma osobny wynik.")
+        self.auto_status.setWordWrap(True)
+        self.auto_status.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.auto_status)
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 1)
+        self.progress.setValue(0)
+        self.progress.setFormat("%v / %m pozycji")
+        layout.addWidget(self.progress)
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        self.table = QTableWidget(len(self.rows), 5)
+        self.table.setHorizontalHeaderLabels(["Scenariusz", "Kategoria", "Tryb", "Wynik", "Powód / co dalej"])
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.table.setAccessibleName("Kolejka 22 scenariuszy TPA; zaznacz wiersze lub pola wyboru")
+        self.table.setAlternatingRowColors(True)
+        self.table.setWordWrap(True)
+        self.table.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.table.setMinimumSize(0, 170)
+        header = self.table.horizontalHeader()
+        header.setMinimumSectionSize(45)
+        for col in (0, 4):
+            header.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+        for col, width in ((1, 95), (2, 90), (3, 105)):
+            header.setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
+            self.table.setColumnWidth(col, width)
+        self.table.verticalHeader().hide()
+        for i, case in enumerate(self.rows):
+            for col, text in enumerate((case["title"], case["category"], MODES[case["mode"]], "NOT_RUN", "Nie sprawdzono gotowości.")):
+                item = QTableWidgetItem(text)
+                item.setData(Qt.ItemDataRole.UserRole, case["id"])
+                if col == 0:
+                    item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                    item.setCheckState(Qt.CheckState.Unchecked)
+                self.table.setItem(i, col, item)
+        self.table.currentCellChanged.connect(self.selected)
+        self.splitter.addWidget(self.table)
+        self.tabs = QTabWidget()
+        self.instructions = self.text_view("Szczegóły scenariusza")
+        self.tabs.addTab(self.instructions, "Szczegóły")
+        self.auto_log = self.text_view("Log i zaakceptowane odpowiedzi testowe")
+        self.tabs.addTab(self.auto_log, "Przebieg / log")
+        self._guide()
+        self.report_view = self.text_view("Czytelny raport TPA")
+        self.tabs.addTab(self.report_view, "Raport")
+        self.technical = self.text_view("Dane techniczne i starsze wyniki")
+        self.tabs.addTab(self.technical, "Techniczne")
+        self.tabs.setMinimumHeight(180)
+        self.splitter.addWidget(self.tabs)
+        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setStretchFactor(1, 2)
+        layout.addWidget(self.splitter, 1)
+        history_row = QHBoxLayout()
+        self.history = QComboBox()
+        self.history.setMinimumWidth(80)
+        self.history.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.history.setAccessibleName("Historia TPA")
+        self.history.currentIndexChanged.connect(self.load_history)
+        history_row.addWidget(self.history, 1)
+        history_row.addWidget(self.button("Odśwież", self.refresh))
+        history_row.addWidget(self.button("Starsze wyniki", self.show_legacy))
+        layout.addLayout(history_row)
+        exports = QHBoxLayout()
+        self.log_button = self.button("Pokaż log", self.show_log)
+        self.report_button = self.button("Otwórz raport", self.open_report)
+        self.export_button = self.button("Eksportuj raport ZIP…", self.export_report)
+        for button in (self.log_button, self.report_button, self.export_button):
+            exports.addWidget(button)
+        layout.addLayout(exports)
+        self.feedback = QLabel()
+        self.feedback.setWordWrap(True)
+        self.feedback.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.feedback)
+        self.elapsed_timer = QTimer(self)
+        self.elapsed_timer.timeout.connect(self.update_progress)
+        self.elapsed_timer.start(250)
+        self.attempt(self.runner.store.recover_interrupted)
+        self.attempt(self.refresh)
+        self.table.selectRow(0)
+        self.table.itemSelectionChanged.connect(self.update_controls)
+        self.table.itemChanged.connect(self.update_controls)
+        self.row_timer = QTimer(self)
+        self.row_timer.setSingleShot(True)
+        self.row_timer.timeout.connect(self.table.resizeRowsToContents)
+        self.refresh_view()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "row_timer"):
+            self.row_timer.start(0)
+
+    @staticmethod
+    def text_view(name: str) -> QPlainTextEdit:
+        view = QPlainTextEdit()
+        view.setReadOnly(True)
+        view.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        view.setAccessibleName(name)
+        return view
+
+    def cell(self, row: int, column: int) -> QTableWidgetItem:
+        item = self.table.item(row, column)
+        if item is None:
+            raise ValueError("Niepełny wiersz tabeli TPA")
+        return item
+
+    def button(self, title: str, action) -> QPushButton:
+        button = QPushButton(title)
+        button.setAccessibleName(title)
+        button.clicked.connect(lambda _checked=False: self.attempt(action))
+        return button
+
+    def attempt(self, action) -> None:
+        try:
+            action()
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.feedback.setText("Operacja niedostępna: " + self.runner.redactor.text(str(exc)))
+
+    def _guide(self) -> None:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        row = QHBoxLayout()
+        self.live_button = self.button("Wykonaj odbiór izolowany", lambda: self.start((self.chosen(),), "live"))
+        self.sandbox_button = self.button("Otwórz izolowane Studio", lambda: self.start((self.chosen(),), "sandbox"))
+        row.addWidget(self.live_button)
+        row.addWidget(self.sandbox_button)
+        layout.addLayout(row)
+        self.checklist = QListWidget()
+        self.checklist.setWordWrap(True)
+        self.checklist.setAccessibleName("Kroki odbioru wspomaganego")
+        layout.addWidget(self.checklist, 1)
+        self.note = QPlainTextEdit()
+        self.note.setPlaceholderText("Co zaobserwowano? Bez dowodu wpisz: nie ustalono i wskaż potrzebne sprawdzenie.")
+        self.note.setMaximumHeight(85)
+        layout.addWidget(self.note)
+        row = QHBoxLayout()
+        self.state = QComboBox()
+        for label, value in (("BLOCKED — brak warunków", "BLOCKED"), ("FAIL — problem", "FAIL"), ("PASS — kryteria spełnione", "PASS")):
+            self.state.addItem(label, value)
+        row.addWidget(self.state)
+        self.proof_button = self.button("Dołącz dowód…", self.attach_proof)
+        self.observe_button = self.button("Zapisz odbiór z dowodami", self.save)
+        row.addWidget(self.proof_button)
+        row.addWidget(self.observe_button)
+        layout.addLayout(row)
+        self.tabs.addTab(page, "Odbiór wspomagany")
+
+    def selected_ids(self) -> tuple[str, ...]:
+        rows = {i.row() for i in self.table.selectionModel().selectedRows()}
+        rows.update(i for i in range(self.table.rowCount()) if self.cell(i, 0).checkState() == Qt.CheckState.Checked)
+        return tuple(self.rows[i]["id"] for i in sorted(rows) if not self.table.isRowHidden(i))
+
+    def chosen(self) -> str:
+        row = self.table.currentRow()
+        if not 0 <= row < len(self.rows) or self.table.isRowHidden(row):
+            raise ValueError("Wybierz widoczny scenariusz TPA")
+        return self.rows[row]["id"]
+
+    def pick_python(self) -> None:
+        name, _ = QFileDialog.getOpenFileName(self, "Interpreter testów", self.python_field.text())
+        if name:
+            self.python_field.setText(name)
+            self.runner.availability.clear()
+            self.runner.probe.clear()
+            self.refresh_view()
+
+    def check_ready(self) -> None:
+        self.runner.python = self.python_field.text().strip()
+        self._started = time.monotonic()
+        self.runner.check_ready()
+        self.update_controls()
+
+    def start(self, ids: tuple[str, ...], execution: str = "regression") -> None:
+        if not ids:
+            raise ValueError("Zaznacz co najmniej jeden widoczny scenariusz")
+        self.runner.python = self.python_field.text().strip()
+        self._started = time.monotonic()
+        self.auto_log.clear()
+        self._log_selection = None
+        self.runner.start_selection(ids, execution=execution, model=self.model.text().strip())
+        self.attached.clear()
+        if execution != "regression":
+            self.tabs.setCurrentWidget(self.auto_log)
+        self.report = self.runner.report
+        self.refresh_view()
+
+    def run_selected_subcheck(self) -> None:
+        self.start(self.selected_ids())
+
+    def run_safe_subchecks(self) -> None:
+        self.start(tuple(r["id"] for r in self.rows))
+
+    def retry_failed(self) -> None:
+        if not self.report:
+            raise ValueError("Wybierz przebieg w historii")
+        ids = tuple(r["case_id"] for r in self.report["results"] if r["status"] in {"FAIL", "BLOCKED", "TIMEOUT", "INTERRUPTED", "CANCELLED", "SKIPPED"})
+        self.start(ids, self.report.get("execution", "regression"))
+
+    def _prepared(self, probe: object) -> None:
+        self.technical.setPlainText(json.dumps(probe, ensure_ascii=False, indent=2))
+        self.refresh_view()
+
+    def _progress(self, text: str) -> None:
+        current = self.runner.report
+        running = next((r["case_id"] for r in current["results"] if r["status"] == "RUNNING"), "") if current else ""
+        key = (current["run_id"], running) if current else ("", "")
+        if text.startswith("Zaakceptowana odpowiedź testowa:") and self._log_selection not in {None, key}:
+            self.auto_log.clear()
+            self._log_selection = key
+        if self._log_selection is not None and self._log_selection != key:
+            return  # A selected completed test must not receive another test's output.
+        self.auto_log.appendPlainText(self.runner.redactor.text(text))
+        if text.startswith("Zaakceptowana odpowiedź testowa:"):
+            self.tabs.setCurrentWidget(self.auto_log)
+
+    def _completed(self, report: object) -> None:
+        if isinstance(report, dict):
+            self.report = report
+            if report.get("persistence_error"):
+                self.feedback.setText(report["persistence_error"])
+        self.refresh()
+
+    def refresh_view(self) -> None:
+        if self.runner.active and self.runner.report is not None and self.runner._next_after_probe:
+            self.report = self.runner.report
+        results = {r["case_id"]: r for r in self.report["results"]} if self.report else {}
+        for i, case in enumerate(self.rows):
+            result = results.get(case["id"], {})
+            state = result.get("status", "NOT_RUN")
+            reason = result.get("reason") or self.runner.availability.get(case["id"], {}).get("reason") or "Użyj Sprawdź gotowość."
+            for col, text in ((3, state), (4, reason)):
+                self.cell(i, col).setText(text)
+                self.cell(i, col).setToolTip(state + "\n" + reason + "\nPełny odbiór: " + result.get("full_gate", "NOT_RUN"))
+            self.cell(i, 0).setToolTip(case["title"] + "\nID: " + case["id"])
+        ready = sum(v["ready"] for v in self.runner.availability.values())
+        counters = summary(self.report)["counts"] if self.report else {}
+        scope = " • historia: " + self.report["source"]["version"] if self.report and self.report["source"]["version"] != legacy.scope_version(self.root) else ""
+        selected_python = self.runner.probe.get("python") or self.python_field.text()
+        python_label = " / ".join(Path(selected_python).parts[-3:]) if selected_python else "nie wybrano"
+        self.summary.setToolTip("Interpreter: " + (selected_python or "nie wybrano") + "\nRaporty: " + str(self.runner.store.base))
+        self.summary.setText("SYSTEM " + legacy.scope_version(self.root).split("-", 1)[0] + scope + "\nPython: " + python_label
+                             + f" • gotowe podtesty: {ready}/22 • MEMORY: off\n" + " | ".join(f"{k}: {v}" for k, v in counters.items()))
+        self.apply_filters()
+        self.table.resizeRowsToContents()
+        self.selected(self.table.currentRow(), 0, -1, -1)
+        self.update_controls()
+        self.update_progress()
+
+    def update_controls(self) -> None:
+        active = self.runner.active
+        for button in (self.auto_one, self.auto_safe, self.check_button, self.retry_button, self.live_button, self.sandbox_button):
+            button.setEnabled(not active)
+            button.setToolTip("Poczekaj na zakończenie przebiegu lub użyj Zatrzymaj." if active else "")
+        self.auto_one.setEnabled(not active and bool(self.selected_ids()))
+        if not self.selected_ids():
+            self.auto_one.setToolTip("Zaznacz co najmniej jeden widoczny scenariusz.")
+        self.retry_button.setEnabled(not active and self.report is not None and any(r["status"] in {"FAIL", "BLOCKED", "TIMEOUT", "INTERRUPTED", "CANCELLED", "SKIPPED"} for r in self.report["results"]))
+        if not self.retry_button.isEnabled() and not active:
+            self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
+        self.auto_cancel.setEnabled(active)
+        for widget in (self.python_field, self.choose_python, self.history):
+            widget.setEnabled(not active)
+        for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
+            button.setEnabled(not active and self.report is not None and bool(self.report.get("finished_utc")))
+        try:
+            live = self.chosen() in LIVE_CASES
+        except ValueError:
+            live = False
+        self.live_button.setEnabled(not active and live)
+        self.live_button.setToolTip("Rzeczywiste kroki na własnym daemonie; tury wymagają modelu." if live else "Dostępny podtest i prowadzony odbiór w izolowanym Studio.")
+
+    def update_progress(self) -> None:
+        rows = self.report["results"] if self.report else []
+        done = sum(r["status"] in TERMINAL for r in rows)
+        self.progress.setRange(0, max(1, len(rows)))
+        self.progress.setValue(done)
+        if self.runner.active:
+            current = next((r["title"] for r in rows if r["status"] == "RUNNING"), "Kontrola gotowości")
+            self.auto_status.setText(f"{current} • {max(0, int(time.monotonic() - self._started))} s • zakończono {done}/{len(rows)}")
+        elif self.report:
+            self.auto_status.setText(f"Zakończono {done}/{len(rows)} pozycji • {self.report['run_id']} • pełny odbiór osobno.")
+
+    def apply_filters(self, *_args) -> None:
+        if not hasattr(self, "table"):
+            return
+        query = self.search.text().casefold().strip()
+        for i, case in enumerate(self.rows):
+            text = " ".join((case["id"], case["title"], self.cell(i, 4).text())).casefold()
+            visible = (not query or query in text) and (not self.category.currentData() or self.category.currentData() == case["category"])
+            visible = visible and (not self.mode_filter.currentData() or self.mode_filter.currentData() == case["mode"])
+            visible = visible and (not self.result_filter.currentData() or self.result_filter.currentData() == self.cell(i, 3).text())
+            self.table.setRowHidden(i, not visible)
+
+    def selected(self, row: int, _col: int, _oldrow: int, _oldcol: int) -> None:
+        if not 0 <= row < len(self.rows):
+            return
+        case = self.rows[row]
+        result = next((r for r in self.report["results"] if r["case_id"] == case["id"]), {}) if self.report else {}
+        self.instructions.setPlainText("ID: " + case["id"] + "\nCEL: " + case["title"] + "\n\nKRYTERIA:\n" + case["expected"]
+                                       + "\n\nWYKONAWCA: " + case["executor"] + "\n" + "\n".join(case["files"])
+                                       + "\nZależności: " + ", ".join(case["requirements"]) + "\n\nZAOBSERWOWANO:\n" + result.get("reason", "nie ustalono")
+                                       + "\nPełny odbiór: " + result.get("full_gate", "NOT_RUN")
+                                       + "\nCzas / kod wyjścia: " + str(result.get("duration_seconds", "nie ustalono")) + " s / " + str(result.get("exit_code", "nie ustalono"))
+                                       + "\nWyniki z JUnit: " + json.dumps(result.get("counts", {}), ensure_ascii=False)
+                                       + "\nUruchomiono: " + " ".join(result.get("command", []))
+                                       + "\nDalej: " + result.get("next_step", "Wykonaj kroki odbioru wspomaganego.")
+                                       + "\n\nOGRANICZENIA:\n" + case["limitations"])
+        guide_key = (self.report["run_id"] if self.report else "", case["id"])
+        if self._guide_key != guide_key:
+            self.guide_drafts[self._guide_key] = {
+                "note": self.note.toPlainText(), "state": self.state.currentIndex(),
+                "checked": [i for i in range(self.checklist.count()) if (item := self.checklist.item(i)) is not None and item.checkState() == Qt.CheckState.Checked]}
+            self._guide_key = guide_key
+            self._guide_id = case["id"]
+            self.checklist.clear()
+            draft = self.guide_drafts.get(guide_key, {})
+            for i, text in enumerate(case["guide"]):
+                item = QListWidgetItem(text)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(Qt.CheckState.Checked if i in draft.get("checked", []) else Qt.CheckState.Unchecked)
+                self.checklist.addItem(item)
+            self.note.setPlainText(draft.get("note", ""))
+            self.state.setCurrentIndex(draft.get("state", 0))
+
+    def refresh(self) -> None:
+        chosen = self.report["run_id"] if self.report else ""
+        self.history.blockSignals(True)
+        try:
+            self.history.clear()
+            self.history.addItem("Historia — wybierz przebieg", "")
+            history = self.runner.store.history()
+            if self.runner.store.history_errors:
+                self.feedback.setText("Błąd odczytu historii: " + " | ".join(self.runner.store.history_errors))
+            for report in history:
+                self.history.addItem(report["started_utc"][:19] + " • " + report["source"]["version"] + " • " + report["run_id"][-8:], report["run_id"])
+            if not self.report and history:
+                self.report = history[0]
+                chosen = self.report["run_id"]
+            self.history.setCurrentIndex(max(0, self.history.findData(chosen)))
+        finally:
+            self.history.blockSignals(False)
+        self.refresh_view()
+
+    def load_history(self, _index: int) -> None:
+        run_id = self.history.currentData()
+        if run_id:
+            self.attempt(lambda: self._load_report(str(run_id)))
+
+    def _load_report(self, run_id: str) -> None:
+        self.report = self.runner.store.load(run_id)
+        self.attached.clear()
+        self.refresh_view()
+        self.open_report()
+
+    def show_log(self) -> None:
+        if not self.report:
+            raise ValueError("Wybierz przebieg z historii lub uruchom testy")
+        key = self.chosen()
+        row = next((r for r in self.report["results"] if r["case_id"] == key), {})
+        self._log_selection = (self.report["run_id"], key)
+        if self.runner.active and self.report is self.runner.report and row.get("status") == "RUNNING":
+            self.auto_log.setPlainText(self.runner.buffer)
+            self.tabs.setCurrentWidget(self.auto_log)
+            return
+        if not row.get("log"):
+            raise ValueError("Test nie ma logu w tym przebiegu: nie uruchomiono go lub zapis się nie udał.")
+        path = safe_child(self.runner.store.folder(self.report["run_id"]), row["log"])
+        if not path.is_file():
+            raise ValueError("Brak pliku logu tego przebiegu. Nie wybrano logu innego testu.")
+        self.auto_log.setPlainText(self.runner.redactor.text(path.read_text(encoding="utf-8")))
+        self.tabs.setCurrentWidget(self.auto_log)
+
+    def open_report(self) -> None:
+        if not self.report:
+            raise ValueError("Najpierw wybierz przebieg")
+        self.report_view.setPlainText(readable_report(self.report))
+        self.technical.setPlainText(json.dumps(self.report, ensure_ascii=False, indent=2))
+        self.tabs.setCurrentWidget(self.report_view)
+
+    def show_legacy(self) -> None:
+        data, _ = legacy.load(self.root)
+        self.technical.setPlainText("Historyczne ręczne wyniki; nie są dowodem nowego wykonania.\n" + self.runner.redactor.text(json.dumps(data, ensure_ascii=False, indent=2)))
+        self.tabs.setCurrentWidget(self.technical)
+
+    def export_report(self) -> None:
+        if not self.report or self.runner.active:
+            raise ValueError("Eksport wymaga zakończonego przebiegu")
+        name, _ = QFileDialog.getSaveFileName(self, "Nowy raport TPA", self.report["run_id"] + ".zip", "ZIP (*.zip)")
+        if name:
+            target = self.runner.store.export_zip(self.report, Path(name))
+            self.feedback.setText("Wyeksportowano raport i dowody: " + str(target))
+
+    def attach_proof(self) -> None:
+        if not self.report:
+            raise ValueError("Najpierw wykonaj i wybierz przebieg")
+        name, _ = QFileDialog.getOpenFileName(self, "Raport/log testowy; bez prywatnej MEMORY", "", "Raporty (*.txt *.log *.json *.xml)")
+        if name:
+            artifact = attach_evidence(self.runner.store, self.report, Path(name))
+            self.attached.setdefault(self.chosen(), []).append(artifact)
+            self.feedback.setText("Dołączono zredagowany dowód: " + artifact)
+
+    def save(self) -> None:
+        if not self.report:
+            raise ValueError("Najpierw wykonaj podtest lub odbiór izolowany")
+        key = self.chosen()
+        checked = [i for i in range(self.checklist.count()) if (item := self.checklist.item(i)) is not None and item.checkState() == Qt.CheckState.Checked]
+        row = next((r for r in self.report["results"] if r["case_id"] == key), {})
+        proofs = list(self.attached.get(key, []))
+        if row.get("junit"):
+            proofs.append(row["junit"])
+        if key + ".live.json" in self.report["artifacts"]:
+            proofs.append(key + ".live.json")
+        record_observation(self.runner.store, self.report, key, checked, self.note.toPlainText(), proofs, str(self.state.currentData()))
+        self.feedback.setText("Zapisano odrębny odbiór człowieka z dowodami; wcześniejsze obserwacje zachowane.")
+        self.refresh_view()
+
+    def shutdown(self) -> bool:
+        if self.runner.active:
+            self.runner.stop()
+            return False
+        return True
+
+    def closeEvent(self, event) -> None:
+        if not self.shutdown():
+            event.ignore()
+            QTimer.singleShot(100, self.close)
+            return
+        self.elapsed_timer.stop()
+        super().closeEvent(event)

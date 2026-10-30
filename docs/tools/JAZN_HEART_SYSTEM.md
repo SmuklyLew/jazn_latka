@@ -61,3 +61,33 @@ Kontrola typów: `python tools/jazn_run_studio/check_types.py`. Regresje: istnie
 ## Źródła kontraktów interfejsu i transportu
 
 Dokowanie opiera się na [Qt QMainWindow](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QMainWindow.html), a blokowanie ukończenia kreatora na [Qt QWizard](https://doc.qt.io/qt-6/qwizard.html). Panel połączeń używa istniejących narzędzi zgodnych z [MCP 2026-07-28, transporty](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports); nie dodaje własnej implementacji protokołu.
+
+## Konsola usług na wzór XAMPP (.94.6.19)
+
+Na stronie **Usługi i procesy** zgromadzono sześć modułów: Runtime Jaźni,
+Ollama, MCP lokalne, MCP publiczne (Cloudflare), Supervisor i MEMORY.
+Wybór wiersza udostępnia pasek **Start / Stop / Restart / Status / Logi**.
+Działania niedozwolone dla danego modułu są wyłączone; podgląd i konfiguracja
+są dostępne w menu wiersza. PID, port i gotowość pochodzą wyłącznie
+z kanonicznych odczytów, a nie z założenia, że istniejący PID oznacza zdrowie.
+
+Start/Stop/Restart kieruje się do istniejących metod `Controller`: dla
+Jaźni przez `run.py` i `main.py`, dla Ollamy oraz MCP wyłącznie w
+odniesieniu do procesów uruchomionych i należących do tego Studio.
+Supervisora sprawdza publiczne `run.py supervisor-status --json`; gotowość
+wymaga potwierdzonej tożsamości, aktywności i aktualnego heartbeat.
+MEMORY ma wyłącznie techniczny odczyt, bez dostępu do prywatnych baz.
+Publiczny Cloudflare/MCP to diagnostyka, nie tryb uruchomienia
+lokalnej bramy `--loopback-dev` jako niechronionego publicznego serwera.
+
+Nie dodano bezwarunkowego **Start All / Stop All**. Trwały runtime,
+supervisor i odrębne usługi wymagają jawnego planu, potwierdzenia właściciela,
+kontroli zależności oraz kanonicznego zamykania i recovery. Wzorcem XAMPP jest
+spójny panel, a nie kopiowanie procesu systemowych usług Apache.
+Szczegółowe formularze OAuth, wdrożenia, mapy zależności i odbiór
+funkcjonalny pozostałych studiów wymagają dalszych etapów. Nie są
+potwierdzone przez samą obecność konsoli.
+
+## Regresja odświeżania usług (.94.6.20)
+
+Odczyt statusu supervisora w `refresh_services()` jest jawnie tylko do odczytu, tak jak kanoniczny status runtime i sondy sieciowe. Test Qt z poprzedniej wersji pomijał `action:supervisor`, dlatego został zaktualizowany bez usuwania funkcji. Historyczny test .19 zachowano bajt w bajt w `tests/archive/`. Pełny odbiór GUI i działania usług na rzeczywistym Windows nadal wymaga osobnej obserwacji operatora.
