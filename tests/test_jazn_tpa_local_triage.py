@@ -40,7 +40,7 @@ def test_stale_sha_version_and_file_hash_do_not_reuse_pass():
 def test_missing_source_evidence_is_not_false_pass():
     current = {**SOURCE, "git_sha": None}
     assert triage_cases(CASES, [run(full_gate="PASS")], current)["chat-resume"]["state"] == DO_POWTORZENIA
-    assert triage_cases(CASES, [run(full_gate="PASS", sha=None)], SOURCE)["chat-resume"]["state"] == ZALICZONE
+    assert triage_cases(CASES, [run(full_gate="PASS", sha=None)], SOURCE)["chat-resume"]["state"] == DO_POWTORZENIA
 
 
 def test_only_confirmed_human_gate_on_same_source_is_received():

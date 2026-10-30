@@ -39,7 +39,9 @@ def _source_relation(prior: dict[str, Any], current: dict[str, Any]) -> str:
         if isinstance(left, str) and left and isinstance(right, str) and right and left != right:
             return "stale"
     old_sha, new_sha = prior.get("git_sha"), current.get("git_sha")
-    if old_sha and not new_sha:
+    # A source hash of version.py alone cannot prove complete repo identity.
+    # Never reuse full_gate PASS unless both immutable Git revisions are known.
+    if not isinstance(old_sha, str) or not old_sha or not isinstance(new_sha, str) or not new_sha:
         return "uncertain"
     old_file, current_file = prior.get("version_sha256"), current.get("version_sha256")
     if not old_file or not current_file:
