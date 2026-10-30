@@ -10,7 +10,7 @@ CASES = [{"id": "chat-resume"}, {"id": "daemon-restart"}]
 SOURCE = {"version": ".35", "version_sha256": "hash-current", "git_sha": "sha-current", "git_dirty": False}
 
 
-def run(case="chat-resume", *, version=".35", sha="sha-current", version_hash="hash-current",
+def run(case="chat-resume", *, version=".35", sha: str | None = "sha-current", version_hash="hash-current",
         result="PASS", full_gate="NOT_RUN", started="2026-10-30T01:00:00Z"):
     return {"started_utc": started,
             "source": {"version": version, "git_sha": sha, "version_sha256": version_hash,
