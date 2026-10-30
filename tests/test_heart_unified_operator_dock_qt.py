@@ -33,6 +33,8 @@ def test_shared_history_and_technical_panels_are_safe_read_only(window) -> None:
     workspace = window.workspace
     assert workspace.tabs.tabText(3) == "Historia"
     assert workspace.tabs.tabText(4) == "Techniczne"
+    assert workspace.tabs.tabText(5) == "Terminal PTY"
+    assert not workspace.interactive_terminal.pty.process
     assert workspace.consoles_splitter.count() == 3
     assert all(console.output.isReadOnly() for console in workspace.consoles)
     workspace.refresh_history()
@@ -45,8 +47,9 @@ def test_shared_history_and_technical_panels_are_safe_read_only(window) -> None:
 
 def test_layout_v3_restores_valid_prior_schemas_but_rejects_bad_tab() -> None:
     assert validate({"schema": SCHEMA, "operator_tab": 4})["operator_tab"] == 4
+    assert validate({"schema": SCHEMA, "operator_tab": 5})["operator_tab"] == 5
     assert validate({"schema": "jazn_heart_layout/v2", "dock_visible": True})["schema"] == SCHEMA
     assert validate({"schema": "jazn_heart_layout/v1"})["schema"] == SCHEMA
-    for invalid in (-1, 5, 1.2, True, "2"):
+    for invalid in (-1, 6, 1.2, True, "2"):
         with pytest.raises(ValueError):
             validate({"schema": SCHEMA, "operator_tab": invalid})
