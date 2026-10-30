@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.26",
-  "active_definition_count": 2931,
+  "system_version": "16.3.25.5.116.0.34.94.6.28",
+  "active_definition_count": 2934,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29063,7 +29063,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 27
+      "line": 32
     },
     "tests/test_jazn_tpa_live_resume_receipt.py::test_receipt_rejects_foreign_or_failed_request": {
       "path": "tests/test_jazn_tpa_live_resume_receipt.py",
@@ -29082,7 +29082,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 59
     },
     "tests/test_jazn_tpa_live_resume_receipt.py::test_receipt_timeout_does_not_fake_admission": {
       "path": "tests/test_jazn_tpa_live_resume_receipt.py",
@@ -29101,7 +29101,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 75
     },
     "tests/test_jazn_tpa_live_resume_receipt.py::test_live_cli_exit_code_matches_reported_status": {
       "path": "tests/test_jazn_tpa_live_resume_receipt.py",
@@ -29120,7 +29120,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 95
     },
     "tests/test_jazn_tpa_live_resume_receipt.py::test_cleanup_cli_exit_code_matches_verified_inactivity": {
       "path": "tests/test_jazn_tpa_live_resume_receipt.py",
@@ -29139,7 +29139,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 105
+      "line": 110
     },
     "tests/test_jazn_tpa_log_scope_qt.py::test_log_button_keeps_selected_completed_test_separate_from_live_output": {
       "path": "tests/test_jazn_tpa_log_scope_qt.py",
@@ -29236,6 +29236,55 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 54
+    },
+    "tests/test_jazn_tpa_smoke_model_selection_qt.py::test_smoke_selects_only_verified_inventory_model": {
+      "path": "tests/test_jazn_tpa_smoke_model_selection_qt.py",
+      "name": "test_smoke_selects_only_verified_inventory_model",
+      "purpose": "Smoke selects only verified inventory model",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_jazn_tpa_smoke_model_selection_qt.py::test_smoke_rejects_unknown_model_without_substitution": {
+      "path": "tests/test_jazn_tpa_smoke_model_selection_qt.py",
+      "name": "test_smoke_rejects_unknown_model_without_substitution",
+      "purpose": "Smoke rejects unknown model without substitution",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_tpa_smoke_model_selection_qt.py::test_smoke_rejects_empty_inventory": {
+      "path": "tests/test_jazn_tpa_smoke_model_selection_qt.py",
+      "name": "test_smoke_rejects_empty_inventory",
+      "purpose": "Smoke rejects empty inventory",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
     },
     "tests/test_jazn_tpa_staging_authority.py::test_local_acceptance_is_fresh_single_use_and_cleanup_can_resume": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
