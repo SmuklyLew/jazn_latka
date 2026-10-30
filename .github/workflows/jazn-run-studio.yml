@@ -67,6 +67,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py run_studio.py
+      - run: python -m pytest -q tests/test_heart_visual_system_qt.py tests/test_version_bound_contract_fields.py tests/test_package_integrity_canonical_worktree.py
       - run: python -m pytest -q tests/test_jazn_tpa_staging_authority.py
       - run: python -m pytest -q tests/test_jazn_acceptance_resume_profile.py tests/test_jazn_workspace_layout_isolation.py tests/test_jazn_tpa_safe_executor.py
       - run: python -m pytest -q tests/test_jazn_tpa_evidence.py tests/test_jazn_tpa_execution_qt.py tests/test_heart_system_xampp_console.py tests/test_heart_system_xampp_console_qt.py tests/test_jazn_tpa_live_full_gate.py tests/test_jazn_tpa_compact_layout_qt.py tests/test_jazn_tpa_log_scope_qt.py tests/test_jazn_tpa_corrupt_evidence.py tests/test_jazn_tpa_action_evidence.py

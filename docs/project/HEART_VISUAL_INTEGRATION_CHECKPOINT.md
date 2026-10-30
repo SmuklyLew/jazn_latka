@@ -26,7 +26,7 @@ every other field for forbidden release literals. This is not a file exemption.
 | --- | --- |
 | P0 | fc500058 retained; live daemon/model acceptance still separate |
 | Audit integrity | Clean Git canonical verification PASS; strict dirty/export byte policy retained |
-| P1 | Central visual system and operator shell in implementation; whole-application operator acceptance required |
+| P1 | Shared tokens, six-profile palette, dialogs, responsive controls, tables, ten menus, command palette, activity bar, section tabs and v2 bounded layout implemented; whole-application operator acceptance required |
 | P2 | ConPTY/PTY interactive terminal remains open; task consoles retain their explicit identity |
 | P3 | Existing canonical service controls retained; complete service acceptance remains open |
 | P4 | Twelve-Studio operational parity remains open per STUDIO_MIGRATION.md |
@@ -34,3 +34,36 @@ every other field for forbidden release literals. This is not a file exemption.
 
 No new dependencies, private MEMORY migration, daemon ownership or deployment
 is authorized by this visual work. Preserve the Draft state of PR #436.
+
+## Visual implementation
+
+`workbench_theme.py` owns color/typography/spacing/density/focus tokens and
+contrast calculations. The custom accent is preserved; selected text and focus
+choose readable contrasting colors even for black/white accents. Semantic
+success/warning/error colors have separate light/dark variants.
+
+`visual_system.py` applies a scoped Qt palette and stylesheet to the window,
+all existing pages and parented dialogs, and observes newly created controls.
+Forms wrap long rows; action rows stack when needed; long button labels wrap
+without losing their dynamic state or full tooltip. Tables use alternating
+rows, movable headers, pixel scrolling and full-text hover tooltips. Existing
+specialized table sizing and read-only contracts remain intact.
+
+`workbench_shell.py` provides Plik/Edycja/Widok/Terminal/Usługi/Jaźń/Studia/TPA/
+Narzędzia/Pomoc. Ctrl+Shift+P filters real actions; Enter executes the selected
+action through the existing guard. Menus retain canonical confirmation and
+capability errors. Missing native import/restore and embedded PTY are explicitly
+identified as remaining stages. No fabricated terminal or readiness was added.
+
+At narrow widths the activity rail and section tabs give way to existing search
+and menus; the sidebar collapses while preserving the operator's preference.
+At larger widths the activity rail, section tabs, splitters and docks remain
+available. Layout v2 stores only bounded primitive dimensions and known-section
+labels, migrates v1 and rejects unknown fields or unsafe sizes. Layout reset
+preserves theme preferences instead of overwriting them with defaults.
+
+This change covers the shared Qt presentation. Independently launched classic
+Tk/cursor studios remain available and are not claimed to share the Qt theme
+or to satisfy native parity. Physical DPI, screen-reader review, every Studio
+workflow and operator acceptance are still open; automated renderings do not
+promote any full_gate to PASS.

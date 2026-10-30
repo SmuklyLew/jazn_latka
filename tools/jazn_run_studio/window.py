@@ -179,7 +179,7 @@ class Window(QMainWindow):
         self.log_toggle.clicked.connect(self.toggle_logs)
         self.statusBar().addPermanentWidget(self.log_toggle)
         self.restore_layout()
-        self.nav.setCurrentRow(0)
+        self.navigate(self.layout_state.get("active_section", "Pulpit"))
         self.statusBar().showMessage(str(core.root))
         self.apply_theme()
         self.timer = QTimer(self)
@@ -205,7 +205,9 @@ class Window(QMainWindow):
     def page(self, title: str, description: str, *, compact: bool = False) -> QVBoxLayout:
         pane = QWidget()
         layout = QVBoxLayout(pane)
-        layout.setContentsMargins(24, 20, 24, 16)
+        from .workbench_theme import METRICS
+        layout.setContentsMargins(METRICS.page_margin, 12, METRICS.page_margin, 12)
+        layout.setSpacing(METRICS.gap)
         heading = QLabel(title)
         heading.setObjectName("heading")
         if not compact:
@@ -877,9 +879,10 @@ class Window(QMainWindow):
         app = QApplication.instance()
         system_dark = (isinstance(app, QApplication)
                        and app.styleHints().colorScheme() == Qt.ColorScheme.Dark)
-        self.setStyleSheet(workbench_stylesheet(
-            self.core.settings.theme, self.core.settings.accent, system_dark=system_dark,
-        ))
+        from .visual_system import VisualSystem
+        if not hasattr(self, "visual_system"):
+            self.visual_system = VisualSystem(self)
+        self.visual_system.apply(self.core.settings.theme, self.core.settings.accent, system_dark=system_dark)
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
@@ -903,6 +906,8 @@ class Window(QMainWindow):
     def toggle_sidebar(self) -> None:
         visible = not self.sidebar.isVisible()
         self.sidebar.setVisible(visible)
+        if hasattr(self, "workbench") and self.workbench.compact_sidebar is not None:
+            self.workbench.compact_sidebar = visible
         self.menu_button.setToolTip("Ukryj boczną nawigację (Ctrl+B)" if visible
                                     else "Pokaż boczną nawigację (Ctrl+B)")
         if visible:
@@ -1208,18 +1213,8 @@ class Window(QMainWindow):
                 return
 
     def _workspace_menu(self) -> None:
-        view = self.menuBar().addMenu("Widok")
-        view.addAction(self.workspace.dock.toggleViewAction())
-        for label, callback in (("Problemy", lambda: self.workspace.show(0)),
-                                ("Output / Logi", lambda: self.workspace.show(1)),
-                                ("Terminal / Konsole", lambda: self.workspace.show(2)),
-                                ("Nawigacja po lewej / prawej", self.switch_sidebar),
-                                ("Przywróć bezpieczny układ", self.reset_layout)):
-            action = view.addAction(label)
-            action.triggered.connect(callback)
-        setup = self.menuBar().addMenu("Konfiguracja")
-        action = setup.addAction("Kreator pierwszego uruchomienia…")
-        action.triggered.connect(self.open_setup)
+        from .workbench_shell import WorkbenchShell
+        self.workbench = WorkbenchShell(self)
 
     def switch_sidebar(self) -> None:
         right = self.shell_splitter.indexOf(self.sidebar) == 0
@@ -1235,9 +1230,8 @@ class Window(QMainWindow):
         self.workspace.dock.setFloating(False)
         self.workspace.dock.hide()
         self.set_logs_visible(False)
-        # Restoring the visual theme is a draft; no runtime settings are changed.
-        self.theme.setCurrentText(Settings().theme)
-        self.setStyleSheet(workbench_stylesheet(Settings().theme, Settings().accent))
+        self.content_splitter.setSizes([max(1, self.height() - 140), 140])
+        self.apply_theme()
 
     def restore_layout(self) -> None:
         if self.smoke:
@@ -1258,6 +1252,11 @@ class Window(QMainWindow):
                  Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
         self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
         self.workspace.dock.setVisible(data.get("dock_visible", False))
+        for title in data.get("open_sections", []):
+            self.navigate(title)
+        for key, splitter in (("shell_sizes", self.shell_splitter), ("content_sizes", self.content_splitter)):
+            if key in data:
+                splitter.setSizes(data[key])
 
     def persist_layout(self) -> None:
         from .workspace_layout import SCHEMA, save_layout
@@ -1266,9 +1265,13 @@ class Window(QMainWindow):
         area = self.dockWidgetArea(self.workspace.dock)
         self.layout_state = {"schema": SCHEMA, "width": self.width(), "height": self.height(),
                              "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
-                             "sidebar_visible": self.sidebar.isVisible(),
+                             "sidebar_visible": self.sidebar.isVisible() if self.workbench.compact_sidebar is None else self.workbench.compact_sidebar,
                              "dock_visible": self.workspace.dock.isVisible(),
                              "dock_area": areas.index(area) if area in areas else 3,
+                             "shell_sizes": self.shell_splitter.sizes(),
+                             "content_sizes": self.content_splitter.sizes(),
+                             "active_section": self.current_section.text(),
+                             "open_sections": [self.workbench.section_tabs.tabText(i) for i in range(self.workbench.section_tabs.count())],
                              "setup_scope": self.layout_state.get("setup_scope", "")}
         save_layout(self.core.root, self.layout_state)
 
