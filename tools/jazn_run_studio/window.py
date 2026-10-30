@@ -1293,6 +1293,7 @@ class Window(QMainWindow):
         areas = [Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea,
                  Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
         self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
+        self.workspace.dock_height = data.get("dock_height", 300)
         self.workspace.dock.setVisible(data.get("dock_visible", False))
         self.workspace.tabs.setCurrentIndex(min(data.get("operator_tab", 0), self.workspace.tabs.count() - 1))
         for title in data.get("open_sections", []):
@@ -1310,6 +1311,7 @@ class Window(QMainWindow):
                              "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
                              "sidebar_visible": self.sidebar.isVisible() if self.workbench.compact_sidebar is None else self.workbench.compact_sidebar,
                              "dock_visible": self.workspace.dock.isVisible(),
+                             "dock_height": max(180, min(3000, self.workspace.dock.height() if self.workspace.dock.isVisible() else self.workspace.dock_height)),
                              "operator_tab": self.workspace.tabs.currentIndex(),
                              "dock_area": areas.index(area) if area in areas else 3,
                              "shell_sizes": self.shell_splitter.sizes(),
