@@ -475,6 +475,17 @@ class Window(QMainWindow):
             "memory": "oddzielna zdolność; stan techniczny nie potwierdza recall",
         }.get(service, "wybierz moduł")
         self.service_selected_label.setText(service.upper() + " — " + note if service else note)
+        # QWidget cell widgets do not inherit QTableWidget::item:selected
+        # foreground automatically. Match the selection brush explicitly.
+        from .workbench_theme import workbench_colors
+        from .core import preferred_theme
+        colors = workbench_colors(preferred_theme(self.core.settings.theme), self.core.settings.accent)
+        for key, row in self.service_rows.items():
+            label = self.statuses[key]
+            selected = row == self.services_table.currentRow()
+            background = colors.accent if selected else "transparent"
+            foreground = colors.selected_text if selected else colors.text
+            label.setStyleSheet(f"background: {background}; color: {foreground}; padding: 3px;")
 
     def refresh_services(self) -> None:
         """Explicit, read-only probes; no silent auto-start or PID adoption."""
@@ -908,6 +919,7 @@ class Window(QMainWindow):
             self.visual_system = VisualSystem(self)
         from .core import preferred_theme
         self.visual_system.apply(preferred_theme(self.core.settings.theme), self.core.settings.accent, system_dark=system_dark)
+        self.refresh_service_controls()
 
     def _about(self) -> None:
         layout = self.page("O programie", "Studio Jaźni Starter  " + STUDIO_VERSION)
