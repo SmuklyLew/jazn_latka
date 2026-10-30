@@ -120,3 +120,45 @@ Zachowano **22/22 scenariusze** opisane w tabeli powyżej i w `tools/jazn_run_st
 Otwarte: P4 rzeczywiste dwie tury lokalnej Ollamy, reconnect/resume tego samego `request_id`, izolowany restart i ACK; P5 Windows `onedir` EXE z SHA/BUILD_INFO/manifestem, niezależna kontrola AV (`IDP.Generic` — **security HOLD**), offline VM, rzeczywiste Qt i DPI 100/150/200%; 12 odrębnych studiów Qt, w tym pięć opisanych luk `BLOCKED`. Wymagane są dowody z izolowanego stagingu **tego samego SHA i wersji**. Release/merge nadal **HOLD**.
 
 **Granica nowego commita:** aktualizacja niniejszego raportu jest wyłącznie dokumentacyjna i sama przesuwa HEAD PR. Sukces `ff6d5927f24325fa06a424915b189f6b133c00ae` nie może być przypisany nowemu commitowi dokumentacyjnemu; po zapisie trzeba osobno zweryfikować jego GitHub Actions. Nie zmieniano `master`, runtime, prywatnej MEMORY, sekretów ani manifestu ręcznie.
+
+---
+
+## Końcowa kontrola dokumentacyjnego HEAD `712c21e` — 2026-10-30 (CET)
+
+**Zakres odczytu:** HEAD Draft PR #436 `712c21ee11b256a232a01c7b9dd67658ae0bd28f` na gałęzi `integration/tpa-heart-studio-20261029`, osobno od historycznych SHA powyżej. Sprawdzono GitHub REST API dla listy workflow, wszystkich jobs (po 100 na stronę; każdy workflow miał maksymalnie 19), PR i globalnych stanów Actions.
+
+- **13/13 workflow zakończonych `completed/success`; 55 jobs: 53 `success`, 2 `skipped`, 0 `failure`, 0 `cancelled`, 0 `timed_out`, 0 `in_progress`, 0 `queued`.** Ostatni workflow `powershell-terminal-regressions` zakończył się 2026-10-30 03:49:33 UTC. To wynik dla `712c21e`, nie dla przyszłego commita dokumentacyjnego.
+- `release-hardening/manifest_sync=success`, sześć macierzy dependency contract = success, `verify (windows-latest targeted)=success`, `verify (ubuntu-latest)=success`. `release finalization=skipped` zgodnie z warunkiem `if: github.event_name != 'pull_request'`.
+- `package-distribution-cleanroom/persist canonical dependency locks and release metadata=skipped` zgodnie z warunkiem `push` na wskazane gałęzie `upgrade/*`. Są to dwa uzasadnione pominięcia dla PR, **nie pełny odbiór wydania**.
+- PR: `draft=true`, `mergeable=true`, `mergeable_state=clean`. Merge/release pozostają **HOLD** do zamknięcia lokalnych bramek i osobnej zgody.
+- W ostatnim odczycie globalnego widoku Actions: `in_progress=0`, `queued=0`, `requested=0`, `pending=0`. Inne gałęzie są niezależne od wyniku PR #436.
+
+| Workflow na `712c21e` | Run | Jobs |
+| --- | --- | --- |
+| dependency-review | [40997323901](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323901) | 1 PASS |
+| memory-cloud optional capability release gate | [40997323933](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323933) | 4 PASS |
+| jazn-run-studio | [40997323972](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323972) | 7 PASS |
+| package-distribution-cleanroom | [40997323996](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323996) | 18 PASS / 1 warunkowy SKIPPED |
+| release-hardening | [40997324010](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997324010) | 9 PASS / 1 warunkowy SKIPPED |
+| persistent-runtime-e2e | [40997323843](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323843) | 2 PASS |
+| Stable test contracts | [40997323839](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323839) | 1 PASS |
+| MCP container build and Compose deployment smoke | [40997323886](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323886) | 1 PASS |
+| javascript-node24-contract | [40997323853](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323853) | 2 PASS |
+| host-spawn-memory-convergence | [40997323867](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323867) | 4 PASS |
+| pyright-active-tree-audit | [40997323836](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323836) | 1 PASS |
+| MCP 2026-07-28 conformance release gate | [40997323868](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323868) | 2 PASS |
+| powershell-terminal-regressions | [40997323837](https://github.com/SmuklyLew/jazn_latka/actions/runs/40997323837) | 1 PASS |
+
+### Oddzielna awaria na innej gałęzi — nie przypisywać do PR #436
+
+W globalnym Actions zakończył się `release-hardening` [40999983890](https://github.com/SmuklyLew/jazn_latka/actions/runs/40999983890) dla gałęzi `fix/tpa-chat-resume-durable-receipt-20261030`, SHA `9aab74fdb3323a125e3ab4bbb91330ddcec03f1b`, z `verify (ubuntu-latest)=failure`. Odczytany [log joba 123884809882](https://github.com/SmuklyLew/jazn_latka/actions/runs/40999983890/job/123884809882) pokazuje **1 failed, 3447 passed, 17 skipped**. Konkretny test `tests/test_jazn_tpa_staging_authority.py::test_real_child_arguments_enter_live_mode_without_model_or_memory_mutation` oczekiwał kodu 0, a proces zwrócił 1 z komunikatem o konieczności wybrania lokalnego modelu Ollama. To **rzeczywista regresja kontraktu test/kod na tamtej gałęzi**, nie brak wykonania lokalnego TPA i nie awaria `712c21e`. Wymaga oddzielnego wyjaśnienia na gałęzi naprawczej, bez osłabiania testu.
+
+### Status TPA i granica dowodów
+
+**22/22 scenariusze pozostają jawne w tabeli głównej: 17 × DO WYKONANIA (TPA) / `NOT_RUN`, 5 × `BLOCKED`** z przyczynami. Nie ma nowych dowodów operatora z lokalnego TPA na `712c21e`. Wyniki `regression_subset` w CI nie są równoważne `full_gate=PASS`.
+
+- P4: dwie rzeczywiste tury lokalnej Ollamy, reconnect, resume tego samego `request_id`, izolowany restart, `display_exact`/ACK — **DO WYKONANIA (TPA)**.
+- P5: Windows final-source `onedir` EXE, SHA/BUILD_INFO/manifest, niezależna weryfikacja antywirusa (`IDP.Generic` — **security HOLD**), VM offline, widoczne Qt/klawiatura/DPI 100%, 150%, 200% — **DO WYKONANIA (TPA)** po spełnieniu wymagań bezpieczeństwa.
+- P3: 12 odrębnych studiów Qt, zgodność z `STUDIO_MIGRATION.md`; pięć braków pełnej parzystości oznaczono `BLOCKED` w tabeli głównej. Nie utożsamiać starego okna ani syntetycznego regresyjnego PASS z natywnym odbiorem.
+
+**Ważne:** ten zapis tworzy nowy HEAD i nie może odziedziczyć statusu CI z `712c21e`. Nowy commit wymaga osobnej kontroli wszystkich 13 workflow. Nie zmieniono `master`, runtime, prywatnej MEMORY, sekretów, kodu, manifestu ani provenance.
