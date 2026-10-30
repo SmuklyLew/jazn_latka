@@ -141,7 +141,20 @@ class SetupWizard(QWizard):
         scroll.setWidget(surface)
         config.addWidget(scroll, 1)
         self.model = self.setting_fields["model"]  # Existing public wizard field.
-        self.model.setPlaceholderText("np. gemma3:latest — model widoczny w Ollama")
+        self.model.setReadOnly(True)
+        self.model.setPlaceholderText("Wybierz model po wykryciu Ollamy")
+        self.model_selector = QComboBox()
+        self.model_selector.setEditable(False)
+        self.model_selector.setAccessibleName("Model Ollama z lokalnej listy zainstalowanych")
+        self.model_selector.addItem("Wykryj modele Ollama w etapie B…", "")
+        self.model_selector.currentIndexChanged.connect(self._selected_model)
+        model_box = QGroupBox("Zainstalowane modele Ollama")
+        model_layout = QVBoxLayout(model_box)
+        model_layout.addWidget(self.model_selector)
+        model_refresh = QPushButton("Wykryj modele")
+        model_refresh.clicked.connect(lambda _checked=False: self.probe("ollama"))
+        model_layout.addWidget(model_refresh)
+        config.addWidget(model_box)
         suggest = QPushButton("Uzupełnij dostępne programy w pustych polach (bez zapisu)")
         suggest.clicked.connect(self.suggest_paths)
         config.addWidget(suggest)
@@ -159,6 +172,24 @@ class SetupWizard(QWizard):
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
         QTimer.singleShot(0, self.retry)
+
+    def set_installed_models(self, names: object) -> None:
+        """Only offer model names returned by the live Ollama API."""
+        items = sorted({name for name in names if isinstance(name, str) and name.strip()}) if isinstance(names, list) else []
+        previous = self.model.text().strip()
+        self.model_selector.blockSignals(True)
+        self.model_selector.clear()
+        self.model_selector.addItem("Wybierz zainstalowany model…" if items else "Brak dostępnych modeli", "")
+        for item in items:
+            self.model_selector.addItem(item, item)
+        index = self.model_selector.findData(previous)
+        self.model_selector.setCurrentIndex(index if index >= 0 else 0)
+        self.model_selector.blockSignals(False)
+
+    def _selected_model(self, _index: int) -> None:
+        selected = self.model_selector.currentData()
+        if isinstance(selected, str) and selected:
+            self.model.setText(selected)
 
     def retry(self) -> None:
         if self.finished_setup:
