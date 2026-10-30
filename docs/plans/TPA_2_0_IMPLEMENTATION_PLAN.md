@@ -5,6 +5,15 @@ Branch: `latka_work/tpa-2-auto-acceptance-history`.
 Praca wyłącznie w osobnym worktree; prywatna MEMORY i aktywne procesy pozostają poza zakresem.
 
 Stan checkpointu .94.6.46: etapy I–III / P0–P2 zaimplementowane i wypchnięte.
+Aktualizacja .94.6.49: przełącznik live przeniesiono do zwijanej sekcji
+środowiska, by usunąć poziomy overflow w Windows 860×580 bez zmiany
+asercji. Historyczny health-check 5.3566 s / limit <5 s pozostaje
+niezdiagnozowany przyczynowo; dodano pięć numerycznych pomiarów etapów
+w izolowanym Windows CI, bez zmiany limitu, semantycznych zapisów i finalizacji.
+**Nie zaliczono jeszcze CI dla .49; kanoniczny metadata sync nie został
+uruchomiony na hostcie z powodu niedostępnego executora.**
+Rzeczywiste tury Ollama wyłącznie po merge, zgodnie z decyzją operatora.
+
 Aktualizacja .94.6.47: dodano poprawkę serializacji checkpointów P2 (stabilny
 hash tożsamości SYSTEM, oddzielenie danych redagowanych od pól strukturalnych)
 oraz nowe testy kolizji redaktora. Wyniki CI tej poprawki nie są jeszcze dowodem
