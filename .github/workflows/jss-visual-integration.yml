@@ -20,7 +20,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: jss-visual-${{ github.event.pull_request.number || github.ref }}
+  group: jss-visual-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
