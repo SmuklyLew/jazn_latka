@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.38",
-  "active_definition_count": 2971,
+  "system_version": "16.3.25.5.116.0.34.94.6.39",
+  "active_definition_count": 2975,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30300,6 +30300,71 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_jss_visual_ci_contract.py::test_profile_matrix_covers_all_three_visual_systems_and_core_pages": {
+      "path": "tests/test_jss_visual_ci_contract.py",
+      "name": "test_profile_matrix_covers_all_three_visual_systems_and_core_pages",
+      "purpose": "Profile matrix covers all three visual systems and core pages",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_jss_visual_ci_contract.py::test_visual_output_refuses_checkout_or_preexisting_target": {
+      "path": "tests/test_jss_visual_ci_contract.py",
+      "name": "test_visual_output_refuses_checkout_or_preexisting_target",
+      "purpose": "Visual output refuses checkout or preexisting target",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "FileExistsError",
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_jss_visual_ci_contract.py::test_visual_run_scrubs_host_environment_and_creates_only_synthetic_files": {
+      "path": "tests/test_jss_visual_ci_contract.py",
+      "name": "test_visual_run_scrubs_host_environment_and_creates_only_synthetic_files",
+      "purpose": "Visual run scrubs host environment and creates only synthetic files",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jss_visual_ci_contract.py::test_reports_are_fail_closed_and_contain_no_private_environment": {
+      "path": "tests/test_jss_visual_ci_contract.py",
+      "name": "test_reports_are_fail_closed_and_contain_no_private_environment",
+      "purpose": "Reports are fail closed and contain no private environment",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
