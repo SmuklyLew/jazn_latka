@@ -166,14 +166,14 @@ jobs:
             'Build or GUI smoke failed; see previous steps.' | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
       - name: Upload Windows test EXE and integrity report
-        if: always()
+        if: success()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: jss-Windows-test-EXE-${{ github.sha }}
           path: |
             ${{ runner.temp }}/jss-exe-build/dist/JaznRunStudio/
             ${{ runner.temp }}/jss-exe-build/exe-report.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 7
 
   gate:
