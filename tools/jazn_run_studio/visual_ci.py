@@ -117,8 +117,8 @@ def emit_reports(output: Path, report: dict[str, Any]) -> None:
 
 
 def run_visual(output: Path, report: dict[str, Any]) -> None:
-    # Import after environment isolation, and only from the existing JSS.
-    from dataclasses import replace
+    # Set all sandbox boundaries before any Qt or Jaźń runtime import.
+    root = isolate_environment(output)
     from unittest.mock import patch
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
@@ -127,7 +127,6 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
     from .window import Window
     from .workspace_layout import load_layout
 
-    root = isolate_environment(output)
     app = QApplication.instance() or QApplication([])
     if not isinstance(app, QApplication) or app.platformName() != "offscreen":
         raise AssertionError("non_offscreen_qt_backend")
