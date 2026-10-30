@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-30T01:36:08+00:00",
-  "updated_at_utc": "2026-10-30T01:36:08+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "generated_at_utc": "2026-10-30T02:03:06+00:00",
+  "updated_at_utc": "2026-10-30T02:03:06+00:00",
   "start_file": "run.py",
-  "file_count": 3510,
-  "static_file_count": 3510,
+  "file_count": 3514,
+  "static_file_count": 3514,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -193,8 +193,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 8065,
-      "sha256": "7130aea36a349ddbb48ac576b029da75d3328ab3ec50f139fabe5d230e07bacc",
+      "size_bytes": 8280,
+      "sha256": "588ac8cc7a5166df18ef3b3173318ac7ea963739749d651598fa33db257b2483",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -455,7 +455,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3002,
-      "sha256": "3c6cb1d9c1e3e983fe0e92d9d6e3fa66b77d69290ea2396f937d2e18e89596ae",
+      "sha256": "ab44b78734093eacb799dd67fd1477414200a2920c2253846ae1c5261ff527f1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -491,7 +491,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1951,
-      "sha256": "c5251abcdf27cfb8f9559c056d701e96b4128696a2091be62cc7dc83d5e3e1f2",
+      "sha256": "b8739a60c4eb0e3dee41bc50ecd973d67b55e0c87723e795b9dacfcb55b3e403",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2443,8 +2443,8 @@
     },
     {
       "path": "docs/project/HEART_VISUAL_INTEGRATION_CHECKPOINT.md",
-      "size_bytes": 2099,
-      "sha256": "40a4978c96424e8451acbea892d24d83a2ae699f5c793bf2448e328aebb26a65",
+      "size_bytes": 6229,
+      "sha256": "c81205f285b862b5d25012f36d2e8178f73f9f3237f92587f584cb87f30b92a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9770,7 +9770,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "8d8dc2d17e4c4847f79df6359ecf5c8ec0d1fea926404d82dbd500ea0dace22a",
+      "sha256": "636733971f7f3c32558df2b3fa2cf5055ca7ed77da6be8435d488a291c24f697",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11272,8 +11272,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 19447,
-      "sha256": "e971c56741b9f6198a32e42075e29f50b92c7ebe0360a1d20ddaba4776eeaa65",
+      "size_bytes": 19655,
+      "sha256": "41c2945dc10990d8e7f5ee670a92abcb2498860cbb9683ca53388eaed715f255",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26949,6 +26949,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_heart_service_visual_readability_qt.py",
+      "size_bytes": 1088,
+      "sha256": "8a04b036786962dc1eff8646f938ffaade0e058519db0e2a9e6cfb41c689a670",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_heart_studio_operator_diagnostics.py",
       "size_bytes": 2896,
       "sha256": "c7d84bc7f3f3d56b0e9e0b4a3476501c8a81e28078eccd62ccc002d88c49d329",
@@ -27087,6 +27096,15 @@
       "path": "tests/test_heart_system_xampp_console_qt.py",
       "size_bytes": 2276,
       "sha256": "094ef6bedd4809c2d760e24d236d42e7bc7ad885333b7d43adbef958c3c6af5f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_heart_visual_system_qt.py",
+      "size_bytes": 4565,
+      "sha256": "feb422b47bdaca87211556ce94f6f12c74551ef388b3162dddadaf704d249887",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31224,9 +31242,27 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/visual_system.py",
+      "size_bytes": 8170,
+      "sha256": "388ea46261bc3ba3b4248825a7ba39d5cab3911fe19c0593b59630decebad1fe",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 83367,
-      "sha256": "b476ed15887f39b70a265b4aab478d338ebeb02a8de48c8b6fe01ae08869d020",
+      "size_bytes": 83667,
+      "sha256": "8d824822fbee926fa10e2a1e607f257957fe96638244c1122e3f1ecba6943c66",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/workbench_shell.py",
+      "size_bytes": 10831,
+      "sha256": "8f80d30e72c7ec7034214a4c6a75ece6d2ed436b25f7b14507d450df5fbe44f4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31234,8 +31270,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
-      "size_bytes": 5647,
-      "sha256": "701e45b4939464ad9819ec74ce6c3dbbe6e47c516b1a98e9e0aca7849d9d8f14",
+      "size_bytes": 9800,
+      "sha256": "d1442e232444af01f537425bd7848c95fe6b4f030cc1fcc4c9df57befe0c3ca5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31243,8 +31279,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workspace_layout.py",
-      "size_bytes": 2397,
-      "sha256": "73d238a91ccc8206f658c9ef11d59201efae7227a20ecfeb1191b5bea226e3fa",
+      "size_bytes": 3312,
+      "sha256": "5d9d38bd3042c2d4b38ebfd144556470ad490fa9995715f2608b73f146d5947d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32045,11 +32081,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.22-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
