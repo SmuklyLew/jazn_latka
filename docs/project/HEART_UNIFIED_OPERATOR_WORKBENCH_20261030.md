@@ -53,3 +53,43 @@ Nie zmieniać master, prywatnej MEMORY, aktywnego daemona ani sekretów. Przed m
 - Qt QMainWindow/QDockWidget: https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QMainWindow.html
 - Qt QProcess: https://doc.qt.io/qtforpython-6/PySide6/QtCore/QProcess.html
 - Microsoft ConPTY: https://learn.microsoft.com/en-us/windows/console/creating-a-pseudoconsole-session
+
+## Decyzja operatorska: dwa motywy i stabilny panel dolny
+
+Na wyraźną prośbę operatora aktualna powłoka JSS udostępnia tylko
+**Ciemny** i **Jasny**. Domyślny jest Ciemny. Są to neutralne, kontrastowe
+warianty przeznaczone dla wszystkich natywnych stron, formularzy i dialogów
+Qt. Historyczne `violet-night`, `purple`, `system` i `custom` mogą nadal
+zostać odczytane przez kontrakt Settings, aby nie blokować starych profili.
+Ich efektywna prezentacja jest Ciemna; oryginalna konfiguracja nie jest
+przepisywana podczas odczytu. Dopiero jawny zapis ustawia motyw `dark` lub
+`light`. Zależne od starej palety archiwalne okna Tk nie zostały
+automatycznie uznane za zgodne z dwoma motywami.
+
+Jedyny dock narzędzi zachowuje wybraną zakładkę oraz kontrolowaną wysokość
+180–3000 pikseli logicznych. Przy przełączaniu zakładek nie nadpisuje
+ręcznej zmiany wielkości. Zachowana jest migracja układu v1/v2 do
+obecnego v3 bez odczytu nieufanych danych binarnych Qt.
+
+Nowy test `tests/test_heart_light_dark_operator_qt.py` obejmuje wybór
+dwóch motywów, zgodność historycznych nazw, kontrast tekstu oraz ochronę
+wymiarów panelu. Jest to **deklaracja zakresu testu**, nie dowód jego
+ukończenia na Windows/Linux. Końcowe CI i fizyczny odbiór GUI są wymagane.
+
+### Macierz odbioru UI do wykonania
+
+| Widok | Ciemny/Jasny | Minimalny ekran | Klawiatura/DPI | Funkcje |
+| --- | --- | --- | --- | --- |
+| Pierwsze uruchomienie A/B/C | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Pulpit, Usługi, Czat lokalny | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Diagnostyka, Katalog testów, TPA | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Konfiguracja Qt, Wersje Qt | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| MEMORY i pozostałe 12 Studiów | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Problemy, Logi, Historia, Techniczne | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Konsole zadań i prawdziwy PTY | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+| Wszystkie dialogi i menu | NOT_RUN | NOT_RUN | NOT_RUN | NOT_RUN |
+
+Wszystkie komórki odbioru pozostają NOT_RUN do przedstawienia
+wyników z Windows i Linux. Konsole zadań to wciąż zadania operatora,
+nie ConPTY; pełny terminal i parytet klasycznych Studiów są osobnymi
+nieukończonymi etapami.
