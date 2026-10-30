@@ -8,6 +8,8 @@ def visual_state(service: str, evidence: dict[str, Any]) -> str:
     if service == "runtime":
         if evidence.get("root_matches") is False or evidence.get("version_matches") is False:
             return "error"
+        if evidence.get("active_state") in {"dead", "stopped", "inactive"}:
+            return "stopped"
         if evidence.get("root_matches") is not True or evidence.get("version_matches") is not True:
             return "unknown"
         if evidence.get("active_state") == "active_trusted" and all(
@@ -17,8 +19,6 @@ def visual_state(service: str, evidence: dict[str, Any]) -> str:
             )
         ):
             return "ready"
-        if evidence.get("active_state") in {"dead", "stopped", "inactive"}:
-            return "stopped"
         return "unknown"
     if evidence.get("ready") is True:
         return "ready"
