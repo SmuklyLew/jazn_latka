@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
-  "package_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
-  "generated_at_utc": "2026-10-30T18:34:38+00:00",
-  "updated_at_utc": "2026-10-30T18:34:38+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
+  "package_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
+  "generated_at_utc": "2026-10-30T18:39:24+00:00",
+  "updated_at_utc": "2026-10-30T18:39:24+00:00",
   "start_file": "run.py",
   "file_count": 3559,
   "static_file_count": 3559,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2990,
-      "sha256": "569e1c60f63d1e1a7f67acabb5c866e58fa23815d338b002a4c7a72cd8bff776",
+      "size_bytes": 2948,
+      "sha256": "7c4644d826f64597c18913c5e11f94e8efb0d23dc9812c08aa705b8f152d1a97",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1951,
-      "sha256": "8e4e9c264518b8aaf6a471490bad49cd45f1ed5633a2ec03b1cd9137ed0f9a71",
+      "size_bytes": 1942,
+      "sha256": "4900ed5643b89de71690359a2cb7f4af69006d6483b09180542b613da87c638a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1939,8 +1939,8 @@
     },
     {
       "path": "docs/plans/TPA_2_0_CHECKPOINT.md",
-      "size_bytes": 10869,
-      "sha256": "0e39b4d504b87d68c3ab251fe29df4e162f961dd60e46d368a690962421fd1d6",
+      "size_bytes": 11874,
+      "sha256": "d2055718efd80b19541c8fcf80401fa57bc903653c308b3948e71c7c0963eca9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9860,7 +9860,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "c6f84ce8b155f15f0774c1e43f8cf9d0c95764365ead0f70f0e29088ac4d6538",
+      "sha256": "a12fcd369c4b4a413d0616f48186983f42190d899c8a5df3755bcdfc2dd47c55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21307,
-      "sha256": "bf9e8e2201e842bdf248a629424c225c87a77f084c5db0dca555a5ff487b9e03",
+      "size_bytes": 21300,
+      "sha256": "6290f5941970fe3d051b529726ffda08faf85551657a81aebb4015b101438f4d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31414,8 +31414,8 @@
     },
     {
       "path": "tools/jazn_run_studio/pty_controlling_child.py",
-      "size_bytes": 754,
-      "sha256": "46a8c3729914d936e103f45d4f3e4142bd71be4187a139ab55acf59557166e38",
+      "size_bytes": 899,
+      "sha256": "b8546bd698d38815ca9eccac8c9a376c52fa3778c7858b49754d9fa2a8f530a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31828,8 +31828,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2659665,
-      "sha256": "61fd4ef0d90ea84d458b18ce9ff9ad161fa7a987360b9de700f08f22c18a9171",
+      "size_bytes": 2672978,
+      "sha256": "1dd832a1d9a5110755ae3a349ef8927302011f0ef704dbae821eed93ae352826",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32486,11 +32486,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+  "release_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
-    "package_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
-    "release_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
+    "package_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration",
+    "release_version": "16.3.25.5.116.0.34.94.6.45-tpa-source-integration"
   },
   "legacy_aliases": {
     "version": "release_version"
