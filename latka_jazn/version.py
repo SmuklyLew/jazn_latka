@@ -1,3 +1,4 @@
+# v116.0.34.94.6.48: Keep TPA compact on Windows and compare canonical local setting paths.
 # v116.0.34.94.6.42: Replace unsafe QLayoutItem inspection with Qt layout hints during theme reflow.
 # v116.0.34.94.6.41: Add Qt crash phase telemetry, Python faulthandler and single PR CI trigger.
 # v116.0.34.94.6.40: Fix JSS Qt teardown, visual artifacts path and Pyright typing.
@@ -179,9 +180,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.47"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.48"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "tpa-checkpoint-redaction-integrity"
+PACKAGE_RELEASE_NAME = "tpa-windows-ci-repair"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
