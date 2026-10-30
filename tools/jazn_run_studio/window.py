@@ -35,6 +35,9 @@ class Window(QMainWindow):
         super().__init__()
         self.core = core
         self.smoke = smoke
+        # Production shows one shared operator dock; smoke keeps the v2
+        # compatibility surface for established Qt regression contracts.
+        self.unified_operator_mode = not smoke
         from .core import load_settings
         _, self.digest = load_settings(core.root)
         self.setWindowTitle("Jaźń — Serce Systemu")
@@ -914,7 +917,15 @@ class Window(QMainWindow):
             self.nav.setFocus()
 
     def set_logs_visible(self, visible: bool) -> None:
-        """Apply operator intent independently of ancestor/window visibility."""
+        """Use one bottom dock in production; never open two log panels."""
+        if self.unified_operator_mode:
+            self.logs_user_hidden = not visible
+            if visible:
+                self.workspace.show(1)
+            else:
+                self.workspace.dock.hide()
+            self.log_toggle.setText("Ukryj panel" if visible else "Pokaż panel")
+            return
         self.logs_user_hidden = not visible
         if visible:
             self.workspace.dock.hide()
@@ -928,10 +939,17 @@ class Window(QMainWindow):
             self.tabs.currentWidget().setFocus()
 
     def toggle_logs(self) -> None:
-        self.set_logs_visible(self.tabs.isHidden())
+        if self.unified_operator_mode:
+            self.set_logs_visible(not self.workspace.dock.isVisible())
+        else:
+            self.set_logs_visible(self.tabs.isHidden())
 
     def show_log(self, key: str) -> QPlainTextEdit:
-        """An explicit operator request opens and selects even an existing log."""
+        """An explicit operator request selects the existing log source."""
+        if self.unified_operator_mode:
+            view = self.log_view(key)
+            self.workspace.open_log_source(key)
+            return view
         view = self.log_view(key)
         self.tabs.setCurrentWidget(view)
         self.set_logs_visible(True)
@@ -952,7 +970,8 @@ class Window(QMainWindow):
             view.document().setMaximumBlockCount(2500)
             view.setAccessibleName("Log " + key)
             self.logs[key] = view
-            self.tabs.addTab(view, key)
+            if not self.unified_operator_mode:
+                self.tabs.addTab(view, key)
         return self.logs[key]
 
     def poll(self) -> None:
@@ -1230,6 +1249,7 @@ class Window(QMainWindow):
         self.workspace.dock.setFloating(False)
         self.workspace.dock.hide()
         self.set_logs_visible(False)
+        self.workspace.tabs.setCurrentIndex(0)
         self.content_splitter.setSizes([max(1, self.height() - 140), 140])
         self.apply_theme()
 
@@ -1252,6 +1272,7 @@ class Window(QMainWindow):
                  Qt.DockWidgetArea.TopDockWidgetArea, Qt.DockWidgetArea.BottomDockWidgetArea]
         self.addDockWidget(areas[data.get("dock_area", 3)], self.workspace.dock)
         self.workspace.dock.setVisible(data.get("dock_visible", False))
+        self.workspace.tabs.setCurrentIndex(min(data.get("operator_tab", 0), self.workspace.tabs.count() - 1))
         for title in data.get("open_sections", []):
             self.navigate(title)
         for key, splitter in (("shell_sizes", self.shell_splitter), ("content_sizes", self.content_splitter)):
@@ -1267,6 +1288,7 @@ class Window(QMainWindow):
                              "sidebar_right": self.shell_splitter.indexOf(self.sidebar) == 1,
                              "sidebar_visible": self.sidebar.isVisible() if self.workbench.compact_sidebar is None else self.workbench.compact_sidebar,
                              "dock_visible": self.workspace.dock.isVisible(),
+                             "operator_tab": self.workspace.tabs.currentIndex(),
                              "dock_area": areas.index(area) if area in areas else 3,
                              "shell_sizes": self.shell_splitter.sizes(),
                              "content_sizes": self.content_splitter.sizes(),
