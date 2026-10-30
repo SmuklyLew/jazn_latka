@@ -22,12 +22,26 @@
   regresje/CI; odroczone odbiory pozostają NOT_RUN, nie PASS.
 - Patch jest stanem rozwojowym Draft PR, nie zielonym release i nie upoważnia
   do merge. Pamięć prywatna, aktywny runtime oraz daemon pozostają nietknięte.
+- Dodano P3 w kodzie: sekwencyjny kreator 17 odbiorów bez live (lub 22
+  po jawnym włączeniu), skróty Ctrl+Alt+P/N, wyświetlanie postępu i
+  powrót do pierwszego scenariusza bez aktualnego, zweryfikowanego
+  `full PASS`. Przechodzenie między krokami nie nadaje PASS.
+  Dołączanie dowodów, ich SHA-256, lista potwierdzeń i walidacja źródła
+  pozostają w istniejącym `record_observation`.
+- Domyślne `Uruchom plan automatyczny` zapisuje teraz wyłącznie 22
+  regresje i **nie uruchamia Ollama/daemona**. Realne kroki live wymagają
+  jawnego zaznaczenia przełącznika oraz wyboru zainstalowanego modelu.
+  Dodano osobne testy regresji, fałszowania checkpointu, kolejki kreatora
+  i Qt offscreen; wynik testów pozostaje NOT_RUN do uzyskania CI.
+- Zakres P3 jest **zaimplementowany, lecz nieodebrany**: kontrola klawiatury,
+  ergonomii, skalowania DPI, Windows/EXE i ponownego otwarcia na realnym
+  GUI wymaga oddzielnych dowodów. Brak potwierdzenia nie jest sukcesem.
 
 
 ## A. Tożsamość
 
-**Stan końcowy checkpointu: P0–P2 wdrożone; cały TPA 2.0 NIEUKOŃCZONY.**
-Brakuje kreatora P3 i rzeczywistych odbiorów opisanych poniżej. Kończymy nowe
+**P0–P2 wdrożone; kod kreatora P3 dodany, lecz nieodebrany; cały TPA 2.0 NIEUKOŃCZONY.**
+Brakuje zweryfikowanego CI i rzeczywistych odbiorów opisanych poniżej. Kończymy nowe
 funkcje w celu zachowania rezerwy budżetu. Ostatni odczyt: 63% puli 300 minut,
 64% tygodnia. Nie utożsamiać tych wartości z limitem następnej sesji.
 
@@ -37,7 +51,7 @@ funkcje w celu zachowania rezerwy budżetu. Ostatni odczyt: 63% puli 300 minut,
 - Baza: `origin/master`, `55948d3813664923ae64c6e24f345369632a1b24` (fetch wykonany).
 - HEAD: commit zawierający ten checkpoint; odczytaj `git rev-parse HEAD`.
   Nie wpisujemy samoodnoszącego się SHA do zawartości commita.
-- Wersja: `16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans`.
+- Wersja obecnego kodu: `16.3.25.5.116.0.34.94.6.47-tpa-checkpoint-redaction-integrity`.
 - Data: 2026-10-30 (Europe/Warsaw).
 
 ## B. Prace i mapa modułów
