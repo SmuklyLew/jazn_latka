@@ -153,7 +153,7 @@ class OperatorWorkspace:
         note.setWordWrap(True)
         layout.addWidget(note)
         row = QHBoxLayout()
-        tty = QPushButton("Otwórz czat TTY w terminalu Windows")
+        tty = QPushButton("Otwórz czat Jaźni w osobnym oknie")
         tty.setEnabled(os.name == "nt" and not self.host.smoke)
         tty.clicked.connect(lambda: self.host.guard(self.open_tty))
         row.addWidget(tty)
@@ -297,12 +297,32 @@ class OperatorWorkspace:
         self.refresh()
 
     def open_tty(self) -> None:
+        """Open the existing canonical Jaźń CLI in a distinct Windows console.
+
+        This does not embed a terminal, claim ownership of an existing daemon,
+        or represent shell access. Keep it distinct from open_system_terminal.
+        """
         if os.name != "nt":
             raise StudioError("Ten przycisk wymaga terminala Windows")
-        # Explicit operator click opens a visible, genuine console. No shell
-        # command string, model text, inherited detached daemon, or PID adoption.
         core = self.host.core
         subprocess.Popen([python_executable(core.settings), "-X", "utf8", str(core.root / "run.py")],
+                         cwd=core.root, env=core.child_environment(), shell=False,
+                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+    def open_system_terminal(self) -> None:
+        """Launch an actual external PowerShell, not the Jaźń runtime CLI.
+
+        Use the Windows system shell by absolute path; never interpolate an
+        operator text string into a command, reuse daemon PID, or log secrets.
+        """
+        if os.name != "nt":
+            raise StudioError("Zewnętrzna konsola PowerShell jest dostępna tylko na Windows")
+        system_root = Path(os.environ.get("SystemRoot", r"C:\Windows"))
+        shell = system_root / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+        if not shell.is_file():
+            raise StudioError("Nie znaleziono systemowego PowerShell w katalogu Windows")
+        core = self.host.core
+        subprocess.Popen([str(shell), "-NoLogo", "-NoExit"],
                          cwd=core.root, env=core.child_environment(), shell=False,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 
