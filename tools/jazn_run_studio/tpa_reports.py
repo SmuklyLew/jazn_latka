@@ -239,7 +239,7 @@ class RunStore:
         return self._validate(report, run_id)
 
     @staticmethod
-    def _validate(report: dict, run_id: str) -> dict:
+    def _validate(report: Any, run_id: str) -> dict:
         if (not isinstance(report, dict) or report.get("schema_version") != SCHEMA
                 or report.get("run_id") != run_id or not isinstance(report.get("results"), list)
                 or not isinstance(report.get("source"), dict) or not isinstance(report["source"].get("version"), str)

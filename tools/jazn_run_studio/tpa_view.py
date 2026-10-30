@@ -74,6 +74,19 @@ class TPAPanel(QWidget):
         setup.addWidget(self.model, 1, 1, 1, 2)
         setup.addWidget(self.refresh_models_button, 1, 3)
         setup.setColumnStretch(2, 1)
+        self.source_kind = QComboBox()
+        for label, key in (("origin/master (domyślnie)", "master"), ("Branch", "branch"),
+                           ("Pull Request", "pr"), ("Próbne scalenie PR", "merge"),
+                           ("Lokalny SYSTEM", "local"), ("Zweryfikowany SYSTEM ZIP", "zip")):
+            self.source_kind.addItem(label, key)
+        if not (self.root / ".git").exists():
+            self.source_kind.setCurrentIndex(self.source_kind.findData("local"))
+        self.source_kind.setAccessibleName("Źródło testów TPA")
+        self.source_value = QLineEdit()
+        self.source_value.setPlaceholderText("Branch, numer PR lub absolutna ścieżka SYSTEM/ZIP")
+        self.source_value.setAccessibleName("Identyfikator źródła testów TPA")
+        setup.addWidget(self.source_kind, 2, 0, 1, 2)
+        setup.addWidget(self.source_value, 2, 2, 1, 2)
         layout.addWidget(self.setup_details)
         self.setup_details.hide()
         filters = QGridLayout()
@@ -312,7 +325,12 @@ class TPAPanel(QWidget):
         selected_model = self.model.currentData() or ""
         if execution == "live" and any(case in LIVE_CASES for case in ids) and not selected_model:
             raise ValueError("Najpierw kliknij Wykryj modele Ollama i wybierz zainstalowany model z listy.")
-        self.runner.start_selection(ids, execution=execution, model=selected_model)
+        # Public Studio launchers verify a real checkout/export. Keep the
+        # existing direct panel API usable by unpackaged synthetic fixtures.
+        packaged = (self.root / ".git").exists() or (self.root / "PACKAGE_INTEGRITY_MANIFEST.json").is_file()
+        self.runner.start_selection(ids, execution=execution, model=selected_model,
+                                    source_kind=str(self.source_kind.currentData()) if packaged else None,
+                                    source_value=self.source_value.text().strip())
         self.history_mode = False
         self.attached.clear()
         if execution != "regression":
@@ -422,7 +440,7 @@ class TPAPanel(QWidget):
         if not self.retry_button.isEnabled() and not active:
             self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
         self.auto_cancel.setEnabled(active)
-        for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button):
+        for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value):
             widget.setEnabled(not active)
         for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
             button.setEnabled(not active and self.report is not None and bool(self.report.get("finished_utc")))

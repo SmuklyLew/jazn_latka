@@ -26,6 +26,7 @@ def test_default_projection_and_history_are_separate_after_panel_restart(store):
         panel.show_current()
         assert panel.cell(6, 1).text() == "PASS"
         panel.table.selectRow(6)
+        assert panel.report is not None
         assert panel.report["run_id"] == first["run_id"]
     finally:
         panel.close()
