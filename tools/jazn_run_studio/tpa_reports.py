@@ -151,12 +151,15 @@ def readable_report(report: dict) -> str:
                   "Oczekiwano: " + result["expected"],
                   "Zaobserwowano: " + result.get("reason", "nie ustalono"),
                   "Czas / kod: " + str(result.get("duration_seconds")) + " s / " + str(result.get("exit_code")),
-                  "Pełna bramka: " + result.get("full_gate", "NOT_RUN"),
+                  "Pełna bramka: " + result.get("full_gate", "NOT_RUN")
+                  + (" — osobny odbiór operatorski do wykonania; wynik podtestu pozostaje ważny"
+                     if result.get("full_gate", "NOT_RUN") == "NOT_RUN" else ""),
                   "Dalej: " + result.get("next_step", "Otwórz log i raport JUnit."), ""]
     lines += ["POKRYCIE 22 SCENARIUSZY"]
     for item in report["coverage_map"]:
         lines += [item["id"] + " • " + item["title"],
-                  "Wykonanie: " + item.get("execution_status", "NOT_RUN") + " • pełny odbiór: " + item.get("full_gate", "NOT_RUN"), item["limitations"]]
+                  "Wykonanie: " + item.get("execution_status", "NOT_RUN") + " • pełny odbiór: " + item.get("full_gate", "NOT_RUN")
+                  + (" (do potwierdzenia przez operatora)" if item.get("full_gate", "NOT_RUN") == "NOT_RUN" else ""), item["limitations"]]
     lines += ["", "Podsumowanie:", json.dumps(summary(report), ensure_ascii=False, indent=2)]
     return "\n".join(lines)
 
