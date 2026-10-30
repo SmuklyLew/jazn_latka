@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-30T10:13:53+00:00",
-  "updated_at_utc": "2026-10-30T10:13:53+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+  "generated_at_utc": "2026-10-30T16:16:05+00:00",
+  "updated_at_utc": "2026-10-30T16:16:05+00:00",
   "start_file": "run.py",
-  "file_count": 3548,
-  "static_file_count": 3548,
+  "file_count": 3549,
+  "static_file_count": 3549,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -202,8 +202,8 @@
     },
     {
       "path": ".github/workflows/jss-visual-integration.yml",
-      "size_bytes": 8324,
-      "sha256": "25b78240ef2ff15ba7bb4e9b29f14a4adbd637ed75b11f12ade524ba44a5f1d4",
+      "size_bytes": 8375,
+      "sha256": "909a2075ea3d126698ff83c5e956847e7dc599baacb708b5d9f05685db2d5db6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2997,
-      "sha256": "564d4c8091179731e81c88da6b386330bfb606ca49d8e60baf3e0343f40ce96c",
+      "sha256": "4a5994a3e2ffe23cdf24a383bd3b47e200138935e16a769eeeec276a8ef017e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -500,7 +500,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1951,
-      "sha256": "ae980df9ff8a2e716c59c719f49eb387728d7aeb8e737067273303b0bd0ac50a",
+      "sha256": "8e4e9c264518b8aaf6a471490bad49cd45f1ed5633a2ec03b1cd9137ed0f9a71",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4333,8 +4333,8 @@
     },
     {
       "path": "docs/uiux/JSS_VISUAL_INTEGRATION_CI.md",
-      "size_bytes": 5910,
-      "sha256": "3071e9b8c4f3ab91ca2908da04ed5b8db21212027d534b2a486d005f27978690",
+      "size_bytes": 6483,
+      "sha256": "bf0e5a5058d650b29fd9709417891f28eb43ad5eeeb0e97d46c8636ec7168bfd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9842,7 +9842,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "c7ce79b180fcb698400ac828411df49a2137c0c97f37cd5d5804a940279ab425",
+      "sha256": "c6f84ce8b155f15f0774c1e43f8cf9d0c95764365ead0f70f0e29088ac4d6538",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11344,8 +11344,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21208,
-      "sha256": "95af2aa520f6225bfe1627bfb208f01fa4698434bc1b44dff9e35ba3e5d9bc7f",
+      "size_bytes": 21309,
+      "sha256": "06a661d315e7d3f1ad9e2c3ae0730433048f1630cef39c1cf6ce8b5b578c88a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28182,6 +28182,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_theme_switch_reflow_qt.py",
+      "size_bytes": 1033,
+      "sha256": "4c6e40e88c12a3f965414e2ef52014c58eab8ae054aa83c1f7192f7c4d2de105",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_uiux_profiles.py",
       "size_bytes": 2884,
       "sha256": "01072a8a1577e135322fdf6bc88f944ccffb9f0fc53adb6ffa8e420dfc4a4260",
@@ -31549,8 +31558,8 @@
     },
     {
       "path": "tools/jazn_run_studio/visual_system.py",
-      "size_bytes": 9089,
-      "sha256": "58cef649f046f6822ad77003663a8c436d0489881e4b82a1593812ad75e464b4",
+      "size_bytes": 9272,
+      "sha256": "09b8b24db63975107756773b369274803d95099b324d34219b8201e705bc74a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31729,8 +31738,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2658970,
-      "sha256": "af8363e9847898bb1af8ec98700904c3a381f430d4f1f46894227ffd892cba62",
+      "size_bytes": 2659665,
+      "sha256": "61fd4ef0d90ea84d458b18ce9ff9ad161fa7a987360b9de700f08f22c18a9171",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32387,11 +32396,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.41-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.42-run-studio-operator-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
