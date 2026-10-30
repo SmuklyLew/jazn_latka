@@ -82,9 +82,15 @@ class OperatorWorkspace:
         self._terminal()
         self._history()
         self._technical()
+        self._interactive_terminal()
         self.last_output = ""
         self._last_jobs = ""
         self.dock.visibilityChanged.connect(self.dock_visibility_changed)
+
+    def _interactive_terminal(self) -> None:
+        from .terminal_view import InteractiveTerminal
+        self.interactive_terminal = InteractiveTerminal(self.host)
+        self.tabs.addTab(self.interactive_terminal, "Terminal PTY")
 
     def dock_visibility_changed(self, visible: bool) -> None:
         if visible and not self.host.unified_operator_mode:

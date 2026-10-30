@@ -94,6 +94,7 @@ class WorkbenchShell(QObject):
         self.command("Widok", "Historia TPA i zadań", lambda: host.workspace.show(3))
         self.command("Widok", "Dane techniczne", lambda: host.workspace.show(4))
         self.command("Terminal", "Konsole zadań w dolnym panelu", lambda: host.workspace.show(2))
+        self.command("Terminal", "Interaktywny lokalny PTY", lambda: host.workspace.show(5))
         self.command("Terminal", "Otwórz PowerShell w osobnym oknie", host.workspace.open_system_terminal)
         self.command("Terminal", "Otwórz lokalny czat Jaźni (run.py)", host.workspace.open_tty)
         self.command("Terminal", "Obsługa PTY / ConPTY", lambda: QMessageBox.information(

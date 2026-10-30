@@ -1,3 +1,4 @@
+# v116.0.34.94.6.30: Local opt-in owned PTY/ConPTY panel, no daemon ownership changes.
 # v116.0.34.94.6.29: Shared operator dock, history and unified logs; no runtime authority changes.
 # v116.0.34.94.6.28: Make TPA model choice, receipt typing and BLOCKED exit consistent.
 # v116.0.34.94.6.26: Fix verified TPA cleanup return code and prevent false operator BLOCKED.
@@ -166,7 +167,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.29"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.30"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (
