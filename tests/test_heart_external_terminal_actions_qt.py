@@ -30,6 +30,8 @@ def test_external_terminal_opens_system_powershell_without_run_py(window, monkey
     ps.parent.mkdir(parents=True)
     ps.touch()
     monkeypatch.setenv("SystemRoot", str(system_root))
+    monkeypatch.setenv("JAZN_MCP_OAUTH_CLIENT_SECRET", "NEVER_EXPOSE_ME")
+    monkeypatch.setenv("JAZN_ROOT", "D:\\older\\system")
     calls = []
 
     def fake_popen(argv, **kwargs):
@@ -40,10 +42,12 @@ def test_external_terminal_opens_system_powershell_without_run_py(window, monkey
     window.workspace.open_system_terminal()
     assert len(calls) == 1
     argv, kwargs = calls[0]
-    assert argv == [str(ps), "-NoLogo", "-NoExit"]
+    assert argv == [str(ps), "-NoLogo", "-NoProfile", "-NoExit"]
     assert kwargs["shell"] is False
     assert kwargs["cwd"] == window.core.root
     assert kwargs["creationflags"] != 0
+    assert kwargs["env"]["JAZN_ROOT"] == str(window.core.root)
+    assert "JAZN_MCP_OAUTH_CLIENT_SECRET" not in kwargs["env"]
     assert "run.py" not in " ".join(argv)
 
 
