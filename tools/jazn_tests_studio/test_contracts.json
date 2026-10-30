@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.37",
-  "active_definition_count": 2964,
+  "system_version": "16.3.25.5.116.0.34.94.6.38",
+  "active_definition_count": 2971,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30187,6 +30187,119 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 145
+    },
+    "tests/test_jss_uiux_profiles.py::test_default_and_migration_do_not_require_a_running_daemon": {
+      "path": "tests/test_jss_uiux_profiles.py",
+      "name": "test_default_and_migration_do_not_require_a_running_daemon",
+      "purpose": "Default and migration do not require a running daemon",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_jss_uiux_profiles.py::test_profiles_are_distinct_and_reusable_for_future_token_composition": {
+      "path": "tests/test_jss_uiux_profiles.py",
+      "name": "test_profiles_are_distinct_and_reusable_for_future_token_composition",
+      "purpose": "Profiles are distinct and reusable for future token composition",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_jss_uiux_profiles.py::test_color_and_accessibility_of_new_styles": {
+      "path": "tests/test_jss_uiux_profiles.py",
+      "name": "test_color_and_accessibility_of_new_styles",
+      "purpose": "Color and accessibility of new styles",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_jss_uiux_profiles.py::test_invalid_accent_fails_closed": {
+      "path": "tests/test_jss_uiux_profiles.py",
+      "name": "test_invalid_accent_fails_closed",
+      "purpose": "Invalid accent fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jss_uiux_profiles_qt.py::test_toolbar_selection_persists_and_does_not_operate_services": {
+      "path": "tests/test_jss_uiux_profiles_qt.py",
+      "name": "test_toolbar_selection_persists_and_does_not_operate_services",
+      "purpose": "Toolbar selection persists and does not operate services",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_jss_uiux_profiles_qt.py::test_unsaved_form_is_not_discarded_on_toolbar_selection": {
+      "path": "tests/test_jss_uiux_profiles_qt.py",
+      "name": "test_unsaved_form_is_not_discarded_on_toolbar_selection",
+      "purpose": "Unsaved form is not discarded on toolbar selection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_jss_uiux_profiles_qt.py::test_all_three_styles_preserve_navigation_and_panels": {
+      "path": "tests/test_jss_uiux_profiles_qt.py",
+      "name": "test_all_three_styles_preserve_navigation_and_panels",
+      "purpose": "All three styles preserve navigation and panels",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",
