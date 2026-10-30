@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
 from .studio_worker import preview_fingerprint
-from .workbench_theme import workbench_stylesheet
+from .workbench_theme import THEME_CHOICES, theme_label, workbench_stylesheet
 
 INSTALL_LINKS = {
     "Python": "https://www.python.org/downloads/",
@@ -104,6 +104,15 @@ class Window(QMainWindow):
         self.section_search.textChanged.connect(self.filter_navigation)
         self.section_search.returnPressed.connect(self.select_search_result)
         header_layout.addWidget(self.section_search, 1)
+        self.style_selector = QComboBox()
+        self.style_selector.setObjectName("jssStyleSelector")
+        self.style_selector.setAccessibleName("Wybór wyglądu całego JSS")
+        self.style_selector.setToolTip("Zmiana wyglądu nie uruchamia ani nie zatrzymuje usług.")
+        for label, key in THEME_CHOICES:
+            self.style_selector.addItem(label, key)
+        self.style_selector.setCurrentIndex(self.style_selector.findData(core.settings.theme))
+        self.style_selector.currentIndexChanged.connect(self.style_selected)
+        header_layout.addWidget(self.style_selector)
         header_layout.addStretch(1)
         self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
         self.workbench_status.setObjectName("workbenchStatus")
@@ -809,8 +818,9 @@ class Window(QMainWindow):
         model_refresh.clicked.connect(lambda _checked=False: self.core.probe("ollama"))
         form.addRow("Odśwież modele", model_refresh)
         self.theme = QComboBox()
-        self.theme.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
-        self.theme.setCurrentText(self.core.settings.theme)
+        for label, key in THEME_CHOICES:
+            self.theme.addItem(label, key)
+        self.theme.setCurrentIndex(self.theme.findData(self.core.settings.theme))
         form.addRow("Motyw", self.theme)
         self.profile_mode = QComboBox()
         self.profile_mode.addItem("Bez dodatkowego profilu", "off")
@@ -890,7 +900,7 @@ class Window(QMainWindow):
 
     def save(self) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
-        data["theme"] = self.theme.currentText()
+        data["theme"] = str(self.theme.currentData())
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
         self.apply_settings(settings)
@@ -903,12 +913,33 @@ class Window(QMainWindow):
         self.refresh_quick_start()
         for key, field in self.fields.items():
             field.setText(str(getattr(settings, key)))
-        self.theme.setCurrentText(settings.theme)
+        self.theme.setCurrentIndex(self.theme.findData(settings.theme))
+        self.style_selector.blockSignals(True)
+        self.style_selector.setCurrentIndex(self.style_selector.findData(settings.theme))
+        self.style_selector.blockSignals(False)
         self.profile_mode.setCurrentIndex(1 if settings.runtime_profile == "operator" else 0)
         self.apply_theme()
         self.settings_baseline = self.settings_draft()
         self.settings_hint.setText("Zapisano. Konfiguracja usług obowiązuje przy ich kolejnym uruchomieniu.")
         self.statusBar().showMessage("Zapisano ustawienia Studio")
+
+    def select_style(self, theme: str) -> None:
+        index = self.style_selector.findData(theme)
+        if index >= 0:
+            self.style_selector.setCurrentIndex(index)
+
+    def style_selected(self, index: int) -> None:
+        """Persist a visual profile only; do not rewrite unsaved configuration."""
+        selected = self.style_selector.itemData(index)
+        if not isinstance(selected, str) or selected == self.core.settings.theme:
+            return
+        if self.settings_draft() != self.settings_baseline:
+            self.style_selector.blockSignals(True)
+            self.style_selector.setCurrentIndex(self.style_selector.findData(self.core.settings.theme))
+            self.style_selector.blockSignals(False)
+            self.statusBar().showMessage("Najpierw zapisz lub odrzuć niezapisane ustawienia.", 5000)
+            return
+        self.guard(lambda: self.apply_settings(replace(self.core.settings, theme=selected)))
 
     def apply_theme(self) -> None:
         app = QApplication.instance()
@@ -1347,7 +1378,7 @@ class Window(QMainWindow):
 
     def settings_draft(self) -> dict[str, str]:
         values = {key: field.text().strip() for key, field in self.fields.items()}
-        values["theme"] = self.theme.currentText()
+        values["theme"] = str(self.theme.currentData())
         values["runtime_profile"] = str(self.profile_mode.currentData())
         return values
 
@@ -1361,7 +1392,7 @@ class Window(QMainWindow):
         defaults = Settings()
         for key, field in self.fields.items():
             field.setText(str(getattr(defaults, key)))
-        self.theme.setCurrentText(defaults.theme)
+        self.theme.setCurrentIndex(self.theme.findData(defaults.theme))
         self.profile_mode.setCurrentIndex(0)
         self.settings_model_selector.setCurrentIndex(0)
 
