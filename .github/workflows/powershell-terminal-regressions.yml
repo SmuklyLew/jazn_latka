@@ -150,6 +150,10 @@ jobs:
       # This does NOT relax the <5 s assertion or drop the test.
       - name: Verify isolated health-check latency and no semantic write
         shell: pwsh
+        env:
+          # Numerical timings only, for diagnosing the required strict SLA.
+          # No change to the assertion, isolation or runtime semantics.
+          JAZN_TURN_LATENCY_DIAGNOSTICS: "1"
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short --durations=5
