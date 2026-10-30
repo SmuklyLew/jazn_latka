@@ -129,10 +129,13 @@ class TPAPanel(QWidget):
         self.auto_cancel = self.button("Zatrzymaj", self.stop_work)
         for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
             actions.addWidget(widget, i // 2, i % 2)
-        self.live_plan = QCheckBox("Włącz rzeczywiste testy live (dopiero po merge)")
+        self.live_plan = QCheckBox("Live po merge (wymaga modelu)")
         self.live_plan.setAccessibleName("Jawna zgoda na uruchomienie izolowanych testów live")
         self.live_plan.setToolTip("Domyślnie plan wykonuje tylko syntetyczne regresje; bez Ollama i startu daemona.")
-        actions.addWidget(self.live_plan, 2, 0, 1, 2)
+        # Keep the main queue visible at the supported 860x580 minimum.
+        # A third action row pushed the queue below the available viewport
+        # on Windows. An existing row has sufficient room for the opt-in.
+        actions.addWidget(self.live_plan, 1, 2)
         layout.addLayout(actions)
         self.auto_status = QLabel("PASS podtestu potwierdza zakres regresji. Pełny odbiór ma osobny wynik.")
         self.auto_status.setWordWrap(True)
