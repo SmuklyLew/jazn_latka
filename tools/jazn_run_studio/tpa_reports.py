@@ -207,6 +207,17 @@ class RunStore:
                         executed_scope=row.get("coverage", "NOT_RUN"))
         clean = redact(report, self.redactor)
         clean["summary"] = summary(clean)
+        # Commit an immutable complete revision BEFORE replacing the compatibility
+        # files. A crash can leave an orphan temp file, never erase a revision.
+        revision = safe_child(folder, "revision-" + uuid.uuid4().hex + ".json")
+        temporary = safe_child(folder, revision.name + ".tmp")
+        payload = json.dumps({"schema": "jazn_tpa_revision/v1", "saved_utc": utc(),
+                              "report": clean}, ensure_ascii=False, indent=2) + "\n"
+        with temporary.open("x", encoding="utf-8", newline="\n") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.rename(temporary, revision)
         for name, content in (("report.json", json.dumps(clean, ensure_ascii=False, indent=2)),
                               ("report.txt", readable_report(clean))):
             target = safe_child(folder, name)
@@ -224,7 +235,11 @@ class RunStore:
         path = safe_child(self.folder(run_id), "report.json")
         if path.stat().st_size > MAX_REPORT:
             raise ValueError("Raport przekracza limit")
-        report = json.loads(path.read_text(encoding="utf-8"))
+        report = json.loads(path.read_text(encoding="utf-8-sig"))
+        return self._validate(report, run_id)
+
+    @staticmethod
+    def _validate(report: dict, run_id: str) -> dict:
         if (not isinstance(report, dict) or report.get("schema_version") != SCHEMA
                 or report.get("run_id") != run_id or not isinstance(report.get("results"), list)
                 or not isinstance(report.get("source"), dict) or not isinstance(report["source"].get("version"), str)
@@ -236,6 +251,43 @@ class RunStore:
                        or not all(isinstance(r.get(k), str) for k in ("case_id", "title", "expected", "reason"))
                        or not isinstance(r.get("command", []), list) or any(not isinstance(a, str) for a in r.get("command", [])) for r in report["results"])):
             raise ValueError("Nieprawidłowy raport TPA")
+        return report
+
+    def revisions(self, run_id: str) -> list[dict]:
+        """Read committed revisions only. Incomplete .tmp files are not evidence."""
+        result = []
+        for path in self.folder(run_id).glob("revision-*.json"):
+            path = safe_child(path.parent, path.name)
+            if path.stat().st_size > MAX_REPORT:
+                raise ValueError("Rewizja przekracza limit")
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if (not isinstance(value, dict) or value.get("schema") != "jazn_tpa_revision/v1"
+                    or not isinstance(value.get("saved_utc"), str)):
+                raise ValueError("Nieprawidłowa rewizja TPA")
+            self._validate(value.get("report"), run_id)
+            result.append(value)
+        return sorted(result, key=lambda v: v["saved_utc"], reverse=True)
+
+    def recover_report(self, run_id: str) -> dict:
+        """Explicit repair, preserving corrupt compatibility files byte-for-byte.
+
+        Does not replay a request or touch runtime processes. The caller can then
+        use recover_interrupted to classify work whose owner is known dead.
+        """
+        revisions = self.revisions(run_id)
+        if not revisions:
+            raise ValueError("Brak kompletnej rewizji do odzyskania")
+        folder = self.folder(run_id)
+        for name in ("report.json", "report.txt"):
+            path = safe_child(folder, name)
+            if path.exists():
+                backup = safe_child(folder, "recovered-" + uuid.uuid4().hex + "-" + name)
+                with backup.open("xb") as stream:
+                    stream.write(path.read_bytes())
+                    stream.flush()
+                    os.fsync(stream.fileno())
+        report = revisions[0]["report"]
+        self.save(report)
         return report
 
     def history(self) -> list[dict]:

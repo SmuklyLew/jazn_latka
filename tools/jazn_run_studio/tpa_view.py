@@ -13,6 +13,7 @@ from . import local_acceptance as legacy
 from .tpa_catalog import LIVE_CASES, MODES, execution_map
 from .tpa_engine import TPARunner
 from .tpa_guidance import attach_evidence, record_observation
+from .tpa_current_state import current_state
 from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, source_identity, summary
 from .tpa_triage import TRIAGE_LABELS, triage_cases, local_queue_text
 
@@ -25,6 +26,9 @@ class TPAPanel(QWidget):
         super().__init__(parent)
         self.root, self.rows = root.resolve(), execution_map()
         self.report: dict | None = None
+        self._history: list[dict] = []
+        self.case_state: dict = {}
+        self.history_mode = False
         self.triage: dict[str, dict[str, str]] = {}
         self.attached: dict[str, list[str]] = {}
         self.guide_drafts: dict[tuple[str, str], dict] = {}
@@ -38,6 +42,7 @@ class TPAPanel(QWidget):
         self.runner.completed.connect(self._completed)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
         self.summary = QLabel("TPA — nie sprawdzono środowiska")
         self.summary.setWordWrap(True)
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
@@ -111,8 +116,8 @@ class TPAPanel(QWidget):
         self.progress.setFormat("%v / %m pozycji")
         layout.addWidget(self.progress)
         self.splitter = QSplitter(Qt.Orientation.Vertical)
-        self.table = QTableWidget(len(self.rows), 5)
-        self.table.setHorizontalHeaderLabels(["Scenariusz", "Kategoria", "Tryb", "Wynik", "Powód / co dalej"])
+        self.table = QTableWidget(len(self.rows), 7)
+        self.table.setHorizontalHeaderLabels(["Scenariusz", "Regresja", "Live", "Pełny odbiór", "Aktualność", "Ostatnia próba", "Następny krok"])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -123,14 +128,14 @@ class TPAPanel(QWidget):
         self.table.setMinimumSize(0, 170)
         header = self.table.horizontalHeader()
         header.setMinimumSectionSize(45)
-        for col in (0, 4):
+        for col in (0, 6):
             header.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
-        for col, width in ((1, 95), (2, 90), (3, 105)):
+        for col, width in ((1, 75), (2, 75), (3, 85), (4, 95), (5, 110)):
             header.setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
             self.table.setColumnWidth(col, width)
         self.table.verticalHeader().hide()
         for i, case in enumerate(self.rows):
-            for col, text in enumerate((case["title"], case["category"], MODES[case["mode"]], "NOT_RUN", "Nie sprawdzono gotowości.")):
+            for col, text in enumerate((case["title"], "NOT_RUN", "NOT_RUN", "NOT_RUN", "Nie ustalono", "—", "Nie sprawdzono gotowości.")):
                 item = QTableWidgetItem(text)
                 item.setData(Qt.ItemDataRole.UserRole, case["id"])
                 if col == 0:
@@ -163,7 +168,9 @@ class TPAPanel(QWidget):
         self.history.setAccessibleName("Historia TPA")
         self.history.currentIndexChanged.connect(self.load_history)
         history_row.addWidget(self.history, 1)
+        history_row.addWidget(self.button("Aktualny stan 22 scenariuszy", self.show_current))
         history_row.addWidget(self.button("Odśwież", self.refresh))
+        history_row.addWidget(self.button("Odzyskaj raport", self.recover_selected_report))
         history_row.addWidget(self.button("Starsze wyniki", self.show_legacy))
         layout.addLayout(history_row)
         exports = QHBoxLayout()
@@ -306,6 +313,7 @@ class TPAPanel(QWidget):
         if execution == "live" and any(case in LIVE_CASES for case in ids) and not selected_model:
             raise ValueError("Najpierw kliknij Wykryj modele Ollama i wybierz zainstalowany model z listy.")
         self.runner.start_selection(ids, execution=execution, model=selected_model)
+        self.history_mode = False
         self.attached.clear()
         if execution != "regression":
             self.tabs.setCurrentWidget(self.auto_log)
@@ -352,11 +360,36 @@ class TPAPanel(QWidget):
         if self.runner.active and self.runner.report is not None and self.runner._next_after_probe:
             self.report = self.runner.report
         results = {r["case_id"]: r for r in self.report["results"]} if self.report else {}
+        current = source_identity(self.root)
+        current.update(self.runner.probe.get("source", {}))
+        history = list(self._history)
+        if self.runner.report is not None:
+            history = [r for r in history if r["run_id"] != self.runner.report["run_id"]]
+            history.append(self.runner.report)
+        self.case_state = current_state(self.runner.store, current, history)
         for i, case in enumerate(self.rows):
             result = results.get(case["id"], {})
+            projection = self.case_state[case["id"]]
+            latest = projection["last_attempt"]
+            if not self.history_mode:
+                result = latest["row"] if latest else {}
             state = result.get("status", "NOT_RUN")
             reason = result.get("reason") or self.runner.availability.get(case["id"], {}).get("reason") or "Użyj Sprawdź gotowość."
-            for col, text in ((3, state), (4, reason)):
+            channel = self.report.get("execution", "regression") if self.report else "regression"
+            values = [state if channel == "regression" else "NOT_RUN",
+                      state if channel == "live" else "NOT_RUN", result.get("full_gate", "NOT_RUN")]
+            relation = "uncertain"
+            if self.history_mode and self.report:
+                from .tpa_triage import _source_relation
+                relation = _source_relation(self.report["source"], current)
+            elif not self.history_mode:
+                values = [projection[k]["status"] if projection[k] else "NOT_RUN" for k in ("regression", "live", "full")]
+                relation = latest["source_relation"] if latest else "uncertain"
+                if latest and latest["evidence_errors"]:
+                    reason = " ".join(latest["evidence_errors"])
+            freshness = {"same": "Aktualne", "stale": "Nieaktualne", "uncertain": "Nie ustalono"}[relation]
+            last_time = (latest["time"] if latest and not self.history_mode else result.get("finished_utc", "")) or "—"
+            for col, text in enumerate([*values, freshness, last_time[:19], reason], 1):
                 self.cell(i, col).setText(text)
                 self.cell(i, col).setToolTip("Wynik scenariusza: " + state + "\n" + reason + "\nPełny odbiór: " + self.full_gate_description(result.get("full_gate", "NOT_RUN")))
             triage = self.triage.get(case["id"], {"state": "NOWE", "reason": "Brak odbioru."})
@@ -367,7 +400,8 @@ class TPAPanel(QWidget):
         selected_python = self.runner.probe.get("python") or self.python_field.text()
         python_label = " / ".join(Path(selected_python).parts[-3:]) if selected_python else "nie wybrano"
         self.summary.setToolTip("Interpreter: " + (selected_python or "nie wybrano") + "\nRaporty: " + str(self.runner.store.base))
-        self.summary.setText("SYSTEM " + legacy.scope_version(self.root).split("-", 1)[0] + scope + "\nPython: " + python_label
+        view_label = "TPA — historia" if self.history_mode else "TPA — stan zbiorczy"
+        self.summary.setText(view_label + " • SYSTEM " + legacy.scope_version(self.root).split("-", 1)[0] + scope + "\nPython: " + python_label
                              + f" • gotowe podtesty: {ready}/22 • MEMORY: off\n" + " | ".join(f"{k}: {v}" for k, v in counters.items()))
         self.apply_filters()
         self.local_gates_view.setPlainText(local_queue_text(self.triage))
@@ -415,10 +449,10 @@ class TPAPanel(QWidget):
             return
         query = self.search.text().casefold().strip()
         for i, case in enumerate(self.rows):
-            text = " ".join((case["id"], case["title"], self.cell(i, 4).text())).casefold()
+            text = " ".join((case["id"], case["title"], self.cell(i, 6).text())).casefold()
             visible = (not query or query in text) and (not self.category.currentData() or self.category.currentData() == case["category"])
             visible = visible and (not self.mode_filter.currentData() or self.mode_filter.currentData() == case["mode"])
-            visible = visible and (not self.result_filter.currentData() or self.result_filter.currentData() == self.cell(i, 3).text())
+            visible = visible and (not self.result_filter.currentData() or self.result_filter.currentData() in {self.cell(i, col).text() for col in (1, 2, 3)})
             visible = visible and (not self.triage_filter.currentData() or self.triage_filter.currentData() == self.triage.get(case["id"], {}).get("state", "NOWE"))
             self.table.setRowHidden(i, not visible)
 
@@ -426,6 +460,9 @@ class TPAPanel(QWidget):
         if not 0 <= row < len(self.rows):
             return
         case = self.rows[row]
+        if not self.history_mode and not self.runner.active:
+            entry = self.case_state.get(case["id"], {}).get("last_attempt")
+            self.report = next((r for r in self._history if entry and r["run_id"] == entry["run_id"]), self.report)
         result = next((r for r in self.report["results"] if r["case_id"] == case["id"]), {}) if self.report else {}
         self.instructions.setPlainText("ID: " + case["id"] + "\nCEL: " + case["title"] + "\n\nKRYTERIA:\n" + case["expected"]
                                        + "\n\nWYKONAWCA: " + case["executor"] + "\n" + "\n".join(case["files"])
@@ -463,6 +500,7 @@ class TPAPanel(QWidget):
             self.history.clear()
             self.history.addItem("Historia — wybierz przebieg", "")
             history = self.runner.store.history()
+            self._history = history
             current = source_identity(self.root)
             probe_source = self.runner.probe.get("source")
             if isinstance(probe_source, dict):
@@ -472,6 +510,9 @@ class TPAPanel(QWidget):
                 self.feedback.setText("Błąd odczytu historii: " + " | ".join(self.runner.store.history_errors))
             for report in history:
                 self.history.addItem(report["started_utc"][:19] + " • " + report["source"]["version"] + " • " + report["run_id"][-8:], report["run_id"])
+            for error in self.runner.store.history_errors:
+                run_id = error.split(":", 1)[0]
+                self.history.addItem("Uszkodzony raport — " + run_id, run_id)
             if not self.report and history:
                 self.report = history[0]
                 chosen = self.report["run_id"]
@@ -486,10 +527,26 @@ class TPAPanel(QWidget):
             self.attempt(lambda: self._load_report(str(run_id)))
 
     def _load_report(self, run_id: str) -> None:
+        self.history_mode = True
         self.report = self.runner.store.load(run_id)
         self.attached.clear()
         self.refresh_view()
         self.open_report()
+
+    def show_current(self) -> None:
+        self.history_mode = False
+        self.refresh()
+
+    def recover_selected_report(self) -> None:
+        if self.runner.active:
+            raise ValueError("Poczekaj na zakończenie bieżącego przebiegu")
+        run_id = self.history.currentData()
+        if not run_id:
+            raise ValueError("Wybierz przebieg lub jego uszkodzony raport w historii")
+        self.runner.store.recover_report(str(run_id))
+        self.runner.store.recover_interrupted()
+        self.feedback.setText("Odzyskano kompletną rewizję; zachowano poprzednie pliki. Nie wysłano żadnej tury.")
+        self.refresh()
 
     def show_log(self) -> None:
         if not self.report:
