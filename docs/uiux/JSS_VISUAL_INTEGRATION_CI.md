@@ -105,3 +105,12 @@ i nie mogą być symulowane jako zaliczone.
 
 Zielony CI bieżącego HEAD jest wymagany przed uznaniem poprawki za
 zweryfikowaną. Te zmiany nie ingerują w MEMORY ani produkcyjny daemon.
+
+## CI .41 — dalsza diagnostyka natywnego crasha Qt
+
+Po usunięciu błędu z fixture zrzuty pod Linux mogą nadal wywołać
+`SIGSEGV` w osobnym procesie renderowania. Teraz każdy etap zrzutów
+wypisuje jedynie bezpieczny znacznik `JSS_VISUAL_PHASE`, a interpreter
+jest uruchamiany z `-X faulthandler`, żeby wskazać stos natywnej awarii.
+Przebieg musi pozostać czerwony aż do rzeczywistej naprawy.
+Workflow `push` usunięto — PR wyzwala jeden przebieg zamiast duplikatu.

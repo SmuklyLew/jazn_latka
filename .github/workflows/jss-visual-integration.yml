@@ -1,8 +1,6 @@
 name: JSS Visual & Integration CI
 
 on:
-  push:
-    branches: ["update/jss-three-workbench-themes-uiux-20261030"]
   pull_request:
     branches: [master]
     paths:
@@ -67,7 +65,7 @@ jobs:
           tests/test_heart_system_dashboard_qt.py
           tests/test_heart_system_diagnostics.py
       - name: Capture real Qt screenshots for all three styles
-        run: python -X utf8 -m tools.jazn_run_studio.visual_ci --output "${{ env.JSS_VISUAL_DIR }}"
+        run: python -X faulthandler -X utf8 -m tools.jazn_run_studio.visual_ci --output "${{ env.JSS_VISUAL_DIR }}"
       - name: Publish report to job summary
         if: always()
         shell: pwsh

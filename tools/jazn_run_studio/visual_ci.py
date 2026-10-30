@@ -114,9 +114,16 @@ def emit_reports(output: Path, report: dict[str, Any]) -> None:
     (output / "index.html").write_text(page, encoding="utf-8")
 
 
+def mark_phase(report: dict[str, Any], phase: str) -> None:
+    """Crash-resilient, non-sensitive marker for isolated Qt CI only."""
+    report["phase"] = phase
+    print("JSS_VISUAL_PHASE " + phase, flush=True)
+
+
 def run_visual(output: Path, report: dict[str, Any]) -> None:
     # Set all sandbox boundaries before any Qt or Jaźń runtime import.
     root = isolate_environment(output)
+    mark_phase(report, "qt_imports")
     from unittest.mock import patch
     from PySide6 import __version__ as pyside_version
     from PySide6.QtCore import Qt
@@ -147,6 +154,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
     # A GUI action or timer that accidentally attempts service creation fails
     # this job rather than reaching a real daemon or external provider.
     with patch("subprocess.Popen", side_effect=deny), patch("socket.create_connection", side_effect=deny):
+        mark_phase(report, "construct_window")
         window = Window(core, smoke=True)
         try:
             window.resize(1240, 840)
@@ -155,7 +163,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             if not window.isVisible():
                 raise AssertionError("main_window_hidden")
             for theme in PROFILES:
-                report["phase"] = "theme:" + theme
+                mark_phase(report, "theme:" + theme)
                 window.select_style(theme)
                 QTest.qWait(50)
                 saved, _digest = load_settings(root)
@@ -169,7 +177,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                 if window.services_table.rowCount() != 6:
                     raise AssertionError("service_rows_missing")
                 for slug, title in SCREENS:
-                    report["phase"] = "capture:" + theme + ":" + slug
+                    mark_phase(report, "capture:" + theme + ":" + slug)
                     window.navigate(title)
                     QTest.qWait(35)
                     if window.current_section.text() != title:
@@ -194,7 +202,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                 QTest.qWait(70)
                 report["checks"]["minimum_viewport:" + theme] = True
 
-            report["phase"] = "distinct_visual_palettes"
+            mark_phase(report, "distinct_visual_palettes")
             for slug, _title in SCREENS:
                 hashes = [next(c["sha256"] for c in report["captures"]
                                if c["file"] == theme + "/" + slug + "-1240x840.png")
@@ -203,7 +211,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                     raise AssertionError("duplicate_theme_pixels:" + slug)
             report["checks"]["distinct_rendered_theme_images"] = True
 
-            report["phase"] = "navigation_layout"
+            mark_phase(report, "navigation_layout")
             # Keyboard navigation, splitters and dock controls.
             window.navigate("Pulpit")
             window.section_search.setText("Katalog testów")
@@ -225,7 +233,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             window.reset_layout()
             report["checks"]["keyboard_sidebar_splitters_layout"] = True
 
-            report["phase"] = "unsaved_settings"
+            mark_phase(report, "unsaved_settings")
             # Preserve an unsaved settings draft when attempting style changes.
             previous = window.core.settings.theme
             original_port = window.fields["mcp_port"].text()
@@ -238,7 +246,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
             window.fields["mcp_port"].setText(original_port)
             report["checks"]["unsaved_settings_guard"] = True
 
-            report["phase"] = "synthetic_failure"
+            mark_phase(report, "synthetic_failure")
             # Synthetic failure must be visible and not imply daemon readiness.
             core.emit("status", "state", {"state": "failed", "error": "invalid_status_json"})
             window.poll()
@@ -254,6 +262,7 @@ def run_visual(output: Path, report: dict[str, Any]) -> None:
                 raise AssertionError("service_job_started")
             report["checks"]["no_service_jobs"] = True
         finally:
+            mark_phase(report, "closing_window")
             window.close()
             app.processEvents()
 

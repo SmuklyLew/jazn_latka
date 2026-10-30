@@ -1,3 +1,4 @@
+# v116.0.34.94.6.41: Add Qt crash phase telemetry, Python faulthandler and single PR CI trigger.
 # v116.0.34.94.6.40: Fix JSS Qt teardown, visual artifacts path and Pyright typing.
 # v116.0.34.94.6.39: Isolated JSS Visual & Integration CI, screenshots, Qt contracts and Windows EXE reports.
 # v116.0.34.94.6.38: Add JSS three-profile UI/UX workbench, theme selection and regression contracts.
@@ -177,7 +178,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.40"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.41"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (
