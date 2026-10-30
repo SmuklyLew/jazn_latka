@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.24",
-  "active_definition_count": 2919,
+  "system_version": "16.3.25.5.116.0.34.94.6.25",
+  "active_definition_count": 2923,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28940,6 +28940,80 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 16
+    },
+    "tests/test_jazn_tpa_live_resume_receipt.py::test_receipt_waits_for_daemon_job_without_replaying_user_text": {
+      "path": "tests/test_jazn_tpa_live_resume_receipt.py",
+      "name": "test_receipt_waits_for_daemon_job_without_replaying_user_text",
+      "purpose": "Receipt waits for daemon job without replaying user text",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_jazn_tpa_live_resume_receipt.py::test_receipt_rejects_foreign_or_failed_request": {
+      "path": "tests/test_jazn_tpa_live_resume_receipt.py",
+      "name": "test_receipt_rejects_foreign_or_failed_request",
+      "purpose": "Receipt rejects foreign or failed request",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_jazn_tpa_live_resume_receipt.py::test_receipt_timeout_does_not_fake_admission": {
+      "path": "tests/test_jazn_tpa_live_resume_receipt.py",
+      "name": "test_receipt_timeout_does_not_fake_admission",
+      "purpose": "Receipt timeout does not fake admission",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_jazn_tpa_live_resume_receipt.py::test_live_cli_exit_code_matches_reported_status": {
+      "path": "tests/test_jazn_tpa_live_resume_receipt.py",
+      "name": "test_live_cli_exit_code_matches_reported_status",
+      "purpose": "Live cli exit code matches reported status",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
     },
     "tests/test_jazn_tpa_log_scope_qt.py::test_log_button_keeps_selected_completed_test_separate_from_live_output": {
       "path": "tests/test_jazn_tpa_log_scope_qt.py",
