@@ -1,6 +1,7 @@
 """Operational TPA queue, guided acceptance and run-owned evidence."""
 from __future__ import annotations
 import json
+from collections import Counter
 from pathlib import Path
 import sys
 import time
@@ -12,10 +13,12 @@ from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QFileDialog, QGridL
 from . import local_acceptance as legacy
 from .tpa_catalog import LIVE_CASES, MODES, execution_map
 from .tpa_engine import TPARunner
+from .tpa_plan_runner import TPAPlanRunner
+from .tpa_execution_plan import plan_counts
 from .tpa_guidance import attach_evidence, record_observation
 from .tpa_current_state import current_state
 from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, source_identity, summary
-from .tpa_triage import TRIAGE_LABELS, triage_cases, local_queue_text
+from .tpa_triage import TRIAGE_LABELS, triage_cases, local_queue_text, NOWE, DO_POWTORZENIA, NIEAKTUALNE, ZALICZONE
 
 
 class TPAPanel(QWidget):
@@ -29,6 +32,7 @@ class TPAPanel(QWidget):
         self._history: list[dict] = []
         self.case_state: dict = {}
         self.history_mode = False
+        self.pending_observation: dict | None = None
         self.triage: dict[str, dict[str, str]] = {}
         self.attached: dict[str, list[str]] = {}
         self.guide_drafts: dict[tuple[str, str], dict] = {}
@@ -40,6 +44,10 @@ class TPAPanel(QWidget):
         self.runner.changed.connect(self.refresh_view)
         self.runner.prepared.connect(self._prepared)
         self.runner.completed.connect(self._completed)
+        self.plan_runner = TPAPlanRunner(self.runner, self)
+        self.plan_runner.changed.connect(self.plan_changed)
+        self.plan_runner.completed.connect(self.plan_completed)
+        self.plan_runner.error.connect(lambda text: self.feedback.setText(text))
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
@@ -113,9 +121,9 @@ class TPAPanel(QWidget):
         layout.addLayout(filters)
         actions = QGridLayout()
         self.auto_one = self.button("Uruchom zaznaczone", self.run_selected_subcheck)
-        self.auto_safe = self.button("Uruchom dostępne automatyczne", self.run_safe_subchecks)
+        self.auto_safe = self.button("Uruchom plan automatyczny", self.run_automatic_plan)
         self.retry_button = self.button("Ponów nieudane / blokady", self.retry_failed)
-        self.auto_cancel = self.button("Zatrzymaj", self.runner.stop)
+        self.auto_cancel = self.button("Zatrzymaj", self.stop_work)
         for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
             actions.addWidget(widget, i // 2, i % 2)
         layout.addLayout(actions)
@@ -169,6 +177,22 @@ class TPAPanel(QWidget):
         self.tabs.addTab(self.technical, "Techniczne")
         self.local_gates_view = self.text_view("Nowe, do powtórzenia i nieaktualne odbiory lokalne")
         self.tabs.addTab(self.local_gates_view, "Odbiory lokalne")
+        plan_page = QWidget()
+        self.plan_page = plan_page
+        plan_layout = QVBoxLayout(plan_page)
+        self.plan_history = QComboBox()
+        self.plan_history.setAccessibleName("Historia planów TPA")
+        plan_layout.addWidget(self.plan_history)
+        plan_actions = QHBoxLayout()
+        self.resume_plan_button = self.button("Kontynuuj przerwany plan", self.resume_plan)
+        self.checkpoint_button = self.button("Zapisz checkpoint", self.plan_runner.checkpoint)
+        self.plan_history.currentIndexChanged.connect(self.update_controls)
+        for button in (self.resume_plan_button, self.checkpoint_button):
+            plan_actions.addWidget(button)
+        plan_layout.addLayout(plan_actions)
+        self.plan_details = self.text_view("Zależności, blokady i checkpoint planu TPA")
+        plan_layout.addWidget(self.plan_details)
+        self.tabs.addTab(plan_page, "Plany i checkpointy")
         self.tabs.setMinimumHeight(180)
         self.splitter.addWidget(self.tabs)
         self.splitter.setStretchFactor(0, 3)
@@ -344,6 +368,40 @@ class TPAPanel(QWidget):
     def run_safe_subchecks(self) -> None:
         self.start(tuple(r["id"] for r in self.rows))
 
+    def run_automatic_plan(self) -> None:
+        self.runner.python = self.python_field.text().strip()
+        self.history_mode = False
+        self.plan_runner.start(tuple(r["id"] for r in self.rows),
+            source={"kind": self.source_kind.currentData(), "value": self.source_value.text().strip()},
+            model=self.model.currentData() or "")
+        self.tabs.setCurrentIndex(self.tabs.indexOf(self.plan_page))
+        self.plan_changed()
+
+    def stop_work(self) -> None:
+        if self.plan_runner.active:
+            self.plan_runner.stop()
+        else:
+            self.runner.stop()
+
+    def resume_plan(self) -> None:
+        plan_id = self.plan_history.currentData()
+        if not plan_id:
+            raise ValueError("Wybierz zapisany, niezakończony plan")
+        self.plan_runner.resume(str(plan_id))
+
+    def plan_changed(self) -> None:
+        plan = self.plan_runner.plan
+        if plan is not None:
+            self.plan_details.setPlainText("Plan " + plan["plan_id"] + "\n" + str(plan_counts(plan))
+                + "\nPełne odbiory operatorskie są oddzielne. Przerwana tura nie jest wysyłana ponownie.\n\n"
+                + json.dumps(plan, ensure_ascii=False, indent=2))
+        self.update_controls()
+
+    def plan_completed(self, plan: object) -> None:
+        if isinstance(plan, dict):
+            self.feedback.setText("Zapisano wykonanie planu: " + str(plan_counts(plan)) + ". Pełny odbiór operatorski pozostaje oddzielny.")
+        self.refresh()
+
     def retry_failed(self) -> None:
         if not self.report:
             raise ValueError("Wybierz przebieg w historii")
@@ -352,6 +410,12 @@ class TPAPanel(QWidget):
 
     def _prepared(self, probe: object) -> None:
         self.technical.setPlainText(json.dumps(probe, ensure_ascii=False, indent=2))
+        if self.pending_observation is not None:
+            pending, self.pending_observation = self.pending_observation, None
+            if isinstance(probe, dict) and probe.get("ok") is True:
+                self.attempt(lambda: self.finish_observation(pending, probe.get("source", {})))
+            else:
+                self.feedback.setText("Nie zapisano odbioru: brak potwierdzonej tożsamości źródła.")
         self.refresh_view()
 
     def _progress(self, text: str) -> None:
@@ -381,7 +445,8 @@ class TPAPanel(QWidget):
         current = source_identity(self.root)
         current.update(self.runner.probe.get("source", {}))
         history = list(self._history)
-        if self.runner.report is not None:
+        if self.runner.report is not None and ((self.runner.active and self.runner._next_after_probe)
+                or not any(r["run_id"] == self.runner.report["run_id"] for r in history)):
             history = [r for r in history if r["run_id"] != self.runner.report["run_id"]]
             history.append(self.runner.report)
         self.case_state = current_state(self.runner.store, current, history)
@@ -402,7 +467,8 @@ class TPAPanel(QWidget):
                 relation = _source_relation(self.report["source"], current)
             elif not self.history_mode:
                 values = [projection[k]["status"] if projection[k] else "NOT_RUN" for k in ("regression", "live", "full")]
-                relation = latest["source_relation"] if latest else "uncertain"
+                relations = [projection[k]["source_relation"] for k in ("regression", "live", "full") if projection[k]]
+                relation = "stale" if "stale" in relations else "uncertain" if not relations or "uncertain" in relations else "same"
                 if latest and latest["evidence_errors"]:
                     reason = " ".join(latest["evidence_errors"])
             freshness = {"same": "Aktualne", "stale": "Nieaktualne", "uncertain": "Nie ustalono"}[relation]
@@ -410,10 +476,16 @@ class TPAPanel(QWidget):
             for col, text in enumerate([*values, freshness, last_time[:19], reason], 1):
                 self.cell(i, col).setText(text)
                 self.cell(i, col).setToolTip("Wynik scenariusza: " + state + "\n" + reason + "\nPełny odbiór: " + self.full_gate_description(result.get("full_gate", "NOT_RUN")))
-            triage = self.triage.get(case["id"], {"state": "NOWE", "reason": "Brak odbioru."})
+            full = projection["full"]
+            triage_state = (NOWE if latest is None else NIEAKTUALNE if relation == "stale" else
+                            ZALICZONE if latest["status"] == "PASS" and full and full["status"] == "PASS" and full["source_relation"] == "same" else DO_POWTORZENIA)
+            triage = {"state": triage_state, "reason": " ".join(full["evidence_errors"]) if full and full["evidence_errors"] else reason}
+            self.triage[case["id"]] = triage
             self.cell(i, 0).setToolTip(case["title"] + "\nID: " + case["id"] + "\nOdbiór: " + TRIAGE_LABELS[triage["state"]] + "\n" + triage["reason"])
         ready = sum(v["ready"] for v in self.runner.availability.values())
         counters = summary(self.report)["counts"] if self.report else {}
+        if not self.history_mode:
+            counters = dict(Counter(s["last_attempt"]["status"] if s["last_attempt"] else "NOT_RUN" for s in self.case_state.values()))
         scope = " • historia: " + self.report["source"]["version"] if self.report and self.report["source"]["version"] != legacy.scope_version(self.root) else ""
         selected_python = self.runner.probe.get("python") or self.python_field.text()
         python_label = " / ".join(Path(selected_python).parts[-3:]) if selected_python else "nie wybrano"
@@ -429,7 +501,7 @@ class TPAPanel(QWidget):
         self.update_progress()
 
     def update_controls(self) -> None:
-        active = self.runner.active
+        active = self.runner.active or self.plan_runner.active
         for button in (self.auto_one, self.auto_safe, self.check_button, self.retry_button, self.live_button, self.sandbox_button):
             button.setEnabled(not active)
             button.setToolTip("Poczekaj na zakończenie przebiegu lub użyj Zatrzymaj." if active else "")
@@ -440,6 +512,8 @@ class TPAPanel(QWidget):
         if not self.retry_button.isEnabled() and not active:
             self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
         self.auto_cancel.setEnabled(active)
+        self.resume_plan_button.setEnabled(not active and bool(self.plan_history.currentData()))
+        self.checkpoint_button.setEnabled(self.plan_runner.plan is not None)
         for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value):
             widget.setEnabled(not active)
         for button in (self.export_button, self.report_button, self.proof_button, self.observe_button):
@@ -512,6 +586,12 @@ class TPAPanel(QWidget):
             self.state.setCurrentIndex(draft.get("state", 0))
 
     def refresh(self) -> None:
+        prior_plan = self.plan_history.currentData()
+        self.plan_history.clear()
+        self.plan_history.addItem("Historia planów — wybierz", "")
+        for plan in self.plan_runner.store.history():
+            self.plan_history.addItem(plan["created_utc"][:19] + " • " + plan["status"] + " • " + plan["plan_id"][-8:], plan["plan_id"])
+        self.plan_history.setCurrentIndex(max(0, self.plan_history.findData(prior_plan)))
         chosen = self.report["run_id"] if self.report else ""
         self.history.blockSignals(True)
         try:
@@ -624,13 +704,29 @@ class TPAPanel(QWidget):
             proofs.append(row["junit"])
         if key + ".live.json" in self.report["artifacts"]:
             proofs.append(key + ".live.json")
-        record_observation(self.runner.store, self.report, key, checked, self.note.toPlainText(), proofs, str(self.state.currentData()))
+        pending = {"report": self.report, "key": key, "checked": checked,
+                   "note": self.note.toPlainText(), "proofs": proofs, "outcome": str(self.state.currentData())}
+        source_root = Path(self.report.get("environment", {}).get("execution_root") or self.root)
+        if (source_root / ".git").exists() or (source_root / "PACKAGE_INTEGRITY_MANIFEST.json").is_file():
+            self.pending_observation = pending
+            try:
+                self.runner.check_ready(source_root=source_root)
+            except (OSError, ValueError, RuntimeError):
+                self.pending_observation = None
+                raise
+            self.update_controls()
+        else:
+            self.finish_observation(pending, None)
+
+    def finish_observation(self, pending: dict, verified: dict | None) -> None:
+        record_observation(self.runner.store, pending["report"], pending["key"], pending["checked"],
+                           pending["note"], pending["proofs"], pending["outcome"], verified_source=verified)
         self.feedback.setText("Zapisano odrębny odbiór człowieka z dowodami; wcześniejsze obserwacje zachowane.")
         self.refresh_view()
 
     def shutdown(self) -> bool:
-        if self.runner.active:
-            self.runner.stop()
+        if self.runner.active or self.plan_runner.active:
+            self.stop_work()
             return False
         return True
 

@@ -15,8 +15,9 @@ from latka_jazn.core.acceptance_layout import resolve_acceptance_layout
 from .core import Redactor
 from .external import environment
 from .tpa_catalog import LIVE_CASES, execution_map, scenario
-from .tpa_reports import RunStore, junit_result, redact, safe_child, utc
+from .tpa_reports import RunStore, junit_result, redact, safe_child, source_identity, utc
 from .tpa_paths import TOKEN_ENV, issue_staging
+from .tpa_execution_plan import PHASE_TIMEOUTS
 
 TIMEOUT_MS = 180_000
 MAX_OUTPUT = 4 * 1024 * 1024
@@ -111,6 +112,7 @@ class TPARunner(QObject):
         super().__init__(parent)
         self.root, self.python = root.resolve(), python
         self.execution_root = self.root
+        self.probe_root = self.root
         self.source_kind: str | None = None
         self.source_value = ""
         self.store = RunStore(self.root)
@@ -155,9 +157,15 @@ class TPARunner(QObject):
             self.changed.emit()
             return False
 
-    def check_ready(self) -> None:
+    def check_ready(self, *, source_root: Path | None = None) -> None:
         if self.active:
             raise ValueError("Poprzednia kontrola lub przebieg nadal trwa")
+        self.probe_root = self.root if source_root is None else source_root
+        if source_root is not None:
+            if not source_root.is_absolute() or (source_root != self.root and not source_root.resolve().is_relative_to(self.store.base.resolve())):
+                raise ValueError("Źródło obserwacji musi należeć do zapisanych przebiegów")
+            if any(p.is_symlink() or p.is_junction() for p in (source_root, *source_root.parents)):
+                raise ValueError("Dowiązanie w źródle obserwacji")
         self.active = True
         self._next_after_probe = False
         self._probe()
@@ -170,6 +178,7 @@ class TPARunner(QObject):
             raise ValueError("Wybierz obsługiwany odbiór izolowany")
         self.execution, self.model = execution, model
         self.execution_root = self.root
+        self.probe_root = self.root
         self.source_kind, self.source_value = source_kind, source_value
         # The run exists even when preflight blocks every selected test.
         self.report = self.store.create(case_ids, self.python, {"memory_mode": "off", "qt_platform": "offscreen"})
@@ -188,7 +197,7 @@ class TPARunner(QObject):
         self.decoder.reset()
         destination = safe_child(self.store.folder(self.report["run_id"]), "source-code")
         self.progress.emit("Przygotowuję osobną kopię źródła: " + str(self.source_kind))
-        self.timer.start(300_000)
+        self.timer.start(int(PHASE_TIMEOUTS["source"] or 300) * 1000)
         self.process.setWorkingDirectory(str(Path(__file__).resolve().parents[2]))
         self.process.start(self.python, ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_sources",
             "--root", str(self.root), "--destination", str(destination),
@@ -213,12 +222,13 @@ class TPARunner(QObject):
             return
         self.process.setWorkingDirectory(str(self.root))
         self.progress.emit("Sprawdzam rzeczywiste importy w wybranym interpreterze…")
-        self.timer.start(180_000 if not (self.root / ".git").exists() else 20_000)
-        self.process.start(self.python, ["-I", "-X", "utf8", "-c", PROBE_SCRIPT, str(self.root)])
+        self.timer.start(int(PHASE_TIMEOUTS["preflight"] or 30) * 1000)
+        self.process.start(self.python, ["-I", "-X", "utf8", "-c", PROBE_SCRIPT, str(self.probe_root)])
         self.changed.emit()
 
     def _probe_done(self, probe: dict) -> None:
         self.timer.stop()
+        probe["source"] = {**source_identity(self.probe_root), **probe.get("source", {})}
         self.probe = probe
         self.availability = readiness(self.root, probe)
         if self.report is not None and self._next_after_probe:
@@ -290,7 +300,8 @@ class TPARunner(QObject):
                 self.stop()
                 QTimer.singleShot(0, self._next)
                 return
-            self.timer.start(900_000 if self.execution == "sandbox" else 480_000)
+            self.timer.start(int(PHASE_TIMEOUTS["gui"] or 120) * 1000 if self.execution == "sandbox" else 900_000)
+            self.process.setWorkingDirectory(str(Path(__file__).resolve().parents[2]))
             self.process.start(self.python, args)
             self.changed.emit()
             return
@@ -329,6 +340,13 @@ class TPARunner(QObject):
                             self.cleanup_result = redact(payload, self.redactor)
                         else:
                             self.live_result = redact(payload, self.redactor)
+                    elif isinstance(payload, dict) and payload.get("event") == "operator_wait" and self.execution == "sandbox":
+                        self.timer.stop()  # Human observation has no runtime deadline.
+                        if self.report is not None:
+                            self.report["results"][self.index].update(waiting_for_operator=True, phase="operator")
+                            self._save()
+                    elif isinstance(payload, dict) and payload.get("event") == "phase" and self.report is not None:
+                        self.report["results"][self.index]["phase"] = str(payload.get("phase", "unknown"))
                     elif isinstance(payload, dict) and payload.get("event") == "accepted_final":
                         original = str(payload.get("text", ""))
                         displayed = self.redactor.text(original)
@@ -393,7 +411,8 @@ class TPARunner(QObject):
                 return
             self.phase, self.cleanup_result = "cleanup", {}
             self.progress.emit("Weryfikuję sprzątnięcie wyłącznie własnego daemona testowego…")
-            self.timer.start(100_000)
+            self.timer.start(int(PHASE_TIMEOUTS["cleanup"] or 90) * 1000)
+            self.process.setWorkingDirectory(str(Path(__file__).resolve().parents[2]))
             self.process.start(self.python, ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root),
                                              "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
                                              "--case", self.report["results"][self.index]["case_id"], "--cleanup"])
@@ -427,6 +446,11 @@ class TPARunner(QObject):
             name = row["case_id"] + ".live.json"
             safe_child(folder, name).write_text(json.dumps({"result": result, "cleanup": self.cleanup_result}, ensure_ascii=False, indent=2), encoding="utf-8")
             self.report["artifacts"].extend([name, self.log_name])
+            if row["status"] == "PASS":
+                from .tpa_current_state import evidence_errors
+                errors = evidence_errors(self.store, self.report, row)
+                if errors:
+                    row.update(status="BLOCKED", reason=" ".join(errors))
         except (OSError, ValueError):
             self.persistence_error = "Nie zapisano dowodów odbioru izolowanego."
             row.update(status="BLOCKED", full_gate="NOT_RUN", reason=self.persistence_error)
@@ -476,6 +500,9 @@ class TPARunner(QObject):
                 self._test_done(-1, False)
 
     def _timeout(self) -> None:
+        if self.report is not None and 0 <= self.index < len(self.report["results"]):
+            row = self.report["results"][self.index]
+            row["timeout_phase"] = "cleanup" if self.phase == "cleanup" else row.get("phase", self.phase)
         if self.phase == "cleanup":
             self.reason = "cleanup_timeout"
             self.process.kill()

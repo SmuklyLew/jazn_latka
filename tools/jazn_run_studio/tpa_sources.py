@@ -120,10 +120,18 @@ def prepare_source(root: Path, destination: Path, *, kind: str = "master", value
         if identity.get("release_verified") is not True:
             raise ValueError("Lokalny SYSTEM nie ma potwierdzonej integralności")
         from latka_jazn.tools.release_staging import create_system_smoke_staging
+        source_manifest = json.loads((source_root / "PACKAGE_INTEGRITY_MANIFEST.json").read_text(encoding="utf-8-sig"))
         create_system_smoke_staging(source_root, destination)
         selected = destination
-        if verified_release_source(selected) != identity:
+        copied = verified_release_source(selected)
+        copied_manifest = json.loads((selected / "PACKAGE_INTEGRITY_MANIFEST.json").read_text(encoding="utf-8-sig"))
+        fingerprints = lambda m: {e["path"]: (e["sha256"], e["size_bytes"]) for e in m["files"]}
+        if (copied.get("release_verified") is not True
+                or any(copied.get(k) != identity.get(k) for k in ("release_source_commit", "release_runtime_version"))
+                or fingerprints(source_manifest) != fingerprints(copied_manifest)):
             raise ValueError("Tożsamość kopii SYSTEM jest niezgodna ze źródłem")
+        copied["source_release_manifest_sha256"] = identity["release_manifest_sha256"]
+        identity = copied
         identity.update(git_sha=identity["release_source_commit"], git_dirty=False, integrity="verified_release_manifest")
     else:
         if not (source_root / ".git").exists():

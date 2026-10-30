@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.45",
-  "active_definition_count": 2996,
+  "system_version": "16.3.25.5.116.0.34.94.6.46",
+  "active_definition_count": 3006,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29026,7 +29026,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 132
     },
     "tests/test_jazn_tpa_evidence.py::test_structured_secret_values_are_redacted_without_corrupting_json": {
       "path": "tests/test_jazn_tpa_evidence.py",
@@ -29041,7 +29041,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 142
     },
     "tests/test_jazn_tpa_evidence.py::test_damaged_history_is_visible_and_does_not_hide_other_runs": {
       "path": "tests/test_jazn_tpa_evidence.py",
@@ -29056,7 +29056,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 146
+      "line": 149
     },
     "tests/test_jazn_tpa_evidence.py::test_gui_and_exe_acceptance_requires_human_evidence_not_just_junit": {
       "path": "tests/test_jazn_tpa_evidence.py",
@@ -29073,7 +29073,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 158
     },
     "tests/test_jazn_tpa_evidence.py::test_live_service_refusal_is_blocked_before_creating_runtime": {
       "path": "tests/test_jazn_tpa_evidence.py",
@@ -29090,7 +29090,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 167
+      "line": 170
     },
     "tests/test_jazn_tpa_evidence.py::test_cleanup_refuses_foreign_root_before_any_canonical_command": {
       "path": "tests/test_jazn_tpa_evidence.py",
@@ -29107,7 +29107,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 181
+      "line": 184
     },
     "tests/test_jazn_tpa_execution_qt.py::test_actual_selected_interpreter_preflight_and_partially_ready_set": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -61166,6 +61166,85 @@
       "description_source": "source_identity",
       "line": 141
     },
+    "tests/test_tpa_2_execution_plan.py::test_restart_cannot_bypass_live_or_regression_predecessors": {
+      "path": "tests/test_tpa_2_execution_plan.py",
+      "name": "test_restart_cannot_bypass_live_or_regression_predecessors",
+      "purpose": "Restart cannot bypass live or regression predecessors",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_tpa_2_execution_plan.py::test_pending_prerequisite_is_not_a_failure_and_live_cannot_count_as_full_acceptance": {
+      "path": "tests/test_tpa_2_execution_plan.py",
+      "name": "test_pending_prerequisite_is_not_a_failure_and_live_cannot_count_as_full_acceptance",
+      "purpose": "Pending prerequisite is not a failure and live cannot count as full acceptance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_tpa_2_execution_plan.py::test_phase_deadlines_do_not_time_out_a_human": {
+      "path": "tests/test_tpa_2_execution_plan.py",
+      "name": "test_phase_deadlines_do_not_time_out_a_human",
+      "purpose": "Phase deadlines do not time out a human",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_tpa_2_execution_plan.py::test_plan_checkpoints_survive_restart_without_overwriting_earlier_states": {
+      "path": "tests/test_tpa_2_execution_plan.py",
+      "name": "test_plan_checkpoints_survive_restart_without_overwriting_earlier_states",
+      "purpose": "Plan checkpoints survive restart without overwriting earlier states",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_tpa_2_execution_plan.py::test_tampered_dependency_checkpoint_is_refused_without_repairing_it": {
+      "path": "tests/test_tpa_2_execution_plan.py",
+      "name": "test_tampered_dependency_checkpoint_is_refused_without_repairing_it",
+      "purpose": "Tampered dependency checkpoint is refused without repairing it",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
     "tests/test_tpa_2_history_qt.py::test_default_projection_and_history_are_separate_after_panel_restart": {
       "path": "tests/test_tpa_2_history_qt.py",
       "name": "test_default_projection_and_history_are_separate_after_panel_restart",
@@ -61195,6 +61274,85 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 43
+    },
+    "tests/test_tpa_2_live_proof.py::test_incomplete_live_evidence_is_not_confirmed_success": {
+      "path": "tests/test_tpa_2_live_proof.py",
+      "name": "test_incomplete_live_evidence_is_not_confirmed_success",
+      "purpose": "Incomplete live evidence is not confirmed success",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_tpa_2_observation_history.py::test_last_confirmed_full_success_survives_a_later_observation": {
+      "path": "tests/test_tpa_2_observation_history.py",
+      "name": "test_last_confirmed_full_success_survives_a_later_observation",
+      "purpose": "Last confirmed full success survives a later observation",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
+    "tests/test_tpa_2_observation_source.py::test_observation_is_bound_to_verified_copy_even_if_studio_version_changes": {
+      "path": "tests/test_tpa_2_observation_source.py",
+      "name": "test_observation_is_bound_to_verified_copy_even_if_studio_version_changes",
+      "purpose": "Observation is bound to verified copy even if studio version changes",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_tpa_2_plan_runner_qt.py::test_real_regression_plan_preserves_source_and_restart_history": {
+      "path": "tests/test_tpa_2_plan_runner_qt.py",
+      "name": "test_real_regression_plan_preserves_source_and_restart_history",
+      "purpose": "Real regression plan preserves source and restart history",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_tpa_2_plan_runner_qt.py::test_resume_does_not_start_new_live_request_for_interrupted_node": {
+      "path": "tests/test_tpa_2_plan_runner_qt.py",
+      "name": "test_resume_does_not_start_new_live_request_for_interrupted_node",
+      "purpose": "Resume does not start new live request for interrupted node",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
     },
     "tests/test_tpa_2_source_execution_qt.py::test_real_source_preparation_and_child_test_are_persisted": {
       "path": "tests/test_tpa_2_source_execution_qt.py",

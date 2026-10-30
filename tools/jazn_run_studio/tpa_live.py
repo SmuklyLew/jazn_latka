@@ -14,6 +14,7 @@ import queue
 import socket
 import sys
 import time
+import threading
 from uuid import uuid4
 
 from .chat import ChatClient
@@ -24,6 +25,7 @@ from .tpa_catalog import LIVE_CASES, TARGETS, scenario
 from .tpa_reports import redact
 from .tpa_reports import safe_child
 from .tpa_paths import TOKEN_ENV, validate_staging
+from .tpa_execution_plan import PhaseDeadline, PHASE_TIMEOUTS
 
 
 def frame(value: dict) -> None:
@@ -179,7 +181,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                       JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated", JAZN_MODEL_ADAPTER="ollama" if model else "null",
                       JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL="http://127.0.0.1:11434")
     core = Controller(stage, Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}"))
-    deadline = time.monotonic() + 420
+    phase_clock = PhaseDeadline()
     evidence: dict = {"case_id": case_id, "root": str(stage), "url": core.settings.daemon_url,
                       "turns": [], "memory_mode": "off", "canonical_transport": "Controller/ChatClient"}
     status = "BLOCKED"
@@ -188,13 +190,20 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
     def tick() -> None:
         if (folder / "cancel.flag").exists():
             raise InterruptedError("Anulowano odbiór; zatrzymuję wyłącznie własne zasoby.")
-        if time.monotonic() > deadline:
-            raise TimeoutError("Przekroczono limit odbioru.")
+        phase_clock.check()
+
+    def phase(name: str) -> None:
+        phase_clock.enter(name)
+        evidence["phase"] = name
+        evidence.setdefault("phases", []).append({"phase": name, "monotonic": time.monotonic()})
+        frame({"event": "phase", "phase": name})
 
     def action(key: str) -> dict:
+        phase({"status": "heartbeat"}.get(key, key))
         return capture_action(core, key, tick, evidence.setdefault("actions", []))
 
     def connected() -> ChatClient:
+        phase("readiness")
         client = ChatClient(core)
         core.chat = client
         client.connect()
@@ -212,6 +221,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                 tick()
 
     def final(client: ChatClient, *, resume: bool = False) -> dict:
+        phase("generation")
         last_poll = 0.0
         while True:
             tick()
@@ -226,12 +236,20 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                         raise ValueError("Wznowienie request_id zakończyło się błędem: "
                                          + str(value.get("error") or "resume_failed"))
                 if kind == "chat_final":
+                    phase("finalization")
                     frame({"event": "accepted_final", **value})
-                    ack = json.loads(sys.stdin.readline())
+                    acknowledgements: queue.Queue[str] = queue.Queue(maxsize=1)
+                    threading.Thread(target=lambda: acknowledgements.put(sys.stdin.readline()), daemon=True).start()
+                    try:
+                        ack = json.loads(acknowledgements.get(timeout=float(PHASE_TIMEOUTS["finalization"] or 30)))
+                    except queue.Empty as exc:
+                        raise TimeoutError("Brak ACK w fazie finalization") from exc
+                    tick()
                     if ack.get("displayed_request_id") != value["request_id"]:
                         raise ValueError("Brak potwierdzenia wyświetlenia wyniku w panelu TPA")
                     client.acknowledge_final(value["request_id"])
                     core.confirm_visible_turn(value)
+                    evidence.setdefault("displayed_request_ids", []).append(value["request_id"])
                     return value
             time.sleep(0.1)
 
@@ -270,7 +288,8 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                         (folder / "owner.json").write_text(json.dumps(owned), encoding="utf-8")
                         action("restart")
                         next_identity = action("status")
-                        if next_identity.get("instance_id") == observed.get("instance_id") or next_identity.get("root_matches") is not True:
+                        if (not next_identity.get("instance_id") or next_identity.get("instance_id") == observed.get("instance_id")
+                                or not all(next_identity.get(k) is True for k in ("root_matches", "version_matches", "process_identity_confirmed", "endpoint_identity_matches", "heartbeat_fresh"))):
                             raise ValueError("Restart nie dał nowej własnej instancji")
                         owned["instance_id"] = next_identity.get("instance_id")
                         (folder / "owner.json").write_text(json.dumps(owned), encoding="utf-8")
@@ -292,10 +311,12 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
         status, reason = "CANCELLED", str(exc)
     except TimeoutError as exc:
         status, reason = "TIMEOUT", str(exc)
+        evidence["timeout_phase"] = phase_clock.phase
     except (OSError, ValueError, RuntimeError) as exc:
         reason = core.redactor.text(str(exc))[:1500]
         status = "FAIL" if evidence["turns"] else "BLOCKED"
     finally:
+        phase("cleanup")
         core.close()
         for job in tuple(core.jobs.values()):
             if job.key == "chat":
@@ -378,6 +399,7 @@ def sandbox(root: Path, folder: Path, case_id: str, python: str, model: str) -> 
                             cwd=stage, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL, shell=False,
                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+    frame({"event": "operator_wait", "phase": "operator", "pid": proc.pid})
     cancelled = False
     try:
         while proc.poll() is None:

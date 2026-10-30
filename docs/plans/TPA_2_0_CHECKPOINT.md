@@ -8,10 +8,41 @@
 - Baza: `origin/master`, `55948d3813664923ae64c6e24f345369632a1b24` (fetch wykonany).
 - HEAD: commit zawierający ten checkpoint; odczytaj `git rev-parse HEAD`.
   Nie wpisujemy samoodnoszącego się SHA do zawartości commita.
-- Wersja: `16.3.25.5.116.0.34.94.6.45-tpa-source-integration`.
+- Wersja: `16.3.25.5.116.0.34.94.6.46-tpa-durable-execution-plans`.
 - Data: 2026-10-30 (Europe/Warsaw).
 
 ## B. Prace i mapa modułów
+
+Etap III / P2: dodano `tpa_execution_plan.py` i `tpa_plan_runner.py`.
+Plan najpierw wykonuje regresje, potem kolejno gui-daemon → ollama-two-turns →
+chat-reconnect → chat-resume → daemon-restart. Wymaga PASS zależności z kompletnymi
+dowodami. Późniejsze kroki kopiują przypięte źródło pierwszego przebiegu, bez
+ponownego wyboru ruchomego master. Checkpointy planu są append-only; GUI ma
+„Uruchom plan automatyczny”, „Kontynuuj przerwany plan” i „Zapisz checkpoint”.
+Wznowienie ponownie sprawdza zapisane dowody. Nierozstrzygnięty krok live staje
+się INTERRUPTED, nigdy nowym send; dalsze zależne kroki są BLOCKED.
+To bezpieczne wznowienie planu, nie automatyczne rozstrzygnięcie przerwanej tury.
+
+Fazy mają oddzielne limity preflight/source/start/heartbeat/readiness/generation/
+finalization/restart/cleanup/gui. Czekanie operatora po otwarciu izolowanego
+Studio wyłącza timeout GUI; nie jest timeoutem daemona. ACK wyświetlenia ma
+osobny limit i jest zapisywany w dowodach. Sterowanie nadal należy do istniejącego
+Controller/ChatClient i run.py → main.py. Pomocnik live pochodzi ze Studio,
+a kanoniczne run.py i testowany runtime z wybranej izolowanej kopii.
+
+Utwardzono odbiór: Studio asynchronicznie sprawdza SHA/integralność faktycznie
+testowanej kopii przed zapisem obserwacji, zamiast wymagać wersji instalacji
+operatora. PASS wymaga poprawnego JUnit lub kompletnego dowodu live (tożsamość,
+zaakceptowane tury, ACK, oryginalne przyjęcie request_id, nowa tożsamość restartu).
+Pełny odbiór 12 studiów ponownie weryfikuje ich dowody. Późniejsza obserwacja
+BLOCKED zachowuje poprzedni zweryfikowany pełny sukces w historii.
+W lokalnych eksportach porównuje się hashe wszystkich chronionych plików i
+provenance; czas wygenerowania nowego manifestu sam nie unieważnia identycznego
+kodu. Oryginały zmienionych testów zachowano append-only z SHA256/provenance.
+
+Etap IV / P3 pozostaje NIEUKOŃCZONY: dostępny istniejący odbiór wspomagany
+z checklistą i dowodami, brak nowego kreatora prowadzącego kolejno przez wszystkie
+scenariusze i niezbędne potwierdzenia. Nie deklarować całego TPA 2.0 jako gotowego.
 
 Checkpoint etapu I został wypchnięty i zweryfikowany na GitHub:
 `d79c2473839f76d88a59e6f2af5c9728a817ee70` (kod),
@@ -19,6 +50,8 @@ Checkpoint etapu I został wypchnięty i zweryfikowany na GitHub:
 Draft PR: https://github.com/SmuklyLew/jazn_latka/pull/443 (base master).
 Etap II wypchnięty jako `13bd41bd` (kod) / `0cfd879bc8d67a4f66d6ab1a79eb650bbeacda6f`
 (metadane); potwierdzono zgodność lokalnego i zdalnego SHA.
+Integracja CI .45: `88cd8639` (kod) / `b2b205cfae14fda4a037503b6b1c682be1520441`
+(metadane), również wypchnięte i potwierdzone.
 
 Naprawy integracyjne po odczycie rzeczywistego CI etapu I: zaktualizowano
 runtime_version kontraktu wdrożenia i version kontraktu startowego, wygenerowano
@@ -68,6 +101,19 @@ Oryginalne ręczne wyniki v1 pozostają w istniejącym „Starsze wyniki” i ni
 promowane do automatycznych wyników v2. Nie wymyślono migracji nieznanych schematów.
 
 ## C. Walidacja
+
+- Etap III przed ostatnim utwardzeniem: **144 passed, 1 skipped**, 64.13 s.
+- Etap III z kontrolą kompletnych dowodów live: **148 passed, 1 skipped**,
+  61.20 s, jawny TPA_PYTEST_EXIT=0 i JUnit
+  `D:\.AI\codex_tasks\tpa-2-stage3-proof-final-junit.xml`.
+- Ostatnie zmiany (historia obserwacji, źródła ZIP/local, wersja): **36 passed**,
+  9.60 s; Pyright całego tools/jazn_run_studio i nowych testów: **0 errors,
+  0 warnings**. Rzeczywisty zweryfikowany lokalny eksport: **PASS**, raport
+  `D:\.AI\codex_tasks\tpa-2-real-local-source-final.json`.
+- Jeden pomocniczy przebieg Qt nie zwrócił podsumowania pytest (nie zaliczano
+  go jako PASS). Końcowy przebieg jawnie tworzy QApplication przed testami
+  mieszającymi QCoreApplication/QApplication i zapisuje kod zakończenia.
+- Szersza regresja oraz końcowe CI .46 pozostają do wykonania po commit/push.
 
 Interpreter testowy: `D:\.AI\codex_tasks\tpa-2-validation-venv\Scripts\python.exe`
 (osobny venv z Python 3.14, system-site-packages, PySide6-Essentials 6.12.0).
@@ -121,16 +167,14 @@ wyłącznie do nowego venv. Nie instalowano nic do środowiska Jaźni.
 
 ## D. Pozostałe prace
 
-1. P1: resolver, wykonanie w detached kopii i rzeczywista weryfikacja ZIP
-   są zaimplementowane i sprawdzone; domknąć metadane/push poprawek CI .45.
-2. P2: zależności preflight → regresja → daemon → dwie zaakceptowane tury →
-   reconnect → resume tego samego nierozstrzygniętego request_id → własny restart.
-   Oddzielne timeouty faz i jawne BLOCKED dla zależnych kroków.
-3. P3: kreator kolejnych półautomatycznych odbiorów, trwały plan/resume,
+1. Domknąć commit/push .46, metadane i ich niezależne sprawdzenie; odczytać
+   CI wyłącznie dla końcowego SHA. P0–P2 są wdrożone z opisanymi granicami.
+2. Rzeczywisty pełny plan live z lokalną Ollamą: NOT RUN. Brak testowego modelu
+   oznacza BLOCKED poszczególnych live, a nie PASS. Nie ruszać obcej Ollamy/daemona.
+3. P3: kreator kolejnych półautomatycznych odbiorów,
    przyciski uruchom/odbiór/kontynuuj/checkpoint/historia. Zapis obserwacji
    ma nadal wymagać rzeczywistego wykonania i materiału z hashami.
-4. Dalsze utwardzenie: kontrola aktualnego źródła w chwili zapisu obserwacji,
-   ponowna walidacja 12 odbiorów zależnych studios-parity, wielkość historii
+4. Dalsze utwardzenie: wielkość historii
    i retencja (bez automatycznego usuwania), import znanych starszych schematów
    tylko na podstawie rzeczywistych fixture'ów, bez zgadywania formatu.
 5. Etap V: szersza regresja z runbooka, idempotencja metadanych, Draft PR i
@@ -146,7 +190,7 @@ cudzych zasobów. Pozostawiono testowy venv i raporty poza Git.
 Nie wykonywano reset/rebase/force-push/merge. Wymagane uprawnienia Git i
 testu dowiązań uzyskano przez mechanizm hosta, zgodnie z autoryzacją zadania.
 
-Ostatni odczyt: 32% całej puli 300 minut, 59% tygodnia. Minimum 30% puli musi
+Ostatni odczyt: 48% całej puli 300 minut, 62% tygodnia. Minimum 30% puli musi
 pozostać niewykorzystane. Sprawdź aktualny licznik przed wznowieniem; historyczny
 odczyt nie dowodzi stanu następnej sesji. Nie używano płatnych API ani agentów.
 
@@ -165,7 +209,8 @@ $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
 Porównaj lokalne i zdalne SHA oraz PR/CI. Odczytaj AGENTS.md i AGENTS.codex.md,
 ten checkpoint i plan. Przeczytano już pełne tpa_live.py, external.py,
 release_staging.py i kontrakt izolacji. Następny krok: domknij walidację/push
-etapu II i przejdź do planu zależności P2; nie przebudowuj kanonicznego lifecycle.
+etapu III, przeprowadź walidację i CI; następny etap funkcjonalny to kreator P3.
+Przy tym budżecie nie zaczynaj go przed oceną rezerwy i zapisem checkpointu.
 Powtarzaj tylko testy zależne od nowych zmian; końcowy gate musi dotyczyć
 aktualnego HEAD. Ukończenie wymaga wszystkich warunków TPA 2.0 z planu,
 rzeczywistych dowodów, branch/PR oraz jawnego rozdzielenia odbiorów manualnych.

@@ -53,6 +53,34 @@ def evidence_errors(store: RunStore, report: dict, row: dict, *, full: bool = Fa
                         or not isinstance(live.get("cleanup"), dict)
                         or live["cleanup"].get("ok") is not True):
                     raise ValueError("Dowód live lub cleanup nie potwierdza PASS")
+                if row["case_id"] in LIVE_CASES:
+                    evidence = live["result"].get("evidence", {})
+                    identity = evidence.get("identity", {})
+                    required_identity = ("root_matches", "version_matches", "process_identity_confirmed", "endpoint_identity_matches", "heartbeat_fresh")
+                    if (not all(identity.get(k) is True for k in required_identity)
+                            or not isinstance(identity.get("instance_id"), str) or not identity["instance_id"]):
+                        raise ValueError("Brak pełnej tożsamości instancji live")
+                    if row["case_id"] == "gui-daemon":
+                        if identity.get("conversation_ready") is not True:
+                            raise ValueError("Niepotwierdzona gotowość rozmowy")
+                    else:
+                        turns = evidence.get("turns", [])
+                        count = 1 if row["case_id"] == "chat-resume" else 2
+                        if (not isinstance(turns, list) or len(turns) != count
+                                or not evidence.get("session_id")
+                                or any(not isinstance(t, dict) or t.get("accepted") is not True
+                                       or any(not isinstance(t.get(k), str) or not t[k] for k in ("request_id", "turn_id", "trace_id", "text")) for t in turns)
+                                or any(len({t[k] for t in turns}) != count for k in ("request_id", "turn_id", "trace_id"))
+                                or evidence.get("displayed_request_ids") != [t["request_id"] for t in turns]):
+                            raise ValueError("Brak kompletnych zaakceptowanych tur i ACK wyświetlenia")
+                        if row["case_id"] == "chat-resume" and (evidence.get("admission", {}).get("confirmed") is not True
+                                or evidence["admission"].get("request_id") != turns[0]["request_id"]):
+                            raise ValueError("Brak trwałego przyjęcia oryginalnego request_id")
+                        if row["case_id"] == "daemon-restart":
+                            restarted = evidence.get("restarted_identity", {})
+                            if (not all(restarted.get(k) is True for k in required_identity)
+                                    or not restarted.get("instance_id") or restarted["instance_id"] == identity["instance_id"]):
+                                raise ValueError("Niepotwierdzona nowa własna instancja po restarcie")
         if full and row.get("operator_observation"):
             observation = json.loads(safe_child(folder, row["operator_observation"]).read_text(encoding="utf-8"))
             if (not isinstance(observation, dict) or observation.get("status") != "PASS"
@@ -93,6 +121,7 @@ def current_state(store: RunStore, current: dict, history: list[dict] | None = N
         state: dict[str, Any] = {"case_id": case["id"], "regression": None, "live": None,
                                  "sandbox": None, "full": None, "last_attempt": None,
                                  "last_success": None, "last_full_success": None}
+        full_candidates: list[dict] = []
         for run, row in attempts:
             relation = _source_relation(run.get("source", {}), current)
             errors = evidence_errors(store, run, row) if row.get("status") == "PASS" else []
@@ -111,9 +140,49 @@ def current_state(store: RunStore, current: dict, history: list[dict] | None = N
                 full_errors = evidence_errors(store, run, row, full=True) if row["full_gate"] == "PASS" else []
                 full = {**entry, "status": "BLOCKED" if errors or full_errors else row["full_gate"],
                         "evidence_errors": errors + full_errors}
+                observations = [o for o in run.get("observations", []) if isinstance(o, dict) and o.get("case_id") == case["id"]]
+                latest_observation = next((o for o in reversed(observations) if o.get("status") == row["full_gate"]), {})
+                full["time"] = latest_observation.get("observed_utc", entry["time"])
+                full_candidates.append(full)
+                for observation in observations:
+                    if observation.get("status") != "PASS" or not isinstance(observation.get("observed_utc"), str):
+                        continue
+                    name = observation.get("artifact")
+                    if not name:
+                        # Known v2 observations predate the explicit artifact field.
+                        # Locate their immutable file by case and observation time.
+                        for candidate in run.get("artifacts", []):
+                            if not candidate.startswith("observation-") or not candidate.endswith(".json"):
+                                continue
+                            try:
+                                path = safe_child(store.folder(run["run_id"]), candidate)
+                                if path.stat().st_size > MAX_REPORT:
+                                    continue
+                                value = json.loads(path.read_text(encoding="utf-8"))
+                                if value == observation:
+                                    name = candidate
+                                    break
+                            except (OSError, ValueError):
+                                continue  # Invalid historical material never becomes PASS.
+                    if not name or name == row.get("operator_observation"):
+                        continue
+                    prior_errors = evidence_errors(store, run, {**row, "operator_observation": name}, full=True)
+                    full_candidates.append({**entry, "status": "BLOCKED" if errors or prior_errors else "PASS",
+                                            "time": observation["observed_utc"], "evidence_errors": errors + prior_errors})
                 if state["full"] is None:
                     state["full"] = full
                 if state["last_full_success"] is None and full["status"] == "PASS":
                     state["last_full_success"] = full
+        if full_candidates:
+            full_candidates.sort(key=lambda item: (str(item["time"]), item["run_id"]), reverse=True)
+            state["full"] = full_candidates[0]
+            state["last_full_success"] = next((item for item in full_candidates if item["status"] == "PASS"), None)
         output[case["id"]] = state
+    parity = output["studios-parity"]
+    if parity["full"] and parity["full"]["status"] == "PASS":
+        accepted = [s for key, s in output.items() if key.startswith("studio-") and s["full"]
+                    and s["full"]["status"] == "PASS" and s["full"]["source_relation"] == "same"]
+        if len(accepted) != 12:
+            parity["full"] = {**parity["full"], "status": "BLOCKED", "evidence_errors": ["Brak 12 zweryfikowanych odbiorów studiów tego źródła."]}
+            parity["last_full_success"] = None
     return output
