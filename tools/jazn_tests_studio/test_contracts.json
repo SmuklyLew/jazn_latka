@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.24",
-  "active_definition_count": 2919,
+  "system_version": "16.3.25.5.116.0.34.94.6.25",
+  "active_definition_count": 2922,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20860,6 +20860,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 40
+    },
+    "tests/test_heart_unified_operator_dock_qt.py::test_production_route_reuses_single_bottom_dock": {
+      "path": "tests/test_heart_unified_operator_dock_qt.py",
+      "name": "test_production_route_reuses_single_bottom_dock",
+      "purpose": "Production route reuses single bottom dock",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_heart_unified_operator_dock_qt.py::test_shared_history_and_technical_panels_are_safe_read_only": {
+      "path": "tests/test_heart_unified_operator_dock_qt.py",
+      "name": "test_shared_history_and_technical_panels_are_safe_read_only",
+      "purpose": "Shared history and technical panels are safe read only",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_heart_unified_operator_dock_qt.py::test_layout_v3_restores_valid_prior_schemas_but_rejects_bad_tab": {
+      "path": "tests/test_heart_unified_operator_dock_qt.py",
+      "name": "test_layout_v3_restores_valid_prior_schemas_but_rejects_bad_tab",
+      "purpose": "Layout v3 restores valid prior schemas but rejects bad tab",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
     },
     "tests/test_heart_visual_system_qt.py::test_all_profiles_have_readable_text_selection_status_and_focus": {
       "path": "tests/test_heart_visual_system_qt.py",
