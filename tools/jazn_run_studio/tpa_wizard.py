@@ -25,7 +25,8 @@ def pending_cases(rows: Iterable[dict], state: Mapping[str, dict], *,
 
 def wizard_counts(rows: Iterable[dict], state: Mapping[str, dict], *,
                   include_live: bool = False) -> tuple[int, int, int]:
-    eligible = [row for row in rows if include_live or row["id"] not in LIVE_CASES]
+    all_rows = tuple(rows)
+    eligible = [row for row in all_rows if include_live or row["id"] not in LIVE_CASES]
     pending = pending_cases(eligible, state, include_live=True)
-    deferred = 0 if include_live else sum(row["id"] in LIVE_CASES for row in rows)
+    deferred = 0 if include_live else sum(row["id"] in LIVE_CASES for row in all_rows)
     return len(eligible) - len(pending), len(eligible), deferred
