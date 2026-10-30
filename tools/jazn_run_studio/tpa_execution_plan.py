@@ -21,14 +21,15 @@ PHASE_TIMEOUTS = {"preflight": 30, "source": 300, "regression": 180, "start": 60
                   "gui": 120, "operator": None}
 
 
-def build_plan(case_ids: tuple[str, ...], source: dict, model: str = "", *, assisted: bool = False) -> dict:
+def build_plan(case_ids: tuple[str, ...], source: dict, model: str = "", *, assisted: bool = False,
+               include_live: bool = True) -> dict:
     known = {c["id"] for c in execution_map()}
     if not case_ids or len(set(case_ids)) != len(case_ids) or set(case_ids) - known:
         raise ValueError("Wybierz znane, niepowtarzające się scenariusze planu")
     # Live predecessors are included explicitly; selecting restart cannot bypass
     # the earlier turn/reconnect/resume acceptance gates.
     selected = set(case_ids)
-    last_live = max((LIVE_ORDER.index(k) for k in selected if k in LIVE_ORDER), default=-1)
+    last_live = max((LIVE_ORDER.index(k) for k in selected if k in LIVE_ORDER), default=-1) if include_live else -1
     selected.update(LIVE_ORDER[:last_live + 1])
     ordered = [c["id"] for c in execution_map() if c["id"] in selected]
     tasks = [{"id": "regression:" + key, "case_id": key, "execution": "regression",
@@ -40,7 +41,8 @@ def build_plan(case_ids: tuple[str, ...], source: dict, model: str = "", *, assi
             "system_root": "", "created_utc": utc(), "saved_utc": utc(), "finished_utc": None,
             "owner_pid": os.getpid(), "status": "QUEUED", "source_request": deepcopy(source),
             "source_copy": None, "source_identity": None, "model": model,
-            "assisted": assisted, "timeouts": dict(PHASE_TIMEOUTS), "tasks": tasks}
+            "assisted": assisted, "regression_only": not include_live,
+            "timeouts": dict(PHASE_TIMEOUTS), "tasks": tasks}
 
 
 def blocked_dependencies(plan: dict) -> None:
@@ -110,7 +112,7 @@ class PlanStore:
         for key in tuple(clean):
             if key not in {"schema", "plan_id", "system_root", "created_utc",
                            "saved_utc", "finished_utc", "owner_pid", "status",
-                           "assisted", "timeouts", "tasks", "source_request",
+                           "assisted", "regression_only", "timeouts", "tasks", "source_request",
                            "model", "source_copy", "source_identity"}:
                 clean[key] = redact(clean[key], self.runs.redactor)
         path = safe_child(folder, "checkpoint-" + uuid4().hex + ".json")
@@ -140,7 +142,8 @@ class PlanStore:
                     or not isinstance(value["source_request"].get("kind"), str)
                     or value["source_request"]["kind"] not in {"master", "branch", "pr", "merge", "local", "zip"}
                     or not isinstance(value["source_request"].get("value", ""), str)
-                    or not isinstance(value.get("model"), str)):
+                    or not isinstance(value.get("model"), str)
+                    or not isinstance(value.get("regression_only", False), bool)):
                 raise ValueError("Uszkodzony checkpoint planu")
             known = {c["id"] for c in execution_map()}
             ids = {n.get("id") for n in value["tasks"] if isinstance(n, dict) and isinstance(n.get("id"), str)}
@@ -151,7 +154,8 @@ class PlanStore:
                     or not isinstance(n.get("depends_on"), list) or any(not isinstance(k, str) or k not in ids for k in n["depends_on"])
                     for n in value["tasks"]):
                 raise ValueError("Nieprawidłowe kroki planu")
-            expected = build_plan(tuple(n["case_id"] for n in value["tasks"] if n["execution"] == "regression"), {})
+            expected = build_plan(tuple(n["case_id"] for n in value["tasks"] if n["execution"] == "regression"), {},
+                                  include_live=not value.get("regression_only", False))
             if [(n["id"], n["depends_on"]) for n in value["tasks"]] != [(n["id"], n["depends_on"]) for n in expected["tasks"]]:
                 raise ValueError("Zmieniono zależności kanonicznego planu")
             checkpoints.append(value)
