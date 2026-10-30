@@ -322,8 +322,14 @@ class OperatorWorkspace:
         if not shell.is_file():
             raise StudioError("Nie znaleziono systemowego PowerShell w katalogu Windows")
         core = self.host.core
-        subprocess.Popen([str(shell), "-NoLogo", "-NoExit"],
-                         cwd=core.root, env=core.child_environment(), shell=False,
+        # External operator shells must not inherit optional secret-file
+        # credentials injected for canonical runtime children.
+        from .core import SECRET_NAME
+        safe_env = {key: value for key, value in os.environ.items()
+                    if not SECRET_NAME.search(key)}
+        safe_env["JAZN_ROOT"] = str(core.root)
+        subprocess.Popen([str(shell), "-NoLogo", "-NoProfile", "-NoExit"],
+                         cwd=core.root, env=safe_env, shell=False,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 
     def show(self, tab: int = 0) -> None:
