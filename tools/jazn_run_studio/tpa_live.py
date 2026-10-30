@@ -118,7 +118,7 @@ class ReceiptCore(Protocol):
 
 
 class ReceiptClient(Protocol):
-    def resume_command(self, request_id: str) -> list[str]: ...
+    def resume_command(self, request_id: str, /) -> list[str]: ...
 
 
 def await_daemon_receipt(core: ReceiptCore, client: ReceiptClient, request_id: str, tick, *, timeout_seconds: float = 45.0) -> dict:
