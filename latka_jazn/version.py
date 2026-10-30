@@ -1,3 +1,4 @@
+# v116.0.34.94.6.27: separate external PowerShell from Jaźń CLI in operator terminal controls.
 # v116.0.34.94.6.26: provide two neutral JSS themes, non-destructive legacy appearance, and persistent operator dock sizing.
 # v116.0.34.94.6.25: unify Heart operator panels, reuse TPA history and reduce service/studio visual clutter.
 # v116.0.34.94.6.24: Preserve recovered P1 and keep selected service labels readable in compact rows.
@@ -164,7 +165,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.26"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.27"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (
