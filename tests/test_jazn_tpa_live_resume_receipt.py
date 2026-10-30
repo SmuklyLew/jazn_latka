@@ -75,7 +75,7 @@ def test_receipt_timeout_does_not_fake_admission(
         code=1,
     ))
     clock = iter([0.0, 0.5, 1.5, 2.5])
-    monkeypatch.setattr(tpa_live.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(tpa_live.time, "monotonic", lambda: next(clock, 5.0))
     monkeypatch.setattr(tpa_live.time, "sleep", lambda _: None)
     with pytest.raises(TimeoutError, match="nie potwierdził"):
         tpa_live.await_daemon_receipt(
