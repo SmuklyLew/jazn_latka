@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
-  "package_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
-  "generated_at_utc": "2026-10-30T06:08:48+00:00",
-  "updated_at_utc": "2026-10-30T06:08:48+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
+  "generated_at_utc": "2026-10-30T06:27:39+00:00",
+  "updated_at_utc": "2026-10-30T06:27:39+00:00",
   "start_file": "run.py",
-  "file_count": 3531,
-  "static_file_count": 3531,
+  "file_count": 3535,
+  "static_file_count": 3535,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -455,7 +455,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2997,
-      "sha256": "1123dbf54e1d9b64d803541fff8d4f0018848a71672d81518cc7a51473ef3866",
+      "sha256": "716103635ac20180ccab4faeb33c4604ecbe787bbe36556e993cc2bf2daca098",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -491,7 +491,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1951,
-      "sha256": "0908ee48f0db4b5603a1a23716fe935a4093f1bec0b29157141a3d1fefadb7ce",
+      "sha256": "521fc7c5adbdab9cc792b9829c1e15a4a8c5149becf69eb10deaa4996831ddcc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2443,8 +2443,8 @@
     },
     {
       "path": "docs/project/HEART_OPERATOR_PTY_P2_CHECKPOINT_20261030.md",
-      "size_bytes": 1302,
-      "sha256": "500f31172984eb252c8f357dec8e93a1f6fb0eb39c16e2461146e4ff7723c45e",
+      "size_bytes": 1459,
+      "sha256": "2366ff58b1dd54ab410aebae7f010f5324dc5ebcd368a8c74a15d5e4b16905ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2463,6 +2463,15 @@
       "path": "docs/project/HEART_OPERATOR_WORKBENCH_P1_CHECKPOINT_20261030.md",
       "size_bytes": 1988,
       "sha256": "3b23952bfb104599a50d2974e44a9bcdb8cae033e8f963f9ed510f38ccc8522c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/project/HEART_TPA_OPERATOR_ACCEPTANCE_TRIAGE_20261030.md",
+      "size_bytes": 1532,
+      "sha256": "3132b81521643d4642e7ff7cc412b2527ce7f2ff7bdd4331eb2d953473c3d2f8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9797,7 +9806,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "054ad4e2ad7b035920ea0c430e29018079bb9721233d45dde7b68701e2dfd14f",
+      "sha256": "f8cb05cf6a132301fbc51d819e767d780c5d376fa6229ec68d0409888e212f44",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11299,8 +11308,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 20496,
-      "sha256": "fa099efd3b3ebd5bea050499239a8c5f862f6770cc9d5aef5e486247a94347fe",
+      "size_bytes": 20614,
+      "sha256": "62c49d7e8b0983ca7c683b16fc98b68255a3e14f506c7aa09d22aa7457e667e2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28047,6 +28056,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_tpa_local_triage.py",
+      "size_bytes": 2515,
+      "sha256": "f9020d3bd72daaa3418ce4edbc0bab1c652163b906aae05aa88c00f6b05be218",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jazn_tpa_local_triage_qt.py",
+      "size_bytes": 1401,
+      "sha256": "aab585b4827d2a67e070b08d0835427f2e3ab056419ee854e6c2036423aa8280",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_tpa_log_scope_qt.py",
       "size_bytes": 1843,
       "sha256": "5917cd1040432e53bf15df21943118a9c70e63e548ff5113b3546dfdf61459de",
@@ -31368,9 +31395,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/tpa_triage.py",
+      "size_bytes": 5523,
+      "sha256": "9733200881fefe50414c4d6f2bbd1a8577a971d4fe6f8b5542e6a8e104094ab7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_run_studio/tpa_view.py",
-      "size_bytes": 30705,
-      "sha256": "117a8e198f37e3f20039ce064241fa5bd43142cd940b97c1b04786d89e313bf9",
+      "size_bytes": 32108,
+      "sha256": "d8e1ec1bc4726cf1865c19c7248ea385e9c50b18fb0d42c665e295320f7487a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31576,8 +31612,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2641208,
-      "sha256": "7d40cebf86f9e6db9b32451b8e0ac0d4bbf68adb468901a70d4f245ceb48be71",
+      "size_bytes": 2645815,
+      "sha256": "ea5cd5ad1fa56e4bfb4f7def324d99663c2718dd5ccb0ee1c045378a815f96c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32234,11 +32270,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
-    "package_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics",
-    "release_version": "16.3.25.5.116.0.34.94.6.34-run-studio-operator-diagnostics"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.35-run-studio-operator-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
