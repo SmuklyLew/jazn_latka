@@ -1,5 +1,26 @@
 # TPA 2.0 — checkpoint
 
+## Aktualizacja 2026-10-30 — Pyright hotfix .94.6.50
+
+- Weryfikacja CI dla SHA `2b4bef75ebd578e27cf69ea5c963ebb898bd19cc`:
+  `pyright-active-tree-audit`, run `41132842088`, job
+  `124327907215` wykazał jeden błąd (`reportOptionalMemberAccess`)
+  w `latka_jazn/core/turn_orchestrator.py`:
+  `"stage" is not a known attribute of "None"`, linia 48. Pyright
+  1.1.411 przeanalizował 1459 plików; 1 error, 0 warning.
+- Poprawiono jedynie wywołanie `stage()` przez lokalne zawężenie
+  `isinstance(observed, TurnExecutionContext)`. Ścieżka bez diagnostyki
+  pozostaje bez efektów ubocznych; nie zmieniono modelu, MEMORY,
+  czasu SLA, asercji ani logiki finalizacji.
+- Podniesiono wersję i zgodne kontrakty do
+  `16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing`.
+- **PASS dopiero po nowym CI**. Poprzedni workflow JSS osiągnął sukces,
+  ale bez dowodu wyników końcowego SHA. Kanoniczny manifest i
+  provenance nadal wymagają uruchomienia generatora w środowisku
+  mającym działający executor; nie zapisano ręcznych hashy.
+- PR pozostaje Draft, bez merge. Realne próby Ollama po merge.
+
+
 ## Aktualizacja 2026-10-30 — naprawa szerokości TPA i profilowanie SLA .94.6.49
 
 - Na podstawie CI dla SHA `3e8cfdd39fa644c60eeea8172f6cc1e08d6d0833`
