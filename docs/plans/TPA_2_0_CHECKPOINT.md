@@ -1,5 +1,28 @@
 # TPA 2.0 — checkpoint
 
+## Aktualizacja 2026-10-30 — naprawa 4 nieudanych checków Windows
+
+- Sprawdzono rzeczywiste logi dla PR #443 / SHA `ecd2536e1747030d4dde8f7edc25fb3f4636681c`:
+  trzy zadania `jazn-run-studio` (Windows Python 3.12/3.13/3.14) zawiodły na
+  `test_minimum_window_exposes_queue_and_expandable_setup_from_keyboard`:
+  tabela TPA y=317, wymagane y<303 przy oknie 860×580.
+  Osobny `powershell-terminal-regressions` wykazał błąd w
+  `test_two_processes_cannot_both_commit_stale_none`: [0,1] zamiast [0,9];
+  proces potomny otrzymał `Local settings path resolves outside its root`.
+- Poprawiono układ TPA, przenosząc przełącznik zgody na live do istniejącego
+  wiersza akcji, bez zmiany wymaganego progu testu i bez automatycznego live.
+- Poprawiono `verify_local_descendant()` w `local_settings_layout.py`:
+  porównanie ścieżki docelowej i root odbywa się teraz po `resolve()` obu
+  stron. Nadal obowiązuje sprawdzenie każdego komponentu na symlink/junction.
+  Dodano 3 syntetyczne testy porównania ścieżek i odmowy przekierowania.
+- Kod i kontrakty wydania są na wersji
+  `16.3.25.5.116.0.34.94.6.48-tpa-windows-ci-repair`.
+  Te zmiany **wymagają CI końcowego SHA**; w chwili wpisu nie jest ono
+  potwierdzone. Kanoniczna synchronizacja manifestu i provenance pozostaje
+  do wykonania, bez ręcznego tworzenia hashy.
+- Rzeczywiste tury Ollamy nadal dopiero po merge. PR pozostaje Draft.
+
+
 ## Aktualizacja 2026-10-30 — naprawa CI i rozdział odbiorów przed/po merge
 
 - Wysłano poprawkę P2: `PlanStore` wiąże checkpoint z SYSTEM przez
