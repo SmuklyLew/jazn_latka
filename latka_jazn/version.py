@@ -1,3 +1,4 @@
+# v116.0.34.94.6.39: Isolated JSS Visual & Integration CI, screenshots, Qt contracts and Windows EXE reports.
 # v116.0.34.94.6.38: Add JSS three-profile UI/UX workbench, theme selection and regression contracts.
 # v116.0.34.94.6.37: Close owned PTY, controlling POSIX tty, verified release TPA source without Git.
 # v116.0.34.94.6.36: Fail-closed TPA triage proof requires matching immutable Git source identity.
@@ -175,7 +176,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.38"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.39"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (
