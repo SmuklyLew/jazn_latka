@@ -128,7 +128,7 @@ class Settings:
     tunnel_config: str = ""
     tunnel_id: str = ""
     model: str = ""
-    theme: str = "violet-night"
+    theme: str = "technical-workbench"
     accent: str = "#A783DB"
     cloudflare_url: str = ""
     mcp_port: str = "8080"
@@ -143,7 +143,8 @@ class Settings:
         if any(not isinstance(v, str) or len(v) > 2048 or any(c in v for c in "\0\r\n") for v in data.values()):
             raise StudioError("Ustawienia muszą być krótkimi tekstami bez znaków sterujących")
         obj = cls(**data)
-        if obj.theme not in {"violet-night", "system", "light", "dark", "purple", "custom"}:
+        from .workbench_theme import THEME_CHOICES
+        if obj.theme not in {key for _, key in THEME_CHOICES}:
             raise StudioError("Nieznany motyw")
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", obj.accent):
             raise StudioError("Kolor wymaga formatu #RRGGBB")

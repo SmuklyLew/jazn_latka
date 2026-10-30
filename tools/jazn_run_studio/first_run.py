@@ -89,8 +89,10 @@ class SetupWizard(QWizard):
         config.addWidget(note)
         self.setting_fields: dict[str, QLineEdit] = {}
         self.theme_choice = QComboBox()
-        self.theme_choice.addItems(["violet-night", "system", "light", "dark", "purple", "custom"])
-        self.theme_choice.setCurrentText(core.settings.theme)
+        from .workbench_theme import THEME_CHOICES
+        for label, key in THEME_CHOICES:
+            self.theme_choice.addItem(label, key)
+        self.theme_choice.setCurrentIndex(self.theme_choice.findData(core.settings.theme))
         self.runtime_profile_choice = QComboBox()
         self.runtime_profile_choice.addItem("Bez profilu", "off")
         self.runtime_profile_choice.addItem("Walidowany profil operatora", "operator")
@@ -261,7 +263,7 @@ class SetupWizard(QWizard):
                 raise StudioError("Interpreter lub wymagania zmieniły się; ponów kontrolę.")
             data = asdict(self.core.settings)
             data.update({key: field.text().strip() for key, field in self.setting_fields.items()})
-            data["theme"] = self.theme_choice.currentText()
+            data["theme"] = str(self.theme_choice.currentData())
             data["runtime_profile"] = str(self.runtime_profile_choice.currentData())
             self.save(Settings.validate(data))
             self.completed(str(self.report["scope"]))

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QTreeWidget, QWidget,
 )
 
-from .workbench_theme import METRICS, workbench_colors, workbench_stylesheet
+from .workbench_theme import METRICS, workbench_colors, workbench_stylesheet, workbench_metrics
 
 
 class VisualSystem(QObject):
@@ -16,28 +16,50 @@ class VisualSystem(QObject):
     def __init__(self, root: QWidget):
         super().__init__(root)
         self.root = root
+        self.metrics = METRICS
         self.reflow_pending = False
+        self._closed = False
+        # The queued callback belongs to this QObject, not an unscoped
+        # singleShot that could outlive the GUI test window.
+        self._reflow_timer = QTimer(self)
+        self._reflow_timer.setSingleShot(True)
+        self._reflow_timer.timeout.connect(self.reflow)
         app = QApplication.instance()
         if isinstance(app, QApplication):
             app.installEventFilter(self)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if self._closed:
+            return False
         if (event.type() in (QEvent.Type.Resize, QEvent.Type.Show)
                 and isinstance(watched, QWidget) and (watched is self.root or self.root.isAncestorOf(watched))
                 and not self.reflow_pending):
             self.reflow_pending = True
-            QTimer.singleShot(0, self.reflow)
+            self._reflow_timer.start(0)
         if (event.type() == QEvent.Type.Polish and isinstance(watched, QWidget)
                 and (watched is self.root or self.root.isAncestorOf(watched))):
             self.polish(watched)
         return False
 
+    def shutdown(self) -> None:
+        """Detach the global filter and cancel pending Qt work on accepted close."""
+        if self._closed:
+            return
+        self._closed = True
+        self._reflow_timer.stop()
+        self.reflow_pending = False
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            app.removeEventFilter(self)
+
     def reflow(self) -> None:
+        if self._closed:
+            return
         self.reflow_pending = False
         for form in self.root.findChildren(QFormLayout):
             form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
             form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-            form.setSpacing(METRICS.gap)
+            form.setSpacing(self.metrics.gap)
         for button in self.root.findChildren(QPushButton):
             original = button.property("heartOriginalText")
             if not isinstance(original, str) or button.text() != button.property("heartRenderedText"):
@@ -67,21 +89,23 @@ class VisualSystem(QObject):
             parent = layout.parentWidget()
             if parent is None:
                 continue
-            available = self.available_width(parent)
-            widths = []
-            for index in range(layout.count()):
-                item = layout.itemAt(index)
-                if item is None:
-                    continue
-                widget = item.widget()
-                if widget is not None and not widget.isHidden():
-                    widths.append(max(widget.minimumWidth(), widget.minimumSizeHint().width()))
-                else:
-                    nested = item.layout()
-                    if nested is not None:
-                        widths.append(nested.minimumSize().width())
-            needed = sum(widths) + max(0, len(widths) - 1) * layout.spacing()
-            direction = QBoxLayout.Direction.TopToBottom if needed > available else QBoxLayout.Direction.LeftToRight
+            # Do not dereference itemAt(index).widget() here. Qt can
+            # invalidate QLayoutItem wrappers while stylesheet repolishing
+            # changes the geometry of a live workbench (Linux SIGSEGV).
+            # Ask Qt for its own horizontal size hint instead.
+            horizontal_width = layout.property("heartHorizontalHintWidth")
+            if layout.direction() == QBoxLayout.Direction.LeftToRight:
+                measured = max(layout.minimumSize().width(), layout.sizeHint().width())
+                if measured > 0:
+                    horizontal_width = measured
+                    layout.setProperty("heartHorizontalHintWidth", measured)
+            if not isinstance(horizontal_width, int) or horizontal_width <= 0:
+                continue
+            direction = (
+                QBoxLayout.Direction.TopToBottom
+                if horizontal_width > self.available_width(parent)
+                else QBoxLayout.Direction.LeftToRight
+            )
             if layout.direction() != direction:
                 layout.setDirection(direction)
 
@@ -113,8 +137,8 @@ class VisualSystem(QObject):
             header.setMinimumSectionSize(36)
             header.setSectionsMovable(True)
             if isinstance(widget, QTableWidget):
-                widget.verticalHeader().setMinimumSectionSize(METRICS.row_height)
-                widget.verticalHeader().setDefaultSectionSize(max(METRICS.row_height, widget.verticalHeader().defaultSectionSize()))
+                widget.verticalHeader().setMinimumSectionSize(self.metrics.row_height)
+                widget.verticalHeader().setDefaultSectionSize(max(self.metrics.row_height, widget.verticalHeader().defaultSectionSize()))
                 if widget is getattr(self.root, "services_table", None):
                     widget.verticalHeader().setDefaultSectionSize(48)
                 widget.setMouseTracking(True)
@@ -123,7 +147,7 @@ class VisualSystem(QObject):
         if isinstance(layout, QFormLayout):
             layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
             layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-            layout.setSpacing(METRICS.gap)
+            layout.setSpacing(self.metrics.gap)
 
     @staticmethod
     def tooltip(table: QTableWidget, row: int, column: int) -> None:
@@ -133,6 +157,7 @@ class VisualSystem(QObject):
 
     def apply(self, theme: str, accent: str, *, system_dark: bool) -> None:
         colors = workbench_colors(theme, accent, system_dark=system_dark)
+        self.metrics = workbench_metrics(theme)
         palette = QPalette(self.root.palette())
         roles = {QPalette.ColorRole.Window: colors.background,
                  QPalette.ColorRole.Base: colors.editor,
@@ -153,8 +178,9 @@ class VisualSystem(QObject):
             palette.setColor(QPalette.ColorGroup.Disabled, role, QColor(colors.muted))
         self.root.setPalette(palette)
         font = QFont(self.root.font())
-        font.setPointSize(METRICS.body_points)
+        font.setPointSize(self.metrics.body_points)
         self.root.setFont(font)
         self.root.setStyleSheet(workbench_stylesheet(theme, accent, system_dark=system_dark))
         for widget in self.root.findChildren(QWidget):
             self.polish(widget)
+        self.reflow()

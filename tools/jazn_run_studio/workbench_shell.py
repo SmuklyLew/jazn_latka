@@ -86,6 +86,10 @@ class WorkbenchShell(QObject):
         self.command("Widok", "Nawigacja", host.toggle_sidebar)
         self.command("Widok", "Nawigacja po lewej / prawej", host.switch_sidebar)
         self.command("Widok", "Przywróć bezpieczny układ", host.reset_layout)
+        from .workbench_theme import WORKBENCH_PROFILES
+        for profile in WORKBENCH_PROFILES:
+            self.command("Widok", "Styl JSS: " + profile.label,
+                         lambda key=profile.key: host.select_style(key))
         self.command("Widok", "Problemy", lambda: host.workspace.show(0))
         self.command("Widok", "Output / Logi", lambda: host.workspace.show(1))
         self.command("Widok", "Ostatni panel narzędzi", lambda: host.workspace.show(
