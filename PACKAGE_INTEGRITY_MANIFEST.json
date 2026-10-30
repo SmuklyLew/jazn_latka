@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
-  "package_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
-  "generated_at_utc": "2026-10-30T18:21:47+00:00",
-  "updated_at_utc": "2026-10-30T18:21:47+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+  "package_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+  "generated_at_utc": "2026-10-30T18:34:38+00:00",
+  "updated_at_utc": "2026-10-30T18:34:38+00:00",
   "start_file": "run.py",
-  "file_count": 3554,
-  "static_file_count": 3554,
+  "file_count": 3559,
+  "static_file_count": 3559,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2930,
-      "sha256": "191efd8489f8cf6b997741d8420e06e3f86e40c0be1bfd3e47b64f8cfc733d53",
+      "size_bytes": 2990,
+      "sha256": "569e1c60f63d1e1a7f67acabb5c866e58fa23815d338b002a4c7a72cd8bff776",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1939,8 +1939,8 @@
     },
     {
       "path": "docs/plans/TPA_2_0_CHECKPOINT.md",
-      "size_bytes": 7655,
-      "sha256": "2d2fc547d9b89f8445052ec3b69c91ee3086cd1440bae4b39eabd61544ca3fce",
+      "size_bytes": 10869,
+      "sha256": "0e39b4d504b87d68c3ab251fe29df4e162f961dd60e46d368a690962421fd1d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21297,
-      "sha256": "e6fd4bf5a6c5e9fab23cd31c4b35363bb0835b3cd92ba3d00f07f326c02c5996",
+      "size_bytes": 21307,
+      "sha256": "bf9e8e2201e842bdf248a629424c225c87a77f084c5db0dca555a5ff487b9e03",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23727,6 +23727,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.43-before-tpa-source-typing/PROVENANCE.md",
+      "size_bytes": 507,
+      "sha256": "c7677082a12565d65af6f002a1f06cae681a768449996a5849c3d21a4fff7f08",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.43-before-tpa-source-typing/test_tpa_2_history_qt.py",
+      "size_bytes": 2107,
+      "sha256": "d164f467606ebce6a1ee9ac17d3ef188005b2d08243010e05d7e15a4cd58116f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -30595,8 +30613,26 @@
     },
     {
       "path": "tests/test_tpa_2_history_qt.py",
-      "size_bytes": 2107,
-      "sha256": "d164f467606ebce6a1ee9ac17d3ef188005b2d08243010e05d7e15a4cd58116f",
+      "size_bytes": 2147,
+      "sha256": "9c746dcffdfe24cdf186600fb456675e0330c498046fb851916cc30d5f774627",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_tpa_2_source_execution_qt.py",
+      "size_bytes": 1755,
+      "sha256": "801054081af374d8f0eab8b04da60e80d600799cac8c5efb3a68174c7b63c38d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_tpa_2_sources.py",
+      "size_bytes": 5872,
+      "sha256": "6bb2ce6ad04f18098bc2ff720a905c0511f33f4188a028f1c1aa02049a39b87b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31486,8 +31522,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_engine.py",
-      "size_bytes": 23570,
-      "sha256": "2671eb5165ff9e9e441f450e35022eec277ab4d2259255c3d18fa854e0de40d1",
+      "size_bytes": 26525,
+      "sha256": "19eeab62a2bdbaf1796bfceab4baef99e444cecb6e8b02360de08b3d82634f76",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31531,8 +31567,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_reports.py",
-      "size_bytes": 19799,
-      "sha256": "ce2b6124d581ea1904b40acb84e0b79e32bda89b6c9211eda0af942f4a315ee3",
+      "size_bytes": 19798,
+      "sha256": "6b4938c16ebd28f4d88c05b2039bb76b8e3fbac8dfb330fb50cc50b501679678",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31557,6 +31593,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_run_studio/tpa_sources.py",
+      "size_bytes": 9977,
+      "sha256": "96b5353f29bba30ffad7617bf79fa21ec7339dc558589f8a69e3111de9821a0b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_run_studio/tpa_triage.py",
       "size_bytes": 6666,
       "sha256": "5ebac8fad8ebc20f95160d0e4237fb7e6b49fb42e2114bfc9257cec0fdc1d25b",
@@ -31567,8 +31612,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_view.py",
-      "size_bytes": 35578,
-      "sha256": "325421f0b9ad76d6e7f9f56fcbf4ff67035366bc038a202901cafe5f39c1612f",
+      "size_bytes": 36951,
+      "sha256": "eb0096eb95db5bb3dea343da1845d08347f51b18c599e093272aad8fe82ff008",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32441,11 +32486,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
+  "release_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
-    "package_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history",
-    "release_version": "16.3.25.5.116.0.34.94.6.43-tpa-durable-history"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+    "package_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection",
+    "release_version": "16.3.25.5.116.0.34.94.6.44-tpa-isolated-source-selection"
   },
   "legacy_aliases": {
     "version": "release_version"
