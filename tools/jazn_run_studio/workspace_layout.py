@@ -21,10 +21,10 @@ def validate(data: Any) -> dict[str, Any]:
     if not isinstance(data, dict) or data.get("schema") not in (SCHEMA, "jazn_heart_layout/v2", "jazn_heart_layout/v1"):
         raise ValueError("Nieznana wersja układu")
     allowed = {"schema", "width", "height", "sidebar_right", "sidebar_visible", "dock_visible", "dock_area", "setup_scope",
-               "shell_sizes", "content_sizes", "active_section", "open_sections", "operator_tab"}
+               "shell_sizes", "content_sizes", "active_section", "open_sections", "operator_tab", "dock_height"}
     if set(data) - allowed:
         raise ValueError("Nieznane pola układu")
-    for name, low, high in (("width", 860, 7680), ("height", 580, 4320), ("dock_area", 0, 3), ("operator_tab", 0, 4)):
+    for name, low, high in (("width", 860, 7680), ("height", 580, 4320), ("dock_area", 0, 3), ("operator_tab", 0, 4), ("dock_height", 180, 3000)):
         if name in data and (type(data[name]) is not int or not low <= data[name] <= high):
             raise ValueError("Nieprawidłowy rozmiar lub obszar panelu")
     for name in ("sidebar_right", "sidebar_visible", "dock_visible"):
