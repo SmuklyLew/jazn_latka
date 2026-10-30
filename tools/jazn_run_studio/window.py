@@ -9,7 +9,7 @@ import queue
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QKeySequence, QPixmap
+from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QIcon, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QColorDialog, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QHeaderView, QLabel,
     QLineEdit, QListWidget, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
@@ -396,7 +396,7 @@ class Window(QMainWindow):
         self.services_table.setColumnWidth(2, 45)
         self.services_table.setColumnWidth(3, 55)
         self.services_table.setColumnWidth(5, 85)
-        self.services_table.verticalHeader().setDefaultSectionSize(90)
+        self.services_table.verticalHeader().setDefaultSectionSize(64)
         layout.addWidget(self.services_table)
         self.service_selected_label = QLabel("Wybierz moduł i dostępną operację.")
         self.service_selected_label.setWordWrap(True)
@@ -1471,7 +1471,21 @@ class Window(QMainWindow):
         ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": "11434",
                  "gateway": self.core.settings.mcp_port, "cloudflare": "HTTPS", "supervisor": "—", "memory": "—"}
         for service, row in self.service_rows.items():
+            from .service_visual_state import visual_state, COLORS, TITLES
             observed = self.supervisor_observation if service == "supervisor" else self.workspace.observations.get(service, {})
+            status = visual_state(service, observed if isinstance(observed, dict) else {})
+            indicator = self.services_table.item(row, 0)
+            if indicator is not None:
+                pix = QPixmap(16, 16)
+                pix.fill(Qt.GlobalColor.transparent)
+                painter = QPainter(pix)
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor(COLORS[status]))
+                painter.drawEllipse(3, 3, 10, 10)
+                painter.end()
+                indicator.setIcon(QIcon(pix))
+                indicator.setToolTip(TITLES[status] + " (nie jest to dowód zaakceptowanej odpowiedzi)")
             pid = observed.get("pid")
             with self.core.lock:
                 job = self.core.jobs.get("service:" + service)
