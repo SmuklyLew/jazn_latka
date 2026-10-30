@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.46",
-  "active_definition_count": 3006,
+  "system_version": "16.3.25.5.116.0.34.94.6.50",
+  "active_definition_count": 3025,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31087,6 +31087,59 @@
       "description_source": "source_identity",
       "line": 33
     },
+    "tests/test_local_settings_canonical_containment.py::test_normal_future_operator_descendant_is_allowed": {
+      "path": "tests/test_local_settings_canonical_containment.py",
+      "name": "test_normal_future_operator_descendant_is_allowed",
+      "purpose": "Normal future operator descendant is allowed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_local_settings_canonical_containment.py::test_canonical_parent_representation_matches_canonical_child": {
+      "path": "tests/test_local_settings_canonical_containment.py",
+      "name": "test_canonical_parent_representation_matches_canonical_child",
+      "purpose": "Canonical parent representation matches canonical child",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_local_settings_canonical_containment.py::test_link_inside_operator_root_is_rejected": {
+      "path": "tests/test_local_settings_canonical_containment.py",
+      "name": "test_link_inside_operator_root_is_rejected",
+      "purpose": "Link inside operator root is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
     "tests/test_local_settings_layout_convergence.py::test_versioned_settings_enables_local_layout": {
       "path": "tests/test_local_settings_layout_convergence.py",
       "name": "test_versioned_settings_enables_local_layout",
@@ -61042,6 +61095,68 @@
       "description_source": "source_identity",
       "line": 110
     },
+    "tests/test_tpa_2_checkpoint_redaction.py::test_checkpoint_survives_secret_collision_and_changed_restart_environment": {
+      "path": "tests/test_tpa_2_checkpoint_redaction.py",
+      "name": "test_checkpoint_survives_secret_collision_and_changed_restart_environment",
+      "purpose": "Checkpoint survives secret collision and changed restart environment",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 12
+    },
+    "tests/test_tpa_2_checkpoint_redaction.py::test_checkpoint_redacts_freeform_reason_without_rewriting_task_graph": {
+      "path": "tests/test_tpa_2_checkpoint_redaction.py",
+      "name": "test_checkpoint_redacts_freeform_reason_without_rewriting_task_graph",
+      "purpose": "Checkpoint redacts freeform reason without rewriting task graph",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_tpa_2_checkpoint_redaction.py::test_checkpoint_root_binding_rejects_tampering_without_modification": {
+      "path": "tests/test_tpa_2_checkpoint_redaction.py",
+      "name": "test_checkpoint_root_binding_rejects_tampering_without_modification",
+      "purpose": "Checkpoint root binding rejects tampering without modification",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_tpa_2_checkpoint_redaction.py::test_checkpoint_reads_legacy_unredacted_root_binding": {
+      "path": "tests/test_tpa_2_checkpoint_redaction.py",
+      "name": "test_checkpoint_reads_legacy_unredacted_root_binding",
+      "purpose": "Checkpoint reads legacy unredacted root binding",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
     "tests/test_tpa_2_current_state.py::test_projection_keeps_previous_case_across_new_run_and_restart": {
       "path": "tests/test_tpa_2_current_state.py",
       "name": "test_projection_keeps_previous_case_across_new_run_and_restart",
@@ -61275,6 +61390,59 @@
       "description_source": "source_identity",
       "line": 43
     },
+    "tests/test_tpa_2_latency_stages.py::test_opt_in_stage_timing_is_numeric_and_complete": {
+      "path": "tests/test_tpa_2_latency_stages.py",
+      "name": "test_opt_in_stage_timing_is_numeric_and_complete",
+      "purpose": "Opt in stage timing is numeric and complete",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_orchestrator",
+        "latka_jazn.core.turn_pipeline_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_tpa_2_latency_stages.py::test_diagnostics_are_disabled_by_default": {
+      "path": "tests/test_tpa_2_latency_stages.py",
+      "name": "test_diagnostics_are_disabled_by_default",
+      "purpose": "Diagnostics are disabled by default",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_orchestrator",
+        "latka_jazn.core.turn_pipeline_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_tpa_2_live_optin_layout_qt.py::test_live_optin_is_reachable_inside_collapsed_environment_settings": {
+      "path": "tests/test_tpa_2_live_optin_layout_qt.py",
+      "name": "test_live_optin_is_reachable_inside_collapsed_environment_settings",
+      "purpose": "Live optin is reachable inside collapsed environment settings",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_tpa_2_live_proof.py::test_incomplete_live_evidence_is_not_confirmed_success": {
       "path": "tests/test_tpa_2_live_proof.py",
       "name": "test_incomplete_live_evidence_is_not_confirmed_success",
@@ -61353,6 +61521,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 32
+    },
+    "tests/test_tpa_2_regression_only.py::test_full_catalog_regression_only_has_22_subtests_and_no_live": {
+      "path": "tests/test_tpa_2_regression_only.py",
+      "name": "test_full_catalog_regression_only_has_22_subtests_and_no_live",
+      "purpose": "Full catalog regression only has 22 subtests and no live",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_tpa_2_regression_only.py::test_explicit_live_mode_keeps_canonical_dependencies": {
+      "path": "tests/test_tpa_2_regression_only.py",
+      "name": "test_explicit_live_mode_keeps_canonical_dependencies",
+      "purpose": "Explicit live mode keeps canonical dependencies",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_tpa_2_regression_only.py::test_regression_only_plan_is_durable_and_resumes_without_live": {
+      "path": "tests/test_tpa_2_regression_only.py",
+      "name": "test_regression_only_plan_is_durable_and_resumes_without_live",
+      "purpose": "Regression only plan is durable and resumes without live",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_tpa_2_regression_only.py::test_tampered_plan_mode_cannot_smuggle_in_live_tasks": {
+      "path": "tests/test_tpa_2_regression_only.py",
+      "name": "test_tampered_plan_mode_cannot_smuggle_in_live_tasks",
+      "purpose": "Tampered plan mode cannot smuggle in live tasks",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
     },
     "tests/test_tpa_2_source_execution_qt.py::test_real_source_preparation_and_child_test_are_persisted": {
       "path": "tests/test_tpa_2_source_execution_qt.py",
@@ -61517,6 +61747,83 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 110
+    },
+    "tests/test_tpa_2_wizard_projection.py::test_premerge_wizard_defers_live_and_never_invents_pass": {
+      "path": "tests/test_tpa_2_wizard_projection.py",
+      "name": "test_premerge_wizard_defers_live_and_never_invents_pass",
+      "purpose": "Premerge wizard defers live and never invents pass",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 6
+    },
+    "tests/test_tpa_2_wizard_projection.py::test_current_verified_acceptance_only_is_skipped": {
+      "path": "tests/test_tpa_2_wizard_projection.py",
+      "name": "test_current_verified_acceptance_only_is_skipped",
+      "purpose": "Current verified acceptance only is skipped",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_tpa_2_wizard_projection.py::test_explicit_live_option_only_changes_queue_not_evidence": {
+      "path": "tests/test_tpa_2_wizard_projection.py",
+      "name": "test_explicit_live_option_only_changes_queue_not_evidence",
+      "purpose": "Explicit live option only changes queue not evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_tpa_2_wizard_qt.py::test_wizard_starts_from_first_pending_and_moves_without_approving": {
+      "path": "tests/test_tpa_2_wizard_qt.py",
+      "name": "test_wizard_starts_from_first_pending_and_moves_without_approving",
+      "purpose": "Wizard starts from first pending and moves without approving",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_tpa_2_wizard_qt.py::test_live_plan_requires_opt_in_and_selected_model": {
+      "path": "tests/test_tpa_2_wizard_qt.py",
+      "name": "test_live_plan_requires_opt_in_and_selected_model",
+      "purpose": "Live plan requires opt in and selected model",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",
