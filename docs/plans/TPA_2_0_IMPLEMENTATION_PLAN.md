@@ -10,6 +10,14 @@ hash tożsamości SYSTEM, oddzielenie danych redagowanych od pól strukturalnych
 oraz nowe testy kolizji redaktora. Wyniki CI tej poprawki nie są jeszcze dowodem
 PASS; metadane wydania wymagają ostatecznej kanonicznej synchronizacji.
 
+Kod P3 dodano do `tpa_view.py` i `tpa_wizard.py`: sekwencyjny przegląd
+niepotwierdzonych odbiorów, liczniki aktualnych `full PASS` oraz wznowienie
+na podstawie zapisanych dowodów. Zapisy odbiorów przechodzą przez istniejącą
+walidację `record_observation` z hashami dowodów; sam kreator nie nadaje PASS.
+Domyślny plan ma 22 podtesty regresyjne i zero operacji live. Włączenie live
+wymaga jawnej decyzji oraz dostępnego modelu.
+**Kod P3 oczekuje na uruchomione CI i rzeczywisty odbiór ergonomii UI**.
+
 Decyzja operatorska: **rzeczywiste dwie tury Ollama oraz pełne próby
 Ollama/reconnect/resume/restart wykonać po merge do master**, nie jako warunek
 wcześniejszego ukończenia P3 i poprawek kodu. Przed merge wymagane są testy
@@ -17,7 +25,8 @@ syntetyczne, GUI tam gdzie dostępne, regresje, audyt źródeł, dowody CI oraz
 jawny wykaz odroczonych odbiorów jako NOT_RUN/BLOCKED (nigdy PASS).
 TPA: 149 passed, 1 skipped; package-smoke system: 15/15; metadane sprawdzone
 niezależnie. Szersza regresja: 3539 passed, 31 skipped, 1 failed (HTTP MCP
-framing). Etap IV / kreator P3 oraz rzeczywiste odbiory pozostają nieukończone.
+framing) dla starego checkpointu .46. W .47 powstał kod kreatora P3;
+walidacja CI, testy fizyczne i odbiory live pozostają nieukończone.
 Szczegółowe dowody i prompt wznowienia zawiera TPA_2_0_CHECKPOINT.md.
 
 1. **P0 / etap I**: niezmienne rewizje raportów, odzyskanie po przerwaniu zapisu,
