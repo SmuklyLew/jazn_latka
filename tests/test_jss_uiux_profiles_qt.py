@@ -7,6 +7,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 from PySide6.QtWidgets import QScrollArea
+from PySide6.QtGui import QPalette
 
 from tests.test_jazn_run_studio_layout import window
 from tools.jazn_run_studio.core import load_settings
@@ -27,7 +28,7 @@ def test_toolbar_selection_persists_and_does_not_operate_services(window, theme:
     assert "niezweryfikowany" in window.workbench_status.text()
     assert window.style_selector.accessibleName()
     assert window.current_section.text() == "Pulpit"
-    assert window.palette().color(window.palette().ColorRole.Window).name().lower() == (
+    assert window.palette().color(QPalette.ColorRole.Window).name().lower() == (
         workbench_colors(theme, window.core.settings.accent).background.lower()
     )
 
