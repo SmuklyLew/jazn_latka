@@ -16,7 +16,7 @@ STATES = (("PASS — operator potwierdził", "passed"),
           ("FAIL — problem", "failed"), ("BLOKADA — nie da się wykonać", "blocked"))
 
 
-class LocalAcceptancePanel(QWidget):
+class LegacyAcceptanceNotes(QWidget):
     """Operator acceptance with isolated optional regression subchecks."""
 
     def __init__(self, root: Path, parent: QWidget | None = None, *, python: str = "") -> None:
@@ -252,3 +252,8 @@ class LocalAcceptancePanel(QWidget):
         self.custom_steps.clear()
         self.custom_expected.clear()
         self.refresh()
+
+
+# Public import remains compatible. The historical notes widget is retained for
+# readers of old operator records; the application uses the executable workbench.
+from .tpa_view import TPAPanel as LocalAcceptancePanel

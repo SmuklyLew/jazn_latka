@@ -1,3 +1,22 @@
+# v116.0.34.94.6.37: Close owned PTY, controlling POSIX tty, verified release TPA source without Git.
+# v116.0.34.94.6.36: Fail-closed TPA triage proof requires matching immutable Git source identity.
+# v116.0.34.94.6.35: TPA read-only local operator triage (new/repeat/outdated) and explicit P2–P5 acceptance queue.
+# v116.0.34.94.6.34: PTY initial/resize and safe restart; runtime status requires verified ROOT and version.
+# v116.0.34.94.6.33: Grounded operator status indicators, compact service rows.
+# v116.0.34.94.6.32: Avoid QWidget.screen collision and type terminal Qt keys correctly.
+# v116.0.34.94.6.31: Persist sixth operator PTY tab safely in bounded layout v3.
+# v116.0.34.94.6.30: Local opt-in owned PTY/ConPTY panel, no daemon ownership changes.
+# v116.0.34.94.6.29: Shared operator dock, history and unified logs; no runtime authority changes.
+# v116.0.34.94.6.28: Make TPA model choice, receipt typing and BLOCKED exit consistent.
+# v116.0.34.94.6.26: Fix verified TPA cleanup return code and prevent false operator BLOCKED.
+# v116.0.34.94.6.25: Confirm durable request admission before TPA resume and report terminal failures truthfully.
+# v116.0.34.94.6.24: Preserve recovered P1 and keep selected service labels readable in compact rows.
+# v116.0.34.94.6.23: Shared six-profile visual system, command palette and responsive operator workbench.
+# v116.0.34.94.6.22: Validate version-bound contract fields without exempting other release literals.
+# v116.0.34.94.6.21: Bind TPA staging to fresh run capabilities and preserve pre-start validation failures.
+# v116.0.34.94.6.20: Preserve read-only supervisor refresh in Heart System and update the Qt regression contract.
+# v116.0.34.94.6.19: XAMPP-style Heart services console and guarded supervisor diagnostics.
+# v116.0.34.94.6.18: TPA live execution does not auto-approve the human full gate and rejects contradictory nonzero exits.
 # v116.0.34.94.6.14: separate log registration from explicit panel requests and preserve full exports.
 # v116.0.34.94.6.13: operator-friendly diagnostics, no-surprise log panels, safe local readiness scan.
 # v116.0.34.94.6.12: configure first-run Studio, guide actual LLM chat, and separate authenticated MCP exposure.
@@ -155,7 +174,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.14"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.37"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "run-studio-operator-diagnostics"
 PACKAGE_VERSION_FULL = (

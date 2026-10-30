@@ -5,7 +5,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 from tests.test_jazn_run_studio_layout import window
-from tools.jazn_run_studio.core import StudioError
+from tools.jazn_run_studio.core import ACTION_BY_KEY, StudioError
 
 
 def test_refresh_uses_only_read_only_status_and_probe_contracts(window, monkeypatch):
@@ -13,7 +13,9 @@ def test_refresh_uses_only_read_only_status_and_probe_contracts(window, monkeypa
     monkeypatch.setattr(window.core, "start_action", lambda key: observed.append("action:" + key))
     monkeypatch.setattr(window.core, "probe", lambda key: observed.append("probe:" + key))
     window.refresh_services()
-    assert observed == ["action:status", "probe:ollama", "probe:gateway"]
+    assert observed == ["action:status", "action:supervisor", "probe:ollama", "probe:gateway"]
+    assert not ACTION_BY_KEY["status"].mutates
+    assert not ACTION_BY_KEY["supervisor"].mutates
     assert "Nie skonfigurowano" in window.dashboard_statuses["cloudflare"].text()
 
 
