@@ -30,10 +30,25 @@ class WorkbenchColors:
 
 def _base_colors(theme: str, accent: str, *, system_dark: bool = False) -> WorkbenchColors:
     """Choose readable, restrained colors without inspecting live services."""
-    if theme not in {"violet-night", "system", "light", "dark", "purple", "custom"}:
+    if theme not in {key for _, key in THEME_CHOICES}:
         raise ValueError("Nieznany motyw Studio")
     if len(accent) != 7 or accent[0] != "#" or any(c not in "0123456789abcdefABCDEF" for c in accent[1:]):
         raise ValueError("Kolor akcentu wymaga formatu #RRGGBB")
+    if theme == "technical-workbench":
+        return WorkbenchColors(
+            "#141A23", "#1B2430", "#202A36", "#263342",
+            "#314053", "#465568", "#F5F8FC", "#BFCDD9", "#5BA5F5", "#0B1A2B"
+        )
+    if theme == "operations-studio":
+        return WorkbenchColors(
+            "#111C21", "#172931", "#1C3038", "#25414B",
+            "#30535F", "#47636B", "#F2FAFC", "#BBD0D7", "#5CD4C2", "#071D22"
+        )
+    if theme == "fluent-studio":
+        return WorkbenchColors(
+            "#171E2B", "#1F2938", "#253347", "#2D3F55",
+            "#38516B", "#50657B", "#F6F9FC", "#C1CFDE", "#86B6FF", "#122034"
+        )
     if theme == "violet-night":
         return WorkbenchColors(
             "#11101C", "#1B172A", "#1B172A", "#242034",
@@ -73,6 +88,45 @@ class WorkbenchMetrics:
 METRICS = WorkbenchMetrics()
 
 
+@dataclass(frozen=True)
+class ThemeProfile:
+    """Pure, serializable appearance definition; no runtime or service access."""
+    key: str
+    label: str
+    description: str
+    metrics: WorkbenchMetrics
+
+
+DEFAULT_WORKBENCH_THEME = "technical-workbench"
+WORKBENCH_PROFILES = (
+    ThemeProfile("technical-workbench", "Technical Workbench",
+                 "Ciemny, zwarty układ dla kodu, testów i diagnostyki.",
+                 WorkbenchMetrics(body_points=9, small_points=8, heading_points=16,
+                                  control_height=24, gap=5, page_margin=12, row_height=27, radius=3)),
+    ThemeProfile("operations-studio", "Operations Studio",
+                 "Czytelny panel usług, monitorowania i operacji.",
+                 WorkbenchMetrics(body_points=10, small_points=9, heading_points=18,
+                                  control_height=30, gap=8, page_margin=18, row_height=36, radius=6)),
+    ThemeProfile("fluent-studio", "Fluent Studio",
+                 "Spokojniejszy układ z przestrzenią i łagodnymi krawędziami.",
+                 WorkbenchMetrics(body_points=10, small_points=9, heading_points=19,
+                                  control_height=34, gap=10, page_margin=22, row_height=40, radius=9)),
+)
+LEGACY_THEMES = ("violet-night", "system", "light", "dark", "purple", "custom")
+THEME_CHOICES = tuple((p.label, p.key) for p in WORKBENCH_PROFILES) + tuple(
+    (key, key) for key in LEGACY_THEMES
+)
+
+
+def workbench_metrics(theme: str) -> WorkbenchMetrics:
+    return next((profile.metrics for profile in WORKBENCH_PROFILES if profile.key == theme), METRICS)
+
+
+def theme_label(theme: str) -> str:
+    return next((label for label, key in THEME_CHOICES if key == theme), theme)
+
+
+
 def contrast_ratio(first: str, second: str) -> float:
     def luminance(color: str) -> float:
         values = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
@@ -95,8 +149,9 @@ def workbench_colors(theme: str, accent: str, *, system_dark: bool = False) -> W
 def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) -> str:
     """Shared visual contract for current and future native Qt studios."""
     c = workbench_colors(theme, accent, system_dark=system_dark)
+    metrics = workbench_metrics(theme)
     return f"""
-        QWidget {{ background: {c.background}; color: {c.text}; font-size: {METRICS.body_points}pt; }}
+        QWidget {{ background: {c.background}; color: {c.text}; font-size: {metrics.body_points}pt; }}
         QLabel {{ background: transparent; }}
         QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 2px solid {c.border}; }}
         QWidget#workbenchTopbar {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {c.editor}, stop:1 {c.sidebar}); border-bottom: 1px solid {c.border}; }}
@@ -105,14 +160,14 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             color: {c.muted}; font-size: 12px;
         }}
         QLabel#workbenchSection {{ font-size: 17px; font-weight: 600; }}
-        QLabel#heading {{ font-size: {METRICS.heading_points}pt; font-weight: 600; padding-bottom: 4px; }}
+        QLabel#heading {{ font-size: {metrics.heading_points}pt; font-weight: 600; padding-bottom: 4px; }}
         QScrollArea {{ background: {c.editor}; border: 0; }}
         QScrollArea > QWidget > QWidget {{ background: {c.editor}; }}
         QListWidget#workbenchNavigation {{
             background: {c.sidebar}; border: 0; padding: 8px 4px;
         }}
         QListWidget#workbenchNavigation::item {{
-            border-radius: 3px; margin: 1px 2px; padding: 7px 8px;
+            border-radius: {metrics.radius}px; margin: 1px 2px; padding: {metrics.gap}px 8px;
         }}
         QListWidget#workbenchNavigation::item:hover {{ background: {c.hover}; }}
         QListWidget#workbenchNavigation::item:selected {{
@@ -120,7 +175,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
         }}
         QPushButton {{
             background: {c.surface}; border: 1px solid {c.border};
-            border-radius: {METRICS.radius}px; min-height: {METRICS.control_height}px; padding: 3px 8px;
+            border-radius: {metrics.radius}px; min-height: {metrics.control_height}px; padding: 3px 8px;
         }}
         QPushButton:hover {{ background: {c.hover}; border-color: {c.accent}; }}
         QPushButton:focus, QListWidget:focus, QTabBar::tab:focus,
@@ -140,11 +195,11 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
         QTabWidget::pane {{ border: 1px solid {c.border}; background: {c.editor}; }}
         QTabBar::tab {{
             background: {c.sidebar}; border: 1px solid {c.border};
-            border-bottom: 0; padding: 7px 14px; margin-right: 2px;
+            border-bottom: 0; padding: {metrics.gap + 2}px 14px; margin-right: 2px;
         }}
         QTabBar::tab:selected {{
             background: {c.editor}; border-top: 2px solid {c.accent};
-            padding-top: 6px;
+            padding-top: {metrics.gap + 1}px;
         }}
         QTabBar::tab:hover {{ background: {c.hover}; }}
         QTableWidget {{
