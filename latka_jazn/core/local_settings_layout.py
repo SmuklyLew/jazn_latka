@@ -37,8 +37,14 @@ def verify_local_descendant(path: Path, layout: LocalSettingsLayout) -> Path:
         current = current / part
         if _redirected(current):
             raise ValueError("Local settings descendant is redirected")
+    # Compare canonical paths on both sides. On Windows an already-created
+    # descendant may be resolved through a physical volume/mount spelling
+    # while its parent was constructed lexically during concurrent creation.
+    # The redirect checks above still reject links/junctions on every
+    # descendant; comparing an unresolved parent is not a security boundary.
+    resolved_root = layout.local.resolve()
     resolved = raw.resolve()
-    if not resolved.is_relative_to(layout.local):
+    if not resolved.is_relative_to(resolved_root):
         raise ValueError("Local settings path resolves outside its root")
     return resolved
 

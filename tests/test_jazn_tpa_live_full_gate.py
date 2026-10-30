@@ -27,7 +27,13 @@ def test_live_result_requires_zero_child_exit_and_separate_human_gate(tmp_path, 
     runner.started = time.monotonic()
     runner.reason = ""
     runner.live_exit_code = exit_code
-    runner.live_result = {"status": "PASS", "reason": "Synthetic accepted turn result"}
+    turns = [{"accepted": True, "request_id": f"request-{n}", "turn_id": f"turn-{n}",
+              "trace_id": f"trace-{n}", "text": "Synthetic accepted text"} for n in range(2)]
+    runner.live_result = {"status": "PASS", "reason": "Synthetic accepted turn result", "evidence": {
+        "identity": {"instance_id": "synthetic-owned", "root_matches": True, "version_matches": True,
+                     "process_identity_confirmed": True, "endpoint_identity_matches": True, "heartbeat_fresh": True},
+        "session_id": "synthetic-session", "turns": turns,
+        "displayed_request_ids": [t["request_id"] for t in turns]}}
     runner.cleanup_result = {"ok": True}
     runner.log_name = "ollama-two-turns.log"
     runner.buffer = "Synthetic test evidence, no real service called.\n"

@@ -116,6 +116,9 @@ def test_human_observation_keeps_regression_result_and_append_only_evidence(stor
     report["finished_utc"] = "finished"
     row = report["results"][0]
     row["status"] = "PASS"
+    row.update(junit="config-persistence.xml", exit_code=0)
+    safe_child(store.folder(report["run_id"]), row["junit"]).write_text('<testcase name="synthetic_config"/>', encoding="utf-8")
+    report["artifacts"].append(row["junit"])
     proof = "example.txt"
     safe_child(store.folder(report["run_id"]), proof).write_text("Observed save/reopen and CAS refusal", encoding="utf-8")
     report["artifacts"].append(proof)

@@ -5,13 +5,17 @@ duplicate runtime lifecycle. The PTY slave is already stdin/out/err.
 """
 from __future__ import annotations
 
-import fcntl
 import os
 import sys
-import termios
+
+if sys.platform != "win32":
+    import fcntl
+    import termios
 
 
 def main() -> int:
+    if sys.platform == "win32":
+        raise RuntimeError("POSIX PTY bootstrap is unavailable on Windows")
     if len(sys.argv) < 2 or not os.isatty(0):
         raise RuntimeError("PTY slave and a shell are required")
     # Popen has already called setsid() in this fresh child process.
