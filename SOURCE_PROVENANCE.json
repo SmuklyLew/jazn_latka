@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "decd52a642223391d960f5cab6cded64e5d2143a",
-  "base_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
-  "commit_date": "2026-10-30T03:52:15Z",
+  "base_merge_commit": "16186b5a707a35f8b77070f121bc95dda7f60d10",
+  "base_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics",
+  "commit_date": "2026-10-30T04:03:54Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-30T03:52:15+00:00",
+  "generated_at_utc": "2026-10-30T04:03:54+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "60de5f9ac63b0ddd4ef2cc5e89ac9a2012c931df",
+  "git_tree_sha": "aba24da4c3a57339bb23636ea8503db0e92ad981",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.14-run-studio-operator-diagnostics",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "decd52a642223391d960f5cab6cded64e5d2143a",
-    "source_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics"
+    "source_commit": "16186b5a707a35f8b77070f121bc95dda7f60d10",
+    "source_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "release_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "decd52a642223391d960f5cab6cded64e5d2143a",
+  "source_commit": "16186b5a707a35f8b77070f121bc95dda7f60d10",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "source_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.24-run-studio-operator-diagnostics",
+  "update_version": "16.3.25.5.116.0.34.94.6.25-run-studio-operator-diagnostics",
   "version_source": "latka_jazn/version.py"
 }
