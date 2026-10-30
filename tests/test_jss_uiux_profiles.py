@@ -41,6 +41,8 @@ def test_color_and_accessibility_of_new_styles(theme: str) -> None:
     for surface in (colors.background, colors.sidebar, colors.editor):
         assert contrast_ratio(colors.text, surface) >= 4.5
         assert contrast_ratio(colors.muted, surface) >= 4.5
+    for surface in (colors.background, colors.sidebar, colors.surface, colors.hover):
+        assert contrast_ratio(colors.border, surface) >= 3
     assert contrast_ratio(colors.selected_text, colors.accent) >= 4.5
     assert contrast_ratio(colors.focus, colors.background) >= 3
     for status in (colors.success, colors.warning, colors.error):
