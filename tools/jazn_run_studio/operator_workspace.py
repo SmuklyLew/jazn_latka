@@ -68,6 +68,7 @@ class OperatorWorkspace:
         self.observations: dict[str, dict[str, Any]] = {}
         self.failures: dict[str, dict[str, Any]] = {}
         self.completed = 0
+        self.dock_height = 300  # operator-resizable height, not a fixed pane
         self.dock = QDockWidget("Narzędzia operatora", window)
         self.dock.setObjectName("heartOperatorDock")
         self.dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
@@ -88,6 +89,8 @@ class OperatorWorkspace:
     def dock_visibility_changed(self, visible: bool) -> None:
         if visible and not self.host.unified_operator_mode:
             self.host.set_logs_visible(False)
+        if not visible and self.dock.height() >= 180:
+            self.dock_height = min(3000, self.dock.height())
 
     def _problems(self) -> None:
         panel = QWidget()
@@ -304,13 +307,19 @@ class OperatorWorkspace:
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 
     def show(self, tab: int = 0) -> None:
+        was_visible = self.dock.isVisible()
+        if was_visible and self.dock.height() >= 180:
+            self.dock_height = min(3000, self.dock.height())
         self.dock.show()
         self.dock.raise_()
         self.tabs.setCurrentIndex(tab)
-        # Do not stack two independent log panes across the entire viewport.
         if not self.host.unified_operator_mode:
             self.host.set_logs_visible(False)
-        self.host.resizeDocks([self.dock], [max(240, self.host.height() // 3)], Qt.Orientation.Vertical)
+        # Only opening a hidden dock sets its remembered height.
+        # Tab switches must not override the operator's manual resize.
+        if not was_visible:
+            requested = min(self.dock_height, max(180, self.host.height() - 180))
+            self.host.resizeDocks([self.dock], [requested], Qt.Orientation.Vertical)
         if tab == 3:
             self.refresh_history()
         elif tab == 4:
