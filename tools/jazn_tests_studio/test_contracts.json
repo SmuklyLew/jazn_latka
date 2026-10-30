@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.36",
-  "active_definition_count": 2957,
+  "system_version": "16.3.25.5.116.0.34.94.6.37",
+  "active_definition_count": 2964,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24955,6 +24955,61 @@
       "description_source": "source_identity",
       "line": 130
     },
+    "tests/test_jazn_operator_pty_cleanup.py::test_controlling_terminal_and_reap": {
+      "path": "tests/test_jazn_operator_pty_cleanup.py",
+      "name": "test_controlling_terminal_and_reap",
+      "purpose": "Controlling terminal and reap",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_jazn_operator_pty_cleanup.py::test_terminates_foreground_child_and_reaps": {
+      "path": "tests/test_jazn_operator_pty_cleanup.py",
+      "name": "test_terminates_foreground_child_and_reaps",
+      "purpose": "Terminates foreground child and reaps",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_jazn_operator_pty_cleanup.py::test_stop_without_spawn_is_idempotent": {
+      "path": "tests/test_jazn_operator_pty_cleanup.py",
+      "name": "test_stop_without_spawn_is_idempotent",
+      "purpose": "Stop without spawn is idempotent",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
     "tests/test_jazn_operator_pty_resize.py::test_resize_before_start_refuses_to_take_over_a_process": {
       "path": "tests/test_jazn_operator_pty_resize.py",
       "name": "test_resize_before_start_refuses_to_take_over_a_process",
@@ -29548,6 +29603,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 30
+    },
+    "tests/test_jazn_tpa_release_identity.py::test_verified_identical_export_can_be_received_without_git": {
+      "path": "tests/test_jazn_tpa_release_identity.py",
+      "name": "test_verified_identical_export_can_be_received_without_git",
+      "purpose": "Verified identical export can be received without git",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_jazn_tpa_release_identity.py::test_missing_verified_manifest_cannot_prove_old_full_gate": {
+      "path": "tests/test_jazn_tpa_release_identity.py",
+      "name": "test_missing_verified_manifest_cannot_prove_old_full_gate",
+      "purpose": "Missing verified manifest cannot prove old full gate",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_jazn_tpa_release_identity.py::test_changed_manifest_cannot_reuse_operator_approval": {
+      "path": "tests/test_jazn_tpa_release_identity.py",
+      "name": "test_changed_manifest_cannot_reuse_operator_approval",
+      "purpose": "Changed manifest cannot reuse operator approval",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_jazn_tpa_release_identity.py::test_forged_release_flag_alone_is_not_enough": {
+      "path": "tests/test_jazn_tpa_release_identity.py",
+      "name": "test_forged_release_flag_alone_is_not_enough",
+      "purpose": "Forged release flag alone is not enough",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
     },
     "tests/test_jazn_tpa_safe_executor.py::test_all_22_operator_cases_remain_manual_gates": {
       "path": "tests/test_jazn_tpa_safe_executor.py",
