@@ -1,0 +1,195 @@
+name: JSS Visual & Integration CI
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - ".github/workflows/jss-visual-integration.yml"
+      - "tools/jazn_run_studio/**"
+      - "tests/test_jss_*.py"
+      - "tests/test_heart_visual_system_qt.py"
+      - "tests/test_jazn_run_studio_layout.py"
+      - "run_studio.py"
+      - "jazn_run_studio.py"
+      - "latka_jazn/version.py"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: jss-visual-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qt-visual:
+    name: Qt visual (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+      JAZN_MEMORY_MODE: "off"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+      JSS_VISUAL_DIR: ${{ runner.temp }}/jss-visual-evidence
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.13"
+      - name: Install GUI extra
+        run: python -m pip install -e ".[run-studio]" pytest
+      - name: Linux Qt shared libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+      - name: Compile runner
+        run: python -m compileall -q tools/jazn_run_studio/visual_ci.py
+      - name: Test UI, configuration, isolation and error handling
+        run: >-
+          python -X utf8 -m pytest -q
+          tests/test_jss_visual_ci_contract.py
+          tests/test_jss_uiux_profiles.py
+          tests/test_jss_uiux_profiles_qt.py
+          tests/test_jazn_run_studio_layout.py
+          tests/test_heart_visual_system_qt.py
+          tests/test_heart_system_dashboard_qt.py
+          tests/test_heart_system_diagnostics.py
+      - name: Capture real Qt screenshots for all three styles
+        run: python -X utf8 -m tools.jazn_run_studio.visual_ci --output "${{ env.JSS_VISUAL_DIR }}"
+      - name: Publish report to job summary
+        if: always()
+        shell: bash
+        run: |
+          if test -f "${JSS_VISUAL_DIR}/report.md"; then
+            cat "${JSS_VISUAL_DIR}/report.md" >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "Visual runner did not produce report.md; check logs." >> "${GITHUB_STEP_SUMMARY}"
+          fi
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jss-visual-${{ runner.os }}-${{ github.sha }}
+          path: |
+            ${{ env.JSS_VISUAL_DIR }}/report.json
+            ${{ env.JSS_VISUAL_DIR }}/report.md
+            ${{ env.JSS_VISUAL_DIR }}/index.html
+            ${{ env.JSS_VISUAL_DIR }}/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Checkout remains unchanged
+        if: always()
+        shell: bash
+        run: |
+          git diff --check
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+  windows-exe:
+    name: Verified Windows EXE and isolated GUI smoke
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+      JAZN_MEMORY_MODE: "off"
+      JAZN_ALLOW_NETWORK: "0"
+      JAZN_DICTIONARY_ALLOW_NETWORK: "0"
+      JAZN_MODEL_ADAPTER: "null"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.13"
+      - name: Install GUI extra and PyInstaller
+        run: python -m pip install -e ".[run-studio]" pyinstaller==6.22.3
+      - name: Build the canonical onedir package
+        shell: pwsh
+        run: |
+          $build = Join-Path $env:RUNNER_TEMP 'jss-exe-build'
+          python -X utf8 tools/jazn_run_studio/build.py --output $build
+          if ($LASTEXITCODE -ne 0) { throw 'EXE build failed' }
+      - name: Verify bundle and smoke in synthetic SYSTEM
+        shell: pwsh
+        run: |
+          $build = Join-Path $env:RUNNER_TEMP 'jss-exe-build'
+          $bundle = Join-Path $build 'dist/JaznRunStudio'
+          $exe = Join-Path $bundle 'JaznRunStudio.exe'
+          python -c "from pathlib import Path; from tools.jazn_run_studio.p5_artifact_evidence import verify_frozen_bundle_manifest as verify; import sys; sys.exit(0 if verify(Path(sys.argv[1]))[0] else 1)" $bundle
+          if ($LASTEXITCODE -ne 0) { throw 'Bundle manifest invalid' }
+          if (-not (Test-Path $exe -PathType Leaf)) { throw 'EXE missing' }
+          $root = Join-Path $env:RUNNER_TEMP 'jss-exe-synthetic-root'
+          New-Item -ItemType Directory -Force (Join-Path $root 'latka_jazn') | Out-Null
+          foreach ($p in @('main.py', 'run.py', 'latka_jazn/version.py')) {
+            Set-Content -Path (Join-Path $root $p) -Value '# CI only: no runtime'
+          }
+          $env:JAZN_ROOT = $root
+          $env:JAZN_RUNTIME_WORKSPACE_DIR = Join-Path $env:RUNNER_TEMP 'jss-exe-workspace'
+          $env:JAZN_OPERATOR_STATE_ROOT = Join-Path $env:RUNNER_TEMP 'jss-exe-operator'
+          $env:JAZN_MEMORY_ROOT = Join-Path $env:RUNNER_TEMP 'jss-exe-memory-disabled'
+          $env:JAZN_STUDIO_PYTHON = (Get-Command python).Source
+          $proc = Start-Process -FilePath $exe -ArgumentList '--gui-smoke' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(45000)) { $proc.Kill(); throw 'GUI smoke timeout' }
+          if ($proc.ExitCode -ne 0) { throw "GUI smoke failed: $($proc.ExitCode)" }
+          @{
+            schema = 'jss_windows_exe_ci/v1'
+            status = 'PASS'
+            executable = 'JaznRunStudio.exe'
+            size_bytes = (Get-Item $exe).Length
+            sha256 = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+            synthetic_system = $true
+            memory_mode = 'off'
+            manifest_verified = $true
+            gui_smoke_exit_code = $proc.ExitCode
+          } | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $build 'exe-report.json') -Encoding utf8
+      - name: Publish EXE report
+        if: always()
+        shell: pwsh
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'jss-exe-build/exe-report.json'
+          if (Test-Path $report) {
+            Get-Content $report | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          } else {
+            'Build or GUI smoke failed; see previous steps.' | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
+      - name: Upload Windows test EXE and integrity report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jss-Windows-test-EXE-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/jss-exe-build/dist/JaznRunStudio/
+            ${{ runner.temp }}/jss-exe-build/exe-report.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  gate:
+    name: JSS visual and integration gate
+    if: always()
+    needs: [qt-visual, windows-exe]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require both visual matrix and EXE PASS
+        shell: bash
+        env:
+          VISUAL_RESULT: ${{ needs.qt-visual.result }}
+          EXE_RESULT: ${{ needs.windows-exe.result }}
+        run: |
+          {
+            echo "## JSS Visual & Integration CI"
+            echo "| Qt Windows/Linux | ${VISUAL_RESULT} |"
+            echo "| Verified Windows EXE | ${EXE_RESULT} |"
+            echo "Synthetic SYSTEM only; MEMORY=off; no production daemon."
+          } >> "${GITHUB_STEP_SUMMARY}"
+          test "${VISUAL_RESULT}" = "success" && test "${EXE_RESULT}" = "success"
