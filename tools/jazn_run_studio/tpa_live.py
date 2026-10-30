@@ -17,6 +17,7 @@ from uuid import uuid4
 
 from .chat import ChatClient
 from .core import Controller, Settings
+from .external import run as run_external
 from .probes import ollama
 from .tpa_catalog import LIVE_CASES, TARGETS, scenario
 from .tpa_reports import redact
@@ -110,6 +111,38 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     return next((v for _, kind, v in seen if kind == "evidence"), {})
 
 
+def await_daemon_receipt(core: Controller, client: ChatClient, request_id: str, tick, *, timeout_seconds: float = 45.0) -> dict:
+    """Prove daemon-side admission before intentionally killing the transport.
+
+    A flushed stdin pipe is not an acknowledgement that a request exists in the
+    durable daemon job store. Poll only the original request_id; never replay
+    the user's text. The read-only daemon-result command does not consume or
+    acknowledge the final, which remains bound to the GUI's eventual ACK.
+    """
+    until = time.monotonic() + timeout_seconds
+    attempts = 0
+    while time.monotonic() < until:
+        tick()
+        attempts += 1
+        try:
+            probe = run_external(client.resume_command(request_id), cwd=core.root, timeout=12)
+            response = json.loads(probe.stdout)
+        except (OSError, ValueError, TimeoutError) as exc:
+            raise ValueError("Nie można zweryfikować przyjęcia tury: " + type(exc).__name__) from exc
+        if not isinstance(response, dict) or response.get("request_id") != request_id:
+            raise ValueError("Odpowiedź daemona nie jest związana z request_id")
+        if response.get("accepted") is True and response.get("job_status") in {
+            "queued", "running", "awaiting_host_finalization", "completed",
+        }:
+            return {"request_id": request_id, "job_status": response["job_status"],
+                    "confirmed": True, "probe_attempts": attempts}
+        if response.get("error_code") != "chat_job_not_found":
+            raise ValueError("Daemon odrzucił potwierdzenie tury: "
+                             + str(response.get("error_code") or response.get("job_status") or "unexpected_result"))
+        time.sleep(0.15)
+    raise TimeoutError("Daemon nie potwierdził przyjęcia oryginalnego request_id")
+
+
 def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) -> dict:
     if case_id not in LIVE_CASES or folder.is_symlink() or any(folder.iterdir()):
         raise ValueError("Odbiór wymaga nowego własnego katalogu i znanego scenariusza")
@@ -177,7 +210,11 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                 if pending_poll is None or pending_poll.done.is_set():
                     client.resume()  # Same durable request, never resend text.
                     last_poll = time.monotonic()
-            for _, kind, value in drain(core):
+            for source, kind, value in drain(core):
+                if resume and source == "chat:resume" and kind == "state" and isinstance(value, dict):
+                    if value.get("state") == "failed":
+                        raise ValueError("Wznowienie request_id zakończyło się błędem: "
+                                         + str(value.get("error") or "resume_failed"))
                 if kind == "chat_final":
                     frame({"event": "accepted_final", **value})
                     ack = json.loads(sys.stdin.readline())
@@ -208,6 +245,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
             code = "TPA" + uuid4().hex[:8].upper()
             request = client.send("Zapamiętaj na potrzeby tej testowej rozmowy kod " + code + ". Potwierdź krótko.")
             if case_id == "chat-resume":
+                evidence["admission"] = await_daemon_receipt(core, client, request, tick)
                 disconnect(client)
                 value = final(client, resume=True)
                 if value["request_id"] != request:
@@ -288,7 +326,7 @@ def main() -> int:
     else:
         result = exercise(args.root, folder, args.case, sys.executable, args.model)
     frame({"event": "result", **result})
-    return 0
+    return 0 if result.get("status") == "PASS" else 1
 
 
 def sandbox(root: Path, folder: Path, case_id: str, python: str, model: str) -> dict:
