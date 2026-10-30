@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -84,8 +85,34 @@ class PlanStore:
         folder = self.folder(plan["plan_id"])
         folder.mkdir(parents=True, exist_ok=True)
         plan["saved_utc"] = utc()
-        plan["system_root"] = str(self.runs.root)
-        clean = redact(plan, self.runs.redactor)
+        # Bind the checkpoint to the canonical system without storing its
+        # potentially sensitive absolute path. This remains stable if a new
+        # process has a different environment/redaction secret list.
+        plan["system_root"] = self._root_binding()
+        clean = deepcopy(plan)
+        # Redact externally influenced content only. Redacting public schema
+        # names, dependencies or status identifiers makes checkpoints
+        # unreadable when an environment secret matches one of those strings.
+        for key in ("model", "source_copy", "source_identity"):
+            if key in clean:
+                clean[key] = redact(clean[key], self.runs.redactor)
+        if isinstance(clean.get("source_request"), dict):
+            clean["source_request"] = {
+                key: (value if key == "kind" else redact(value, self.runs.redactor))
+                for key, value in clean["source_request"].items()
+            }
+        for task in clean.get("tasks", []):
+            if isinstance(task, dict):
+                for key in tuple(task):
+                    if key not in {"id", "case_id", "execution", "depends_on",
+                                   "status", "run_id", "started_utc", "finished_utc"}:
+                        task[key] = redact(task[key], self.runs.redactor)
+        for key in tuple(clean):
+            if key not in {"schema", "plan_id", "system_root", "created_utc",
+                           "saved_utc", "finished_utc", "owner_pid", "status",
+                           "assisted", "timeouts", "tasks", "source_request",
+                           "model", "source_copy", "source_identity"}:
+                clean[key] = redact(clean[key], self.runs.redactor)
         path = safe_child(folder, "checkpoint-" + uuid4().hex + ".json")
         temporary = safe_child(folder, path.name + ".tmp")
         with temporary.open("x", encoding="utf-8", newline="\n") as stream:
@@ -95,6 +122,9 @@ class PlanStore:
             os.fsync(stream.fileno())
         os.rename(temporary, path)
 
+    def _root_binding(self) -> str:
+        return "sha256:" + sha256(str(self.runs.root).encode("utf-8")).hexdigest()
+
     def load(self, plan_id: str) -> dict:
         checkpoints = []
         for path in self.folder(plan_id).glob("checkpoint-*.json"):
@@ -103,7 +133,8 @@ class PlanStore:
                 raise ValueError("Checkpoint planu przekracza limit")
             value = json.loads(path.read_text(encoding="utf-8"))
             if (not isinstance(value, dict) or value.get("schema") != "jazn_tpa_execution_plan/v1"
-                    or value.get("plan_id") != plan_id or value.get("system_root") != str(self.runs.root)
+                    or value.get("plan_id") != plan_id
+                    or value.get("system_root") not in {self._root_binding(), str(self.runs.root)}
                     or not isinstance(value.get("saved_utc"), str) or not isinstance(value.get("tasks"), list)
                     or not isinstance(value.get("source_request"), dict)
                     or not isinstance(value["source_request"].get("kind"), str)
