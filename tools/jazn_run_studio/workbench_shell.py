@@ -90,6 +90,7 @@ class WorkbenchShell(QObject):
         for profile in WORKBENCH_PROFILES:
             self.command("Widok", "Styl JSS: " + profile.label,
                          lambda key=profile.key: host.select_style(key))
+        self.command("Widok", "Stany serwera / Runtime / MCP / Ollama…", host.open_service_status)
         self.command("Widok", "Problemy", lambda: host.workspace.show(0))
         self.command("Widok", "Output / Logi", lambda: host.workspace.show(1))
         self.command("Widok", "Ostatni panel narzędzi", lambda: host.workspace.show(
