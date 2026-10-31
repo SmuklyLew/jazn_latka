@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-  "package_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-  "generated_at_utc": "2026-10-31T16:42:41+00:00",
-  "updated_at_utc": "2026-10-31T16:42:41+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "generated_at_utc": "2026-10-31T19:25:04+00:00",
+  "updated_at_utc": "2026-10-31T19:25:04+00:00",
   "start_file": "run.py",
-  "file_count": 3578,
-  "static_file_count": 3578,
+  "file_count": 3579,
+  "static_file_count": 3579,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3012,
-      "sha256": "c8393cff9a4c141a28329d9edbf719d56ba2ed0afd43707e56cddd9034171c82",
+      "size_bytes": 3049,
+      "sha256": "ab828610be37c0cb671b6bb71e23af04f09d0295f391aad5c47f2ff6a81eaf56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1953,
-      "sha256": "aaf928075dc09d11519f90b3dcf689fd4a2f2d3e7e47ce760de4a4504f5fc3c8",
+      "size_bytes": 1960,
+      "sha256": "045d74ec1215f48cb422203197d3e1150a91eb0ca84e53ca76eff226f397ac55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9860,7 +9860,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "e90de031219f41bb4ac5ed913af12a86e72f2839397150f99d69bcf339bd9547",
+      "sha256": "66fcf0a64e92feec59d84b7fbe46d0bc4da23e72b6ff07434f495cfc2ddfd329",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21724,
-      "sha256": "8653b79a417578b472d43af37319a7263fa2406edfb2d11c345830db9fd56f16",
+      "size_bytes": 21870,
+      "sha256": "963bd564b85682487033632a35a852bcfb67d794f9f6e4a09f9be4c92cae0678",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23781,6 +23781,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.51-pre-pdf-operator-contract/test_plugin_operator_convergence.py",
+      "size_bytes": 2914,
+      "sha256": "d4c11487e5df9335c62bbe7a308e525bf15a09d9b11f0dbb7ca1a2fe393d740c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -29741,7 +29750,7 @@
     {
       "path": "tests/test_plugin_operator_convergence.py",
       "size_bytes": 2914,
-      "sha256": "d4c11487e5df9335c62bbe7a308e525bf15a09d9b11f0dbb7ca1a2fe393d740c",
+      "sha256": "b14b6bf71e0d2ed30077cab07241bc1fcfebfd8d46cf8e003ae523ce50231b92",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32000,7 +32009,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2693710,
-      "sha256": "7f5c464c6815d80228efc752361bb790c5a19d837e87e9075b77d06b2104b6b0",
+      "sha256": "9955b44540f333b525de4cea1f39bcf825f7602c650814c2c622962f1624c168",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32657,11 +32666,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+  "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-    "package_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-    "release_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
