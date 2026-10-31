@@ -1308,7 +1308,7 @@ class Window(QMainWindow):
     def open_service_status(self) -> None:
         """Display the read-only, non-modal service indicators."""
         if self.service_status_dialog is None:
-            self.service_status_dialog = ServiceStatusDialog(self)
+            self.service_status_dialog = ServiceStatusDialog(self, lambda: self.guard(self.refresh_services))
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
