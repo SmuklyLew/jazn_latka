@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.50",
+  "system_version": "16.3.25.5.116.0.34.94.6.51",
   "active_definition_count": 3025,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -47391,26 +47391,26 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 14
     },
     "tests/test_pdf_dependency_capability_convergence.py::test_release_locks_follow_explicit_core_archive_pdf_profile": {
       "path": "tests/test_pdf_dependency_capability_convergence.py",
       "name": "test_release_locks_follow_explicit_core_archive_pdf_profile",
       "purpose": "Release locks follow explicit core archive pdf profile",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "archive"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.dependencies.runtime"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 38
     },
     "tests/test_pdf_dependency_capability_convergence.py::test_dependency_block_message_names_only_activation_required_core": {
       "path": "tests/test_pdf_dependency_capability_convergence.py",
@@ -47427,7 +47427,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 61
     },
     "tests/test_pending_host_request_continuity.py::test_completed_daemon_presentation_reuses_persisted_phase_one": {
       "path": "tests/test_pending_host_request_continuity.py",
