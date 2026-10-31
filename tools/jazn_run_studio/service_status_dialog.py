@@ -10,7 +10,7 @@ from typing import Any, TYPE_CHECKING
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
+    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
 )
 
 if TYPE_CHECKING:
