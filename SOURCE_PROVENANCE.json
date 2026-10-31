@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
-  "base_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "commit_date": "2026-10-30T22:33:11Z",
+  "base_merge_commit": "805990bb61eb5fe0ed8c3332496da46cfc9eb987",
+  "base_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "commit_date": "2026-10-31T19:25:04Z",
   "dirty": false,
-  "generated_at_utc": "2026-10-30T22:33:11+00:00",
+  "generated_at_utc": "2026-10-31T19:25:04+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "26330323e41aabe6a834b7a00df9bfc44ce7b995",
+  "git_tree_sha": "beab5fdc9925867416cea9987cc0e66b457cb749",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
+    "base_commit": "21fec93774794c66158a7da86f6ad49f3f2b70c9",
     "base_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
-    "source_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing"
+    "source_commit": "805990bb61eb5fe0ed8c3332496da46cfc9eb987",
+    "source_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "14659c6cdc1ebeb694c4a463f3564f7e5008d663",
+  "source_commit": "805990bb61eb5fe0ed8c3332496da46cfc9eb987",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "source_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "update_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "version_source": "latka_jazn/version.py"
 }

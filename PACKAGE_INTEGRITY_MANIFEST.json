@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "package_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "generated_at_utc": "2026-10-30T22:33:11+00:00",
-  "updated_at_utc": "2026-10-30T22:33:11+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "generated_at_utc": "2026-10-31T19:25:04+00:00",
+  "updated_at_utc": "2026-10-31T19:25:04+00:00",
   "start_file": "run.py",
-  "file_count": 3577,
-  "static_file_count": 3577,
+  "file_count": 3579,
+  "static_file_count": 3579,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2983,
-      "sha256": "12d02c34833d03f9616c966411322f110e7a068ecf081d3a7086a04ba5933d89",
+      "size_bytes": 3049,
+      "sha256": "ab828610be37c0cb671b6bb71e23af04f09d0295f391aad5c47f2ff6a81eaf56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1949,
-      "sha256": "4e88abddf47d529711e9c2a924dc1add0af4088d765bd9a208b6450f0135ebbb",
+      "size_bytes": 1960,
+      "sha256": "045d74ec1215f48cb422203197d3e1150a91eb0ca84e53ca76eff226f397ac55",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2570,7 +2570,7 @@
     {
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
       "size_bytes": 12431,
-      "sha256": "9b7f5325cfcecb264a5c732430337cb83884ede07b6d7478289379a55a0eaa5c",
+      "sha256": "3eb3a28663d69e307661ee8a52ae3ddd0c11036c9fcf390ef4268dd95d0eeffb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4271,7 +4271,7 @@
     {
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
       "size_bytes": 13673,
-      "sha256": "b1bf7385457ca8757863151ea1141d2c1387694b16a04199317402fcbefe1464",
+      "sha256": "b94bd8e99201886484e6a9a9f24ace41bcb5179f53afd150b1ce1c80f8dbd531",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9662,7 +9662,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "7e6bf7660dc1b57791949bd2d175bf1e8604f80adf652efad396b6500210ca7f",
+      "sha256": "8f0cea50563897e8d6dee8ee0be501939dd878d85527b6ec76fc14681349439e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9671,7 +9671,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "ddaed26f0a7a5a77fc724eb1462dad38fec3d970e45f3c10499f9e2681296a90",
+      "sha256": "9d41c536fdbc4195019b5f98f3f1e1044fdc425e6144ec8239133b4fad056873",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9680,7 +9680,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "fb95eeea87c427e65bf52535c71c895d14f315fe38fe11ee641f95614be70c92",
+      "sha256": "80734f406958b3d5b861a4bcee2a6a57b7e0862844f1ffced95537d82329121a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9689,7 +9689,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "ed22dc5289779a5bb314d1d03543ee9d8c6de8ad62460026c6abd06cc58cd856",
+      "sha256": "6d35851bab6d23429be680fcbd26601c33bb61d72ae366a73162cb33c66ba19f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9698,7 +9698,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "434700ee19720fed3668ad6b4c19e45cf0efdfaa830cbf72e92c82a8c2340109",
+      "sha256": "57cc308eb96717bd2fe526f32e20b50361345a3414bf1eb2deaa4ca008e3d55a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9707,7 +9707,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "ad2b5d6a97234bb9fa0f71dd9a7c83826c7da27b77440d3f3c9041fe08fb2bb1",
+      "sha256": "7f5bf1a92acc4e43160523dbeafe842312fadb23b9579a51d709fa0c9cd7e4ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9860,7 +9860,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "97cd8e7df3b1cc98130655347bd669e67f24d8a14bc12d6bc5dac6d96833abd5",
+      "sha256": "66fcf0a64e92feec59d84b7fbe46d0bc4da23e72b6ff07434f495cfc2ddfd329",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21617,
-      "sha256": "3fb95710830de84950e4566771b66b1b10a23796787aceb936cc09b5c3ebf02e",
+      "size_bytes": 21870,
+      "sha256": "963bd564b85682487033632a35a852bcfb67d794f9f6e4a09f9be4c92cae0678",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11543,7 +11543,7 @@
     {
       "path": "pyproject.toml",
       "size_bytes": 2427,
-      "sha256": "011e89913bec2b113fee2d59988a4ca4271ab108f4750be98d2bf320ce9e2289",
+      "sha256": "91f77d6eafd833152add1a22962ccfe239224949d31fb47e5b5af13a625d6052",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23772,6 +23772,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.50-pre-pypdf-6214/test_pdf_dependency_capability_convergence.py",
+      "size_bytes": 2286,
+      "sha256": "d22f6bc7f0107be13d62b350858697b9d4aa2888526f1fde4b6d4daaeac71fd7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.51-pre-pdf-operator-contract/test_plugin_operator_convergence.py",
+      "size_bytes": 2914,
+      "sha256": "d4c11487e5df9335c62bbe7a308e525bf15a09d9b11f0dbb7ca1a2fe393d740c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -29677,8 +29695,8 @@
     },
     {
       "path": "tests/test_pdf_dependency_capability_convergence.py",
-      "size_bytes": 2286,
-      "sha256": "d22f6bc7f0107be13d62b350858697b9d4aa2888526f1fde4b6d4daaeac71fd7",
+      "size_bytes": 2435,
+      "sha256": "0339270b1dd05032ec7d06b2ed2be4b8983a2122560ed3cb0953c356927e0087",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29732,7 +29750,7 @@
     {
       "path": "tests/test_plugin_operator_convergence.py",
       "size_bytes": 2914,
-      "sha256": "d4c11487e5df9335c62bbe7a308e525bf15a09d9b11f0dbb7ca1a2fe393d740c",
+      "sha256": "b14b6bf71e0d2ed30077cab07241bc1fcfebfd8d46cf8e003ae523ce50231b92",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31991,7 +32009,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2693710,
-      "sha256": "be5bbbe95c199e48aa6e2998508b3379906c03d30f1ccb80005fed7dea92b456",
+      "sha256": "9955b44540f333b525de4cea1f39bcf825f7602c650814c2c622962f1624c168",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32648,11 +32666,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-    "package_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-    "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -19,7 +19,7 @@ def test_archive_and_pdf_are_optional_for_activation_but_remain_in_release_profi
     assert any(req.lower().startswith("py7zr") for req in archive)
     assert any(req.lower().startswith("pyzipper") for req in archive)
     assert any(req.lower().startswith("rarfile") for req in archive)
-    assert pdf == ["pypdf>=6.21.1,<7"]
+    assert pdf == ["pypdf>=6.21.4,<7"]
 
 
 def test_plugin_registry_uses_pypa_entry_point_group_without_loading_external_code() -> None:
