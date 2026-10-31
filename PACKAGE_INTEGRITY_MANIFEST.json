@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "package_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-  "generated_at_utc": "2026-10-30T22:33:11+00:00",
-  "updated_at_utc": "2026-10-30T22:33:11+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+  "package_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+  "generated_at_utc": "2026-10-31T16:37:28+00:00",
+  "updated_at_utc": "2026-10-31T16:37:28+00:00",
   "start_file": "run.py",
-  "file_count": 3577,
-  "static_file_count": 3577,
+  "file_count": 3578,
+  "static_file_count": 3578,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2983,
-      "sha256": "12d02c34833d03f9616c966411322f110e7a068ecf081d3a7086a04ba5933d89",
+      "size_bytes": 3007,
+      "sha256": "beda90183fefd7b490ab506e2e6b9d074413c6327a2713c0f3d8e1c0a12b9c2a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1949,
-      "sha256": "4e88abddf47d529711e9c2a924dc1add0af4088d765bd9a208b6450f0135ebbb",
+      "size_bytes": 1953,
+      "sha256": "aaf928075dc09d11519f90b3dcf689fd4a2f2d3e7e47ce760de4a4504f5fc3c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2570,7 +2570,7 @@
     {
       "path": "docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md",
       "size_bytes": 12431,
-      "sha256": "9b7f5325cfcecb264a5c732430337cb83884ede07b6d7478289379a55a0eaa5c",
+      "sha256": "3eb3a28663d69e307661ee8a52ae3ddd0c11036c9fcf390ef4268dd95d0eeffb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4271,7 +4271,7 @@
     {
       "path": "docs/tools/JAZN_DEPENDENCY_STUDIO.md",
       "size_bytes": 13673,
-      "sha256": "b1bf7385457ca8757863151ea1141d2c1387694b16a04199317402fcbefe1464",
+      "sha256": "b94bd8e99201886484e6a9a9f24ace41bcb5179f53afd150b1ce1c80f8dbd531",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9860,7 +9860,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "97cd8e7df3b1cc98130655347bd669e67f24d8a14bc12d6bc5dac6d96833abd5",
+      "sha256": "e90de031219f41bb4ac5ed913af12a86e72f2839397150f99d69bcf339bd9547",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21617,
-      "sha256": "3fb95710830de84950e4566771b66b1b10a23796787aceb936cc09b5c3ebf02e",
+      "size_bytes": 21724,
+      "sha256": "8653b79a417578b472d43af37319a7263fa2406edfb2d11c345830db9fd56f16",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11543,7 +11543,7 @@
     {
       "path": "pyproject.toml",
       "size_bytes": 2427,
-      "sha256": "011e89913bec2b113fee2d59988a4ca4271ab108f4750be98d2bf320ce9e2289",
+      "sha256": "91f77d6eafd833152add1a22962ccfe239224949d31fb47e5b5af13a625d6052",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23772,6 +23772,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.50-pre-pypdf-6214/test_pdf_dependency_capability_convergence.py",
+      "size_bytes": 2286,
+      "sha256": "d22f6bc7f0107be13d62b350858697b9d4aa2888526f1fde4b6d4daaeac71fd7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -29677,8 +29686,8 @@
     },
     {
       "path": "tests/test_pdf_dependency_capability_convergence.py",
-      "size_bytes": 2286,
-      "sha256": "d22f6bc7f0107be13d62b350858697b9d4aa2888526f1fde4b6d4daaeac71fd7",
+      "size_bytes": 2435,
+      "sha256": "0339270b1dd05032ec7d06b2ed2be4b8983a2122560ed3cb0953c356927e0087",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31991,7 +32000,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2693710,
-      "sha256": "be5bbbe95c199e48aa6e2998508b3379906c03d30f1ccb80005fed7dea92b456",
+      "sha256": "7f5c464c6815d80228efc752361bb790c5a19d837e87e9075b77d06b2104b6b0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32648,11 +32657,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+  "release_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-    "package_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
-    "release_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+    "package_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
+    "release_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening"
   },
   "legacy_aliases": {
     "version": "release_version"
