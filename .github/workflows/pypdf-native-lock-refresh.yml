@@ -1,0 +1,146 @@
+name: native-pypdf-security-lock-refresh
+
+on:
+  push:
+    branches:
+      - 'fix/v16.3.25.5.116.0.34.94.6.51-pypdf-security-locks'
+    paths:
+      - '.github/workflows/pypdf-native-lock-refresh.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: "native PDF lock ${{ matrix.target }} py${{ matrix.python }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: windows-latest, target: windows-x64, python: "3.12", digits: "312"}
+          - {runner: windows-latest, target: windows-x64, python: "3.13", digits: "313"}
+          - {runner: windows-latest, target: windows-x64, python: "3.14", digits: "314"}
+          - {runner: ubuntu-latest, target: linux-x64, python: "3.12", digits: "312"}
+          - {runner: ubuntu-latest, target: linux-x64, python: "3.13", digits: "313"}
+          - {runner: ubuntu-latest, target: linux-x64, python: "3.14", digits: "314"}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    env:
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Select native Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Generate and audit native lock using Dependency Studio
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e . pip-audit
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --wheelhouse-root "$RUNNER_TEMP/jazn-pdf-native" --json \
+            download --profile core --profile archive --profile pdf \
+            --python-version "${{ matrix.python }}" --platform current \
+            > "$RUNNER_TEMP/native-result.json"
+          bundle="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$RUNNER_TEMP/native-result.json")"
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json verify --bundle "$bundle"
+          python -m pip_audit \
+            -r "$bundle/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
+            --strict --format json --output "$RUNNER_TEMP/native-pip-audit.json"
+          mkdir -p native-lock
+          cp "$bundle/JAZN_WHEELHOUSE_REQUIREMENTS.txt" \
+            "native-lock/${{ matrix.target }}-py${{ matrix.digits }}.txt"
+          grep -E '^pypdf==6\.21\.4 --hash=sha256:[a-f0-9]{64}$' \
+            "native-lock/${{ matrix.target }}-py${{ matrix.digits }}.txt"
+
+      - name: Upload native Dependency Studio lock
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jazn-pypdf-native-${{ matrix.target }}-py${{ matrix.digits }}
+          path: native-lock/
+          if-no-files-found: error
+          retention-days: 7
+
+  apply:
+    name: Apply strictly generated PDF wheel hashes
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout security repair branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Download all six native Dependency Studio locks
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          pattern: jazn-pypdf-native-*
+          path: ${{ runner.temp }}/native-pdf-locks
+          merge-multiple: true
+
+      - name: Refresh strictly one package entry per existing lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "fix/v16.3.25.5.116.0.34.94.6.51-pypdf-security-locks"
+          git fetch origin "$GITHUB_REF_NAME"
+          git merge --ff-only "origin/$GITHUB_REF_NAME"
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+
+          source = Path(os.environ["RUNNER_TEMP"]) / "native-pdf-locks"
+          destination = Path("latka_jazn/resources/dependencies/locks/core+archive+pdf")
+          names = [
+              f"{platform}-py{python}.txt"
+              for platform in ("windows-x64", "linux-x64")
+              for python in ("312", "313", "314")
+          ]
+          assert set(path.name for path in source.glob("*.txt")) == set(names)
+          digests = set()
+          for name in names:
+              generated = (source / name).read_text(encoding="utf-8")
+              candidates = [
+                  line for line in generated.splitlines()
+                  if re.fullmatch(r"pypdf==6\.21\.4 --hash=sha256:[0-9a-f]{64}", line)
+              ]
+              if len(candidates) != 1:
+                  raise ValueError(f"Canonical native lock lacks unique patched PDF entry: {name}")
+              new_row = candidates[0]
+              digests.add(new_row.partition("sha256:")[2])
+              current = destination / name
+              original = current.read_text(encoding="utf-8")
+              old_rows = [line for line in original.splitlines() if line.startswith("pypdf==")]
+              if len(old_rows) != 1 or not old_rows[0].startswith("pypdf==6.21.2 "):
+                  raise ValueError(f"Unexpected previous dependency lock: {name}")
+              replacement = original.replace(old_rows[0], new_row)
+              assert replacement.count(new_row) == 1
+              assert replacement.replace(new_row, old_rows[0]) == original
+              current.write_text(replacement, encoding="utf-8", newline="\n")
+          if len(digests) != 1:
+              raise ValueError("Universal PDF wheel SHA-256 differs between native platforms")
+          print("Six Dependency Studio PDF hashes verified; unrelated lock entries untouched")
+          PY
+          git diff --check
+          git add latka_jazn/resources/dependencies/locks/core+archive+pdf/
+          if ! git diff --cached --quiet; then
+            git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "fix(deps): refresh six native pypdf wheel hashes from verified Dependency Studio outputs"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          else
+            echo "All six patched PDF locks are already current"
+          fi
