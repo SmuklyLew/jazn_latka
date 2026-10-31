@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
+from .service_status_dialog import ServiceStatusDialog
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
 
@@ -184,7 +185,7 @@ class Window(QMainWindow):
         self.statusBar().addPermanentWidget(self.operator_status, 1)
         from .operator_workspace import OperatorWorkspace
         self.workspace = OperatorWorkspace(self)
-        self.service_status_dialog = None
+        self.service_status_dialog: ServiceStatusDialog | None = None
         self.operator_status.clicked.connect(lambda: self.workspace.show(0))
         self._workspace_menu()
         self.settings_baseline = self.settings_draft()
@@ -1306,7 +1307,6 @@ class Window(QMainWindow):
 
     def open_service_status(self) -> None:
         """Display the read-only, non-modal service indicators."""
-        from .service_status_dialog import ServiceStatusDialog
         if self.service_status_dialog is None:
             self.service_status_dialog = ServiceStatusDialog(self)
         self.service_status_dialog.show()
