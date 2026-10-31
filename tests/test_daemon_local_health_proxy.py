@@ -18,7 +18,7 @@ def test_health_check_ignores_proxy_for_loopback(monkeypatch) -> None:
             self.end_headers()
             self.wfile.write(body)
 
-        def log_message(self, *_args):
+        def log_message(self, format: str, *args: object) -> None:
             pass
 
     server = HTTPServer(("127.0.0.1", 0), Handler)
