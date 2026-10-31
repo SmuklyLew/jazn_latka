@@ -6,16 +6,12 @@ services. The window never probes synchronously on the Qt GUI thread.
 from __future__ import annotations
 
 import time
-from typing import Any, TYPE_CHECKING
+from typing import Any, Callable
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
+    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
 )
-
-if TYPE_CHECKING:
-    from .window import Window
-
 
 # A visible caption always accompanies each colored circle.
 STATUS_COLORS = {"good": "#32C77A", "warn": "#E8A13B", "bad": "#E2525D"}
@@ -80,9 +76,9 @@ class ServiceStatusDialog(QDialog):
         ("ollama", "Ollama i wybrany model"),
     )
 
-    def __init__(self, host: Window):
+    def __init__(self, host: QWidget, request_refresh: Callable[[], None]):
         super().__init__(host)
-        self.host = host
+        self._request_refresh = request_refresh
         self.setObjectName("jssServiceStatusDialog")
         self.setWindowTitle("Jaźń — Stany usług")
         self.setModal(False)
@@ -128,17 +124,17 @@ class ServiceStatusDialog(QDialog):
 
         self.timer = QTimer(self)
         self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.render)
+        self.timer.timeout.connect(self.render_statuses)
         self.timer.start()
-        self.render()
+        self.render_statuses()
 
     def request_refresh(self) -> None:
         # A click is an explicit request for the existing nonblocking Controller
         # jobs; never call HTTP or lifecycle directly in this widget.
         self.samples.clear()
         self.failures.clear()
-        self.render()
-        self.host.guard(self.host.refresh_services)
+        self.render_statuses()
+        self._request_refresh()
 
     def observe(self, key: str, kind: str, value: object) -> None:
         if kind == "evidence" and isinstance(value, dict):
@@ -157,9 +153,9 @@ class ServiceStatusDialog(QDialog):
                               "probe:ollama_generate": ("ollama",)}.get(key, ())
             self.failures.update(failed_service)
         if self.isVisible():
-            self.render()
+            self.render_statuses()
 
-    def render(self) -> None:
+    def render_statuses(self) -> None:
         now = time.monotonic()
         for key, _title in self.SERVICES:
             observed = self.samples.get(key)
