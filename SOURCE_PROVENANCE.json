@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "c78387883fab57c2f127fdfb925e6b9bec2595d7",
+  "base_merge_commit": "3672b545bf9fa10a09d39f3c6b2d92075c0f93ea",
   "base_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-  "commit_date": "2026-10-31T16:37:28Z",
+  "commit_date": "2026-10-31T17:42:41+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-10-31T16:37:28+00:00",
+  "generated_at_utc": "2026-10-31T16:42:41+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "76e6d9d85c815d015a00fb3a058be9da7817c4de",
+  "git_tree_sha": "bc96aff4ac90631b4c3b823a93b4db054a5d903f",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "c78387883fab57c2f127fdfb925e6b9bec2595d7",
+    "source_commit": "3672b545bf9fa10a09d39f3c6b2d92075c0f93ea",
     "source_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "c78387883fab57c2f127fdfb925e6b9bec2595d7",
+  "source_commit": "3672b545bf9fa10a09d39f3c6b2d92075c0f93ea",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
   "tag": null,

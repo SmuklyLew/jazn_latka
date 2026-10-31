@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
   "runtime_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
   "package_version": "16.3.25.5.116.0.34.94.6.51-pypdf-6214-supply-chain-hardening",
-  "generated_at_utc": "2026-10-31T16:37:28+00:00",
-  "updated_at_utc": "2026-10-31T16:37:28+00:00",
+  "generated_at_utc": "2026-10-31T16:42:41+00:00",
+  "updated_at_utc": "2026-10-31T16:42:41+00:00",
   "start_file": "run.py",
   "file_count": 3578,
   "static_file_count": 3578,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3007,
-      "sha256": "beda90183fefd7b490ab506e2e6b9d074413c6327a2713c0f3d8e1c0a12b9c2a",
+      "size_bytes": 3012,
+      "sha256": "c8393cff9a4c141a28329d9edbf719d56ba2ed0afd43707e56cddd9034171c82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9662,7 +9662,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "7e6bf7660dc1b57791949bd2d175bf1e8604f80adf652efad396b6500210ca7f",
+      "sha256": "8f0cea50563897e8d6dee8ee0be501939dd878d85527b6ec76fc14681349439e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9671,7 +9671,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "ddaed26f0a7a5a77fc724eb1462dad38fec3d970e45f3c10499f9e2681296a90",
+      "sha256": "9d41c536fdbc4195019b5f98f3f1e1044fdc425e6144ec8239133b4fad056873",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9680,7 +9680,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/linux-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "fb95eeea87c427e65bf52535c71c895d14f315fe38fe11ee641f95614be70c92",
+      "sha256": "80734f406958b3d5b861a4bcee2a6a57b7e0862844f1ffced95537d82329121a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9689,7 +9689,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py312.txt",
       "size_bytes": 1511,
-      "sha256": "ed22dc5289779a5bb314d1d03543ee9d8c6de8ad62460026c6abd06cc58cd856",
+      "sha256": "6d35851bab6d23429be680fcbd26601c33bb61d72ae366a73162cb33c66ba19f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9698,7 +9698,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py313.txt",
       "size_bytes": 1511,
-      "sha256": "434700ee19720fed3668ad6b4c19e45cf0efdfaa830cbf72e92c82a8c2340109",
+      "sha256": "57cc308eb96717bd2fe526f32e20b50361345a3414bf1eb2deaa4ca008e3d55a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9707,7 +9707,7 @@
     {
       "path": "latka_jazn/resources/dependencies/locks/core+archive+pdf/windows-x64-py314.txt",
       "size_bytes": 1410,
-      "sha256": "ad2b5d6a97234bb9fa0f71dd9a7c83826c7da27b77440d3f3c9041fe08fb2bb1",
+      "sha256": "7f5bf1a92acc4e43160523dbeafe842312fadb23b9579a51d709fa0c9cd7e4ed",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
