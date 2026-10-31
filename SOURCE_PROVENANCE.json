@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "21fec93774794c66158a7da86f6ad49f3f2b70c9",
-    "base_version": "16.3.25.5.116.0.34.94.6.50-tpa-pyright-context-narrowing",
+    "base_commit": "805990bb61eb5fe0ed8c3332496da46cfc9eb987",
+    "base_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "805990bb61eb5fe0ed8c3332496da46cfc9eb987",
