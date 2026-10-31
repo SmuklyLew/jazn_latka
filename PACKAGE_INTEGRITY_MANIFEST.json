@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
-  "generated_at_utc": "2026-10-31T22:09:57+00:00",
-  "updated_at_utc": "2026-10-31T22:09:57+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "package_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "generated_at_utc": "2026-10-31T22:17:55+00:00",
+  "updated_at_utc": "2026-10-31T22:17:55+00:00",
   "start_file": "run.py",
-  "file_count": 3580,
-  "static_file_count": 3580,
+  "file_count": 3582,
+  "static_file_count": 3582,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3065,
-      "sha256": "eb448421c2681ea638e1d917f1a22e0f2f68a8816589a224a93f5e64252ab25c",
+      "size_bytes": 3018,
+      "sha256": "74202dc5e6ab41f5fa553e82422db6bb78ca17e547c64f704772c3fa394f3a5d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6763,8 +6763,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 245423,
-      "sha256": "6755cc56c5488747cbacf9f71c8ed5bc8dd1d8b5e20725fbd05dc2166e8f48a4",
+      "size_bytes": 246687,
+      "sha256": "7062b89eae979aa16baeb3d91740ff5add4f812e09d7bca694e80cef9e479076",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11362,8 +11362,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 21870,
-      "sha256": "963bd564b85682487033632a35a852bcfb67d794f9f6e4a09f9be4c92cae0678",
+      "size_bytes": 21983,
+      "sha256": "90329fcdf86f2fbc982a0be6865a14b530a8f6aa3983bf4e89708b00733f6e26",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26805,6 +26805,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_daemon_local_health_proxy.py",
+      "size_bytes": 1422,
+      "sha256": "e75a2cccc2b708c266ad24201a98fb0a9fa322628c286e80bc2b9a1434bb6fe8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_daemon_result_transport_live_diagnostics.py",
       "size_bytes": 12457,
       "sha256": "bcba9abc1802c9cdadd651ef3d0d10fd55f83bf97fe641c134e9435e89b22551",
@@ -28257,6 +28266,15 @@
       "path": "tests/test_jazn_workspace_layout_isolation.py",
       "size_bytes": 6407,
       "sha256": "d6f53d853e249c7f9cfca26f39149c4a819f1fba010582aa86eee1b227a4248d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_service_status_dialog.py",
+      "size_bytes": 3450,
+      "sha256": "9abeaef81065ae5bfdf825d9acedf1c780b5285ba10ff72ac8455766b8f1cb8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31603,8 +31621,8 @@
     },
     {
       "path": "tools/jazn_run_studio/service_status_dialog.py",
-      "size_bytes": 7845,
-      "sha256": "398e07fe1a6b5f286a4a65454ad888607e89ed870779009b6203f8d60ff0ccf1",
+      "size_bytes": 7875,
+      "sha256": "7da35c9dc5c1ad19ab51f41484c98574e465576e23827f63b3333e5dfbcf00df",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31846,8 +31864,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 91428,
-      "sha256": "02f4533ce200911fe2baa1919210bd21fb07ba0bd04f975f94bede91393e54e6",
+      "size_bytes": 91491,
+      "sha256": "2b237651d55540fa5494b95571c6d5df4f5044a5eb4ad08ec230e40f75f55a5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32017,8 +32035,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2693710,
-      "sha256": "9955b44540f333b525de4cea1f39bcf825f7602c650814c2c622962f1624c168",
+      "size_bytes": 2696453,
+      "sha256": "c4131695f62c9967acc885704abee89d6016804db80de6f8fd036dfde6efcc2d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32675,11 +32693,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+    "package_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+    "release_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status"
   },
   "legacy_aliases": {
     "version": "release_version"
