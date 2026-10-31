@@ -213,14 +213,11 @@ dialogue_intent_classifier.py ma około 1190 linii i zawiera rozbudowane reguły
 
 Proponuję trzywarstwowe rozpoznawanie:
 
-## 1. Reguły deterministyczne: komendy operacyjne, krytyczne ograniczenia bezpieczeństwa, jawne rozkazy, status Runtime.
+1. **Reguły deterministyczne:** komendy operacyjne, krytyczne ograniczenia bezpieczeństwa, jawne rozkazy, status Runtime.
 
+2. **Klasyfikacja semantyczna:** wieloznaczne intencje, kontekst, odniesienia do wcześniejszych wypowiedzi, prośby mieszane.
 
-## 2. Klasyfikacja semantyczna: wieloznaczne intencje, kontekst, odniesienia do wcześniejszych wypowiedzi, prośby mieszane.
-
-
-## 3. Model językowy: rozumienie złożonej wypowiedzi, planowanie odpowiedzi i formułowanie naturalnego tekstu.
-
+3. **Model językowy:** rozumienie złożonej wypowiedzi, planowanie odpowiedzi i formułowanie naturalnego tekstu.
 Reguła oparta na słowie „pamiętasz” nie powinna automatycznie rozstrzygać wszystkich znaczeń wypowiedzi. System powinien uwzględniać to, o czyjej pamięci jest mowa, w jakim kontekście i co zostało już powiedziane.
 
 ### 4.2.3. Rzeczywiste ewaluacje jakości Jaźni
@@ -401,6 +398,8 @@ Warto również stosować próby adversarialne i oceny ludzkie, ponieważ jakoś
 Docelowo każde wydanie Jaźni powinno zawierać maszynowo weryfikowalny raport z czterema odrębnymi kategoriami.
 **Przykładowy kontrakt raportu wydania**
 
+| Kategoria | Zakres |
+| --- | --- |
 | SYSTEM | Integralność, provenance, version, CI, cleanroom |
 | RUNTIME | Start, status, heartbeat, recovery, sesja, finalizacja |
 | AI QUALITY | Baseline LLM, eval score, regresje językowe, memory grounding |
