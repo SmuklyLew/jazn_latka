@@ -74,7 +74,7 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
             action()
 
     host = Host()
-    panel = ServiceStatusDialog(host)
+    panel = ServiceStatusDialog(host, lambda: host.guard(host.refresh_services))
     assert not panel.isModal()
     assert host.refresh_count == 0
     assert len(panel.indicators) == 4
