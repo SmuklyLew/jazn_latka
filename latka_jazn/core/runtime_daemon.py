@@ -3827,7 +3827,16 @@ def http_json(
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers["Content-Type"] = "application/json; charset=utf-8"
     req = urllib.request.Request(url, data=data, method=method.upper(), headers=headers)
-    with urllib.request.urlopen(req, timeout=timeout) as response:
+    # A daemon loopback probe must never inherit HTTP_PROXY/HTTPS_PROXY. Desktop
+    # environments can carry a proxy even while connecting to 127.0.0.1.
+    # Preserve the existing opener for non-loopback requests.
+    target = urllib.parse.urlsplit(url)
+    open_url = (
+        urllib.request.build_opener(urllib.request.ProxyHandler({})).open
+        if target.scheme == "http" and target.hostname in LOOPBACK_CLIENTS
+        else urllib.request.urlopen
+    )
+    with open_url(req, timeout=timeout) as response:
         raw = response.read()
         return json.loads(raw.decode("utf-8", errors="strict"))
 
@@ -3869,10 +3878,17 @@ def run_daemon(
         }
         print(json.dumps(payload, ensure_ascii=False, sort_keys=True), file=sys.stderr)
         return 3
+    # Every phase is an operator-owned local JSONL diagnostic, not an alternate
+    # readiness decision. Keep the original identity and integrity gates intact.
+    append_daemon_process_event(config.root, "boot_phase", phase="release_verified", daemon_pid=os.getpid())
     # runtime_write_v1 is a critical local write layer; initialize a clean store if the release pack omitted stale shards.
+    append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_init", daemon_pid=os.getpid())
     build_runtime_write_access_status(config, initialize=True, writes_enabled=True)
+    append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_ready", daemon_pid=os.getpid())
     # Write the normal active-runtime marker first; then the daemon marker extends it.
+    append_daemon_process_event(config.root, "boot_phase", phase="active_marker_write", daemon_pid=os.getpid())
     write_active_runtime_marker(config.root, marker_output=marker_path, action="daemon_run_start")
+    append_daemon_process_event(config.root, "boot_phase", phase="http_bind", daemon_pid=os.getpid())
     server = JaznDaemonServer(
         (host, int(port)),
         JaznDaemonHandler,
@@ -3884,6 +3900,7 @@ def run_daemon(
     )
     server.refresh_timestamp_contract(reason="startup_background", background=True, force=True)
     server.write_marker()
+    append_daemon_process_event(config.root, "boot_phase", phase="endpoint_bound", daemon_pid=os.getpid())
     _emit_visible_daemon_event("started", host=host, port=int(port), root=str(config.root), heartbeat_interval_seconds=float(heartbeat_interval))
     server.start_heartbeat()
     if server.rest_cycle_controller is not None:

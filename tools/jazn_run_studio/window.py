@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
+from .service_status_dialog import ServiceStatusDialog
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
 
@@ -114,6 +115,10 @@ class Window(QMainWindow):
         self.style_selector.currentIndexChanged.connect(self.style_selected)
         header_layout.addWidget(self.style_selector)
         header_layout.addStretch(1)
+        self.services_status_button = QPushButton("● Stany usług")
+        self.services_status_button.setAccessibleName("Otwórz stany serwera, Runtime, MCP i Ollama")
+        self.services_status_button.clicked.connect(self.open_service_status)
+        header_layout.addWidget(self.services_status_button)
         self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
         self.workbench_status.setObjectName("workbenchStatus")
         self.workbench_status.setAccessibleName("Ostatnio sprawdzona gotowość lokalnego runtime; nie oznacza zaakceptowanej odpowiedzi")
@@ -180,6 +185,7 @@ class Window(QMainWindow):
         self.statusBar().addPermanentWidget(self.operator_status, 1)
         from .operator_workspace import OperatorWorkspace
         self.workspace = OperatorWorkspace(self)
+        self.service_status_dialog: ServiceStatusDialog | None = None
         self.operator_status.clicked.connect(lambda: self.workspace.show(0))
         self._workspace_menu()
         self.settings_baseline = self.settings_draft()
@@ -1047,6 +1053,8 @@ class Window(QMainWindow):
                 except queue.Empty:
                     break
             self.workspace.observe(key, kind, value)
+            if self.service_status_dialog is not None and kind in {"evidence", "probe", "state"}:
+                self.service_status_dialog.observe(key, kind, value)
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "memory_report":
@@ -1296,6 +1304,15 @@ class Window(QMainWindow):
             if not self.nav.item(row).isHidden():
                 self.nav.setCurrentRow(row)
                 return
+
+    def open_service_status(self) -> None:
+        """Display the read-only, non-modal service indicators."""
+        if self.service_status_dialog is None:
+            self.service_status_dialog = ServiceStatusDialog(self, lambda: self.guard(self.refresh_services))
+        self.service_status_dialog.show()
+        self.service_status_dialog.raise_()
+        self.service_status_dialog.activateWindow()
+        self.service_status_dialog.request_refresh()
 
     def _workspace_menu(self) -> None:
         from .workbench_shell import WorkbenchShell
