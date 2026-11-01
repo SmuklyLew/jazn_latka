@@ -128,7 +128,7 @@ class TPAPanel(QWidget):
         self.retry_button = self.button("Ponów nieudane / blokady", self.retry_failed)
         self.auto_cancel = self.button("Zatrzymaj", self.stop_work)
         for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
-            actions.addWidget(widget, 0, i)
+            actions.addWidget(widget, i // 2, i % 2)
         self.live_plan = QCheckBox("Live po merge (wymaga modelu)")
         self.live_plan.setAccessibleName("Jawna zgoda na uruchomienie izolowanych testów live")
         self.live_plan.setToolTip("Domyślnie plan wykonuje tylko syntetyczne regresje; bez Ollama i startu daemona.")
@@ -145,12 +145,11 @@ class TPAPanel(QWidget):
         self.progress.setRange(0, 1)
         self.progress.setValue(0)
         self.progress.setFormat("%v / %m pozycji")
-        # Keep the queue visible in a small Windows viewport: action buttons
-        # share one row, and status/progress share another without hiding state.
+        # Status/progress share a row below the queue to preserve the
+        # compact viewport, while actions use two columns to avoid overflow.
         status_row = QHBoxLayout()
         status_row.addWidget(self.auto_status, 3)
         status_row.addWidget(self.progress, 1)
-        layout.addLayout(status_row)
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.table = QTableWidget(len(self.rows), 7)
         self.table.setHorizontalHeaderLabels(["Scenariusz", "Regresja", "Live", "Pełny odbiór", "Aktualność", "Ostatnia próba", "Następny krok"])
@@ -213,6 +212,9 @@ class TPAPanel(QWidget):
         self.splitter.setStretchFactor(0, 3)
         self.splitter.setStretchFactor(1, 2)
         layout.addWidget(self.splitter, 1)
+        # Keep the queue above the fold at 860x580; progress/status remain
+        # accessible beneath it inside the parent scroll area.
+        layout.addLayout(status_row)
         history_row = QHBoxLayout()
         self.history = QComboBox()
         self.history.setMinimumWidth(80)
