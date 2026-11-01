@@ -41,6 +41,10 @@ def test_real_qt_history_shows_missing_tests_and_block_reason(setup_history):
     panel.refresh()
     drain(app, panel)
     assert panel.table.rowCount() == 22
+    panel.resize(860, 580)
+    panel.show()
+    app.processEvents()
+    assert panel.width() == 860 and panel.height() == 580
     panel.status.setCurrentText("BLOCKED")
     assert panel.table.rowCount() == 1
     reason = panel.table.item(0, 3)

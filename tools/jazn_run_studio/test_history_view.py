@@ -5,10 +5,10 @@ from pathlib import Path
 import subprocess
 from uuid import uuid4
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt
 from PySide6.QtWidgets import (
     QComboBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit,
-    QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QPushButton, QSizePolicy, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from .tpa_reports import RunStore, STATES
@@ -108,21 +108,25 @@ class TestHistoryPanel(QWidget):
         row.addWidget(self.status)
         layout.addLayout(row)
         archive_row = QHBoxLayout()
-        self.export_button = QPushButton("Eksportuj zweryfikowany ZIP…")
+        self.export_button = QPushButton("Eksportuj ZIP…")
+        self.export_button.setAccessibleName("Eksportuj zweryfikowane archiwum dowodów")
         self.export_button.clicked.connect(self.export_selected)
         archive_row.addWidget(self.export_button)
-        self.import_button = QPushButton("Sprawdź i importuj ZIP…")
+        self.import_button = QPushButton("Importuj ZIP…")
+        self.import_button.setAccessibleName("Sprawdź i importuj archiwum dowodów")
         self.import_button.clicked.connect(self.import_archive)
         archive_row.addWidget(self.import_button)
         self.compare_choice = QComboBox()
         self.compare_choice.setAccessibleName("Przebieg porównawczy")
         archive_row.addWidget(self.compare_choice, 1)
-        compare = QPushButton("Porównaj przebiegi")
+        compare = QPushButton("Porównaj")
+        compare.setAccessibleName("Porównaj wybrane przebiegi testów")
         compare.clicked.connect(self.compare_runs)
         archive_row.addWidget(compare)
         layout.addLayout(archive_row)
         self.summary = QLabel("Historia jest odczytywana na żądanie. Nie uruchamia testów ani usług.")
         self.summary.setWordWrap(True)
+        self.summary.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.summary)
         self.table = QTableWidget(0, 4)
         self.table.setHorizontalHeaderLabels(["Scenariusz", "Wykonanie", "Pełna bramka", "Przyczyna"])
@@ -133,6 +137,7 @@ class TestHistoryPanel(QWidget):
         layout.addWidget(self.table, 1)
         self.previous_outcomes = QLabel("")
         self.previous_outcomes.setWordWrap(True)
+        self.previous_outcomes.setTextFormat(Qt.TextFormat.PlainText)
         self.previous_outcomes.setAccessibleName("Ostatni sukces i porażka scenariusza")
         layout.addWidget(self.previous_outcomes)
         self.artifact = QComboBox()
@@ -146,8 +151,14 @@ class TestHistoryPanel(QWidget):
         layout.addWidget(self.details)
         self.errors = QLabel("")
         self.errors.setWordWrap(True)
+        self.errors.setTextFormat(Qt.TextFormat.PlainText)
         self.errors.setAccessibleName("Błędy integralności historii")
         layout.addWidget(self.errors)
+        for choice in (self.run_choice, self.compare_choice, self.status, self.artifact):
+            choice.setMinimumContentsLength(10)
+            choice.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+            choice.setMinimumWidth(0)
+            choice.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
 
     def choose_folder(self) -> None:
         selected = QFileDialog.getExistingDirectory(self, "Katalog przebiegów do odczytu")

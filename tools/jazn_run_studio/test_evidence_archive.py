@@ -269,6 +269,7 @@ def history(base: Path, *, limit: int = 100) -> tuple[list[dict], list[str]]:
         raise ValueError("Nieprawidłowy limit historii")
     safe_child(base.parent, base.name)
     found, errors = [], []
+    history_bytes = 0
     if not base.exists():
         return found, errors
     folders = sorted(base.glob("run-*"), key=lambda path: path.stat().st_mtime_ns, reverse=True)
@@ -281,7 +282,13 @@ def history(base: Path, *, limit: int = 100) -> tuple[list[dict], list[str]]:
             markers = sorted(folder.glob("snapshot-*.json"), key=lambda p: p.stat().st_mtime_ns, reverse=True)
             if not markers:
                 continue  # Legacy runs remain accessible through the existing reader.
-            found.append(read_snapshot(folder, markers[0].stem))
+            run = read_snapshot(folder, markers[0].stem)
+            size = sum(map(len, run["files"].values()))
+            if history_bytes + size > MAX_TOTAL:
+                errors.append("Limit pamięci historii; wybierz katalog z mniejszym zakresem przebiegów")
+                break
+            history_bytes += size
+            found.append(run)
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
             errors.append(folder.name + ": " + type(exc).__name__ + "; brak potwierdzonego wyniku")
         if len(found) + len(errors) >= limit:

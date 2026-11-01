@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.56",
+  "system_version": "16.3.25.5.116.0.34.94.6.57",
   "active_definition_count": 3056,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -30495,11 +30495,11 @@
       "path": "tests/test_jss_evidence_history_qt.py",
       "name": "test_real_qt_history_shows_missing_tests_and_block_reason",
       "purpose": "Real qt history shows missing tests and block reason",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -30519,7 +30519,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 60
     },
     "tests/test_jss_evidence_history_qt.py::test_catalog_integrates_history_without_automatic_reads": {
       "path": "tests/test_jss_evidence_history_qt.py",
@@ -30534,7 +30534,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 72
     },
     "tests/test_jss_modular_view_boundaries.py::test_each_functional_view_owns_exactly_one_method_implementation": {
       "path": "tests/test_jss_modular_view_boundaries.py",

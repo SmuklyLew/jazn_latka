@@ -1,3 +1,4 @@
+# v116.0.34.94.6.57: Bound evidence history memory, preserve plain text and fit long run identifiers in small windows.
 # v116.0.34.94.6.56: Add immutable TPA manifests, per-scenario evidence and read-only Qt history.
 # v116.0.34.94.6.54: Split JSS workbench views and event dispatch into bounded modules.
 # v116.0.34.94.6.53: Add bounded startup phase diagnostics, proxy-free loopback probes, and JSS service status window.
@@ -187,7 +188,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.56"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.57"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (

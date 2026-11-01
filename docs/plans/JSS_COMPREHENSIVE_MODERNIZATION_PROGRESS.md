@@ -75,3 +75,11 @@ Pierwsza pełna próba wyłączyła autoload pluginów bez jawnego AnyIO; brakow
 Ostatni odczyt przy tym checkpoincie: 42% wykorzystania 5 h (58% pozostało, 23 punkty do STOP), tydzień 72%. Odświeżyć przed kolejnymi kosztownymi krokami.
 
 Pozostałe E1: pełna walidacja Windows/Linux i wymaganych CI na końcowym SHA, indeks/paginacja pełnej historii, odtwarzanie częściowych potwierdzeń do GUI oraz pomiar/przeniesienie synchronicznego zapisu TPA poza GUI. Release/live/operator pozostają RELEASE_NOT_ACCEPTED. E2–E8 nie rozpoczęte.
+
+### Dalszy mały patch fundamentu
+
+Źródło pierwszego checkpointu: `07076e880529d13ddcf3fa901da663f06f6a407d`; jego metadane: `b6449cad9a53011be91f3cd123abd5893de2f57b`. Ostatnia szersza regresja rozpoczęta przed naprawą kompaktowego układu zakończyła się 201 PASS, 2 SKIPPED i 1 FAIL tego układu (`e1-final-regression.*`). Nie jest to PASS całej regresji.
+
+Podgląd wykazał dodatkowo nadmierną szerokość historii z długimi identyfikatorami. Następny patch ogranicza wymagania szerokości pól, skraca podpisy przycisków z pełnymi etykietami accessibility, wymusza PlainText dla danych importowanych i ogranicza łączny rozmiar odczytanej historii. Niezmienione wymaganie 860×580 oraz nowy test historii przechodzą: 5 PASS (`history-responsive-fixed.*`). Typy: 0 errors/warnings. Wersja pochodzi dynamicznie z `latka_jazn/version.py`; oba kontrakty i katalog są synchronizowane razem.
+
+Pełna ponowna suite ma ruszyć po commicie tego patcha, kanonicznej synchronizacji i kontroli rzeczywistego HEAD, w środowisku `venv/` zadania, z jawnym AnyIO i trwałym rejestrem. Stan wykonywanego checkpointu/walidacji: `D:/.AI/codex_tasks/jss-modernization-20261101/evidence/validation-state.json`. Jeżeli ma IN_PROGRESS, najpierw sprawdzić istniejący proces i raport; nie uruchamiać drugiego przebiegu. Żaden zrzut offscreen nie zalicza odbioru wizualnego realnego Windows ani P0.
