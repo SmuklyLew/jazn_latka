@@ -284,13 +284,29 @@ class TPARunner(QObject):
         self._next_after_probe = True
         self.phase, self.reason = "persisting", ""
         snapshot = deepcopy(self.report)
+        refusal = self._python_refusal()
+        if refusal is not None:
+            # Read-only argument validation; no import/source process was run.
+            # There is no executable QUEUED state to persist for this request.
+            self.probe = {**refusal, "source": deepcopy(snapshot["source"])}
+            self.availability = readiness(self.root, self.probe)
+            snapshot["environment"].update(self.probe)
+            self._mark_refused(snapshot)
+            snapshot["finished_utc"] = utc()
         def operation():
             self.store.begin(snapshot)
             return snapshot
         def created(saved):
-            self._adopt(saved)
+            self._adopt(saved, results=refusal is not None)
+            if refusal is not None:
+                assert self.report is not None
+                self.report["environment"] = saved["environment"]
+                self.report["finished_utc"] = saved["finished_utc"]
             if self.reason == "cancelled":
                 self._next()
+            elif refusal is not None:
+                self.prepared.emit(self.probe)
+                self._finish_queue()
             else:
                 self._probe()
         self._io(operation, created)
@@ -312,15 +328,30 @@ class TPARunner(QObject):
             "--kind", str(self.source_kind), "--value", self.source_value])
         self.changed.emit()
 
+    def _python_refusal(self) -> dict | None:
+        selected = Path(self.python)
+        if not selected.is_absolute() or not selected.is_file():
+            return {"ok": False, "reason": "Wybierz istniejący interpreter Python przez ścieżkę absolutną.",
+                    "probe_executed": False, "imports": {}}
+        return None
+
+    def _mark_refused(self, report: dict) -> None:
+        for row in report["results"]:
+            if self.reason == "cancelled":
+                row.update(status="CANCELLED", reason="Anulowano przed uruchomieniem.")
+            else:
+                row.update(status="BLOCKED", reason=self.availability[row["case_id"]]["reason"],
+                           next_step="Wybierz interpreter, przygotuj zależności lub przywróć wymagane pliki; ponów gotowość.")
+
     def _probe(self) -> None:
         self.phase, self.reason, self.buffer = "preflight", "", ""
         self.pending_line = ""
         self.decoder.reset()
         self.probe = {}
         self.availability = {}
-        selected = Path(self.python)
-        if not selected.is_absolute() or not selected.is_file():
-            self._probe_done({"ok": False, "reason": "Wybierz istniejący interpreter Python przez ścieżkę absolutną."})
+        refusal = self._python_refusal()
+        if refusal is not None:
+            self._probe_done(refusal)
             return
         try:
             self.temp = tempfile.TemporaryDirectory(prefix="jazn-tpa-")
@@ -356,12 +387,7 @@ class TPARunner(QObject):
         if self._next_after_probe:
             if not probe.get("ok"):
                 assert self.report is not None
-                for row in self.report["results"]:
-                    if self.reason == "cancelled":
-                        row.update(status="CANCELLED", reason="Anulowano przed uruchomieniem.")
-                    else:
-                        row.update(status="BLOCKED", reason=self.availability[row["case_id"]]["reason"],
-                                   next_step="Wybierz interpreter, przygotuj zależności lub przywróć wymagane pliki; ponów gotowość.")
+                self._mark_refused(self.report)
                 self._complete()
                 return
             QTimer.singleShot(0, self._prepare_source if self.source_kind and probe.get("ok") else self._next)

@@ -197,3 +197,39 @@ Szersza rejestrowana regresja: **69 PASS**, `async-refusal-precommit.*`,
 `registered-refusal-targeted/run-0e9faf958f3f4b9da655b9233c066a1d/`.
 Wymagane są jeszcze metadane, pełna suite i exact-head CI .63.
 Historycznych porażek .62 nie zmieniać na PASS. E0/E1 IN_PROGRESS; E2–E8 NOT_RUN.
+
+### E1 — pierwsza trwała rewizja odmowy i publikacja GUI po zapisie (.64)
+
+Użytkownik autoryzował wykorzystanie pozostałych 30% okna po wcześniejszym STOP;
+ta zgoda zastępuje próg 65/70% wyłącznie dla tej kontynuacji. Przy wznowieniu
+oficjalny odczyt wynosił 71% / 5 h, 11% tygodnia. Nie uruchomiono resetów,
+kredytów ani dodatkowych modeli. Ostatni kontrolny odczyt podczas patcha: 75%.
+Checkout/origin/PR przed edycją: 450273b7, czyste drzewo, master 784f3aac bez zmian.
+
+Kontrolowany test na niezmiennym runnerze .63 z commita 450273b7 odtworzył błąd:
+zatrzymany końcowy zapis pozostawia GUI już BLOCKED, mimo braku zatwierdzenia
+końcowej rewizji. Wynik **1 FAIL**, `invalid-refusal-baseline.*`, zachowany.
+To potwierdza przedwczesną publikację stanu; większa szybkość testu nie jest
+wystarczającą poprawką tej niespójności.
+
+W .64 pusta, względna lub nieistniejąca ścieżka Pythona jest odrzucana przez
+walidację argumentu przed uruchomieniem procesu. Kopia kompletnego raportu odmowy
+jest zapisywana w pierwszym kanonicznym snapshotcie, po niezmiennym manifeście.
+GUI zachowuje QUEUED do potwierdzenia trwałości; dopiero wtedy przyjmuje BLOCKED,
+środowisko i czas zakończenia. probe_executed=false i puste imports jawnie
+odróżniają odmowę od rzeczywistej kontroli importów. Normalny preflight,
+fsync/snapshot, bariera RUNNING i kanoniczny właściciel pozostają zachowane.
+
+Nowe kontrakty zatrzymują końcowy zapis i sprawdzają brak przedwczesnego wyniku,
+anulowanie, błąd dysku, brak uruchomionego dziecka oraz zgodność każdej publikacji
+BLOCKED z odczytem dysku. Oryginał rozszerzonego testu z .63 zachowany bajt w bajt
+w tests/archive z blob SHA. Istniejący test odbioru Windows pozostaje bez zmian,
+włącznie ze 100 oczekiwaniami po 10 ms i odczytem BLOCKED z dysku.
+
+Pierwsza regresja: **30 PASS**, `invalid-refusal-first.*`; typy całego JSS i
+dwóch testów: **0 errors/warnings**, `invalid-refusal-types.txt`; Node24:
+**23 workflow PASS**, `invalid-refusal-node24.txt`. Szersza rejestrowana regresja:
+**73 PASS**, `invalid-refusal-precommit.*`, `registered-invalid-precommit/`.
+Metadane, pełna suite i exact-head CI wymagają końcowych dowodów. Brak zamknięcia P0:
+indeks historii, pozostali wykonawcy/CI, ręczne obserwacje i lokalny MCP pozostają
+otwarte; E0/E1 IN_PROGRESS, E2–E8 NOT_RUN, RELEASE_NOT_ACCEPTED.

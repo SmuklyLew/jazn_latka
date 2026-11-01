@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.63",
-  "active_definition_count": 3079,
+  "system_version": "16.3.25.5.116.0.34.94.6.64",
+  "active_definition_count": 3082,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31097,6 +31097,53 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 24
+    },
+    "tests/test_jss_tpa_invalid_interpreter_qt.py::test_invalid_interpreter_keeps_gui_uncommitted_until_snapshot_ack": {
+      "path": "tests/test_jss_tpa_invalid_interpreter_qt.py",
+      "name": "test_invalid_interpreter_keeps_gui_uncommitted_until_snapshot_ack",
+      "purpose": "Invalid interpreter keeps gui uncommitted until snapshot ack",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_jss_tpa_invalid_interpreter_qt.py::test_invalid_interpreter_write_failure_never_claims_durable_refusal": {
+      "path": "tests/test_jss_tpa_invalid_interpreter_qt.py",
+      "name": "test_invalid_interpreter_write_failure_never_claims_durable_refusal",
+      "purpose": "Invalid interpreter write failure never claims durable refusal",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_jss_tpa_invalid_interpreter_qt.py::test_blocked_ui_state_always_has_matching_committed_disk_state": {
+      "path": "tests/test_jss_tpa_invalid_interpreter_qt.py",
+      "name": "test_blocked_ui_state_always_has_matching_committed_disk_state",
+      "purpose": "Blocked ui state always has matching committed disk state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_jss_uiux_profiles.py::test_default_and_migration_do_not_require_a_running_daemon": {
       "path": "tests/test_jss_uiux_profiles.py",

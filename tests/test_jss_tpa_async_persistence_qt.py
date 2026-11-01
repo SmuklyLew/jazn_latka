@@ -179,20 +179,20 @@ def test_invalid_interpreter_persists_one_complete_refusal_after_initial_manifes
     original = runner.store.save
     snapshots, launches = [], []
     def save(report):
+        assert (runner.store.folder(report["run_id"]) / "manifest.json").is_file()
         original(report)
         snapshots.append(deepcopy(report))
     monkeypatch.setattr(runner.store, "save", save)
     monkeypatch.setattr(runner.process, "start", lambda *_args: launches.append(1))
     runner.start_selection(("smoke-isolation", "config-persistence"))
     wait_until(lambda: not runner.active)
-    assert not launches and len(snapshots) == 2
-    assert snapshots[0]["finished_utc"] is None
-    assert all(row["status"] == "QUEUED" for row in snapshots[0]["results"])
-    assert snapshots[1]["finished_utc"]
-    assert all(row["status"] == "BLOCKED" and row["full_gate"] == "NOT_RUN" for row in snapshots[1]["results"])
-    assert snapshots[1]["environment"]["ok"] is False
-    saved = runner.store.load(snapshots[1]["run_id"])
-    assert saved["results"] == snapshots[1]["results"]
+    assert not launches and len(snapshots) == 1
+    assert snapshots[0]["finished_utc"]
+    assert all(row["status"] == "BLOCKED" and row["full_gate"] == "NOT_RUN" for row in snapshots[0]["results"])
+    assert snapshots[0]["environment"]["ok"] is False
+    assert snapshots[0]["environment"]["probe_executed"] is False
+    saved = runner.store.load(snapshots[0]["run_id"])
+    assert saved["results"] == snapshots[0]["results"]
 
 
 def test_cleanup_failure_is_explicit_after_write_failure(system, monkeypatch):

@@ -47,3 +47,5 @@ Additional append-only provenance:
 | `tests/test_jazn_run_studio_local_acceptance.py` from `3002abdb178a50d14f992e0a353a06f79302db93` before releasing the GIL during the same 100 waits of 10 ms | `test_jazn_run_studio_local_acceptance_v16_3_25_5_116_0_34_94_6_62.py` | `816c8f1368d70698cff5c065f8d5e7432c0e32b5` |
 
 | `tests/test_jss_tpa_async_persistence_qt.py` from `3002abdb178a50d14f992e0a353a06f79302db93` before adding the complete failed-preflight snapshot contract | `test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_62.py` | `2587b4711458cd96b61d5263e5e6124ab10b955c` |
+
+| `tests/test_jss_tpa_async_persistence_qt.py` from `450273b796d0dfae802ce25fe347b8b000447b07` before persisting an invalid-interpreter refusal in its first snapshot (valid-interpreter durability barriers retained) | `test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_63.py` | `5cffc9e8682cfee997b357b64e84a08a8c59632d` |

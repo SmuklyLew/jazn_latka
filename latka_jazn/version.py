@@ -1,3 +1,4 @@
+# v116.0.34.94.6.64: Commit invalid-interpreter refusal in the first snapshot and publish GUI results only after durability.
 # v116.0.34.94.6.63: Persist a failed TPA preflight as one complete refusal without launching selected processes.
 # v116.0.34.94.6.62: Serialize automated TPA evidence writes off the Qt thread with durable launch/completion barriers.
 # v116.0.34.94.6.61: Page evidence scenarios and persist execution identity in the first durable index.
@@ -194,7 +195,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.63"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.64"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (
