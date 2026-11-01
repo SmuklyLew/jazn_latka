@@ -34,6 +34,19 @@ Moduły zawierają **zachowane metody** oryginalnego `Window`, skomponowane prze
 6. Potwierdzenie statusu to osobna czynność — kolor, PID, port lub nazwa modelu nie dowodzą gotowości runtime.
 7. Po każdej zmianie uruchom testy Qt/Windows/Linux, Pyright, smoke z `--gui-smoke`, testy release i wygeneruj nowe screenshoty z `visual_ci.py`.
 
+## Dowody testowe i historia
+
+`tpa_reports.RunStore` pozostaje właścicielem przebiegów. `test_evidence_archive.py`
+zapisuje niezmienny katalog wymaganego zakresu i kompletne, wersjonowane snapshoty
+TXT/JSON z integralnością. `test_evidence_plugin.py` jest adapterem istniejącego
+pytest, korzystającym z tego samego magazynu i kanonicznego katalogu Test Studio.
+Nie uruchamia runtime ani modelu i nie przyznaje pełnego odbioru.
+
+`test_history_view.py`, osadzony w katalogu testów, odczytuje także zewnętrzne
+dowody bez naprawiania plików. Odczyt/import/eksport pracują poza wątkiem GUI.
+Pełny kontrakt i jawne pozostałe bramki:
+`docs/uiux/JSS_TEST_EVIDENCE_ARCHIVE.md`.
+
 ## Granice niezmieniane przez refaktor
 
 - Żadnych zmian logiki `run.py` / `main.py` i niezależnej finalizacji rozmów.

@@ -18,10 +18,11 @@ from .core import Redactor
 from .local_acceptance import scope_version
 from .tpa_catalog import execution_map
 
-STATES = ("NOT_RUN", "QUEUED", "RUNNING", "PASS", "FAIL", "SKIPPED", "BLOCKED", "CANCELLED", "TIMEOUT", "INTERRUPTED")
+STATES = ("NOT_RUN", "QUEUED", "RUNNING", "PASS", "FAIL", "SKIPPED", "BLOCKED", "CANCELLED", "TIMEOUT", "INTERRUPTED", "ERROR")
 TERMINAL = frozenset(STATES) - {"NOT_RUN", "QUEUED", "RUNNING"}
 SCHEMA = "jazn_tpa_run/v2"
 MAX_REPORT = 4 * 1024 * 1024
+MAX_REGISTERED_INDEX = 16 * 1024 * 1024
 
 
 def utc() -> str:
@@ -155,7 +156,7 @@ def readable_report(report: dict) -> str:
                   + (" — osobny odbiór operatorski do wykonania; wynik podtestu pozostaje ważny"
                      if result.get("full_gate", "NOT_RUN") == "NOT_RUN" else ""),
                   "Dalej: " + result.get("next_step", "Otwórz log i raport JUnit."), ""]
-    lines += ["POKRYCIE 22 SCENARIUSZY"]
+    lines += ["POKRYCIE SCENARIUSZY: " + str(len(report["coverage_map"]))]
     for item in report["coverage_map"]:
         lines += [item["id"] + " • " + item["title"],
                   "Wykonanie: " + item.get("execution_status", "NOT_RUN") + " • pełny odbiór: " + item.get("full_gate", "NOT_RUN")
@@ -165,9 +166,12 @@ def readable_report(report: dict) -> str:
 
 
 class RunStore:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, evidence_base: Path | None = None):
         self.root = root.resolve()
-        self.base = operator_state_dir("jazn_studio_tpa", root, per_system=True)
+        self.base = (operator_state_dir("jazn_studio_tpa", root, per_system=True)
+                     if evidence_base is None else validate_operator_path(
+                         evidence_base, root, directory=True,
+                         allow_acceptance_operator=os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"))
         self.redactor = Redactor()
         self.history_errors: list[str] = []
 
@@ -179,21 +183,32 @@ class RunStore:
                                allow_acceptance_operator=os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated")
         return target
 
-    def create(self, case_ids: tuple[str, ...], python: str, environment: dict) -> dict:
-        mapping = {c["id"]: c for c in execution_map()}
+    def create(self, case_ids: tuple[str, ...], python: str, environment: dict, *,
+               catalogue: list[dict] | None = None, source: dict | None = None) -> dict:
+        definitions = execution_map() if catalogue is None else catalogue
+        mapping = {c["id"]: c for c in definitions}
+        if (len(mapping) != len(definitions) or any(
+                not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,99}", key)
+                or not all(isinstance(row.get(field), str) for field in ("title", "expected", "steps", "category", "executor", "mode", "limitations"))
+                or not all(isinstance(row.get(field), list) and all(isinstance(item, str) for item in row[field]) for field in ("files", "requirements"))
+                for key, row in mapping.items())):
+            raise ValueError("Nieprawidłowy katalog wymaganego zakresu")
         if not case_ids or len(case_ids) != len(set(case_ids)) or set(case_ids) - mapping.keys():
             raise ValueError("Wybierz znane, niepowtarzające się scenariusze")
         run_id = "run-" + uuid.uuid4().hex
         self.base.mkdir(parents=True, exist_ok=True)
         self.folder(run_id).mkdir(exist_ok=False)
-        report = {"schema_version": SCHEMA, "run_id": run_id, "source": source_identity(self.root),
+        report = {"schema_version": SCHEMA, "run_id": run_id, "source": source_identity(self.root) if source is None else source,
                   "python": python, "environment": environment, "selected": list(case_ids),
                   "owner_pid": os.getpid(), "started_utc": utc(), "finished_utc": None,
-                  "coverage_map": execution_map(), "artifacts": [], "results": [
+                  "coverage_map": definitions, "artifacts": [], "results": [
                       {"case_id": key, "title": mapping[key]["title"], "expected": mapping[key]["expected"],
                        "status": "QUEUED", "reason": "Oczekuje na wykonanie.", "full_gate": "NOT_RUN",
                        "coverage": "regression_subset", "exit_code": None, "duration_seconds": None,
                        "next_step": "Uruchom podtest; potem wykonaj kroki odbioru wspomaganego."} for key in case_ids]}
+        from .test_evidence_archive import initialize
+        initialize(self.folder(run_id), report)
+        report["evidence_schema"] = "jazn_test_evidence/v1"
         self.save(report)
         return report
 
@@ -207,6 +222,10 @@ class RunStore:
                         executed_scope=row.get("coverage", "NOT_RUN"))
         clean = redact(report, self.redactor)
         clean["summary"] = summary(clean)
+        if report.get("evidence_schema") == "jazn_test_evidence/v1":
+            from .test_evidence_archive import save_snapshot
+            key = save_snapshot(folder, clean, self.redactor)
+            report["evidence_snapshot"] = clean["evidence_snapshot"] = key
         # Commit an immutable complete revision BEFORE replacing the compatibility
         # files. A crash can leave an orphan temp file, never erase a revision.
         revision = safe_child(folder, "revision-" + uuid.uuid4().hex + ".json")
@@ -233,9 +252,11 @@ class RunStore:
 
     def load(self, run_id: str) -> dict:
         path = safe_child(self.folder(run_id), "report.json")
-        if path.stat().st_size > MAX_REPORT:
+        if path.stat().st_size > MAX_REGISTERED_INDEX:
             raise ValueError("Raport przekracza limit")
         report = json.loads(path.read_text(encoding="utf-8-sig"))
+        if path.stat().st_size > MAX_REPORT and report.get("execution") != "pytest":
+            raise ValueError("Raport TPA przekracza limit")
         return self._validate(report, run_id)
 
     @staticmethod
@@ -258,7 +279,7 @@ class RunStore:
         result = []
         for path in self.folder(run_id).glob("revision-*.json"):
             path = safe_child(path.parent, path.name)
-            if path.stat().st_size > MAX_REPORT:
+            if path.stat().st_size > MAX_REGISTERED_INDEX:
                 raise ValueError("Rewizja przekracza limit")
             value = json.loads(path.read_text(encoding="utf-8"))
             if (not isinstance(value, dict) or value.get("schema") != "jazn_tpa_revision/v1"

@@ -14,6 +14,9 @@ on:
       - "tests/test_daemon_shutdown_http_body.py"
       - "latka_jazn/core/runtime_daemon.py"
       - "tests/test_jazn_run_studio.py"
+      - "tests/test_jss_evidence*.py"
+      - "tests/test_jss_pytest_evidence_plugin.py"
+      - "tests/test_jss_tpa_compact_filters_qt.py"
       - "tests/test_jazn_tpa_safe_executor.py"
       - "tests/test_jazn_tpa_live_full_gate.py"
       - "tests/test_jazn_tpa_staging_authority.py"
@@ -67,6 +70,23 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
       - run: python -m compileall -q tools/jazn_run_studio jazn_run_studio.py run_studio.py
+      - name: Durable evidence and read-only Qt history contracts
+        run: >-
+          python -X utf8 -m pytest -q -ra
+          --junitxml="${{ runner.temp }}/jss-evidence-contracts.xml"
+          tests/test_jss_evidence_archive.py
+          tests/test_jss_evidence_history_qt.py
+          tests/test_jss_pytest_evidence_plugin.py
+          tests/test_jss_tpa_compact_filters_qt.py
+          tests/test_jazn_tpa_compact_layout_qt.py
+      - name: Preserve evidence contracts on every outcome
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jss-evidence-${{ matrix.os }}-py${{ matrix.python }}-${{ github.sha }}
+          path: ${{ runner.temp }}/jss-evidence-contracts.xml
+          if-no-files-found: error
+          retention-days: 7
       - run: python -m pytest -q tests/test_heart_visual_system_qt.py tests/test_heart_service_visual_readability_qt.py tests/test_version_bound_contract_fields.py tests/test_package_integrity_canonical_worktree.py
       - run: python -m pytest -q tests/test_jazn_tpa_staging_authority.py
       - run: python -m pytest -q tests/test_jazn_acceptance_resume_profile.py tests/test_jazn_workspace_layout_isolation.py tests/test_jazn_tpa_safe_executor.py

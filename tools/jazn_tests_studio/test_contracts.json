@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.55",
-  "active_definition_count": 3036,
+  "system_version": "16.3.25.5.116.0.34.94.6.56",
+  "active_definition_count": 3056,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30250,6 +30250,292 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_manifest_precedes_execution_and_all_22_have_txt_json",
+      "purpose": "Manifest precedes execution and all 22 have txt json",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jss_evidence_archive.py::test_status_never_promotes_to_release_acceptance": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_status_never_promotes_to_release_acceptance",
+      "purpose": "Status never promotes to release acceptance",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_jss_evidence_archive.py::test_revisions_preserve_old_source_and_results": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_revisions_preserve_old_source_and_results",
+      "purpose": "Revisions preserve old source and results",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_jss_evidence_archive.py::test_missing_or_modified_evidence_is_not_a_verified_result": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_missing_or_modified_evidence_is_not_a_verified_result",
+      "purpose": "Missing or modified evidence is not a verified result",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_jss_evidence_archive.py::test_read_external_copy_never_mutates_source": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_read_external_copy_never_mutates_source",
+      "purpose": "Read external copy never mutates source",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_jss_evidence_archive.py::test_incomplete_snapshot_does_not_hide_committed_previous_revision": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_incomplete_snapshot_does_not_hide_committed_previous_revision",
+      "purpose": "Incomplete snapshot does not hide committed previous revision",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_jss_evidence_archive.py::test_changed_required_catalogue_is_refused_before_new_save": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_changed_required_catalogue_is_refused_before_new_save",
+      "purpose": "Changed required catalogue is refused before new save",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_jss_evidence_archive.py::test_manifest_edit_and_source_relabelling_are_refused": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_manifest_edit_and_source_relabelling_are_refused",
+      "purpose": "Manifest edit and source relabelling are refused",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
+    },
+    "tests/test_jss_evidence_archive.py::test_export_contains_only_verified_text_and_can_be_read_after_extraction": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_export_contains_only_verified_text_and_can_be_read_after_extraction",
+      "purpose": "Export contains only verified text and can be read after extraction",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "FileExistsError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_jss_evidence_archive.py::test_import_refuses_unsafe_paths_before_creating_destination": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_import_refuses_unsafe_paths_before_creating_destination",
+      "purpose": "Import refuses unsafe paths before creating destination",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 141
+    },
+    "tests/test_jss_evidence_archive.py::test_import_checks_hashes_before_creating_destination": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_import_checks_hashes_before_creating_destination",
+      "purpose": "Import checks hashes before creating destination",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 151
+    },
+    "tests/test_jss_evidence_archive.py::test_explicit_external_writable_store_still_protects_system": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_explicit_external_writable_store_still_protects_system",
+      "purpose": "Explicit external writable store still protects system",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 165
+    },
+    "tests/test_jss_evidence_archive.py::test_leaf_symlink_cannot_supply_external_evidence": {
+      "path": "tests/test_jss_evidence_archive.py",
+      "name": "test_leaf_symlink_cannot_supply_external_evidence",
+      "purpose": "Leaf symlink cannot supply external evidence",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 173
+    },
+    "tests/test_jss_evidence_history_qt.py::test_real_qt_history_shows_missing_tests_and_block_reason": {
+      "path": "tests/test_jss_evidence_history_qt.py",
+      "name": "test_real_qt_history_shows_missing_tests_and_block_reason",
+      "purpose": "Real qt history shows missing tests and block reason",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_jss_evidence_history_qt.py::test_corrupted_history_remains_visible_as_error": {
+      "path": "tests/test_jss_evidence_history_qt.py",
+      "name": "test_corrupted_history_remains_visible_as_error",
+      "purpose": "Corrupted history remains visible as error",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_jss_evidence_history_qt.py::test_catalog_integrates_history_without_automatic_reads": {
+      "path": "tests/test_jss_evidence_history_qt.py",
+      "name": "test_catalog_integrates_history_without_automatic_reads",
+      "purpose": "Catalog integrates history without automatic reads",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
     "tests/test_jss_modular_view_boundaries.py::test_each_functional_view_owns_exactly_one_method_implementation": {
       "path": "tests/test_jss_modular_view_boundaries.py",
       "name": "test_each_functional_view_owns_exactly_one_method_implementation",
@@ -30279,6 +30565,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 121
+    },
+    "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
+      "path": "tests/test_jss_pytest_evidence_plugin.py",
+      "name": "test_real_pytest_fail_skip_and_teardown_error_are_not_promoted",
+      "purpose": "Real pytest fail skip and teardown error are not promoted",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jss_pytest_evidence_plugin.py::test_no_collected_tests_is_error_with_persistent_report": {
+      "path": "tests/test_jss_pytest_evidence_plugin.py",
+      "name": "test_no_collected_tests_is_error_with_persistent_report",
+      "purpose": "No collected tests is error with persistent report",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_jss_pytest_evidence_plugin.py::test_partial_collection_error_blocks_execution_and_collection_gate": {
+      "path": "tests/test_jss_pytest_evidence_plugin.py",
+      "name": "test_partial_collection_error_blocks_execution_and_collection_gate",
+      "purpose": "Partial collection error blocks execution and collection gate",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
@@ -30341,6 +30678,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 16
+    },
+    "tests/test_jss_tpa_compact_filters_qt.py::test_collapsed_filters_keep_search_and_keyboard_access": {
+      "path": "tests/test_jss_tpa_compact_filters_qt.py",
+      "name": "test_collapsed_filters_keep_search_and_keyboard_access",
+      "purpose": "Collapsed filters keep search and keyboard access",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 9
     },
     "tests/test_jss_tpa_full_gate_entry_qt.py::test_full_acceptance_button_opens_scrollable_evidence_wizard": {
       "path": "tests/test_jss_tpa_full_gate_entry_qt.py",

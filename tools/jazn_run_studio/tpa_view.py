@@ -113,14 +113,23 @@ class TPAPanel(QWidget):
         self.search = QLineEdit()
         self.search.setPlaceholderText("Szukaj nazwy, identyfikatora lub przyczyny…")
         self.search.setAccessibleName("Filtr nazwy TPA")
-        filters.addWidget(self.search, 0, 0, 1, 4)
+        filters.addWidget(self.search, 0, 0, 1, 3)
+        self.filter_details = QWidget()
+        filter_options = QGridLayout(self.filter_details)
+        filter_options.setContentsMargins(0, 0, 0, 0)
+        self.filter_toggle = QPushButton("Filtry…")
+        self.filter_toggle.setCheckable(True)
+        self.filter_toggle.setAccessibleName("Rozwiń filtry kategorii, trybu i wyników TPA")
+        self.filter_toggle.toggled.connect(self.filter_details.setVisible)
+        filters.addWidget(self.filter_toggle, 0, 3)
+        filters.addWidget(self.filter_details, 1, 0, 1, 4)
         self.category, self.mode_filter, self.result_filter, self.triage_filter = QComboBox(), QComboBox(), QComboBox(), QComboBox()
         for col, (widget, title) in enumerate(((self.category, "Kategoria"), (self.mode_filter, "Tryb"), (self.result_filter, "Wynik"), (self.triage_filter, "Odbiór lokalny"))):
             widget.addItem(title + ": wszystkie", "")
             widget.setAccessibleName("Filtr TPA: " + title)
             widget.setMinimumWidth(60)
             widget.currentIndexChanged.connect(self.apply_filters)
-            filters.addWidget(widget, 1, col)
+            filter_options.addWidget(widget, 0, col)
         for category in sorted({r["category"] for r in self.rows}):
             self.category.addItem(category, category)
         for key, label in MODES.items():
@@ -130,6 +139,9 @@ class TPAPanel(QWidget):
         for key, label in TRIAGE_LABELS.items():
             self.triage_filter.addItem(label, key)
         self.search.textChanged.connect(self.apply_filters)
+        # Search remains directly available. Advanced filters are keyboard
+        # accessible without pushing the queue below the minimum viewport.
+        self.filter_details.hide()
         layout.addLayout(filters)
         actions = QGridLayout()
         self.auto_one = self.button("Uruchom zaznaczone", self.run_selected_subcheck)
