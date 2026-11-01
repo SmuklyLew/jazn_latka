@@ -103,7 +103,7 @@ class WorkbenchShell(QObject):
         self.command("Terminal", "Otwórz PowerShell w osobnym oknie", host.workspace.open_system_terminal)
         self.command("Terminal", "Otwórz lokalny czat Jaźni (run.py)", host.workspace.open_tty)
         self.command("Terminal", "Obsługa PTY / ConPTY", lambda: QMessageBox.information(
-            host, "Terminal", "Konsole zadań nie emulują terminala TTY. PowerShell uruchamia się w osobnym oknie. Wbudowany ConPTY/PTY wymaga osobnej implementacji oraz testów na Windows i Linux."))
+            host, "Terminal", "Konsole zadań to nie terminal TTY. Wbudowany lokalny PTY uruchamia PowerShell na Windows (opcjonalny pywinpty) lub powłokę na Linux. Obsługa zaawansowanych sekwencji VT/ANSI pozostaje ograniczona; sesja nie zarządza daemonem Jaźni."))
         self.command("Usługi", "Panel usług", lambda: host.navigate("Usługi i procesy"))
         self.command("Usługi", "Sprawdź wszystkie usługi", host.refresh_services)
         for operation, label in (("start", "Start wybranej usługi"), ("stop", "Stop wybranej usługi"), ("restart", "Restart wybranej usługi")):
