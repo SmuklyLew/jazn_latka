@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
   "runtime_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
   "package_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
-  "generated_at_utc": "2026-10-31T23:55:19+00:00",
-  "updated_at_utc": "2026-10-31T23:55:19+00:00",
+  "generated_at_utc": "2026-11-01T00:21:16+00:00",
+  "updated_at_utc": "2026-11-01T00:21:16+00:00",
   "start_file": "run.py",
-  "file_count": 3583,
-  "static_file_count": 3583,
+  "file_count": 3594,
+  "static_file_count": 3594,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3023,
-      "sha256": "f30d8e715337073132bc15579390d1b8ce05629625e44fde86848bda24f8aff5",
+      "sha256": "45d3218d20a58bb724f35b11032e00d613e96ad779317cb088ff866e63487e79",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31191,6 +31191,105 @@
       "path": "tools/jazn_archive.py",
       "size_bytes": 4740,
       "sha256": "46cff926b2b6e432a53a097d61c18fb05253805dd1b5f57852fd491821dc3543",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/Jazn_Centrum_Procesow.spec",
+      "size_bytes": 691,
+      "sha256": "a5bff22b050208ad813d321e1e1701ab3c17b44a2ad0e4e515812e59e5dd41b7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/Analysis-00.toc",
+      "size_bytes": 183278,
+      "sha256": "d1bd08745d4594b96a6336a1bd08e35defd7af57c1676e51ba78f3570a126aad",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/EXE-00.toc",
+      "size_bytes": 147338,
+      "sha256": "4c08085cfacb69d824f308067a226070c2b073deaec9f39ab18c40a01b157368",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/Jazn_Centrum_Procesow.pkg",
+      "size_bytes": 11215701,
+      "sha256": "f317ccc3b82a0bbdddfedee23403328f1c72b75d4ae4ba3178866e36ab06c695",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/PKG-00.toc",
+      "size_bytes": 145644,
+      "sha256": "f57042c881b72228fd4153f538d9b94487eddfc12ec7c9cbc082e30188672462",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/PYZ-00.pyz",
+      "size_bytes": 1851273,
+      "sha256": "defa1f9f2711d31e953534eb1352cee318f63e10fedbbfc4a52c8d82a99b0a70",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/PYZ-00.toc",
+      "size_bytes": 17916,
+      "sha256": "2aeaac17d8116d4b735f40028df901ca8baf78fe210644b588ae0564f80efcae",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/warn-Jazn_Centrum_Procesow.txt",
+      "size_bytes": 2033,
+      "sha256": "4a7237dd14451a3876b18d96216be11341970a35c9cf9edf57712e193f9b18a9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build/Jazn_Centrum_Procesow/xref-Jazn_Centrum_Procesow.html",
+      "size_bytes": 288227,
+      "sha256": "020e38e5d733bcde44e9fd441ae1d2993697186d5e2d1eadbb279e47bc20492b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/build_windows.ps1",
+      "size_bytes": 865,
+      "sha256": "9285d23ecf9b8618e2c8ee78fe0a0a634dcbe4a19f41b970defed61501195049",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_centrum_procesow/jazn_centrum_procesow.py",
+      "size_bytes": 22111,
+      "sha256": "0eadbcdb48c036ab677bbae375cb694604ba759b2ba0649caa0d253cb4a3f844",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
