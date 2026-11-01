@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.67",
-  "active_definition_count": 3088,
+  "system_version": "16.3.25.5.116.0.34.94.6.68",
+  "active_definition_count": 3089,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30627,6 +30627,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 37
+    },
+    "tests/test_jss_evidence_phase_identity.py::test_phase_reporting_does_not_requery_the_environment": {
+      "path": "tests/test_jss_evidence_phase_identity.py",
+      "name": "test_phase_reporting_does_not_requery_the_environment",
+      "purpose": "Phase reporting does not requery the environment",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
     },
     "tests/test_jss_evidence_platform.py::test_windows_snapshot_uses_native_version_without_platform_queries": {
       "path": "tests/test_jss_evidence_platform.py",

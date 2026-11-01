@@ -1,3 +1,4 @@
+# v116.0.34.94.6.68: Reuse frozen scenario identity in evidence phase hooks without requerying the platform.
 # v116.0.34.94.6.67: Sync manual evidence artifacts and publish copied reports only after durable commit.
 # v116.0.34.94.6.66: Preserve the canonical speech route and no-probe decision through adapter construction.
 # v116.0.34.94.6.65: Capture native Windows evidence metadata without blocking WMI inventory queries.
@@ -198,7 +199,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.67"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.68"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (

@@ -294,3 +294,20 @@ i listy wyników po zatwierdzeniu, bez unieważniania referencji. Niezmieniony s
 test i nowe kontrole tożsamości przechodzą: **53 PASS**, `manual-commit-compatible.*`;
 typy **0 errors/warnings**. Nie zmieniano istniejących testów.
 Przeniesienie ręcznych operacji GUI poza główny wątek i pełne P0 pozostają otwarte.
+# .68 — evidence phase identity, 2026-11-02
+
+The pinned .67 full run terminated with pytest exit3 / INTERNALERROR after
+1817 PASS and16 SKIPPED. The Windows metadata regression deliberately forbids
+platform inventory, exposing a phase-hook call that rebuilt the frozen
+definition solely to compute its identifier. Hosted JSS matrices failed at
+the same adapter call; their old acceptance step was not reached.
+
+Phase hooks now compute only the canonical stable nodeid hash and look up the
+existing result row. Manifest construction still captures the environment
+before execution. No assertions, tests or timing limits were weakened.
+Registered platform/phase/plugin regression:6PASS,63.75s; targeted Pyright
+0errors/0warnings. Evidence phase-identity.{txt,xml}, phase-identity-types.txt
+and registered-phase-identity/ under the external task directory. Full .67
+report remains evidence/full-system-jss-renewed-foundation.{txt,xml}; it is an
+incomplete failed validation, never a complete PASS. E0/E1 still IN_PROGRESS.
+

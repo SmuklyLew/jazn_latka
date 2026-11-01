@@ -24,9 +24,14 @@ from .tpa_reports import RunStore, junit_result, redact, safe_child, source_iden
 from .test_evidence_archive import _json, _write
 
 
+def _case_id(nodeid: str) -> str:
+    """Pure identity lookup; phase hooks never rebuild the frozen inventory."""
+    return "pytest-" + sha256(nodeid.encode("utf-8")).hexdigest()[:32]
+
+
 def _definition(nodeid: str, record: dict | None = None) -> dict:
     record = record or {}
-    return {"id": "pytest-" + sha256(nodeid.encode("utf-8")).hexdigest()[:32],
+    return {"id": _case_id(nodeid),
             "title": nodeid, "steps": str(record.get("purpose") or "Execute the registered pytest test"),
             "expected": str(record.get("expected") or "All assertions and setup/teardown succeed"),
             "category": str(record.get("category") or "pytest"), "executor": "pytest",
@@ -113,7 +118,7 @@ class EvidenceRecorder:
                     source[key] = bool(result.stdout) if key == "git_dirty" else result.stdout.decode("ascii").strip()
             except (OSError, subprocess.SubprocessError, UnicodeError):
                 pass
-        selected = tuple([_definition(item.nodeid)["id"] for item in items] + ["pytest-collection"])
+        selected = tuple([_case_id(item.nodeid) for item in items] + ["pytest-collection"])
         self.report = self.store.create(selected, sys.executable,
             {"os": platform.system(), "python_version": platform.python_version(),
              "pytest_version": pytest.__version__, "collected_count": len(items),
@@ -136,7 +141,7 @@ class EvidenceRecorder:
     def pytest_runtest_logreport(self, report: Any) -> None:
         if self.report is None:
             raise RuntimeError("Evidence manifest was not committed before execution")
-        key = _definition(report.nodeid)["id"]
+        key = _case_id(report.nodeid)
         row = self.rows[key]
         row.setdefault("started_utc", utc())
         row["duration_seconds"] = float(row.get("duration_seconds") or 0) + report.duration
