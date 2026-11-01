@@ -18,6 +18,7 @@ on:
       - "tests/test_jss_pytest_evidence_plugin.py"
       - "tests/test_jss_test_evidence_dependency_profile.py"
       - "tests/test_jss_tpa_compact_filters_qt.py"
+      - "tests/test_jss_tpa_async_persistence_qt.py"
       - "tests/test_jazn_tpa_safe_executor.py"
       - "tests/test_jazn_tpa_live_full_gate.py"
       - "tests/test_jazn_tpa_staging_authority.py"
@@ -78,8 +79,11 @@ jobs:
           download --profile test-evidence --platform current --python-version "${{ matrix.python }}"
           > "${{ runner.temp }}/test-evidence-download.json"
       - name: Durable evidence and read-only Qt history contracts
+        env:
+          JAZN_TEST_EVIDENCE_DIR: ${{ runner.temp }}/jss-evidence-runs
         run: >-
           python -X utf8 -m pytest -q -ra
+          -p tools.jazn_run_studio.test_evidence_plugin
           --junitxml="${{ runner.temp }}/jss-evidence-contracts.xml"
           tests/test_jss_evidence_archive.py
           tests/test_jss_evidence_history_qt.py
@@ -89,6 +93,7 @@ jobs:
           tests/test_jss_pytest_evidence_plugin.py
           tests/test_jss_test_evidence_dependency_profile.py
           tests/test_jss_tpa_compact_filters_qt.py
+          tests/test_jss_tpa_async_persistence_qt.py
           tests/test_jazn_tpa_compact_layout_qt.py
       - name: Preserve evidence contracts on every outcome
         if: always()
@@ -97,6 +102,7 @@ jobs:
           name: jss-evidence-${{ matrix.os }}-py${{ matrix.python }}-${{ github.sha }}
           path: |
             ${{ runner.temp }}/jss-evidence-contracts.xml
+            ${{ runner.temp }}/jss-evidence-runs/**
             ${{ runner.temp }}/test-evidence-download.json
             ${{ runner.temp }}/test-evidence-wheelhouse/**/JAZN_WHEELHOUSE_REQUIREMENTS.txt
             ${{ runner.temp }}/test-evidence-wheelhouse/**/JAZN_WHEELHOUSE_MANIFEST.json

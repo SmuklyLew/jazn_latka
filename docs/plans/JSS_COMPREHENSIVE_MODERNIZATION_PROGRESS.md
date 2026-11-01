@@ -127,3 +127,47 @@ Odtworzono też błąd pierwszego indeksu pytest: wykonawca był oznaczany dopie
 Końcowe nowe kontrakty po doprecyzowaniu typu QApplication: **6 PASS** (`history-index-pagination-final.*`). Typy całego JSS i obu nowych plików: **0 błędów, 0 ostrzeżeń** (`history-index-pagination-types-fixed.txt`); Node24 **23 workflow PASS**. Pierwszy odczyt typów ujawnił brak zawężenia QCoreApplication do QApplication w nowej fixture; poprawiono rzeczywistą kontrolą typu, bez ignorowania diagnostyki. Przed zapisem tego punktu budżet: 53% / 5 h, 87% / tydzień. Nie rozpoczynać większego patcha zapisu TPA przed kolejną sesją z dostatecznym zapasem; zachować wyniki końcowego pipeline i instrukcję wznowienia.
 
 Nadal otwarte E1: pełny indeks starszych przebiegów, kompletna integracja wszystkich wykonawców/CI i asynchroniczny zapis TPA. Pomiar `tpa-write-responsiveness-baseline.json`: create 0.310 s, save 0.206–0.222 s; przerwa pętli Qt 0.310 s. Wyłącznie własne raporty w izolowanym katalogu, bez scenariuszy/usług. Większy patch opisano w `D:/.AI/codex_tasks/jss-modernization-20261101/NEXT_TPA_WRITE_STEP.md`; wymaga nowego zapasu budżetu i osobnej pełnej walidacji. E0/E1 pozostają IN_PROGRESS, E2–E8 NOT_RUN, RELEASE_NOT_ACCEPTED.
+
+### E1 — asynchroniczny zapis automatycznej kolejki TPA (.62)
+
+Wznowienie: rzeczywisty local/origin/PR HEAD 00bcf8b6, Draft PR #450, master
+784f3aac bez zmian; czyste drzewo przed edycją. Oficjalne okno odnowione: 0% / 5 h
+i 0% tygodnia przy starcie; nie uruchomiono resetu ani kredytów. Obowiązuje ponownie
+operacyjny STOP 65% / 5 h. Ostatni pomiar podczas patcha: 22% / 5 h, 4% tygodnia.
+
+RunStore.prepare/begin rozdziela budowę kontraktu i jego trwały zapis, zachowując
+synchroniczne publiczne create/save. Aktywna TPARunner używa jednego szeregowego
+workera, kopii raportów i kontynuacji Qt. Manifest poprzedza preflight, RUNNING
+poprzedza start procesu, completed czeka na finalny snapshot i własny cleanup.
+Walidacja i zapis JUnit/log/live pracują poza GUI; anulowanie, awaria dysku i
+przepełnienie kolejki nie uruchamiają zależnych procesów. Błąd cleanup jest jawny.
+Ręczny zapis obserwacji operatorskiej pozostaje do osobnego przeglądu.
+
+Pierwsza regresja ujawniła głodzenie workerów przez QTest.qWait zatrzymujące GIL.
+Helper istniejącego testu pompuje teraz zdarzenia i oddaje GIL przez time.sleep,
+z zachowaniem timeoutu i asercji. Oryginały dwóch zmienionych testów zachowane
+bajt w bajt w tests/archive z blob SHA w README. Wyniki rozwojowe zachowane,
+nie są zamieniane na PASS: pierwszy 9 FAIL / 5 PASS, wariant qWait+yield 6 FAIL /
+34 PASS i 1 FAIL / 4 PASS nowych barier. Poprawiony event pump: **45 PASS**.
+
+Regresja przed commitem: **85 PASS, 1 SKIPPED**, `async-tpa-precommit.*`;
+końcowe 7 kontraktów barier: **7 PASS**, `async-tpa-barriers-final.*`.
+Typy całego JSS i trzech testów: **0 błędów, 0 ostrzeżeń**,
+`async-tpa-types-fixed.txt`; wcześniejszy błąd typu fixture zachowany osobno.
+Node24: **PASS, 23 workflow**. Workflow JSS zapisuje rejestr i przesyła go
+również przy porażce kroku kontraktów; pozostałe kroki/wykonawcy nadal wymagają
+kompletnej integracji.
+
+Rzeczywisty QApplication.exec i 25 własnych zapisów: wszystkie poza wątkiem GUI,
+start_selection 14.5 ms, maksymalna przerwa heartbeat **27.8 ms**, poprzednio
+310 ms. Raport `tpa-write-responsiveness-async.txt`. Celowo brakujące pliki testów
+dają 22 BLOCKED, nie PASS; pomiar nie zalicza runtime/modelu/fizycznego GUI.
+
+Pełna suite .61 na HEAD 00bcf8b6: **3625 PASS, 1 FAIL, 31 SKIPPED**, 789.98 s;
+FAIL MCP framing, odtworzony niezależnym stdlib. Końcowe CI .61: **77 SUCCESS,
+1 FAILURE, 2 SKIPPED**; Windows health-check 6.5006942 s wobec progu <5 s.
+Nie osłabiono parsera, SLA ani asercji. Te wyniki są historyczne, nie zaliczają .62.
+Nowy patch wymaga przypiętego pełnego przebiegu, metadanych i exact-head CI.
+E0/E1 nadal IN_PROGRESS: pozostają pełny indeks starszych przebiegów, integracja
+pozostałych wykonawców/CI, ręczny zapis, Windows/Linux i niezaliczone bramki.
+E2–E8 NOT_RUN; RELEASE_NOT_ACCEPTED.

@@ -186,6 +186,14 @@ class RunStore:
     def create(self, case_ids: tuple[str, ...], python: str, environment: dict, *,
                catalogue: list[dict] | None = None, source: dict | None = None,
                execution: str = "regression") -> dict:
+        report = self.prepare(case_ids, python, environment, catalogue=catalogue, source=source, execution=execution)
+        self.begin(report)
+        return report
+
+    def prepare(self, case_ids: tuple[str, ...], python: str, environment: dict, *,
+                catalogue: list[dict] | None = None, source: dict | None = None,
+                execution: str = "regression") -> dict:
+        """Build the existing run contract without creating/writing evidence."""
         if execution not in {"regression", "pytest", "live", "sandbox"}:
             raise ValueError("Nieprawidłowy wykonawca przebiegu")
         definitions = execution_map() if catalogue is None else catalogue
@@ -199,8 +207,6 @@ class RunStore:
         if not case_ids or len(case_ids) != len(set(case_ids)) or set(case_ids) - mapping.keys():
             raise ValueError("Wybierz znane, niepowtarzające się scenariusze")
         run_id = "run-" + uuid.uuid4().hex
-        self.base.mkdir(parents=True, exist_ok=True)
-        self.folder(run_id).mkdir(exist_ok=False)
         report = {"schema_version": SCHEMA, "run_id": run_id, "source": source_identity(self.root) if source is None else source,
                   "python": python, "environment": environment, "selected": list(case_ids), "execution": execution,
                   "owner_pid": os.getpid(), "started_utc": utc(), "finished_utc": None,
@@ -212,11 +218,17 @@ class RunStore:
         # Freeze only the same redacted contract that later snapshots/receipts
         # use. Parametrized pytest nodeids can themselves contain credentials.
         report = redact(report, self.redactor)
+        return report
+
+    def begin(self, report: dict) -> None:
+        """Persist the initial manifest and snapshot before any execution."""
+        self._validate(report, report["run_id"])
+        self.base.mkdir(parents=True, exist_ok=True)
+        self.folder(report["run_id"]).mkdir(exist_ok=False)
         from .test_evidence_archive import initialize
-        initialize(self.folder(run_id), report)
+        initialize(self.folder(report["run_id"]), report)
         report["evidence_schema"] = "jazn_test_evidence/v1"
         self.save(report)
-        return report
 
     def save(self, report: dict) -> None:
         folder = self.folder(report["run_id"])

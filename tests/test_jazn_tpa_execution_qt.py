@@ -5,7 +5,6 @@ import time
 import pytest
 pytest.importorskip("PySide6")
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 from tools.jazn_run_studio.tpa_catalog import execution_map
 from tools.jazn_run_studio.tpa_engine import TPARunner, readiness
@@ -31,7 +30,11 @@ def system(tmp_path, monkeypatch):
 def wait_until(predicate, timeout=20):
     deadline = time.monotonic() + timeout
     while not predicate() and time.monotonic() < deadline:
-        QTest.qWait(20)
+        # qWait's binding can retain the GIL across each wait and starve a
+        # Python worker between filesystem calls. Match QApplication.exec:
+        # pump Qt and release the GIL, keeping the same deadline/assertions.
+        QApplication.processEvents()
+        time.sleep(0.005)
     assert predicate(), "asynchronous operation did not complete"
 
 

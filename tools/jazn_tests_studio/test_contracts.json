@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.61",
-  "active_definition_count": 3071,
+  "system_version": "16.3.25.5.116.0.34.94.6.62",
+  "active_definition_count": 3078,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29139,7 +29139,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 41
     },
     "tests/test_jazn_tpa_execution_qt.py::test_real_pytest_result_persistence_and_junit": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29156,7 +29156,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 60
     },
     "tests/test_jazn_tpa_execution_qt.py::test_cancel_timeout_and_gui_responsiveness": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29175,7 +29175,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 74
+      "line": 77
     },
     "tests/test_jazn_tpa_execution_qt.py::test_invalid_python_is_durable_blocked_and_missing_files_do_not_abort_queue": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29190,7 +29190,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 99
+      "line": 102
     },
     "tests/test_jazn_tpa_execution_qt.py::test_panel_preserves_selection_history_filters_and_routes_correct_log": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29205,7 +29205,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 113
+      "line": 116
     },
     "tests/test_jazn_tpa_execution_qt.py::test_main_window_problem_log_without_selection": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29220,7 +29220,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 148
+      "line": 151
     },
     "tests/test_jazn_tpa_execution_qt.py::test_real_process_start_error_is_blocked_not_a_hanging_run": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29235,7 +29235,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 153
+      "line": 156
     },
     "tests/test_jazn_tpa_execution_qt.py::test_panel_keeps_guide_draft_and_defers_close_until_owned_process_stops": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29250,7 +29250,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 165
+      "line": 168
     },
     "tests/test_jazn_tpa_execution_qt.py::test_report_write_failure_is_visible_and_never_silently_passes": {
       "path": "tests/test_jazn_tpa_execution_qt.py",
@@ -29265,7 +29265,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 186
+      "line": 189
     },
     "tests/test_jazn_tpa_installed_ollama_models_qt.py::test_tpa_model_choice_is_noneditable_and_only_installed_models": {
       "path": "tests/test_jazn_tpa_installed_ollama_models_qt.py",
@@ -29813,7 +29813,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 41
     },
     "tests/test_jazn_tpa_staging_authority.py::test_refuses_foreign_stale_or_nonfresh_staging": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29834,7 +29834,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 51
     },
     "tests/test_jazn_tpa_staging_authority.py::test_protected_paths_are_never_authorized": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29855,7 +29855,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 76
     },
     "tests/test_jazn_tpa_staging_authority.py::test_junction_is_rejected_even_when_target_stays_in_acceptance": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29874,7 +29874,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 74
+      "line": 82
     },
     "tests/test_jazn_tpa_staging_authority.py::test_real_child_arguments_enter_live_mode_without_model_or_memory_mutation": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29892,7 +29892,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 96
     },
     "tests/test_jazn_tpa_staging_authority.py::test_entrypoint_dispatch_and_structured_validation_failure": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29911,7 +29911,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 117
     },
     "tests/test_jazn_tpa_staging_authority.py::test_cleanup_only_stops_the_recorded_verified_instance": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29930,7 +29930,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 137
     },
     "tests/test_jazn_tpa_staging_authority.py::test_cleanup_before_start_does_not_create_a_controller": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29947,7 +29947,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 151
+      "line": 159
     },
     "tests/test_jazn_tpa_staging_authority.py::test_qt_queue_passes_run_authority_and_correct_mode": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29966,7 +29966,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 166
     },
     "tests/test_jazn_tpa_staging_authority.py::test_summary_separates_execution_pass_from_full_acceptance": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -29983,7 +29983,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 189
+      "line": 198
     },
     "tests/test_jazn_tpa_staging_authority.py::test_qt_result_preserves_original_refusal_with_or_without_cleanup_failure": {
       "path": "tests/test_jazn_tpa_staging_authority.py",
@@ -30002,7 +30002,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 200
+      "line": 209
     },
     "tests/test_jazn_tpa_workbench_layout_diagnostics.py::test_service_page_and_stack_fit_minimum_width": {
       "path": "tests/test_jazn_tpa_workbench_layout_diagnostics.py",
@@ -30932,6 +30932,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 16
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_initial_write_does_not_block_gui_or_launch_before_durability": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_initial_write_does_not_block_gui_or_launch_before_durability",
+      "purpose": "Initial write does not block gui or launch before durability",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_cancel_during_initial_write_never_starts_a_child": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_cancel_during_initial_write_never_starts_a_child",
+      "purpose": "Cancel during initial write never starts a child",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_failed_running_save_prevents_test_launch_and_preserves_prior_snapshot": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_failed_running_save_prevents_test_launch_and_preserves_prior_snapshot",
+      "purpose": "Failed running save prevents test launch and preserves prior snapshot",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_completed_waits_for_final_snapshot_and_owned_cleanup": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_completed_waits_for_final_snapshot_and_owned_cleanup",
+      "purpose": "Completed waits for final snapshot and owned cleanup",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 113
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_serial_lane_overflow_aborts_dependent_callbacks": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_serial_lane_overflow_aborts_dependent_callbacks",
+      "purpose": "Serial lane overflow aborts dependent callbacks",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_readiness_cleanup_failure_does_not_relabel_previous_report": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_readiness_cleanup_failure_does_not_relabel_previous_report",
+      "purpose": "Readiness cleanup failure does not relabel previous report",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
+    },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_cleanup_failure_is_explicit_after_write_failure": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_cleanup_failure_is_explicit_after_write_failure",
+      "purpose": "Cleanup failure is explicit after write failure",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 176
     },
     "tests/test_jss_tpa_compact_filters_qt.py::test_collapsed_filters_keep_search_and_keyboard_access": {
       "path": "tests/test_jss_tpa_compact_filters_qt.py",

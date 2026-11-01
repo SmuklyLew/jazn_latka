@@ -128,7 +128,20 @@ SKIPPED, INTERRUPTED, CANCELLED i ERROR nigdy nie zamieniają się w PASS wskute
 braku danych. Snapshot wykonania ma `RELEASE_NOT_ACCEPTED`: sam pytest lub TPA
 nie może poświadczyć całej macierzy Windows/Linux/live/manual/final-SHA CI.
 
+Automatyczna kolejka `TPARunner` zapisuje kopie raportów w jednym szeregowym
+workerze `tpa_io.SerialIO`. Początkowy manifest musi być trwały przed preflight,
+a zapis RUNNING przed uruchomieniem scenariusza. Końcowy sygnał completed czeka
+na sprzątnięcie własnego katalogu tymczasowego i końcowy snapshot. Log/JUnit oraz
+dowody live zapisuje ten sam worker przez `tpa_result_io`; QProcess i stan GUI
+pozostają na wątku Qt. Anulowanie podczas zapisu nie uruchamia następnego procesu.
+Błąd zapisu zatrzymuje zależne działania, zachowuje poprzedni snapshot i zgłasza
+persistence_error; błąd sprzątania ma osobny cleanup_error. Kolejka ma ograniczenie
+64 oczekujących operacji; przepełnienie jest błędem, bez pozornego sukcesu.
+Publiczny `RunStore.create/save` zachowuje kontrakt synchroniczny dla pozostałych
+wykonawców. Ręczne zapisy obserwacji operatorskiej wymagają osobnego przeglądu.
+
 Ta implementacja jest fundamentem E1. Otwarta pozostaje pełna integracja wszystkich
-wykonawców CI, kompletny read-only indeks oraz dowód responsywności zapisu TPA i odbiór Windows/
-Linux. Odczyt, import i eksport GUI są asynchroniczne; synchroniczna ścieżka zapisu
-RunStore nadal wymaga pomiaru i ewentualnego przeniesienia poza wątek GUI.
+wykonawców CI, kompletny read-only indeks i pełny odbiór Windows/Linux. Odczyt,
+import i eksport GUI są asynchroniczne. Pomiar rzeczywistej pętli Qt i własnych
+zapisów kolejki jest dowodem responsywności na danym hoście, bez zaliczenia
+fizycznego GUI, modelu ani scenariuszy live.
