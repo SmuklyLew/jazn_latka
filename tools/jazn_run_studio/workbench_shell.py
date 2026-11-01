@@ -141,9 +141,12 @@ class WorkbenchShell(QObject):
         self.activity.setMovable(False)
         self.activity.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         for title, icon in (("Pulpit", QStyle.StandardPixmap.SP_ComputerIcon),
+                            ("Czat lokalny", QStyle.StandardPixmap.SP_MessageBoxInformation),
                             ("Usługi i procesy", QStyle.StandardPixmap.SP_DriveNetIcon),
-                            ("Studia Jaźni", QStyle.StandardPixmap.SP_DirIcon),
+                            ("Dowody MEMORY", QStyle.StandardPixmap.SP_DirHomeIcon),
+                            ("Katalog testów", QStyle.StandardPixmap.SP_FileDialogListView),
                             ("TPA", QStyle.StandardPixmap.SP_DialogApplyButton),
+                            ("Developer", QStyle.StandardPixmap.SP_DirIcon),
                             ("Ustawienia", QStyle.StandardPixmap.SP_FileDialogDetailedView)):
             action = self.activity.addAction(host.style().standardIcon(icon), title)
             action.setToolTip(title)
