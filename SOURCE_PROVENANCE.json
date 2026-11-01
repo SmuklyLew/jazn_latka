@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "76bee54b83d172e6cfc2d31f5a109f28fa936af5",
-    "base_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+    "base_commit": "ba62efe429f2a4fd931f839a76e04f911c6907a0",
+    "base_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "ba62efe429f2a4fd931f839a76e04f911c6907a0",
