@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
+  "base_merge_commit": "397fe624034c959411474043c9cf88f20a76b431",
   "base_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-  "commit_date": "2026-11-01T01:08:06Z",
+  "commit_date": "2026-11-01T02:14:59+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-01T01:08:06+00:00",
+  "generated_at_utc": "2026-11-01T01:14:59+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "19de716210d5a767d6ce9f70a5548ce40b68be8a",
+  "git_tree_sha": "c8c6e65aa2ad2e861b0f39fdc1fa7bf149bb287e",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
+    "source_commit": "397fe624034c959411474043c9cf88f20a76b431",
     "source_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
+  "source_commit": "397fe624034c959411474043c9cf88f20a76b431",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "tag": null,
