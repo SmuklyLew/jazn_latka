@@ -191,6 +191,18 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             selection-color: {c.selected_text};
         }}
         QPlainTextEdit {{ font-family: Consolas, 'DejaVu Sans Mono', monospace; }}
+        QPlainTextEdit#workbenchChatTranscript {{
+            background: {c.editor}; border: 0; padding: 18px;
+            font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
+            font-size: {metrics.body_points + 1}pt;
+        }}
+        QPlainTextEdit#workbenchChatComposer {{
+            background: {c.surface}; border: 1px solid {c.border};
+            border-radius: 10px; padding: 10px;
+            font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
+        }}
+        QLabel#workbenchChatStatus {{ color: {c.muted}; padding: 6px 8px; }}
+
         QSplitter::handle {{ background: {c.border}; border: 1px solid {c.hover}; }}
         QSplitter::handle:hover {{ background: {c.accent}; }}
         QTabWidget::pane {{ border: 1px solid {c.border}; background: {c.editor}; }}
