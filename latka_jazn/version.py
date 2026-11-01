@@ -1,3 +1,4 @@
+# v116.0.34.94.6.54: Split JSS workbench views and event dispatch into bounded modules.
 # v116.0.34.94.6.53: Add bounded startup phase diagnostics, proxy-free loopback probes, and JSS service status window.
 # v116.0.34.94.6.52: Align operator PDF optional-capability contract with security-patched pypdf minimum; preserve approved test snapshot.
 # v116.0.34.94.6.51: Require patched pypdf and regenerate six native hash-locked PDF release profiles.
@@ -185,9 +186,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.53"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.54"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "tpa-startup-diagnostics-jss-status"
+PACKAGE_RELEASE_NAME = "jss-modular-vscode-workbench"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

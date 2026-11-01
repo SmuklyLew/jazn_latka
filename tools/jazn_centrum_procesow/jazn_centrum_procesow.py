@@ -374,8 +374,8 @@ class ProcessWindow:
             }
             if WIN:
                 options["creationflags"] = (
-                    subprocess.CREATE_NEW_PROCESS_GROUP |
-                    subprocess.CREATE_NO_WINDOW
+                    getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) |
+                    getattr(subprocess, "CREATE_NO_WINDOW", 0)
                 )
             else:
                 options["start_new_session"] = True

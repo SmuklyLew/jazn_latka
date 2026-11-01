@@ -141,12 +141,15 @@ class TPAPanel(QWidget):
         self.auto_status = QLabel("PASS podtestu potwierdza zakres regresji. Pełny odbiór ma osobny wynik.")
         self.auto_status.setWordWrap(True)
         self.auto_status.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.auto_status)
         self.progress = QProgressBar()
         self.progress.setRange(0, 1)
         self.progress.setValue(0)
         self.progress.setFormat("%v / %m pozycji")
-        layout.addWidget(self.progress)
+        # Status/progress share a row below the queue to preserve the
+        # compact viewport, while actions use two columns to avoid overflow.
+        status_row = QHBoxLayout()
+        status_row.addWidget(self.auto_status, 3)
+        status_row.addWidget(self.progress, 1)
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.table = QTableWidget(len(self.rows), 7)
         self.table.setHorizontalHeaderLabels(["Scenariusz", "Regresja", "Live", "Pełny odbiór", "Aktualność", "Ostatnia próba", "Następny krok"])
@@ -209,6 +212,9 @@ class TPAPanel(QWidget):
         self.splitter.setStretchFactor(0, 3)
         self.splitter.setStretchFactor(1, 2)
         layout.addWidget(self.splitter, 1)
+        # Keep the queue above the fold at 860x580; progress/status remain
+        # accessible beneath it inside the parent scroll area.
+        layout.addLayout(status_row)
         history_row = QHBoxLayout()
         self.history = QComboBox()
         self.history.setMinimumWidth(80)

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.53",
-  "active_definition_count": 3029,
+  "system_version": "16.3.25.5.116.0.34.94.6.54",
+  "active_definition_count": 3031,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30204,6 +30204,36 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 145
+    },
+    "tests/test_jss_modular_view_boundaries.py::test_each_functional_view_owns_exactly_one_method_implementation": {
+      "path": "tests/test_jss_modular_view_boundaries.py",
+      "name": "test_each_functional_view_owns_exactly_one_method_implementation",
+      "purpose": "Each functional view owns exactly one method implementation",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
+      "path": "tests/test_jss_modular_view_boundaries.py",
+      "name": "test_studio_module_imports_preserve_canonical_controller_boundary",
+      "purpose": "Studio module imports preserve canonical controller boundary",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
