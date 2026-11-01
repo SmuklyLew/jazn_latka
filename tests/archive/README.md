@@ -37,3 +37,5 @@ Additional append-only provenance:
 | `tests/test_heart_unified_operator_dock_qt.py` from `16.3.25.5.116.0.34.94.6.30` prior to sixth terminal tab | `test_heart_unified_operator_dock_qt_v16_3_25_5_116_0_34_94_6_30.py` | `2b005c6c824a09d0de0691faa9dfa05fb1d19103` |
 
 | `tests/test_jazn_service_visual_state.py` before ROOT/version truth-gate hardening in `16.3.25.5.116.0.34.94.6.33` | `test_jazn_service_visual_state_v16_3_25_5_116_0_34_94_6_33.py` | `cbc658ddf359089c8af94d44a4a00846c1d83390` |
+
+| `tests/test_jazn_run_studio_part2_operator_qt.py` from `2dc2727ecc191b214e8d3ce3755c986bc09f5a84` before binding color-dialog tests to their extracted owner module | `test_jazn_run_studio_part2_operator_qt_v16_3_25_5_116_0_34_94_6_57.py` | `4b7aa5c2c6d810910d63f4b8708979cdb85fb294` |

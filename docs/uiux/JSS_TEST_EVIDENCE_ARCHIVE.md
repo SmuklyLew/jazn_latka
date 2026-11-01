@@ -49,6 +49,13 @@ wykrywa niespójność bajtów, nie jest podpisem niezależnego audytora.
 Adapter `test_evidence_plugin.py` działa wewnątrz istniejącego pytest. Nie jest
 drugim wykonawcą ani parserem komend Jaźni. Przykład jawnego włączenia:
 
+Wykonawca pytest jest zadeklarowany jako opcjonalna capability `test-evidence`
+w `pyproject.toml` i rejestrze Dependency Studio. Nie należy do activation core
+ani domyślnego sidecara release. Profil można pobrać i zweryfikować istniejącym
+Dependency Studio; jego locki są generowane z rzeczywistych wheel-i, bez ręcznego
+wpisywania hashy. Brak pytest blokuje wyłącznie wykonanie tego adaptera, a nie
+odczyt archiwum w JSS ani start runtime.
+
 ```powershell
 $env:JAZN_TEST_EVIDENCE_DIR = 'D:/owned-task/evidence-runs'
 & '<verified-python.exe>' -X utf8 -m pytest `

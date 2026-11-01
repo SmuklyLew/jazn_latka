@@ -46,7 +46,7 @@ Pełne SYSTEM/JSS/CI/TPA/live i finalny release gate: **NOT_RUN** do czasu zapis
 
 ## Najbliższy krok
 
-Sprawdzić oficjalne wykorzystanie 5 h, używać rzeczywistego absolutnego interpretera (alias `python` wskazuje na Windows Python Install Manager), wykonać i zachować baseline celowanych testów TPA. Następnie wdrożyć manifest i osobne raporty w istniejącym RunStore, czytnik integralności i historię Qt. Nie rozpoczynać E2 przed P0 PASS.
+Kontynuować według najnowszego checkpointu poniżej i pliku `D:/.AI/codex_tasks/jss-modernization-20261101/CONTINUE_HERE.md`. Nie powtarzać zakończonej implementacji fundamentu. Nie rozpoczynać E2 przed P0 PASS.
 
 ## Checkpoint implementacji E0/E1 — 2026-11-01
 
@@ -83,3 +83,13 @@ Pozostałe E1: pełna walidacja Windows/Linux i wymaganych CI na końcowym SHA, 
 Podgląd wykazał dodatkowo nadmierną szerokość historii z długimi identyfikatorami. Następny patch ogranicza wymagania szerokości pól, skraca podpisy przycisków z pełnymi etykietami accessibility, wymusza PlainText dla danych importowanych i ogranicza łączny rozmiar odczytanej historii. Niezmienione wymaganie 860×580 oraz nowy test historii przechodzą: 5 PASS (`history-responsive-fixed.*`). Typy: 0 errors/warnings. Wersja pochodzi dynamicznie z `latka_jazn/version.py`; oba kontrakty i katalog są synchronizowane razem.
 
 Pełna ponowna suite ma ruszyć po commicie tego patcha, kanonicznej synchronizacji i kontroli rzeczywistego HEAD, w środowisku `venv/` zadania, z jawnym AnyIO i trwałym rejestrem. Stan wykonywanego checkpointu/walidacji: `D:/.AI/codex_tasks/jss-modernization-20261101/evidence/validation-state.json`. Jeżeli ma IN_PROGRESS, najpierw sprawdzić istniejący proces i raport; nie uruchamiać drugiego przebiegu. Żaden zrzut offscreen nie zalicza odbioru wizualnego realnego Windows ani P0.
+
+### Kontynuacja po zmianie budżetu przez użytkownika
+
+Użytkownik polecił wykorzystać dalsze 20 punktów procentowych przy 63% zużycia, pozostawiając 17% na checkpoint. Nowy próg zakończenia zwykłej implementacji to około 83% wykorzystania okna 5 h; rezerwy nie trzeba zużywać. Oficjalny odczyt przy przygotowaniu tego zapisu: 75% / 5 h i 77% / tydzień. Reset pozostaje jak wyżej. Nie uruchomiono resetu, kredytów ani dodatkowych modeli.
+
+PR #450 jest Draft, gałąź i baza bez zmian. Poprzedni końcowy HEAD `2dc2727ecc191b214e8d3ce3755c986bc09f5a84` miał zgodne metadane (3617 plików), lecz CI ujawniło brak deklaracji pytest dla adaptera dowodów. Wersja .58 dodaje opcjonalny profil `test-evidence`, poza core/release, test rzeczywistego audytu importów oraz wygenerowany kanonicznie lock Windows/Python 3.14. Dependency Studio zweryfikowało sześć wheel i wykonało izolowaną instalację offline z pip check/import smoke/inventory. Próba cross-target bez natywnego locka została poprawnie odrzucona; pozostałych platform nie zaliczono. Workflow zbiera natywne locki i manifesty w każdej pozycji macierzy.
+
+Poprzedni pełny przebieg przerwano po potwierdzeniu własności procesu: test koloru podmieniał klasę w starym module `window`, podczas gdy implementacja korzysta z `view_settings`. Poprawiono wyłącznie miejsce podmiany, zachowując asercje i archiwizując oryginalny test z commita 2dc. Pełny raport częściowy i receipts zachowane; status **INTERRUPTED**, nie PASS. Pierwotny skrypt narzucał globalne JAZN_MEMORY_ROOT/MODE i zakłócał syntetyczne fixture; nie należy ich ustawiać globalnie w pełnej suite. Nie zmieniano prywatnej MEMORY ani runtime w celu uzyskania zielonych testów.
+
+Po korekcie środowiska: `resume-targeted.*` **28 PASS**; wszystkie moduły z wcześniejszych porażek: `resume-prior-failures.*` **89 PASS, 2 SKIPPED** (fixtures POSIX); typy **0 błędów i ostrzeżeń**, audyt Node24 **PASS, 23 workflow**. Wyników przebiegów nie sumować. Nowy pełny przebieg ma osobny stan `evidence/validation-resume-state.json`, raporty `full-system-jss-resume.*` i rejestr `registered-resume-run/`. E0/E1 nadal IN_PROGRESS, E2–E8 NOT_RUN; RELEASE_NOT_ACCEPTED.

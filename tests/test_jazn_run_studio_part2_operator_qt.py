@@ -55,7 +55,7 @@ def test_lower_logs_panel_can_be_hidden_and_restored(window) -> None:
 
 
 def test_color_palette_accepts_valid_selection_without_premature_save(window, monkeypatch) -> None:
-    gui = importlib.import_module("tools.jazn_run_studio.window")
+    gui = importlib.import_module("tools.jazn_run_studio.view_settings")
 
     class Accepted:
         @staticmethod
@@ -72,7 +72,7 @@ def test_color_palette_accepts_valid_selection_without_premature_save(window, mo
 
 
 def test_color_palette_cancel_keeps_draft(window, monkeypatch) -> None:
-    gui = importlib.import_module("tools.jazn_run_studio.window")
+    gui = importlib.import_module("tools.jazn_run_studio.view_settings")
 
     class Cancelled:
         @staticmethod
