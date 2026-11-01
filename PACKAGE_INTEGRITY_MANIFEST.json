@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
-  "package_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
-  "generated_at_utc": "2026-11-01T03:47:08+00:00",
-  "updated_at_utc": "2026-11-01T03:47:08+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
+  "package_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
+  "generated_at_utc": "2026-11-01T05:14:19+00:00",
+  "updated_at_utc": "2026-11-01T05:14:19+00:00",
   "start_file": "run.py",
-  "file_count": 3608,
-  "static_file_count": 3608,
+  "file_count": 3617,
+  "static_file_count": 3617,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -193,8 +193,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 8280,
-      "sha256": "588ac8cc7a5166df18ef3b3173318ac7ea963739749d651598fa33db257b2483",
+      "size_bytes": 9244,
+      "sha256": "496f75ad3446c6b7e0797a0d2c19c8f1c00ae0556efe76f6cf3c5497967a02e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -400,8 +400,8 @@
     },
     {
       "path": "AGENTS.codex.md",
-      "size_bytes": 6466,
-      "sha256": "a53dd7bd529f73214d5b447db3d2dcc3379efc740aaa72246e9e2441c36678f8",
+      "size_bytes": 7251,
+      "sha256": "71f35fc6b284f9a1c2643a172df270d67748cc17054b3398fa82aee378b5618b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3018,
-      "sha256": "71c84ddb73ac02d9857a71ffaabfb1ea5d8c5d1aa40582e0ca035fc3e3fed787",
+      "size_bytes": 3035,
+      "sha256": "5a9e2c967dc6cf3987f854b61700394765390503fd700ef4bf719fd09f92aea0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1954,
-      "sha256": "734265a6fb564d09c8c2eac3f075acd9c8da81f08bab274377bcbf6dbe781cb7",
+      "size_bytes": 1956,
+      "sha256": "d1a3640950537890d43f842f434cb14c7415b7b4e4da3e4658a8150adcbfc8de",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1824,6 +1824,15 @@
       "path": "docs/plans/JAZN_V16_3_25_5_117_CHATGPT_MCP_APPS_TYPESCRIPT_UI_CONVERGENCE_PLAN.md",
       "size_bytes": 15771,
       "sha256": "63fadcb5361875e63eb44eafcb8c8b06d8ea535ff6123e696dc5438291398d22",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/plans/JSS_COMPREHENSIVE_MODERNIZATION_PROGRESS.md",
+      "size_bytes": 9270,
+      "sha256": "28643aea52600ec6a636e8809b0c60175f6c04fd968381836e2e825f58b9e692",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4353,6 +4362,15 @@
       "path": "docs/uiux/JSS_SCREEN_CONTRACTS.md",
       "size_bytes": 5260,
       "sha256": "476e748810f7bfc84a8a42345234bf51da7518410f59a2e8cb68588037b3e3d4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/uiux/JSS_TEST_EVIDENCE_ARCHIVE.md",
+      "size_bytes": 5213,
+      "sha256": "38a700d9b386ff872fc104639a74a3033a86ea8d5965121ae61072ea98aff323",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9878,7 +9896,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "70d903936f108ea5259e5c8b1ffd7632ea8925a1887fb7e71c0672534b485751",
+      "sha256": "7e97991c0b3d9cfd49b8ed23d15383ed01668b0f36509a62c590becf794bc970",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11380,8 +11398,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 22071,
-      "sha256": "dfc8f677837c43af47cd37fc42708b37ae1c1d7c0509d1da684a8152ea7cd7b3",
+      "size_bytes": 22171,
+      "sha256": "5d9dc2d0438017f25780e37121c0c8060ae3cf1026c35a4d41b7666d428c72a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28308,9 +28326,36 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_evidence_archive.py",
+      "size_bytes": 8941,
+      "sha256": "aa7a8785e735ce20770c40e49f33321a743be9dc391bb00fadeaed0430cc0f83",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_evidence_history_qt.py",
+      "size_bytes": 2886,
+      "sha256": "93d042b4caf6673814dd89aa6a23d8f4d4cd29ddee9a840421bdbc847764d0a6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_modular_view_boundaries.py",
       "size_bytes": 3930,
       "sha256": "d502a69abd2fbd047e0869bfa4d6f6c4acc065aaf68da5c0600a0ea740ffd4a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_pytest_evidence_plugin.py",
+      "size_bytes": 4035,
+      "sha256": "d6e218cdf2a70ef2cb401b0893501b6fb2fe471cddfb0d0f45744a31d13e47ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28329,6 +28374,15 @@
       "path": "tests/test_jss_theme_switch_reflow_qt.py",
       "size_bytes": 1033,
       "sha256": "4c6e40e88c12a3f965414e2ef52014c58eab8ae054aa83c1f7192f7c4d2de105",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_tpa_compact_filters_qt.py",
+      "size_bytes": 982,
+      "sha256": "c362cfbbedcff5f628a81122553aa391ad80c669cf1688213c11b1f209a2d07b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31531,8 +31585,8 @@
     },
     {
       "path": "tools/jazn_run_studio/ARCHITECTURE.md",
-      "size_bytes": 2969,
-      "sha256": "243b9a117a4a0fb9a510ccc502a15db60d91bd059e2225054881e31c866507a1",
+      "size_bytes": 3655,
+      "sha256": "adc589cc1f698dd665b9a75634d601ba103eff23c012cb3c6277cdeb8f30ba19",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31837,8 +31891,35 @@
     },
     {
       "path": "tools/jazn_run_studio/test_catalog_view.py",
-      "size_bytes": 4662,
-      "sha256": "08021ab02829a11eb14cbafc75c52e1f887e3b83365868b6200125bbb994d463",
+      "size_bytes": 5050,
+      "sha256": "85533cf782b61bd34ec1db210121930e6fed1946cf326794afa487e63c9cb007",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/test_evidence_archive.py",
+      "size_bytes": 19158,
+      "sha256": "dee739720dfbae561c2f85bae4592f1291bf1ece16c58b4bff6109d45bfa459f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/test_evidence_plugin.py",
+      "size_bytes": 11509,
+      "sha256": "4899d1b5074df9bdc26677060e67de5dc0281f54d55ce413323f440174c08b51",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/test_history_view.py",
+      "size_bytes": 15107,
+      "sha256": "2799f63a00ad324dc3d9f8d938ff5884db14be54ccd1dae24de8d55bbd60bd00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31927,8 +32008,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_reports.py",
-      "size_bytes": 19798,
-      "sha256": "6b4938c16ebd28f4d88c05b2039bb76b8e3fbac8dfb330fb50cc50b501679678",
+      "size_bytes": 21495,
+      "sha256": "5544a651109b18b84d9a9fd0b39b18ab217a85f7878f9ae4c479c580ab109cd7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31972,8 +32053,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_view.py",
-      "size_bytes": 52291,
-      "sha256": "624b58bcd988949dd6ea0bac3054bb86d6e03e12d35b62a093b1338c3c9630bd",
+      "size_bytes": 53016,
+      "sha256": "8f8808edc506e3146c64432374034fc0c99ff39895169a880b27e0b3e5fb4af8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32269,8 +32350,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2701404,
-      "sha256": "faf7b0b81c490b45c1bf7214ddc82ce122a680dc92d1daa1a8fd82d4ee0210e6",
+      "size_bytes": 2715718,
+      "sha256": "3bcf147432a28481db41eb77a12cc6eef61b7032c6e32b22e4f00a5eaf8db33b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32927,11 +33008,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+  "release_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
-    "package_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
-    "release_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
+    "package_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation",
+    "release_version": "16.3.25.5.116.0.34.94.6.56-jss-durable-test-evidence-foundation"
   },
   "legacy_aliases": {
     "version": "release_version"
