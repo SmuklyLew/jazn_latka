@@ -32,37 +32,65 @@ from typing import Any
 class ChatViewMixin:
     def _chat(self: Any) -> None:
         layout = self.page("Czat lokalny", "Rozmowa przez runtime Jaźni i wybrany model Ollama. Tylko zaakceptowane odpowiedzi runtime pojawiają się jako wypowiedzi Łatki.")
-        self.chat_state = QLabel("Rozłączony. Wybierz model w ustawieniach, uruchom runtime i Ollamę, a następnie połącz.")
+        self.chat_state = QLabel(
+            "Rozłączony. Wybierz model w ustawieniach, uruchom runtime i Ollamę, a następnie połącz.")
         self.chat_state.setWordWrap(True)
+        self.chat_state.setObjectName("workbenchChatStatus")
         layout.addWidget(self.chat_state)
+
+        # The conversation is the focus of this view. Technical connection
+        # controls remain discoverable without occupying half the editor.
+        self.chat_controls_toggle = QPushButton("Połączenie i model ▸")
+        self.chat_controls_toggle.setCheckable(True)
+        self.chat_controls_toggle.setAccessibleName("Rozwiń lub zwiń połączenie i model czatu")
+        layout.addWidget(self.chat_controls_toggle)
+        self.chat_controls = QWidget()
+        controls = QVBoxLayout(self.chat_controls)
+        controls.setContentsMargins(0, 0, 0, 4)
         model_row = QHBoxLayout()
         self.chat_model_selector = QComboBox()
         self.chat_model_selector.setAccessibleName("Model dla czatu lokalnego Ollama")
         self.chat_model_selector.addItem("Wykryj modele Ollama…", "")
         if self.core.settings.model:
-            self.chat_model_selector.addItem(self.core.settings.model + " (z ustawień, niezweryfikowany)",
-                                             self.core.settings.model)
+            self.chat_model_selector.addItem(
+                self.core.settings.model + " (z ustawień, niezweryfikowany)",
+                self.core.settings.model)
             self.chat_model_selector.setCurrentIndex(1)
         model_row.addWidget(self.chat_model_selector, 1)
         self.button("Wykryj modele", lambda: self.core.probe("ollama"), model_row)
         self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), model_row)
         self.button("Zapisz wybór", self.select_local_model, model_row)
-        layout.addLayout(model_row)
-        row = QHBoxLayout()
-        self.button("Połącz", self.connect_local_chat, row)
-        self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), row)
-        self.button("Wznów wynik", self.resume_chat, row)
-        layout.addLayout(row)
+        controls.addLayout(model_row)
+        connection_row = QHBoxLayout()
+        self.button("Połącz", self.connect_local_chat, connection_row)
+        self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), connection_row)
+        self.button("Wznów wynik", self.resume_chat, connection_row)
+        controls.addLayout(connection_row)
+        layout.addWidget(self.chat_controls)
+        self.chat_controls_toggle.toggled.connect(self.chat_controls.setVisible)
+        self.chat_controls_toggle.toggled.connect(
+            lambda opened: self.chat_controls_toggle.setText(
+                "Połączenie i model ▾" if opened else "Połączenie i model ▸"))
+        self.chat_controls.hide()
+
         self.conversation = QPlainTextEdit()
         self.conversation.setReadOnly(True)
+        self.conversation.setObjectName("workbenchChatTranscript")
         self.conversation.setAccessibleName("Historia lokalnej rozmowy")
-        layout.addWidget(self.conversation, 2)
+        self.conversation.setPlaceholderText(
+            "Tutaj pojawią się wiadomości i odpowiedzi pochodzące z zaakceptowanych tur.")
+        self.conversation.setMinimumHeight(220)
+        layout.addWidget(self.conversation, 3)
+        composer = QHBoxLayout()
         self.message = QPlainTextEdit()
-        self.message.setPlaceholderText("Twoja wiadomość…")
+        self.message.setObjectName("workbenchChatComposer")
+        self.message.setPlaceholderText("Napisz wiadomość do lokalnej Jaźni…")
         self.message.setAccessibleName("Wiadomość do runtime Jaźni")
         self.message.setMaximumHeight(100)
-        layout.addWidget(self.message)
-        self.button("Wyślij", self.send_chat, layout)
+        composer.addWidget(self.message, 1)
+        self.send_button = self.button("Wyślij", self.send_chat, composer)
+        self.send_button.setObjectName("jssPrimaryAction")
+        layout.addLayout(composer)
 
 
     def select_local_model(self: Any) -> None:
