@@ -136,6 +136,7 @@ class WorkbenchShell(QObject):
             self.command("Studia", label, lambda: QMessageBox.information(host, "Migracja Studio",
                 "Pełny natywny workflow importu/restore pozostaje w P4. Klasyczne narzędzia są zachowane; operacje wymagają planu i izolowanego projektu."))
         self.command("TPA", "Otwórz TPA — 22 scenariusze", lambda: host.navigate("TPA"))
+        self.command("TPA", "Rozpocznij pełny odbiór…", lambda: (host.navigate("TPA"), host.local_acceptance_panel.open_full_acceptance()), "Ctrl+Alt+T")
         self.command("TPA", "Sprawdź gotowość TPA", lambda: host.local_acceptance_panel.check_ready())
         self.command("Narzędzia", "Ustawienia", lambda: host.navigate("Ustawienia"), "Ctrl+,")
         self.command("Narzędzia", "Diagnostyka", lambda: host.navigate("Diagnostyka"))
