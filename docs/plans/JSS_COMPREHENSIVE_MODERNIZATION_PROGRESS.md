@@ -233,3 +233,27 @@ dwóch testów: **0 errors/warnings**, `invalid-refusal-types.txt`; Node24:
 Metadane, pełna suite i exact-head CI wymagają końcowych dowodów. Brak zamknięcia P0:
 indeks historii, pozostali wykonawcy/CI, ręczne obserwacje i lokalny MCP pozostają
 otwarte; E0/E1 IN_PROGRESS, E2–E8 NOT_RUN, RELEASE_NOT_ACCEPTED.
+
+### E1 — koszt zimnej identyfikacji Windows (.65)
+
+Po potwierdzeniu nowego przydziału (1% / 5 h, 0% tygodnia) obowiązuje ponownie
+STOP65%, bez wyjątku z poprzedniego okna. Potwierdzono czyste lokalne/origin/PR
+27dd38c3, Draft PR450 i niezmienny master784f3aac. Poprzednia pełna suite .64
+jest zakończona: **3637 PASS, 1 FAIL, 31 SKIPPED, 7 ostrzeżeń**,737.62s;
+`full-system-jss-invalid-refusal.*`. Nie uruchamiać jej ponownie. CI .64:
+75 SUCCESS /2 FAILURE /3 SKIPPED. Błędy Windows3.14 i health<5s pozostają historyczne.
+
+Rzeczywisty profil pierwszego zapisu w nowym natywnym procesie wskazał 4 zapytania
+WMI przez platform.system/platform:151.9ms, wobec35ms wszystkich54fsync.
+Raport `initial-refusal-profile-baseline.json`. Windows snapshot używa teraz
+sys.getwindowsversion().platform_version i jawnej identyfikacji Python/bitowości
+procesu zapisującego. Dane wybranego interpretera pozostają oddzielne. Brak
+rozgrzewania, cache poprzedniego wyniku, redukcji dowodów lub fsync. Pozostałe OS
+zachowują dotychczasowy format identyfikacji; starsze snapshoty nadal czytelne.
+
+Nowe testy przed poprawką **2 FAIL** (`cold-platform-before.*`); po poprawce
+archiwum i niezmieniony odbiór Windows: **36 PASS,1 SKIPPED** (`cold-platform-after.*`).
+Typy **0 errors/warnings**, Node24 **23 workflow PASS**. Nowy zimny profil:
+worker281.2ms, całość295.5ms wobec407.0ms; nadal54fsync, zeroWMI.
+`initial-refusal-profile-native.json`. Potwierdzenie hosted Windows3.14, pełna
+walidacja i P0 nadal wymagane; E0/E1 IN_PROGRESS, E2–E8 NOT_RUN.

@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 import platform
 import re
+import struct
+import sys
 from typing import Any
 from uuid import uuid4
 import zipfile
@@ -112,6 +114,19 @@ def scenario_text(row: dict) -> str:
     ])
 
 
+def _writer_platform() -> dict:
+    # Python 3.14's platform.system/platform can synchronously query WMI on
+    # Windows. Kernel version is available directly, without inventory or a
+    # warm-up. Keep writer identity distinct from the selected test Python.
+    if sys.platform == "win32":
+        version = sys.getwindowsversion().platform_version
+        identity = {"os": "Windows", "platform": "Windows-" + ".".join(map(str, version))}
+    else:
+        identity = {"os": platform.system(), "platform": platform.platform()}
+    return {**identity, "writer_python_version": list(sys.version_info[:3]),
+            "writer_pointer_bits": struct.calcsize("P") * 8}
+
+
 def save_snapshot(folder: Path, report: dict, redactor: Any) -> str:
     """Publish a new immutable revision; a crash leaves older revisions readable."""
     contract_raw = _read(safe_child(folder, "manifest.json"))
@@ -140,7 +155,7 @@ def save_snapshot(folder: Path, report: dict, redactor: Any) -> str:
     snapshot.mkdir(exist_ok=False)
     content: dict[str, bytes] = {"manifest.json": _json(contract)}
     environment = redact({**report.get("environment", {}), "python": report["python"],
-                          "os": platform.system(), "platform": platform.platform()}, redactor)
+                          **_writer_platform()}, redactor)
     content["environment.json"] = _json(environment)
     # Copy only the explicitly owned, redacted text artifacts. Never walk live
     # staging, runtime, MEMORY, SQLite, claims or arbitrary neighboring files.

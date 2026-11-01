@@ -87,6 +87,7 @@ jobs:
           -p tools.jazn_run_studio.test_evidence_plugin
           --junitxml="${{ runner.temp }}/jss-evidence-contracts.xml"
           tests/test_jss_evidence_archive.py
+          tests/test_jss_evidence_platform.py
           tests/test_jss_evidence_history_qt.py
           tests/test_jss_evidence_history_pagination_qt.py
           tests/test_jss_evidence_initial_index.py

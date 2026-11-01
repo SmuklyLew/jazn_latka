@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.64",
-  "active_definition_count": 3082,
+  "system_version": "16.3.25.5.116.0.34.94.6.65",
+  "active_definition_count": 3084,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30627,6 +30627,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 37
+    },
+    "tests/test_jss_evidence_platform.py::test_windows_snapshot_uses_native_version_without_platform_queries": {
+      "path": "tests/test_jss_evidence_platform.py",
+      "name": "test_windows_snapshot_uses_native_version_without_platform_queries",
+      "purpose": "Windows snapshot uses native version without platform queries",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_jss_evidence_platform.py::test_host_environment_metadata_survives_verified_round_trip": {
+      "path": "tests/test_jss_evidence_platform.py",
+      "name": "test_host_environment_metadata_survives_verified_round_trip",
+      "purpose": "Host environment metadata survives verified round trip",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
     },
     "tests/test_jss_evidence_receipt_recovery.py::test_manifest_is_redacted_before_it_is_frozen": {
       "path": "tests/test_jss_evidence_receipt_recovery.py",
