@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d9066c449ec9f93d78c87c64d67b50d35a52f476",
-  "base_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
-  "commit_date": "2026-11-01T01:21:16+01:00",
+  "base_merge_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
+  "base_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
+  "commit_date": "2026-11-01T01:08:06Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-01T00:21:16+00:00",
+  "generated_at_utc": "2026-11-01T01:08:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "0c2b4a111477bfe400e24fb8e754c9e5f9eafaab",
+  "git_tree_sha": "19de716210d5a767d6ce9f70a5548ce40b68be8a",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "d9066c449ec9f93d78c87c64d67b50d35a52f476",
+    "base_commit": "76bee54b83d172e6cfc2d31f5a109f28fa936af5",
     "base_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d9066c449ec9f93d78c87c64d67b50d35a52f476",
-    "source_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status"
+    "source_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
+    "source_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "release_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d9066c449ec9f93d78c87c64d67b50d35a52f476",
+  "source_commit": "67d4d4cd76ebe741b14de9a3f17b5dc817b45eac",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "source_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.53-tpa-startup-diagnostics-jss-status",
+  "update_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "version_source": "latka_jazn/version.py"
 }
