@@ -152,8 +152,9 @@ class ServiceStatusDialog(QDialog):
                               "probe:ollama": ("ollama",),
                               "probe:ollama_generate": ("ollama",)}.get(key, ())
             self.failures.update(failed_service)
-        if self.isVisible():
-            self.render_statuses()
+        # Keep the read-only projection current while hidden as well: opening
+        # or reopening the window must not briefly expose an earlier sample.
+        self.render_statuses()
 
     def render_statuses(self) -> None:
         now = time.monotonic()
