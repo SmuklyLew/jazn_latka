@@ -308,6 +308,14 @@ class TPAPanel(QWidget):
         self.wizard_status.setWordWrap(True)
         self.wizard_status.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.wizard_status)
+        self.wizard_live_toggle = QCheckBox("Uwzględnij 5 scenariuszy live (wymaga modelu Ollama)")
+        self.wizard_live_toggle.setAccessibleName("Jawna zgoda na scenariusze live w kreatorze")
+        self.wizard_live_toggle.setToolTip(
+            "Nie uruchamia usług samodzielnie. Odbiory live startują dopiero po osobnym kliknięciu.")
+        self.wizard_live_toggle.setChecked(self.live_plan.isChecked())
+        self.wizard_live_toggle.toggled.connect(self.live_plan.setChecked)
+        self.live_plan.toggled.connect(self.wizard_live_toggle.setChecked)
+        layout.addWidget(self.wizard_live_toggle)
         self.acceptance_environment = QLabel(
             "Źródło i katalog dowodów zostaną wyświetlone po wybraniu przebiegu.")
         self.acceptance_environment.setObjectName("tpaAcceptanceEnvironment")
