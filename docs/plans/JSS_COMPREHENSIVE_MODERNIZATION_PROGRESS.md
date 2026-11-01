@@ -337,3 +337,22 @@ regression confirms2FAIL/10PASS (redaction-scaling-before.*). This defect remain
 open; the successful pagination fixture uses normal multiline text logs. No
 complete P0 or release acceptance is claimed. Full final-SHA validation pending.
 
+# .70 — bounded assignment redaction, 2026-11-02
+
+The independently reproduced long-word defect is repaired in the canonical
+Studio Redactor. Assignment keys are scanned once, then classified; secret
+values retain the same masking, including nested assignments inside public
+values. Existing tests remain unchanged. Before:2FAIL/10PASS (owned five-second
+subprocess timeouts). After:47PASS across new scaling/compatibility cases,
+existing Studio contracts, checkpoint redaction and manual evidence failures.
+The original12MiB unbroken-word shape now completes in0.598s using the actual
+Redactor (redaction-12mib-after.json). This is synthetic performance evidence,
+not live/operator acceptance. Whole JSS/new tests Pyright0errors/0warnings.
+
+E0/E1 remain IN_PROGRESS. CI/executor registry integration, off-GUI manual
+observations, final-SHA full validation and live Windows/Linux gates remain
+open. The .67 hosted health-check latency/no-write step is SUCCESS; its full
+PowerShell suite was still running at last observation. Hosted JSS .67 matrix
+failed at the phase identity defect, now fixed in .68; no claim that its later
+Windows3.14 local acceptance step ran. Same Draft PR450, no merge.
+

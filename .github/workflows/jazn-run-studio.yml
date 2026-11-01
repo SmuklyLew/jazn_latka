@@ -94,6 +94,7 @@ jobs:
           tests/test_jss_evidence_platform.py
           tests/test_jss_evidence_phase_identity.py
           tests/test_jss_evidence_store_paging.py
+          tests/test_jss_evidence_redaction_scaling.py
           tests/test_speech_adapter_route_resolution.py
           tests/test_jss_manual_evidence_commit.py
           tests/test_jss_evidence_history_qt.py
