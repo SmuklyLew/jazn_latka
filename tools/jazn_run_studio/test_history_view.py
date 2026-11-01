@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from .tpa_reports import RunStore, STATES
-from .test_evidence_archive import export_snapshot, history, import_snapshot
+from .test_evidence_archive import export_snapshot, history_page, import_snapshot
 
 
 class _Signals(QObject):
@@ -21,14 +21,15 @@ class _Signals(QObject):
 
 
 class _ReadHistory(QRunnable):
-    def __init__(self, base: Path, root: Path):
+    def __init__(self, base: Path, root: Path, cursor: str | None = None):
         super().__init__()
         self.base, self.root = base, root
+        self.cursor = cursor
         self.signals = _Signals()
 
     def run(self) -> None:
         try:
-            runs, errors = history(self.base)
+            page = history_page(self.base, cursor=self.cursor)
             current_sha = None
             current_dirty = None
             # Read-only identity observation, off the GUI thread. Failure is
@@ -46,7 +47,8 @@ class _ReadHistory(QRunnable):
                         current_dirty = bool(state.stdout)
             except (OSError, subprocess.SubprocessError, UnicodeError):
                 pass
-            self.signals.finished.emit({"runs": runs, "errors": errors, "sha": current_sha, "dirty": current_dirty, "base": self.base})
+            self.signals.finished.emit({"runs": page.runs, "errors": page.errors, "next_cursor": page.next_cursor,
+                                        "total": page.total, "sha": current_sha, "dirty": current_dirty, "base": self.base})
         except (OSError, ValueError, TypeError, KeyError) as exc:
             self.signals.finished.emit({"runs": [], "errors": [type(exc).__name__ + ": historia niedostępna"], "sha": None, "dirty": None, "base": self.base})
 
@@ -82,6 +84,9 @@ class TestHistoryPanel(QWidget):
         self.worker: _ReadHistory | None = None
         self.archive_worker: _ArchiveJob | None = None
         self.loaded_base: Path | None = None
+        self.run_cursors: list[str | None] = [None]
+        self.run_page = 0
+        self.next_run_cursor: str | None = None
         layout = QVBoxLayout(self)
         source = QHBoxLayout()
         self.base = QLineEdit(str(RunStore(root).base))
@@ -94,6 +99,21 @@ class TestHistoryPanel(QWidget):
         self.refresh_button.clicked.connect(self.refresh)
         source.addWidget(self.refresh_button)
         layout.addLayout(source)
+        run_pages = QHBoxLayout()
+        self.previous_runs_button = QPushButton("Nowsze przebiegi")
+        self.next_runs_button = QPushButton("Starsze przebiegi")
+        self.run_page_counter = QLabel("Przebiegi: nie odczytano")
+        self.run_page_counter.setTextFormat(Qt.TextFormat.PlainText)
+        self.run_page_counter.setWordWrap(True)
+        self.run_page_counter.setMinimumWidth(0)
+        self.run_page_counter.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.previous_runs_button.clicked.connect(lambda: self.change_run_page(-1))
+        self.next_runs_button.clicked.connect(lambda: self.change_run_page(1))
+        for button in (self.previous_runs_button, self.next_runs_button):
+            button.setEnabled(False)
+            run_pages.addWidget(button)
+        run_pages.addWidget(self.run_page_counter, 1)
+        layout.addLayout(run_pages)
         row = QHBoxLayout()
         self.run_choice = QComboBox()
         self.run_choice.setAccessibleName("Przebieg testów")
@@ -189,12 +209,31 @@ class TestHistoryPanel(QWidget):
     def refresh(self) -> None:
         if self.worker is not None:
             return
+        self.run_cursors = [None]
+        self.run_page = 0
+        self._load_run_page()
+
+    def change_run_page(self, offset: int) -> None:
+        if self.worker is not None:
+            return
+        if offset > 0:
+            if self.next_run_cursor is None:
+                return
+            self.run_cursors = self.run_cursors[:self.run_page + 1] + [self.next_run_cursor]
+        elif self.run_page == 0:
+            return
+        self.run_page += offset
+        self._load_run_page()
+
+    def _load_run_page(self) -> None:
         base = Path(self.base.text())
         if not base.is_absolute() or ".." in base.parts:
             self.errors.setText("Wybierz absolutną ścieżkę katalogu bez '..'.")
             return
         self.refresh_button.setEnabled(False)
-        self.worker = _ReadHistory(base, self.root)
+        self.previous_runs_button.setEnabled(False)
+        self.next_runs_button.setEnabled(False)
+        self.worker = _ReadHistory(base, self.root, self.run_cursors[self.run_page])
         self.worker.signals.finished.connect(self.loaded)
         QThreadPool.globalInstance().start(self.worker)
 
@@ -204,6 +243,10 @@ class TestHistoryPanel(QWidget):
         self.runs, self.current_sha = payload["runs"], payload["sha"]
         self.current_dirty = payload["dirty"]
         self.loaded_base = payload["base"]
+        self.next_run_cursor = payload.get("next_cursor")
+        self.previous_runs_button.setEnabled(self.run_page > 0)
+        self.next_runs_button.setEnabled(self.next_run_cursor is not None)
+        self.run_page_counter.setText(f"Strona przebiegów {self.run_page + 1} • {len(self.runs)} odczytanych • katalog: {payload.get('total', len(self.runs))}")
         self.errors.setText("\n".join(payload["errors"]))
         self.run_choice.blockSignals(True)
         self.run_choice.clear()
@@ -281,9 +324,9 @@ class TestHistoryPanel(QWidget):
                           if previous["scenario_id"] == row["scenario_id"] and previous["execution_status"] in statuses]
             if candidates:
                 summary, _ = max(candidates, key=lambda item: item[0]["saved_utc"])
-                outcomes.append(label + ": " + summary["saved_utc"] + " • SHA " + str(summary["source"].get("git_sha") or "UNKNOWN"))
+                outcomes.append(label + " na tej stronie: " + summary["saved_utc"] + " • SHA " + str(summary["source"].get("git_sha") or "UNKNOWN"))
             else:
-                outcomes.append(label + ": brak w odczytanej historii")
+                outcomes.append(label + ": brak na tej stronie; sprawdź starsze/nowsze przebiegi")
         self.previous_outcomes.setText("\n".join(outcomes))
         for name in ["scenarios/" + row["scenario_id"] + ".txt", "results/" + row["scenario_id"] + ".json", *row["artifacts"]]:
             self.artifact.addItem(name)

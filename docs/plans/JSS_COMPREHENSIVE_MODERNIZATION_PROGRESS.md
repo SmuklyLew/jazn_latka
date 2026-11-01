@@ -311,3 +311,29 @@ and registered-phase-identity/ under the external task directory. Full .67
 report remains evidence/full-system-jss-renewed-foundation.{txt,xml}; it is an
 incomplete failed validation, never a complete PASS. E0/E1 still IN_PROGRESS.
 
+# .69 — storage-level history pages, 2026-11-02
+
+RunStore and verified snapshots now expose bounded read-only pages, continuation
+cursors, explicit errors and inventory counts. The 100-run/64MiB limits apply
+per page, with no lost record at byte boundaries. Keyset discovery uses a bounded
+heap; inventory changes invalidate continuation explicitly. Legacy compatible
+reports remain reachable through RunStore; missing snapshot seals are reported
+as errors rather than silently omitted. Existing per-document/run integrity
+limits remain intact. Both history views provide older/newer navigation and
+read pages off the Qt thread. Previous PASS/FAIL labels explicitly describe
+the loaded page; this does not claim a global outcome index.
+
+Registered store/Qt/workspace validation:35PASS,1SKIPPED (OS symlink capability),
+101.46s; history-store-final.{txt,xml}, registered-history-store/. Actual fixtures
+cover104 persisted runs, >64MiB of verified text evidence, stable forward/back
+navigation, errors and background thread use. Initial combined check57PASS,
+1FAIL,2SKIPPED exposed new counter minimum-width overflow; fixed layout, then
+unchanged Qt/workspace checks20PASS. Pyright0errors/0warnings, Node24 auditPASS.
+
+An earlier large unbroken-word fixture was explicitly INTERRUPTED after exposing
+existing quadratic secret-assignment redaction; process identities and diagnosis
+are preserved in history-store-interrupted*. Separate bounded subprocess
+regression confirms2FAIL/10PASS (redaction-scaling-before.*). This defect remains
+open; the successful pagination fixture uses normal multiline text logs. No
+complete P0 or release acceptance is claimed. Full final-SHA validation pending.
+

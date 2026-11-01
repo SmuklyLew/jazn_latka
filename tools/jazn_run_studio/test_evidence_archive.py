@@ -286,39 +286,31 @@ def _validate_snapshot(key: str, seal: dict, integrity_raw: bytes, read_member: 
     return {"manifest": contract, "summary": overview, "results": results, "files": data}
 
 
+def _history_run(folder: Path) -> tuple[dict, int]:
+    # Directory metadata orders discovery only; the canonical verifier owns
+    # every status, identity and byte. No fallback to an older successful seal.
+    markers = sorted(folder.glob("snapshot-*.json"), key=lambda path: path.stat().st_mtime_ns, reverse=True)
+    if not markers:
+        raise ValueError("Brak zatwierdzonego snapshotu; starszy raport jest dostępny przez RunStore")
+    run = read_snapshot(folder, markers[0].stem)
+    from .test_evidence_receipts import recover_receipts
+    run = recover_receipts(folder, run)
+    return run, sum(map(len, run["files"].values()))
+
+
+def history_page(base: Path, *, limit: int = 100, cursor: str | None = None):
+    """Verify one bounded page, with explicit continuation across the entire store."""
+    from .tpa_history_paging import read_page
+    return read_page(base, _history_run, limit=limit, cursor=cursor, byte_limit=MAX_TOTAL)
+
+
 def history(base: Path, *, limit: int = 100) -> tuple[list[dict], list[str]]:
-    """Bounded, read-only discovery; malformed/latest evidence remains an error."""
-    if not 1 <= limit <= 100:
-        raise ValueError("Nieprawidłowy limit historii")
-    safe_child(base.parent, base.name)
-    found, errors = [], []
-    history_bytes = 0
-    if not base.exists():
-        return found, errors
-    folders = sorted(base.glob("run-*"), key=lambda path: path.stat().st_mtime_ns, reverse=True)
-    for folder in folders:
-        if not re.fullmatch(r"run-[0-9a-f]{32}", folder.name):
-            continue
-        try:
-            safe_child(base, folder.name)
-            # The mtime only orders discovery. No status is inferred from it.
-            markers = sorted(folder.glob("snapshot-*.json"), key=lambda p: p.stat().st_mtime_ns, reverse=True)
-            if not markers:
-                continue  # Legacy runs remain accessible through the existing reader.
-            run = read_snapshot(folder, markers[0].stem)
-            from .test_evidence_receipts import recover_receipts
-            run = recover_receipts(folder, run)
-            size = sum(map(len, run["files"].values()))
-            if history_bytes + size > MAX_TOTAL:
-                errors.append("Limit pamięci historii; wybierz katalog z mniejszym zakresem przebiegów")
-                break
-            history_bytes += size
-            found.append(run)
-        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
-            errors.append(folder.name + ": " + type(exc).__name__ + "; brak potwierdzonego wyniku")
-        if len(found) + len(errors) >= limit:
-            break
-    return sorted(found, key=lambda run: run["summary"]["saved_utc"], reverse=True), errors
+    """Compatibility first page; callers are explicitly warned about continuation."""
+    page = history_page(base, limit=limit)
+    errors = list(page.errors)
+    if page.next_cursor:
+        errors.append("Dalsze przebiegi: użyj history_page z next_cursor; odczytano tylko jedną stronę historii")
+    return sorted(page.runs, key=lambda run: run["summary"]["saved_utc"], reverse=True), errors
 
 
 def export_snapshot(folder: Path, key: str, destination: Path, system_root: Path) -> Path:

@@ -342,6 +342,14 @@ class RunStore:
                     self.history_errors.append(path.name + ": " + type(exc).__name__ + "; zachowano plik, nie ustalono wyniku.")
         return sorted(result, key=lambda r: r["started_utc"], reverse=True)
 
+    def history_page(self, *, limit: int = 100, cursor: str | None = None):
+        """Read compatibility reports one page at a time, retaining legacy access."""
+        from .tpa_history_paging import read_page
+        def load(folder: Path) -> tuple[dict, int]:
+            report = self.load(folder.name)
+            return report, safe_child(folder, "report.json").stat().st_size
+        return read_page(self.base, load, limit=limit, cursor=cursor)
+
     def recover_interrupted(self) -> None:
         for report in self.history():
             if report.get("finished_utc"):

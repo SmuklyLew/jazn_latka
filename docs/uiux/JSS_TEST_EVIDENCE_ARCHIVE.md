@@ -109,7 +109,27 @@ Wyniki scenariuszy mają strony po 300 wierszy z przyciskami poprzedniej/następ
 strony i licznikiem. Filtr obejmuje cały przebieg, a jego zmiana lub wybór innego
 przebiegu wraca na pierwszą stronę. Pusty wynik ma licznik 0 z 0. Limit strony
 ogranicza koszt widgetów, nie odcina dalszych scenariuszy. To nie jest jeszcze
-pełny indeks wszystkich starszych przebiegów poza limitem odczytu historii.
+pełny indeks wyników wszystkich scenariuszy we wszystkich przebiegach naraz.
+
+Lista przebiegów ma odrębne stronicowanie na poziomie magazynu: `history_page`
+zwraca zweryfikowane przebiegi, odmowy, liczbę pozycji katalogu i `next_cursor`.
+Limit 100 przebiegów i 64 MiB danych dotyczy jednej strony, nie całej historii.
+Przebieg, który nie mieści się obok poprzednich, pozostaje pierwszą pozycją
+następnej strony. Nie jest pomijany. Limity pojedynczego archiwum i dokumentu
+oraz kontrola SHA-256 pozostają bez zmian. Starsze raporty bez snapshotu są
+jawnie odrzucane przez czytnik snapshotów; `RunStore.history_page` zachowuje
+dostęp do zgodnych raportów starszego formatu.
+
+Odkrywanie katalogów używa ograniczonego kopca zamiast listy wszystkich raportów.
+Kursor jest związany z katalogiem oraz metadanymi jego pozycji. Zmiana inwentarza
+wymaga odświeżenia; nie prowadzi do cichego pominięcia pozycji pomiędzy stronami.
+Kolejność odkrywania opiera się na mtime i run_id, nigdy nie dowodzi wyniku ani
+daty wykonania. Wyniki i źródło pochodzą wyłącznie ze zweryfikowanej rewizji.
+Widok historii i panel operatorski mają przyciski starszych/nowszych przebiegów;
+oba odczytują pojedynczą stronę poza wątkiem Qt. Filtr scenariuszy i informacja
+o ostatnim PASS/FAIL dotyczą wyraźnie aktualnie wczytanej strony przebiegów.
+Funkcja zgodności `history()` zwraca pierwszą stronę i jawną informację o dalszym
+ciągu. Istniejące `RunStore.history()` zachowuje publiczny kontrakt pełnej listy.
 
 Rodzaj wykonania (pytest/regression/live/sandbox) jest zapisany już w pierwszym
 indeksie i snapshotcie. Duży indeks pytest sprzed pierwszej fazy podlega limitowi

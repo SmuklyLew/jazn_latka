@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.68",
-  "active_definition_count": 3089,
+  "system_version": "16.3.25.5.116.0.34.94.6.69",
+  "active_definition_count": 3101,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30802,6 +30802,198 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 220
+    },
+    "tests/test_jss_evidence_store_paging.py::test_all_237_records_are_reachable_without_duplicates": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_all_237_records_are_reachable_without_duplicates",
+      "purpose": "All 237 records are reachable without duplicates",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jss_evidence_store_paging.py::test_page_byte_budget_defers_next_record_instead_of_dropping_it": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_page_byte_budget_defers_next_record_instead_of_dropping_it",
+      "purpose": "Page byte budget defers next record instead of dropping it",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_jss_evidence_store_paging.py::test_bad_record_does_not_hide_older_records_or_become_pass": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_bad_record_does_not_hide_older_records_or_become_pass",
+      "purpose": "Bad record does not hide older records or become pass",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_jss_evidence_store_paging.py::test_changing_inventory_refuses_stale_cursor": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_changing_inventory_refuses_stale_cursor",
+      "purpose": "Changing inventory refuses stale cursor",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_jss_evidence_store_paging.py::test_malformed_cursors_refused": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_malformed_cursors_refused",
+      "purpose": "Malformed cursors refused",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_jss_evidence_store_paging.py::test_cursor_cannot_be_reused_for_other_evidence_root": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_cursor_cannot_be_reused_for_other_evidence_root",
+      "purpose": "Cursor cannot be reused for other evidence root",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_jss_evidence_store_paging.py::test_mutation_during_read_refused_without_returning_partial_success": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_mutation_during_read_refused_without_returning_partial_success",
+      "purpose": "Mutation during read refused without returning partial success",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_jss_evidence_store_paging.py::test_discovery_does_not_follow_junctions": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_discovery_does_not_follow_junctions",
+      "purpose": "Discovery does not follow junctions",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_jss_evidence_store_paging.py::test_archive_and_legacy_store_can_reach_every_real_run_after_100": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_archive_and_legacy_store_can_reach_every_real_run_after_100",
+      "purpose": "Archive and legacy store can reach every real run after 100",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 133
+    },
+    "tests/test_jss_evidence_store_paging.py::test_actual_verified_snapshots_above_64mib_remain_reachable": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_actual_verified_snapshots_above_64mib_remain_reachable",
+      "purpose": "Actual verified snapshots above 64mib remain reachable",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
+    },
+    "tests/test_jss_evidence_store_paging.py::test_qt_navigation_loads_older_run_pages_without_growing_loaded_history": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_qt_navigation_loads_older_run_pages_without_growing_loaded_history",
+      "purpose": "Qt navigation loads older run pages without growing loaded history",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 169
+    },
+    "tests/test_jss_evidence_store_paging.py::test_operator_history_uses_background_store_pages_and_reports_failure": {
+      "path": "tests/test_jss_evidence_store_paging.py",
+      "name": "test_operator_history_uses_background_store_pages_and_reports_failure",
+      "purpose": "Operator history uses background store pages and reports failure",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 204
     },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",

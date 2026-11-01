@@ -184,6 +184,11 @@ class OperatorWorkspace:
 
     def _history(self) -> None:
         """History reuses the canonical TPA store, never copies evidence."""
+        from .tpa_io import SerialIO
+        self.history_io = SerialIO(self.host)
+        self.history_cursors: list[str | None] = [None]
+        self.history_page_index = 0
+        self.history_next_cursor: str | None = None
         panel = QWidget()
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(8, 8, 8, 8)
@@ -195,6 +200,16 @@ class OperatorWorkspace:
         refresh.clicked.connect(self.refresh_history)
         bar.addWidget(refresh)
         layout.addLayout(bar)
+        pages = QHBoxLayout()
+        self.history_newer = QPushButton("Nowsze przebiegi")
+        self.history_older = QPushButton("Starsze przebiegi")
+        self.history_newer.clicked.connect(lambda: self.change_history_page(-1))
+        self.history_older.clicked.connect(lambda: self.change_history_page(1))
+        for button in (self.history_newer, self.history_older):
+            button.setEnabled(False)
+            pages.addWidget(button)
+        pages.addStretch(1)
+        layout.addLayout(pages)
         self.history_tree = QTreeWidget()
         self.history_tree.setAccessibleName("Historia zadań bieżących i zapisanych przebiegów TPA")
         self.history_tree.setHeaderLabels(["Przebieg / źródło", "Wynik", "Czas", "Akcja"])
@@ -210,6 +225,25 @@ class OperatorWorkspace:
         self.tabs.addTab(panel, "Historia")
 
     def refresh_history(self) -> None:
+        if self.history_io.pending:
+            return
+        self.history_cursors = [None]
+        self.history_page_index = 0
+        self._read_history_page()
+
+    def change_history_page(self, offset: int) -> None:
+        if self.history_io.pending:
+            return
+        if offset > 0:
+            if self.history_next_cursor is None:
+                return
+            self.history_cursors = self.history_cursors[:self.history_page_index + 1] + [self.history_next_cursor]
+        elif self.history_page_index == 0:
+            return
+        self.history_page_index += offset
+        self._read_history_page()
+
+    def _read_history_page(self) -> None:
         self.history_tree.clear()
         with self.host.core.lock:
             jobs = [job.snapshot() for job in self.host.core.jobs.values()]
@@ -220,15 +254,27 @@ class OperatorWorkspace:
                 "Zadanie: " + key, state, "bieżąca sesja", "Otwórz log",
             ])
             item.setData(0, Qt.ItemDataRole.UserRole, ("job", key))
-        reports: list[dict[str, Any]] = []
-        issue = ""
+        self.history_job_count = len(jobs)
+        self.history_newer.setEnabled(False)
+        self.history_older.setEnabled(False)
+        self.history_summary.setText("Odczytywanie strony historii TPA…")
         try:
             store = self.host.local_acceptance_panel.runner.store
-            reports = store.history()[:100]
-            if store.history_errors:
-                issue = " • odczyt: " + "; ".join(str(x) for x in store.history_errors[:2])
+            cursor = self.history_cursors[self.history_page_index]
+            self.history_io.submit(lambda: store.history_page(cursor=cursor),
+                                   self._history_page_loaded, self._history_page_failed)
         except (OSError, ValueError, KeyError, TypeError) as exc:
-            issue = " • błąd odczytu " + type(exc).__name__
+            self._history_page_failed(type(exc).__name__)
+
+    def _history_page_failed(self, error: str) -> None:
+        self.history_summary.setText("Błąd odczytu historii: " + error + ". Odśwież listę przebiegów.")
+
+    def _history_page_loaded(self, page) -> None:
+        reports = page.runs
+        self.history_next_cursor = page.next_cursor
+        self.history_newer.setEnabled(self.history_page_index > 0)
+        self.history_older.setEnabled(page.next_cursor is not None)
+        issue = " • odczyt: " + "; ".join(page.errors) if page.errors else ""
         for report in reports:
             run_id = str(report.get("run_id", ""))
             if not run_id:
@@ -244,7 +290,8 @@ class OperatorWorkspace:
             item.setToolTip(1, "To wyniki podtestów; pełny odbiór jest osobną kontrolą.")
             item.setData(0, Qt.ItemDataRole.UserRole, ("tpa", run_id))
         self.history_summary.setText(
-            f"Zadania tej sesji: {len(jobs)} • historia TPA: {len(reports)}" + issue
+            f"Zadania tej sesji: {self.history_job_count} • TPA: strona {self.history_page_index + 1}, "
+            f"{len(reports)} odczytanych / {page.total} w katalogu" + issue
         )
 
     def open_history_item(self, item: QTreeWidgetItem, _column: int) -> None:
