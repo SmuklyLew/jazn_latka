@@ -1,6 +1,6 @@
 {
   "schema_version": "jazn_public_mcp_deployment/v1",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.52-pypdf-6214-operator-contract-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
   "transport": {
     "protocol": "MCP",
     "protocol_version": "2026-07-28",
