@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.60",
-  "active_definition_count": 3065,
+  "system_version": "16.3.25.5.116.0.34.94.6.61",
+  "active_definition_count": 3071,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30491,6 +30491,66 @@
       "description_source": "source_identity",
       "line": 173
     },
+    "tests/test_jss_evidence_history_pagination_qt.py::test_all_scenarios_are_accessible_in_bounded_pages": {
+      "path": "tests/test_jss_evidence_history_pagination_qt.py",
+      "name": "test_all_scenarios_are_accessible_in_bounded_pages",
+      "purpose": "All scenarios are accessible in bounded pages",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jss_evidence_history_pagination_qt.py::test_filters_reset_page_and_apply_to_the_entire_run": {
+      "path": "tests/test_jss_evidence_history_pagination_qt.py",
+      "name": "test_filters_reset_page_and_apply_to_the_entire_run",
+      "purpose": "Filters reset page and apply to the entire run",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_jss_evidence_history_pagination_qt.py::test_pagination_fits_compact_viewport": {
+      "path": "tests/test_jss_evidence_history_pagination_qt.py",
+      "name": "test_pagination_fits_compact_viewport",
+      "purpose": "Pagination fits compact viewport",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_jss_evidence_history_pagination_qt.py::test_failed_import_does_not_enable_export_of_an_unsealed_projection": {
+      "path": "tests/test_jss_evidence_history_pagination_qt.py",
+      "name": "test_failed_import_does_not_enable_export_of_an_unsealed_projection",
+      "purpose": "Failed import does not enable export of an unsealed projection",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
     "tests/test_jss_evidence_history_qt.py::test_real_qt_history_shows_missing_tests_and_block_reason": {
       "path": "tests/test_jss_evidence_history_qt.py",
       "name": "test_real_qt_history_shows_missing_tests_and_block_reason",
@@ -30535,6 +30595,38 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 72
+    },
+    "tests/test_jss_evidence_initial_index.py::test_pytest_initial_index_uses_registered_limit_before_any_test_phase": {
+      "path": "tests/test_jss_evidence_initial_index.py",
+      "name": "test_pytest_initial_index_uses_registered_limit_before_any_test_phase",
+      "purpose": "Pytest initial index uses registered limit before any test phase",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_jss_evidence_initial_index.py::test_ordinary_tpa_index_does_not_receive_the_registered_pytest_limit": {
+      "path": "tests/test_jss_evidence_initial_index.py",
+      "name": "test_ordinary_tpa_index_does_not_receive_the_registered_pytest_limit",
+      "purpose": "Ordinary tpa index does not receive the registered pytest limit",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
     },
     "tests/test_jss_evidence_receipt_recovery.py::test_manifest_is_redacted_before_it_is_frozen": {
       "path": "tests/test_jss_evidence_receipt_recovery.py",

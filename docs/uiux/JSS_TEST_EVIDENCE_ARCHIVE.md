@@ -105,6 +105,16 @@ JUnit i logu. Odczyt i weryfikacja odbywają się w zadaniu roboczym. Nie urucha
 testów, modeli, daemona ani naprawy źródłowych raportów. Zgodność SHA bez pewności,
 że źródło było czyste, nie jest pokazywana jako aktualny, zweryfikowany wynik.
 
+Wyniki scenariuszy mają strony po 300 wierszy z przyciskami poprzedniej/następnej
+strony i licznikiem. Filtr obejmuje cały przebieg, a jego zmiana lub wybór innego
+przebiegu wraca na pierwszą stronę. Pusty wynik ma licznik 0 z 0. Limit strony
+ogranicza koszt widgetów, nie odcina dalszych scenariuszy. To nie jest jeszcze
+pełny indeks wszystkich starszych przebiegów poza limitem odczytu historii.
+
+Rodzaj wykonania (pytest/regression/live/sandbox) jest zapisany już w pierwszym
+indeksie i snapshotcie. Duży indeks pytest sprzed pierwszej fazy podlega limitowi
+zarejestrowanego zakresu; zwykły raport TPA zachowuje swój wcześniejszy limit.
+
 Porównanie przebiegów przedstawia zmiany statusów i źródła. Eksport ponownie
 weryfikuje cały zestaw i zapisuje nowy ZIP bez nadpisywania. Import weryfikuje
 wszystkie elementy i hashe przed utworzeniem nowego katalogu. ZIP nie może zawierać

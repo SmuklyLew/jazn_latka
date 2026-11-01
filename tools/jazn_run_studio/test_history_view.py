@@ -75,6 +75,8 @@ class TestHistoryPanel(QWidget):
         self.root = root
         self.runs: list[dict] = []
         self.visible: list[dict] = []
+        self.page_index = 0
+        self.page_size = 300
         self.current_sha: str | None = None
         self.current_dirty: bool | None = None
         self.worker: _ReadHistory | None = None
@@ -124,6 +126,24 @@ class TestHistoryPanel(QWidget):
         compare.setAccessibleName("Porównaj wybrane przebiegi testów")
         compare.clicked.connect(self.compare_runs)
         archive_row.addWidget(compare)
+        self.previous_page_button = QPushButton("‹")
+        self.previous_page_button.setAccessibleName("Poprzednia strona wyników scenariuszy")
+        self.previous_page_button.setToolTip("Poprzednia strona wyników scenariuszy")
+        self.previous_page_button.setFixedWidth(30)
+        self.previous_page_button.clicked.connect(lambda: self.change_page(-1))
+        archive_row.addWidget(self.previous_page_button)
+        self.page_counter = QLabel("Strona 0 z 0")
+        self.page_counter.setAccessibleName("Strona wyników")
+        self.page_counter.setTextFormat(Qt.TextFormat.PlainText)
+        archive_row.addWidget(self.page_counter)
+        self.next_page_button = QPushButton("›")
+        self.next_page_button.setAccessibleName("Następna strona wyników scenariuszy")
+        self.next_page_button.setToolTip("Następna strona wyników scenariuszy")
+        self.next_page_button.setFixedWidth(30)
+        self.next_page_button.clicked.connect(lambda: self.change_page(1))
+        archive_row.addWidget(self.next_page_button)
+        self.previous_page_button.setEnabled(False)
+        self.next_page_button.setEnabled(False)
         layout.addLayout(archive_row)
         self.summary = QLabel("Historia jest odczytywana na żądanie. Nie uruchamia testów ani usług.")
         self.summary.setWordWrap(True)
@@ -197,7 +217,13 @@ class TestHistoryPanel(QWidget):
             self.compare_choice.setCurrentIndex(1)
         self.render_results()
 
-    def render_results(self, *_unused: object) -> None:
+    def change_page(self, offset: int) -> None:
+        self.page_index += offset
+        self.render_results(reset_page=False)
+
+    def render_results(self, *_unused: object, reset_page: bool = True) -> None:
+        if reset_page:
+            self.page_index = 0
         index = self.run_choice.currentIndex()
         self.visible = []
         self.table.setRowCount(0)
@@ -206,6 +232,9 @@ class TestHistoryPanel(QWidget):
         self.artifact.clear()
         if not 0 <= index < len(self.runs):
             self.export_button.setEnabled(False)
+            self.page_counter.setText("Strona 0 z 0")
+            self.previous_page_button.setEnabled(False)
+            self.next_page_button.setEnabled(False)
             self.summary.setText("Brak zweryfikowanych przebiegów w wybranym katalogu.")
             return
         run = self.runs[index]
@@ -225,7 +254,13 @@ class TestHistoryPanel(QWidget):
         matching = [row for row in run["results"]
                         if (not query or query in (row["scenario_id"] + " " + row.get("name", "") + " " + row["reason"]).casefold())
                         and (selected_status == "Wszystkie" or row["execution_status"] == selected_status)]
-        self.visible = matching[:300]
+        page_count = (len(matching) + self.page_size - 1) // self.page_size
+        self.page_index = min(max(0, self.page_index), max(0, page_count - 1))
+        offset = self.page_index * self.page_size
+        self.visible = matching[offset:offset + self.page_size]
+        self.page_counter.setText(f"Strona {self.page_index + 1 if page_count else 0} z {page_count}")
+        self.previous_page_button.setEnabled(self.page_index > 0)
+        self.next_page_button.setEnabled(self.page_index + 1 < page_count)
         self.summary.setText(self.summary.text() + f" • pokazano {len(self.visible)} z {len(matching)}; filtr obejmuje cały przebieg")
         self.table.setRowCount(len(self.visible))
         for i, row in enumerate(self.visible):
@@ -291,6 +326,8 @@ class TestHistoryPanel(QWidget):
         self.archive_worker = None
         self.export_button.setEnabled(True)
         self.import_button.setEnabled(True)
+        index = self.run_choice.currentIndex()
+        self.export_button.setEnabled(0 <= index < len(self.runs) and not self.runs[index]["summary"].get("receipt_recovery"))
         if "error" in result:
             self.errors.setText(result["error"])
         elif result["operation"] == "import":

@@ -184,7 +184,10 @@ class RunStore:
         return target
 
     def create(self, case_ids: tuple[str, ...], python: str, environment: dict, *,
-               catalogue: list[dict] | None = None, source: dict | None = None) -> dict:
+               catalogue: list[dict] | None = None, source: dict | None = None,
+               execution: str = "regression") -> dict:
+        if execution not in {"regression", "pytest", "live", "sandbox"}:
+            raise ValueError("Nieprawidłowy wykonawca przebiegu")
         definitions = execution_map() if catalogue is None else catalogue
         mapping = {c["id"]: c for c in definitions}
         if (len(mapping) != len(definitions) or any(
@@ -199,7 +202,7 @@ class RunStore:
         self.base.mkdir(parents=True, exist_ok=True)
         self.folder(run_id).mkdir(exist_ok=False)
         report = {"schema_version": SCHEMA, "run_id": run_id, "source": source_identity(self.root) if source is None else source,
-                  "python": python, "environment": environment, "selected": list(case_ids),
+                  "python": python, "environment": environment, "selected": list(case_ids), "execution": execution,
                   "owner_pid": os.getpid(), "started_utc": utc(), "finished_utc": None,
                   "coverage_map": definitions, "artifacts": [], "results": [
                       {"case_id": key, "title": mapping[key]["title"], "expected": mapping[key]["expected"],

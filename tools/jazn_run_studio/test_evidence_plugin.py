@@ -118,8 +118,7 @@ class EvidenceRecorder:
             {"os": platform.system(), "python_version": platform.python_version(),
              "pytest_version": pytest.__version__, "collected_count": len(items),
              "inventory_definition_count": len(inventory), "inventory_error": self.inventory_error},
-            catalogue=definitions, source=source)
-        self.report["execution"] = "pytest"
+            catalogue=definitions, source=source, execution="pytest")
         self.rows = {row["case_id"]: row for row in self.report["results"]}
         self.rows["pytest-collection"].update(status="ERROR" if self.inventory_error or self.collection_errors else "PASS",
             reason=("Canonical inventory unavailable" if self.inventory_error else

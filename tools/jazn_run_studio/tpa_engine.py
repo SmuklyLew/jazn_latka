@@ -181,7 +181,7 @@ class TPARunner(QObject):
         self.probe_root = self.root
         self.source_kind, self.source_value = source_kind, source_value
         # The run exists even when preflight blocks every selected test.
-        self.report = self.store.create(case_ids, self.python, {"memory_mode": "off", "qt_platform": "offscreen"})
+        self.report = self.store.create(case_ids, self.python, {"memory_mode": "off", "qt_platform": "offscreen"}, execution=execution)
         self.report["execution"] = execution
         if source_kind:
             self.report["requested_source"] = {"kind": source_kind, "value": source_value}

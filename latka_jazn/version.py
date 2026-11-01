@@ -1,3 +1,4 @@
+# v116.0.34.94.6.61: Page evidence scenarios and persist execution identity in the first durable index.
 # v116.0.34.94.6.60: Recover immutable pytest receipts read-only and redact contracts before freezing.
 # v116.0.34.94.6.59: Keep service status evidence current while its non-modal window is hidden.
 # v116.0.34.94.6.58: Declare optional pytest evidence capability and repair the post-refactor color-dialog test binding.
@@ -191,7 +192,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.60"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.61"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (
