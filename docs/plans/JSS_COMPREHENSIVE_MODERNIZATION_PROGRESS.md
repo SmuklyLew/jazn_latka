@@ -257,3 +257,19 @@ Typy **0 errors/warnings**, Node24 **23 workflow PASS**. Nowy zimny profil:
 worker281.2ms, całość295.5ms wobec407.0ms; nadal54fsync, zeroWMI.
 `initial-refusal-profile-native.json`. Potwierdzenie hosted Windows3.14, pełna
 walidacja i P0 nadal wymagane; E0/E1 IN_PROGRESS, E2–E8 NOT_RUN.
+
+### P0 — zachowanie decyzji no-probe przy tworzeniu adaptera (.66)
+
+Nowe kontrakty przed poprawką: **3 FAIL,1 PASS**, `route-no-probe-before.*`.
+build_speech_adapter_for_turn i build_model_guided_speech_status przekazywały
+rozpoznaną konfigurację do fabryki, która ponownie wybierała trasę i wykonywała
+probe mimo probe_local=False. Fabryka ma teraz zgodny domyślny resolve_route=True,
+a oba miejsca konstrukcji już rozpoznanej trasy używają resolve_route=False.
+Domyślna publiczna fabryka nadal rozpoznaje trasę; jawny probe warstwy mowy
+wykonywany jest dokładnie raz. Brak globalnych flag omijających testy lub zmian SLA.
+
+Regresja routingu, orkiestracji, adapterów i wersji: **76 PASS**,
+`route-resolution-regression.*`; typy **0 errors/warnings**. Niezmieniony test
+zdrowia <5s przeszedł; całe wywołanie testowe trwało lokalnie0.87s. Pierwszy
+zakres atomowości i nowych kontraktów: **18 PASS**, `route-no-probe-after.*`.
+Hosted PowerShell i pełna walidacja końcowego SHA pozostają do potwierdzenia.
