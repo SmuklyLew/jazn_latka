@@ -1,6 +1,6 @@
 """Simple line icons for the JSS activity rail, drawn natively with Qt."""
 from __future__ import annotations
-from PySide6.QtCore import Qt, QRectF
+from PySide6.QtCore import Qt, QRectF, QLineF
 from PySide6.QtGui import QColor, QIcon, QPainter, QPainterPath, QPen, QPixmap
 
 
@@ -10,7 +10,11 @@ def activity_icon(kind: str, color: str) -> QIcon:
     p = QPainter(canvas)
     p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
     p.scale(2.2, 2.2)
-    p.setPen(QPen(QColor(color), 1.6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+    pen = QPen(QColor(color))
+    pen.setWidthF(1.6)
+    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    p.setPen(pen)
     p.setBrush(Qt.BrushStyle.NoBrush)
     if kind == "dashboard":
         p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
@@ -29,11 +33,11 @@ def activity_icon(kind: str, color: str) -> QIcon:
             p.drawEllipse(QRectF(5, y + 1, 1.2, 1.2))
     elif kind == "memory":
         p.drawEllipse(QRectF(3, 3, 14, 5))
-        p.drawLine(3, 5.5, 3, 15); p.drawLine(17, 5.5, 17, 15)
+        p.drawLine(QLineF(3, 5.5, 3, 15)); p.drawLine(QLineF(17, 5.5, 17, 15))
         p.drawArc(QRectF(3, 12.5, 14, 5), 180 * 16, 180 * 16)
     elif kind == "tests":
         p.drawRoundedRect(QRectF(4, 2.5, 12, 15), 2, 2)
-        p.drawLine(6, 10, 8.5, 12.3); p.drawLine(8.5, 12.3, 14, 6.5)
+        p.drawLine(QLineF(6, 10, 8.5, 12.3)); p.drawLine(QLineF(8.5, 12.3, 14, 6.5))
     elif kind == "studios":
         for x in (3, 11):
             for y in (3, 11):
@@ -41,7 +45,7 @@ def activity_icon(kind: str, color: str) -> QIcon:
     elif kind == "developer":
         p.drawLine(8, 5, 3, 10); p.drawLine(3, 10, 8, 15)
         p.drawLine(12, 5, 17, 10); p.drawLine(17, 10, 12, 15)
-        p.drawLine(11.5, 3.5, 8.5, 16.5)
+        p.drawLine(QLineF(11.5, 3.5, 8.5, 16.5))
     elif kind == "settings":
         p.drawEllipse(QRectF(5, 5, 10, 10))
         p.drawEllipse(QRectF(8, 8, 4, 4))
