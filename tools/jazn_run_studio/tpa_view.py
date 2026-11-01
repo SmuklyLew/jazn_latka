@@ -128,7 +128,7 @@ class TPAPanel(QWidget):
         self.retry_button = self.button("Ponów nieudane / blokady", self.retry_failed)
         self.auto_cancel = self.button("Zatrzymaj", self.stop_work)
         for i, widget in enumerate((self.auto_one, self.auto_safe, self.retry_button, self.auto_cancel)):
-            actions.addWidget(widget, i // 2, i % 2)
+            actions.addWidget(widget, 0, i)
         self.live_plan = QCheckBox("Live po merge (wymaga modelu)")
         self.live_plan.setAccessibleName("Jawna zgoda na uruchomienie izolowanych testów live")
         self.live_plan.setToolTip("Domyślnie plan wykonuje tylko syntetyczne regresje; bez Ollama i startu daemona.")
@@ -141,12 +141,16 @@ class TPAPanel(QWidget):
         self.auto_status = QLabel("PASS podtestu potwierdza zakres regresji. Pełny odbiór ma osobny wynik.")
         self.auto_status.setWordWrap(True)
         self.auto_status.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.auto_status)
         self.progress = QProgressBar()
         self.progress.setRange(0, 1)
         self.progress.setValue(0)
         self.progress.setFormat("%v / %m pozycji")
-        layout.addWidget(self.progress)
+        # Keep the queue visible in a small Windows viewport: action buttons
+        # share one row, and status/progress share another without hiding state.
+        status_row = QHBoxLayout()
+        status_row.addWidget(self.auto_status, 3)
+        status_row.addWidget(self.progress, 1)
+        layout.addLayout(status_row)
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.table = QTableWidget(len(self.rows), 7)
         self.table.setHorizontalHeaderLabels(["Scenariusz", "Regresja", "Live", "Pełny odbiór", "Aktualność", "Ostatnia próba", "Następny krok"])
