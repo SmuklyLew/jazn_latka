@@ -166,8 +166,9 @@ class EvidenceRecorder:
         name = key + "-" + uuid4().hex
         folder = self.store.folder(self.report["run_id"])
         _write(safe_child(folder, name + ".json"), envelope)
+        result = event["result"]
         _write(safe_child(folder, name + ".txt"),
-               (row["title"] + "\n" + row["status"] + "\n" + row["reason"] + "\n").encode("utf-8"))
+               (result["title"] + "\n" + result["status"] + "\n" + result["reason"] + "\n").encode("utf-8"))
 
     @pytest.hookimpl(trylast=True)
     def pytest_sessionfinish(self, session: Any, exitstatus: int) -> None:

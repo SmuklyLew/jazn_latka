@@ -206,6 +206,9 @@ class RunStore:
                        "status": "QUEUED", "reason": "Oczekuje na wykonanie.", "full_gate": "NOT_RUN",
                        "coverage": "regression_subset", "exit_code": None, "duration_seconds": None,
                        "next_step": "Uruchom podtest; potem wykonaj kroki odbioru wspomaganego."} for key in case_ids]}
+        # Freeze only the same redacted contract that later snapshots/receipts
+        # use. Parametrized pytest nodeids can themselves contain credentials.
+        report = redact(report, self.redactor)
         from .test_evidence_archive import initialize
         initialize(self.folder(run_id), report)
         report["evidence_schema"] = "jazn_test_evidence/v1"

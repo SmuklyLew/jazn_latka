@@ -19,7 +19,7 @@ from uuid import uuid4
 import zipfile
 
 from .tpa_catalog import LIVE_CASES
-from .tpa_reports import MAX_REPORT, STATES, redact, safe_child, utc
+from .tpa_reports import MAX_REPORT, STATES, Redactor, redact, safe_child, utc
 
 SCHEMA = "jazn_test_evidence/v1"
 MAX_FILES = 20000
@@ -55,7 +55,7 @@ def _read(path: Path) -> bytes:
 def manifest(report: dict) -> dict:
     """Freeze the full TPA contract, not just a successful selected subset."""
     return {
-        "schema": SCHEMA, "run_id": report["run_id"],
+        "schema": SCHEMA, "run_id": report["run_id"], "redaction_policy": "canonical-before-freeze/v1",
         "created_utc": report["started_utc"], "selected": list(report["selected"]),
         "scope": "Registered tests and gates; execution alone does not certify a SYSTEM release",
         "scenarios": [{
@@ -101,6 +101,7 @@ def scenario_text(row: dict) -> str:
     return "\n".join([
         "JAŹŃ / JSS — RAPORT SCENARIUSZA", "",
         "SCENARIO_ID: " + row["scenario_id"], "RUN_ID: " + row["run_id"],
+        *(["NAME: " + row["name"]] if "name" in row else []),
         "VERSION: " + str(row["source"].get("version")),
         "SOURCE_SHA: " + str(row["source"].get("git_sha") or "UNKNOWN"),
         "STATUS: " + row["execution_status"], "FULL_GATE: " + row["full_gate_status"],
@@ -169,7 +170,7 @@ def save_snapshot(folder: Path, report: dict, redactor: Any) -> str:
         if status not in STATES or full not in STATES:
             raise ValueError("Nieznany status scenariusza")
         record = redact({
-            "schema": SCHEMA, "scenario_id": case_id, "run_id": report["run_id"],
+            "schema": SCHEMA, "scenario_id": case_id, "run_id": report["run_id"], "name": definition["name"],
             "source": deepcopy(report["source"]), "environment": environment,
             "execution": report.get("execution", "regression"),
             "execution_status": status, "full_gate_status": full,
@@ -242,6 +243,8 @@ def _validate_snapshot(key: str, seal: dict, integrity_raw: bytes, read_member: 
             raise ValueError("Brak lub niezgodny SHA256 dowodu: " + name)
         data[name] = raw
     contract = json.loads(data["manifest.json"])
+    if contract.get("redaction_policy") not in {None, "canonical-before-freeze/v1"}:
+        raise ValueError("Nieznana polityka redakcji manifestu")
     overview = json.loads(data["summary.json"])
     ids = [row["scenario_id"] for row in contract["scenarios"]]
     if (not ids or len(ids) != len(set(ids)) or contract.get("schema") != SCHEMA
@@ -249,9 +252,14 @@ def _validate_snapshot(key: str, seal: dict, integrity_raw: bytes, read_member: 
             or overview.get("snapshot") != key):
         raise ValueError("Niezgodny manifest przebiegu")
     results = []
+    definitions = {row["scenario_id"]: row for row in contract["scenarios"]}
+    redactor = Redactor({})
+    legacy = contract.get("redaction_policy") is None
     for case_id in ids:
         row = json.loads(data["results/" + case_id + ".json"])
         if (row.get("schema") != SCHEMA or row.get("scenario_id") != case_id
+                or ("name" in row and row["name"] != (
+                    redactor.text(definitions[case_id]["name"]) if legacy else definitions[case_id]["name"]))
                 or row.get("run_id") != seal["run_id"] or row.get("source") != overview["source"]
                 or row.get("execution_status") not in STATES or row.get("full_gate_status") not in STATES
                 or scenario_text(row).encode("utf-8") != data["scenarios/" + case_id + ".txt"]
@@ -283,6 +291,8 @@ def history(base: Path, *, limit: int = 100) -> tuple[list[dict], list[str]]:
             if not markers:
                 continue  # Legacy runs remain accessible through the existing reader.
             run = read_snapshot(folder, markers[0].stem)
+            from .test_evidence_receipts import recover_receipts
+            run = recover_receipts(folder, run)
             size = sum(map(len, run["files"].values()))
             if history_bytes + size > MAX_TOTAL:
                 errors.append("Limit pamięci historii; wybierz katalog z mniejszym zakresem przebiegów")
@@ -304,6 +314,8 @@ def export_snapshot(folder: Path, key: str, destination: Path, system_root: Path
     safe_child(destination.parent, destination.name)
     validate_operator_path(destination, system_root)
     snapshot = read_snapshot(folder, key)
+    if _json(redact(snapshot["manifest"], Redactor({}))) != snapshot["files"]["manifest.json"]:
+        raise ValueError("Historyczny manifest zawiera niezredagowane dane; eksport zablokowany")
     prefix = snapshot["summary"]["run_id"] + "/"
     with destination.open("xb") as output:
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:

@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 from uuid import uuid4
+from zipfile import BadZipFile
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt
 from PySide6.QtWidgets import (
@@ -60,7 +61,7 @@ class _ArchiveJob(QRunnable):
         try:
             result = (import_snapshot if self.operation == "import" else export_snapshot)(*self.args)
             self.signals.finished.emit({"operation": self.operation, "path": str(result)})
-        except (OSError, ValueError, TypeError, KeyError, RuntimeError) as exc:
+        except (OSError, ValueError, TypeError, KeyError, AttributeError, RuntimeError, BadZipFile) as exc:
             self.signals.finished.emit({"error": type(exc).__name__ + ": odmowa importu/eksportu; zachowano źródłowe dowody"})
 
 
@@ -204,6 +205,7 @@ class TestHistoryPanel(QWidget):
         self.previous_outcomes.clear()
         self.artifact.clear()
         if not 0 <= index < len(self.runs):
+            self.export_button.setEnabled(False)
             self.summary.setText("Brak zweryfikowanych przebiegów w wybranym katalogu.")
             return
         run = self.runs[index]
@@ -214,10 +216,14 @@ class TestHistoryPanel(QWidget):
                     "inny SHA lub zmienione źródło")
         self.summary.setText(str(source.get("version")) + " • SHA: " + str(sha or "nie ustalono") +
                              " • " + relation + " • RELEASE_NOT_ACCEPTED")
+        unsealed = bool(run["summary"].get("receipt_recovery"))
+        self.export_button.setEnabled(not unsealed and self.archive_worker is None)
+        if unsealed:
+            self.summary.setText(self.summary.text() + " • NIEZAMKNIĘTY PRZEBIEG — potwierdzenia faz; brak raportu końcowego")
         query = self.query.text().casefold()
         selected_status = self.status.currentText()
         matching = [row for row in run["results"]
-                        if (not query or query in (row["scenario_id"] + " " + row["reason"]).casefold())
+                        if (not query or query in (row["scenario_id"] + " " + row.get("name", "") + " " + row["reason"]).casefold())
                         and (selected_status == "Wszystkie" or row["execution_status"] == selected_status)]
         self.visible = matching[:300]
         self.summary.setText(self.summary.text() + f" • pokazano {len(self.visible)} z {len(matching)}; filtr obejmuje cały przebieg")
@@ -296,6 +302,9 @@ class TestHistoryPanel(QWidget):
     def export_selected(self) -> None:
         index = self.run_choice.currentIndex()
         if not 0 <= index < len(self.runs) or self.loaded_base is None:
+            return
+        if self.runs[index]["summary"].get("receipt_recovery"):
+            self.errors.setText("Podgląd potwierdzeń nie ma raportu końcowego. Eksport wymaga kompletnej rewizji.")
             return
         destination, _ = QFileDialog.getSaveFileName(self, "Eksport dowodów", "", "ZIP (*.zip)")
         if destination:

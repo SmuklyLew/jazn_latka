@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.59",
-  "active_definition_count": 3058,
+  "system_version": "16.3.25.5.116.0.34.94.6.60",
+  "active_definition_count": 3065,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30535,6 +30535,132 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 72
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_manifest_is_redacted_before_it_is_frozen": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_manifest_is_redacted_before_it_is_frozen",
+      "purpose": "Manifest is redacted before it is frozen",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_legacy_manifest_and_redacted_receipts_match_without_rewriting_sources": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_legacy_manifest_and_redacted_receipts_match_without_rewriting_sources",
+      "purpose": "Legacy manifest and redacted receipts match without rewriting sources",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_actual_crash_recovers_completed_case_without_promoting_incomplete_call": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_actual_crash_recovers_completed_case_without_promoting_incomplete_call",
+      "purpose": "Actual crash recovers completed case without promoting incomplete call",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_pass_call_without_teardown_is_not_pass": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_pass_call_without_teardown_is_not_pass",
+      "purpose": "Pass call without teardown is not pass",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 156
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_inconsistent_or_ambiguous_receipt_is_an_error_not_historical_pass": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_inconsistent_or_ambiguous_receipt_is_an_error_not_historical_pass",
+      "purpose": "Inconsistent or ambiguous receipt is an error not historical pass",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 167
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_qt_history_displays_unsealed_receipts_and_refuses_snapshot_export": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_qt_history_displays_unsealed_receipts_and_refuses_snapshot_export",
+      "purpose": "Qt history displays unsealed receipts and refuses snapshot export",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 197
+    },
+    "tests/test_jss_evidence_receipt_recovery.py::test_archive_worker_finishes_with_error_for_malformed_import": {
+      "path": "tests/test_jss_evidence_receipt_recovery.py",
+      "name": "test_archive_worker_finishes_with_error_for_malformed_import",
+      "purpose": "Archive worker finishes with error for malformed import",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive",
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 220
     },
     "tests/test_jss_modular_view_boundaries.py::test_each_functional_view_owns_exactly_one_method_implementation": {
       "path": "tests/test_jss_modular_view_boundaries.py",

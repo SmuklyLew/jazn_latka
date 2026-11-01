@@ -17,6 +17,8 @@ zapisu do instalacji.
 ## Zapis i awaria
 
 `manifest.json` powstaje przed pierwszym testem i zawiera cały wymagany zakres.
+Kontrakt jest redagowany przed zamrożeniem, również gdy nazwa parametryzacji
+zawiera dane uwierzytelniające. Identyfikator scenariusza pozostaje stabilny.
 Manifestu nie wolno zmieniać. Ustalenie źródła podczas preflight jest oddzielone
 od wykonania; po rozpoczęciu wykonania `execution-source.json` wiąże źródło.
 Próba przeniesienia wyniku na inne źródło jest odrzucana.
@@ -77,9 +79,23 @@ pozostawia PASS z samego call. Potwierdzenia są create-only, redagowane i mają
 własne SHA-256. Końcowy snapshot powstaje po zakończeniu pytest i dołącza JUnit,
 jeżeli pytest rzeczywiście go zapisał.
 
-Potwierdzenia częściowe po zabiciu pytest pozostają materiałem diagnostycznym;
-nie są automatycznie promowane do kompletnego wyniku release. Pełna rekonstrukcja
-tych potwierdzeń do widoku historii wymaga dalszego kontraktu recovery.
+Potwierdzenia częściowe są odczytywane po weryfikacji ostatniego kompletnego
+snapshotu. Czytnik sprawdza SHA-256, parę TXT/JSON, run_id, źródło, scenariusz,
+unikalność i kolejność faz. Widok jest wyliczany w pamięci, bez naprawy plików.
+PASS scenariusza wymaga setup, zaliczonego call oraz zaliczonego teardown.
+Brak końcowej fazy pozostaje RUNNING z jawnym brakiem potwierdzenia zakończenia;
+czytnik nie wnioskuje o żywotności procesu. Brak jakiegokolwiek potwierdzenia
+pozostaje NOT_RUN, a FAIL/ERROR i SKIPPED nie stają się PASS. Niespójność lub
+duplikat fazy jest błędem historii, bez fallbacku do wcześniejszego PASS.
+Przebieg ma widoczne oznaczenie NIEZAMKNIĘTY, nigdy pełny odbiór release.
+Eksport takiej projekcji jako kompletnej rewizji jest zablokowany w GUI;
+źródłowe create-only potwierdzenia pozostają na dysku. Snapshot końcowy pozostaje
+autorytatywny i nie jest zastępowany projekcją częściowych potwierdzeń.
+Starsze manifesty sprzed redakcji przed zamrożeniem są porównywane ze stabilnymi
+regułami redakcji, bez używania dzisiejszych sekretów środowiska. Ich źródła nie
+są przepisywane. Eksport manifestu zawierającego wykrywalne niezredagowane dane
+uwierzytelniające jest blokowany. Nowe raporty mają też nazwę scenariusza w TXT
+i JSON; brak tego opcjonalnego pola w starszym snapshotcie nie psuje odczytu.
 
 ## Odczyt w JSS
 
@@ -103,7 +119,6 @@ braku danych. Snapshot wykonania ma `RELEASE_NOT_ACCEPTED`: sam pytest lub TPA
 nie może poświadczyć całej macierzy Windows/Linux/live/manual/final-SHA CI.
 
 Ta implementacja jest fundamentem E1. Otwarta pozostaje pełna integracja wszystkich
-wykonawców CI, odtwarzanie częściowych potwierdzeń w GUI,
-kompletny read-only indeks oraz dowód responsywności zapisu TPA i odbiór Windows/
+wykonawców CI, kompletny read-only indeks oraz dowód responsywności zapisu TPA i odbiór Windows/
 Linux. Odczyt, import i eksport GUI są asynchroniczne; synchroniczna ścieżka zapisu
 RunStore nadal wymaga pomiaru i ewentualnego przeniesienia poza wątek GUI.
