@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.62",
-  "active_definition_count": 3078,
+  "system_version": "16.3.25.5.116.0.34.94.6.63",
+  "active_definition_count": 3079,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31023,6 +31023,21 @@
       "description_source": "source_identity",
       "line": 161
     },
+    "tests/test_jss_tpa_async_persistence_qt.py::test_invalid_interpreter_persists_one_complete_refusal_after_initial_manifest": {
+      "path": "tests/test_jss_tpa_async_persistence_qt.py",
+      "name": "test_invalid_interpreter_persists_one_complete_refusal_after_initial_manifest",
+      "purpose": "Invalid interpreter persists one complete refusal after initial manifest",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 176
+    },
     "tests/test_jss_tpa_async_persistence_qt.py::test_cleanup_failure_is_explicit_after_write_failure": {
       "path": "tests/test_jss_tpa_async_persistence_qt.py",
       "name": "test_cleanup_failure_is_explicit_after_write_failure",
@@ -31036,7 +31051,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 198
     },
     "tests/test_jss_tpa_compact_filters_qt.py::test_collapsed_filters_keep_search_and_keyboard_access": {
       "path": "tests/test_jss_tpa_compact_filters_qt.py",

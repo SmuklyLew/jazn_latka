@@ -173,6 +173,28 @@ def test_readiness_cleanup_failure_does_not_relabel_previous_report(system):
     assert messages and "PermissionError" in messages[-1]
 
 
+def test_invalid_interpreter_persists_one_complete_refusal_after_initial_manifest(system, monkeypatch):
+    root, _ = system
+    runner = TPARunner(root, str(root / "absent-python.exe"))
+    original = runner.store.save
+    snapshots, launches = [], []
+    def save(report):
+        original(report)
+        snapshots.append(deepcopy(report))
+    monkeypatch.setattr(runner.store, "save", save)
+    monkeypatch.setattr(runner.process, "start", lambda *_args: launches.append(1))
+    runner.start_selection(("smoke-isolation", "config-persistence"))
+    wait_until(lambda: not runner.active)
+    assert not launches and len(snapshots) == 2
+    assert snapshots[0]["finished_utc"] is None
+    assert all(row["status"] == "QUEUED" for row in snapshots[0]["results"])
+    assert snapshots[1]["finished_utc"]
+    assert all(row["status"] == "BLOCKED" and row["full_gate"] == "NOT_RUN" for row in snapshots[1]["results"])
+    assert snapshots[1]["environment"]["ok"] is False
+    saved = runner.store.load(snapshots[1]["run_id"])
+    assert saved["results"] == snapshots[1]["results"]
+
+
 def test_cleanup_failure_is_explicit_after_write_failure(system, monkeypatch):
     root, _ = system
     runner = TPARunner(root, sys.executable)

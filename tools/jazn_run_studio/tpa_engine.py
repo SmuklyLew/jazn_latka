@@ -342,6 +342,11 @@ class TPARunner(QObject):
         if self.report is not None and self._next_after_probe:
             self.report["environment"].update(probe)
             self.report["source"].update(probe.get("source", {}))
+            if not probe.get("ok"):
+                # No selected process can run. Persist the complete refusal
+                # once instead of serial snapshots for every blocked row.
+                self._after_probe(probe)
+                return
             self._save_then(lambda: self._after_probe(probe))
             return
         self._after_probe(probe)
@@ -349,6 +354,16 @@ class TPARunner(QObject):
     def _after_probe(self, probe: dict) -> None:
         self.prepared.emit(probe)
         if self._next_after_probe:
+            if not probe.get("ok"):
+                assert self.report is not None
+                for row in self.report["results"]:
+                    if self.reason == "cancelled":
+                        row.update(status="CANCELLED", reason="Anulowano przed uruchomieniem.")
+                    else:
+                        row.update(status="BLOCKED", reason=self.availability[row["case_id"]]["reason"],
+                                   next_step="Wybierz interpreter, przygotuj zależności lub przywróć wymagane pliki; ponów gotowość.")
+                self._complete()
+                return
             QTimer.singleShot(0, self._prepare_source if self.source_kind and probe.get("ok") else self._next)
         else:
             temporary, self.temp = self.temp, None

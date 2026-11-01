@@ -171,3 +171,29 @@ Nowy patch wymaga przypiętego pełnego przebiegu, metadanych i exact-head CI.
 E0/E1 nadal IN_PROGRESS: pozostają pełny indeks starszych przebiegów, integracja
 pozostałych wykonawców/CI, ręczny zapis, Windows/Linux i niezaliczone bramki.
 E2–E8 NOT_RUN; RELEASE_NOT_ACCEPTED.
+
+### E1 — kompletna odmowa preflight (.63)
+
+Pełna lokalna suite .62 na 3002abdb: **3631 PASS, 2 FAIL, 31 SKIPPED,
+7 ostrzeżeń**, 795.14 s; `full-system-jss-async-tpa.*`, rejestr
+`registered-async-tpa-run/`. Porażki: starszy test widoku lokalnego odbioru i
+znane lokalne ramkowanie HTTP MCP. Linux verify: **3643 PASS, 1 FAIL,
+19 SKIPPED**, 153.80 s; jedyna porażka to ten sam test widoku. Log
+`ci-async-verify-linux.txt`. Macierz JSS Windows/Linux ma identyczny objaw.
+
+Test oczekiwał w QTest.qWait, zatrzymując GIL. Oddanie GIL przy zachowanych
+100 iteracjach po 10 ms ujawniło dodatkowo zbędne pośrednie zapisy odmowy.
+Przy nieudanym preflight żaden scenariusz nie może wystartować: kolejka zapisuje
+teraz początkowy manifest/snapshot i jeden kompletny końcowy raport wszystkich
+BLOCKED (lub CANCELLED przy anulowaniu). Zaliczonego preflight i bariery RUNNING
+przed procesem nie zmieniono. Nowy test wymaga dokładnie dwóch trwałych zapisów,
+braku startu procesu i wszystkich BLOCKED/full_gate NOT_RUN na dysku.
+
+Oryginały obu rozszerzonych testów zachowano w tests/archive z blob SHA.
+Asercje poprzedniego testu i liczba/czas jego oczekiwań pozostały takie same.
+Celowana regresja poprawki: **26 PASS**, `async-refusal-targeted.*`.
+Typy całego JSS i dwóch testów: **0 errors/warnings**, `async-refusal-types.txt`.
+Szersza rejestrowana regresja: **69 PASS**, `async-refusal-precommit.*`,
+`registered-refusal-targeted/run-0e9faf958f3f4b9da655b9233c066a1d/`.
+Wymagane są jeszcze metadane, pełna suite i exact-head CI .63.
+Historycznych porażek .62 nie zmieniać na PASS. E0/E1 IN_PROGRESS; E2–E8 NOT_RUN.
