@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
-  "package_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
-  "generated_at_utc": "2026-11-01T05:48:51+00:00",
-  "updated_at_utc": "2026-11-01T05:48:51+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
+  "package_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
+  "generated_at_utc": "2026-11-01T19:51:05+00:00",
+  "updated_at_utc": "2026-11-01T19:51:05+00:00",
   "start_file": "run.py",
   "file_count": 3620,
   "static_file_count": 3620,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3035,
-      "sha256": "a3889a228729f488586707f8d86b2a88ee0ceed688554e840b92ea205c2f4add",
+      "sha256": "5d48836c65dc5fae09cf216d2c488a6fa536ba313b33daf32377c419da447cd7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -500,7 +500,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1956,
-      "sha256": "1475a13d9e04f9f91b6e0b254492549dbb4f62215306db4490ed617149205d15",
+      "sha256": "a269ef20aeb89ce156ec30f1efc5a161af9b1d8f3e026fbf3e749714d8e86e0c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1831,8 +1831,8 @@
     },
     {
       "path": "docs/plans/JSS_COMPREHENSIVE_MODERNIZATION_PROGRESS.md",
-      "size_bytes": 12769,
-      "sha256": "fe7984e0850f7f9e6797a17dff2f1b43f79d31b57e05ec3f1c76f286db1b787b",
+      "size_bytes": 14254,
+      "sha256": "a0f1bdd50c0362493297ae6cb0f46c66dea95a1ff0f37f230ce5f6d79997dda8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9905,7 +9905,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "d2038097632693e164d40b99be20ff14c3ce8f86ae09bc752704d9720ebb4ad3",
+      "sha256": "04f6299225cf5fd431622061dddd477327d38486e7e9ff99b1e1105e4d63ec23",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11407,8 +11407,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 22411,
-      "sha256": "1104e22e4237e74fb5c072d6e4b8e5345b8948dde7e8d8b7b3eb19f7f0d763fc",
+      "size_bytes": 22507,
+      "sha256": "927f8b2fec7cc9be8e663d0d9735b5dd9e8a7399cdb3cbfade3465ca6c5074ba",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31864,8 +31864,8 @@
     },
     {
       "path": "tools/jazn_run_studio/service_status_dialog.py",
-      "size_bytes": 7875,
-      "sha256": "7da35c9dc5c1ad19ab51f41484c98574e465576e23827f63b3333e5dfbcf00df",
+      "size_bytes": 7997,
+      "sha256": "d633ae7016917625de68b573abd1fff9e2254e6acbd85640eea91d1c79cddee4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32378,7 +32378,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2717392,
-      "sha256": "229cc6312b9d7f857d8daf1841f469fc30d4f71aeaa62a5d876d714f585f5bd6",
+      "sha256": "8258445920695031625347a132e30f15de5e162e5f8eb68688a127c68730b5b7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33035,11 +33035,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
+  "release_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
-    "package_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation",
-    "release_version": "16.3.25.5.116.0.34.94.6.58-jss-durable-test-evidence-foundation"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
+    "package_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation",
+    "release_version": "16.3.25.5.116.0.34.94.6.59-jss-durable-test-evidence-foundation"
   },
   "legacy_aliases": {
     "version": "release_version"
