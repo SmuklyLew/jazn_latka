@@ -16,6 +16,7 @@ on:
       - "latka_jazn/core/model_guided_speech_runtime.py"
       - "latka_jazn/model_adapters/factory.py"
       - "tests/test_speech_adapter_route_resolution.py"
+      - "tests/test_jss_manual_evidence_commit.py"
       - "tests/test_jazn_run_studio.py"
       - "tests/test_jss_evidence*.py"
       - "tests/test_jss_pytest_evidence_plugin.py"
@@ -92,6 +93,7 @@ jobs:
           tests/test_jss_evidence_archive.py
           tests/test_jss_evidence_platform.py
           tests/test_speech_adapter_route_resolution.py
+          tests/test_jss_manual_evidence_commit.py
           tests/test_jss_evidence_history_qt.py
           tests/test_jss_evidence_history_pagination_qt.py
           tests/test_jss_evidence_initial_index.py

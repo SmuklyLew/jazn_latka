@@ -273,3 +273,24 @@ Regresja routingu, orkiestracji, adapterów i wersji: **76 PASS**,
 zdrowia <5s przeszedł; całe wywołanie testowe trwało lokalnie0.87s. Pierwszy
 zakres atomowości i nowych kontraktów: **18 PASS**, `route-no-probe-after.*`.
 Hosted PowerShell i pełna walidacja końcowego SHA pozostają do potwierdzenia.
+
+### E1 — trwałość ręcznych obserwacji i załączników (.67)
+
+Oba zapisy działają teraz na kopii raportu. Artefakt jest tworzony bez
+nadpisywania, flush/fsync poprzedza commit RunStore, a raport wywołującego jest
+aktualizowany dopiero po jego sukcesie. Błąd zapisu artefaktu lub raportu pozostawia
+poprzedni stan w pamięci i na dysku; nie usuwa osieroconych własnych dowodów.
+Wymagania PASS, aktualność źródła, redakcja i odrębna bramka operatora pozostają.
+
+Nowe testy przed poprawką: **6 FAIL**, JUnit `manual-commit-before.xml`; pierwsza
+próba miała dodatkowo błąd cleanup systemowego TEMP. Kolejne przebiegi używają
+wyłącznie TEMP zadania, a wstrzyknięty błąd fsync jest cofany przed raportowaniem
+przez pytest, aby nie obejmował adaptera dowodów. Nie zmieniono asercji.
+Nowe kontrakty z aktywnym rejestrem: **6 PASS**, `manual-commit-after.*` i
+`registered-manual-commit/`. To syntetyczne dane testowe, bez odbioru człowieka.
+Szersza regresja ujawniła zachowywaną referencję do wiersza: **52 PASS,1 FAIL**,
+`manual-commit-regression.*`. Przyjęcie kopii aktualizuje teraz istniejące wiersze
+i listy wyników po zatwierdzeniu, bez unieważniania referencji. Niezmieniony stary
+test i nowe kontrole tożsamości przechodzą: **53 PASS**, `manual-commit-compatible.*`;
+typy **0 errors/warnings**. Nie zmieniano istniejących testów.
+Przeniesienie ręcznych operacji GUI poza główny wątek i pełne P0 pozostają otwarte.

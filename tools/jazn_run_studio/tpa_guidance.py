@@ -1,7 +1,9 @@
 """Evidence-backed human observations, separate from automated test outcomes."""
 from __future__ import annotations
+from copy import deepcopy
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
 import uuid
@@ -11,7 +13,28 @@ from .tpa_catalog import LIVE_CASES, scenario
 from .tpa_reports import RunStore, redact, safe_child, utc
 
 
+def _write_artifact(path: Path, text: str) -> None:
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(text)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _adopt_report(original: dict, committed: dict) -> None:
+    # Existing clients retain references to result rows. Publish their new
+    # values after commit without invalidating those public references.
+    for field in ("results", "coverage_map"):
+        if len(original[field]) != len(committed[field]):
+            raise ValueError("Zmieniono zakres raportu podczas zapisu obserwacji")
+    for field in ("results", "coverage_map"):
+        for previous, current in zip(original[field], committed[field], strict=True):
+            previous.update(current)
+        committed[field] = original[field]
+    original.update(committed)
+
+
 def attach_evidence(store: RunStore, report: dict, source: Path) -> str:
+    original, report = report, deepcopy(report)
     if re.search(r"(?i)(?:credential|secret|password|token|auth|\.env|\.ssh|\.aws)", source.name):
         raise ValueError("Nie dołączaj plików uwierzytelnienia ani sekretów")
     if source.suffix.lower() not in {".txt", ".log", ".json", ".xml"}:
@@ -25,14 +48,16 @@ def attach_evidence(store: RunStore, report: dict, source: Path) -> str:
     text = source.read_text(encoding="utf-8")
     text = json.dumps(redact(json.loads(text), store.redactor), ensure_ascii=False, indent=2) if source.suffix.lower() == ".json" else store.redactor.text(text)
     name = "proof-" + uuid.uuid4().hex + ".txt"
-    safe_child(store.folder(report["run_id"]), name).write_text(text, encoding="utf-8")
+    _write_artifact(safe_child(store.folder(report["run_id"]), name), text)
     report["artifacts"].append(name)
     store.save(report)
+    _adopt_report(original, report)
     return name
 
 
 def record_observation(store: RunStore, report: dict, case_id: str, checked: list[int], note: str, evidence_names: list[str], outcome: str,
                        *, verified_source: dict | None = None) -> dict:
+    original, report = report, deepcopy(report)
     case = scenario(case_id)
     execution_root = Path(report.get("environment", {}).get("execution_root") or store.root)
     if execution_root != store.root and (not execution_root.is_absolute() or not execution_root.resolve().is_relative_to(store.base.resolve())
@@ -84,9 +109,10 @@ def record_observation(store: RunStore, report: dict, case_id: str, checked: lis
                    "scope": "Human observation; not CI and not an automatic migration claim"}
     name = "observation-" + uuid.uuid4().hex + ".json"
     observation["artifact"] = name
-    safe_child(store.folder(report["run_id"]), name).write_text(json.dumps(observation, ensure_ascii=False, indent=2), encoding="utf-8")
+    _write_artifact(safe_child(store.folder(report["run_id"]), name), json.dumps(observation, ensure_ascii=False, indent=2))
     report["artifacts"].append(name)
     report.setdefault("observations", []).append(observation)
     row.update(full_gate=outcome, operator_observation=name)
     store.save(report)
+    _adopt_report(original, report)
     return observation
