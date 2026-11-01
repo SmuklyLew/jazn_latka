@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFileDialog, QGridLayout,
     QHeaderView, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
-    QPlainTextEdit, QProgressBar, QPushButton, QSplitter, QTableWidget,
+    QPlainTextEdit, QProgressBar, QPushButton, QScrollArea, QSplitter, QTableWidget,
     QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget)
 from . import local_acceptance as legacy
 from .tpa_catalog import LIVE_CASES, MODES, execution_map
@@ -57,7 +57,16 @@ class TPAPanel(QWidget):
         self.summary = QLabel("TPA — nie sprawdzono środowiska")
         self.summary.setWordWrap(True)
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(self.summary)
+        header = QHBoxLayout()
+        header.addWidget(self.summary, 1)
+        self.full_acceptance_button = self.button("Pełny odbiór →", self.open_full_acceptance)
+        self.full_acceptance_button.setObjectName("jssPrimaryAction")
+        self.full_acceptance_button.setAccessibleName("Rozpocznij kreator pełnego odbioru TPA")
+        self.full_acceptance_button.setToolTip(
+            "Otwiera osobny odbiór operatorski. PASS regresji nie zalicza pełnej bramki. "
+            "Scenariusze live wymagają jawnej zgody w Środowisko i model.")
+        header.addWidget(self.full_acceptance_button)
+        layout.addLayout(header)
         self.setup_details = QWidget()
         setup = QGridLayout(self.setup_details)
         setup.setContentsMargins(0, 0, 0, 0)
@@ -283,14 +292,37 @@ class TPAPanel(QWidget):
             self.feedback.setText("Operacja niedostępna: " + self.runner.redactor.text(str(exc)))
 
     def _guide(self) -> None:
-        page = QWidget()
+        # QTabWidget can be only 180px tall at minimum viewport size. A scroll
+        # area is essential: proof, checklist and SAVE must remain reachable.
+        page = QScrollArea()
+        page.setWidgetResizable(True)
+        page.setObjectName("tpaFullAcceptanceScroll")
+        page.setAccessibleName("Pełny odbiór TPA — przewijane kroki i dowody")
+        content = QWidget()
+        page.setWidget(content)
         self.guide_page = page
-        layout = QVBoxLayout(page)
+        layout = QVBoxLayout(content)
+        layout.setSpacing(8)
         self.wizard_status = QLabel(
             "Kreator P3 — kolejno przechodź odbiory; bez osobnego dowodu nie ma PASS.")
         self.wizard_status.setWordWrap(True)
         self.wizard_status.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.wizard_status)
+        self.wizard_live_toggle = QCheckBox("Uwzględnij 5 scenariuszy live (wymaga modelu Ollama)")
+        self.wizard_live_toggle.setAccessibleName("Jawna zgoda na scenariusze live w kreatorze")
+        self.wizard_live_toggle.setToolTip(
+            "Nie uruchamia usług samodzielnie. Odbiory live startują dopiero po osobnym kliknięciu.")
+        self.wizard_live_toggle.setChecked(self.live_plan.isChecked())
+        self.wizard_live_toggle.toggled.connect(self.live_plan.setChecked)
+        self.live_plan.toggled.connect(self.wizard_live_toggle.setChecked)
+        layout.addWidget(self.wizard_live_toggle)
+        self.acceptance_environment = QLabel(
+            "Źródło i katalog dowodów zostaną wyświetlone po wybraniu przebiegu.")
+        self.acceptance_environment.setObjectName("tpaAcceptanceEnvironment")
+        self.acceptance_environment.setTextFormat(Qt.TextFormat.PlainText)
+        self.acceptance_environment.setWordWrap(True)
+        self.acceptance_environment.setAccessibleName("Źródło, interpreter, kopia SYSTEM i dowody pełnego odbioru")
+        layout.addWidget(self.acceptance_environment)
         wizard_buttons = QHBoxLayout()
         self.wizard_resume_button = self.button("Kreator: rozpocznij / wznów", self.wizard_start)
         self.wizard_prev_button = self.button("Poprzedni krok", lambda: self.wizard_step(-1))
@@ -326,6 +358,22 @@ class TPAPanel(QWidget):
         layout.addLayout(row)
         self.tabs.addTab(page, "Odbiór wspomagany")
 
+    def open_full_acceptance(self) -> None:
+        """First-class entry point; never grants PASS or starts a daemon."""
+        self.wizard_start()
+        self.tabs.setCurrentWidget(self.guide_page)
+        if self.report is None:
+            self.feedback.setText(
+                "Pełny odbiór wymaga nowego przebiegu dla wybranego źródła. "
+                "Wybierz scenariusz, uruchom właściwy podtest lub izolowane Studio "
+                "i dołącz osobny dowód.")
+        else:
+            version = self.report.get("source", {}).get("version")
+            if version != legacy.scope_version(self.root):
+                self.feedback.setText(
+                    "Wybrany przebieg pochodzi z innej wersji SYSTEM. "
+                    "Zapisz aktualny podtest/odbiór izolowany dla bieżącego źródła.")
+
     def _wizard_queue(self) -> tuple[str, ...]:
         return pending_cases(self.rows, self.case_state, include_live=self.live_plan.isChecked())
 
@@ -357,7 +405,8 @@ class TPAPanel(QWidget):
         self.show_current()
         pending = self._wizard_queue()
         if pending:
-            self._wizard_focus(pending[0])
+            current = self.rows[self.table.currentRow()]["id"] if 0 <= self.table.currentRow() < len(self.rows) else ""
+            self._wizard_focus(current if current in pending else pending[0])
         else:
             self._update_wizard_status()
             self.feedback.setText(
@@ -590,6 +639,21 @@ class TPAPanel(QWidget):
         self.update_controls()
         self.update_progress()
         self._update_wizard_status()
+        accepted, total, _deferred = wizard_counts(self.rows, self.case_state, include_live=True)
+        self.full_acceptance_button.setText(f"Pełny odbiór {accepted}/{total} →")
+        source = self.report.get("source", {}) if self.report else {}
+        scope = str(source.get("version") or "brak wykonanego przebiegu")
+        execution_root = str(self.report.get("environment", {}).get("execution_root") or "brak kopii") if self.report else "brak kopii"
+        relation_note = ("UWAGA: raport innej wersji — wykonaj nowy przebieg."
+                         if self.report and scope != legacy.scope_version(self.root) else
+                         "Wynik z tej wersji nie zastępuje dowodu operatora.")
+        self.acceptance_environment.setText(
+            "SYSTEM otwartego Studio: " + str(self.root) +
+            "\nŹródło przebiegu: " + scope +
+            "\nKopia testowa SYSTEM: " + execution_root +
+            "\nInterpreter: " + self.python_field.text().strip() +
+            "\nTrwałe dowody: " + str(self.runner.store.base) +
+            "\n" + relation_note)
 
     def update_controls(self) -> None:
         active = self.runner.active or self.plan_runner.active
@@ -603,6 +667,7 @@ class TPAPanel(QWidget):
         if not self.retry_button.isEnabled() and not active:
             self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
         self.auto_cancel.setEnabled(active)
+        self.full_acceptance_button.setEnabled(not active)
         self.resume_plan_button.setEnabled(not active and bool(self.plan_history.currentData()))
         self.checkpoint_button.setEnabled(self.plan_runner.plan is not None)
         for widget in (self.python_field, self.choose_python, self.history, self.model, self.refresh_models_button, self.source_kind, self.source_value, self.live_plan):

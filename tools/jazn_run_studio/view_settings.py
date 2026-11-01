@@ -210,6 +210,8 @@ class SettingsViewMixin:
         if not hasattr(self, "visual_system"):
             self.visual_system = VisualSystem(self)
         self.visual_system.apply(self.core.settings.theme, self.core.settings.accent, system_dark=system_dark)
+        if hasattr(self, "workbench"):
+            self.workbench.refresh_activity_icons()
 
 
     def settings_draft(self: Any) -> dict[str, str]:

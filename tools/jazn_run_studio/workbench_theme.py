@@ -36,8 +36,8 @@ def _base_colors(theme: str, accent: str, *, system_dark: bool = False) -> Workb
         raise ValueError("Kolor akcentu wymaga formatu #RRGGBB")
     if theme == "technical-workbench":
         return WorkbenchColors(
-            "#141A23", "#1B2430", "#202A36", "#263342",
-            "#314053", "#8194AA", "#F5F8FC", "#BFCDD9", "#5BA5F5", "#0B1A2B"
+            "#0D1219", "#151E29", "#141B25", "#1F2B39",
+            "#304054", "#8194AA", "#F5F8FC", "#CCD6E2", "#70B7FF", "#0A1725"
         )
     if theme == "operations-studio":
         return WorkbenchColors(
@@ -153,9 +153,10 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
     return f"""
         QWidget {{ background: {c.background}; color: {c.text}; font-size: {metrics.body_points}pt; }}
         QLabel {{ background: transparent; }}
-        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 2px solid {c.border}; }}
-        QWidget#workbenchTopbar {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {c.editor}, stop:1 {c.sidebar}); border-bottom: 1px solid {c.border}; }}
-        QLabel#workbenchBrand {{ color: {c.accent}; font-size: 17px; font-weight: 700; }}
+        QWidget#workbenchSidebar {{ background: {c.sidebar}; border-right: 1px solid {c.border}; }}
+        QWidget#workbenchTopbar {{ background: {c.sidebar}; border-bottom: 1px solid {c.border}; }}
+        QLabel#workbenchBrand {{ color: {c.text}; font-size: 14px; font-weight: 700; }}
+        QLabel#workbenchSidebarGroup {{ color: {c.muted}; font-size: 10px; font-weight: 700; padding: 10px 6px 4px 6px; }}
         QLabel#workbenchCaption, QLabel#workbenchStatus, QLabel#workbenchFootnote {{
             color: {c.muted}; font-size: 12px;
         }}
@@ -171,7 +172,7 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
         }}
         QListWidget#workbenchNavigation::item:hover {{ background: {c.hover}; }}
         QListWidget#workbenchNavigation::item:selected {{
-            background: {c.accent}; color: {c.selected_text};
+            background: {c.surface}; color: {c.text}; border-left: 3px solid {c.accent};
         }}
         QPushButton {{
             background: {c.surface}; border: 1px solid {c.border};
@@ -190,6 +191,18 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             selection-color: {c.selected_text};
         }}
         QPlainTextEdit {{ font-family: Consolas, 'DejaVu Sans Mono', monospace; }}
+        QPlainTextEdit#workbenchChatTranscript {{
+            background: {c.editor}; border: 0; padding: 18px;
+            font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
+            font-size: {metrics.body_points + 1}pt;
+        }}
+        QPlainTextEdit#workbenchChatComposer {{
+            background: {c.surface}; border: 1px solid {c.border};
+            border-radius: 10px; padding: 10px;
+            font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
+        }}
+        QLabel#workbenchChatStatus {{ color: {c.muted}; padding: 6px 8px; }}
+
         QSplitter::handle {{ background: {c.border}; border: 1px solid {c.hover}; }}
         QSplitter::handle:hover {{ background: {c.accent}; }}
         QTabWidget::pane {{ border: 1px solid {c.border}; background: {c.editor}; }}
@@ -211,6 +224,14 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             background: {c.sidebar}; border: 0;
             border-bottom: 1px solid {c.border}; padding: 6px;
         }}
+        QToolBar#heartActivityBar {{ background: {c.background}; border-right: 1px solid {c.border}; spacing: 0px; padding: 0px; }}
+        QToolBar#heartActivityBar QToolButton {{ border: 0; border-left: 3px solid transparent; border-radius: 0; min-height: 42px; max-height: 42px; padding: 0; }}
+        QToolBar#heartActivityBar QToolButton:hover {{ background: {c.hover}; }}
+        QToolBar#heartActivityBar QToolButton:checked {{ border-left: 3px solid {c.accent}; background: {c.editor}; }}
+        QLineEdit#workbenchQuickSearch {{ background: {c.editor}; border-radius: 5px; padding: 5px 12px; }}
+        QTabBar#heartSectionTabs::tab {{ padding: 7px 13px; border: 0; border-right: 1px solid {c.border}; margin: 0; }}
+        QTabBar#heartSectionTabs::tab:selected {{ border-top: 2px solid {c.accent}; background: {c.editor}; }}
+        QPushButton#jssPrimaryAction {{ background: {c.accent}; color: {c.selected_text}; font-weight: 700; border-radius: 5px; }}
         QStatusBar {{
             background: {c.sidebar}; border-top: 1px solid {c.border};
             color: {c.muted};

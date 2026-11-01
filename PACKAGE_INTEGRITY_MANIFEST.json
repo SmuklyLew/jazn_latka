@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-  "package_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-  "generated_at_utc": "2026-11-01T02:41:57+00:00",
-  "updated_at_utc": "2026-11-01T02:41:57+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+  "package_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+  "generated_at_utc": "2026-11-01T03:25:28+00:00",
+  "updated_at_utc": "2026-11-01T03:25:28+00:00",
   "start_file": "run.py",
-  "file_count": 3603,
-  "static_file_count": 3603,
+  "file_count": 3605,
+  "static_file_count": 3605,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2981,
-      "sha256": "400cf2ae00a2006865d7084d6d7ab515b6bc182db397b015336c64a22bddc07a",
+      "size_bytes": 3012,
+      "sha256": "bbe9f3d681e7e02f3300494357171aac7added15bd1ed9f5142d94921f620013",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "46ee4a88949012f9447d0805c4a1d692de9eafb5c4d56faec3786f32b996bf88",
+      "size_bytes": 1954,
+      "sha256": "734265a6fb564d09c8c2eac3f075acd9c8da81f08bab274377bcbf6dbe781cb7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9869,7 +9869,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "abe564f8647cbcdff422c6928a6a7520d4168ebcca84b4007afd09e86a49acb1",
+      "sha256": "70d903936f108ea5259e5c8b1ffd7632ea8925a1887fb7e71c0672534b485751",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11371,8 +11371,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 22065,
-      "sha256": "d5ec96736ce9b5ce0fb584d6cc2c12577d78ea1fd8ab8a72adf1987fc0790386",
+      "size_bytes": 22071,
+      "sha256": "dfc8f677837c43af47cd37fc42708b37ae1c1d7c0509d1da684a8152ea7cd7b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28281,6 +28281,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_activity_containers_qt.py",
+      "size_bytes": 1424,
+      "sha256": "8e8b765a2fa56daa7965320856cc176648cb97b28850c3aa07d190ebd9e4be79",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_modular_view_boundaries.py",
       "size_bytes": 3930,
       "sha256": "d502a69abd2fbd047e0869bfa4d6f6c4acc065aaf68da5c0600a0ea740ffd4a8",
@@ -31999,8 +32008,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_navigation.py",
-      "size_bytes": 16545,
-      "sha256": "2ef1994751b017d3493f7374c6d43bde016a3a555e63e9ff197cc18747ae6c6c",
+      "size_bytes": 16855,
+      "sha256": "1fef21c19604e286ea17a91a5d51e685d28287794e9f0ba8a31f2fd93b573953",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32017,8 +32026,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_settings.py",
-      "size_bytes": 13916,
-      "sha256": "038f578cc0bfb3e0395ebf64f8547a61cdef65955c79c7c3a76327ae951ee22b",
+      "size_bytes": 14007,
+      "sha256": "7635658c8709e9d83143e20e9a805c61f130eaa9f16552ff2dfbcd99180b9208",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32053,8 +32062,17 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 15853,
-      "sha256": "9c16b62d5abcf2b9fb671dced9b225b6c017f804b306e368493f90c0d8ee014f",
+      "size_bytes": 16085,
+      "sha256": "3387ed682aae3c929f89ab434c6db0c73ea5ad31fb9c9d875bde365858e02233",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/workbench_icons.py",
+      "size_bytes": 2320,
+      "sha256": "fc17a5408a36f8c803f339705f9256e20322a39bb859db22a211229cab73041f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32062,8 +32080,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_shell.py",
-      "size_bytes": 12235,
-      "sha256": "7353538bed5163cfb1d16cbc898e9794ff75019b647880ebc2cb583e92db0beb",
+      "size_bytes": 14457,
+      "sha256": "a10e9bbcbc270bd3d9a6ce6c0be156ad78cc07003ec2a2ae783ad89d639bf2ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32071,8 +32089,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
-      "size_bytes": 12226,
-      "sha256": "18306ad68ce0d0a984f04d6c061ff8218521ac1fc5ad0bc18eb3e1f6752709b8",
+      "size_bytes": 13275,
+      "sha256": "76330e175c07e898792d25c01a340e1e743bdc0344a6b7ed890ac4665da1c8d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32224,8 +32242,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2697888,
-      "sha256": "eb0c57ff52aae3ecc05c256277a760efd8bdaa133909d5873ef56f3f96137769",
+      "size_bytes": 2699293,
+      "sha256": "b8a1ebaf49688264f33525da27798c85c842789c239dd164e0d1e63ee087d82d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32882,11 +32900,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
+  "release_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-    "package_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench",
-    "release_version": "16.3.25.5.116.0.34.94.6.54-jss-modular-vscode-workbench"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+    "package_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa",
+    "release_version": "16.3.25.5.116.0.34.94.6.55-jss-vscode-activity-navigation-tpa"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -3,14 +3,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
-from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtCore import QEvent, QObject, Qt, QSize
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QBoxLayout, QDialog, QLineEdit, QListWidget, QListWidgetItem,
-    QMessageBox, QStyle, QTabBar, QToolBar, QVBoxLayout,
+    QMessageBox, QTabBar, QToolBar, QVBoxLayout,
 )
 
 from .core import STUDIOS
+from .workbench_icons import activity_icon
 
 if TYPE_CHECKING:
     from .window import Window
@@ -62,6 +63,22 @@ class CommandPalette(QDialog):
         action = self.commands[item.data(Qt.ItemDataRole.UserRole)]
         self.accept()
         action.trigger()
+
+
+# Dedicated view containers; the existing QListWidget/QStackedWidget indices remain stable.
+ACTIVITY_GROUPS = {
+    "Pulpit": ("Pulpit",),
+    "Czat": ("Czat lokalny", "Modele AI", "Połączenie z ChatGPT"),
+    "Usługi": ("Usługi i procesy", "Diagnostyka"),
+    "MEMORY": ("Dowody MEMORY",),
+    "Testy i TPA": ("Katalog testów", "TPA"),
+    "Studia": ("Studia Jaźni", "Konfiguracja Qt", "Wersje Qt"),
+    "Developer": ("Developer",),
+    "Ustawienia": ("Ustawienia", "O programie"),
+}
+ACTIVITY_ICONS = dict(zip(ACTIVITY_GROUPS, (
+    "dashboard", "chat", "services", "memory", "tests", "studios", "developer", "settings"
+)))
 
 
 class WorkbenchShell(QObject):
@@ -119,6 +136,7 @@ class WorkbenchShell(QObject):
             self.command("Studia", label, lambda: QMessageBox.information(host, "Migracja Studio",
                 "Pełny natywny workflow importu/restore pozostaje w P4. Klasyczne narzędzia są zachowane; operacje wymagają planu i izolowanego projektu."))
         self.command("TPA", "Otwórz TPA — 22 scenariusze", lambda: host.navigate("TPA"))
+        self.command("TPA", "Rozpocznij pełny odbiór…", lambda: (host.navigate("TPA"), host.local_acceptance_panel.open_full_acceptance()), "Ctrl+Alt+T")
         self.command("TPA", "Sprawdź gotowość TPA", lambda: host.local_acceptance_panel.check_ready())
         self.command("Narzędzia", "Ustawienia", lambda: host.navigate("Ustawienia"), "Ctrl+,")
         self.command("Narzędzia", "Diagnostyka", lambda: host.navigate("Diagnostyka"))
@@ -138,19 +156,21 @@ class WorkbenchShell(QObject):
         host.nav.currentRowChanged.connect(self.sync_section)
         self.activity = QToolBar("Aktywność", host)
         self.activity.setObjectName("heartActivityBar")
+        self.activity.setAccessibleName("Pasek aktywności JSS")
         self.activity.setMovable(False)
+        self.activity.setFloatable(False)
         self.activity.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        for title, icon in (("Pulpit", QStyle.StandardPixmap.SP_ComputerIcon),
-                            ("Czat lokalny", QStyle.StandardPixmap.SP_MessageBoxInformation),
-                            ("Usługi i procesy", QStyle.StandardPixmap.SP_DriveNetIcon),
-                            ("Dowody MEMORY", QStyle.StandardPixmap.SP_DirHomeIcon),
-                            ("Katalog testów", QStyle.StandardPixmap.SP_FileDialogListView),
-                            ("TPA", QStyle.StandardPixmap.SP_DialogApplyButton),
-                            ("Developer", QStyle.StandardPixmap.SP_DirIcon),
-                            ("Ustawienia", QStyle.StandardPixmap.SP_FileDialogDetailedView)):
-            action = self.activity.addAction(host.style().standardIcon(icon), title)
-            action.setToolTip(title)
-            action.triggered.connect(lambda _checked=False, target=title: host.navigate(target))
+        self.activity.setIconSize(QSize(22, 22))
+        self.activity.setMinimumWidth(48)
+        self.activity.setMaximumWidth(48)
+        self.active_group = "Pulpit"
+        self.activity_actions: dict[str, QAction] = {}
+        for group, kind in ACTIVITY_ICONS.items():
+            action = self.activity.addAction(activity_icon(kind, "#B8C6D5"), group)
+            action.setCheckable(True)
+            action.setToolTip("Otwórz obszar: " + group)
+            action.triggered.connect(lambda _checked=False, name=group: self.activate_group(name))
+            self.activity_actions[group] = action
         host.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.activity)
         host.installEventFilter(self)
         self.sync_section(host.nav.currentRow())
@@ -183,11 +203,46 @@ class WorkbenchShell(QObject):
             self.host.studio_choice.setCurrentIndex(index)
             self.host.load_studio_operations()
 
+    @staticmethod
+    def group_for_section(title: str) -> str:
+        return next((group for group, sections in ACTIVITY_GROUPS.items()
+                     if title in sections), "Pulpit")
+
+    def apply_activity_filter(self, search: str | None = None) -> None:
+        """Activity groups replace a monolithic page list; search spans all sections."""
+        text = (self.host.section_search.text() if search is None else search).casefold().strip()
+        visible = set(ACTIVITY_GROUPS[self.active_group])
+        for row in range(self.host.nav.count()):
+            item = self.host.nav.item(row)
+            item.setHidden(text not in item.text().casefold() if text else item.text() not in visible)
+        self.host.sidebar_heading.setText(self.active_group.upper())
+        for group, action in self.activity_actions.items():
+            action.setChecked(group == self.active_group)
+
+    def activate_group(self, group: str) -> None:
+        if group not in ACTIVITY_GROUPS:
+            return
+        self.active_group = group
+        self.apply_activity_filter()
+        if self.host.current_section.text() not in ACTIVITY_GROUPS[group]:
+            self.host.navigate(ACTIVITY_GROUPS[group][0])
+        else:
+            self.host.nav.setFocus()
+
+    def refresh_activity_icons(self) -> None:
+        from .workbench_theme import workbench_colors
+        c = workbench_colors(self.host.core.settings.theme, self.host.core.settings.accent)
+        for group, action in self.activity_actions.items():
+            action.setIcon(activity_icon(ACTIVITY_ICONS[group], c.accent if action.isChecked() else c.muted))
+
     def sync_section(self, row: int) -> None:
         item = self.host.nav.item(row)
         if item is None:
             return
         title = item.text()
+        self.active_group = self.group_for_section(title)
+        self.apply_activity_filter()
+        self.refresh_activity_icons()
         index = next((i for i in range(self.section_tabs.count()) if self.section_tabs.tabText(i) == title), -1)
         if index < 0:
             index = self.section_tabs.addTab(title)
@@ -206,7 +261,7 @@ class WorkbenchShell(QObject):
             elif not compact and self.compact_sidebar is not None:
                 self.host.sidebar.setVisible(self.compact_sidebar)
                 self.compact_sidebar = None
-            self.activity.setVisible(not compact)
+            self.activity.setVisible(True)
             self.section_tabs.setVisible(not compact)
             self.host.workbench_status.setVisible(not compact)
         return False
