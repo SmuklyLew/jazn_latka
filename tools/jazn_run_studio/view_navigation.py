@@ -120,11 +120,17 @@ class NavigationViewMixin:
         self.section_search.clear()
         for row in range(self.nav.count()):
             if self.nav.item(row).text() == title:
+                if hasattr(self, "workbench"):
+                    self.workbench.active_group = self.workbench.group_for_section(title)
+                    self.workbench.apply_activity_filter()
                 self.nav.setCurrentRow(row)
                 return
 
 
     def filter_navigation(self: Any, query: str) -> None:
+        if hasattr(self, "workbench"):
+            self.workbench.apply_activity_filter(query)
+            return
         for row in range(self.nav.count()):
             item = self.nav.item(row)
             item.setHidden(query.casefold().strip() not in item.text().casefold())
