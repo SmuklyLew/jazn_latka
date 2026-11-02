@@ -463,6 +463,34 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
     }
 
 
+def memory_evidence(data: dict[str, Any]) -> dict[str, Any]:
+    """Operator-only capability projection; never include private memory paths.
+
+    Search availability, autobiographical recall and wake continuity are
+    separate capabilities. A successful daemon probe must not promote any of
+    them to ready merely because the process is alive.
+    """
+    readiness = data.get("capability_readiness")
+    readiness = readiness if isinstance(readiness, dict) else {}
+    startup = data.get("startup")
+    startup = startup if isinstance(startup, dict) else {}
+    continuity = startup.get("memory_continuity_status")
+    continuity = continuity if isinstance(continuity, dict) else {}
+    search = readiness.get("memory_search_ready") is True
+    recall = readiness.get("full_autobiographical_recall_ready") is True
+    continuous = readiness.get("continuity_ready") is True
+    return {
+        "service": "memory",
+        "ready": recall and continuous,
+        "memory_search_ready": search,
+        "full_autobiographical_recall_ready": recall,
+        "continuity_ready": continuous,
+        "normalization_status": continuity.get("normalization_status"),
+        "wake_state_status": continuity.get("wake_state_status"),
+        "accepted_visible_turn": False,
+    }
+
+
 @dataclass
 class Job:
     key: str
@@ -979,6 +1007,7 @@ class Controller:
                         job.error = "invalid_status_json"
                 self.emit(job.key, "evidence", daemon_evidence(value, expected_root=self.root))
                 self.emit(job.key, "status_summary", status_summary(value))
+                self.emit(job.key, "memory_evidence", memory_evidence(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
                     self.emit(job.key, "helper", json.loads(raw))
