@@ -34,7 +34,10 @@ def test_batch_evidence_rejects_symlink(tmp_path, monkeypatch):
     state.mkdir()
     target = tmp_path / "external"
     target.mkdir()
-    (state / "batch-evidence").symlink_to(target, target_is_directory=True)
+    try:
+        (state / "batch-evidence").symlink_to(target, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("Host does not permit creation of test symlinks")
     monkeypatch.setattr(runner, "state_dir", lambda _root: state)
     with pytest.raises(ValueError, match="Symlink"):
         runner.PytestRun(tmp_path, evidence=True)._prepare_evidence()
