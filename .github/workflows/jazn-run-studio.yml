@@ -24,6 +24,7 @@ on:
       - "tests/test_jss_tpa_compact_filters_qt.py"
       - "tests/test_jss_tpa_async_persistence_qt.py"
       - "tests/test_jss_tpa_invalid_interpreter_qt.py"
+      - "tests/test_jss_tpa_manual_async_qt.py"
       - "tests/test_jazn_tpa_safe_executor.py"
       - "tests/test_jazn_tpa_live_full_gate.py"
       - "tests/test_jazn_tpa_staging_authority.py"
@@ -107,6 +108,7 @@ jobs:
           tests/test_jss_tpa_compact_filters_qt.py
           tests/test_jss_tpa_async_persistence_qt.py
           tests/test_jss_tpa_invalid_interpreter_qt.py
+          tests/test_jss_tpa_manual_async_qt.py
           tests/test_jazn_tpa_compact_layout_qt.py
       - name: Preserve evidence contracts on every outcome
         if: always()

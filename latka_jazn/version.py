@@ -1,3 +1,4 @@
+# v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
 # v116.0.34.94.6.71: Use stable closed report indexes for Windows history cursors and preserve operator labels.
 # v116.0.34.94.6.70: Scan complete assignment keys linearly while preserving canonical secret redaction.
 # v116.0.34.94.6.69: Page verified archive and compatibility history in bounded background reads.
@@ -202,7 +203,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.71"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.72"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (

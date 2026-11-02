@@ -1,5 +1,6 @@
 """Operational TPA queue, guided acceptance and run-owned evidence."""
 from __future__ import annotations
+from copy import deepcopy
 import json
 from collections import Counter
 from pathlib import Path
@@ -17,7 +18,8 @@ from .tpa_engine import TPARunner
 from .tpa_plan_runner import TPAPlanRunner
 from .tpa_execution_plan import plan_counts
 from .tpa_wizard import pending_cases, wizard_counts
-from .tpa_guidance import attach_evidence, record_observation
+from .tpa_guidance import attach_evidence, record_observation, _adopt_report
+from .tpa_io import SerialIO
 from .tpa_current_state import current_state
 from .tpa_reports import STATES, TERMINAL, readable_report, safe_child, source_identity, summary
 from .tpa_triage import TRIAGE_LABELS, triage_cases, local_queue_text, NOWE, DO_POWTORZENIA, NIEAKTUALNE, ZALICZONE
@@ -42,6 +44,7 @@ class TPAPanel(QWidget):
         self._log_selection: tuple[str, str] | None = None
         self._guide_id, self._started = "", 0.0
         self._wizard_active = False
+        self.manual_io = SerialIO(self)
         self.runner = TPARunner(root, python or ("" if getattr(sys, "frozen", False) else sys.executable), self)
         self.runner.progress.connect(self._progress)
         self.runner.changed.connect(self.refresh_view)
@@ -488,6 +491,7 @@ class TPAPanel(QWidget):
         self.update_controls()
 
     def start(self, ids: tuple[str, ...], execution: str = "regression") -> None:
+        self._manual_idle()
         if not ids:
             raise ValueError("Zaznacz co najmniej jeden widoczny scenariusz")
         self.runner.python = self.python_field.text().strip()
@@ -517,6 +521,7 @@ class TPAPanel(QWidget):
         self.start(tuple(r["id"] for r in self.rows))
 
     def run_automatic_plan(self) -> None:
+        self._manual_idle()
         self.runner.python = self.python_field.text().strip()
         self.history_mode = False
         live_requested = self.live_plan.isChecked()
@@ -668,7 +673,8 @@ class TPAPanel(QWidget):
             "\n" + relation_note)
 
     def update_controls(self) -> None:
-        active = self.runner.active or self.plan_runner.active
+        active = self.runner.active or self.plan_runner.active or self.manual_io.pending or self.pending_observation is not None
+        self.table.setEnabled(not self.manual_io.pending)
         for button in (self.auto_one, self.auto_safe, self.check_button, self.retry_button, self.live_button, self.sandbox_button):
             button.setEnabled(not active)
             button.setToolTip("Poczekaj na zakończenie przebiegu lub użyj Zatrzymaj." if active else "")
@@ -678,7 +684,7 @@ class TPAPanel(QWidget):
         self.retry_button.setEnabled(not active and self.report is not None and any(r["status"] in {"FAIL", "BLOCKED", "TIMEOUT", "INTERRUPTED", "CANCELLED", "SKIPPED"} for r in self.report["results"]))
         if not self.retry_button.isEnabled() and not active:
             self.retry_button.setToolTip("Brak nieudanych, pominiętych lub zablokowanych pozycji w wybranym przebiegu.")
-        self.auto_cancel.setEnabled(active)
+        self.auto_cancel.setEnabled(self.runner.active or self.plan_runner.active)
         self.full_acceptance_button.setEnabled(not active)
         self.resume_plan_button.setEnabled(not active and bool(self.plan_history.currentData()))
         self.checkpoint_button.setEnabled(self.plan_runner.plan is not None)
@@ -722,7 +728,7 @@ class TPAPanel(QWidget):
         if not 0 <= row < len(self.rows):
             return
         case = self.rows[row]
-        if not self.history_mode and not self.runner.active:
+        if not self.history_mode and not self.runner.active and not self.manual_io.pending:
             entry = self.case_state.get(case["id"], {}).get("last_attempt")
             self.report = next((r for r in self._history if entry and r["run_id"] == entry["run_id"]), self.report)
         result = next((r for r in self.report["results"] if r["case_id"] == case["id"]), {}) if self.report else {}
@@ -795,6 +801,7 @@ class TPAPanel(QWidget):
             self.attempt(lambda: self._load_report(str(run_id)))
 
     def _load_report(self, run_id: str) -> None:
+        self._manual_idle()
         self.history_mode = True
         self.report = self.runner.store.load(run_id)
         self.attached.clear()
@@ -855,15 +862,24 @@ class TPAPanel(QWidget):
             self.feedback.setText("Wyeksportowano raport i dowody: " + str(target))
 
     def attach_proof(self) -> None:
+        self._manual_idle()
         if not self.report:
             raise ValueError("Najpierw wykonaj i wybierz przebieg")
         name, _ = QFileDialog.getOpenFileName(self, "Raport/log testowy; bez prywatnej MEMORY", "", "Raporty (*.txt *.log *.json *.xml)")
         if name:
-            artifact = attach_evidence(self.runner.store, self.report, Path(name))
-            self.attached.setdefault(self.chosen(), []).append(artifact)
-            self.feedback.setText("Dołączono zredagowany dowód: " + artifact)
+            original, candidate, key = self.report, deepcopy(self.report), self.chosen()
+            def committed(artifact: str) -> None:
+                _adopt_report(original, candidate)
+                self.attached.setdefault(key, []).append(artifact)
+                self.feedback.setText("Dołączono zredagowany dowód: " + artifact)
+                self.refresh_view()
+            self.manual_io.submit(lambda: attach_evidence(self.runner.store, candidate, Path(name)),
+                                  committed, self._manual_failed)
+            self.feedback.setText("Zapisywanie dowodu… Potwierdzenie nastąpi po trwałym zapisie.")
+            self.update_controls()
 
     def save(self) -> None:
+        self._manual_idle()
         if not self.report:
             raise ValueError("Najpierw wykonaj podtest lub odbiór izolowany")
         key = self.chosen()
@@ -889,14 +905,34 @@ class TPAPanel(QWidget):
             self.finish_observation(pending, None)
 
     def finish_observation(self, pending: dict, verified: dict | None) -> None:
-        record_observation(self.runner.store, pending["report"], pending["key"], pending["checked"],
-                           pending["note"], pending["proofs"], pending["outcome"], verified_source=verified)
-        self.feedback.setText("Zapisano odrębny odbiór człowieka z dowodami; wcześniejsze obserwacje zachowane.")
-        self.refresh_view()
-        if self._wizard_active:
-            QTimer.singleShot(0, lambda: self.wizard_step(1))
+        self._manual_idle()
+        original = pending["report"]
+        candidate = deepcopy(original)
+        request = {key: deepcopy(value) for key, value in pending.items() if key != "report"}
+        source = deepcopy(verified)
+        def committed(_value: dict) -> None:
+            _adopt_report(original, candidate)
+            self.feedback.setText("Zapisano odrębny odbiór człowieka z dowodami; wcześniejsze obserwacje zachowane.")
+            self.refresh_view()
+            if self._wizard_active:
+                QTimer.singleShot(0, lambda: self.wizard_step(1))
+        self.manual_io.submit(lambda: record_observation(self.runner.store, candidate, request["key"], request["checked"],
+                             request["note"], request["proofs"], request["outcome"], verified_source=source),
+                             committed, self._manual_failed)
+        self.feedback.setText("Zapisywanie obserwacji… Potwierdzenie nastąpi po trwałym zapisie.")
+        self.update_controls()
+
+    def _manual_idle(self) -> None:
+        if self.manual_io.pending or self.pending_observation is not None:
+            raise ValueError("Poczekaj na zakończenie zapisu lub weryfikacji obserwacji")
+
+    def _manual_failed(self, error: str) -> None:
+        self.feedback.setText("Nie zapisano dowodu/obserwacji: " + error + ". Poprzedni raport pozostaje ważny.")
+        self.update_controls()
 
     def shutdown(self) -> bool:
+        if self.manual_io.pending or self.pending_observation is not None:
+            return False
         if self.runner.active or self.plan_runner.active:
             self.stop_work()
             return False

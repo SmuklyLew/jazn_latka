@@ -374,3 +374,31 @@ Hosted .70 JSS Linux3.12/3.13/3.14 SUCCESS; Windows matrix failed the same
 cursor defect before reaching later local-acceptance assertions. Windows3.14
 timing acceptance remains unconfirmed. E0/E1 IN_PROGRESS; release not accepted.
 
+# .72 — asynchronous manual evidence, 2026-11-02
+
+TPAPanel submits copied reports to a serial I/O lane for observation/attachment
+validation, artifact fsync and RunStore persistence. GUI report rows and attached
+proofs are adopted only after the durable acknowledgement, preserving held row
+aliases. Controls prevent concurrent mutation; close waits for the pending
+write. A failed write reports its real error and retains prior visible state.
+No test or acceptance time limit changed. Synthetic tests use FAIL observations,
+not fabricated human acceptance.
+
+Controlled baseline4FAIL (held synchronous writes blocked the caller); after
+10PASS including backend fault injection. Registered TPA regression56PASS,
+85.09s, including unchanged local-acceptance, automated persistence and execution
+contracts. Evidence manual-async-{before,after,regression}.{txt,xml},
+registered-manual-async/. Whole JSS/new tests types0errors/0warnings and
+Node24 auditPASS. Required complete final-SHA Windows/Linux/live matrix is open.
+
+User explicitly authorized live acceptance in local Work under D:/.AI. Read-only
+Ollama inventory confirms gemma3:latest; owned TPA panel/plan observer is prepared
+under the external task directory. No model download, active MEMORY mutation or
+foreign process adoption. Live has not started at this source checkpoint.
+Task3 remaining executor/CI integration is not implemented. All23 workflows have
+been inspected; in particular preserve the no-checkout/dependency-empty consumer
+job in package-distribution-cleanroom when adding any recorder. Do not introduce
+a source checkout into that cleanroom just to load a local composite action.
+E0/E1 IN_PROGRESS; E2–E8NOT_RUN; RELEASE_NOT_ACCEPTED. Budget68%five-hour/11%weekly
+at last official read; latest user extension is scoped to this window only.
+

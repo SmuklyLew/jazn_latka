@@ -162,7 +162,12 @@ Błąd zapisu zatrzymuje zależne działania, zachowuje poprzedni snapshot i zg�
 persistence_error; błąd sprzątania ma osobny cleanup_error. Kolejka ma ograniczenie
 64 oczekujących operacji; przepełnienie jest błędem, bez pozornego sukcesu.
 Publiczny `RunStore.create/save` zachowuje kontrakt synchroniczny dla pozostałych
-wykonawców. Ręczne zapisy obserwacji operatorskiej wymagają osobnego przeglądu.
+wykonawców. Ręczne obserwacje i załączniki panelu TPA korzystają z osobnej
+szeregowej kolejki I/O. Worker dostaje kopię raportu; artefakt jest synchronizowany
+przed snapshotem, a Qt przyjmuje nowy raport dopiero po potwierdzeniu zapisu.
+Błąd nie aktualizuje widocznego odbioru ani listy załączników. W trakcie zapisu
+nie można uruchomić kolejnego przebiegu ani zmienić wybranego raportu. Zamykanie
+panelu czeka na zakończenie zapisu; nie przerywa go przyciskiem Zatrzymaj.
 
 Ta implementacja jest fundamentem E1. Otwarta pozostaje pełna integracja wszystkich
 wykonawców CI, kompletny read-only indeks i pełny odbiór Windows/Linux. Odczyt,

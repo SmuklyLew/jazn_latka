@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.71",
-  "active_definition_count": 3106,
+  "system_version": "16.3.25.5.116.0.34.94.6.72",
+  "active_definition_count": 3107,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31508,6 +31508,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 57
+    },
+    "tests/test_jss_tpa_manual_async_qt.py::test_manual_commit_is_background_and_adopted_only_after_ack": {
+      "path": "tests/test_jss_tpa_manual_async_qt.py",
+      "name": "test_manual_commit_is_background_and_adopted_only_after_ack",
+      "purpose": "Manual commit is background and adopted only after ack",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 20,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
     },
     "tests/test_jss_uiux_profiles.py::test_default_and_migration_do_not_require_a_running_daemon": {
       "path": "tests/test_jss_uiux_profiles.py",
