@@ -67,7 +67,7 @@ def test_checks_are_paginated_and_incomplete_evidence_is_rejected(monkeypatch):
     assert len(rows) == 101
     pages = []
     def fake_urlopen(request, *, timeout):
-        page = 1 if "page=1" in request.full_url else 2
+        page = 1 if request.full_url.endswith("&page=1") else 2
         pages.append(page)
         return Response({"total_count": 101, "check_runs": rows[(page-1)*100:page*100]})
     monkeypatch.setattr(retirement, "urlopen", fake_urlopen)
@@ -75,7 +75,7 @@ def test_checks_are_paginated_and_incomplete_evidence_is_rejected(monkeypatch):
     assert pages == [1, 2]
 
     def truncated(request, *, timeout):
-        return Response({"total_count": 101, "check_runs": rows[:100] if "page=1" in request.full_url else []})
+        return Response({"total_count": 101, "check_runs": rows[:100] if request.full_url.endswith("&page=1") else []})
     monkeypatch.setattr(retirement, "urlopen", truncated)
     with pytest.raises(ValueError, match="Unable to verify"):
         retirement._green_checks("a" * 40)
