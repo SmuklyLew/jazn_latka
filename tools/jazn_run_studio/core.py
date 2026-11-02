@@ -426,13 +426,29 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         isinstance(root, str) and bool(root)
         and Path(root).resolve() == expected_root.resolve()
     ) if expected_root is not None else None
+    # Compare live endpoint identity with the installed SYSTEM, not a historical
+    # marker.runtime_version_full. Old markers can survive a verified lifecycle
+    # transition, while an explicit mismatching live ping must still fail closed.
+    system_version = data.get("runtime_version_full") or data.get("runtime_version")
+    daemon_version = (
+        ping.get("runtime_version")
+        or daemon.get("runtime_version_full")
+        or daemon.get("runtime_version")
+    )
     version_matches = (
-        data.get("runtime_version") == PACKAGE_VERSION_FULL
-        and ping.get("runtime_version") == PACKAGE_VERSION_FULL
+        system_version == PACKAGE_VERSION_FULL
+        and daemon_version == PACKAGE_VERSION_FULL
     ) if expected_root is not None else None
+    # A canonical active_ready + ready core is positive *service readiness*,
+    # never proof of model-generated speech or accepted finalization.
+    conversation_ready = matrix.get("conversation_ready") is True or (
+        data.get("operational_state") == "active_ready"
+        and data.get("runtime_core_ready") is True
+        and daemon.get("readiness_state") == "ready"
+    )
     return {
-        "system_version": data.get("runtime_version"),
-        "daemon_version": ping.get("runtime_version"),
+        "system_version": system_version,
+        "daemon_version": daemon_version,
         "pid": daemon.get("pid"),
         "instance_id": daemon.get("daemon_instance_id"),
         "endpoint_reachable": daemon.get("endpoint_reachable") is True,
@@ -440,7 +456,7 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,
         "heartbeat_fresh": daemon.get("endpoint_heartbeat_fresh") is True,
         "active_state": daemon.get("active_state") or data.get("runtime_active_state"),
-        "conversation_ready": matrix.get("conversation_ready") is True,
+        "conversation_ready": conversation_ready,
         "root_matches": root_matches,
         "version_matches": version_matches,
         "accepted_visible_turn": False,
