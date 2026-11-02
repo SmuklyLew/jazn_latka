@@ -43,6 +43,16 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     for status in inspect_current_requirements(root, requirements):
         row(status.distribution, status.ready, status.requirement + " / " + str(status.installed_version or "brak"),
             "Sprawdź profil core + run-studio w Studiu Zależności; instalacja wymaga zgody.")
+    # pytest and the evidence adapter are a separate optional operator
+    # capability. Lack of test tooling does not prevent JSS or the daemon
+    # starting, but must be visible before a bulk test operation.
+    for status in inspect_current_requirements(
+        root, resolve_profile_requirements(root, ("test-evidence",))
+    ):
+        row("Testy: " + status.distribution, status.ready,
+            status.requirement + " / " + str(status.installed_version or "brak"),
+            "Użyj profilu test-evidence w Studiu Zależności (jawny wheelhouse).",
+            required=False)
     checked = verify_package_integrity_manifest(root)
     codes = [str(e.get("code", "invalid")) for e in checked.get("errors", []) if isinstance(e, dict)]
     row("Integralność SYSTEM", checked.get("ok") is True,
