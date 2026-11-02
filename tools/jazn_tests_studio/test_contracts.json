@@ -20239,7 +20239,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 42
     },
     "tests/test_heart_system_connection_recovery.py::test_mcp_imports_use_exact_gateway_interpreter": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20720,7 +20720,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 80
     },
     "tests/test_heart_system_guided_onboarding_qt.py::test_sidebar_chat_connect_cannot_bypass_guided_readiness": {
       "path": "tests/test_heart_system_guided_onboarding_qt.py",
@@ -20737,7 +20737,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 90
     },
     "tests/test_heart_system_helper_payload.py::test_helper_rejects_invalid_payload_before_reservation": {
       "path": "tests/test_heart_system_helper_payload.py",
