@@ -82,7 +82,7 @@ class TestCatalogPanel(QWidget):
         self.stop_batch_button.clicked.connect(self.stop_batch)
         run_controls.addWidget(self.stop_batch_button)
         self.tpa_button = QPushButton("Odbiór zbiorczy TPA (22 scenariusze)")
-        self.tpa_button.clicked.connect(self.open_tpa_requested.emit)
+        self.tpa_button.clicked.connect(lambda _checked=False: self.open_tpa_requested.emit())
         run_controls.addWidget(self.tpa_button)
         layout.addLayout(run_controls)
         self.batch_status = QLabel(
