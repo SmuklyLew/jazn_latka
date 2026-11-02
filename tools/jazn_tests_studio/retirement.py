@@ -98,33 +98,60 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _green_checks(head: str) -> list[str]:
+    """Verify the most recent result for every check on the exact GitHub SHA."""
     if not re.fullmatch(r"[0-9a-f]{40}", head):
         raise ValueError("Invalid commit SHA")
-    address = ("https://api.github.com/repos/" + GITHUB_REPOSITORY
-               + "/commits/" + head + "/check-runs?per_page=100")
-    request = Request(
-        address,
-        headers={"Accept": "application/vnd.github+json", "User-Agent": "jazn-tests-studio"},
-    )
+    runs: list[dict] = []
+    total: int | None = None
     try:
-        with urlopen(request, timeout=12) as response:
-            data = response.read(256_000)
-        payload = json.loads(data)
+        for page in range(1, 11):
+            address = (
+                "https://api.github.com/repos/" + GITHUB_REPOSITORY
+                + "/commits/" + head + "/check-runs?per_page=100&page=" + str(page)
+            )
+            request = Request(
+                address, headers={
+                    "Accept": "application/vnd.github+json",
+                    "User-Agent": "jazn-tests-studio",
+                },
+            )
+            with urlopen(request, timeout=12) as response:
+                payload = json.loads(response.read(512_000))
+            if not isinstance(payload, dict):
+                raise ValueError("Invalid GitHub checks")
+            observed = payload.get("total_count")
+            rows = payload.get("check_runs")
+            if (not isinstance(observed, int) or not 0 < observed <= 1000
+                    or total is not None and total != observed
+                    or not isinstance(rows, list)
+                    or len(rows) > 100
+                    or any(not isinstance(row, dict) for row in rows)):
+                raise ValueError("Incomplete GitHub checks")
+            total = observed
+            runs.extend(rows)
+            if len(runs) >= total:
+                break
+            if not rows:
+                raise ValueError("Missing GitHub checks page")
     except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
         raise ValueError("Unable to verify GitHub checks on the exact HEAD") from exc
-    runs = payload.get("check_runs") if isinstance(payload, dict) else None
-    if (not isinstance(runs, list) or not runs
-            or payload.get("total_count") != len(runs)):
+    if total is None or len(runs) != total:
         raise ValueError("Incomplete GitHub checks; refusing retirement")
-    names = [r.get("name") for r in runs if isinstance(r, dict)]
-    # These gates are a minimum, not a substitute for manually recorded TPA.
+    latest: dict[str, dict] = {}
+    for run in runs:
+        name = run.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("Unnamed GitHub check")
+        prior = latest.get(name)
+        if prior is None or (run.get("id") or 0) > (prior.get("id") or 0):
+            latest[name] = run
     required = ("manifest_sync", "test (ubuntu-latest, 3.12)", "test (windows-latest, 3.12)")
-    if any(name not in names for name in required):
+    if any(name not in latest for name in required):
         raise ValueError("Required release/Windows/Linux checks are missing")
-    if any(not isinstance(r, dict) or r.get("status") != "completed"
-           or r.get("conclusion") != "success" for r in runs):
+    if any(run.get("status") != "completed" or run.get("conclusion") != "success"
+           for run in latest.values()):
         raise ValueError("GitHub checks are not all successful")
-    return sorted(set(str(x) for x in names))
+    return sorted(latest)
 
 
 def archive_file(root: Path, relative: str, *, expected_sha256: str,
