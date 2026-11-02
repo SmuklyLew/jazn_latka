@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
-  "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
-  "commit_date": "2026-11-02T01:17:25+01:00",
+  "base_merge_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
+  "base_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
+  "commit_date": "2026-11-02T02:23:06Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-02T00:17:25+00:00",
+  "generated_at_utc": "2026-11-02T02:23:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "9fccce5f062dccad5bc3cb58d8ce53c88776ba4b",
+  "git_tree_sha": "fecdf42ac87ccf92eccefc5fb0c015a5b48ead51",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,21 +14,21 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+    "base_commit": "90d1977a15597596cc724acbca54caa52a986cfb",
     "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
-    "source_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation"
+    "source_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
+    "source_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
+  "release_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+  "source_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
+  "source_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
+  "update_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
   "version_source": "latka_jazn/version.py"
 }

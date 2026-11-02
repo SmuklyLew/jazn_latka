@@ -26,7 +26,12 @@ def test_mcp_imports_use_exact_gateway_interpreter(monkeypatch: pytest.MonkeyPat
     def fake_run(argv, **_kwargs):
         calls.append(argv)
         return subprocess.CompletedProcess(argv, 0, json.dumps({
-            "mcp": True, "uvicorn": True, "starlette": True, "pydantic": False,
+            "mcp": {"import_ok": True, "version": "2.2.0"},
+            "uvicorn": {"import_ok": True, "version": "0.31.1"},
+            "starlette": {"import_ok": True, "version": "0.48.0"},
+            "pydantic": {"import_ok": False, "version": None},
+            "packaging": {"import_ok": True, "version": "26.3"},
+            "tzdata": {"import_ok": True, "version": "2026.6"},
         }).encode(), b"")
 
     monkeypatch.setattr(studio_core, "run_external", fake_run)

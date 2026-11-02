@@ -277,6 +277,10 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
             event.ignore()
             QTimer.singleShot(100, self.close)
             return
+        if not self.tests_catalog_panel.shutdown():
+            event.ignore()
+            QTimer.singleShot(100, self.close)
+            return
         if not self.smoke and self.settings_draft() != self.settings_baseline:
             if QMessageBox.question(self, "Niezapisane ustawienia", "Zamknąć i odrzucić niezapisane zmiany ustawień?") != QMessageBox.StandardButton.Yes:
                 event.ignore()

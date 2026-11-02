@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from uuid import uuid4
 from typing import Any, Callable
 
 from .core import EVENT_MARKER, UI_STATUS, state_dir
@@ -23,11 +24,16 @@ class PytestRun:
         *,
         timeout: int = 1800,
         on_event: Callable[[dict[str, Any]], None] | None = None,
+        python: str | None = None,
+        evidence: bool = False,
     ) -> None:
         self.root = Path(root)
         self.nodeids = list(nodeids or [])
         self.timeout = max(1, int(timeout))
         self.on_event = on_event or (lambda event: None)
+        self.python = str(python or sys.executable)
+        self.evidence = bool(evidence)
+        self.evidence_dir: Path | None = None
         self.process: subprocess.Popen[str] | None = None
         self.thread: threading.Thread | None = None
         self.started = 0.0
@@ -44,7 +50,7 @@ class PytestRun:
 
     def command(self) -> list[str]:
         cmd = [
-            sys.executable,
+            self.python,
             "-X",
             "utf8",
             "-B",
@@ -59,8 +65,23 @@ class PytestRun:
             "-o",
             f"cache_dir={state_dir(self.root) / 'pytest_cache'}",
         ]
+        if self.evidence_dir is not None:
+            cmd.extend([
+                "-p", "tools.jazn_run_studio.test_evidence_plugin",
+                "--junitxml=" + str(self.evidence_dir / "junit.xml"),
+            ])
         cmd.extend(self.nodeids or ["tests", "--ignore=tests/archive"])
         return cmd
+
+    def _prepare_evidence(self) -> None:
+        if not self.evidence:
+            return
+        base = state_dir(self.root) / "batch-evidence"
+        if base.is_symlink():
+            raise ValueError("Symlink w katalogu dowodów testowych")
+        base.mkdir(parents=True, exist_ok=True)
+        self.evidence_dir = base / ("run-" + uuid4().hex)
+        self.evidence_dir.mkdir(mode=0o700, exist_ok=False)
 
     def start(self) -> "PytestRun":
         if self.thread is not None:
@@ -143,6 +164,11 @@ class PytestRun:
         returncode: int | None = None
         launch_error: str | None = None
         try:
+            if not Path(self.python).is_absolute() or not Path(self.python).is_file():
+                raise ValueError("Interpreter testów musi wskazywać istniejący plik absolutny")
+            self._prepare_evidence()
+            if self.evidence_dir is not None:
+                env["JAZN_TEST_EVIDENCE_DIR"] = str(self.evidence_dir / "evidence")
             cmd = self.command()
             proc = subprocess.Popen(
                 cmd,
@@ -198,6 +224,8 @@ class PytestRun:
             "completed": self._completed,
             "counts": dict(self._counts),
             "output": "".join(self._output)[-250000:],
+            "evidence_dir": str(self.evidence_dir) if self.evidence_dir is not None else None,
+            "full_gate_status": "NOT_RUN",
         }
         if launch_error:
             self.result["error"] = launch_error
@@ -222,6 +250,8 @@ def run_pytest(
     timeout: int = 1800,
     live: bool = False,
     on_event: Callable[[dict[str, Any]], None] | None = None,
+    evidence: bool = False,
+    python: str | None = None,
 ) -> dict[str, Any]:
     def console_event(event: dict[str, Any]) -> None:
         if on_event is not None:
@@ -245,7 +275,8 @@ def run_pytest(
             if "FAILURES" in text or "ERRORS" in text or text.startswith("FAILED ") or text.startswith("ERROR "):
                 print(text, end="", flush=True)
 
-    run = PytestRun(root, nodeids, timeout=timeout, on_event=console_event).start()
+    run = PytestRun(root, nodeids, timeout=timeout, on_event=console_event,
+                    evidence=evidence, python=python).start()
     try:
         return run.wait(timeout + 30)
     except KeyboardInterrupt:

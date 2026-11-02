@@ -77,6 +77,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_review.add_argument("--purpose", default="")
     p_review.add_argument("--expected", default="")
     p_review.add_argument("--note", default="")
+    p_review.add_argument("--replacement-nodeid", default="",
+                          help="Aktualny test w innym pliku, który zachowuje kontrakt wycofywanego.")
+
+    p_preview = sub.add_parser("retirement-preview",
+                               help="Odczytowy plan wycofania całego pliku testowego.", allow_abbrev=False)
+    p_preview.add_argument("--file", required=True, help="Względna ścieżka tests/test_*.py")
+
+    p_retire = sub.add_parser("retire-file",
+                              help="Jawna archiwizacja po sprawdzeniu zielonego CI bieżącego HEAD.", allow_abbrev=False)
+    p_retire.add_argument("--file", required=True)
+    p_retire.add_argument("--expected-sha256", required=True)
+    p_retire.add_argument("--expected-head", required=True)
+    p_retire.add_argument("--confirm", required=True, help="Wpisz ARCHIWIZUJ")
+    p_retire.add_argument("--apply", action="store_true", help="Bez tej flagi pokazuje wyłącznie plan")
     return parser
 
 
@@ -167,11 +181,27 @@ def _run_command(args: argparse.Namespace, root: Path) -> int:
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result.get("ok") else 1
     if command == "run-all":
-        result = run_pytest(root, timeout=args.timeout, live=True)
+        result = run_pytest(root, timeout=args.timeout, live=True, evidence=True)
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result.get("ok") else 1
+    if command == "retirement-preview":
+        from .retirement import preview
+        print(json.dumps(preview(root, args.file), indent=2, ensure_ascii=False))
+        return 0
+    if command == "retire-file":
+        from .retirement import preview, archive_file
+        if not args.apply:
+            print(json.dumps(preview(root, args.file), indent=2, ensure_ascii=False))
+            return 0
+        result = archive_file(
+            root, args.file, expected_sha256=args.expected_sha256,
+            expected_head=args.expected_head, confirmation=args.confirm,
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0
     if command == "review":
-        set_review(root, args.nodeid, args.status, args.purpose, args.expected, args.note)
+        set_review(root, args.nodeid, args.status, args.purpose, args.expected,
+                   args.note, replacement_nodeid=args.replacement_nodeid)
         return 0
     raise RuntimeError(f"Nieznana komenda: {command}")
 

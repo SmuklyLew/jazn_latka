@@ -116,7 +116,13 @@ class StudioViewMixin:
             "Katalog testów",
             "Natywny podgląd Test Studio: filtrowanie testów i ich oczekiwań bez uruchamiania lub edycji.",
         )
-        self.tests_catalog_panel = TestCatalogPanel(self.core.root)
+        from .core import python_executable
+        self.tests_catalog_panel = TestCatalogPanel(
+            self.core.root,
+            python="" if self.smoke else python_executable(self.core.settings),
+            enable_execution=not self.smoke,
+        )
+        self.tests_catalog_panel.open_tpa_requested.connect(lambda: self.navigate("TPA"))
         layout.addWidget(self.tests_catalog_panel)
 
 

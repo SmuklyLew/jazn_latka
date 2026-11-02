@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.72",
-  "active_definition_count": 3107,
+  "system_version": "16.3.25.5.116.0.34.94.6.73",
+  "active_definition_count": 3124,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20074,7 +20074,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 43
     },
     "tests/test_heart_system_connection_recovery.py::test_report_requires_gui_ack_for_accepted_turn": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20093,7 +20093,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 68
     },
     "tests/test_heart_system_connection_recovery.py::test_resume_nonzero_exit_preserves_request_and_error": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20110,7 +20110,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 82
     },
     "tests/test_heart_system_connection_recovery.py::test_resume_pending_is_successful_poll_not_false_final": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20127,7 +20127,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 97
     },
     "tests/test_heart_system_coverage_encoding.py::test_audit_cli_json_has_lossless_unicode_with_legacy_stdio": {
       "path": "tests/test_heart_system_coverage_encoding.py",
@@ -30235,6 +30235,68 @@
       "description_source": "source_identity",
       "line": 25
     },
+    "tests/test_jss_batch_pytest_qt.py::test_batch_evidence_uses_operator_state_and_exact_interpreter": {
+      "path": "tests/test_jss_batch_pytest_qt.py",
+      "name": "test_batch_evidence_uses_operator_state_and_exact_interpreter",
+      "purpose": "Batch evidence uses operator state and exact interpreter",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_jss_batch_pytest_qt.py::test_batch_evidence_rejects_symlink": {
+      "path": "tests/test_jss_batch_pytest_qt.py",
+      "name": "test_batch_evidence_rejects_symlink",
+      "purpose": "Batch evidence rejects symlink",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jss_batch_pytest_qt.py::test_native_batch_status_does_not_approve_real_acceptance": {
+      "path": "tests/test_jss_batch_pytest_qt.py",
+      "name": "test_native_batch_status_does_not_approve_real_acceptance",
+      "purpose": "Native batch status does not approve real acceptance",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_jss_batch_pytest_qt.py::test_native_batch_shutdown_stops_child_without_approving": {
+      "path": "tests/test_jss_batch_pytest_qt.py",
+      "name": "test_native_batch_shutdown_stops_child_without_approving",
+      "purpose": "Native batch shutdown stops child without approving",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
+    },
     "tests/test_jss_chat_workbench_qt.py::test_local_chat_transcript_and_composer_are_primary_surfaces": {
       "path": "tests/test_jss_chat_workbench_qt.py",
       "name": "test_local_chat_transcript_and_composer_are_primary_surfaces",
@@ -31246,6 +31308,118 @@
       "description_source": "source_identity",
       "line": 61
     },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_preflight_uses_exact_python_and_sdk_api": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_preflight_uses_exact_python_and_sdk_api",
+      "purpose": "Mcp preflight uses exact python and sdk api",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_version_incompatible_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_version_incompatible_fails_closed",
+      "purpose": "Mcp version incompatible fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_import_missing_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_import_missing_fails_closed",
+      "purpose": "Mcp import missing fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_profile_without_declared_requirements_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_profile_without_declared_requirements_fails_closed",
+      "purpose": "Mcp profile without declared requirements fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_optional_mcp_failures_never_block_gui_setup": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_optional_mcp_failures_never_block_gui_setup",
+      "purpose": "Optional mcp failures never block gui setup",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
       "name": "test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release",
@@ -31281,6 +31455,142 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 20
+    },
+    "tests/test_jss_test_retirement.py::test_retirement_preview_requires_all_reviews_and_verified_replacements": {
+      "path": "tests/test_jss_test_retirement.py",
+      "name": "test_retirement_preview_requires_all_reviews_and_verified_replacements",
+      "purpose": "Retirement preview requires all reviews and verified replacements",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jss_test_retirement.py::test_retirement_refuses_unsafe_source_paths": {
+      "path": "tests/test_jss_test_retirement.py",
+      "name": "test_retirement_refuses_unsafe_source_paths",
+      "purpose": "Retirement refuses unsafe source paths",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_jss_test_retirement.py::test_retirement_requires_confirmation_exact_digest_branch_and_green_checks": {
+      "path": "tests/test_jss_test_retirement.py",
+      "name": "test_retirement_requires_confirmation_exact_digest_branch_and_green_checks",
+      "purpose": "Retirement requires confirmation exact digest branch and green checks",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_jss_test_retirement.py::test_retirement_archives_byte_exact_original_and_leaves_new_ci_pending": {
+      "path": "tests/test_jss_test_retirement.py",
+      "name": "test_retirement_archives_byte_exact_original_and_leaves_new_ci_pending",
+      "purpose": "Retirement archives byte exact original and leaves new ci pending",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_jss_test_retirement_checks.py::test_green_checks_verify_required_matrix_and_exact_sha": {
+      "path": "tests/test_jss_test_retirement_checks.py",
+      "name": "test_green_checks_verify_required_matrix_and_exact_sha",
+      "purpose": "Green checks verify required matrix and exact sha",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_jss_test_retirement_checks.py::test_pending_required_check_cannot_authorize_retirement": {
+      "path": "tests/test_jss_test_retirement_checks.py",
+      "name": "test_pending_required_check_cannot_authorize_retirement",
+      "purpose": "Pending required check cannot authorize retirement",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jss_test_retirement_checks.py::test_latest_successful_rerun_supersedes_prior_failed_check": {
+      "path": "tests/test_jss_test_retirement_checks.py",
+      "name": "test_latest_successful_rerun_supersedes_prior_failed_check",
+      "purpose": "Latest successful rerun supersedes prior failed check",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_jss_test_retirement_checks.py::test_checks_are_paginated_and_incomplete_evidence_is_rejected": {
+      "path": "tests/test_jss_test_retirement_checks.py",
+      "name": "test_checks_are_paginated_and_incomplete_evidence_is_rejected",
+      "purpose": "Checks are paginated and incomplete evidence is rejected",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_jss_theme_switch_reflow_qt.py::test_repeated_theme_switch_reflow_is_safe_for_all_profiles": {
       "path": "tests/test_jss_theme_switch_reflow_qt.py",

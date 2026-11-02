@@ -43,6 +43,16 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     for status in inspect_current_requirements(root, requirements):
         row(status.distribution, status.ready, status.requirement + " / " + str(status.installed_version or "brak"),
             "Sprawdź profil core + run-studio w Studiu Zależności; instalacja wymaga zgody.")
+    # pytest and the evidence adapter are a separate optional operator
+    # capability. Lack of test tooling does not prevent JSS or the daemon
+    # starting, but must be visible before a bulk test operation.
+    for status in inspect_current_requirements(
+        root, resolve_profile_requirements(root, ("test-evidence",))
+    ):
+        row("Testy: " + status.distribution, status.ready,
+            status.requirement + " / " + str(status.installed_version or "brak"),
+            "Użyj profilu test-evidence w Studiu Zależności (jawny wheelhouse).",
+            required=False)
     checked = verify_package_integrity_manifest(root)
     codes = [str(e.get("code", "invalid")) for e in checked.get("errors", []) if isinstance(e, dict)]
     row("Integralność SYSTEM", checked.get("ok") is True,
@@ -55,10 +65,37 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     else:
         row("Konfiguracja", True, "Kanoniczny schemat konfiguracji", "")
     row("Dostęp do SYSTEM", os.access(root, os.R_OK), "Sprawdzenie uprawnień odczytu", "Sprawdź uprawnienia katalogu.")
+
+    # Optional MCP lives in a separately selected interpreter. Test that real
+    # environment, never the Qt worker's imports, and never install implicitly.
+    from .core import load_settings, mcp_dependency_preflight, python_executable
+    mcp_python = ""
+    mcp_checks = {name: False for name in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")}
+    mcp_error = ""
+    try:
+        configured, _digest = load_settings(root)
+        mcp_python = python_executable(
+            Settings(python=configured.mcp_python or configured.python or sys.executable)
+        )
+        mcp_checks = mcp_dependency_preflight(mcp_python, root)
+    except (OSError, ValueError, RuntimeError) as exc:
+        # A broken optional service must never suppress the required GUI audit.
+        mcp_error = type(exc).__name__
+    row("Interpreter MCP", bool(mcp_python) and not mcp_error,
+        mcp_python or mcp_error or "Nieustalony",
+        "Wybierz właściwy Python MCP w ustawieniach Studio.", required=False)
+    for module, available in mcp_checks.items():
+        row("MCP: " + module, available,
+            "Import i wersja zgodne z profilem mcp-http" if available else
+            "Brak importu, wymaganej wersji lub niezgodny interpreter",
+            "Otwórz Studio Zależności; użyj zatwierdzonego profilu mcp-http "
+            "i zweryfikowanego wheelhouse w wybranym interpreterze.", required=False)
     return {"schema": "jazn_studio_setup/v1", "observed_at_utc": datetime.now(timezone.utc).isoformat(),
             "scope": setup_scope(root, sys.executable), "rows": rows,
             "required_ok": all(r["state"] == "PASS" for r in rows if r["required"]),
             "discovery": discovery(Settings(python=sys.executable)),
+            "mcp": {"interpreter": mcp_python, "ready": all(mcp_checks.values()) and not mcp_error,
+                    "modules": mcp_checks, "error_type": mcp_error or None},
             "runtime_activated": False, "accepted_visible_turn": False}
 
 

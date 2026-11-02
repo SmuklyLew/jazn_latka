@@ -351,38 +351,66 @@ def discovery(settings: Settings) -> dict[str, Any]:
 
 
 def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
-    """Inspect imports in the *actual gateway interpreter*, before process ownership.
+    """Verify core and MCP imports *and declared versions* in the exact interpreter.
 
-    -I isolates Python from cwd/PYTHONPATH; the installed SDK is still visible.
-    This is a bounded read-only import check, never an installer.
+    The probe is read-only and isolated (-I). No pip, gateway start or daemon
+    lifecycle is allowed here. A module import alone does not prove SDK API
+    compatibility or that the pinned distribution version is installed.
     """
     script = (
-        "import importlib, json\n"
-        "names = ('mcp', 'uvicorn', 'starlette', 'pydantic')\n"
+        "import importlib, importlib.metadata, json, sys\n"
+        "names = ('mcp', 'uvicorn', 'starlette', 'pydantic', 'packaging', 'tzdata')\n"
         "result = {}\n"
         "for name in names:\n"
         "    try:\n"
+        "        if sys.version_info < (3, 12):\n"
+        "            raise RuntimeError('unsupported_python')\n"
         "        importlib.import_module(name)\n"
+        "        if name == 'mcp':\n"
+        "            from mcp.server import MCPServer\n"
+        "            from mcp.server.mcpserver import RequestStateSecurity\n"
+        "        result[name] = {'import_ok': True, 'version': importlib.metadata.version(name)}\n"
         "    except Exception:\n"
-        "        result[name] = False\n"
-        "    else:\n"
-        "        result[name] = True\n"
+        "        result[name] = {'import_ok': False, 'version': None}\n"
         "print(json.dumps(result))\n"
     )
     try:
         result = run_external([interpreter, "-I", "-c", script], cwd=root, timeout=15)
-        if result.returncode or len(result.stdout) > 1024:
+        if result.returncode or len(result.stdout) > 2048:
             raise StudioError("Interpreter MCP nie przeszedł kontroli importów")
         checks = json.loads(result.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         raise StudioError("Nie można zweryfikować zależności wybranego interpretera MCP") from exc
-    names = ("mcp", "uvicorn", "starlette", "pydantic")
-    if not isinstance(checks, dict) or set(checks) != set(names) or any(
-        not isinstance(checks[name], bool) for name in names
-    ):
+    names = ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
+    if not isinstance(checks, dict) or set(checks) != set(names):
         raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
-    return {name: checks[name] for name in names}
+    from packaging.requirements import Requirement
+    import tomllib
 
+    try:
+        declared = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        requirements = [
+            *declared["project"]["dependencies"],
+            *declared["project"]["optional-dependencies"]["mcp-http"],
+        ]
+        specs = {str(Requirement(item).name).lower().replace("_", "-"): Requirement(item)
+                 for item in requirements}
+        if set(specs) != set(names):
+            raise ValueError("mcp_http_profile_incomplete")
+        output: dict[str, bool] = {}
+        for name in names:
+            item = checks[name]
+            if not isinstance(item, dict) or type(item.get("import_ok")) is not bool:
+                raise ValueError("invalid_mcp_import_status")
+            version = item.get("version")
+            output[name] = bool(
+                item["import_ok"]
+                and isinstance(version, str)
+                and specs[name].specifier.contains(version, prereleases=True)
+            )
+        return output
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        raise StudioError("Nie można zweryfikować wersji profilu core + mcp-http z pyproject.toml") from exc
 
 def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
     """Keep separate proof of process, runtime root and package identity."""

@@ -88,6 +88,21 @@ class SettingsViewMixin:
             field.textChanged.connect(self.settings_changed)
         self.theme.currentTextChanged.connect(self.settings_changed)
         self.profile_mode.currentIndexChanged.connect(self.settings_changed)
+        self.dependency_audit_status = QLabel("Sprawdzanie środowisk Python i profili zależności…")
+        self.dependency_audit_status.setWordWrap(True)
+        self.dependency_audit_status.setAccessibleName("Stan bibliotek GUI i lokalnej bramy MCP")
+        layout.addWidget(self.dependency_audit_status)
+        self.button("Sprawdź biblioteki ponownie (tylko odczyt)", self.audit_dependencies, layout)
+        self.button("Otwórz Studio Zależności — instalacja za zgodą operatora",
+                    lambda: self.core.start_studio("dependencies"), layout)
+        self.dependency_audit_job = None
+        self.dependency_audit_timer = QTimer(self)
+        self.dependency_audit_timer.timeout.connect(self.poll_dependency_audit)
+        # The GUI remains responsive; missing optional MCP cannot block the
+        # window or trigger network installation at startup.
+        if not self.smoke:
+            QTimer.singleShot(0, self.audit_dependencies)
+
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
         self.button("Wczytaj profil środowiska runtime", lambda: self.core.studio_helper("profile-read"), layout)
@@ -98,6 +113,49 @@ class SettingsViewMixin:
         self.button("Zapisz profil przyszłych uruchomień runtime", self.save_profile, layout)
         layout.addStretch()
 
+
+    def audit_dependencies(self: Any) -> None:
+        """Start one bounded operator audit; never install or start services."""
+        try:
+            self.dependency_audit_job = self.core.check_setup()
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.dependency_audit_status.setText(
+                "Nie można wykonać kontroli: " + self.core.redactor.text(type(exc).__name__)
+            )
+            return
+        self.dependency_audit_status.setText("Kontrola w tle: wymagania GUI i interpreter MCP…")
+        self.dependency_audit_timer.start(250)
+
+    def poll_dependency_audit(self: Any) -> None:
+        job = self.dependency_audit_job
+        if job is None or not job.done.is_set():
+            return
+        self.dependency_audit_timer.stop()
+        self.dependency_audit_job = None
+        report = self.core.setup_observation
+        if job.state != "succeeded" or report.get("schema") != "jazn_studio_setup/v1":
+            self.dependency_audit_status.setText(
+                "Kontrola niekompletna: " + self.core.redactor.text(str(job.error or job.state))
+            )
+            return
+        required = [row for row in report.get("rows", [])
+                    if row.get("required") and row.get("state") != "PASS"]
+        mcp = report.get("mcp", {})
+        interpreter = self.core.redactor.text(str(mcp.get("interpreter") or "nieustalony"))
+        modules = mcp.get("modules", {})
+        missing = [name for name in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
+                   if modules.get(name) is not True]
+        gui = "gotowe" if not required else "braki: " + ", ".join(
+            str(item.get("name")) for item in required[:8]
+        )
+        gateway = "gotowe do próby uruchomienia" if mcp.get("ready") is True else (
+            "brak lub niezgodna wersja: " + ", ".join(missing)
+        )
+        self.dependency_audit_status.setText(
+            "GUI: " + gui + "\nMCP Python: " + interpreter + "\nMCP: " + gateway +
+            "\nBrama i daemon wymagają oddzielnych testów /readyz oraz statusu runtime. "
+            "Instalacja wymaga jawnej zgody w Studiu Zależności."
+        )
 
     def settings_model_selected(self: Any, _index: int) -> None:
         selected = self.settings_model_selector.currentData()
