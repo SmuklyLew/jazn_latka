@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+  "base_merge_commit": "f316aeeb9c29dc0080f9ec4ec4edbef8b112bae2",
   "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
-  "commit_date": "2026-11-02T01:17:25+01:00",
+  "commit_date": "2026-11-02T02:17:57+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-02T00:17:25+00:00",
+  "generated_at_utc": "2026-11-02T01:17:57+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "9fccce5f062dccad5bc3cb58d8ce53c88776ba4b",
+  "git_tree_sha": "10881067e515128d62a76c770d668a151da0b741",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -14,11 +14,11 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+    "base_commit": "90d1977a15597596cc724acbca54caa52a986cfb",
     "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+    "source_commit": "f316aeeb9c29dc0080f9ec4ec4edbef8b112bae2",
     "source_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "3b184edcb89f6250963549700d563dc8daaee86a",
+  "source_commit": "f316aeeb9c29dc0080f9ec4ec4edbef8b112bae2",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
   "tag": null,
