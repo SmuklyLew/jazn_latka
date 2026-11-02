@@ -148,3 +148,29 @@ def test_jss_verified_live_daemon_does_not_use_historical_marker(tmp_path) -> No
     mismatch = daemon_evidence(record, expected_root=tmp_path)
     assert mismatch["version_matches"] is False
     assert visual_state("runtime", mismatch) == "error"
+
+
+def test_jss_optional_not_ready_probe_does_not_turn_service_popup_red(monkeypatch) -> None:
+    import os
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    pytest.importorskip("PySide6")
+    from PySide6.QtWidgets import QApplication, QWidget
+    from tools.jazn_run_studio.service_status_dialog import ServiceStatusDialog
+
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
+    host = QWidget()
+    dialog = ServiceStatusDialog(host, lambda: None)
+    dialog.observe("probe:gateway", "probe", {
+        "service": "gateway", "ready": False, "endpoint_reachable": False,
+    })
+    dialog.observe("probe:gateway", "state", {
+        "state": "failed", "error": "service_not_ready",
+    })
+    assert "Niezweryfikowany" in dialog.indicators["mcp"][1].text()
+    dialog.observe("probe:gateway", "state", {
+        "state": "failed", "error": "connection_refused_unexpected",
+    })
+    assert "Błąd" in dialog.indicators["mcp"][1].text()
+    dialog.close()
+    host.close()
