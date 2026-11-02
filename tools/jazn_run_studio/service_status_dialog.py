@@ -151,7 +151,15 @@ class ServiceStatusDialog(QDialog):
                               "probe:gateway": ("mcp",),
                               "probe:ollama": ("ollama",),
                               "probe:ollama_generate": ("ollama",)}.get(key, ())
-            self.failures.update(failed_service)
+            # A completed optional probe can truthfully report "not ready"
+            # without establishing a service fault. Keep its negative sample
+            # visible as a warning; transport exceptions remain real failures.
+            unready = {
+                "service_not_ready", "selected_model_missing",
+                "ollama_models_empty", "ollama_generation_unverified",
+            }
+            if not (key.startswith("probe:") and str(value.get("error") or "") in unready):
+                self.failures.update(failed_service)
         # Keep the read-only projection current while hidden as well: opening
         # or reopening the window must not briefly expose an earlier sample.
         self.render_statuses()
