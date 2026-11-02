@@ -410,7 +410,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
             )
         return output
     except (OSError, KeyError, TypeError, ValueError) as exc:
-        raise StudioError("Nie można zweryfikować wersji profilu core + mcp-http z pyproject.toml") from exc
+        raise StudioError("Nie można zweryfikować wersji profilu MCP (core + mcp-http) z pyproject.toml") from exc
 
 def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
     """Keep separate proof of process, runtime root and package identity."""
