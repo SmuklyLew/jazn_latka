@@ -60,7 +60,7 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     # environment, never the Qt worker's imports, and never install implicitly.
     from .core import load_settings, mcp_dependency_preflight, python_executable
     mcp_python = ""
-    mcp_checks = {name: False for name in ("mcp", "uvicorn", "starlette", "pydantic")}
+    mcp_checks = {name: False for name in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")}
     mcp_error = ""
     try:
         configured, _digest = load_settings(root)
