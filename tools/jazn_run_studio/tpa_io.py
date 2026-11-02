@@ -2,7 +2,7 @@
 from collections import deque
 from typing import Any, Callable
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, QTimer, Signal, Slot
 
 
 class _Signals(QObject):
@@ -86,4 +86,6 @@ class SerialIO(QObject):
             if completed_job is not None:
                 # Deletion via the sender's event loop, never synchronously in
                 # the slot which handles the sender's finished signal.
-                completed_job.signals.deleteLater()
+                QTimer.singleShot(
+                    0, lambda job=completed_job: job.signals.deleteLater()
+                )
