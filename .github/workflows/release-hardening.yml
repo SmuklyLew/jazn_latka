@@ -205,6 +205,8 @@ jobs:
       QT_QPA_PLATFORM: offscreen
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
+      # Capture a fatal traceback if Qt object teardown crashes after passing tests.
+      PYTHONFAULTHANDLER: "1"
     steps:
       - name: Checkout synchronized source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
