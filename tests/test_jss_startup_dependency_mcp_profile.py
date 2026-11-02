@@ -13,7 +13,7 @@ from tools.jazn_run_studio.core import Settings, StudioError
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULES = ("mcp", "uvicorn", "starlette", "pydantic")
+MODULES = ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
 
 
 def _installed(version: str = "2.2.0") -> dict[str, dict[str, object]]:
@@ -22,6 +22,8 @@ def _installed(version: str = "2.2.0") -> dict[str, dict[str, object]]:
         "uvicorn": {"import_ok": True, "version": "0.31.1"},
         "starlette": {"import_ok": True, "version": "0.48.0"},
         "pydantic": {"import_ok": True, "version": "2.12.3"},
+        "packaging": {"import_ok": True, "version": "26.3"},
+        "tzdata": {"import_ok": True, "version": "2026.6"},
     }
 
 
@@ -47,7 +49,7 @@ def test_mcp_version_incompatible_fails_closed(monkeypatch: pytest.MonkeyPatch) 
 
     monkeypatch.setattr(core, "run_external", fake_run)
     checks = core.mcp_dependency_preflight("selected-mcp-python", ROOT)
-    assert checks == {"mcp": False, "uvicorn": True, "starlette": True, "pydantic": True}
+    assert checks == {name: name != "mcp" for name in MODULES}
 
 
 def test_mcp_import_missing_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -98,6 +100,6 @@ def test_optional_mcp_failures_never_block_gui_setup(
     assert report["mcp"]["ready"] is False
     assert report["mcp"]["interpreter"] == sys.executable
     rows = [item for item in report["rows"] if item["name"].startswith("MCP: ")]
-    assert len(rows) == 4
+    assert len(rows) == 6
     assert all(item["state"] == "OPTIONAL_MISSING" and item["required"] is False
                for item in rows)
