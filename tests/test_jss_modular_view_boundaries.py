@@ -64,7 +64,9 @@ OWNERS = {
         "settings_draft",
         "settings_changed",
         "reset_settings_draft",
-        "filter_settings"
+        "filter_settings",
+        "audit_dependencies",
+        "poll_dependency_audit"
     ],
     "view_navigation.py": [
         "_about",
