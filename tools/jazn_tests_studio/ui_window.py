@@ -372,7 +372,8 @@ def run_window_ui(root: Path, diagnostics: DiagnosticsHub) -> int:
         run_state_var.set("STARTING")
         set_running_controls(True)
         diagnostics.record("INFO", "Uruchomiono pytest", scope="selected" if nodeids else "all", nodeids=nodeids or [])
-        active_run = PytestRun(root, nodeids, timeout=1800, on_event=event_queue.put).start()
+        active_run = PytestRun(root, nodeids, timeout=7200 if not nodeids else 1800,
+                               evidence=not bool(nodeids), on_event=event_queue.put).start()
         app.after(25, poll_events)
 
     def run_one() -> None:
