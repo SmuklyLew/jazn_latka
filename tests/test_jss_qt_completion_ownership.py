@@ -32,16 +32,16 @@ def test_serial_completion_sender_survives_callback_dispatch() -> None:
     lane = SerialIO(host)
     was_valid: list[bool] = []
     failures: list[str] = []
-    sender_ref = None
+    sender_refs: list[weakref.ReferenceType] = []
 
     def completed(value: str) -> None:
         assert value == "ok"
-        sender = sender_ref()
+        sender = sender_refs[0]()
         was_valid.append(sender is not None and isValid(sender))
 
     lane.submit(lambda: "ok", completed, failures.append)
     assert lane.job is not None
-    sender_ref = weakref.ref(lane.job.signals)
+    sender_refs.append(weakref.ref(lane.job.signals))
     _wait_for(lambda: not lane.pending)
     assert was_valid == [True]
     assert failures == []
