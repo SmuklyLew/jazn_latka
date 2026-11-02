@@ -174,3 +174,24 @@ def test_jss_optional_not_ready_probe_does_not_turn_service_popup_red(monkeypatc
     assert "Błąd" in dialog.indicators["mcp"][1].text()
     dialog.close()
     host.close()
+
+
+def test_jss_memory_evidence_preserves_partial_readiness() -> None:
+    from tools.jazn_run_studio.core import memory_evidence
+    reported = memory_evidence({
+        "capability_readiness": {
+            "memory_search_ready": True,
+            "full_autobiographical_recall_ready": False,
+            "continuity_ready": False,
+        },
+        "startup": {"memory_continuity_status": {
+            "normalization_status": "normalization_stale",
+            "wake_state_status": "normalization_stale",
+        }},
+    })
+    assert reported["service"] == "memory"
+    assert reported["ready"] is False
+    assert reported["memory_search_ready"] is True
+    assert reported["normalization_status"] == "normalization_stale"
+    assert visual_state("memory", reported) == "reachable"
+    assert visual_state("runtime", reported) != "ready"
