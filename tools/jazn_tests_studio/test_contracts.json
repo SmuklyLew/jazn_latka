@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.74",
-  "active_definition_count": 3136,
+  "active_definition_count": 3139,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31463,6 +31463,51 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jss_qt_completion_ownership.py::test_serial_completion_sender_survives_callback_dispatch": {
+      "path": "tests/test_jss_qt_completion_ownership.py",
+      "name": "test_serial_completion_sender_survives_callback_dispatch",
+      "purpose": "Serial completion sender survives callback dispatch",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jss_qt_completion_ownership.py::test_history_jobs_are_not_owned_by_threadpool": {
+      "path": "tests/test_jss_qt_completion_ownership.py",
+      "name": "test_history_jobs_are_not_owned_by_threadpool",
+      "purpose": "History jobs are not owned by threadpool",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_jss_qt_completion_ownership.py::test_history_panel_retains_worker_until_queued_completion_finishes": {
+      "path": "tests/test_jss_qt_completion_ownership.py",
+      "name": "test_history_panel_retains_worker_until_queued_completion_finishes",
+      "purpose": "History panel retains worker until queued completion finishes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
