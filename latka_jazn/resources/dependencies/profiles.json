@@ -20,6 +20,10 @@
       "kind": "operator_optional",
       "source_optional_group": "run-studio"
     },
+    "test-evidence": {
+      "kind": "operator_optional",
+      "source_optional_group": "test-evidence"
+    },
     "memory-cloud": {
       "kind": "runtime_optional",
       "source_optional_group": "memory-cloud"

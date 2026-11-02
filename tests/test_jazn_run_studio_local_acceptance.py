@@ -103,11 +103,12 @@ def test_qt_acceptance_page_renders_without_live_runtime(roots, monkeypatch):
     assert first is not None and first.text() == "NOT_RUN"
     # Missing interpreter/files produce a durable BLOCKED execution record,
     # instead of letting a manual declaration masquerade as a test result.
-    from PySide6.QtTest import QTest
+    import time
     panel.python_field.clear()
     panel.start(("gui-daemon",))
     for _ in range(100):
-        QTest.qWait(10)
+        app.processEvents()
+        time.sleep(0.01)
         if not panel.runner.active:
             break
     assert panel.report is not None

@@ -51,5 +51,9 @@ Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralno
 
 ## 7. Raport i dowody
 
+- Modernizacja JSS wymaga niezmiennego manifestu wszystkich scenariuszy danego zakresu przed wykonaniem, oddzielnych TXT/JSON, JUnit pytest oraz jawnego źródła i środowiska. Niezebrane i niewykonane testy pozostają widoczne; nie wolno zastępować ich PASS.
+- Do trwałej rejestracji pytest służy jawnie włączany `tools.jazn_run_studio.test_evidence_plugin` i zewnętrzny `JAZN_TEST_EVIDENCE_DIR`; dla TPA używaj istniejącego RunStore. Kontrakt i ograniczenia: `docs/uiux/JSS_TEST_EVIDENCE_ARCHIVE.md`. Sama obecność adaptera nie potwierdza integracji wszystkich CI.
+- Oddzielaj `execution_status`, `full_gate_status`, realny odbiór i aktualność SHA. Końcowy odbiór wymaga pełnej wymaganej macierzy; testy celowane, zapis commita i screenshoty jej nie zastępują.
+
 - Przy dłuższej pracy informuj krótko o etapach, bez zalewania rozmowy logami i bez obietnic pracy w tle.
 - Podaj zmienione pliki, wyniki rzeczywiście uruchomionych kontroli, ograniczenia i ryzyka. Branch i SHA commita podawaj tylko po rzeczywistym zapisie. Oddziel fakty od założeń.

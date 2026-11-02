@@ -15,6 +15,14 @@ from tools.jazn_run_studio.tpa_paths import TOKEN_ENV, issue_staging, validate_s
 from tools.jazn_run_studio.tpa_reports import RunStore
 
 
+def drain_persistence(app, runner):
+    deadline = time.monotonic() + 10
+    while runner.persistence_pending and time.monotonic() < deadline:
+        app.processEvents()
+        time.sleep(0.005)
+    assert not runner.persistence_pending, "Evidence persistence did not finish"
+
+
 @pytest.fixture
 def owned(tmp_path, monkeypatch):
     root = tmp_path / "SYSTEM"
@@ -172,6 +180,7 @@ def test_qt_queue_passes_run_authority_and_correct_mode(owned, monkeypatch, mode
         captured = []
         monkeypatch.setattr(runner.process, "start", lambda python, args: captured.append((python, args)))
         runner._next()
+        drain_persistence(app, runner)
         runner.timer.stop()
         assert runner.report is not None
         assert len(captured) == 1
@@ -214,6 +223,7 @@ def test_qt_result_preserves_original_refusal_with_or_without_cleanup_failure(ow
     else:
         runner.live_exit_code, runner.cleanup_result = 1, {"ok": False}
         runner._live_done(1)
+    drain_persistence(app, runner)
     assert runner.report is not None
     saved = store.load(runner.report["run_id"])["results"][0]
     assert saved["reason"].startswith("Pierwotna odmowa walidacji")

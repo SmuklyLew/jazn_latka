@@ -155,7 +155,7 @@ def build_speech_adapter_for_turn(
         infer_host_environment=infer_host,
         probe_local=probe_local,
     )
-    adapter = build_model_adapter(routed_config)
+    adapter = build_model_adapter(routed_config, resolve_route=False)
     if route_status.selected_route == ROUTE_NULL and fallback_adapter is not None:
         adapter = fallback_adapter
     status = build_model_guided_speech_status(
@@ -191,7 +191,7 @@ def build_model_guided_speech_status(
     if _speech_disabled(env_map):
         effective_adapter = adapter or NullModelAdapter()
     else:
-        effective_adapter = adapter or build_model_adapter(routed_config)
+        effective_adapter = adapter or build_model_adapter(routed_config, resolve_route=False)
     described_status = effective_adapter.describe() if hasattr(effective_adapter, "describe") else {"status": "unknown"}
     adapter_status = json_object(described_status)
     contract = json_object(adapter_status.get("adapter_contract"))

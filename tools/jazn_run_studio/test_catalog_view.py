@@ -1,14 +1,14 @@
-"""Native, explicitly read-only Qt catalogue view over Test Studio contracts.
+"""Native, explicitly read-only Qt catalogue and verified evidence history.
 
 This migrates *inspection* of test purposes and expectations only. It does not
-claim parity with legacy execution, review editing, history or cancellation.
+claim parity with legacy execution, review editing or cancellation.
 """
 from __future__ import annotations
 
 from pathlib import Path
 from PySide6.QtWidgets import (
     QComboBox, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit, QPushButton,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QTableWidget, QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget,
 )
 from tools.jazn_tests_studio.core import filtered
 
@@ -25,11 +25,21 @@ _STATUS_OPTIONS = (
 class TestCatalogPanel(QWidget):
     """No test execution, review mutation or persistence is possible here."""
 
+    __test__ = False
+
     def __init__(self, root: Path, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.root = root
         self.rows: list[tuple[str, dict]] = []
-        layout = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        tabs = QTabWidget()
+        outer.addWidget(tabs)
+        catalog_page = QWidget()
+        tabs.addTab(catalog_page, "Katalog i oczekiwania")
+        from .test_history_view import TestHistoryPanel
+        self.history_panel = TestHistoryPanel(root)
+        tabs.addTab(self.history_panel, "Historia wyników TPA")
+        layout = QVBoxLayout(catalog_page)
         controls = QHBoxLayout()
         self.query = QLineEdit()
         self.query.setPlaceholderText("Szukaj: nazwa, cel, kategoria lub tag")

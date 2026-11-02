@@ -37,3 +37,15 @@ Additional append-only provenance:
 | `tests/test_heart_unified_operator_dock_qt.py` from `16.3.25.5.116.0.34.94.6.30` prior to sixth terminal tab | `test_heart_unified_operator_dock_qt_v16_3_25_5_116_0_34_94_6_30.py` | `2b005c6c824a09d0de0691faa9dfa05fb1d19103` |
 
 | `tests/test_jazn_service_visual_state.py` before ROOT/version truth-gate hardening in `16.3.25.5.116.0.34.94.6.33` | `test_jazn_service_visual_state_v16_3_25_5_116_0_34_94_6_33.py` | `cbc658ddf359089c8af94d44a4a00846c1d83390` |
+
+| `tests/test_jazn_run_studio_part2_operator_qt.py` from `2dc2727ecc191b214e8d3ce3755c986bc09f5a84` before binding color-dialog tests to their extracted owner module | `test_jazn_run_studio_part2_operator_qt_v16_3_25_5_116_0_34_94_6_57.py` | `4b7aa5c2c6d810910d63f4b8708979cdb85fb294` |
+
+| `tests/test_jazn_tpa_staging_authority.py` from `00bcf8b618e0574103fcdf15fe81c4a35c654652` before waiting for asynchronous evidence persistence (assertions retained) | `test_jazn_tpa_staging_authority_v16_3_25_5_116_0_34_94_6_61.py` | `3411c38aa9204be83e7de36d8025114010fa82ae` |
+
+| `tests/test_jazn_tpa_execution_qt.py` from `00bcf8b618e0574103fcdf15fe81c4a35c654652` before yielding the GIL while pumping Qt (same timeout/assertions) | `test_jazn_tpa_execution_qt_v16_3_25_5_116_0_34_94_6_61.py` | `c37f173c598c78a543661639884de89b32ccdc57` |
+
+| `tests/test_jazn_run_studio_local_acceptance.py` from `3002abdb178a50d14f992e0a353a06f79302db93` before releasing the GIL during the same 100 waits of 10 ms | `test_jazn_run_studio_local_acceptance_v16_3_25_5_116_0_34_94_6_62.py` | `816c8f1368d70698cff5c065f8d5e7432c0e32b5` |
+
+| `tests/test_jss_tpa_async_persistence_qt.py` from `3002abdb178a50d14f992e0a353a06f79302db93` before adding the complete failed-preflight snapshot contract | `test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_62.py` | `2587b4711458cd96b61d5263e5e6124ab10b955c` |
+
+| `tests/test_jss_tpa_async_persistence_qt.py` from `450273b796d0dfae802ce25fe347b8b000447b07` before persisting an invalid-interpreter refusal in its first snapshot (valid-interpreter durability barriers retained) | `test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_63.py` | `5cffc9e8682cfee997b357b64e84a08a8c59632d` |

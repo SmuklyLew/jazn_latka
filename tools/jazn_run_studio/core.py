@@ -36,8 +36,29 @@ MAX_OUTPUT = 2 * 1024 * 1024
 MAX_LINE = 16384
 SECRET_NAME = re.compile(r"token|secret|password|api.?key|credential|authorization", re.I)
 SECRET_ASSIGNMENT = re.compile(
-    r'''(?i)(["']?[\w-]*(?:token|secret|password|api[_-]?key|credential)[\w-]*["']?\s*[:=]\s*)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}]+)'''
+    r'''(?<![\w-])(["']?([\w-]+)["']?\s*[:=]\s*)'''
 )
+SECRET_ASSIGNMENT_NAME = re.compile(r"token|secret|password|api[_-]?key|credential", re.I)
+SECRET_ASSIGNMENT_VALUE = re.compile(r'''"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}]+''')
+
+
+def _redact_assignments(text: str) -> str:
+    # Scan complete keys once, then test their names. Searching every suffix of
+    # a megabyte word with two greedy word ranges caused quadratic backtracking.
+    # Public values are still scanned for nested secret assignments, as before.
+    pieces: list[str] = []
+    copied = position = 0
+    while match := SECRET_ASSIGNMENT.search(text, position):
+        position = match.end()
+        if not SECRET_ASSIGNMENT_NAME.search(match.group(2)):
+            continue
+        value = SECRET_ASSIGNMENT_VALUE.match(text, position)
+        if value is None:
+            continue
+        pieces.extend((text[copied:position], '"[UKRYTO]"'))
+        copied = position = value.end()
+    pieces.append(text[copied:])
+    return "".join(pieces)
 
 
 class StudioError(ValueError):
@@ -54,7 +75,7 @@ class Redactor:
         text = value.replace("\x00", "")
         for secret in self.values:
             text = text.replace(secret, "[UKRYTO]")
-        text = SECRET_ASSIGNMENT.sub(r'\1"[UKRYTO]"', text)
+        text = _redact_assignments(text)
         text = re.sub(r"(?i)\bBearer\s+[^\s\"',;]+", "Bearer [UKRYTO]", text)
         text = re.sub(r"\bsk-[A-Za-z0-9_-]+", "[UKRYTO]", text)
         text = re.sub(r"(https?://)[^/\s:@]+:[^/\s@]+@", r"\1[UKRYTO]@", text)

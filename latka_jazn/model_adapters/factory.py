@@ -58,8 +58,11 @@ def _config_with_llm_route(config: Any, *, command: str | None = None) -> Any:
     return routed
 
 
-def build_model_adapter(config: Any):
-    config = _config_with_llm_route(config)
+def build_model_adapter(config: Any, *, resolve_route: bool = True):
+    # Speech construction already has a canonical route decision. Re-resolving
+    # it here would disregard its no-probe policy and can select another route.
+    if resolve_route:
+        config = _config_with_llm_route(config)
     name = str(getattr(config, "model_adapter", "null") or "null").strip().lower()
     if name in {"chatgpt", "chatgpt_runtime", "chatgpt_runtime_adapter", "chat_gpt", "chat-gpt"}:
         return ChatgptRuntimeAdapter(

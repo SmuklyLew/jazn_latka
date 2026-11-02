@@ -32,6 +32,9 @@ markers = [
 ]
 
 [project.optional-dependencies]
+test-evidence = [
+  "pytest>=8.3,<10",
+]
 run-studio = [
   "PySide6-Essentials>=6.12,<6.13",
 ]

@@ -1,3 +1,20 @@
+# v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
+# v116.0.34.94.6.71: Use stable closed report indexes for Windows history cursors and preserve operator labels.
+# v116.0.34.94.6.70: Scan complete assignment keys linearly while preserving canonical secret redaction.
+# v116.0.34.94.6.69: Page verified archive and compatibility history in bounded background reads.
+# v116.0.34.94.6.68: Reuse frozen scenario identity in evidence phase hooks without requerying the platform.
+# v116.0.34.94.6.67: Sync manual evidence artifacts and publish copied reports only after durable commit.
+# v116.0.34.94.6.66: Preserve the canonical speech route and no-probe decision through adapter construction.
+# v116.0.34.94.6.65: Capture native Windows evidence metadata without blocking WMI inventory queries.
+# v116.0.34.94.6.64: Commit invalid-interpreter refusal in the first snapshot and publish GUI results only after durability.
+# v116.0.34.94.6.63: Persist a failed TPA preflight as one complete refusal without launching selected processes.
+# v116.0.34.94.6.62: Serialize automated TPA evidence writes off the Qt thread with durable launch/completion barriers.
+# v116.0.34.94.6.61: Page evidence scenarios and persist execution identity in the first durable index.
+# v116.0.34.94.6.60: Recover immutable pytest receipts read-only and redact contracts before freezing.
+# v116.0.34.94.6.59: Keep service status evidence current while its non-modal window is hidden.
+# v116.0.34.94.6.58: Declare optional pytest evidence capability and repair the post-refactor color-dialog test binding.
+# v116.0.34.94.6.57: Bound evidence history memory, preserve plain text and fit long run identifiers in small windows.
+# v116.0.34.94.6.56: Add immutable TPA manifests, per-scenario evidence and read-only Qt history.
 # v116.0.34.94.6.54: Split JSS workbench views and event dispatch into bounded modules.
 # v116.0.34.94.6.53: Add bounded startup phase diagnostics, proxy-free loopback probes, and JSS service status window.
 # v116.0.34.94.6.52: Align operator PDF optional-capability contract with security-patched pypdf minimum; preserve approved test snapshot.
@@ -186,9 +203,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.55"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.72"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "jss-vscode-activity-navigation-tpa"
+PACKAGE_RELEASE_NAME = "jss-durable-test-evidence-foundation"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
