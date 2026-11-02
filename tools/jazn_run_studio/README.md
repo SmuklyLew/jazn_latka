@@ -204,6 +204,26 @@ instalator nadal wymaga osobnego potwierdzenia operatora.
   separate MCP/uvicorn dependencies installed (the core Jaźń interpreter is
   unchanged). Public OAuth MCP is a distinct explicitly configured deployment,
   never an automatic fallback of this local action.
+- On every normal Qt launch, the Settings page schedules one nonblocking,
+  read-only dependency audit. The existing launcher remains responsible for
+  core/Qt preflight before GUI import. The additional audit resolves the
+  configured `mcp_python` (falling back to the selected Studio Python) and
+  checks all four MCP imports, the SDK server API and version constraints from
+  `pyproject.toml [project.optional-dependencies].mcp-http`. Optional MCP
+  failures are displayed but do not fail core/GUI readiness. The first-run
+  wizard uses the same interpreter-specific evidence. GUI smoke never starts
+  this background audit.
+- The Settings page can re-run this audit and open the **existing**
+  Dependency Studio. Downloads and installations require explicit operator
+  consent and the canonical verified wheelhouse/offline installer; dependency
+  checks never run pip, restart a daemon, modify MEMORY, or open a tunnel.
+  After installation the operator chooses that interpreter in **Python MCP**
+  and repeats the local readiness checks. Python binaries are external
+  execution capabilities, not files embedded in the Jaźń SYSTEM core.
+- For an absent local listener, inspect the selected interpreter first and then
+  test `127.0.0.1:<mcp_port>/healthz` and `/readyz`. A healthy private daemon
+  on port 8787 does not imply MCP gateway readiness on port 8080; a local
+  `--loopback-dev` gateway must never be published by a public tunnel.
 - Critical completion, state and validated chat-final events have a separate
   overflow channel. Saturated diagnostic log streams can lose redundant log
   updates but must not discard accepted final messages or terminal states.
