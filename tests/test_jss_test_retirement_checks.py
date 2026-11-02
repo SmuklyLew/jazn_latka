@@ -9,7 +9,8 @@ from tools.jazn_tests_studio import retirement
 
 
 REQUIRED = [
-    "manifest_sync", "test (ubuntu-latest, 3.12)", "test (windows-latest, 3.12)",
+    "manifest_sync", "Validate stable Test Studio contracts",
+    "test (ubuntu-latest, 3.12)", "test (windows-latest, 3.12)",
 ]
 
 
@@ -63,7 +64,7 @@ def test_latest_successful_rerun_supersedes_prior_failed_check(monkeypatch):
 
 def test_checks_are_paginated_and_incomplete_evidence_is_rejected(monkeypatch):
     rows = [_row(name, index + 1) for index, name in enumerate(REQUIRED)]
-    rows += [_row("nonrequired-" + str(i), 10 + i) for i in range(98)]
+    rows += [_row("nonrequired-" + str(i), 10 + i) for i in range(97)]
     assert len(rows) == 101
     pages = []
     def fake_urlopen(request, *, timeout):
