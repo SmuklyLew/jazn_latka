@@ -351,7 +351,7 @@ def discovery(settings: Settings) -> dict[str, Any]:
 
 
 def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
-    """Verify real imports *and declared versions* in the exact MCP interpreter.
+    """Verify core and MCP imports *and declared versions* in the exact interpreter.
 
     The probe is read-only and isolated (-I). No pip, gateway start or daemon
     lifecycle is allowed here. A module import alone does not prove SDK API
@@ -359,7 +359,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
     """
     script = (
         "import importlib, importlib.metadata, json, sys\n"
-        "names = ('mcp', 'uvicorn', 'starlette', 'pydantic')\n"
+        "names = ('mcp', 'uvicorn', 'starlette', 'pydantic', 'packaging', 'tzdata')\n"
         "result = {}\n"
         "for name in names:\n"
         "    try:\n"
@@ -381,18 +381,24 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
         checks = json.loads(result.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         raise StudioError("Nie można zweryfikować zależności wybranego interpretera MCP") from exc
-    names = ("mcp", "uvicorn", "starlette", "pydantic")
-    if not isinstance(checks, dict) or set(checks) != set(names):
+    names = ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
+    legacy_names = ("mcp", "uvicorn", "starlette", "pydantic")
+    if not isinstance(checks, dict):
         raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
-    # Some legacy isolated fixtures return bools; preserve that test contract.
-    if all(type(checks[name]) is bool for name in names):
-        return {name: checks[name] for name in names}
+    # Preserve isolated pre-v73 regression fixtures that return four bools.
+    if set(checks) == set(legacy_names) and all(type(checks[name]) is bool for name in legacy_names):
+        return {name: checks[name] for name in legacy_names}
+    if set(checks) != set(names):
+        raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
     from packaging.requirements import Requirement
     import tomllib
 
     try:
         declared = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-        requirements = declared["project"]["optional-dependencies"]["mcp-http"]
+        requirements = [
+            *declared["project"]["dependencies"],
+            *declared["project"]["optional-dependencies"]["mcp-http"],
+        ]
         specs = {str(Requirement(item).name).lower().replace("_", "-"): Requirement(item)
                  for item in requirements}
         if set(specs) != set(names):
@@ -410,7 +416,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
             )
         return output
     except (OSError, KeyError, TypeError, ValueError) as exc:
-        raise StudioError("Nie można zweryfikować wersji profilu MCP z pyproject.toml") from exc
+        raise StudioError("Nie można zweryfikować wersji profilu core + mcp-http z pyproject.toml") from exc
 
 def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
     """Keep separate proof of process, runtime root and package identity."""
