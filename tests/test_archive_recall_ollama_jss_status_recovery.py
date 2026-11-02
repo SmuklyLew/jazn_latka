@@ -44,7 +44,7 @@ def test_archive_accepts_later_verified_hits_after_low_confidence_candidates() -
     assert audit["eligible"] == 2
 
 
-@pytest.mark.parametrize("bad", ["not-a-number", float("nan"), -1, 0.0])
+@pytest.mark.parametrize("bad", ["not-a-number", float("nan"), float("inf"), -1, 0.0])
 def test_archive_invalid_identity_values_fail_closed(bad) -> None:
     accepted, audit = filter_verified_archive_hits([_hit(bad)], limit=3)
     assert not accepted
