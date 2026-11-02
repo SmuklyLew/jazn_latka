@@ -105,16 +105,20 @@ class EventViewMixin:
                     self.refresh_quick_start()
                 service = value.get("service")
                 if service in self.statuses:
-                    if value.get("ready") is True:
-                        detail = "Pracuje • endpoint i gotowość usługi potwierdzone; funkcja wymaga osobnego testu"
-                    elif value.get("ready") is False:
-                        detail = "BŁĄD • usługa nie zgłasza gotowości"
-                    elif service == "ollama":
-                        detail = ("Ollama API • generacja modelu potwierdzona; finalizacja Jaźni osobno"
-                                  if value.get("generation_verified") is True else
-                                  "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana")
+                    from .service_visual_state import visual_state
+                    visual = visual_state(str(service), value)
+                    if visual == "error":
+                        detail = "BŁĄD • potwierdzona awaria usługi"
+                    elif visual == "ready":
+                        detail = "Pracuje • gotowość usługi potwierdzona; finalizacja Jaźni osobno"
+                    elif visual == "reachable":
+                        detail = ("Ollama API odpowiada • generacja osobno"
+                                  if service == "ollama" else
+                                  "Usługa dostępna technicznie • pełna gotowość niepotwierdzona")
+                    elif visual == "stopped":
+                        detail = "Usługa zatrzymana • nie oznacza awarii SYSTEM"
                     else:
-                        detail = "Odpowiedź testu • gotowość niezweryfikowana"
+                        detail = "Nieskonfigurowana / niezweryfikowana • sprawdź ustawienia i probe"
                     self.update_service_summary(str(service), detail)
                 if service == "ollama":
                     names = value.get("models", [])
