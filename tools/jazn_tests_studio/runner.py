@@ -250,6 +250,8 @@ def run_pytest(
     timeout: int = 1800,
     live: bool = False,
     on_event: Callable[[dict[str, Any]], None] | None = None,
+    evidence: bool = False,
+    python: str | None = None,
 ) -> dict[str, Any]:
     def console_event(event: dict[str, Any]) -> None:
         if on_event is not None:
@@ -273,7 +275,8 @@ def run_pytest(
             if "FAILURES" in text or "ERRORS" in text or text.startswith("FAILED ") or text.startswith("ERROR "):
                 print(text, end="", flush=True)
 
-    run = PytestRun(root, nodeids, timeout=timeout, on_event=console_event).start()
+    run = PytestRun(root, nodeids, timeout=timeout, on_event=console_event,
+                    evidence=evidence, python=python).start()
     try:
         return run.wait(timeout + 30)
     except KeyboardInterrupt:
