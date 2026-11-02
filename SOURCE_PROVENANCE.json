@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "87a758d0fd902942c05d63b25a2917a035f2e932",
+  "base_merge_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
   "base_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-  "commit_date": "2026-11-02T01:36:08Z",
+  "commit_date": "2026-11-02T02:23:06Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-02T01:36:08+00:00",
+  "generated_at_utc": "2026-11-02T02:23:06+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "7c88d5158dd062038f836d7eaca81c505774e645",
+  "git_tree_sha": "fecdf42ac87ccf92eccefc5fb0c015a5b48ead51",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "87a758d0fd902942c05d63b25a2917a035f2e932",
+    "source_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
     "source_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "87a758d0fd902942c05d63b25a2917a035f2e932",
+  "source_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
   "tag": null,
