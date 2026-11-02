@@ -20,7 +20,7 @@ def controller(tmp_path: Path) -> Controller:
     return Controller(tmp_path, Settings(model="local-test"))
 
 
-def test_mcp_imports_use_exact_gateway_interpreter(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_mcp_imports_use_exact_gateway_interpreter(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []
 
     def fake_run(argv, **_kwargs):
@@ -35,7 +35,7 @@ def test_mcp_imports_use_exact_gateway_interpreter(monkeypatch: pytest.MonkeyPat
         }).encode(), b"")
 
     monkeypatch.setattr(studio_core, "run_external", fake_run)
-    checks = mcp_dependency_preflight("selected-mcp-python", tmp_path)
+    checks = mcp_dependency_preflight("selected-mcp-python", Path(__file__).resolve().parents[1])
     assert calls[0][0:3] == ["selected-mcp-python", "-I", "-c"]
     assert checks["pydantic"] is False
 

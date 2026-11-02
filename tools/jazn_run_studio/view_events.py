@@ -58,12 +58,11 @@ class EventViewMixin:
                 self.update_service_summary("memory", str(value.get("memory", "niezweryfikowane")))
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                ready = (all(value.get(flag) is True for flag in (
+                ready = all(value.get(flag) is True for flag in (
                     "endpoint_reachable", "process_identity_confirmed",
                     "endpoint_identity_matches", "heartbeat_fresh",
-                    "conversation_ready",
-                )) and value.get("root_matches") is not False
-                    and value.get("version_matches") is not False)
+                    "conversation_ready", "root_matches", "version_matches",
+                ))
                 state = str(value.get("active_state") or "niepotwierdzony")
                 heading = ("Pracuje — zweryfikowany runtime" if ready else
                            "Zatrzymane — runtime nieaktywny" if state in {"dead", "stopped", "inactive"} else
@@ -105,16 +104,20 @@ class EventViewMixin:
                     self.refresh_quick_start()
                 service = value.get("service")
                 if service in self.statuses:
-                    if value.get("ready") is True:
-                        detail = "Pracuje • endpoint i gotowość usługi potwierdzone; funkcja wymaga osobnego testu"
-                    elif value.get("ready") is False:
-                        detail = "BŁĄD • usługa nie zgłasza gotowości"
-                    elif service == "ollama":
-                        detail = ("Ollama API • generacja modelu potwierdzona; finalizacja Jaźni osobno"
-                                  if value.get("generation_verified") is True else
-                                  "Endpoint odpowiada • generacja odpowiedzi niezweryfikowana")
+                    from .service_visual_state import visual_state
+                    visual = visual_state(str(service), value)
+                    if visual == "error":
+                        detail = "BŁĄD • potwierdzona awaria usługi"
+                    elif visual == "ready":
+                        detail = "Pracuje • gotowość usługi potwierdzona; finalizacja Jaźni osobno"
+                    elif visual == "reachable":
+                        detail = ("Ollama API odpowiada • generacja osobno"
+                                  if service == "ollama" else
+                                  "Usługa dostępna technicznie • pełna gotowość niepotwierdzona")
+                    elif visual == "stopped":
+                        detail = "Usługa zatrzymana • nie oznacza awarii SYSTEM"
                     else:
-                        detail = "Odpowiedź testu • gotowość niezweryfikowana"
+                        detail = "Nieskonfigurowana / niezweryfikowana • sprawdź ustawienia i probe"
                     self.update_service_summary(str(service), detail)
                 if service == "ollama":
                     names = value.get("models", [])

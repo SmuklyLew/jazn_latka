@@ -2,7 +2,7 @@
 from collections import deque
 from typing import Any, Callable
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, QTimer, Signal, Slot
 
 
 class _Signals(QObject):
@@ -12,6 +12,11 @@ class _Signals(QObject):
 class _Work(QRunnable):
     def __init__(self, operation: Callable[[], Any]):
         super().__init__()
+        # The GUI owns this one-shot runnable until the queued completion
+        # callback is handled. Qt's default auto-delete can invalidate the
+        # Python wrapper (and its signal owner) before the GUI consumes it.
+        # SerialIO._finished releases the final reference after delivery.
+        self.setAutoDelete(False)
         self.operation = operation
         self.signals = _Signals()
 
@@ -59,16 +64,28 @@ class SerialIO(QObject):
 
     @Slot(object)
     def _finished(self, payload: dict) -> None:
+        # Retain the QRunnable and its QObject signal sender until this queued
+        # delivery has fully returned. Releasing self.job immediately used to
+        # destroy the sender while Qt was still dispatching its signal.
+        completed_job = self.job
         done, failed = self.callback, self.failure
         self.job = self.callback = self.failure = None
-        if self.abort_error is not None:
-            payload = {"error": self.abort_error}
-            self.abort_error = None
-        if "error" in payload:
-            self.queue.clear()  # No dependent process may launch after failure.
-            assert failed is not None
-            failed(payload["error"])
-        else:
-            assert done is not None
-            done(payload["value"])
-        self._pump()
+        try:
+            if self.abort_error is not None:
+                payload = {"error": self.abort_error}
+                self.abort_error = None
+            if "error" in payload:
+                self.queue.clear()  # No dependent process may launch after failure.
+                assert failed is not None
+                failed(payload["error"])
+            else:
+                assert done is not None
+                done(payload["value"])
+            self._pump()
+        finally:
+            if completed_job is not None:
+                # Deletion via the sender's event loop, never synchronously in
+                # the slot which handles the sender's finished signal.
+                QTimer.singleShot(
+                    0, lambda job=completed_job: job.signals.deleteLater()
+                )

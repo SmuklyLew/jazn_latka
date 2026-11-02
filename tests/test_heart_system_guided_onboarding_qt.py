@@ -50,6 +50,7 @@ def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> N
         "heartbeat_fresh": True,
         "conversation_ready": True,
         "active_state": "active_degraded",
+        "root_matches": True, "version_matches": True,
     })
     window.poll()
     assert window.quick_chat_button.isEnabled() is False
@@ -60,6 +61,7 @@ def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> N
         "heartbeat_fresh": True,
         "conversation_ready": True,
         "active_state": "active_trusted",
+        "root_matches": True, "version_matches": True,
     })
     window.poll()
     assert window.quick_chat_button.isEnabled() is False

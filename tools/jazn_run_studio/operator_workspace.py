@@ -405,8 +405,12 @@ class OperatorWorkspace:
             self.refresh_technical()
 
     def observe(self, key: str, kind: str, value: Any) -> None:
-        if kind in {"evidence", "probe"} and isinstance(value, dict):
-            service = "runtime" if kind == "evidence" else str(value.get("service", ""))
+        if kind in {"evidence", "probe", "memory_evidence"} and isinstance(value, dict):
+            service = (
+                "runtime" if kind == "evidence" else
+                "memory" if kind == "memory_evidence" else
+                str(value.get("service", ""))
+            )
             self.observations[service] = dict(value)
         if kind == "state" and value.get("state") in {"succeeded", "failed", "stopped"}:
             self.completed += 1
