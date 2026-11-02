@@ -157,12 +157,13 @@ def archive_file(root: Path, relative: str, *, expected_sha256: str,
     ) / name
     if archive.exists() or archive.is_symlink():
         raise ValueError("Archive target already exists; append-only history")
-    archive.parent.mkdir(parents=True, exist_ok=True)
+    # Check all existing ancestors *before* creating anything in archive.
     for parent in [archive.parent, *archive.parent.parents]:
         if parent == root:
             break
         if parent.is_symlink():
             raise ValueError("Archive target includes a symlink")
+    archive.parent.mkdir(parents=True, exist_ok=True)
     metadata = archive.with_suffix(".retirement.json")
     if metadata.exists() or metadata.is_symlink():
         raise ValueError("Retirement metadata already exists")
