@@ -14,8 +14,8 @@
   },
   "lineage": {
     "base_branch": "master",
-    "base_commit": "90d1977a15597596cc724acbca54caa52a986cfb",
-    "base_version": "16.3.25.5.116.0.34.94.6.72-jss-durable-test-evidence-foundation",
+    "base_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
+    "base_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
     "source_commit": "4af9c76c49f34de31a1d67de64a8846021d1f84f",
