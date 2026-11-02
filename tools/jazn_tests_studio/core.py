@@ -210,23 +210,33 @@ def set_review(
     purpose: str = "",
     expected: str = "",
     notes: str = "",
+    replacement_nodeid: str = "",
 ) -> None:
     if status not in VALID_REVIEW:
         raise ValueError(f"Niepoprawny status: {status}")
-    if nodeid not in contracts(root):
+    catalog = contracts(root)
+    if nodeid not in catalog:
         raise KeyError(f"Nieznany test: {nodeid}")
+    if replacement_nodeid:
+        if (status != "obsolete" or replacement_nodeid not in catalog
+                or replacement_nodeid.split("::", 1)[0] == nodeid.split("::", 1)[0]
+                or effective_contract(root, replacement_nodeid).get("status") != "current"):
+            raise ValueError("Test zastępczy musi być aktualnym kontraktem z innego pliku")
     payload = load_reviews(root)
     review_map = payload.setdefault("reviews", {})
     if not isinstance(review_map, dict):
         review_map = {}
         payload["reviews"] = review_map
-    review_map[nodeid] = {
+    record = {
         "status": status,
         "purpose": purpose,
         "expected": expected,
         "notes": notes,
         "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+    if replacement_nodeid and status == "obsolete":
+        record["replacement_nodeid"] = replacement_nodeid
+    review_map[nodeid] = record
     save_reviews(root, payload)
 
 
