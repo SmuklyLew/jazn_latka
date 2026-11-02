@@ -337,6 +337,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--runtime-preview", action="store_true", dest="runtime_preview", help="Pokaż krótki, czytelny podgląd jednej tury runtime: final_visible_text + kluczowe pola diagnostyczne. Nie wypisuje pełnej koperty cognitive-frame do terminala.")
     parser.add_argument("--preview-persist", action="store_true", dest="preview_persist", help="Jawnie zezwól --runtime-preview/--dev-preview na zapis zwykłej pamięci rozmownej. Domyślnie preview jest read-only dla pamięci użytkowej.")
     parser.add_argument("--dev-preview", action="store_true", dest="dev_preview", help="Tryb deweloperski: pokaż pełny payload runtime-preview/cognitive-frame na stdout albo zapisz go przez --runtime-preview-output.")
+    parser.add_argument("--preview-local-ollama", action="store_true", dest="preview_local_ollama", help="Jawnie użyj lokalnego adaptera Ollama w jednorazowym --dev-preview/--runtime-preview; nie wybieraj host_bridge po nazwie klienta.")
     parser.add_argument("--runtime-preview-output", type=Path, default=None, help="Opcjonalna ścieżka pliku JSON dla --runtime-preview/--dev-preview; pełny payload trafia do pliku, a stdout zwraca tylko krótki, czytelny wynik.")
     parser.add_argument("--active-cache-status", action="store_true", dest="active_cache_status", help="Pokaż status aktywnego rozpakowanego folderu i decyzję, czy trzeba ponownie rozpakować ZIP.")
     parser.add_argument("--project-startup-index", action="store_true", dest="project_startup_index", help="Zbuduj i pokaż mapę plików oraz modułów/funkcji Jaźni przy rozruchu.")
@@ -1506,6 +1507,8 @@ def legacy_main(argv: list[str] | None = None) -> int:
         parser.error("--runtime-preview-output wymaga --runtime-preview albo --dev-preview")
     if ns.preview_persist and not (ns.runtime_preview or ns.dev_preview):
         parser.error("--preview-persist wymaga --runtime-preview albo --dev-preview")
+    if ns.preview_local_ollama and not (ns.runtime_preview or ns.dev_preview):
+        parser.error("--preview-local-ollama wymaga --dev-preview albo --runtime-preview")
     if ns.chat_gpt_final_only:
         ns.chat_gpt = True
     if ns.final_only and not ns.chat_gpt:
@@ -2223,7 +2226,13 @@ def legacy_main(argv: list[str] | None = None) -> int:
             envelope = engine.process_turn(
                 text,
                 client_context={
-                    "client": "chatgpt_runtime_preview" if ns.runtime_preview else "chatgpt_dev_preview",
+                    "client": (
+                        "ollama_dev_preview" if ns.preview_local_ollama else
+                        ("chatgpt_runtime_preview" if ns.runtime_preview else "chatgpt_dev_preview")
+                    ),
+                    # Explicit model test must not be mistaken for a ChatGPT host.
+                    "command": "--chat-ollama" if ns.preview_local_ollama else "--chat-gpt",
+                    "language_channel": "ollama" if ns.preview_local_ollama else "chatgpt",
                     "lifecycle": "one_shot_preview",
                     "preview_phase": "single_integrated_process_turn",
                     "session_id": ns.session_id,
