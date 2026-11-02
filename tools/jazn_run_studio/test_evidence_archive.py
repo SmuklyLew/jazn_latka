@@ -301,7 +301,7 @@ def _history_run(folder: Path) -> tuple[dict, int]:
 def history_page(base: Path, *, limit: int = 100, cursor: str | None = None):
     """Verify one bounded page, with explicit continuation across the entire store."""
     from .tpa_history_paging import read_page
-    return read_page(base, _history_run, limit=limit, cursor=cursor, byte_limit=MAX_TOTAL)
+    return read_page(base, _history_run, limit=limit, cursor=cursor, byte_limit=MAX_TOTAL, index_file="report.json")
 
 
 def history(base: Path, *, limit: int = 100) -> tuple[list[dict], list[str]]:

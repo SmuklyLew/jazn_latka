@@ -257,7 +257,7 @@ class OperatorWorkspace:
         self.history_job_count = len(jobs)
         self.history_newer.setEnabled(False)
         self.history_older.setEnabled(False)
-        self.history_summary.setText("Odczytywanie strony historii TPA…")
+        self.history_summary.setText("historia TPA: odczytywanie strony…")
         try:
             store = self.host.local_acceptance_panel.runner.store
             cursor = self.history_cursors[self.history_page_index]
@@ -290,7 +290,7 @@ class OperatorWorkspace:
             item.setToolTip(1, "To wyniki podtestów; pełny odbiór jest osobną kontrolą.")
             item.setData(0, Qt.ItemDataRole.UserRole, ("tpa", run_id))
         self.history_summary.setText(
-            f"Zadania tej sesji: {self.history_job_count} • TPA: strona {self.history_page_index + 1}, "
+            f"Zadania tej sesji: {self.history_job_count} • historia TPA: strona {self.history_page_index + 1}, "
             f"{len(reports)} odczytanych / {page.total} w katalogu" + issue
         )
 

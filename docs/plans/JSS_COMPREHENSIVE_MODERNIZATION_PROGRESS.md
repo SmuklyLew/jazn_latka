@@ -356,3 +356,21 @@ PowerShell suite was still running at last observation. Hosted JSS .67 matrix
 failed at the phase identity defect, now fixed in .68; no claim that its later
 Windows3.14 local acceptance step ran. Same Draft PR450, no merge.
 
+# .71 — Windows index stability and operator label, 2026-11-02
+
+Pinned .70 full validation TERMINAL:3675PASS,3FAIL,32SKIPPED,7warnings,
+738.64s, full-system-jss-history-redaction.{txt,xml} and registered receipts.
+Two new failures were the delayed NTFS directory mtime invalidating a read-only
+history scan and the old operator label disappearing during asynchronous read.
+The third remains the independently diagnosed MCP HTTP framing failure.
+
+Storage pages now order and fingerprint closed report indexes instead of
+directory mtimes. Missing/refused indexes remain discoverable. Cursor scope
+includes the indexing policy. Existing dock label is preserved during and after
+background reads; no assertion changed. New deterministic index-policy cases
+3PASS; unchanged archive/receipt/unified-dock regression42PASS/1SKIPPED,
+48.88s. Whole JSS/new tests Pyright0errors/0warnings. Evidence index-stability-*.
+Hosted .70 JSS Linux3.12/3.13/3.14 SUCCESS; Windows matrix failed the same
+cursor defect before reaching later local-acceptance assertions. Windows3.14
+timing acceptance remains unconfirmed. E0/E1 IN_PROGRESS; release not accepted.
+

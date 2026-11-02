@@ -348,7 +348,7 @@ class RunStore:
         def load(folder: Path) -> tuple[dict, int]:
             report = self.load(folder.name)
             return report, safe_child(folder, "report.json").stat().st_size
-        return read_page(self.base, load, limit=limit, cursor=cursor)
+        return read_page(self.base, load, limit=limit, cursor=cursor, index_file="report.json")
 
     def recover_interrupted(self) -> None:
         for report in self.history():

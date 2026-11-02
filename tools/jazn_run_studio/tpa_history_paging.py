@@ -22,7 +22,7 @@ class HistoryPage:
     bytes_read: int
 
 
-def _candidates(base: Path, limit: int, after: tuple[int, str] | None):
+def _candidates(base: Path, limit: int, after: tuple[int, str] | None, index_file: str | None):
     # A bounded heap avoids retaining every directory or any report body.
     heap: list[tuple[int, str]] = []
     digest = 0
@@ -33,7 +33,19 @@ def _candidates(base: Path, limit: int, after: tuple[int, str] | None):
         for entry in entries:
             if not re.fullmatch(r"run-[0-9a-f]{32}", entry.name):
                 continue
-            stamp = entry.stat(follow_symlinks=False).st_mtime_ns
+            if index_file is None:
+                stamp = entry.stat(follow_symlinks=False).st_mtime_ns
+            else:
+                # NTFS can publish a directory mtime late, including after a
+                # read-only scan. The atomically replaced, closed report index
+                # provides a stable order. A missing/refused index is still a
+                # candidate, with an explicit canonical loader error if invalid.
+                try:
+                    folder = safe_child(base, entry.name)
+                    index = safe_child(folder, index_file)
+                    stamp = index.stat(follow_symlinks=False).st_mtime_ns
+                except (OSError, ValueError):
+                    stamp = 0
             key = (stamp, entry.name)
             # Commutative fingerprint: scandir order is not stable. Run names
             # are unique; mutations invalidate the cursor instead of skipping.
@@ -50,7 +62,7 @@ def _candidates(base: Path, limit: int, after: tuple[int, str] | None):
 
 def read_page(base: Path, loader: Callable[[Path], tuple[dict, int]], *,
               limit: int = 100, cursor: str | None = None,
-              byte_limit: int = 64 * 1024 * 1024) -> HistoryPage:
+              byte_limit: int = 64 * 1024 * 1024, index_file: str | None = None) -> HistoryPage:
     """Advance past both valid and refused records, without losing a byte-bound run.
 
     Limits apply to one page. Individual evidence limits remain enforced by the
@@ -62,6 +74,7 @@ def read_page(base: Path, loader: Callable[[Path], tuple[dict, int]], *,
     if not base.is_absolute() or ".." in base.parts:
         raise ValueError("Wybierz absolutny katalog historii bez '..'")
     safe_child(base.parent, base.name)
+    scope = sha256(os.fsencode(base) + b"\0" + (index_file or "").encode()).hexdigest()
     after = None
     expected = None
     if cursor is not None:
@@ -70,7 +83,7 @@ def read_page(base: Path, loader: Callable[[Path], tuple[dict, int]], *,
                 raise ValueError()
             value = json.loads(cursor)
             if (set(value) != {"schema", "base", "generation", "after"}
-                    or value["schema"] != 1 or value["base"] != sha256(os.fsencode(base)).hexdigest()
+                    or value["schema"] != 1 or value["base"] != scope
                     or not isinstance(value["generation"], str)
                     or not isinstance(value["after"], list) or len(value["after"]) != 2
                     or type(value["after"][0]) is not int
@@ -81,7 +94,7 @@ def read_page(base: Path, loader: Callable[[Path], tuple[dict, int]], *,
             expected = value["generation"]
         except (ValueError, TypeError, KeyError):
             raise ValueError("Nieprawidłowy kursor historii") from None
-    candidates, generation, count = _candidates(base, limit, after)
+    candidates, generation, count = _candidates(base, limit, after, index_file)
     if expected is not None and expected != generation:
         raise ValueError("Historia zmieniła się; odśwież listę przebiegów")
     runs: list[dict] = []
@@ -108,11 +121,11 @@ def read_page(base: Path, loader: Callable[[Path], tuple[dict, int]], *,
             errors.append(folder.name + ": " + type(exc).__name__ + "; brak potwierdzonego wyniku")
         last = key
     # Detect a write/addition during verification too, not just between pages.
-    _, final_generation, _ = _candidates(base, 1, None)
+    _, final_generation, _ = _candidates(base, 1, None, index_file)
     if generation != final_generation:
         raise ValueError("Historia zmieniła się podczas odczytu; odśwież listę przebiegów")
     next_cursor = None
     if more and last is not None:
-        next_cursor = json.dumps({"schema": 1, "base": sha256(os.fsencode(base)).hexdigest(),
+        next_cursor = json.dumps({"schema": 1, "base": scope,
                                   "generation": generation, "after": last}, separators=(",", ":"))
     return HistoryPage(runs, errors, next_cursor, count, used)

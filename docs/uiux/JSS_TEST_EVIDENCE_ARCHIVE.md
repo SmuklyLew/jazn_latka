@@ -123,8 +123,12 @@ dostęp do zgodnych raportów starszego formatu.
 Odkrywanie katalogów używa ograniczonego kopca zamiast listy wszystkich raportów.
 Kursor jest związany z katalogiem oraz metadanymi jego pozycji. Zmiana inwentarza
 wymaga odświeżenia; nie prowadzi do cichego pominięcia pozycji pomiędzy stronami.
-Kolejność odkrywania opiera się na mtime i run_id, nigdy nie dowodzi wyniku ani
+Kolejność odkrywania opiera się na mtime zamkniętego, atomowo publikowanego
+`report.json` i run_id, nigdy nie dowodzi wyniku ani
 daty wykonania. Wyniki i źródło pochodzą wyłącznie ze zweryfikowanej rewizji.
+Opóźniona aktualizacja mtime katalogu przez Windows nie unieważnia kursora.
+Brak zgodnego indeksu nie usuwa pozycji z katalogu; weryfikator nadal rozstrzyga
+ważność snapshotu albo jawnie zgłasza błąd odczytu raportu.
 Widok historii i panel operatorski mają przyciski starszych/nowszych przebiegów;
 oba odczytują pojedynczą stronę poza wątkiem Qt. Filtr scenariuszy i informacja
 o ostatnim PASS/FAIL dotyczą wyraźnie aktualnie wczytanej strony przebiegów.
