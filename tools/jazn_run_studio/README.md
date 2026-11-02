@@ -397,3 +397,33 @@ is pending. See `STUDIO_MIGRATION.md` for full parity status.
 ## Jaźń — Serce Systemu (.94.1)
 
 Main GUI launcher: `python -X utf8 run_studio.py`. The previous `jazn_run_studio.py` remains compatible. Default theme: **Jaźń Violet Night** (`violet-night`). main.py still owns CLI/TTY and runtime lifecycle. See `docs/reports/JAZN_HEART_SYSTEM_CHECKPOINT_1.md` for current evidence and outstanding gates.
+
+
+## Zbiorcze testy, TPA i bezpieczne wycofywanie starych testów (v73)
+
+W **Katalog testów** znajduje się jawny przycisk
+**Uruchom WSZYSTKIE aktywne testy (pytest)**. Wykonanie działa w odrębnym
+procesie wybranego Pythona, pozostawia GUI responsywne i umożliwia anulowanie.
+Wykorzystuje kanoniczny `tools.jazn_tests_studio.runner.PytestRun`,
+`tools.jazn_run_studio.test_evidence_plugin` i operator-only
+`batch-evidence/run-*/` z JUnit i niezmiennym manifestem testów.
+Przy uruchamianiu Studio raport zależności uwzględnia opcjonalny profil
+`test-evidence`; brak pytest nie blokuje GUI i nie instaluje pakietów
+automatycznie. Pełny plan TPA jest dostępny obok jako osobna akcja
+nawigująca do **22 scenariuszy TPA**.
+
+`Pytest PASS` jest tylko wynikiem wykonania automatycznego zestawu.
+Nie nadaje PASS bramce `full_gate_status` (fizyczny Windows, DPI, EXE,
+MCP publiczny, dwie rzeczywiste tury Ollama, reconnect/resume).
+Taki odbiór wymaga oddzielnych rzeczywistych dowodów i świadomej zgody.
+
+Niezgodne lub przestarzałe testy można przeglądać na poziomie
+pojedynczych kontraktów. Domyślny `run-all` ich **nie ukrywa**.
+`retirement-preview` nie modyfikuje kodu, natomiast `retire-file`
+to wyłącznie jawna procedura całego modułu, wymagająca weryfikowanego
+SHA pliku, wyraźnego testu zastępczego, czystej gałęzi, zielonej
+macierzy GitHub dla bieżącego commita i polecenia `ARCHIWIZUJ`.
+Oryginał trafia bajt w bajt do `tests/archive/` z metadanymi przed
+usunięciem aktywnego pliku. Potem należy zsynchronizować katalog,
+release metadata i ponowić CI na nowym SHA. Szczegółowa instrukcja:
+`tools/jazn_tests_studio/README.md`.
