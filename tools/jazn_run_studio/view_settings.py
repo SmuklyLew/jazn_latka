@@ -143,7 +143,7 @@ class SettingsViewMixin:
         mcp = report.get("mcp", {})
         interpreter = self.core.redactor.text(str(mcp.get("interpreter") or "nieustalony"))
         modules = mcp.get("modules", {})
-        missing = [name for name in ("mcp", "uvicorn", "starlette", "pydantic")
+        missing = [name for name in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
                    if modules.get(name) is not True]
         gui = "gotowe" if not required else "braki: " + ", ".join(
             str(item.get("name")) for item in required[:8]
