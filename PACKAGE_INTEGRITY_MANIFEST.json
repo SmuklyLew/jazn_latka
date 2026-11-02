@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-  "package_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-  "generated_at_utc": "2026-11-02T12:09:43+00:00",
-  "updated_at_utc": "2026-11-02T12:09:43+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+  "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+  "generated_at_utc": "2026-11-02T12:16:20+00:00",
+  "updated_at_utc": "2026-11-02T12:16:20+00:00",
   "start_file": "run.py",
-  "file_count": 3648,
-  "static_file_count": 3648,
+  "file_count": 3650,
+  "static_file_count": 3650,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3002,
-      "sha256": "8ccbb663727b3b52368a00d0248dbd54adbbf18740fcc507b15855c5d6cb80f7",
+      "size_bytes": 2955,
+      "sha256": "49f20633fbbded84ee460bf8f9de3b5e51e21d2aaccef0d1255eca333437d9ea",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4962,6 +4962,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/archive_recall_policy.py",
+      "size_bytes": 2495,
+      "sha256": "e83e3a886370a76a7ff69f63ee72ed542a5ba37f9e44d0ad22d275620297016b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/birth_manifest.py",
       "size_bytes": 13097,
       "sha256": "f28f3e52ed5eafae2b0ea65a4f4502a19598addf819889fe722cf6b7ca91565d",
@@ -5602,8 +5611,8 @@
     },
     {
       "path": "latka_jazn/core/engine.py",
-      "size_bytes": 132799,
-      "sha256": "971b21f737474e4a5990bfca381f976c71a379c26c932e68757d646360fa8ee5",
+      "size_bytes": 132703,
+      "sha256": "a716aba791c8b01235d32b7383c31348aea0dbf8c38159bff2b1af5d9fc83e45",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11407,8 +11416,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24042,
-      "sha256": "d08c4b996c47cd66e4cd3022b6fde120664e2f0d4897df89c60a59aa515b7ce7",
+      "size_bytes": 24195,
+      "sha256": "e5f3daac2bc5f5610ce1215086f903c2485af927c4403d0a8f326ec308f024aa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11515,8 +11524,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 140467,
-      "sha256": "a03f688c377dc1c4c00925725601d2178d8affa5593f6393857ddde54f5d02e1",
+      "size_bytes": 141271,
+      "sha256": "b43f38d1ca56176c0af669ff71469b0c33fb1db2b3f56ec1b092b07916046729",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -25743,6 +25752,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "size_bytes": 5992,
+      "sha256": "e3295c19fa58ed420a0cb2523f4d4cb0fa8754df8b58643f8f81ee9ba21cdbf5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_archived_test_policy.py",
       "size_bytes": 3106,
       "sha256": "77994e4c049549763936833326050c4d837bcf1311f69243a25a96ad0471b3a6",
@@ -31927,8 +31945,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 54309,
-      "sha256": "71792957e70d706b72ac64e4c183ee0ebe11dd7a8a9f8d49741e9504c0de6c11",
+      "size_bytes": 55099,
+      "sha256": "f16a8066c00df88a5e22324be4f81221384860dda5780274eeddbcaf6b80e70f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32377,8 +32395,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_events.py",
-      "size_bytes": 16829,
-      "sha256": "01bb7d10194ecb473226af4b65e9ca66da399399e4f19527c4790107fdc8c0ec",
+      "size_bytes": 16953,
+      "sha256": "1235a6e95c531ea2536f9660cff26f7c8f9ccb072eee09dd15fda3c87cc467a5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32629,8 +32647,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2765711,
-      "sha256": "f0752a4c778a37e9ae5be98fc542c5809347277d958b70c185324f23d250e905",
+      "size_bytes": 2772186,
+      "sha256": "69c38f17d598cb8e515f4f4cc993f3854f75c6d5f8ca121e80e32de78cf7c2b3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33287,11 +33305,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
+  "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-    "package_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery",
-    "release_version": "16.3.25.5.116.0.34.94.6.73-jss-dependency-mcp-env-recovery"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+    "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+    "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status"
   },
   "legacy_aliases": {
     "version": "release_version"
