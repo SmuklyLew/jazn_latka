@@ -64,6 +64,7 @@ from latka_jazn.core.runtime_status import build_runtime_status
 from latka_jazn.core.memory_recall_presenter import MemoryRecallPresenter
 from latka_jazn.core.free_dialogue_synthesizer import FreeDialogueSynthesizer
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
+from latka_jazn.core.archive_recall_policy import filter_verified_archive_hits
 from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS, analyze_memory_intent
 from latka_jazn.core.memory_use_gate import MemoryUseGate
 from latka_jazn.core.memory_recall_observability import build_memory_recall_observability
@@ -1016,7 +1017,9 @@ class JaznEngine:
         try:
             store = ConversationArchiveStore(self.config.root)
             search_options: dict[str, Any] = {
-                "limit": max(1, limit),
+                # FTS rank is not an identity check. Over-fetch within a
+                # fixed cap so unsafe early hits do not hide later valid ones.
+                "limit": min(64, max(1, limit * 4)),
                 "include_snippets": True,
                 "should_continue": turn_context.can_continue if turn_context is not None else None,
             }
@@ -1029,22 +1032,13 @@ class JaznEngine:
                 "issues": [f"conversation_archive_error:{type(exc).__name__}:{exc}"],
                 "truth_boundary": "Błąd archive search nie może blokować rozmowy ani udawać pamięci.",
             }
+        verified, eligibility = filter_verified_archive_hits(
+            search_result.get("hits") or [], limit=limit,
+        )
+        search_result["eligibility"] = eligibility
         hits = []
-        for hit in search_result.get("hits") or []:
-            if not isinstance(hit, dict):
-                continue
-            review_status = str(hit.get("review_status") or "").strip().casefold()
-            if review_status in {"rejected", "quarantined", "invalid", "superseded"}:
-                continue
-            identity_confidence = hit.get("identity_confidence")
-            try:
-                if identity_confidence is not None and float(identity_confidence) < 0.5:
-                    continue
-            except (TypeError, ValueError):
-                continue
+        for hit in verified:
             excerpt = str(hit.get("excerpt") or "").strip()
-            if not excerpt:
-                continue
             hits.append({
                 "phrase": query or "temporal_scope_only",
                 "search_pass": "conversation_archive_fts",
@@ -1336,6 +1330,7 @@ class JaznEngine:
                 "temporal_scope": conversation_archive_search.get("temporal_scope"),
                 "sampling_strategy": conversation_archive_search.get("sampling_strategy"),
                 "candidate_count": conversation_archive_search.get("candidate_count"),
+                "eligibility": conversation_archive_search.get("eligibility") or {},
                 "issues": conversation_archive_search.get("issues") or [],
                 "truth_boundary": conversation_archive_search.get("truth_boundary"),
             },
