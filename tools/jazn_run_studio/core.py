@@ -382,13 +382,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         raise StudioError("Nie można zweryfikować zależności wybranego interpretera MCP") from exc
     names = ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
-    legacy_names = ("mcp", "uvicorn", "starlette", "pydantic")
-    if not isinstance(checks, dict):
-        raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
-    # Preserve isolated pre-v73 regression fixtures that return four bools.
-    if set(checks) == set(legacy_names) and all(type(checks[name]) is bool for name in legacy_names):
-        return {name: checks[name] for name in legacy_names}
-    if set(checks) != set(names):
+    if not isinstance(checks, dict) or set(checks) != set(names):
         raise StudioError("Nieprawidłowa odpowiedź kontroli zależności MCP")
     from packaging.requirements import Requirement
     import tomllib
