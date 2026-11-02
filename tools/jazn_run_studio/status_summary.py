@@ -45,8 +45,8 @@ def status_summary(data: dict[str, Any]) -> dict[str, str]:
         continuity_text = "ciągłość niezweryfikowana • nie wykonano odpowiedniego odczytu"
     adapter_name = _text(adapter.get("selected_backend_adapter") or adapter.get("adapter_id"))
     if adapter_name in {"null", "null_model_adapter"}:
-        model = ("null_model_adapter — brak domyślnego modelu w tym raporcie; "
-                 "działanie lokalnej Ollamy i generacji sprawdza osobny probe")
+        model = ("null_model_adapter — brak backendu generacyjnego w tej trasie runtime; "
+                 "stan osobnej lokalnej Ollamy i generacji wymaga niezależnego probe")
     else:
         model = adapter_name + " / " + _text(adapter.get("model_name")) + "; generacja niezweryfikowana"
     return {
