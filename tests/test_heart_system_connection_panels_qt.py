@@ -27,6 +27,7 @@ def test_runtime_evidence_updates_header_and_sidebar_together(window) -> None:
         "endpoint_reachable": True, "process_identity_confirmed": True,
         "endpoint_identity_matches": True, "heartbeat_fresh": True,
         "conversation_ready": True, "active_state": "active_trusted",
+        "root_matches": True, "version_matches": True,
     })
     window.poll()
     assert "runtime zweryfikowany" in window.workbench_status.text()
