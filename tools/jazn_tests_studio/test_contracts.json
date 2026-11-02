@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.73",
-  "active_definition_count": 3124,
+  "system_version": "16.3.25.5.116.0.34.94.6.74",
+  "active_definition_count": 3131,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1744,6 +1744,164 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 16
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_archive_identity_threshold_is_not_relaxed": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_archive_identity_threshold_is_not_relaxed",
+      "purpose": "Archive identity threshold is not relaxed",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_archive_accepts_later_verified_hits_after_low_confidence_candidates": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_archive_accepts_later_verified_hits_after_low_confidence_candidates",
+      "purpose": "Archive accepts later verified hits after low confidence candidates",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_archive_invalid_identity_values_fail_closed": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_archive_invalid_identity_values_fail_closed",
+      "purpose": "Archive invalid identity values fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_runtime_archive_overfetch_keeps_later_verified_hit": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_runtime_archive_overfetch_keeps_later_verified_hit",
+      "purpose": "Runtime archive overfetch keeps later verified hit",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "archive",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_explicit_local_preview_is_not_routed_as_chatgpt_host": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_explicit_local_preview_is_not_routed_as_chatgpt_host",
+      "purpose": "Explicit local preview is not routed as chatgpt host",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive",
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_jss_optional_services_do_not_turn_red_when_unconfigured": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_jss_optional_services_do_not_turn_red_when_unconfigured",
+      "purpose": "Jss optional services do not turn red when unconfigured",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
+    },
+    "tests/test_archive_recall_ollama_jss_status_recovery.py::test_jss_verified_live_daemon_does_not_use_historical_marker": {
+      "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
+      "name": "test_jss_verified_live_daemon_does_not_use_historical_marker",
+      "purpose": "Jss verified live daemon does not use historical marker",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.archive_recall_policy",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
     },
     "tests/test_archived_test_policy.py::test_repository_pytest_config_excludes_archive_by_default": {
       "path": "tests/test_archived_test_policy.py",
