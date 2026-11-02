@@ -228,6 +228,10 @@ class ServiceViewMixin:
                     readiness = "recall i ciągłość potwierdzone"
                 elif status == "reachable":
                     readiness = "wyszukiwanie dostępne; ciągłość niepotwierdzona"
+                elif self.memory_observed:
+                    # A status_summary is evidence of a technical observation,
+                    # not proof of search, continuity, or autobiographical recall.
+                    readiness = "status techniczny"
                 else:
                     readiness = "niezweryfikowana"
             if service in {"gateway", "cloudflare"} and status == "reachable":
