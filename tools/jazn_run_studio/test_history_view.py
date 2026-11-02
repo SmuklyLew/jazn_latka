@@ -6,7 +6,7 @@ import subprocess
 from uuid import uuid4
 from zipfile import BadZipFile
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, QTimer, Signal, Qt
 from PySide6.QtWidgets import (
     QComboBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit,
     QPushButton, QSizePolicy, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
@@ -23,6 +23,8 @@ class _Signals(QObject):
 class _ReadHistory(QRunnable):
     def __init__(self, base: Path, root: Path, cursor: str | None = None):
         super().__init__()
+        # Retain the worker through queued Qt signal delivery.
+        self.setAutoDelete(False)
         self.base, self.root = base, root
         self.cursor = cursor
         self.signals = _Signals()
@@ -56,6 +58,8 @@ class _ReadHistory(QRunnable):
 class _ArchiveJob(QRunnable):
     def __init__(self, operation: str, args: tuple):
         super().__init__()
+        # The Python owner releases this job after its completion slot.
+        self.setAutoDelete(False)
         self.operation, self.args = operation, args
         self.signals = _Signals()
 
@@ -238,7 +242,11 @@ class TestHistoryPanel(QWidget):
         QThreadPool.globalInstance().start(self.worker)
 
     def loaded(self, payload: dict) -> None:
+        finished_worker = self.worker
         self.worker = None
+        if finished_worker is not None:
+            # Defer release until the signal delivery returns to the event loop.
+            QTimer.singleShot(0, lambda job=finished_worker: job.signals.deleteLater())
         self.refresh_button.setEnabled(True)
         self.runs, self.current_sha = payload["runs"], payload["sha"]
         self.current_dirty = payload["dirty"]
@@ -366,7 +374,10 @@ class TestHistoryPanel(QWidget):
         QThreadPool.globalInstance().start(self.archive_worker)
 
     def archive_completed(self, result: dict) -> None:
+        finished_worker = self.archive_worker
         self.archive_worker = None
+        if finished_worker is not None:
+            QTimer.singleShot(0, lambda job=finished_worker: job.signals.deleteLater())
         self.export_button.setEnabled(True)
         self.import_button.setEnabled(True)
         index = self.run_choice.currentIndex()
