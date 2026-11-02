@@ -224,7 +224,14 @@ class ServiceViewMixin:
                 ready = observed.get("ready") is True
             readiness = "potwierdzona" if ready else "niezweryfikowana"
             if service == "memory":
-                readiness = "status techniczny" if self.memory_observed else "niezweryfikowana"
+                if status == "ready":
+                    readiness = "recall i ciągłość potwierdzone"
+                elif status == "reachable":
+                    readiness = "wyszukiwanie dostępne; ciągłość niepotwierdzona"
+                else:
+                    readiness = "niezweryfikowana"
+            if service in {"gateway", "cloudflare"} and status == "reachable":
+                readiness = "endpoint/transport; pełna autoryzacja niepotwierdzona"
             if service == "ollama" and observed.get("endpoint_reachable"):
                 readiness = ("API; generacja potwierdzona" if observed.get("generation_verified") is True
                              else "API; brak testu generacji")
