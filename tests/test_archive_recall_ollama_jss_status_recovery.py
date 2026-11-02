@@ -74,7 +74,12 @@ def test_runtime_archive_overfetch_keeps_later_verified_hit(monkeypatch, tmp_pat
             })
 
     monkeypatch.setattr(engine_module, "ConversationArchiveStore", FakeStore)
-    instance = SimpleNamespace(config=SimpleNamespace(root=tmp_path))
+    from typing import cast
+    # Deliberately avoid starting a daemon or constructing an engine.
+    instance = cast(
+        engine_module.JaznEngine,
+        SimpleNamespace(config=SimpleNamespace(root=tmp_path)),
+    )
     hits, report = engine_module.JaznEngine._conversation_archive_context_hits(
         instance, ["sieć", "snów"], limit=2,
     )
