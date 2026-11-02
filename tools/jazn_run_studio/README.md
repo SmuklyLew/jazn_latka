@@ -208,8 +208,9 @@ instalator nadal wymaga osobnego potwierdzenia operatora.
   read-only dependency audit. The existing launcher remains responsible for
   core/Qt preflight before GUI import. The additional audit resolves the
   configured `mcp_python` (falling back to the selected Studio Python) and
-  checks all four MCP imports, the SDK server API and version constraints from
-  `pyproject.toml [project.optional-dependencies].mcp-http`. Optional MCP
+  checks the MCP modules, the core `packaging`/`tzdata` dependencies,
+  the SDK server API and version constraints from `pyproject.toml`
+  (`[project].dependencies` plus the `mcp-http` extra). Optional MCP
   failures are displayed but do not fail core/GUI readiness. The first-run
   wizard uses the same interpreter-specific evidence. GUI smoke never starts
   this background audit.
