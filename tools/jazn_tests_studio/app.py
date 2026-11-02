@@ -181,7 +181,7 @@ def _run_command(args: argparse.Namespace, root: Path) -> int:
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result.get("ok") else 1
     if command == "run-all":
-        result = run_pytest(root, timeout=args.timeout, live=True)
+        result = run_pytest(root, timeout=args.timeout, live=True, evidence=True)
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result.get("ok") else 1
     if command == "retirement-preview":
