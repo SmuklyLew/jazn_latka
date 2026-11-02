@@ -1,3 +1,4 @@
+# v116.0.34.94.6.74: Gate archive recall by verified author, expose rejection diagnostics, add local Ollama preview, and repair JSS service status projections.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
 # v116.0.34.94.6.71: Use stable closed report indexes for Windows history cursors and preserve operator labels.
@@ -204,9 +205,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.73"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.74"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "jss-dependency-mcp-env-recovery"
+PACKAGE_RELEASE_NAME = "recall-ollama-jss-status"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
