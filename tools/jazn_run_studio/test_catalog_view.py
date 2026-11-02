@@ -109,6 +109,44 @@ class TestCatalogPanel(QWidget):
         self.details.setPlaceholderText("Wybierz test, aby przeczytać jego oczekiwania i cel.")
         self.details.setMaximumHeight(145)
         layout.addWidget(self.details)
+        self.retirement_button = QPushButton("Sprawdź możliwość wycofania testu")
+        self.retirement_button.clicked.connect(self.preview_retirement)
+        layout.addWidget(self.retirement_button)
+        self.retirement_info = QLabel(
+            "Wycofanie wymaga przeglądu wszystkich testów z pliku, aktualnych "
+            "testów zastępczych, zielonego CI i zachowania oryginału w tests/archive."
+        )
+        self.retirement_info.setWordWrap(True)
+        layout.addWidget(self.retirement_info)
+
+    def preview_retirement(self) -> None:
+        row = self.table.currentRow()
+        if not 0 <= row < len(self.rows):
+            self.retirement_info.setText("Wybierz test z katalogu do przeglądu.")
+            return
+        from tools.jazn_tests_studio.retirement import preview
+        nodeid = self.rows[row][0]
+        name = nodeid.split("::", 1)[0]
+        try:
+            report = preview(self.root, name)
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.retirement_info.setText(
+                "Wycofanie zablokowane: " + type(exc).__name__
+            )
+            return
+        if report["status"] != "REVIEW_READY":
+            self.retirement_info.setText(
+                "Archiwizacja: BLOCKED; brak przeglądu lub zamiennika dla "
+                + str(len(report["blockers"])) + " kontraktów. Nie usunięto testów."
+            )
+            return
+        self.retirement_info.setText(
+            "Plik: " + str(report["file"]) + " • recenzje: "
+            + str(report["reviewed_with_current_replacements"]) + "/"
+            + str(report["contracts_in_file"])
+            + ". Gotowe wyłącznie do odbioru operatorskiego. CI: NIEZWERYFIKOWANE. "
+              "Archiwizacja wymaga jawnego retire-file po zatwierdzeniu dowodów."
+        )
 
     def start_batch(self) -> None:
         if self.batch is not None and not self.batch.done.is_set():
