@@ -24,6 +24,7 @@ on:
       - "tests/test_jss_tpa_compact_filters_qt.py"
       - "tests/test_jss_tpa_async_persistence_qt.py"
       - "tests/test_jss_tpa_io_runnable_lifetime.py"
+      - "tests/test_jss_qt_completion_ownership.py"
       - "tests/test_archive_recall_ollama_jss_status_recovery.py"
       - "tests/test_jss_tpa_invalid_interpreter_qt.py"
       - "tests/test_jss_tpa_manual_async_qt.py"
@@ -112,6 +113,7 @@ jobs:
           tests/test_jss_tpa_compact_filters_qt.py
           tests/test_jss_tpa_async_persistence_qt.py
           tests/test_jss_tpa_io_runnable_lifetime.py
+          tests/test_jss_qt_completion_ownership.py
           tests/test_jss_tpa_invalid_interpreter_qt.py
           tests/test_jss_tpa_manual_async_qt.py
           tests/test_jazn_tpa_compact_layout_qt.py
