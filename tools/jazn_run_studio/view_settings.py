@@ -100,7 +100,8 @@ class SettingsViewMixin:
         self.dependency_audit_timer.timeout.connect(self.poll_dependency_audit)
         # The GUI remains responsive; missing optional MCP cannot block the
         # window or trigger network installation at startup.
-        QTimer.singleShot(0, self.audit_dependencies)
+        if not self.smoke:
+            QTimer.singleShot(0, self.audit_dependencies)
 
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
