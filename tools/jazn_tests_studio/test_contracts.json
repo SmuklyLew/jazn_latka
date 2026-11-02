@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.72",
-  "active_definition_count": 3107,
+  "system_version": "16.3.25.5.116.0.34.94.6.73",
+  "active_definition_count": 3112,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -20074,7 +20074,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 43
     },
     "tests/test_heart_system_connection_recovery.py::test_report_requires_gui_ack_for_accepted_turn": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20093,7 +20093,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 68
     },
     "tests/test_heart_system_connection_recovery.py::test_resume_nonzero_exit_preserves_request_and_error": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20110,7 +20110,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 82
     },
     "tests/test_heart_system_connection_recovery.py::test_resume_pending_is_successful_poll_not_false_final": {
       "path": "tests/test_heart_system_connection_recovery.py",
@@ -20127,7 +20127,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 97
     },
     "tests/test_heart_system_coverage_encoding.py::test_audit_cli_json_has_lossless_unicode_with_legacy_stdio": {
       "path": "tests/test_heart_system_coverage_encoding.py",
@@ -31245,6 +31245,118 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 61
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_preflight_uses_exact_python_and_sdk_api": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_preflight_uses_exact_python_and_sdk_api",
+      "purpose": "Mcp preflight uses exact python and sdk api",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_version_incompatible_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_version_incompatible_fails_closed",
+      "purpose": "Mcp version incompatible fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_import_missing_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_import_missing_fails_closed",
+      "purpose": "Mcp import missing fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_profile_without_declared_requirements_fails_closed": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_mcp_profile_without_declared_requirements_fails_closed",
+      "purpose": "Mcp profile without declared requirements fails closed",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_optional_mcp_failures_never_block_gui_setup": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_optional_mcp_failures_never_block_gui_setup",
+      "purpose": "Optional mcp failures never block gui setup",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
     },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
