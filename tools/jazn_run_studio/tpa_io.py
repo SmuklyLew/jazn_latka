@@ -12,6 +12,11 @@ class _Signals(QObject):
 class _Work(QRunnable):
     def __init__(self, operation: Callable[[], Any]):
         super().__init__()
+        # The GUI owns this one-shot runnable until the queued completion
+        # callback is handled. Qt's default auto-delete can invalidate the
+        # Python wrapper (and its signal owner) before the GUI consumes it.
+        # SerialIO._finished releases the final reference after delivery.
+        self.setAutoDelete(False)
         self.operation = operation
         self.signals = _Signals()
 
