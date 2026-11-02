@@ -58,12 +58,11 @@ class EventViewMixin:
                 self.update_service_summary("memory", str(value.get("memory", "niezweryfikowane")))
             elif kind == "evidence":
                 yes = lambda flag: "tak" if flag else "niepotwierdzone"
-                ready = (all(value.get(flag) is True for flag in (
+                ready = all(value.get(flag) is True for flag in (
                     "endpoint_reachable", "process_identity_confirmed",
                     "endpoint_identity_matches", "heartbeat_fresh",
-                    "conversation_ready",
-                )) and value.get("root_matches") is not False
-                    and value.get("version_matches") is not False)
+                    "conversation_ready", "root_matches", "version_matches",
+                ))
                 state = str(value.get("active_state") or "niepotwierdzony")
                 heading = ("Pracuje — zweryfikowany runtime" if ready else
                            "Zatrzymane — runtime nieaktywny" if state in {"dead", "stopped", "inactive"} else
