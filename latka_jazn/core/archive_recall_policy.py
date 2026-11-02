@@ -6,6 +6,7 @@ The returned audit is metadata-only and contains no message contents/UIDs.
 """
 from __future__ import annotations
 
+from math import isfinite
 from typing import Any, Iterable
 
 MIN_IDENTITY_CONFIDENCE = 0.50
@@ -45,7 +46,7 @@ def filter_verified_archive_hits(
                 counters["identity_review_required"] = True
                 continue
             # NaN must not accidentally pass float comparisons.
-            if not (verified_confidence >= MIN_IDENTITY_CONFIDENCE):
+            if not isfinite(verified_confidence) or verified_confidence < MIN_IDENTITY_CONFIDENCE:
                 counters["rejected_identity"] = int(counters["rejected_identity"]) + 1
                 counters["identity_review_required"] = True
                 continue
