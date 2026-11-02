@@ -145,7 +145,14 @@ def _green_checks(head: str) -> list[str]:
         prior = latest.get(name)
         if prior is None or (run.get("id") or 0) > (prior.get("id") or 0):
             latest[name] = run
-    required = ("manifest_sync", "test (ubuntu-latest, 3.12)", "test (windows-latest, 3.12)")
+    # The catalog/definition gate is necessary: a stale catalog could hide
+    # new test functions in a whole-file retirement candidate.
+    required = (
+        "manifest_sync",
+        "Validate stable Test Studio contracts",
+        "test (ubuntu-latest, 3.12)",
+        "test (windows-latest, 3.12)",
+    )
     if any(name not in latest for name in required):
         raise ValueError("Required release/Windows/Linux checks are missing")
     if any(run.get("status") != "completed" or run.get("conclusion") != "success"
