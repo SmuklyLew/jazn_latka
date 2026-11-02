@@ -1,4 +1,4 @@
-# v116.0.34.94.6.74: Gate archive recall by verified author, expose rejection diagnostics, add local Ollama preview, and repair JSS service status projections.
+# v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
 # v116.0.34.94.6.71: Use stable closed report indexes for Windows history cursors and preserve operator labels.
