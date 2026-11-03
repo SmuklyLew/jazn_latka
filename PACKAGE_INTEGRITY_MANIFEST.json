@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
-  "package_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
-  "generated_at_utc": "2026-11-03T01:23:56+00:00",
-  "updated_at_utc": "2026-11-03T01:23:56+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
+  "package_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
+  "generated_at_utc": "2026-11-03T01:39:06+00:00",
+  "updated_at_utc": "2026-11-03T01:39:06+00:00",
   "start_file": "run.py",
   "file_count": 3660,
   "static_file_count": 3660,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2947,
-      "sha256": "7c9471753ade71a595fce1c145a5f16fffbbf7c2b31fea1396a54cbed2605ab3",
+      "size_bytes": 2941,
+      "sha256": "2add60c37d585db5995ee12efbe58686d8a3310c5aa9430f1454253f76f578e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1943,
-      "sha256": "34663175db164902726ca119949a8ea6d8612ef359cfd35c4b0109c14847ccec",
+      "size_bytes": 1942,
+      "sha256": "7d2694a93703f4f41c346279da8405ecfd9afd7b1c37f0f1a6c160bce8d03a8d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9941,7 +9941,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "35822461767c639af7141cd7122bfc85ae974c1d21a68741347f9ee8ef3b97e6",
+      "sha256": "171cf6b724602f169e5ded3a66eb14e71a9e8abfc31e824b4e13265b30f244ee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11443,8 +11443,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24302,
-      "sha256": "563958e200c196bba29737153195d393a36b28ea185a42c76d6bf4a83dbeb91c",
+      "size_bytes": 24422,
+      "sha256": "78e3272e28cb75fc9758d54e14a6e115fd31a4e0d721c48b72289170fd417c9b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32431,8 +32431,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_view.py",
-      "size_bytes": 54966,
-      "sha256": "c8c9514854bf4d3a3b6d88b5fdfc66a393af69304bba157607b97549b6ed40ee",
+      "size_bytes": 55184,
+      "sha256": "fd477a0073a261058a03bb8bc50a55a1bc8ffa289825c02d1fd58ba038c82b5d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32738,7 +32738,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2784158,
-      "sha256": "3bd20d972dfe0fe911949a344272ad84c443f3f8b914eee030a84e2b84d6089d",
+      "sha256": "3992895fdd574baf7a1707cbabe64efd12baf5c39fb2dcca22508a696592146d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33395,11 +33395,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+  "release_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
-    "package_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
-    "release_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
+    "package_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss",
+    "release_version": "16.3.25.5.116.0.34.94.6.76-windows-supervisor-jss"
   },
   "legacy_aliases": {
     "version": "release_version"
