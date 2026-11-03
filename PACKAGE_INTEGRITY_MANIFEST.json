@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
-  "package_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
-  "generated_at_utc": "2026-11-03T14:50:29+00:00",
-  "updated_at_utc": "2026-11-03T14:50:29+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
+  "package_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
+  "generated_at_utc": "2026-11-03T15:17:23+00:00",
+  "updated_at_utc": "2026-11-03T15:17:23+00:00",
   "start_file": "run.py",
-  "file_count": 3665,
-  "static_file_count": 3665,
+  "file_count": 3667,
+  "static_file_count": 3667,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2965,
-      "sha256": "743026124c1560d2b3a960f03fe49b7092efa16ae8915bc0c67b4be20a55dbf6",
+      "size_bytes": 2947,
+      "sha256": "6dc979ede8575dbf353be042ae3b8cd12de131a4f2e3b942a669e64b885454bb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1946,
-      "sha256": "a5359d930fe7a948d39e1c99587c9d4bfb27fd8aa84ef842269c06abdeca5678",
+      "size_bytes": 1943,
+      "sha256": "2b8c06be4c35492d092c691e4e2a0eff0b4cd383dec30bb290f286f63b16aa72",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4020,6 +4020,15 @@
       "path": "docs/runtime/CHATGPT_SIWC_OPTIONAL_MODEL_CHANNEL.md",
       "size_bytes": 6115,
       "sha256": "5a188ceeebc0fc94eec02a11286ef577f63b9d2abc657816798ce49710cc0065",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/runtime/INTEGRITY_VERIFICATION_STARTUP.md",
+      "size_bytes": 1997,
+      "sha256": "60016cecbebf6169113e00608f1087a4c247db0b1cc73a03d45025b22ef3177d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9941,7 +9950,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "2e3ce189842911023ad4a58f1797720d5392e5a2a7b546660c267e1287eceb78",
+      "sha256": "4136c51dd3f551a886d849ee4b83a6617f89e72ea43e9873b91329d90f534dfe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11290,8 +11299,8 @@
     },
     {
       "path": "latka_jazn/tools/package_integrity.py",
-      "size_bytes": 38874,
-      "sha256": "93598de179dff269bbc4e2e21e8219eef0b71a1dd229f774b59757f3f585977c",
+      "size_bytes": 39065,
+      "sha256": "d55921614f1b38ab5dc500365c36a7eaefea294130d86002c921b06254057a8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11380,8 +11389,8 @@
     },
     {
       "path": "latka_jazn/tools/safe_paths.py",
-      "size_bytes": 3115,
-      "sha256": "c8f6ba53857ed0a07af85878e29cc74e22dc2fa944c46dc5acdf389c3d8fa64f",
+      "size_bytes": 3906,
+      "sha256": "7d2fd4794a7a65c48d91567fa27cf423577cb2834b4622440320655388d04e60",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11443,8 +11452,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24838,
-      "sha256": "a469c13342fe2c2cca59f6b72eea82b8aa6ff1e50447b8ff4b08d3c34fed9a20",
+      "size_bytes": 24968,
+      "sha256": "40f32bd1f4122e5f3dd529326df73fd5aa0c7154647c2d879c8781c29bebc663",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27804,6 +27813,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_integrity_pinned_root.py",
+      "size_bytes": 3081,
+      "sha256": "c6350e6db4adafe078e93e4acf759df112477e0d07650f98714e81f9ce28ab7f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_acceptance_resume_profile.py",
       "size_bytes": 5772,
       "sha256": "849b18c47dfecc2ab3a61535c60e28ff0c947950c6a4105e2a4d28235e80a6b8",
@@ -32782,8 +32800,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2788696,
-      "sha256": "30f20d58c590d1b4e24a8896ce4fd07799bf5af152954fac2f8ef8e24617f89c",
+      "size_bytes": 2791266,
+      "sha256": "c7456074217ce320781c8c016ed26d84d08d4555d77315556be44ebba863f573",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33440,11 +33458,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+  "release_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
-    "package_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
-    "release_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
+    "package_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths",
+    "release_version": "16.3.25.5.116.0.34.94.6.81-bounded-integrity-paths"
   },
   "legacy_aliases": {
     "version": "release_version"
