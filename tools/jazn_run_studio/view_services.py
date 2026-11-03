@@ -219,7 +219,9 @@ class ServiceViewMixin:
                 if job is not None and job.proc is not None and job.proc.poll() is None:
                     pid = job.pid
             if service == "runtime":
-                ready = all(observed.get(flag) is True for flag in ("endpoint_reachable", "process_identity_confirmed", "endpoint_identity_matches", "heartbeat_fresh", "conversation_ready"))
+                # Caption and indicator share the complete ROOT/version/state
+                # gate; partial endpoint evidence cannot confirm readiness.
+                ready = status == "ready"
             else:
                 ready = observed.get("ready") is True
             readiness = "potwierdzona" if ready else "niezweryfikowana"
