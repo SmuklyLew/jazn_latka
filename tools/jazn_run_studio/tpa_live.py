@@ -357,6 +357,8 @@ def main() -> int:
         result = cleanup(folder, sys.executable)
     elif args.sandbox:
         result = sandbox(args.root, folder, args.case, sys.executable, args.model)
+    elif args.ollama_api_base is None:
+        result = exercise(args.root, folder, args.case, sys.executable, args.model)
     else:
         result = exercise(args.root, folder, args.case, sys.executable, args.model, api_base=args.ollama_api_base)
     frame({"event": "result", **result})

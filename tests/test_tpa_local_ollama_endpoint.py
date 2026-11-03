@@ -23,7 +23,7 @@ def api():
             self.end_headers()
             self.wfile.write(payload)
 
-        def log_message(self, *_args):
+        def log_message(self, format: str, *args: object) -> None:
             pass
 
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
