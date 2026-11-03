@@ -180,6 +180,8 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--daemon-port", type=int, default=8787)
     child.add_argument("--check-interval-seconds", type=float, default=5.0)
     child.add_argument("--daemon-start-timeout", type=float, default=12.0)
+    child.add_argument("--windows-service", action="store_true",
+                       help="Uruchom jako rzeczywista usługa SCM; poza SCM odmawia startu.")
 
     for name in ("supervisor-status", "supervisor-plan"):
         child = sub.add_parser(name, allow_abbrev=False)
@@ -575,6 +577,20 @@ def main(
         )
 
         if ns.command == "supervisor-run":
+            if ns.windows_service:
+                from latka_jazn.core.windows_supervisor import run_windows_supervisor_service
+
+                try:
+                    return run_windows_supervisor_service(root, lambda event: run_supervisor(
+                        root, host=ns.daemon_host, port=ns.daemon_port,
+                        check_interval_seconds=ns.check_interval_seconds,
+                        startup_timeout_seconds=ns.daemon_start_timeout, stop_event=event,
+                    ))
+                except (OSError, RuntimeError) as exc:
+                    _emit({"ok": False, "error_code": "windows_supervisor_service_failed",
+                           "error_type": type(exc).__name__, "winerror": getattr(exc, "winerror", None),
+                           "reason": str(exc), "console_fallback_performed": False}, as_json=True)
+                    return 2
             return run_supervisor(
                 root,
                 host=ns.daemon_host,
