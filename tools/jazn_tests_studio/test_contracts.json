@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.77",
-  "active_definition_count": 3146,
+  "system_version": "16.3.25.5.116.0.34.94.6.78",
+  "active_definition_count": 3147,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31463,6 +31463,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 68
+    },
+    "tests/test_jss_pytest_interrupted_evidence.py::test_keyboard_interrupt_in_teardown_preserves_incomplete_evidence": {
+      "path": "tests/test_jss_pytest_interrupted_evidence.py",
+      "name": "test_keyboard_interrupt_in_teardown_preserves_incomplete_evidence",
+      "purpose": "Keyboard interrupt in teardown preserves incomplete evidence",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_jss_qt_completion_ownership.py::test_serial_completion_sender_survives_callback_dispatch": {
       "path": "tests/test_jss_qt_completion_ownership.py",
