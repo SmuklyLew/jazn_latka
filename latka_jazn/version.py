@@ -1,3 +1,4 @@
+# v116.0.34.94.6.76: Keep managed interpreter paths out of the compact TPA summary while preserving full setup identity.
 # v116.0.34.94.6.75: Add native SCM supervisor hosting and root-bound Windows startup configuration.
 # v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
@@ -206,9 +207,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.75"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.76"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "windows-supervisor-host"
+PACKAGE_RELEASE_NAME = "windows-supervisor-jss"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
