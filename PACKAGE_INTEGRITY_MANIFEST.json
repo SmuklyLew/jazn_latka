@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "generated_at_utc": "2026-11-02T22:40:51+00:00",
-  "updated_at_utc": "2026-11-02T22:40:51+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+  "package_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+  "generated_at_utc": "2026-11-03T01:07:36+00:00",
+  "updated_at_utc": "2026-11-03T01:07:36+00:00",
   "start_file": "run.py",
-  "file_count": 3657,
-  "static_file_count": 3657,
+  "file_count": 3660,
+  "static_file_count": 3660,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2948,
-      "sha256": "cb16559b44eff3f1dc16a4f1cb0734f92657062bdc4c897e21878c0ccffe018a",
+      "size_bytes": 2947,
+      "sha256": "2b1c8196c82bd1ba6544d439990001b5481cbc2696ebcdf6fe1dc3611401c911",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4242,6 +4242,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/runtime/WINDOWS_SUPERVISOR_HOST.md",
+      "size_bytes": 4627,
+      "sha256": "feaed0adb2be9695e0bb4ef908c059738de8826295f9607806272747f068b81f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/runtime/WORKSPACE_ISOLATION_CONTRACT.md",
       "size_bytes": 5782,
       "sha256": "be27287166b671c5777fd694ade12ee8a17739f6abbb41b7938f3721f5a044fd",
@@ -4810,8 +4819,8 @@
     },
     {
       "path": "latka_jazn/cli.py",
-      "size_bytes": 51206,
-      "sha256": "239468cd37bd5f5e06a3086819d038581285407faf2e2cebe9aff4344140dea8",
+      "size_bytes": 52249,
+      "sha256": "1c766819edc5b9ac66ed41afc45c80773743668fbe7e8e1b8ff99cb5b02a05e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6934,8 +6943,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_supervisor.py",
-      "size_bytes": 26843,
-      "sha256": "3013b893f669c7b7fb1d6108a9d599395184670945e162be540ff8d15ba9ea0b",
+      "size_bytes": 27000,
+      "sha256": "11309eaf1e3d05463aa5b05c7d775c889bef60c419044f65d2351f1e3ae2c03d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7449,6 +7458,15 @@
       "path": "latka_jazn/core/voice_source_contract.py",
       "size_bytes": 3458,
       "sha256": "5fcdbe78a320cb9ef04172452c04eb94e224fd80b1c3c7c9fe51806f5c29a431",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/windows_supervisor.py",
+      "size_bytes": 11692,
+      "sha256": "e497b6ccac0b8326e868c6970b4fde2e8b02e12717cc8089554c829609f71969",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11443,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24202,
-      "sha256": "a83cf5572be5d585b94bead9a6d022b03e855c292cb00d4a2e26b668ebbc58d1",
+      "size_bytes": 24302,
+      "sha256": "563958e200c196bba29737153195d393a36b28ea185a42c76d6bf4a83dbeb91c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31440,6 +31458,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_windows_supervisor_host.py",
+      "size_bytes": 6630,
+      "sha256": "3bcc72da81dbc7468944f2c7cb1faf998260fca2f6b74caf20a1e462ee729100",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_zip_resource_limits.py",
       "size_bytes": 2885,
       "sha256": "cdaf6bb1700d65063c590a43b83d4a460ada26e01085d6aedd73acf5c888d369",
@@ -32710,8 +32737,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2778210,
-      "sha256": "8ff6926a4f41f010fedc27f90c68f314d4526e4673e29f57a95a21bad61b1e47",
+      "size_bytes": 2784158,
+      "sha256": "3bd20d972dfe0fe911949a344272ad84c443f3f8b914eee030a84e2b84d6089d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33368,11 +33395,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+  "release_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-    "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-    "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+    "package_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host",
+    "release_version": "16.3.25.5.116.0.34.94.6.75-windows-supervisor-host"
   },
   "legacy_aliases": {
     "version": "release_version"
