@@ -20,7 +20,7 @@ from uuid import uuid4
 from .chat import ChatClient
 from .core import Controller, Settings
 from .external import run as run_external
-from .probes import ollama
+from .probes import ollama, ollama_api_base
 from .tpa_catalog import LIVE_CASES, TARGETS, scenario
 from .tpa_reports import redact
 from .tpa_reports import safe_child
@@ -155,12 +155,13 @@ def await_daemon_receipt(core: ReceiptCore, client: ReceiptClient, request_id: s
     raise TimeoutError("Daemon nie potwierdził przyjęcia oryginalnego request_id")
 
 
-def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) -> dict:
+def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *, api_base: str | None = None) -> dict:
     if case_id not in LIVE_CASES or folder.is_symlink() or any(folder.iterdir()):
         raise ValueError("Odbiór wymaga nowego własnego katalogu i znanego scenariusza")
+    base = ollama_api_base(api_base if api_base is not None else "http://127.0.0.1:11434")
     if model:
         try:
-            present = ollama(model).get("selected_model_present") is True
+            present = (ollama(model) if api_base is None else ollama(model, api_base=base)).get("selected_model_present") is True
         except OSError:
             return {"status": "BLOCKED", "reason": "Lokalna Ollama nie odpowiada. Uruchom usługę właściwym workflow Studio, sprawdź model i ponów odbiór; nie uruchomiono daemona testowego.",
                     "evidence": {"service_reachable": False, "cleanup": {"ok": True}, "turns": []}}
@@ -179,11 +180,12 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
     os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"), JAZN_MEMORY_ROOT=str(folder / "memory"),
                       JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_MEMORY_MODE="off",
                       JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated", JAZN_MODEL_ADAPTER="ollama" if model else "null",
-                      JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL="http://127.0.0.1:11434")
+                      JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL=base)
     core = Controller(stage, Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}"))
     phase_clock = PhaseDeadline()
     evidence: dict = {"case_id": case_id, "root": str(stage), "url": core.settings.daemon_url,
-                      "turns": [], "memory_mode": "off", "canonical_transport": "Controller/ChatClient"}
+                      "turns": [], "memory_mode": "off", "ollama_api_base": base,
+                      "canonical_transport": "Controller/ChatClient"}
     status = "BLOCKED"
     reason = "Nie zakończono odbioru."
 
@@ -339,6 +341,7 @@ def main() -> int:
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--case", required=True)
     parser.add_argument("--model", default="")
+    parser.add_argument("--ollama-api-base", default=os.environ.get("JAZN_OLLAMA_BASE_URL"))
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--sandbox", action="store_true")
     args = parser.parse_args()
@@ -355,7 +358,7 @@ def main() -> int:
     elif args.sandbox:
         result = sandbox(args.root, folder, args.case, sys.executable, args.model)
     else:
-        result = exercise(args.root, folder, args.case, sys.executable, args.model)
+        result = exercise(args.root, folder, args.case, sys.executable, args.model, api_base=args.ollama_api_base)
     frame({"event": "result", **result})
     # The cleanup contract reports {"ok": bool}, not {"status": "PASS"}.
     # Keep process exit codes aligned with their respective result schemas.

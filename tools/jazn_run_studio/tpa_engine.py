@@ -22,6 +22,7 @@ from .tpa_paths import TOKEN_ENV, issue_staging
 from .tpa_execution_plan import PHASE_TIMEOUTS
 from .tpa_io import SerialIO
 from .tpa_result_io import finish_live, finish_test
+from .probes import ollama_api_base
 
 TIMEOUT_MS = 180_000
 MAX_OUTPUT = 4 * 1024 * 1024
@@ -146,6 +147,7 @@ class TPARunner(QObject):
         self._next_after_probe = False
         self.execution = "regression"
         self.model = ""
+        self.ollama_api_base = "http://127.0.0.1:11434"
         self.live_result: dict = {}
         self.io = SerialIO(self)
 
@@ -264,17 +266,20 @@ class TPARunner(QObject):
         self._probe()
 
     def start_selection(self, case_ids: tuple[str, ...], *, execution: str = "regression", model: str = "",
-                        source_kind: str | None = None, source_value: str = "") -> None:
+                        source_kind: str | None = None, source_value: str = "",
+                        api_base: str = "http://127.0.0.1:11434") -> None:
         if self.active:
             raise ValueError("Poprzedni przebieg nadal trwa")
         if execution not in {"regression", "live", "sandbox"} or (execution == "live" and set(case_ids) - LIVE_CASES):
             raise ValueError("Wybierz obsługiwany odbiór izolowany")
+        self.ollama_api_base = ollama_api_base(api_base)
         self.execution, self.model = execution, model
         self.execution_root = self.root
         self.probe_root = self.root
         self.source_kind, self.source_value = source_kind, source_value
         # The run exists even when preflight blocks every selected test.
-        self.report = self.store.prepare(case_ids, self.python, {"memory_mode": "off", "qt_platform": "offscreen"}, execution=execution)
+        self.report = self.store.prepare(case_ids, self.python,
+            {"memory_mode": "off", "qt_platform": "offscreen", "ollama_api_base": self.ollama_api_base}, execution=execution)
         self.report["execution"] = execution
         if source_kind:
             self.report["requested_source"] = {"kind": source_kind, "value": source_value}
@@ -442,7 +447,8 @@ class TPARunner(QObject):
             self.log_name = row["case_id"] + ".log"
             args = ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root),
                     "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
-                    "--case", row["case_id"], "--model", self.model]
+                    "--case", row["case_id"], "--model", self.model,
+                    "--ollama-api-base", self.ollama_api_base]
             if self.execution == "sandbox":
                 args.append("--sandbox")
             row.update(status="RUNNING", reason="Rzeczywisty odbiór w nowym stagingu; nie dotyka aktywnego daemona.",

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.78",
-  "active_definition_count": 3147,
+  "system_version": "16.3.25.5.116.0.34.94.6.79",
+  "active_definition_count": 3152,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -63815,6 +63815,97 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_selected_test_endpoint_is_probed_without_default_port_fallback": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_selected_test_endpoint_is_probed_without_default_port_fallback",
+      "purpose": "Selected test endpoint is probed without default port fallback",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_invalid_endpoint_is_rejected_before_transport": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_invalid_endpoint_is_rejected_before_transport",
+      "purpose": "Invalid endpoint is rejected before transport",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_live_cli_passes_explicit_endpoint_to_existing_executor": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_live_cli_passes_explicit_endpoint_to_existing_executor",
+      "purpose": "Live cli passes explicit endpoint to existing executor",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_runtime_environment_preserves_preflight_endpoint": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_runtime_environment_preserves_preflight_endpoint",
+      "purpose": "Runtime environment preserves preflight endpoint",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_tpa_runner_ollama_endpoint.py::test_queue_records_endpoint_before_preflight_and_passes_it_to_live_child": {
+      "path": "tests/test_tpa_runner_ollama_endpoint.py",
+      "name": "test_queue_records_endpoint_before_preflight_and_passes_it_to_live_child",
+      "purpose": "Queue records endpoint before preflight and passes it to live child",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",
