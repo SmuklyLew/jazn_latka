@@ -414,7 +414,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
 
 def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
     """Keep separate proof of process, runtime root and package identity."""
-    from latka_jazn.version import PACKAGE_VERSION_FULL
+    from latka_jazn.core.version_source import read_runtime_version_from_version_py
     daemon = data.get("daemon")
     daemon = daemon if isinstance(daemon, dict) else {}
     ping = daemon.get("ping")
@@ -426,8 +426,8 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         isinstance(root, str) and bool(root)
         and Path(root).resolve() == expected_root.resolve()
     ) if expected_root is not None else None
-    # Compare live endpoint identity with the installed SYSTEM, not a historical
-    # marker.runtime_version_full. Old markers can survive a verified lifecycle
+    # Compare live identity with the selected SYSTEM's static version, not the
+    # operator package or a historical marker. Old markers can survive a verified lifecycle
     # transition, while an explicit mismatching live ping must still fail closed.
     system_version = data.get("runtime_version_full") or data.get("runtime_version")
     daemon_version = (
@@ -435,9 +435,11 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         or daemon.get("runtime_version_full")
         or daemon.get("runtime_version")
     )
-    version_matches = (
-        system_version == PACKAGE_VERSION_FULL
-        and daemon_version == PACKAGE_VERSION_FULL
+    expected_version = read_runtime_version_from_version_py(expected_root) if expected_root is not None else None
+    version_matches = bool(
+        expected_version
+        and system_version == expected_version
+        and daemon_version == expected_version
     ) if expected_root is not None else None
     # A canonical active_ready + ready core is positive *service readiness*,
     # never proof of model-generated speech or accepted finalization.
@@ -448,6 +450,7 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
     )
     return {
         "system_version": system_version,
+        "expected_system_version": expected_version,
         "daemon_version": daemon_version,
         "pid": daemon.get("pid"),
         "instance_id": daemon.get("daemon_instance_id"),

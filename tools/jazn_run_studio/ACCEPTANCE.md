@@ -1,5 +1,12 @@
 # Scope, evidence and remaining gates
 
+JSS binds daemon version evidence to the canonical version.py of its selected
+SYSTEM ROOT. The operator package may have a different version. Both the status
+document and live daemon identity must match the selected source; missing,
+unreadable or nonliteral source metadata cannot fall back to the operator's
+version. ROOT, instance, process and heartbeat checks remain separate and are
+all still required before TPA cleanup.
+
 Live TPA may select an existing isolated local Ollama API with
 `--ollama-api-base http://127.0.0.1:<port>` (or `JAZN_OLLAMA_BASE_URL` for the
 TPA subprocess). The endpoint must be HTTP loopback with an explicit port from

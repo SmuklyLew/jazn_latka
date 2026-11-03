@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.81",
-  "active_definition_count": 3155,
+  "system_version": "16.3.25.5.116.0.34.94.6.82",
+  "active_definition_count": 3159,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1923,7 +1923,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 153
+      "line": 156
     },
     "tests/test_archive_recall_ollama_jss_status_recovery.py::test_jss_memory_evidence_preserves_partial_readiness": {
       "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
@@ -1946,7 +1946,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 179
+      "line": 182
     },
     "tests/test_archived_test_policy.py::test_repository_pytest_config_excludes_archive_by_default": {
       "path": "tests/test_archived_test_policy.py",
@@ -62314,6 +62314,80 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 38
+    },
+    "tests/test_studio_selected_root_version.py::test_external_system_version_can_match_without_matching_operator_package": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_external_system_version_can_match_without_matching_operator_package",
+      "purpose": "External system version can match without matching operator package",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_studio_selected_root_version.py::test_live_identity_must_match_the_selected_source_version": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_live_identity_must_match_the_selected_source_version",
+      "purpose": "Live identity must match the selected source version",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_studio_selected_root_version.py::test_unreadable_or_nonliteral_source_cannot_fall_back_to_operator_identity": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_unreadable_or_nonliteral_source_cannot_fall_back_to_operator_identity",
+      "purpose": "Unreadable or nonliteral source cannot fall back to operator identity",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_studio_selected_root_version.py::test_a_changed_selected_version_invalidates_an_older_endpoint": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_a_changed_selected_version_invalidates_an_older_endpoint",
+      "purpose": "A changed selected version invalidates an older endpoint",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
     },
     "tests/test_studios_memory_path_normalization.py::test_memory_and_tier_paths_share_one_normalization": {
       "path": "tests/test_studios_memory_path_normalization.py",

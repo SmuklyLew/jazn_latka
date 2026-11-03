@@ -56,6 +56,9 @@ def test_worktree_cannot_adopt_master_daemon_identity(tmp_path: Path) -> None:
     candidate_worktree = tmp_path / "pr429"
     active_master.mkdir()
     candidate_worktree.mkdir()
+    (candidate_worktree / "latka_jazn").mkdir()
+    (candidate_worktree / "latka_jazn/version.py").write_text(
+        f"PACKAGE_VERSION={PACKAGE_VERSION_FULL!r}\n", encoding="utf-8")
     status = {
         "resolved_active_root": str(active_master),
         "runtime_version": PACKAGE_VERSION_FULL,
