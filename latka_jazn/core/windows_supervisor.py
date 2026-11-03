@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import subprocess
 import threading
+from types import ModuleType
 from typing import Any, Protocol
 import xml.etree.ElementTree as ET
 
@@ -120,6 +121,17 @@ class ServiceAPI(Protocol):
 class _NativeServiceAPI:
     """Typed Win32 ABI and retained callbacks for a single own-process service."""
 
+    # Declare lazy bindings outside the Windows-only constructor path. Their
+    # dynamic ctypes factories stay behind ServiceAPI and explicit ABI types.
+    ctypes: ModuleType
+    dll: Any
+    handler_type: Callable[..., Any]
+    main_type: Callable[..., Any]
+    status_type: Callable[..., Any]
+    entry_type: Any
+    handle: int | None
+    callbacks: list[object]
+
     def __init__(self) -> None:
         if os.name != "nt":
             raise OSError("Windows Service Control Manager is unavailable on this platform")
@@ -149,8 +161,8 @@ class _NativeServiceAPI:
         self.dll.RegisterServiceCtrlHandlerExW.restype = wintypes.HANDLE
         self.dll.SetServiceStatus.argtypes = [wintypes.HANDLE, ctypes.POINTER(NativeStatus)]
         self.dll.SetServiceStatus.restype = wintypes.BOOL
-        self.handle: Any = None
-        self.callbacks: list[Any] = []
+        self.handle = None
+        self.callbacks = []
 
     def dispatch(self, name: str, main: Callable[[], None]) -> None:
         callback = self.main_type(lambda _argc, _argv: main())
