@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
-  "package_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
-  "generated_at_utc": "2026-11-03T15:30:37+00:00",
-  "updated_at_utc": "2026-11-03T15:30:37+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
+  "package_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
+  "generated_at_utc": "2026-11-03T16:52:26+00:00",
+  "updated_at_utc": "2026-11-03T16:52:26+00:00",
   "start_file": "run.py",
-  "file_count": 3672,
-  "static_file_count": 3672,
+  "file_count": 3673,
+  "static_file_count": 3673,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3001,
-      "sha256": "ca981e80932f5194b56fb7cf58505b4b953a9ca0e5f97d796fa74708cf86677e",
+      "size_bytes": 2971,
+      "sha256": "bf6ad2f5ed3fb1b919fb22284097f3020e3454908cc19ba0417ac0ccbad4a2ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1952,
-      "sha256": "da5a8de09faecd934e3107be9b2e68f4970d8b277dfae1fa41f68a6c371d2ee5",
+      "size_bytes": 1947,
+      "sha256": "ba2c6521a5cec79325100fa4a4b0076720d8535180a1b3026cb5e66472519648",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9950,7 +9950,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "6f3a21a21789c0e763bbae5702515b0681e2ef5c1981ab462afed24358cd500f",
+      "sha256": "914684bcdb3dba655ccc8d58fb116cc136a41589959adcd1af3b5b845ef625ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11452,8 +11452,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 25108,
-      "sha256": "587b502e78f1e055965c194b112cfa7fd05b91bba0df1e2994b36f4634109430",
+      "size_bytes": 25202,
+      "sha256": "d4cd74281e0134d8f3ce201c40a20bf9bbfccf079d9314db86903d0d808c4d7c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28704,6 +28704,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_service_table_readiness.py",
+      "size_bytes": 2184,
+      "sha256": "214267fd3b93355b46e6def323abeca82411e64d0597f0d0bd24af068107f286",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_startup_dependency_mcp_profile.py",
       "size_bytes": 4623,
       "sha256": "773a48277e9926bfe96221f1a0c6bc5879045ac45fbce5e7ed52028e0b99db03",
@@ -32611,8 +32620,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_services.py",
-      "size_bytes": 14450,
-      "sha256": "a7631b2a22c4d99c68e76d1678f90cb18dfbe9a6a214e62266015df959542f60",
+      "size_bytes": 14455,
+      "sha256": "dea119235bda2458523aca8034220a880b7b40512452affbb8ad0feb38da9f70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32845,8 +32854,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2794401,
-      "sha256": "9d2b708a6e94757461725f71be17dfe9fcccb8e4f9ad4aaf85db1a0106cf5699",
+      "size_bytes": 2796462,
+      "sha256": "7c30c184eb10c84ecbe9524aedfe5e5935b8b77d064fb007ca3287bf8430c99c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33503,11 +33512,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
+  "release_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
-    "package_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence",
-    "release_version": "16.3.25.5.116.0.34.94.6.82-selected-system-version-evidence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
+    "package_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity",
+    "release_version": "16.3.25.5.116.0.34.94.6.83-services-readiness-identity"
   },
   "legacy_aliases": {
     "version": "release_version"
