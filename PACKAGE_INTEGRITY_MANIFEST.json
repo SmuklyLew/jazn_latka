@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
-  "package_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
-  "generated_at_utc": "2026-11-03T14:37:48+00:00",
-  "updated_at_utc": "2026-11-03T14:37:48+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+  "package_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+  "generated_at_utc": "2026-11-03T14:50:29+00:00",
+  "updated_at_utc": "2026-11-03T14:50:29+00:00",
   "start_file": "run.py",
-  "file_count": 3663,
-  "static_file_count": 3663,
+  "file_count": 3665,
+  "static_file_count": 3665,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "858955273188126bbf510155741adb8df85823b90aa18d4b01942e4a1c0908f4",
+      "size_bytes": 2965,
+      "sha256": "743026124c1560d2b3a960f03fe49b7092efa16ae8915bc0c67b4be20a55dbf6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "a220540eb151ab10cdaec911959ad1bb5263a13e812e8e365a5615ec2c4716d2",
+      "size_bytes": 1946,
+      "sha256": "a5359d930fe7a948d39e1c99587c9d4bfb27fd8aa84ef842269c06abdeca5678",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9941,7 +9941,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "c39e4be0cbc65e24ef6ac891b931e4651688cfe5b4d1e3ba6bf938c3f16f3c13",
+      "sha256": "2e3ce189842911023ad4a58f1797720d5392e5a2a7b546660c267e1287eceb78",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11443,8 +11443,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24735,
-      "sha256": "ec80c28a8ef87e37441d114783b961dcdd669705576859e97db6805e5a11f5b4",
+      "size_bytes": 24838,
+      "sha256": "a469c13342fe2c2cca59f6b72eea82b8aa6ff1e50447b8ff4b08d3c34fed9a20",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19158,6 +19158,24 @@
       "path": "tests/archive/test_supervisor_version_release_gate__v16_3_25_5_116_0_34_42_pre_typefix.py",
       "size_bytes": 5026,
       "sha256": "09fe34b1566cca99cadad8f74966a254e8c6aae8f2057d736a78164a4656d17c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_tpa_local_ollama_endpoint__v16_3_25_5_116_0_34_94_6_79__9efbbd3b.provenance.json",
+      "size_bytes": 256,
+      "sha256": "6c91ecd554cd6c07f18b6d7b6b39e5486d2deac9e25642d3ce2268625265807d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_tpa_local_ollama_endpoint__v16_3_25_5_116_0_34_94_6_79__9efbbd3b.py",
+      "size_bytes": 4267,
+      "sha256": "05e98d6fddb28df329da1548207f6bdaac6bb583fb26efa45dd84e079b472f0f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31261,8 +31279,8 @@
     },
     {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
-      "size_bytes": 4267,
-      "sha256": "05e98d6fddb28df329da1548207f6bdaac6bb583fb26efa45dd84e079b472f0f",
+      "size_bytes": 4295,
+      "sha256": "1ede19e052a3b751fb4d52c4ad61308fbbe3d6169955b5c4177421ce376fec82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32368,8 +32386,8 @@
     },
     {
       "path": "tools/jazn_run_studio/tpa_live.py",
-      "size_bytes": 23301,
-      "sha256": "883781d02943d2c7f81ed83600dd7513ee915b8969a18f83690427882fc1fd29",
+      "size_bytes": 23424,
+      "sha256": "254a6f4f020ff993a356936b9e1c1dd264e9b636adf662a976569d0057945941",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32765,7 +32783,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2788696,
-      "sha256": "1aa190645682ab13eb9256a061122733835fb90ee776d61978765244a9d1ed8c",
+      "sha256": "30f20d58c590d1b4e24a8896ce4fd07799bf5af152954fac2f8ef8e24617f89c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33422,11 +33440,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
+  "release_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
-    "package_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint",
-    "release_version": "16.3.25.5.116.0.34.94.6.79-isolated-tpa-ollama-endpoint"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+    "package_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility",
+    "release_version": "16.3.25.5.116.0.34.94.6.80-tpa-endpoint-compatibility"
   },
   "legacy_aliases": {
     "version": "release_version"
