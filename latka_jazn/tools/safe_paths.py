@@ -59,6 +59,31 @@ def resolve_safe_path(
 
     canonical = validate_safe_relative_path(relative)
     root_resolved = Path(root).expanduser().resolve()
+    return _resolve_under_root(root_resolved, canonical, must_exist=must_exist, must_be_file=must_be_file)
+
+
+class SafePathRoot:
+    """Resolve a batch against one pinned root, checking every member afresh.
+
+    The canonical root is pinned. Relative syntax, file/link metadata and target
+    resolution are checked afresh for every member.
+    """
+
+    def __init__(self, root: Path | str) -> None:
+        self.root = Path(root).expanduser().resolve()
+
+    def resolve(self, relative: str) -> tuple[str, Path]:
+        canonical = validate_safe_relative_path(relative)
+        return canonical, _resolve_under_root(self.root, canonical)
+
+
+def _resolve_under_root(
+    root_resolved: Path,
+    canonical: str,
+    *,
+    must_exist: bool = False,
+    must_be_file: bool = False,
+) -> Path:
     candidate = root_resolved.joinpath(*canonical.split("/"))
     resolved = candidate.resolve(strict=False)
     if not _within(resolved, root_resolved):

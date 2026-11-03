@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.80",
-  "active_definition_count": 3152,
+  "system_version": "16.3.25.5.116.0.34.94.6.81",
+  "active_definition_count": 3155,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24923,6 +24923,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 221
+    },
+    "tests/test_integrity_pinned_root.py::test_batch_member_does_not_inherit_trust_from_an_earlier_valid_path": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_batch_member_does_not_inherit_trust_from_an_earlier_valid_path",
+      "purpose": "Batch member does not inherit trust from an earlier valid path",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "UnsafeRelativePathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_integrity_pinned_root.py::test_batch_detects_a_link_escape_introduced_after_an_earlier_member": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_batch_detects_a_link_escape_introduced_after_an_earlier_member",
+      "purpose": "Batch detects a link escape introduced after an earlier member",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "UnsafeRelativePathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_integrity_pinned_root.py::test_repeated_verification_rehashes_contents_and_checks_new_static_members": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_repeated_verification_rehashes_contents_and_checks_new_static_members",
+      "purpose": "Repeated verification rehashes contents and checks new static members",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
     },
     "tests/test_jazn_acceptance_resume_profile.py::test_profile_session_reused_without_autostart_or_prod_writes": {
       "path": "tests/test_jazn_acceptance_resume_profile.py",
