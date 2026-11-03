@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "ccc92b302f618a69a3b1466f474ab1b3785a8650",
-  "base_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-  "commit_date": "2026-11-03T12:22:35+01:00",
+  "base_merge_commit": "3c0fcbc4ab12e182076484e63a0bb22d486345d5",
+  "base_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+  "commit_date": "2026-11-03T15:08:41+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-03T11:22:35+00:00",
+  "generated_at_utc": "2026-11-03T14:08:41+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "45d1e990e806256791285a41f69a900a530cf486",
+  "git_tree_sha": "6cf855e925330dd617143eb8d0ba7286d0456d13",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "ccc92b302f618a69a3b1466f474ab1b3785a8650",
-    "source_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss"
+    "source_commit": "3c0fcbc4ab12e182076484e63a0bb22d486345d5",
+    "source_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
+  "release_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "ccc92b302f618a69a3b1466f474ab1b3785a8650",
+  "source_commit": "3c0fcbc4ab12e182076484e63a0bb22d486345d5",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
+  "source_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
+  "update_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
   "version_source": "latka_jazn/version.py"
 }

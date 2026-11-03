@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-  "package_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-  "generated_at_utc": "2026-11-03T11:22:35+00:00",
-  "updated_at_utc": "2026-11-03T11:22:35+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+  "package_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+  "generated_at_utc": "2026-11-03T14:08:41+00:00",
+  "updated_at_utc": "2026-11-03T14:08:41+00:00",
   "start_file": "run.py",
-  "file_count": 3660,
-  "static_file_count": 3660,
+  "file_count": 3661,
+  "static_file_count": 3661,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2941,
-      "sha256": "925f61cbb80aebf086f06c84c06094ea0a90936b17842caf788c05397d7d3efb",
+      "size_bytes": 2977,
+      "sha256": "5cb4bc595834e201e4db8686c5002a4de85b93832b9a2fa9757dd18da5639ac3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1942,
-      "sha256": "498ee10e1fa65a804ed5ebe9e9a7a43ced9e64a7933fc8fbfaa68ed164c823ee",
+      "size_bytes": 1948,
+      "sha256": "8b30a38010e0b4290da3b72eb0b9b187ae775b75d6af29c38414ea3fafc3b04a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4387,8 +4387,8 @@
     },
     {
       "path": "docs/uiux/JSS_TEST_EVIDENCE_ARCHIVE.md",
-      "size_bytes": 10646,
-      "sha256": "ed4ad13b72aca9cf019931c0826a47bcf237d903efaa7d066ab87b6b2cacfc63",
+      "size_bytes": 10886,
+      "sha256": "98f6aaab7a94f4cb8421dea03e78418a865b3bc3357e8193b31724a4e4ff5412",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9941,7 +9941,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "c0e28b224b60a0dd5ccfe320c51b23403dd8bd12d441cfc5d254b869019379d0",
+      "sha256": "26a7c273d0fce7d1c87e8e3e61656a5ed934fe6039a4671cd5dd057cd9e4ead2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11443,8 +11443,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24517,
-      "sha256": "3637237f30dde028e09b2da7f3029e416ca49ade1ffd029faefebe9f5076587a",
+      "size_bytes": 24620,
+      "sha256": "7f049fed7df3751d585a395f515595246745514f1514e3c858be457f06103542",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28605,6 +28605,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_pytest_interrupted_evidence.py",
+      "size_bytes": 2203,
+      "sha256": "0ea9573db32255542e87f0eb937b91f58e3a42539efb31806fe84f47e978fba6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_qt_completion_ownership.py",
       "size_bytes": 2729,
       "sha256": "a7952d6437bc6f866ef8b779a779893328f1ec3cedcc4b8650bbdf41f50619c8",
@@ -32251,8 +32260,8 @@
     },
     {
       "path": "tools/jazn_run_studio/test_evidence_plugin.py",
-      "size_bytes": 11653,
-      "sha256": "257c6311b4a5958eef3ae10e348da3a23f1a0d5f7a69310975d5c04fe1cb5bb2",
+      "size_bytes": 12006,
+      "sha256": "64a88bddf5e455a5b0f33739ef502fae353579f21a8e036867240e338f50087e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32737,8 +32746,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2784158,
-      "sha256": "904a61a5f1ed9095bb27666720b49c39f900ddcdc9d611d816dbbfe0a7c7ecfb",
+      "size_bytes": 2784941,
+      "sha256": "b8cce3816e1aea9fcf68ca51733c7d2c9699ba200d7f502816c24593ed5389c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33395,11 +33404,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
+  "release_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-    "package_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss",
-    "release_version": "16.3.25.5.116.0.34.94.6.77-windows-supervisor-jss"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+    "package_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence",
+    "release_version": "16.3.25.5.116.0.34.94.6.78-pytest-interruption-evidence"
   },
   "legacy_aliases": {
     "version": "release_version"
