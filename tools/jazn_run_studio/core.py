@@ -387,9 +387,15 @@ def discovery(settings: Settings, root: Path | None = None) -> dict[str, Any]:
     except StudioError as exc:
         selected_python = None
         python_error = str(exc)
+    source = ("operator" if settings.python else
+              "environment" if os.environ.get("JAZN_STUDIO_PYTHON") else
+              "project_venv" if root is not None and (root / ".venv").exists() else
+              "host_fallback")
     return {
         "python": selected_python,
         "python_error": python_error,
+        "python_source": source,
+        "dependencies_interpreter": sys.executable,
         "python_version": sys.version.split()[0],
         "ollama": settings.ollama or shutil.which("ollama"),
         "cloudflared": settings.cloudflared or shutil.which("cloudflared"),
