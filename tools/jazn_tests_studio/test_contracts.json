@@ -27226,7 +27226,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 53
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_checkpoint_failure_preserves_pending_request": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -27243,7 +27243,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 71
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_unaccepted_transport_result_stays_pending_without_gui_final": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -27258,7 +27258,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 82
     },
     "tests/test_jazn_run_studio_delivery_ack.py::test_restart_reloads_pending_request_without_replay": {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
@@ -27273,7 +27273,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 92
     },
     "tests/test_jazn_run_studio_env_guard.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
       "path": "tests/test_jazn_run_studio_env_guard.py",

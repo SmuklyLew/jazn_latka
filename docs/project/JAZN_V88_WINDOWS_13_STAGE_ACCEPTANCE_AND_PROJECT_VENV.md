@@ -199,3 +199,16 @@ Testy MCP (SDK2.2.0): 42 PASS / 1 FAIL. Diagnoza wykazała dwa odrębne problemy
 Winpty, PyInstaller i PyNaCl nie są dostępne w projektowym .venv; nie instalowano
 ich automatycznie. Fizyczny ConPTY/EXE, prywatny MEMORY recall i pełny odbiór
 operatorski pozostają BLOCKED/NOT_RUN, zgodnie z zakresem zdolności.
+
+Pełna regresja na SHA f874ce01970707601c49302177e39f863ce54ded:
+3859 PASS, 8 FAIL, 42 SKIPPED, 7 warnings, 713.55 s (pełne TXT/JUnit i plugin).
+Cztery FAIL dotyczą starego mocka python_executable przyjmującego jeden argument;
+fixture dostosowano do przekazania ROOT i dodano asercję zgodności ROOT, zachowując
+wszystkie testy ACK/finalizacji. Oryginał zachowano byte-exact z provenance.
+Pozostałe trzy FAIL wynikają z izolacji wykonawcy: zagnieżdżony pytest próbuje
+sprzątać cudzy systemowy pytest-current; skrypt PowerShell pozostawiał puste
+zmienne zamiast je usuwać. Poprawiony zewnętrzny runner używa Remove-Item Env:
+i nowego własnego TEMP/TMP/TMPDIR. Celowany test kandydacki: 21 PASS / 2.48 s.
+Ósmy FAIL to potwierdzony problem ramkowania /mcp w powierzchni wykonawczej.
+Żadnego z ośmiu FAIL nie zaliczono jako PASS. Pełny oryginalny przebieg zachowano
+jako full-v92.txt/xml; kolejny przebieg ma odrębne pliki full-v92-02.*.
