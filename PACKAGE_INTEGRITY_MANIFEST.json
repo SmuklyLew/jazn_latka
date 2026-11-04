@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
-  "package_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
-  "generated_at_utc": "2026-11-04T14:01:30+00:00",
-  "updated_at_utc": "2026-11-04T14:01:30+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
+  "package_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
+  "generated_at_utc": "2026-11-04T14:14:25+00:00",
+  "updated_at_utc": "2026-11-04T14:14:25+00:00",
   "start_file": "run.py",
-  "file_count": 3679,
-  "static_file_count": 3679,
+  "file_count": 3680,
+  "static_file_count": 3680,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3007,
-      "sha256": "5a651c8008c7dafd1616a9f1e13cf02af8aa7baa95af1e53b7ed9948525dc5fc",
+      "sha256": "83b3e89cba6074181f7f719f1c9351ab45f3581163ca0574eca39c5da70ec07d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -500,7 +500,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1953,
-      "sha256": "febdb2db85973fc1ba1548a500a3dc179e07c80a06a4b62c10e3611917eb937c",
+      "sha256": "3553d8e396dd627e0b683f4b436d10c99140b4c1cbd8c72391188f4e92f7bcab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4036,8 +4036,8 @@
     },
     {
       "path": "docs/runtime/ISOLATED_DAEMON_OPERATOR_RECOVERY.md",
-      "size_bytes": 2543,
-      "sha256": "d43c7c86593b8ef34d53c8b69696a7259a302d39b0f7601476098f192449dcac",
+      "size_bytes": 3002,
+      "sha256": "5ce5fb9c77db8c42a1b8611a9441a154dbc092a33098f5c7a31959a11c1de021",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9968,7 +9968,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "d18c5aea2f19f3c103cec6da92c93b44979b2dda007f506035a5f368067ab024",
+      "sha256": "a47e2e94d2584e22b8c3377a92037ce2f35bea3a5d232bc011f01bf9b8be7fc5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11470,8 +11470,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 25529,
-      "sha256": "9ab999f2bc24579385265fb679ec8874c941cbdd5da92c45565ceb269b8eaab2",
+      "size_bytes": 25628,
+      "sha256": "e761ed928da052de3549a2eef31c8a34df87139aa0cae216bb3e8ae5654f60f4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31143,6 +31143,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_studio_bounded_daemon_diagnostics.py",
+      "size_bytes": 2482,
+      "sha256": "a4de588ce6a59fbf165dafb6c603daabacd34d885fd8f6065bebed1e696ecbb9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_studio_operator_paths.py",
       "size_bytes": 11933,
       "sha256": "09a303c6bccfa3cadb719cf2a6528d813e3fc6889d997fc298bf6d0975b95472",
@@ -32206,8 +32215,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 56691,
-      "sha256": "bae59fcc0751ec41009dec18d81988d1ec5ef768f3a2b69bc1779cf4c492d898",
+      "size_bytes": 57787,
+      "sha256": "f6b481592e9f3e56ca9e0319b54139cea61936909a61732f78cbd58086e08cef",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32908,8 +32917,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2808894,
-      "sha256": "1b44a11bc0eccba7430b95f4596726150c874f17b7f56f2da7ee58197939ed0f",
+      "size_bytes": 2809582,
+      "sha256": "b044139c1a781b25aeb2280ed66094872074d3befa3b6b9a153ceb598cbbb3fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33566,11 +33575,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
+  "release_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
-    "package_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery",
-    "release_version": "16.3.25.5.116.0.34.94.6.86-isolated-daemon-operator-recovery"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
+    "package_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics",
+    "release_version": "16.3.25.5.116.0.34.94.6.87-bounded-daemon-status-diagnostics"
   },
   "legacy_aliases": {
     "version": "release_version"
