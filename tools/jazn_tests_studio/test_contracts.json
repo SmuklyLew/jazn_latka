@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.74",
-  "active_definition_count": 3139,
+  "system_version": "16.3.25.5.116.0.34.94.6.88",
+  "active_definition_count": 3178,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -1923,7 +1923,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 153
+      "line": 156
     },
     "tests/test_archive_recall_ollama_jss_status_recovery.py::test_jss_memory_evidence_preserves_partial_readiness": {
       "path": "tests/test_archive_recall_ollama_jss_status_recovery.py",
@@ -1946,7 +1946,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 179
+      "line": 182
     },
     "tests/test_archived_test_policy.py::test_repository_pytest_config_excludes_archive_by_default": {
       "path": "tests/test_archived_test_policy.py",
@@ -24924,6 +24924,216 @@
       "description_source": "source_identity",
       "line": 221
     },
+    "tests/test_integrity_pinned_root.py::test_batch_member_does_not_inherit_trust_from_an_earlier_valid_path": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_batch_member_does_not_inherit_trust_from_an_earlier_valid_path",
+      "purpose": "Batch member does not inherit trust from an earlier valid path",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "UnsafeRelativePathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_integrity_pinned_root.py::test_batch_detects_a_link_escape_introduced_after_an_earlier_member": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_batch_detects_a_link_escape_introduced_after_an_earlier_member",
+      "purpose": "Batch detects a link escape introduced after an earlier member",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "UnsafeRelativePathError"
+      ],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_integrity_pinned_root.py::test_repeated_verification_rehashes_contents_and_checks_new_static_members": {
+      "path": "tests/test_integrity_pinned_root.py",
+      "name": "test_repeated_verification_rehashes_contents_and_checks_new_static_members",
+      "purpose": "Repeated verification rehashes contents and checks new static members",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.tools.safe_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_resume_refusal_identifies_dead_process_and_preserves_marker": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_resume_refusal_identifies_dead_process_and_preserves_marker",
+      "purpose": "Resume refusal identifies dead process and preserves marker",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_dead_owned_marker_can_enter_canonical_start_without_deleting_state": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_dead_owned_marker_can_enter_canonical_start_without_deleting_state",
+      "purpose": "Dead owned marker can enter canonical start without deleting state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_start_refuses_foreign_live_unknown_or_unverified_state": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_start_refuses_foreign_live_unknown_or_unverified_state",
+      "purpose": "Start refuses foreign live unknown or unverified state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_start_refuses_different_workspace_before_probe": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_start_refuses_different_workspace_before_probe",
+      "purpose": "Start refuses different workspace before probe",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_verified_existing_instance_can_be_reused_without_state_changes": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_verified_existing_instance_can_be_reused_without_state_changes",
+      "purpose": "Verified existing instance can be reused without state changes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_read_only_cli_diagnostics_do_not_adopt_untrusted_daemon": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_read_only_cli_diagnostics_do_not_adopt_untrusted_daemon",
+      "purpose": "Read only cli diagnostics do not adopt untrusted daemon",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_explicit_start_calls_guard_then_existing_control_plane": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_explicit_start_calls_guard_then_existing_control_plane",
+      "purpose": "Explicit start calls guard then existing control plane",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_gui_and_other_mutations_still_require_full_resume_trust": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_gui_and_other_mutations_still_require_full_resume_trust",
+      "purpose": "Gui and other mutations still require full resume trust",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
     "tests/test_jazn_acceptance_resume_profile.py::test_profile_session_reused_without_autostart_or_prod_writes": {
       "path": "tests/test_jazn_acceptance_resume_profile.py",
       "name": "test_profile_session_reused_without_autostart_or_prod_writes",
@@ -31464,6 +31674,25 @@
       "description_source": "source_identity",
       "line": 68
     },
+    "tests/test_jss_pytest_interrupted_evidence.py::test_keyboard_interrupt_in_teardown_preserves_incomplete_evidence": {
+      "path": "tests/test_jss_pytest_interrupted_evidence.py",
+      "name": "test_keyboard_interrupt_in_teardown_preserves_incomplete_evidence",
+      "purpose": "Keyboard interrupt in teardown preserves incomplete evidence",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_jss_qt_completion_ownership.py::test_serial_completion_sender_survives_callback_dispatch": {
       "path": "tests/test_jss_qt_completion_ownership.py",
       "name": "test_serial_completion_sender_survives_callback_dispatch",
@@ -31555,6 +31784,57 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 61
+    },
+    "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_incomplete_identity": {
+      "path": "tests/test_jss_service_table_readiness.py",
+      "name": "test_table_does_not_confirm_incomplete_identity",
+      "purpose": "Table does not confirm incomplete identity",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_inactive_state": {
+      "path": "tests/test_jss_service_table_readiness.py",
+      "name": "test_table_does_not_confirm_inactive_state",
+      "purpose": "Table does not confirm inactive state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_jss_service_table_readiness.py::test_table_confirms_complete_runtime_identity": {
+      "path": "tests/test_jss_service_table_readiness.py",
+      "name": "test_table_confirms_complete_runtime_identity",
+      "purpose": "Table confirms complete runtime identity",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
     },
     "tests/test_jss_startup_dependency_mcp_profile.py::test_mcp_preflight_uses_exact_python_and_sdk_api": {
       "path": "tests/test_jss_startup_dependency_mcp_profile.py",
@@ -54540,6 +54820,168 @@
       "description_source": "source_identity",
       "line": 264
     },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_daemon_sets_exclusive_ownership_before_bind": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_daemon_sets_exclusive_ownership_before_bind",
+      "purpose": "Daemon sets exclusive ownership before bind",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_second_daemon_cannot_share_live_daemon_address": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_second_daemon_cannot_share_live_daemon_address",
+      "purpose": "Second daemon cannot share live daemon address",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_later_reusable_listener_cannot_claim_daemon_address": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_later_reusable_listener_cannot_claim_daemon_address",
+      "purpose": "Later reusable listener cannot claim daemon address",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_daemon_refuses_an_existing_reusable_listener_before_writing_state": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_daemon_refuses_an_existing_reusable_listener_before_writing_state",
+      "purpose": "Daemon refuses an existing reusable listener before writing state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_cleanly_closed_unused_listener_can_be_reopened": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_cleanly_closed_unused_listener_can_be_reopened",
+      "purpose": "Cleanly closed unused listener can be reopened",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_missing_windows_exclusive_option_refuses_before_state_write": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_missing_windows_exclusive_option_refuses_before_state_write",
+      "purpose": "Missing windows exclusive option refuses before state write",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_runtime_daemon_windows_exclusive_bind.py::test_closed_http_listener_can_reopen_after_completed_request": {
+      "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
+      "name": "test_closed_http_listener_can_reopen_after_completed_request",
+      "purpose": "Closed http listener can reopen after completed request",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
     "tests/test_runtime_full_turn.py::test_full_runtime_turn_commits_transactionally_without_legacy_fanout": {
       "path": "tests/test_runtime_full_turn.py",
       "name": "test_full_runtime_turn_commits_transactionally_without_legacy_fanout",
@@ -61834,6 +62276,23 @@
       "description_source": "source_identity",
       "line": 176
     },
+    "tests/test_studio_bounded_daemon_diagnostics.py::test_negative_status_cause_survives_log_rotation": {
+      "path": "tests/test_studio_bounded_daemon_diagnostics.py",
+      "name": "test_negative_status_cause_survives_log_rotation",
+      "purpose": "Negative status cause survives log rotation",
+      "expected": "Pytest completes this contract cleanly and all 21 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 21,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_studio_operator_paths.py::test_defaults_are_external_and_discovery_does_not_create_directories": {
       "path": "tests/test_studio_operator_paths.py",
       "name": "test_defaults_are_external_and_discovery_does_not_create_directories",
@@ -62233,6 +62692,80 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 38
+    },
+    "tests/test_studio_selected_root_version.py::test_external_system_version_can_match_without_matching_operator_package": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_external_system_version_can_match_without_matching_operator_package",
+      "purpose": "External system version can match without matching operator package",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_studio_selected_root_version.py::test_live_identity_must_match_the_selected_source_version": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_live_identity_must_match_the_selected_source_version",
+      "purpose": "Live identity must match the selected source version",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_studio_selected_root_version.py::test_unreadable_or_nonliteral_source_cannot_fall_back_to_operator_identity": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_unreadable_or_nonliteral_source_cannot_fall_back_to_operator_identity",
+      "purpose": "Unreadable or nonliteral source cannot fall back to operator identity",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_studio_selected_root_version.py::test_a_changed_selected_version_invalidates_an_older_endpoint": {
+      "path": "tests/test_studio_selected_root_version.py",
+      "name": "test_a_changed_selected_version_invalidates_an_older_endpoint",
+      "purpose": "A changed selected version invalidates an older endpoint",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
     },
     "tests/test_studios_memory_path_normalization.py::test_memory_and_tier_paths_share_one_normalization": {
       "path": "tests/test_studios_memory_path_normalization.py",
@@ -63796,6 +64329,97 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_selected_test_endpoint_is_probed_without_default_port_fallback": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_selected_test_endpoint_is_probed_without_default_port_fallback",
+      "purpose": "Selected test endpoint is probed without default port fallback",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_invalid_endpoint_is_rejected_before_transport": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_invalid_endpoint_is_rejected_before_transport",
+      "purpose": "Invalid endpoint is rejected before transport",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_live_cli_passes_explicit_endpoint_to_existing_executor": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_live_cli_passes_explicit_endpoint_to_existing_executor",
+      "purpose": "Live cli passes explicit endpoint to existing executor",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_tpa_local_ollama_endpoint.py::test_runtime_environment_preserves_preflight_endpoint": {
+      "path": "tests/test_tpa_local_ollama_endpoint.py",
+      "name": "test_runtime_environment_preserves_preflight_endpoint",
+      "purpose": "Runtime environment preserves preflight endpoint",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_tpa_runner_ollama_endpoint.py::test_queue_records_endpoint_before_preflight_and_passes_it_to_live_child": {
+      "path": "tests/test_tpa_runner_ollama_endpoint.py",
+      "name": "test_queue_records_endpoint_before_preflight_and_passes_it_to_live_child",
+      "purpose": "Queue records endpoint before preflight and passes it to live child",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",
@@ -66058,6 +66682,166 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 6
+    },
+    "tests/test_windows_supervisor_host.py::test_plan_binds_one_root_to_a_noninteractive_boot_task_and_native_service": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_plan_binds_one_root_to_a_noninteractive_boot_task_and_native_service",
+      "purpose": "Plan binds one root to a noninteractive boot task and native service",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 16,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_windows_supervisor_host.py::test_service_control_stops_only_the_supervisor_and_waits_for_its_completion": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_service_control_stops_only_the_supervisor_and_waits_for_its_completion",
+      "purpose": "Service control stops only the supervisor and waits for its completion",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_windows_supervisor_host.py::test_service_preserves_canonical_supervisor_return_code": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_service_preserves_canonical_supervisor_return_code",
+      "purpose": "Service preserves canonical supervisor return code",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_windows_supervisor_host.py::test_worker_failure_is_reported_to_scm_without_becoming_success": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_worker_failure_is_reported_to_scm_without_becoming_success",
+      "purpose": "Worker failure is reported to scm without becoming success",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
+    },
+    "tests/test_windows_supervisor_host.py::test_registration_failure_never_starts_the_canonical_supervisor": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_registration_failure_never_starts_the_canonical_supervisor",
+      "purpose": "Registration failure never starts the canonical supervisor",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_windows_supervisor_host.py::test_real_scm_dispatcher_refuses_a_console_process_without_fallback": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_real_scm_dispatcher_refuses_a_console_process_without_fallback",
+      "purpose": "Real scm dispatcher refuses a console process without fallback",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
+    "tests/test_windows_supervisor_host.py::test_canonical_cli_routes_explicit_service_flag_without_plain_supervisor_fallback": {
+      "path": "tests/test_windows_supervisor_host.py",
+      "name": "test_canonical_cli_routes_explicit_service_flag_without_plain_supervisor_fallback",
+      "purpose": "Canonical cli routes explicit service flag without plain supervisor fallback",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 141
     },
     "tests/test_zip_resource_limits.py::test_normal_zip_passes_resource_validation": {
       "path": "tests/test_zip_resource_limits.py",

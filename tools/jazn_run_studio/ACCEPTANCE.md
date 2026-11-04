@@ -1,5 +1,24 @@
 # Scope, evidence and remaining gates
 
+JSS binds daemon version evidence to the canonical version.py of its selected
+SYSTEM ROOT. The operator package may have a different version. Both the status
+document and live daemon identity must match the selected source; missing,
+unreadable or nonliteral source metadata cannot fall back to the operator's
+version. ROOT, instance, process and heartbeat checks remain separate and are
+all still required before TPA cleanup.
+
+Live TPA may select an existing isolated local Ollama API with
+`--ollama-api-base http://127.0.0.1:<port>` (or `JAZN_OLLAMA_BASE_URL` for the
+TPA subprocess). The endpoint must be HTTP loopback with an explicit port from
+1024 to 65535, without credentials, paths, query or fragment. Preflight and the
+canonical runtime receive the same normalized address. The default remains
+`http://127.0.0.1:11434`. This option does not start Ollama, pull a model or
+certify a generated/finalized turn; missing models still block before staging.
+The existing queue accepts the same explicit `api_base` in `start_selection`,
+records it before preflight, and passes it as a command argument across its
+sanitized subprocess environment. No inherited credentials or host configuration
+are required; the ordinary GUI selection retains its default endpoint.
+
 Current continuation evidence is recorded in
 `docs/plans/JAZN_RUN_STUDIO_COMPLETION_CHECKPOINT.md`. The .60 P0 checkpoint
 has 58 SUCCESS/2 SKIPPED checks. .61 enforces P1 resource limits; .62 provides
