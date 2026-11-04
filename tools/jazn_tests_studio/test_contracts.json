@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.91",
-  "active_definition_count": 3197,
+  "system_version": "16.3.25.5.116.0.34.94.6.92",
+  "active_definition_count": 3198,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -34501,6 +34501,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 10
+    },
+    "tests/test_mcp_http_body_replay_lifetime.py::test_sdk_delegation_waits_for_real_disconnect_after_replayed_body": {
+      "path": "tests/test_mcp_http_body_replay_lifetime.py",
+      "name": "test_sdk_delegation_waits_for_real_disconnect_after_replayed_body",
+      "purpose": "Sdk delegation waits for real disconnect after replayed body",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_tasks_bridge"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
     },
     "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
       "path": "tests/test_mcp_http_cli.py",

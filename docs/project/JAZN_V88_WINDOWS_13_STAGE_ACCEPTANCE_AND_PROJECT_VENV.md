@@ -159,3 +159,43 @@ Pyright nie jest zainstalowany w projektowym .venv; narzędzie przygotowano
 w osobnym static-venv katalogu zadania. Pierwszy pełny Windows Pyright:
 40 błędów, w tym brak opcjonalnego prompt-toolkit i trzy wcześniejsze
 odwołania do API POSIX. Ten wynik pozostaje jawny; nie jest PASS.
+
+## Odbiór live v91 i poprawka ASGI v92
+
+Dla czystego SHA `2724cdf9f2087df54c1cf7bae4ca3f6308a30ea4` wykonano natywny
+panel TPA na Windows, z projektowym Pythonem 3.14.4 i istniejącą lokalną Ollamą
+11434/gemma3:latest. RunStore: `run-49126582f37a4e678a1e5d19e56245ee`.
+Pięć scenariuszy PASS: gui-daemon, ollama-two-turns, chat-reconnect, chat-resume,
+daemon-restart. Siedem zaakceptowanych, wyświetlonych i potwierdzonych tur;
+resume miał potwierdzony admission tego samego request_id bez replay.
+Restart dał nową zweryfikowaną tożsamość i druga odpowiedź odtworzyła kod
+z pierwszej tury. Każdy własny daemon zakończono przez canonical_stop;
+wszystkie dodatkowe cleanup_exit_code=0. Użyto MEMORY=off: brak dowodu recall
+prywatnej pamięci. Manifest archiwum obejmuje 22 scenariusze (5 PASS,
+17 NOT_RUN); wszystkie full_gate pozostają NOT_RUN. Weryfikator archiwum
+sprawdził snapshot i hashe. Raporty i zrzuty: katalog zadania,
+`v91-live-summary.json`, `v91-live-verified.json`, `v91-live-accepted-*.png`.
+Wyniki są historyczne dla wskazanego SHA, nie automatycznie dla v92.
+
+Kanoniczna synchronizacja v91 i niezależny check: manifest/provenance zgodne,
+synchronized=true, 3691 plików, source_commit=a6ae35686bfd98a0d1ccf04dab1c0446b9643fa9.
+
+Testy MCP (SDK2.2.0): 42 PASS / 1 FAIL. Diagnoza wykazała dwa odrębne problemy:
+
+- Własny błąd mostu ASGI: po odtworzeniu body zgłaszał fikcyjny
+  http.disconnect. V92 po jednorazowym replay czeka na rzeczywiste receive.
+  Dwa deterministyczne testy przed zmianą FAIL, zestaw po zmianie 28 PASS
+  (43.31 s), w tym kontrakty HTTP/Tasks, OAuth i odmowa wadliwych ramek.
+- Niezależny problem hosta: kontrolny ThreadingHTTPServer standardowej biblioteki
+  wysyła Content-Length, lecz klient surowego socketu dla /mcp odbiera
+  Transfer-Encoding:chunked bez chunk coding. Identyczny handler i treść dla
+  /probe zachowują prawidłowy Content-Length. Instrumentacja h11 potwierdza
+  poprawne bajty na wyjściu kodera, inne nagłówki po stronie klienta. Dowody:
+  `stdlib-wire-control.json`, `mcp-framing-candidate-v4/wire.bin` i server.log.
+  Nie ustalono komponentu hosta dokonującego tej zmiany. Nie zmieniano
+  ustawień hosta, nie osłabiono walidacji ramek i nie uznano lokalnego testu
+  CLI MCP za zaliczony. Wcześniejsze nieudane próby diagnostyczne zachowano.
+
+Winpty, PyInstaller i PyNaCl nie są dostępne w projektowym .venv; nie instalowano
+ich automatycznie. Fizyczny ConPTY/EXE, prywatny MEMORY recall i pełny odbiór
+operatorski pozostają BLOCKED/NOT_RUN, zgodnie z zakresem zdolności.
