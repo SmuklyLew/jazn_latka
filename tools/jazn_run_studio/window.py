@@ -226,7 +226,7 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         if not smoke:
             from .requirements_worker import setup_scope
             from .core import python_executable
-            if self.layout_state.get("setup_scope") != setup_scope(self.core.root, python_executable(self.core.settings)):
+            if self.layout_state.get("setup_scope") != setup_scope(self.core.root, python_executable(self.core.settings, self.core.root)):
                 QTimer.singleShot(0, self.open_setup)
         if isinstance(app := QApplication.instance(), QApplication):
             app.styleHints().colorSchemeChanged.connect(lambda _scheme: self.apply_theme())
