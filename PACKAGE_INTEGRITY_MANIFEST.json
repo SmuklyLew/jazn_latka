@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-  "package_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-  "generated_at_utc": "2026-11-04T20:04:08+00:00",
-  "updated_at_utc": "2026-11-04T20:04:08+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+  "package_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+  "generated_at_utc": "2026-11-04T22:56:09+00:00",
+  "updated_at_utc": "2026-11-04T22:56:09+00:00",
   "start_file": "run.py",
-  "file_count": 3694,
-  "static_file_count": 3694,
+  "file_count": 3696,
+  "static_file_count": 3696,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2995,
-      "sha256": "9ebadf9c0f1a8099ac4bc595e2f32abbf6d1371a89053169a7570ca9928d605f",
+      "size_bytes": 2989,
+      "sha256": "ba2c9bcee86482af4e0670c2ffb8def246147641d6267c082b238c61f1b57d56",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1951,
-      "sha256": "71747d97115263779ed6fba6671445a92548f0de96fc5a5a28a022107a90c515",
+      "size_bytes": 1950,
+      "sha256": "ab6e97d8b37f52ad971b1664409b59b1d59b7efb176950d1aade1c697bb9e133",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4260,6 +4260,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/runtime/SQLITE_EXISTING_WAL_WRITE_GATE.md",
+      "size_bytes": 2952,
+      "sha256": "c682a3622d353150cdab9002cfe65643dbffb63aa13e1a22850502d6f52e28f7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/runtime/TURN_FINALIZATION_CONTRACTS.md",
       "size_bytes": 6156,
       "sha256": "48b11b40326e9a0db206a9d0f008ab18195776d438a23fcc3a673eca30c4e017",
@@ -7519,8 +7528,8 @@
     },
     {
       "path": "latka_jazn/db/runtime_sqlite.py",
-      "size_bytes": 11409,
-      "sha256": "604a304deb1f1cc96125cf925607628ff404cad08fd565e4227143b3ed0dc8f0",
+      "size_bytes": 12897,
+      "sha256": "c3224d9dcd1dd1e56aa0ed823c4b37fe1d4a495e9a82456e2de28331878c93d6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9977,7 +9986,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "1207adfe0b2f468eed9883223350cda0b0558e0a7f92b2c2e176ba759948af1c",
+      "sha256": "e6e2b9eb294eaacea2d4d3c1bf7c8a0a0b7689142bcd24aca003ad252493e5b5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10264,8 +10273,8 @@
     },
     {
       "path": "latka_jazn/tools/chat_export_store.py",
-      "size_bytes": 24672,
-      "sha256": "e506e89453e02125fcb10e0928f69a6d19601a478b8a343f107e38636081406d",
+      "size_bytes": 24469,
+      "sha256": "40a878723b00d7bb23d7922c064df18a0a66269c5ecbf8557dc4cf7e170fbdd0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10930,8 +10939,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_fidelity.py",
-      "size_bytes": 28083,
-      "sha256": "32a5dc767c4d17dc28bd668307f51887de8f2e7f66d4be59e40f1a852bf9c21d",
+      "size_bytes": 28097,
+      "sha256": "77aff5c8ff64620f8370a1a705fd00f85f76220cc2132a6b652ae0137cba75b2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11218,8 +11227,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_store.py",
-      "size_bytes": 1608,
-      "sha256": "093bbd580b3629406d656deda823a59e053fab9179f8d30d3b6a714cf4761b67",
+      "size_bytes": 1493,
+      "sha256": "f8623ee1f8e803fc2ab5ebfc15d0ac0e31a58feff62230b17abc0a0849683922",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11479,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26163,
-      "sha256": "af9193a0e89b10278d831cc1f45a8b6dc835d3854e72898afe70da43c3d3c7ad",
+      "size_bytes": 26292,
+      "sha256": "24b9969cb0651c8d239c440b9309386c51819619f267edc5e9de96f0781143a1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31008,6 +31017,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "size_bytes": 6888,
+      "sha256": "2a99fe4eece0071f08257c67bdc12a109d7a3acc502ecc0b93119984f4effb2f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_sqlite_hardening.py",
       "size_bytes": 5906,
       "sha256": "295eac6f2e223b37c5f373a406c4d2cebb89438352706bcf28e332ba859c4dce",
@@ -33043,8 +33061,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2823977,
-      "sha256": "65a57a0da07c8833eddc484b6c44016d278ebda183d6840f296a5e5e3716954b",
+      "size_bytes": 2833463,
+      "sha256": "7f9aeaf355553bbfa921d0f18b799fa84735a1d02d40750447e81d8ed093d324",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33701,11 +33719,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "release_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-    "package_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-    "release_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+    "package_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+    "release_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate"
   },
   "legacy_aliases": {
     "version": "release_version"

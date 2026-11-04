@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "f844800adda6e53734764872d614fb8eee18b015",
-  "base_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-  "commit_date": "2026-11-04T21:04:08+01:00",
+  "base_merge_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
+  "base_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+  "commit_date": "2026-11-04T23:56:09+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-04T20:04:08+00:00",
+  "generated_at_utc": "2026-11-04T22:56:09+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "f3e9f0b669918cd9720616c9abd615e43b29b2cf",
+  "git_tree_sha": "307b7aa49a830f20e346781f60a61f2ab7c63482",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "f844800adda6e53734764872d614fb8eee18b015",
-    "source_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime"
+    "source_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
+    "source_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "release_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "f844800adda6e53734764872d614fb8eee18b015",
+  "source_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "source_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "update_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "version_source": "latka_jazn/version.py"
 }
