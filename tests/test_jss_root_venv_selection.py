@@ -87,7 +87,10 @@ def test_project_venv_requires_interpreter_file(
         python_executable(Settings(), root)
 
 
-def test_mcp_uses_same_default_or_explicit_overrides(root: Path, tmp_path: Path) -> None:
+def test_mcp_uses_same_default_or_explicit_overrides(
+    root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("JAZN_STUDIO_PYTHON", raising=False)
     local = make_local_venv(root)
     assert python_executable(Settings(python=""), root) == str(local)
     other = tmp_path / "python-for-mcp"
@@ -95,7 +98,10 @@ def test_mcp_uses_same_default_or_explicit_overrides(root: Path, tmp_path: Path)
     assert python_executable(Settings(python=str(other)), root) == str(other)
 
 
-def test_independent_worktrees_never_share_project_venv(tmp_path: Path) -> None:
+def test_independent_worktrees_never_share_project_venv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("JAZN_STUDIO_PYTHON", raising=False)
     first = tmp_path / "master"
     second = tmp_path / "feature"
     first.mkdir()
