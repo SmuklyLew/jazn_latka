@@ -1,3 +1,4 @@
+# v116.0.34.94.6.93: Refuse unsafe existing WAL before writable open and route rebuild stores through the central journal policy.
 # v116.0.34.94.6.92: Preserve the real ASGI receive channel after replaying a buffered MCP request.
 # v116.0.34.94.6.91: Bind chat, resume, final validator and operator launch to ROOT interpreter selection.
 # v116.0.34.94.6.90: Resolve future settings paths from strict existing ancestors during concurrent Windows mkdir.
@@ -223,9 +224,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.92"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.93"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "mcp-request-connection-lifetime"
+PACKAGE_RELEASE_NAME = "sqlite-existing-wal-write-gate"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

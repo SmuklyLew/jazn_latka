@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.92",
-  "active_definition_count": 3198,
+  "system_version": "16.3.25.5.116.0.34.94.6.93",
+  "active_definition_count": 3208,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -57002,6 +57002,243 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 186
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_existing_wal_refused_before_sqlite_open_and_bytes_preserved": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_existing_wal_refused_before_sqlite_open_and_bytes_preserved",
+      "purpose": "Existing wal refused before sqlite open and bytes preserved",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_fixed_library_can_keep_existing_wal": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_fixed_library_can_keep_existing_wal",
+      "purpose": "Fixed library can keep existing wal",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_new_and_rollback_databases_remain_writable": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_new_and_rollback_databases_remain_writable",
+      "purpose": "New and rollback databases remain writable",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_gate_does_not_hide_permission_errors": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_gate_does_not_hide_permission_errors",
+      "purpose": "Gate does not hide permission errors",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "PermissionError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_diagnostic_does_not_claim_global_writer_coverage": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_diagnostic_does_not_claim_global_writer_coverage",
+      "purpose": "Diagnostic does not claim global writer coverage",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_multiple_process_writers_keep_rollback_database_integrity": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_multiple_process_writers_keep_rollback_database_integrity",
+      "purpose": "Multiple process writers keep rollback database integrity",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_rebuild_store_uses_central_safe_journal_policy": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_rebuild_store_uses_central_safe_journal_policy",
+      "purpose": "Rebuild store uses central safe journal policy",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_rebuild_store_refuses_existing_unsafe_wal_without_conversion": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_rebuild_store_refuses_existing_unsafe_wal_without_conversion",
+      "purpose": "Rebuild store refuses existing unsafe wal without conversion",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 124
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_archive_and_rebuild_share_the_same_safe_journal_policy": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_archive_and_rebuild_share_the_same_safe_journal_policy",
+      "purpose": "Archive and rebuild share the same safe journal policy",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "archive",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 135
+    },
+    "tests/test_runtime_sqlite_existing_wal_gate.py::test_source_mirror_uses_the_same_safe_journal_policy": {
+      "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
+      "name": "test_source_mirror_uses_the_same_safe_journal_policy",
+      "purpose": "Source mirror uses the same safe journal policy",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools.chat_export_store",
+        "latka_jazn.tools.memory_rebuild_app.source_fidelity",
+        "latka_jazn.tools.memory_rebuild_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 146
     },
     "tests/test_runtime_sqlite_hardening.py::test_sqlite_wal_reset_fix_version_matrix": {
       "path": "tests/test_runtime_sqlite_hardening.py",

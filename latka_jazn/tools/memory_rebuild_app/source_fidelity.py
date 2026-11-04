@@ -28,6 +28,8 @@ from latka_jazn.tools.chat_export_reader import (
     sha256_file,
 )
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable
+
 from .html_import import read_html_conversations
 from .test_spec import TestOutcome
 
@@ -76,12 +78,7 @@ def default_test00_root(tool_root: str | Path) -> Path:
 
 
 def _connect(database: Path) -> sqlite3.Connection:
-    con = sqlite3.connect(database, timeout=60)
-    con.row_factory = sqlite3.Row
-    con.execute("PRAGMA foreign_keys=ON")
-    con.execute("PRAGMA journal_mode=WAL")
-    con.execute("PRAGMA synchronous=FULL")
-    return con
+    return connect_runtime_writable(database, timeout_ms=60_000, synchronous="FULL")
 
 
 def _initialize(con: sqlite3.Connection) -> None:
@@ -646,7 +643,8 @@ def run_test00_source_fidelity(
             ))
         integrity = [str(row[0]) for row in con.execute("PRAGMA integrity_check")]
         foreign_keys = [tuple(row) for row in con.execute("PRAGMA foreign_key_check")]
-        con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        if str(con.execute("PRAGMA journal_mode").fetchone()[0]).lower() == "wal":
+            con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         con.commit()
 
     outcome = _aggregate_outcome(results)

@@ -116,8 +116,9 @@ def runtime_sqlite_write_guard(
 
     The sidecar lock file is deliberately separate from SQLite's own WAL/SHM files.
     It narrows all Jaźń runtime writers for a database to one application-level
-    writer at a time, which also prevents concurrent Jaźń checkpoints/writes on
-    SQLite builds affected by the WAL-reset race. The guard is re-entrant for
+    writer at a time. Only operations using this guard are serialized; this
+    is not proof that every SQLite writer or checkpoint is covered. The safe
+    journal policy remains the primary WAL-reset mitigation. The guard is re-entrant for
     the same database on the same thread so connection setup can safely run
     inside a larger guarded transaction.
     """
@@ -180,6 +181,28 @@ def runtime_sqlite_journal_mode(version_info: tuple[int, ...] | None = None) -> 
     return "WAL" if sqlite_wal_reset_fix_available(version_info) else "DELETE"
 
 
+def require_safe_sqlite_write(path: str | Path) -> None:
+    """Refuse existing WAL files on vulnerable SQLite without opening them RW.
+
+    Never silently convert an existing database: journal changes may checkpoint
+    its WAL and require an explicit maintenance decision with a fixed library.
+    New/rollback-journal databases remain supported by the central connection
+    policy. Cooperating writers must keep using the same write guard.
+    """
+    if str(path) == ":memory:" or sqlite_wal_reset_fix_available():
+        return
+    try:
+        with Path(path).open("rb") as stream:
+            header = stream.read(20)
+    except FileNotFoundError:
+        return
+    if header.startswith(b"SQLite format 3\x00") and 2 in header[18:20]:
+        raise sqlite3.OperationalError(
+            "unsafe_existing_wal_requires_fixed_sqlite: refusing writable open; "
+            "no automatic checkpoint or journal conversion"
+        )
+
+
 def runtime_sqlite_capabilities() -> dict[str, Any]:
     fixed = sqlite_wal_reset_fix_available()
     selected_journal_mode = runtime_sqlite_journal_mode()
@@ -194,6 +217,9 @@ def runtime_sqlite_capabilities() -> dict[str, Any]:
         "journal_mode_policy": "wal_on_fixed_sqlite_else_delete",
         "wal_reset_mitigation_required": not fixed,
         "wal_reset_mitigation_active": not fixed and selected_journal_mode == "DELETE",
+        "mitigation_scope": "central_runtime_writable_connections_only",
+        "existing_wal_on_unfixed_sqlite": "refuse_before_writable_open",
+        "all_sqlite_writers_verified": False,
         "truth_boundary": (
             "The runtime reports the SQLite library actually loaded by Python. "
             "Fixed SQLite builds use WAL. Builds without a documented WAL-reset fix use DELETE rollback-journal mode, "
@@ -258,6 +284,7 @@ def connect_runtime_writable(
         raise ValueError("temp_store must be FILE, MEMORY or None")
     timeout_value = max(1, int(timeout_ms))
     with runtime_sqlite_write_guard(db_path, timeout_ms=timeout_value):
+        require_safe_sqlite_write(db_path)
         connection = sqlite3.connect(
             writable_sqlite_uri(db_path),
             uri=True,
@@ -272,6 +299,10 @@ def connect_runtime_writable(
             selected_journal_mode = runtime_sqlite_journal_mode()
             current_mode_row = connection.execute("PRAGMA journal_mode").fetchone()
             current_mode = "" if current_mode_row is None else str(current_mode_row[0]).upper()
+            if current_mode == "WAL" and selected_journal_mode != "WAL":
+                raise sqlite3.OperationalError(
+                    "unsafe_existing_wal_requires_fixed_sqlite: journal changed during open"
+                )
             if current_mode != selected_journal_mode:
                 mode_row = connection.execute(f"PRAGMA journal_mode={selected_journal_mode}").fetchone()
                 current_mode = "" if mode_row is None else str(mode_row[0]).upper()
