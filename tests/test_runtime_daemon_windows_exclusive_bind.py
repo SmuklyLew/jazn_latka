@@ -33,7 +33,9 @@ def daemon(tmp_path):
 def test_daemon_sets_exclusive_ownership_before_bind(daemon):
     server = daemon()
     assert server.socket.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR) == 0
-    assert server.socket.getsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE) != 0
+    exclusive_option = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+    assert exclusive_option is not None
+    assert server.socket.getsockopt(socket.SOL_SOCKET, exclusive_option) != 0
 
 
 def test_second_daemon_cannot_share_live_daemon_address(daemon):

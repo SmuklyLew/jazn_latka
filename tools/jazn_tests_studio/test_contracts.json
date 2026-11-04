@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.84",
+  "system_version": "16.3.25.5.116.0.34.94.6.85",
   "active_definition_count": 3169,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -54676,14 +54676,14 @@
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
       "name": "test_daemon_sets_exclusive_ownership_before_bind",
       "purpose": "Daemon sets exclusive ownership before bind",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime",
         "windows"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -54716,7 +54716,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 39
+      "line": 41
     },
     "tests/test_runtime_daemon_windows_exclusive_bind.py::test_later_reusable_listener_cannot_claim_daemon_address": {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
@@ -54740,7 +54740,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 47
     },
     "tests/test_runtime_daemon_windows_exclusive_bind.py::test_daemon_refuses_an_existing_reusable_listener_before_writing_state": {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
@@ -54764,7 +54764,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 53
+      "line": 55
     },
     "tests/test_runtime_daemon_windows_exclusive_bind.py::test_cleanly_closed_unused_listener_can_be_reopened": {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
@@ -54786,7 +54786,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 68
     },
     "tests/test_runtime_daemon_windows_exclusive_bind.py::test_missing_windows_exclusive_option_refuses_before_state_write": {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
@@ -54810,7 +54810,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 74
+      "line": 76
     },
     "tests/test_runtime_daemon_windows_exclusive_bind.py::test_closed_http_listener_can_reopen_after_completed_request": {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
@@ -54832,7 +54832,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 86
     },
     "tests/test_runtime_full_turn.py::test_full_runtime_turn_commits_transactionally_without_legacy_fanout": {
       "path": "tests/test_runtime_full_turn.py",
