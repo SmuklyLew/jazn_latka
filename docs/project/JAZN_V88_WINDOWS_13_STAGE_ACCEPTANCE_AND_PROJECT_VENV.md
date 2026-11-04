@@ -139,3 +139,23 @@ Dowody lokalne: `D:\.AI\codex_tasks\jss-v89-finalization-20261104\`,
 `before.txt/xml`, `p0.txt/xml`, `p0-evidence/` (kanoniczny plugin JSS).
 Są to wyniki drzewa roboczego przed końcowym commitem; końcowy SHA wymaga
 własnej walidacji. Nie zmieniano operatorowego .venv ani prywatnych ustawień.
+
+## Kontynuacja v91 — interpreter rozmowy i operatora
+
+W przeglądzie znaleziono pominięty argument ROOT w ChatClient (connect,
+resume i worker walidatora finalizacji), propozycjach/kontroli kreatora oraz
+zewnętrznej konsoli Jaźni. Sam poprawny resolver z v89 nie wystarczał:
+wywołanie bez ROOT wybierało host Python zamiast projektowego .venv,
+a brakujący interpreter projektu mógł zostać niezauważony przez czat.
+Wszystkie wskazane wywołania przekazują teraz ROOT do istniejącego resolvera.
+Nie zmieniono transportu, accepted finalization, endpointu ani request_id.
+
+Dowód przed poprawką: nowe testy ChatClient 4 FAIL / 2 PASS. Po poprawce:
+40 PASS w 48.05 s (wybór .venv, nadpisania operatora/środowiska, odmowa
+uszkodzonego środowiska, resume, walidator, kreator Qt i zewnętrzna konsola).
+Raporty: chat-before.txt/xml, p1.txt/xml oraz p1-evidence w tym samym
+zewnętrznym katalogu zadania. Są to testy regresyjne, nie dowód żywej rozmowy.
+Pyright nie jest zainstalowany w projektowym .venv; narzędzie przygotowano
+w osobnym static-venv katalogu zadania. Pierwszy pełny Windows Pyright:
+40 błędów, w tym brak opcjonalnego prompt-toolkit i trzy wcześniejsze
+odwołania do API POSIX. Ten wynik pozostaje jawny; nie jest PASS.

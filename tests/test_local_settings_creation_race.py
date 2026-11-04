@@ -27,7 +27,7 @@ def test_directory_created_after_initial_lookup(tmp_path, monkeypatch, created):
     target = operator / "jazn_run_studio"
     layout = LocalSettingsLayout(system, system / ".settings", local,
                                  operator, local / "acceptance")
-    original = ntpath._getfinalpathname
+    original = getattr(ntpath, "_getfinalpathname")
     injected = False
     errors = []
 

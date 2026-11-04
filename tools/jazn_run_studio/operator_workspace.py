@@ -358,7 +358,7 @@ class OperatorWorkspace:
         if os.name != "nt":
             raise StudioError("Ten przycisk wymaga terminala Windows")
         core = self.host.core
-        subprocess.Popen([python_executable(core.settings), "-X", "utf8", str(core.root / "run.py")],
+        subprocess.Popen([python_executable(core.settings, core.root), "-X", "utf8", str(core.root / "run.py")],
                          cwd=core.root, env=core.child_environment(), shell=False,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 

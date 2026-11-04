@@ -70,13 +70,13 @@ class ChatClient:
 
     def connection_command(self) -> list[str]:
         self._require_same_endpoint()
-        return [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
+        return [python_executable(self.core.settings, self.core.root), "-X", "utf8", str(self.core.root / "run.py"),
                 "--chat-ollama", *self.daemon_options,
                 "--ollama-model", self.core.settings.model, "--session-id", self.session_id]
 
     def resume_command(self, request: str) -> list[str]:
         self._require_same_endpoint()
-        return [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
+        return [python_executable(self.core.settings, self.core.root), "-X", "utf8", str(self.core.root / "run.py"),
                 "--daemon-result", request, *self.daemon_options]
 
     def connect(self) -> None:
@@ -171,7 +171,7 @@ class ChatClient:
             self.core.emit("chat", "chat_state", "Runtime zgłosił błąd: " + code + ". Zachowano request_id; użyj Wznów wynik.")
             return
         # No unaccepted candidate or user prompt is sent into the shared log registry.
-        checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
+        checked = run([python_executable(self.core.settings, self.core.root), "-X", "utf8", "-m",
                        "tools.jazn_run_studio.validation_worker"], cwd=self.core.root,
                       data=json.dumps({"payload": payload, "request_id": request,
                                        "session_id": self.session_id}, ensure_ascii=False).encode("utf-8"), timeout=30)
