@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-  "package_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-  "generated_at_utc": "2026-11-04T19:22:21+00:00",
-  "updated_at_utc": "2026-11-04T19:22:21+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "package_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+  "generated_at_utc": "2026-11-04T19:44:15+00:00",
+  "updated_at_utc": "2026-11-04T19:44:15+00:00",
   "start_file": "run.py",
-  "file_count": 3691,
-  "static_file_count": 3691,
+  "file_count": 3692,
+  "static_file_count": 3692,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3007,
-      "sha256": "b70094034662efa4cd9bc800d677faa0c72dd6568c8cc3dcdcfc787f4d487686",
+      "size_bytes": 2995,
+      "sha256": "c8765f9af7b780c68b50624b8bacc555bde2ac581a25ac953132b0a96d920b69",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1953,
-      "sha256": "ff7836dfb1c4d88b0b24963bbcbd5da2d50f385194cf77b276d2350427fd1d5b",
+      "size_bytes": 1951,
+      "sha256": "71747d97115263779ed6fba6671445a92548f0de96fc5a5a28a022107a90c515",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2533,8 +2533,8 @@
     },
     {
       "path": "docs/project/JAZN_V88_WINDOWS_13_STAGE_ACCEPTANCE_AND_PROJECT_VENV.md",
-      "size_bytes": 13062,
-      "sha256": "dcace2055e5cc7b23ac2e247de66bb2cf56e0c84370fb48aa12e2a51740923a3",
+      "size_bytes": 15645,
+      "sha256": "168b5a8bc6bcc6e48a47ae1a760f3fffaa9d4450770c5a227ae7505998203b54",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7717,8 +7717,8 @@
     },
     {
       "path": "latka_jazn/mcp/http_tasks_bridge.py",
-      "size_bytes": 20932,
-      "sha256": "d6f1d27d4a3140493f364d7dd69130a201ae2699c57c711e0cb44eb35e832f43",
+      "size_bytes": 21150,
+      "sha256": "199021f515d31b0c26ba95de9e22b698bda9990d04780887be5d25d1855cd325",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9977,7 +9977,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "7a7772f63d9cd71afd3e34dbed33c1f797a453ed5ee16a67d3f320702bb8dfc6",
+      "sha256": "1207adfe0b2f468eed9883223350cda0b0558e0a7f92b2c2e176ba759948af1c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11479,8 +11479,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26065,
-      "sha256": "67751f86f1912ee29538eaf80bb29929e5ca09bdeaf0ad1cbda6ad678f560683",
+      "size_bytes": 26163,
+      "sha256": "af9193a0e89b10278d831cc1f45a8b6dc835d3854e72898afe70da43c3d3c7ad",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29199,6 +29199,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_http_body_replay_lifetime.py",
+      "size_bytes": 2880,
+      "sha256": "54019a041b39e2a74b3f9cc6cd51135bb2028971459dbf17f6486cc6289c7f41",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_mcp_http_cli.py",
       "size_bytes": 873,
       "sha256": "9383fce7e7e36be7f4635e808456360b5b225b845ca826eb24e89090ecec40b4",
@@ -33016,8 +33025,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2823155,
-      "sha256": "baf2060722c834e5e03d1e2482f29d5b5c5f031eb7f0201c17d21893d5b6fee2",
+      "size_bytes": 2823977,
+      "sha256": "886b20afa8eaf7b6bdd8f8292b275b6ccd1c68040814fadc4c291a0ae5101281",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33674,11 +33683,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
+  "release_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-    "package_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-    "release_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+    "package_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
+    "release_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime"
   },
   "legacy_aliases": {
     "version": "release_version"
