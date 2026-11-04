@@ -459,6 +459,10 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,
         "heartbeat_fresh": daemon.get("endpoint_heartbeat_fresh") is True,
         "active_state": daemon.get("active_state") or data.get("runtime_active_state"),
+        "active_state_reason": str(daemon.get("active_state_reason") or "not_observed")[:128],
+        "process_state": str(daemon.get("process_state") or "not_observed")[:128],
+        "identity_state": str(daemon.get("identity_state") or "not_observed")[:128],
+        "heartbeat_state": str(daemon.get("heartbeat_state") or "not_observed")[:128],
         "conversation_ready": conversation_ready,
         "root_matches": root_matches,
         "version_matches": version_matches,
@@ -1008,7 +1012,18 @@ class Controller:
                     job.state = "failed"
                     if job.error is None or job.error.startswith("process_exit:"):
                         job.error = "invalid_status_json"
-                self.emit(job.key, "evidence", daemon_evidence(value, expected_root=self.root))
+                evidence = daemon_evidence(value, expected_root=self.root)
+                self.emit(job.key, "evidence", evidence)
+                # Canonical status may exceed the rotating line buffer. Keep a
+                # bounded diagnosis after the raw log, including negative status
+                # on exit 1, so terminal operators never lose the refusal cause.
+                self.emit(job.key, "log", "JSS_DAEMON_DIAGNOSTIC " + json.dumps({
+                    "schema_version": "jazn_studio_daemon_diagnostic/v1",
+                    "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "root": str(self.root),
+                    **evidence,
+                    "process_events_log": str(workspace_runtime_path(self.root) / "daemon" / "process_events.jsonl"),
+                }, ensure_ascii=False))
                 self.emit(job.key, "status_summary", status_summary(value))
                 self.emit(job.key, "memory_evidence", memory_evidence(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):

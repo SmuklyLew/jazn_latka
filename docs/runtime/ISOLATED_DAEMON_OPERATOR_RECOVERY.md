@@ -21,6 +21,13 @@ szczegóły błędu i ścieżki logów; zdarzenia startu znajdują się w katalo
 `daemon/process_events.jsonl` wybranego workspace. Brak zdarzenia końca
 procesu i pusty stderr nie rozstrzygają przyczyny jego zakończenia.
 
+Duży raport kanoniczny może przekroczyć rotacyjny bufor logów JSS. Dlatego
+ostatni wiersz statusu `JSS_DAEMON_DIAGNOSTIC` zawiera ograniczony JSON z czasem
+pomiaru, wybranym ROOT, wersją, PID, instancją, stanem procesu, kodem przyczyny,
+oddzielnymi dowodami gotowości i ścieżką dziennika zdarzeń. Jest emitowany
+również dla negatywnego statusu z kodem wyjścia 1. Nie zmienia wyniku komendy
+ani nie potwierdza zaakceptowanej wypowiedzi runtime.
+
 ## Jawny start przez kanoniczny control plane
 
 Po sprawdzeniu diagnozy operator może wykonać:
