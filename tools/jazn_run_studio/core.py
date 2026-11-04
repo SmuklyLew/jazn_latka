@@ -553,6 +553,7 @@ class Controller:
         self.redactor = Redactor()
         self.jobs: dict[str, Job] = {}
         self.logs: dict[str, deque[str]] = {}
+        self._diagnostic_logs: deque[str] = deque(maxlen=2500)
         self.events: queue.Queue[tuple[str, str, Any]] = queue.Queue(maxsize=5000)
         # Terminal states, validated chat finals and helper results cannot be
         # discarded when a burst of diagnostic logs fills the bounded queue.
@@ -567,7 +568,24 @@ class Controller:
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
-            if kind == "log":
+            if kind == "daemon_diagnostic":
+                # Internal, fixed-schema scalar projection only. Raw child
+                # output always enters as "log" and cannot opt out of redaction
+                # by imitating a diagnostic prefix. Preserve public field names;
+                # credentials are redacted in values before JSON serialization.
+                if not isinstance(value, dict) or any(
+                    not isinstance(name, str) or type(item) not in (str, int, bool, type(None))
+                    for name, item in value.items()
+                ):
+                    raise StudioError("Nieprawidłowy format diagnozy daemona")
+                value = "JSS_DAEMON_DIAGNOSTIC " + json.dumps({
+                    name: self.redactor.text(item) if isinstance(item, str) else item
+                    for name, item in value.items()
+                }, ensure_ascii=False)
+                kind = "log"
+                self.logs.setdefault(key, deque(maxlen=2500)).append(value)
+                self._diagnostic_logs.append(value)
+            elif kind == "log":
                 value = self.redactor.text(str(value))
                 self.logs.setdefault(key, deque(maxlen=2500)).append(value)
             elif kind == "state" and isinstance(value, dict):
@@ -1017,13 +1035,13 @@ class Controller:
                 # Canonical status may exceed the rotating line buffer. Keep a
                 # bounded diagnosis after the raw log, including negative status
                 # on exit 1, so terminal operators never lose the refusal cause.
-                self.emit(job.key, "log", "JSS_DAEMON_DIAGNOSTIC " + json.dumps({
+                self.emit(job.key, "daemon_diagnostic", {
                     "schema_version": "jazn_studio_daemon_diagnostic/v1",
                     "observed_at_utc": datetime.now(timezone.utc).isoformat(),
                     "root": str(self.root),
                     **evidence,
                     "process_events_log": str(workspace_runtime_path(self.root) / "daemon" / "process_events.jsonl"),
-                }, ensure_ascii=False))
+                })
                 self.emit(job.key, "status_summary", status_summary(value))
                 self.emit(job.key, "memory_evidence", memory_evidence(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
@@ -1111,8 +1129,16 @@ class Controller:
 
     def export_report(self, path: Path) -> None:
         path = _path_without_links(path.absolute())
+        with self.lock:
+            internal_diagnostics = set(self._diagnostic_logs)
+            report = self.report()
         def sanitized(value: Any) -> Any:
             if isinstance(value, str):
+                if value in internal_diagnostics:
+                    # Reapply any newly loaded secrets to values, preserving
+                    # the schema of internally created diagnostic log records.
+                    prefix = "JSS_DAEMON_DIAGNOSTIC "
+                    return prefix + json.dumps(sanitized(json.loads(value[len(prefix):])), ensure_ascii=False)
                 return self.redactor.text(value)
             if isinstance(value, dict):
                 return {k: sanitized(v) for k, v in value.items()}
@@ -1121,7 +1147,7 @@ class Controller:
             return value
         # Exclusive creation prevents silently replacing a source/config file.
         with path.open("x", encoding="utf-8") as stream:
-            json.dump(sanitized(self.report()), stream, ensure_ascii=False, indent=2)
+            json.dump(sanitized(report), stream, ensure_ascii=False, indent=2)
 
     def close(self) -> None:
         with self.lock:

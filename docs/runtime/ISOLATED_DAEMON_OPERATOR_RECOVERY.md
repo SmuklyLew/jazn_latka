@@ -28,6 +28,11 @@ oddzielnymi dowodami gotowości i ścieżką dziennika zdarzeń. Jest emitowany
 również dla negatywnego statusu z kodem wyjścia 1. Nie zmienia wyniku komendy
 ani nie potwierdza zaakceptowanej wypowiedzi runtime.
 
+Nazwy pól tego wewnętrznego raportu są stałe. Redakcja sekretów obejmuje wartości
+przed serializacją JSON, również przy eksporcie i po późniejszym wczytaniu nowych
+sekretów. Zwykły tekst procesu potomnego nadal przechodzi pełną redakcję tekstową;
+sam prefiks `JSS_DAEMON_DIAGNOSTIC` nie nadaje mu zaufania ani gotowości.
+
 ## Jawny start przez kanoniczny control plane
 
 Po sprawdzeniu diagnozy operator może wykonać:

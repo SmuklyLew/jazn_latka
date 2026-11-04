@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.87",
+  "system_version": "16.3.25.5.116.0.34.94.6.88",
   "active_definition_count": 3178,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -62280,16 +62280,18 @@
       "path": "tests/test_studio_bounded_daemon_diagnostics.py",
       "name": "test_negative_status_cause_survives_log_rotation",
       "purpose": "Negative status cause survives log rotation",
-      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 21 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
-      "markers": [],
-      "assertion_count": 11,
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 21,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 10
+      "line": 13
     },
     "tests/test_studio_operator_paths.py::test_defaults_are_external_and_discovery_does_not_create_directories": {
       "path": "tests/test_studio_operator_paths.py",
