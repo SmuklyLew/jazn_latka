@@ -142,7 +142,9 @@ class DashboardViewMixin:
         data = discovery(self.core.settings, self.core.root)
         rows = [(name, "Dostępny" if data.get(name) else "Brak", str(data.get(name) or (data.get("python_error") if name == "python" else None) or "Wskaż plik w ustawieniach"))
                 for name in ("python", "ollama", "cloudflared", "git")]
-        rows += [(name, "Dostępna" if present else "Brak", "Biblioteka Pythona") for name, present in data["dependencies"].items()]
+        rows += [(name, "Dostępna" if present else "Brak",
+                  "Biblioteka hosta GUI: " + str(data["dependencies_interpreter"]))
+                 for name, present in data["dependencies"].items()]
         self.setup.setRowCount(len(rows))
         for row, values in enumerate(rows):
             for column, value in enumerate(values):
