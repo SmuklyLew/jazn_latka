@@ -9,7 +9,7 @@ import pytest
 
 from tools.jazn_run_studio.core import (
     Controller, Settings, StudioError, discovery, project_python_executable,
-    python_executable,
+    python_candidate_for_ui, python_executable,
 )
 
 
@@ -71,6 +71,9 @@ def test_broken_project_venv_fails_closed_without_host_fallback(
     report = discovery(Settings(), root)
     assert report["python"] is None
     assert "pyvenv.cfg" in report["python_error"]
+    # The UI can open but must not silently use the host interpreter.
+    expected = root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    assert python_candidate_for_ui(Settings(), root) == str(expected)
 
 
 def test_project_venv_requires_interpreter_file(
