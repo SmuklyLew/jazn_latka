@@ -359,6 +359,19 @@ def python_executable(settings: Settings, root: Path | None = None) -> str:
     return sys.executable
 
 
+def python_candidate_for_ui(settings: Settings, root: Path) -> str:
+    """Present a refused choice in the GUI without switching to a foreign Python.
+
+    Process launch still uses python_executable() and fails closed. This helper
+    only supplies a visible candidate to the Test Catalog and TPA editors.
+    """
+    try:
+        return python_executable(settings, root)
+    except StudioError:
+        return (settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")
+                or str(root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")))
+
+
 def executable(explicit: str, name: str) -> str:
     found = explicit or shutil.which(name)
     if not found or not Path(found).is_file():
