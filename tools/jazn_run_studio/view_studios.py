@@ -133,7 +133,10 @@ class StudioViewMixin:
             "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
             compact=True,
         )
-        self.local_acceptance_panel = LocalAcceptancePanel(\n            self.core.root,\n            python=\"\" if self.smoke else python_executable(self.core.settings, self.core.root),\n        )
+        self.local_acceptance_panel = LocalAcceptancePanel(
+            self.core.root,
+            python="" if self.smoke else python_executable(self.core.settings, self.core.root),
+        )
         self.local_acceptance_panel.models_requested.connect(lambda: self.core.probe("ollama"))
         self.local_acceptance_panel.dependency_requested.connect(self.open_tpa_dependencies)
         layout.addWidget(self.local_acceptance_panel)
