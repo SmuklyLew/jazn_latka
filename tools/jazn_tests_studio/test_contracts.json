@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.88",
-  "active_definition_count": 3178,
+  "active_definition_count": 3185,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31737,6 +31737,125 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 62
+    },
+    "tests/test_jss_root_venv_selection.py::test_fallback_to_host_without_project_environment": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_fallback_to_host_without_project_environment",
+      "purpose": "Fallback to host without project environment",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_jss_root_venv_selection.py::test_project_venv_used_for_runtime_and_discovery": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_project_venv_used_for_runtime_and_discovery",
+      "purpose": "Project venv used for runtime and discovery",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_jss_root_venv_selection.py::test_explicit_operator_setting_and_environment_win": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_explicit_operator_setting_and_environment_win",
+      "purpose": "Explicit operator setting and environment win",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_jss_root_venv_selection.py::test_broken_project_venv_fails_closed_without_host_fallback": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_broken_project_venv_fails_closed_without_host_fallback",
+      "purpose": "Broken project venv fails closed without host fallback",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_jss_root_venv_selection.py::test_project_venv_requires_interpreter_file": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_project_venv_requires_interpreter_file",
+      "purpose": "Project venv requires interpreter file",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_jss_root_venv_selection.py::test_mcp_uses_same_default_or_explicit_overrides": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_mcp_uses_same_default_or_explicit_overrides",
+      "purpose": "Mcp uses same default or explicit overrides",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_jss_root_venv_selection.py::test_independent_worktrees_never_share_project_venv": {
+      "path": "tests/test_jss_root_venv_selection.py",
+      "name": "test_independent_worktrees_never_share_project_venv",
+      "purpose": "Independent worktrees never share project venv",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
