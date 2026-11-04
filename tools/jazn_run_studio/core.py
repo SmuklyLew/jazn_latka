@@ -319,14 +319,43 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
             Path(name).unlink(missing_ok=True)
         return sha256(data).hexdigest()
 
-def python_executable(settings: Settings) -> str:
+def project_python_executable(root: Path) -> str | None:
+    """Read-only, fail-closed discovery of the Python environment owned by ROOT.
+
+    The base Python installation remains outside the project; ROOT/.venv is an
+    isolated, disposable set of dependencies, never a configuration store.
+    Do not install packages, follow a linked environment, or adopt a foreign
+    interpreter when a project environment exists but is incomplete.
+    """
+    venv = root / ".venv"
+    if not venv.exists() and not venv.is_symlink():
+        return None
+    if venv.is_symlink() or venv.is_junction() or not venv.is_dir():
+        raise StudioError("ROOT/.venv jest nieprawidłowym katalogiem lub dowiązaniem")
+    if not (venv / "pyvenv.cfg").is_file():
+        raise StudioError("ROOT/.venv nie ma pyvenv.cfg; odtwórz środowisko po weryfikacji")
+    candidate = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    if not candidate.is_file():
+        raise StudioError("ROOT/.venv nie ma interpretera; odtwórz środowisko po weryfikacji")
+    return str(candidate)
+
+
+def python_executable(settings: Settings, root: Path | None = None) -> str:
+    """Operator choice > explicit environment override > ROOT/.venv > host.
+
+    Do not change running daemon ownership or mutate any settings here.
+    """
     explicit = settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")
     if explicit:
         if not Path(explicit).is_absolute() or not Path(explicit).is_file():
             raise StudioError("Nieprawidłowy JAZN_STUDIO_PYTHON / interpreter")
         return explicit
+    if root is not None:
+        selected = project_python_executable(root)
+        if selected is not None:
+            return selected
     if getattr(sys, "frozen", False):
-        raise StudioError("Wersja EXE wymaga ścieżki do Pythona w ustawieniach lub JAZN_STUDIO_PYTHON")
+        raise StudioError("Wersja EXE wymaga ROOT/.venv lub jawnego interpretera Python")
     return sys.executable
 
 
@@ -337,9 +366,17 @@ def executable(explicit: str, name: str) -> str:
     return str(Path(found).absolute())
 
 
-def discovery(settings: Settings) -> dict[str, Any]:
+def discovery(settings: Settings, root: Path | None = None) -> dict[str, Any]:
+    # Read-only: the GUI remains available even when ROOT/.venv needs repair.
+    try:
+        selected_python = python_executable(settings, root)
+        python_error = None
+    except StudioError as exc:
+        selected_python = None
+        python_error = str(exc)
     return {
-        "python": settings.python or os.environ.get("JAZN_STUDIO_PYTHON") or (None if getattr(sys, "frozen", False) else sys.executable),
+        "python": selected_python,
+        "python_error": python_error,
         "python_version": sys.version.split()[0],
         "ollama": settings.ollama or shutil.which("ollama"),
         "cloudflared": settings.cloudflared or shutil.which("cloudflared"),
@@ -625,7 +662,7 @@ class Controller:
                 # restart is parsed directly by main.py; its options must not
                 # be hidden behind the compatibility separator.
                 args.extend(target)
-        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
+        return [python_executable(self.settings, self.root), "-X", "utf8", str(self.root / "run.py"), *args]
 
     def _reserve(self, key: str) -> Job:
         with self.lock:
@@ -666,7 +703,7 @@ class Controller:
                 return current
             job = self._reserve("setup:requirements")
             self.setup_observation = {}
-            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
+            self._launch(job, [python_executable(self.settings, self.root), "-X", "utf8", "-m",
                                "tools.jazn_run_studio.requirements_worker"], 600)
             return job
 
@@ -690,7 +727,7 @@ class Controller:
                 raise StudioError("Brak pliku Studio")
             entry[0] = str(script)
         job = self._reserve("studio:" + key)
-        self._launch(job, [python_executable(self.settings), "-X", "utf8", *entry], None)
+        self._launch(job, [python_executable(self.settings, self.root), "-X", "utf8", *entry], None)
         return job
 
     def ensure_ollama(self) -> Job:
@@ -732,7 +769,7 @@ class Controller:
             # The canonical CLI refuses MCP without an explicit security mode.
             # Studio owns only a local developer listener; public OAuth must be
             # configured through the separately validated deployment workflow.
-            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python))
+            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python), self.root)
             imports = mcp_dependency_preflight(mcp_interpreter, self.root)
             missing = [name for name, available in imports.items() if not available]
             if missing:
@@ -808,7 +845,7 @@ class Controller:
     def child_environment(self, *, profile: bool = False) -> dict[str, str]:
         env = environment()
         if profile and self.settings.runtime_profile == "operator":
-            result = run_external([python_executable(self.settings), "-X", "utf8", "-m",
+            result = run_external([python_executable(self.settings, self.root), "-X", "utf8", "-m",
                                   "tools.jazn_run_studio.studio_worker", "profile-env"], cwd=self.root, timeout=35)
             if result.returncode or len(result.stdout) > 32768:
                 raise StudioError("Walidacja profilu przyszłego uruchomienia nie powiodła się")
@@ -853,7 +890,7 @@ class Controller:
                 raise StudioError("Zbyt duże dane operacji")
         job = self._reserve("helper:" + mode + ":" + key)
         job.input_data = payload
-        argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
+        argv = [python_executable(self.settings, self.root), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
         if key:
             argv.append(key)
         self._launch(job, argv, 7200 if mode == "execute" else 45)
@@ -870,7 +907,7 @@ class Controller:
             raise StudioError("Nieznana inspekcja pamięci")
         if operation != "readiness" and not project:
             raise StudioError("Wybierz plik projektu pamięci")
-        argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+        argv = [python_executable(self.settings, self.root), "-X", "utf8", str(self.root / "run.py"),
                 "memory-inspection", "--root", str(self.root), "--operation", operation, "--json"]
         for option, value in (("project", project), ("reference", reference),
                               ("reference-sha256", reference_sha256), ("parent", parent),
