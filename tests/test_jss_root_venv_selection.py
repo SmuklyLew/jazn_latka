@@ -42,7 +42,10 @@ def test_project_venv_used_for_runtime_and_discovery(root: Path, monkeypatch: py
     local = make_local_venv(root)
     assert project_python_executable(root) == str(local)
     assert python_executable(Settings(), root) == str(local)
-    assert discovery(Settings(), root)["python"] == str(local)
+    observed = discovery(Settings(), root)
+    assert observed["python"] == str(local)
+    assert observed["python_source"] == "project_venv"
+    assert observed["dependencies_interpreter"] == sys.executable
     core = Controller(root)
     assert core.command("version")[0] == str(local)
 
