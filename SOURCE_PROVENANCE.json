@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
+  "base_merge_commit": "e43f03587a754086fb9752c4038e3c828f23ef0d",
   "base_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-  "commit_date": "2026-11-04T23:56:09+01:00",
+  "commit_date": "2026-11-05T00:31:00+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-04T22:56:09+00:00",
+  "generated_at_utc": "2026-11-04T23:31:00+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "307b7aa49a830f20e346781f60a61f2ab7c63482",
+  "git_tree_sha": "ba6fbc95263d095daa021038f297fc119a3c3282",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
+    "source_commit": "e43f03587a754086fb9752c4038e3c828f23ef0d",
     "source_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "a0f5abfb9ef8182adb99e336a801444156e556f1",
+  "source_commit": "e43f03587a754086fb9752c4038e3c828f23ef0d",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
   "tag": null,
