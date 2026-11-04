@@ -1,3 +1,4 @@
+# v116.0.34.94.6.89: Prefer ROOT/.venv for JSS, MCP and TPA with verified operator override and safe fallback.
 # v116.0.34.94.6.88: Preserve diagnostic JSON field names while redacting values in capture and export.
 # v116.0.34.94.6.87: Preserve a bounded daemon refusal diagnosis after rotating large status logs.
 # v116.0.34.94.6.86: Diagnose refused acceptance resumes and guard explicit canonical recovery of dead owned daemons.
@@ -219,9 +220,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.88"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.89"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "structured-daemon-diagnostic-redaction"
+PACKAGE_RELEASE_NAME = "jss-project-venv-defaults"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
