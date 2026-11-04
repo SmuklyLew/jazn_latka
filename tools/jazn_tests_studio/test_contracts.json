@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.85",
-  "active_definition_count": 3169,
+  "system_version": "16.3.25.5.116.0.34.94.6.86",
+  "active_definition_count": 3177,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -24985,6 +24985,154 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 46
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_resume_refusal_identifies_dead_process_and_preserves_marker": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_resume_refusal_identifies_dead_process_and_preserves_marker",
+      "purpose": "Resume refusal identifies dead process and preserves marker",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_dead_owned_marker_can_enter_canonical_start_without_deleting_state": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_dead_owned_marker_can_enter_canonical_start_without_deleting_state",
+      "purpose": "Dead owned marker can enter canonical start without deleting state",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_start_refuses_foreign_live_unknown_or_unverified_state": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_start_refuses_foreign_live_unknown_or_unverified_state",
+      "purpose": "Start refuses foreign live unknown or unverified state",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_start_refuses_different_workspace_before_probe": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_start_refuses_different_workspace_before_probe",
+      "purpose": "Start refuses different workspace before probe",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_verified_existing_instance_can_be_reused_without_state_changes": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_verified_existing_instance_can_be_reused_without_state_changes",
+      "purpose": "Verified existing instance can be reused without state changes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_read_only_cli_diagnostics_do_not_adopt_untrusted_daemon": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_read_only_cli_diagnostics_do_not_adopt_untrusted_daemon",
+      "purpose": "Read only cli diagnostics do not adopt untrusted daemon",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_explicit_start_calls_guard_then_existing_control_plane": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_explicit_start_calls_guard_then_existing_control_plane",
+      "purpose": "Explicit start calls guard then existing control plane",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_isolated_daemon_operator_recovery.py::test_gui_and_other_mutations_still_require_full_resume_trust": {
+      "path": "tests/test_isolated_daemon_operator_recovery.py",
+      "name": "test_gui_and_other_mutations_still_require_full_resume_trust",
+      "purpose": "Gui and other mutations still require full resume trust",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
     },
     "tests/test_jazn_acceptance_resume_profile.py::test_profile_session_reused_without_autostart_or_prod_writes": {
       "path": "tests/test_jazn_acceptance_resume_profile.py",

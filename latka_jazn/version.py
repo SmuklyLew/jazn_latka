@@ -1,3 +1,4 @@
+# v116.0.34.94.6.86: Diagnose refused acceptance resumes and guard explicit canonical recovery of dead owned daemons.
 # v116.0.34.94.6.85: Preserve native exclusive-listener assertions with cross-platform socket typing.
 # v116.0.34.94.6.84: Bind the Windows daemon TCP listener exclusively before creating runtime state.
 # v116.0.34.94.6.83: Require the full runtime identity gate in the JSS services readiness caption.
@@ -216,9 +217,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.85"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.86"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "exclusive-listener-cross-platform-audit"
+PACKAGE_RELEASE_NAME = "isolated-daemon-operator-recovery"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
