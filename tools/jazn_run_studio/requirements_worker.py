@@ -75,7 +75,8 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     try:
         configured, _digest = load_settings(root)
         mcp_python = python_executable(
-            Settings(python=configured.mcp_python or configured.python or sys.executable)
+            Settings(python=configured.mcp_python or configured.python)
+            , root
         )
         mcp_checks = mcp_dependency_preflight(mcp_python, root)
     except (OSError, ValueError, RuntimeError) as exc:
@@ -93,7 +94,7 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     return {"schema": "jazn_studio_setup/v1", "observed_at_utc": datetime.now(timezone.utc).isoformat(),
             "scope": setup_scope(root, sys.executable), "rows": rows,
             "required_ok": all(r["state"] == "PASS" for r in rows if r["required"]),
-            "discovery": discovery(Settings(python=sys.executable)),
+            "discovery": discovery(Settings(python=sys.executable), root),
             "mcp": {"interpreter": mcp_python, "ready": all(mcp_checks.values()) and not mcp_error,
                     "modules": mcp_checks, "error_type": mcp_error or None},
             "runtime_activated": False, "accepted_visible_turn": False}
