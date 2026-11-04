@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
   "runtime_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
   "package_version": "16.3.25.5.116.0.34.94.6.91-jss-project-interpreter-consumers",
-  "generated_at_utc": "2026-11-04T19:18:32+00:00",
-  "updated_at_utc": "2026-11-04T19:18:32+00:00",
+  "generated_at_utc": "2026-11-04T19:22:21+00:00",
+  "updated_at_utc": "2026-11-04T19:22:21+00:00",
   "start_file": "run.py",
-  "file_count": 3689,
-  "static_file_count": 3689,
+  "file_count": 3691,
+  "static_file_count": 3691,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3007,
-      "sha256": "3799e878a9eab40f7097dd5a7fb4aae30b1d1e4b8ede2a5c175fc918670124a0",
+      "sha256": "b70094034662efa4cd9bc800d677faa0c72dd6568c8cc3dcdcfc787f4d487686",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19047,6 +19047,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_local_settings_creation_race__v16_3_25_5_116_0_34_94_6_91__ef17def2.provenance.json",
+      "size_bytes": 380,
+      "sha256": "b4cba4e7e4ce5fee3fe9dd3de8205ddc49895e2ae422e84dbcfd9801c45e8056",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_local_settings_creation_race__v16_3_25_5_116_0_34_94_6_91__ef17def2.py",
+      "size_bytes": 5367,
+      "sha256": "0150717b52468ef9a271e6ed6cce96967ca37bd628d3abaeda18e0a7133ca8db",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_mcp_http_gateway_v16_3_25_5_92.py",
       "size_bytes": 8743,
       "sha256": "eceb2a88c6028523758dc7532ce4105d24801c417a5478251198601f3928c4db",
@@ -29074,8 +29092,8 @@
     },
     {
       "path": "tests/test_local_settings_creation_race.py",
-      "size_bytes": 5367,
-      "sha256": "0150717b52468ef9a271e6ed6cce96967ca37bd628d3abaeda18e0a7133ca8db",
+      "size_bytes": 5385,
+      "sha256": "57d1526906384eb47cef1affe3120c48e404043ff6fb9775846d8dbde625a3b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
