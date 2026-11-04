@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
-  "package_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
-  "generated_at_utc": "2026-11-03T17:35:21+00:00",
-  "updated_at_utc": "2026-11-03T17:35:21+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
+  "package_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
+  "generated_at_utc": "2026-11-04T13:52:13+00:00",
+  "updated_at_utc": "2026-11-04T13:52:13+00:00",
   "start_file": "run.py",
-  "file_count": 3675,
-  "static_file_count": 3675,
+  "file_count": 3677,
+  "static_file_count": 3677,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2959,
-      "sha256": "014293a8cf07212f948820c859b5a8aef3266355dbe523da3c45fda8cfcf425c",
+      "size_bytes": 3043,
+      "sha256": "667056652c5a5f039bb50a88218e0a33da86c14e1a7723e33097513363c2febe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1945,
-      "sha256": "748f29316f3b8beb898d514c6d20064d0a0ff30859a2be1b69faf7a93e2085ca",
+      "size_bytes": 1959,
+      "sha256": "95f275cbb7878eca76ffca46a04819d2866658d375e52608f8774b3a80e9d389",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9959,7 +9959,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "3d306b5313b18224e89707597294f96c0f0554597365fb024ec366e4999d63da",
+      "sha256": "7391369fefeb4449782ccc2461c1e3b07447040f44550a12abedad956a41cbbf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11461,8 +11461,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 25301,
-      "sha256": "f4ce6f108885a05131bb2220ee53f4ab2c1f6377fd1483daf3847a11d01ffeee",
+      "size_bytes": 25417,
+      "sha256": "f6dc3a7c3372cdabf1feff31092e08127cde51bb2fb7592e804f22fdc490ea03",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19185,6 +19185,24 @@
       "path": "tests/archive/test_run_studio_qt_recovery_v16_3_25_5_116_0_34_94_6_9.py",
       "size_bytes": 5205,
       "sha256": "07dc88320d78b4bdcc04a1e5a99f8f8063631863b5a3d683d437c0ec26b4b3ea",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_daemon_windows_exclusive_bind__v16_3_25_5_116_0_34_94_6_84__3c60c68b.provenance.json",
+      "size_bytes": 268,
+      "sha256": "13c3a923fcaa7498add0ad3100da835b5b48d5fb97a974dcf5c5303f2d4fd398",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_daemon_windows_exclusive_bind__v16_3_25_5_116_0_34_94_6_84__3c60c68b.py",
+      "size_bytes": 3436,
+      "sha256": "c774285b0a472ecc1ed7b4de38152bd6c1d13314e954d5c7812d34812bb6efdf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30730,8 +30748,8 @@
     },
     {
       "path": "tests/test_runtime_daemon_windows_exclusive_bind.py",
-      "size_bytes": 3436,
-      "sha256": "c774285b0a472ecc1ed7b4de38152bd6c1d13314e954d5c7812d34812bb6efdf",
+      "size_bytes": 3534,
+      "sha256": "c63be720c5b032612cad4e83a8232816c01e477465b1b93d25e0e292414243a2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32873,7 +32891,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2802648,
-      "sha256": "00d2ecf09a0a26a2aabde459b3bac09e4ed5115338807bc4c2a719a14d7b819d",
+      "sha256": "e090b4ba7332d004264e646efcb38a58c275dc4ca7d92feaa49823d22527ea40",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33530,11 +33548,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
+  "release_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
-    "package_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener",
-    "release_version": "16.3.25.5.116.0.34.94.6.84-exclusive-daemon-listener"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
+    "package_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit",
+    "release_version": "16.3.25.5.116.0.34.94.6.85-exclusive-listener-cross-platform-audit"
   },
   "legacy_aliases": {
     "version": "release_version"
