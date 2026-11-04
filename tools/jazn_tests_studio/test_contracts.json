@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.89",
-  "active_definition_count": 3185,
+  "system_version": "16.3.25.5.116.0.34.94.6.90",
+  "active_definition_count": 3189,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33464,6 +33464,93 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 44
+    },
+    "tests/test_local_settings_creation_race.py::test_directory_created_after_initial_lookup": {
+      "path": "tests/test_local_settings_creation_race.py",
+      "name": "test_directory_created_after_initial_lookup",
+      "purpose": "Directory created after initial lookup",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize",
+        "skipif"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_local_settings_creation_race.py::test_permission_error_is_not_treated_as_missing": {
+      "path": "tests/test_local_settings_creation_race.py",
+      "name": "test_permission_error_is_not_treated_as_missing",
+      "purpose": "Permission error is not treated as missing",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "PermissionError"
+      ],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_local_settings_creation_race.py::test_traversal_still_refused": {
+      "path": "tests/test_local_settings_creation_race.py",
+      "name": "test_traversal_still_refused",
+      "purpose": "Traversal still refused",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_local_settings_creation_race.py::test_simultaneous_first_writes_are_serialized": {
+      "path": "tests/test_local_settings_creation_race.py",
+      "name": "test_simultaneous_first_writes_are_serialized",
+      "purpose": "Simultaneous first writes are serialized",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_settings_layout"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
     },
     "tests/test_local_settings_layout_convergence.py::test_versioned_settings_enables_local_layout": {
       "path": "tests/test_local_settings_layout_convergence.py",

@@ -104,3 +104,38 @@ To jest dopiero instrukcja wykonania na PC, **nie twierdzenie o wykonaniu**. Ka�
 Weryfikacja nowej gałęzi: py_compile/static checks, testy jednostkowe oraz TPA Windows dla nowego SHA; integralność PACKAGE_INTEGRITY_MANIFEST.json/SOURCE_PROVENANCE.json (kanoniczny mechanizm synchronizacji, nigdy ręczna fikcja hashy); ponowny MCP, Ollama i dwie tury. Następnie etap 13, fizyczny odbiór Windows GUI/SCM/ConPTY, brak naruszenia MEMORY i publiczny MCP/OAuth na rzeczywistym hoście. Dopóki tego brak, pozostaje RELEASE_NOT_ACCEPTED.
 
 Źródła: https://docs.python.org/3/library/venv.html ; https://code.visualstudio.com/docs/python/environments ; https://docs.pytest.org/en/stable/how-to/output.html ; docs/uiux/JSS_TEST_EVIDENCE_ARCHIVE.md .
+
+## Kontynuacja v90 — współbieżne tworzenie katalogów Windows (2026-11-04)
+
+Źródło: `update/jazn-jss-root-venv-resolver-20261104`, commit
+`7c193bd3e3a20eccbec06ce69a808bbbe9f59f8f`. Nowa gałąź naprawcza:
+`fix/jazn-jss-v89-windows-acceptance-finalization`. Historyczne wyniki tabeli
+nie są przenoszone na nową wersję. Status pozostaje RELEASE_NOT_ACCEPTED.
+
+Przyczyna sporadycznego `[0, 1]`: Windows `ntpath.realpath(strict=False)`
+porównuje błędy pierwszego lookup i ponownej próby usunięcia prefiksu urządzenia.
+Jeśli inny proces utworzy brakującego rodzica pomiędzy tymi operacjami,
+ERROR_PATH_NOT_FOUND (3) zmienia się w ERROR_FILE_NOT_FOUND (2). Wynik może
+zachować `\\?\`, chociaż rodzic był już rozwiązany bez tego prefiksu.
+`Path.is_relative_to` porównuje reprezentacje ścieżek; taka para wywoływała
+fałszywą odmowę wyjścia poza ROOT przed wejściem do blokady zapisu.
+
+`local_settings_layout` rozwiązuje teraz istniejącego przodka z `strict=True`
+i dopisuje wyłącznie brakujące komponenty. Obsługuje tylko FileNotFoundError;
+odmowa dostępu i pozostałe błędy pozostają błędami. Walidacja traversal,
+symlinków/junctions i kanonicznej granicy katalogu pozostaje obowiązkowa,
+a komponenty są ponownie sprawdzane po rozwiązaniu ścieżki. Nie zmieniono
+StudioError, kodu odmowy konfliktu ani blokady i atomowego zastąpienia pliku.
+To ochrona współpracujących procesów, nie obietnica bezpieczeństwa wobec
+uprzywilejowanego procesu podmieniającego filesystem w dowolnej chwili.
+
+Nowy test wymusza utworzenie rodzica w osobnym procesie po błędzie natywnego
+lookup, przed obsługą błędu przez realpath. Na oryginalnym kodzie v89:
+1 FAIL (ten sam ValueError), 1 PASS. Po poprawce zestaw ustawień:
+49 PASS, 4 SKIPPED w 49.79 s, w tym 20 równoczesnych pierwszych zapisów,
+nieaktualne digesty, zachowanie pliku po błędzie i natywne junctions Windows.
+Pominięcia: konto nie może tworzyć symlinków; testy pozostają aktywne.
+Dowody lokalne: `D:\.AI\codex_tasks\jss-v89-finalization-20261104\`,
+`before.txt/xml`, `p0.txt/xml`, `p0-evidence/` (kanoniczny plugin JSS).
+Są to wyniki drzewa roboczego przed końcowym commitem; końcowy SHA wymaga
+własnej walidacji. Nie zmieniano operatorowego .venv ani prywatnych ustawień.
