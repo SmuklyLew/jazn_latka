@@ -80,6 +80,25 @@ $env:QT_QPA_PLATFORM = "offscreen"
 Write-Host "pytest exit: $LASTEXITCODE"
 ~~~
 
+## Kontrola końcowego SHA i kanoniczna synchronizacja wydania
+
+Wersja patcha: 16.3.25.5.116.0.34.94.6.89-jss-project-venv-defaults. Jest nowym kodem względem 13 etapów wykonanych na bazowym v88. Te historyczne PASS nie zatwierdzają jego integralności.
+
+Po sprawdzeniu nowego HEAD i przy czystym Git uruchom na Windows w testowym worktree (bez zmiany żywego daemona lub MEMORY):
+
+~~~powershell
+Set-Location "D:\.AI\jazn_jss_modernization_20261103"
+$py = ".\.venv\Scripts\python.exe"
+& $py -X utf8 -m pytest tests/test_jss_root_venv_selection.py tests/test_jazn_run_studio.py -q -ra
+if ($LASTEXITCODE -ne 0) { throw "Targeted regression failed" }
+git diff --check
+& $py -X utf8 -m latka_jazn.tools.release_metadata_sync --root . --base-branch master --write --json
+if ($LASTEXITCODE -ne 0) { throw "Release metadata synchronization failed" }
+git status --short
+~~~
+
+To jest dopiero instrukcja wykonania na PC, **nie twierdzenie o wykonaniu**. Każdy zapis manifestu/provenance musi pochodzić z kanonicznego release_metadata_sync, a wynik powinien być sprawdzony pod kątem idempotencji, poprawnego SHA źródła i aktualnej wersji. Commit/push metadanych, pełna regresja Windows/Linux i finalny CI są osobnymi wymaganymi etapami. Nie edytuj manifestu ręcznie.
+
 ## Otwarta bramka RELEASE
 
 Weryfikacja nowej gałęzi: py_compile/static checks, testy jednostkowe oraz TPA Windows dla nowego SHA; integralność PACKAGE_INTEGRITY_MANIFEST.json/SOURCE_PROVENANCE.json (kanoniczny mechanizm synchronizacji, nigdy ręczna fikcja hashy); ponowny MCP, Ollama i dwie tury. Następnie etap 13, fizyczny odbiór Windows GUI/SCM/ConPTY, brak naruszenia MEMORY i publiczny MCP/OAuth na rzeczywistym hoście. Dopóki tego brak, pozostaje RELEASE_NOT_ACCEPTED.
