@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
   "runtime_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
   "package_version": "16.3.25.5.116.0.34.94.6.92-mcp-request-connection-lifetime",
-  "generated_at_utc": "2026-11-04T19:44:15+00:00",
-  "updated_at_utc": "2026-11-04T19:44:15+00:00",
+  "generated_at_utc": "2026-11-04T20:04:08+00:00",
+  "updated_at_utc": "2026-11-04T20:04:08+00:00",
   "start_file": "run.py",
-  "file_count": 3692,
-  "static_file_count": 3692,
+  "file_count": 3694,
+  "static_file_count": 3694,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2995,
-      "sha256": "c8765f9af7b780c68b50624b8bacc555bde2ac581a25ac953132b0a96d920b69",
+      "sha256": "9ebadf9c0f1a8099ac4bc595e2f32abbf6d1371a89053169a7570ca9928d605f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2533,8 +2533,8 @@
     },
     {
       "path": "docs/project/JAZN_V88_WINDOWS_13_STAGE_ACCEPTANCE_AND_PROJECT_VENV.md",
-      "size_bytes": 15645,
-      "sha256": "168b5a8bc6bcc6e48a47ae1a760f3fffaa9d4450770c5a227ae7505998203b54",
+      "size_bytes": 16603,
+      "sha256": "e29b6051df647a203f4417257cded2b5469a8b1723f46ec4fa09e7c4aa845fbf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18912,6 +18912,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_jazn_run_studio_delivery_ack__v16_3_25_5_116_0_34_94_6_92__f874ce01.provenance.json",
+      "size_bytes": 392,
+      "sha256": "5278636d5f04523be3d1fc8f3843b551c63772d4507e067902424bdd5bfebda3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_run_studio_delivery_ack__v16_3_25_5_116_0_34_94_6_92__f874ce01.py",
+      "size_bytes": 3942,
+      "sha256": "670ae4d1080d5e497cb90a39c6f381b71a7e54e958e8d69715a252676a126141",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_jazn_run_studio_integrations_v16_3_25_5_116_0_34_75.py",
       "size_bytes": 8479,
       "sha256": "114264b577d091628d4ddc570b01bb5e1f2e078a29e2f7ae8c5b9397b139b828",
@@ -28210,8 +28228,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
-      "size_bytes": 3942,
-      "sha256": "670ae4d1080d5e497cb90a39c6f381b71a7e54e958e8d69715a252676a126141",
+      "size_bytes": 4066,
+      "sha256": "23bff3e00981583c309d40e3ace658b8113dba24cfd43258dad171966aa27fdf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33026,7 +33044,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2823977,
-      "sha256": "886b20afa8eaf7b6bdd8f8292b275b6ccd1c68040814fadc4c291a0ae5101281",
+      "sha256": "65a57a0da07c8833eddc484b6c44016d278ebda183d6840f296a5e5e3716954b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
