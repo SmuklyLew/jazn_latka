@@ -75,8 +75,7 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     try:
         configured, _digest = load_settings(root)
         mcp_python = python_executable(
-            Settings(python=configured.mcp_python or configured.python)
-            , root
+            Settings(python=configured.mcp_python or configured.python), root
         )
         mcp_checks = mcp_dependency_preflight(mcp_python, root)
     except (OSError, ValueError, RuntimeError) as exc:
