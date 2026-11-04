@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.88",
+  "system_version": "16.3.25.5.116.0.34.94.6.89",
   "active_definition_count": 3185,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -31759,13 +31759,13 @@
       "path": "tests/test_jss_root_venv_selection.py",
       "name": "test_project_venv_used_for_runtime_and_discovery",
       "purpose": "Project venv used for runtime and discovery",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -31787,7 +31787,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 53
     },
     "tests/test_jss_root_venv_selection.py::test_broken_project_venv_fails_closed_without_host_fallback": {
       "path": "tests/test_jss_root_venv_selection.py",
@@ -31806,7 +31806,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 67
     },
     "tests/test_jss_root_venv_selection.py::test_project_venv_requires_interpreter_file": {
       "path": "tests/test_jss_root_venv_selection.py",
@@ -31823,7 +31823,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 82
     },
     "tests/test_jss_root_venv_selection.py::test_mcp_uses_same_default_or_explicit_overrides": {
       "path": "tests/test_jss_root_venv_selection.py",
@@ -31840,7 +31840,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 93
     },
     "tests/test_jss_root_venv_selection.py::test_independent_worktrees_never_share_project_venv": {
       "path": "tests/test_jss_root_venv_selection.py",
@@ -31855,7 +31855,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 104
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
