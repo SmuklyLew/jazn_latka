@@ -37,7 +37,7 @@ def test_directory_created_after_initial_lookup(tmp_path, monkeypatch, created):
             return original(path)
         except FileNotFoundError as exc:
             if Path(path) == target and not injected:
-                errors.append(exc.winerror)
+                errors.append(getattr(exc, "winerror", None))
                 injected = True
                 # A distinct process creates only the missing parent, after
                 # the OS lookup failed and before realpath handles its error.

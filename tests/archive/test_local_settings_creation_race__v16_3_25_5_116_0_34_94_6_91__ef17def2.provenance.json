@@ -1,0 +1,7 @@
+{
+  "source_commit": "ef17def2478e70cd6732cd721d0288830416481b",
+  "source_path": "tests/test_local_settings_creation_race.py",
+  "source_version": "16.3.25.5.116.0.34.94.6.91",
+  "sha256": "0150717b52468ef9a271e6ed6cce96967ca37bd628d3abaeda18e0a7133ca8db",
+  "reason": "Access native Windows exception field dynamically for Linux type analysis; error-code assertion unchanged."
+}
