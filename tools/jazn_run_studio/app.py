@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
                 elif not args.check and args.run not in ISOLATED_DIAGNOSTIC_ACTIONS:
                     validate_resumed_daemon(layout, core.settings.daemon_url)
             if args.check:
-                print(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))
+                print(json.dumps(discovery(core.settings, core.root), ensure_ascii=False, indent=2))
                 return 0
             if args.run or args.probe:
                 job = core.start_action(args.run) if args.run else core.probe(args.probe)
