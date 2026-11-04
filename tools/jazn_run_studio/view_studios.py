@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 from . import STUDIO_VERSION
-from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
+from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, python_executable, save_settings
 from .service_status_dialog import ServiceStatusDialog
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
