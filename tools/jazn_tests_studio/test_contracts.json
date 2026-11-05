@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.94",
-  "active_definition_count": 3208,
+  "system_version": "16.3.25.5.116.0.34.94.6.95",
+  "active_definition_count": 3213,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -55340,6 +55340,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 86
+    },
+    "tests/test_runtime_feminine_voice_gate.py::test_masculine_narration_is_rejected_before_acceptance": {
+      "path": "tests/test_runtime_feminine_voice_gate.py",
+      "name": "test_masculine_narration_is_rejected_before_acceptance",
+      "purpose": "Masculine narration is rejected before acceptance",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.finalization_service",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.host_regeneration_policy",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_runtime_feminine_voice_gate.py::test_feminine_narration_and_quoted_source_are_preserved": {
+      "path": "tests/test_runtime_feminine_voice_gate.py",
+      "name": "test_feminine_narration_and_quoted_source_are_preserved",
+      "purpose": "Feminine narration and quoted source are preserved",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.finalization_service",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.host_regeneration_policy",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_runtime_feminine_voice_gate.py::test_dedicated_handler_or_technical_route_cannot_bypass_masculine_gate": {
+      "path": "tests/test_runtime_feminine_voice_gate.py",
+      "name": "test_dedicated_handler_or_technical_route_cannot_bypass_masculine_gate",
+      "purpose": "Dedicated handler or technical route cannot bypass masculine gate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.finalization_service",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.host_regeneration_policy",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_runtime_feminine_voice_gate.py::test_voice_rejection_has_one_retry_and_preserves_other_integrity_gates": {
+      "path": "tests/test_runtime_feminine_voice_gate.py",
+      "name": "test_voice_rejection_has_one_retry_and_preserves_other_integrity_gates",
+      "purpose": "Voice rejection has one retry and preserves other integrity gates",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.finalization_service",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.host_regeneration_policy",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_runtime_feminine_voice_gate.py::test_real_voice_validator_rejection_never_reaches_finalizer": {
+      "path": "tests/test_runtime_feminine_voice_gate.py",
+      "name": "test_real_voice_validator_rejection_never_reaches_finalizer",
+      "purpose": "Real voice validator rejection never reaches finalizer",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.finalization_service",
+        "latka_jazn.core.host_finalization_transaction",
+        "latka_jazn.core.host_regeneration_policy",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
     },
     "tests/test_runtime_full_turn.py::test_full_runtime_turn_commits_transactionally_without_legacy_fanout": {
       "path": "tests/test_runtime_full_turn.py",
