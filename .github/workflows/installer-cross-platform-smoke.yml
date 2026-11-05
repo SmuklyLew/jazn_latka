@@ -1,0 +1,58 @@
+name: Jaźń installer cross-platform smoke
+
+on:
+  push:
+    branches:
+      - "fix/**"
+      - "update/**"
+      - "upgrade/**"
+      - master
+    paths:
+      - "setup.ps1"
+      - "setup.sh"
+      - "tools/jazn_setup.py"
+      - "tests/test_jazn_setup_installer.py"
+      - ".github/workflows/installer-cross-platform-smoke.yml"
+  pull_request:
+    paths:
+      - "setup.ps1"
+      - "setup.sh"
+      - "tools/jazn_setup.py"
+      - "tests/test_jazn_setup_installer.py"
+      - ".github/workflows/installer-cross-platform-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: setup ${{ matrix.os }} Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python: ["3.12", "3.13", "3.14"]
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # verified v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # verified v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Syntax gate before any package installation
+        run: python -m py_compile tools/jazn_setup.py tests/test_jazn_setup_installer.py
+      - name: Read-only first-run diagnostics with missing optional packages
+        run: python -X utf8 tools/jazn_setup.py doctor --json
+      - name: Install test-only dependencies
+        run: python -m pip install -e . pytest
+      - name: Cross-platform installer and Dependency Studio regressions
+        run: python -m pytest -q tests/test_jazn_setup_installer.py tests/test_dependency_studio.py
+      - name: Explicit isolated .venv creation
+        run: python -X utf8 tools/jazn_setup.py venv --yes --json
+      - name: Verify diagnostic does not claim daemon/MCP availability
+        run: python -X utf8 tools/jazn_setup.py doctor --json
+      - name: Dependency consistency
+        run: python -m pip check
