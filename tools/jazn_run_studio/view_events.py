@@ -10,6 +10,7 @@ import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
+import time
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -42,6 +43,14 @@ class EventViewMixin:
                 except queue.Empty:
                     break
             self.workspace.observe(key, kind, value)
+            if (isinstance(value, dict) and (
+                (kind == "evidence" and key == "status")
+                or (kind == "probe" and key in {"probe:gateway", "probe:ollama", "probe:ollama_generate"})
+                or (kind == "state" and key in {"status", "probe:gateway", "probe:ollama",
+                                                 "probe:ollama_generate"}
+                    and value.get("state") in {"succeeded", "failed", "stopped"})
+            )):
+                self.service_status_history[(key, kind)] = (time.monotonic(), dict(value))
             if self.service_status_dialog is not None and kind in {"evidence", "probe", "state"}:
                 self.service_status_dialog.observe(key, kind, value)
             if kind == "log":

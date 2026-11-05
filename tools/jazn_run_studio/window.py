@@ -200,6 +200,9 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         from .operator_workspace import OperatorWorkspace
         self.workspace = OperatorWorkspace(self)
         self.service_status_dialog: ServiceStatusDialog | None = None
+        # Bounded current-session evidence, including its original monotonic age.
+        # A new status dialog must not recertify stale observations on open.
+        self.service_status_history: dict[tuple[str, str], tuple[float, dict[str, Any]]] = {}
         self.operator_status.clicked.connect(lambda: self.workspace.show(0))
         self._workspace_menu()
         self.settings_baseline = self.settings_draft()
