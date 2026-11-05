@@ -1,0 +1,10 @@
+{
+  "source_path": "tests/test_jss_modular_view_boundaries.py",
+  "source_commit": "df0c6b5e05946cd04037dd4cf5ffa302ded51c0f",
+  "source_git_blob_sha1": "4fa8f8e563b8517afc6919f82a91f2b05611311a",
+  "source_version": "16.3.25.5.116.0.34.94.6.103",
+  "archive_path": "tests/archive/test_jss_modular_view_boundaries__pre_v16_3_25_5_116_0_34_94_6_103__df0c6b5e.py",
+  "encoding": "utf-8",
+  "snapshot_policy": "append_only_byte_identical",
+  "reason": "Add explicit ownership of the existing ChatViewMixin.update_chat_progress method without relaxing unique-owner assertions"
+}
