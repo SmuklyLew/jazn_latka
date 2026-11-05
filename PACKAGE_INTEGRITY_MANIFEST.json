@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
   "runtime_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
   "package_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
-  "generated_at_utc": "2026-11-05T19:26:09+00:00",
-  "updated_at_utc": "2026-11-05T19:26:09+00:00",
+  "generated_at_utc": "2026-11-05T19:36:31+00:00",
+  "updated_at_utc": "2026-11-05T19:36:31+00:00",
   "start_file": "run.py",
-  "file_count": 3719,
-  "static_file_count": 3719,
+  "file_count": 3721,
+  "static_file_count": 3721,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3020,
-      "sha256": "1b4d716d8e2eadbc82e669e9f7583562842e4c4d38e2e82f828ee222e1b98623",
+      "sha256": "ef40d6c02290c94bb7a3da6f382748d85075db8065a4433f124af295669c331e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19065,6 +19065,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_jss_modular_view_boundaries__pre_v16_3_25_5_116_0_34_94_6_103__df0c6b5e.provenance.json",
+      "size_bytes": 575,
+      "sha256": "bfb7c649edd8ecf45bcc4b3d42121c9c2edca3ee1e0887ca309e10df1e78f608",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jss_modular_view_boundaries__pre_v16_3_25_5_116_0_34_94_6_103__df0c6b5e.py",
+      "size_bytes": 3993,
+      "sha256": "cb078e6356f9a5585ce5c914f025be61fa986090b739de753cbf4505cad8c5a8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_jss_modular_view_boundaries_v16_3_25_5_116_0_34_94_6_73.py",
       "size_bytes": 3930,
       "sha256": "d502a69abd2fbd047e0869bfa4d6f6c4acc065aaf68da5c0600a0ea740ffd4a8",
@@ -28921,8 +28939,8 @@
     },
     {
       "path": "tests/test_jss_modular_view_boundaries.py",
-      "size_bytes": 3993,
-      "sha256": "cb078e6356f9a5585ce5c914f025be61fa986090b739de753cbf4505cad8c5a8",
+      "size_bytes": 4025,
+      "sha256": "fc9507dc1e71bf49ae16ee5fa234a3258864ee11c357bb0c9cd133b60aea3bd0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33269,7 +33287,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2862701,
-      "sha256": "ee8ff827ce5befdab9e3d0dff1ccc10a4ed8995bc931a1d4bae6eb8c62da2c0f",
+      "sha256": "cd467b041362bf6b55d2363137c65e298b8b5b6de05a59f28c8c18ea0fbd56a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
