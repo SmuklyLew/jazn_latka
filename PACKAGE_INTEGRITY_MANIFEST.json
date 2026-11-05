@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
-  "package_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
-  "generated_at_utc": "2026-11-05T01:19:38+00:00",
-  "updated_at_utc": "2026-11-05T01:19:38+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+  "package_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+  "generated_at_utc": "2026-11-05T01:23:04+00:00",
+  "updated_at_utc": "2026-11-05T01:23:04+00:00",
   "start_file": "run.py",
-  "file_count": 3699,
-  "static_file_count": 3699,
+  "file_count": 3701,
+  "static_file_count": 3701,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3001,
-      "sha256": "10f9f46b04157d45f930d0153e7b947a6f1bbf046c7f2a53f1c85b58eb18330b",
+      "size_bytes": 2977,
+      "sha256": "7531e1d9e77f623f94a49ef39e4cc4c463e216b799851ab55d2bab53ddfbadc4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6844,8 +6844,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_answer_validator.py",
-      "size_bytes": 61785,
-      "sha256": "93de0f65c731f929082b032c8cd0ce5d1c017fc7319278a40cb875b5987b1b95",
+      "size_bytes": 62332,
+      "sha256": "4e27b94173db61aee546d7c7dfdc4c246543a0a0dc68448cda1125a87ef87486",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26508,
-      "sha256": "c9d88e5a5632ab7a98fb98f445759358d9c3e20a131775d25a387facee76c71f",
+      "size_bytes": 26614,
+      "sha256": "a7ea700cec86f6f8256b8b8d1f7386e5ad88849e78c3892561a0e31ef4448965",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19302,6 +19302,24 @@
       "path": "tests/archive/test_runtime_daemon_windows_exclusive_bind__v16_3_25_5_116_0_34_94_6_84__3c60c68b.py",
       "size_bytes": 3436,
       "sha256": "c774285b0a472ecc1ed7b4de38152bd6c1d13314e954d5c7812d34812bb6efdf",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_feminine_voice_gate_v16_3_25_5_116_0_34_94_6_95.provenance.json",
+      "size_bytes": 338,
+      "sha256": "6942fc7a5d7c763e8272ba6f081d0e5f76b0dc9b7f9da64e2ff11ec10d99789c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_feminine_voice_gate_v16_3_25_5_116_0_34_94_6_95.py",
+      "size_bytes": 5363,
+      "sha256": "d7af44875921496e38bf42bf6ff5a04150ee5c448f43125d02a9fc205075f730",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30928,8 +30946,8 @@
     },
     {
       "path": "tests/test_runtime_feminine_voice_gate.py",
-      "size_bytes": 5363,
-      "sha256": "d7af44875921496e38bf42bf6ff5a04150ee5c448f43125d02a9fc205075f730",
+      "size_bytes": 5499,
+      "sha256": "47fb71b255f6a4bdff7b34fd651fa98ad9e53ce404a5c9b6662cfc93d66e3e82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33089,7 +33107,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2838326,
-      "sha256": "ce995d3ce0421199beef9f2a19c19c5859574096290fa5277a8c274e371d7222",
+      "sha256": "1f4ee5d8dff34865449c25e45bb2bcf494e13476a551434e2c6faac0e2f50f82",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33746,11 +33764,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
+  "release_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
-    "package_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate",
-    "release_version": "16.3.25.5.116.0.34.94.6.95-feminine-voice-finalization-gate"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+    "package_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+    "release_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary"
   },
   "legacy_aliases": {
     "version": "release_version"
