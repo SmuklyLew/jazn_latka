@@ -46,6 +46,14 @@ jobs:
         run: python -m py_compile tools/jazn_setup.py tests/test_jazn_setup_installer.py
       - name: Read-only first-run diagnostics with missing optional packages
         run: python -X utf8 tools/jazn_setup.py doctor --json
+      - name: Windows PowerShell entrypoint diagnostics
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\\setup.ps1 doctor -Json
+      - name: POSIX shell entrypoint diagnostics
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sh ./setup.sh doctor --json
       - name: Install test-only dependencies
         run: python -m pip install -e . pytest
       - name: Cross-platform installer and Dependency Studio regressions
