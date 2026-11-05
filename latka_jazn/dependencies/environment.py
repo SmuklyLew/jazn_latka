@@ -206,12 +206,18 @@ def install_bundle(
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
 
-    envs_root.mkdir(parents=True, exist_ok=True)
+    (env_root.parent if project_venv else envs_root).mkdir(parents=True, exist_ok=True)
     if env_root.exists() or env_root.is_symlink():
         raise DependencyStudioError(
             "Project .venv exists; refusing an unsafe in-place mutation"
             if project_venv else f"Fresh managed environment path already exists: {env_root}"
         )
+    if project_venv:
+        # Exclusive reservation closes the first-install race on Windows/POSIX.
+        try:
+            env_root.mkdir(exist_ok=False)
+        except FileExistsError as exc:
+            raise DependencyStudioError("Concurrent or pre-existing .venv; refuse overwrite") from exc
     try:
         _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)

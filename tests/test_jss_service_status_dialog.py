@@ -93,6 +93,8 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
 
 
 def test_refresh_keeps_last_good_evidence_and_uptime() -> None:
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
     host = QWidget()
     panel = ServiceStatusDialog(host, lambda: None)
     panel.observe("status", "evidence", {**_runtime_evidence(),
@@ -107,6 +109,8 @@ def test_refresh_keeps_last_good_evidence_and_uptime() -> None:
 
 
 def test_model_listing_does_not_erase_fresh_generation_for_same_model() -> None:
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
     host = QWidget()
     panel = ServiceStatusDialog(host, lambda: None)
     generated = {"service": "ollama", "endpoint_reachable": True,
