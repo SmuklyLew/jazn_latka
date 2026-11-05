@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-  "generated_at_utc": "2026-11-02T22:40:51+00:00",
-  "updated_at_utc": "2026-11-02T22:40:51+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+  "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+  "generated_at_utc": "2026-11-05T23:41:03+00:00",
+  "updated_at_utc": "2026-11-05T23:41:03+00:00",
   "start_file": "run.py",
   "file_count": 3657,
   "static_file_count": 3657,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2948,
-      "sha256": "cb16559b44eff3f1dc16a4f1cb0734f92657062bdc4c897e21878c0ccffe018a",
+      "size_bytes": 2936,
+      "sha256": "a59fceec43e5fe3d60472505da46eb97054c0ff12e101d259fc401b1b191e0f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6817,8 +6817,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 246687,
-      "sha256": "7062b89eae979aa16baeb3d91740ff5add4f812e09d7bca694e80cef9e479076",
+      "size_bytes": 254212,
+      "sha256": "24cfa0c7c410a4ac2e6e8643b107ea174a39eca40e8b8f5830bd790482109d25",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11425,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24202,
-      "sha256": "a83cf5572be5d585b94bead9a6d022b03e855c292cb00d4a2e26b668ebbc58d1",
+      "size_bytes": 24332,
+      "sha256": "71cd031ff5d19bab0ea6007cedb8bbe1124932141687f7d716b870e3662fcf0e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32711,7 +32711,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2778210,
-      "sha256": "8ff6926a4f41f010fedc27f90c68f314d4526e4673e29f57a95a21bad61b1e47",
+      "sha256": "358c2b719c8d2cd097b5329143ca8c162997a8c0a313f1ddc0ef74afb4d9c394",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33368,11 +33368,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
+  "release_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-    "package_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
-    "release_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+    "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+    "release_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery"
   },
   "legacy_aliases": {
     "version": "release_version"
