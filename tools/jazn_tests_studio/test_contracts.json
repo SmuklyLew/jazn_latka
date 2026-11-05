@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.101",
-  "active_definition_count": 3227,
+  "active_definition_count": 3236,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28967,16 +28967,184 @@
       "description_source": "source_identity",
       "line": 20
     },
-    "tests/test_jazn_setup_installer.py::<parse_error>": {
+    "tests/test_jazn_setup_installer.py::test_doctor_read_only_without_any_venv": {
       "path": "tests/test_jazn_setup_installer.py",
-      "name": "<parse_error>",
-      "purpose": "Source must parse as valid Python.",
-      "expected": "AST parsing succeeds; current error: unexpected character after line continuation character (<unknown>, line 165)",
-      "category": "contract",
+      "name": "test_doctor_read_only_without_any_venv",
+      "purpose": "Doctor read only without any venv",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
       "tags": [
-        "syntax"
+        "repository"
       ],
-      "status": "incompatible"
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_jazn_setup_installer.py::test_unknown_profile_fails_closed": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_unknown_profile_fails_closed",
+      "purpose": "Unknown profile fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_jazn_setup_installer.py::test_no_implicit_network_or_install": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_no_implicit_network_or_install",
+      "purpose": "No implicit network or install",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "network",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_jazn_setup_installer.py::test_incomplete_venv_is_not_destroyed": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_incomplete_venv_is_not_destroyed",
+      "purpose": "Incomplete venv is not destroyed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_jazn_setup_installer.py::test_offline_install_uses_canonical_dependency_studio": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_offline_install_uses_canonical_dependency_studio",
+      "purpose": "Offline install uses canonical dependency studio",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_jazn_setup_installer.py::test_reuse_managed_environment_without_install": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_reuse_managed_environment_without_install",
+      "purpose": "Reuse managed environment without install",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 110
+    },
+    "tests/test_jazn_setup_installer.py::test_optional_profiles_must_not_reuse_core_only": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_optional_profiles_must_not_reuse_core_only",
+      "purpose": "Optional profiles must not reuse core only",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_jazn_setup_installer.py::test_doctor_invalid_python_status_is_not_fabricated": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_doctor_invalid_python_status_is_not_fabricated",
+      "purpose": "Doctor invalid python status is not fabricated",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_jazn_setup_installer.py::test_cli_returns_nonzero_for_unsupported_install": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_cli_returns_nonzero_for_unsupported_install",
+      "purpose": "Cli returns nonzero for unsupported install",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
+    },
+    "tests/test_jazn_setup_installer.py::test_powershell_and_sh_preserve_installation_root": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_powershell_and_sh_preserve_installation_root",
+      "purpose": "Powershell and sh preserve installation root",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 158
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
@@ -48283,6 +48451,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.response_generation_mode",
         "latka_jazn.core.runtime_answer_validator",
@@ -48290,7 +48459,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 45
     },
     "tests/test_ollama_time_awareness_clock_guard_v99.py::test_answer_without_runtime_time_is_rejected": {
       "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
@@ -48306,6 +48475,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.response_generation_mode",
         "latka_jazn.core.runtime_answer_validator",
@@ -48313,7 +48483,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 111
+      "line": 120
     },
     "tests/test_ollama_time_awareness_clock_guard_v99.py::test_ordinary_greeting_remains_model_eligible": {
       "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
@@ -48327,6 +48497,7 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.response_generation_mode",
         "latka_jazn.core.runtime_answer_validator",
@@ -48334,7 +48505,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 130
     },
     "tests/test_ollama_turn_stability_nlp.py::test_language_guard_rejects_clear_english_and_accepts_polish": {
       "path": "tests/test_ollama_turn_stability_nlp.py",
