@@ -229,9 +229,39 @@ def _confirm(yes: bool, online: bool) -> None:
         raise SetupError("Operator did not approve the install")
 
 
+def _wizard(args: argparse.Namespace) -> dict[str, Any]:
+    """Interactive selection of operator-owned components and supply path."""
+    if not sys.stdin.isatty():
+        raise SetupError("Wizard requires a terminal; use install --yes with explicit options in CI")
+    print("Jaźń guided setup — no daemon, MEMORY or tunnel changes")
+    print("  1. Jaźń Core")
+    print("  2. Core + JSS (Run Studio)")
+    print("  3. Core + JSS + local MCP libraries (configure auth in JSS)")
+    print("  4. Core + JSS + Polish NLP (large download)")
+    choices = {
+        "1": ["core"], "2": ["core", "run-studio"],
+        "3": ["core", "run-studio", "mcp-http"],
+        "4": ["core", "run-studio", "polish-nlp"],
+    }
+    selection = input("Choose profile [1-4]: ").strip()
+    if selection not in choices:
+        raise SetupError("Invalid wizard choice; nothing changed")
+    print("Exact verified offline bundle directory, or blank for approved network download:")
+    choice = input("Bundle path [blank = online]: ").strip()
+    delegated = argparse.Namespace(**vars(args))
+    delegated.mode = "install"
+    delegated.profile = choices[selection]
+    delegated.bundle = choice
+    delegated.online = not bool(choice)
+    delegated.yes = False
+    return execute(delegated)
+
+
 def execute(args: argparse.Namespace) -> dict[str, Any]:
     root = ROOT
     _root_check(root)
+    if args.mode == "wizard":
+        return _wizard(args)
     profiles = _requested_profiles(root, args.profile)
     target = _target()
     if args.mode in {"doctor", "preflight"}:
@@ -262,8 +292,6 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     if args.mode != "repair" and _managed_matches(managed, profiles):
         return {"ok": True, "mode": "install", "state": "already_ready",
                 "python_executable": managed["python_executable"], "profiles": profiles}
-    if not args.online and args.mode != "online" and not args.bundle:
-        raise SetupError("Supply --bundle (verified wheelhouse), or explicitly choose --online with operator consent")
     online = args.online or args.mode == "online"
     if online and args.bundle:
         raise SetupError("Choose --bundle OR --online, not both")
@@ -276,7 +304,24 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         )
         bundle = Path(str(result.get("bundle_dir") or ""))
     else:
-        bundle = Path(args.bundle).expanduser()
+        if args.bundle:
+            bundle = Path(args.bundle).expanduser()
+        else:
+            try:
+                discovered = _dependency_studio(
+                    root, "verify", "--profile", ",".join(profiles), "--platform", "current",
+                )
+                bundles = discovered.get("bundles") or []
+                verified = next((item for item in bundles
+                                 if isinstance(item, dict) and
+                                 (item.get("verification") or {}).get("ok") is True), None)
+                bundle = Path(str(verified["bundle_dir"])) if verified else Path("")
+            except (SetupError, KeyError, TypeError):
+                bundle = Path("")
+            if not bundle.is_absolute():
+                raise SetupError(
+                    "No compatible verified offline wheelhouse; supply --bundle or approve --online"
+                )
     if not bundle.is_absolute() or not bundle.is_dir():
         raise SetupError("No wheelhouse bundle available after the download step")
     verification = _dependency_studio(root, "verify", "--bundle", str(bundle))
@@ -311,7 +356,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Jaźń operator setup (no daemon lifecycle)")
     parser.add_argument("mode", nargs="?", default="doctor",
-                        choices=("doctor", "install", "repair", "verify", "venv",
+                        choices=("doctor", "wizard", "install", "repair", "verify", "venv",
                                  "preflight", "online"))
     parser.add_argument("--profile", action="append", default=[],
                         help="One or more canonical Dependency Studio profiles, comma-separated")
