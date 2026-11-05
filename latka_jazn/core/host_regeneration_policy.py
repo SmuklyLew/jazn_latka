@@ -8,6 +8,7 @@ from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("host_regeneration_policy")
 REGENERABLE_VIOLATIONS = frozenset({
+    "voice_perspective_mismatch",
     "forbidden_host_voice_prefix",
     "malformed_message_envelope",
     # One bounded rewrite is safe; the candidate still passes the full,

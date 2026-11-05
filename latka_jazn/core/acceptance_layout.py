@@ -129,11 +129,11 @@ def _owned_session_id(system_root: Path) -> str:
     return saved["session_id"]
 
 
-def validate_resumed_daemon(layout: AcceptanceLayout, daemon_url: str) -> None:
-    """Read-only identity gate when reusing a session with a daemon marker."""
+def _resumed_daemon_status(layout: AcceptanceLayout, daemon_url: str) -> dict | None:
+    """Observe the selected acceptance marker without changing it or its requests."""
     marker = layout.runtime / "JAZN_ACTIVE_RUNTIME.json"
     if not marker.exists() and not marker.is_symlink():
-        return
+        return None
     if marker.is_symlink() or marker.is_junction():
         raise ValueError("Niezaufany marker testowego daemona")
     from urllib.parse import urlsplit
@@ -142,17 +142,68 @@ def validate_resumed_daemon(layout: AcceptanceLayout, daemon_url: str) -> None:
     url = urlsplit(daemon_url)
     if url.scheme != "http" or url.hostname != "127.0.0.1" or url.port is None:
         raise ValueError("Nieprawidłowy adres testowego daemona")
-    status = status_daemon(JaznConfig(root=layout.system), host="127.0.0.1", port=url.port)
-    if (status.get("active_state") != "active_trusted"
-            or status.get("process_identity_confirmed") is not True
-            or status.get("endpoint_identity_matches") is not True
-            or status.get("endpoint_heartbeat_fresh") is not True
+    return status_daemon(JaznConfig(root=layout.system), host="127.0.0.1", port=url.port,
+                         marker_output=marker)
+
+
+def _resume_trusted(status: dict) -> bool:
+    return (status.get("active_state") == "active_trusted"
+            and all(status.get(key) is True for key in (
+                "process_identity_confirmed", "endpoint_identity_matches",
+                "endpoint_heartbeat_fresh", "package_integrity_verified",
+                "source_provenance_verified")))
+
+
+def _resume_refusal(status: dict) -> ValueError:
+    def code(key: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9_.-]", "_", str(status.get(key) or "not_observed"))[:128]
+
+    missing = ",".join(key for key in (
+        "process_identity_confirmed", "endpoint_identity_matches",
+        "endpoint_heartbeat_fresh", "package_integrity_verified", "source_provenance_verified"
+    ) if status.get(key) is not True)
+    return ValueError(
+        "Odmowa wznowienia: ROOT/PID/instancja/heartbeat lub integralność niepotwierdzone. "
+        f"reason={code('active_state_reason')}; process={code('process_state')}; "
+        f"identity={code('identity_state')}; heartbeat={code('heartbeat_state')}; "
+        f"unverified={missing}. Diagnostyka: --isolated-acceptance --run status. "
+        "Jawny start własnej martwej instancji: --isolated-acceptance --run start. "
+        "Zachowaj ten sam --root i ustawienia endpointu; nie usuwaj markera ani requestów."
+    )
+
+
+def validate_resumed_daemon(layout: AcceptanceLayout, daemon_url: str) -> None:
+    """Read-only identity gate when reusing a session with a daemon marker."""
+    status = _resumed_daemon_status(layout, daemon_url)
+    if status is not None and not _resume_trusted(status):
+        raise _resume_refusal(status)
+
+
+def validate_isolated_daemon_start(layout: AcceptanceLayout, daemon_url: str) -> None:
+    """Allow an explicit canonical start, never a takeover of a live/unknown PID.
+
+    This only validates; start_daemon still owns integrity, port binding, marker
+    transitions and durable pending requests. No marker is removed here.
+    """
+    if workspace_runtime_path(layout.system).resolve() != layout.runtime.resolve():
+        raise ValueError("Niezgodny workspace testowego daemona; odmowa recovery")
+    status = _resumed_daemon_status(layout, daemon_url)
+    if status is None:
+        return
+    own_root = (isinstance(status.get("active_root"), str)
+                and Path(status["active_root"]).resolve() == layout.system.resolve())
+    if (not own_root or status.get("marker_valid") is not True
             or status.get("package_integrity_verified") is not True
             or status.get("source_provenance_verified") is not True):
-        raise ValueError(
-            "Odmowa wznowienia: marker istnieje, lecz ROOT/PID/instancja/heartbeat "
-            "lub integralność nie zostały potwierdzone. Wykonaj diagnostykę operatora."
-        )
+        raise _resume_refusal(status)
+    if _resume_trusted(status):
+        return  # Canonical start may reuse this verified instance.
+    if not (type(status.get("pid")) is int and status["pid"] > 0
+            and status.get("process_state") == "dead"
+            and status.get("pid_alive") is False
+            and status.get("pid_alive_os_probe") is False
+            and status.get("endpoint_reachable") is False):
+        raise _resume_refusal(status)
 
 
 @contextmanager

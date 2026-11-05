@@ -26,7 +26,10 @@ class _Core(Controller):
 
 def _client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[studio_chat.ChatClient, _Core]:
     monkeypatch.setattr(studio_chat, "settings_path", lambda _root: tmp_path / "settings.json")
-    monkeypatch.setattr(studio_chat, "python_executable", lambda _settings: "python")
+    def selected_python(_settings: Settings, root: Path | None = None) -> str:
+        assert root == tmp_path
+        return "python"
+    monkeypatch.setattr(studio_chat, "python_executable", selected_python)
     core = _Core(tmp_path)
     client = studio_chat.ChatClient(core)
     client.pending = "studio-turn-1"

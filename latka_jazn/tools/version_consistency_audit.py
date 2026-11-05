@@ -95,6 +95,9 @@ MAX_SCAN_BYTES = 4 * 1024 * 1024
 VERSION_BOUND_CONTRACTS = {
     "latka_jazn/resources/startup_contract.json": ("version", "package_version"),
     "deploy/chatgpt_mcp/deployment.contract.json": ("runtime_version", "package_version_full"),
+    # The canonical Test Studio generator stamps only this envelope field.
+    # The rest of the catalog remains subject to the ordinary literal scan.
+    "tools/jazn_tests_studio/test_contracts.json": ("system_version", "package_version"),
 }
 VERSION_PATTERN = re.compile(r"v\d+\.\d+(?:\.\d+)*(?:[-_][A-Za-z0-9_.-]+)?|\d+\.\d+(?:\.\d+)+")
 

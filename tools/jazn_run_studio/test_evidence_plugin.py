@@ -84,6 +84,7 @@ class EvidenceRecorder:
         self.store = RunStore(self.root, evidence_base=output)
         self.report: dict | None = None
         self.rows: dict[str, dict] = {}
+        self.completed_phases: dict[str, set[str]] = {}
         self.inventory_error = ""
         self.collection_errors: list[str] = []
 
@@ -173,6 +174,7 @@ class EvidenceRecorder:
         result = event["result"]
         _write(safe_child(folder, name + ".txt"),
                (result["title"] + "\n" + result["status"] + "\n" + result["reason"] + "\n").encode("utf-8"))
+        self.completed_phases.setdefault(key, set()).add(report.when)
 
     @pytest.hookimpl(trylast=True)
     def pytest_sessionfinish(self, session: Any, exitstatus: int) -> None:
@@ -182,7 +184,9 @@ class EvidenceRecorder:
         if int(exitstatus) != 0 and not session.items:
             self.rows["pytest-collection"].update(status="ERROR", reason="Collection failed or no tests were collected")
         for row in self.rows.values():
-            if row["status"] in {"QUEUED", "RUNNING"}:
+            incomplete_pass = (row["case_id"] != "pytest-collection" and row["status"] == "PASS"
+                               and self.completed_phases.get(row["case_id"]) != {"setup", "call", "teardown"})
+            if row["status"] in {"QUEUED", "RUNNING"} or incomplete_pass:
                 row.update(status="INTERRUPTED", reason="Test did not complete before the pytest session ended")
         xml_path = getattr(self.config.option, "xmlpath", None)
         if xml_path and Path(xml_path).is_file():

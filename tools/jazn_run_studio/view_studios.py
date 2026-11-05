@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 from . import STUDIO_VERSION
-from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
+from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, python_candidate_for_ui, save_settings
 from .service_status_dialog import ServiceStatusDialog
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
@@ -116,10 +116,9 @@ class StudioViewMixin:
             "Katalog testów",
             "Natywny podgląd Test Studio: filtrowanie testów i ich oczekiwań bez uruchamiania lub edycji.",
         )
-        from .core import python_executable
         self.tests_catalog_panel = TestCatalogPanel(
             self.core.root,
-            python="" if self.smoke else python_executable(self.core.settings),
+            python="" if self.smoke else python_candidate_for_ui(self.core.settings, self.core.root),
             enable_execution=not self.smoke,
         )
         self.tests_catalog_panel.open_tpa_requested.connect(lambda: self.navigate("TPA"))
@@ -133,7 +132,10 @@ class StudioViewMixin:
             "Testy przepuszczania aktualizacji — bezpieczne podtesty w izolacji + ręczny odbiór 22 scenariuszy. Automatyczny PASS nie zalicza bramki.",
             compact=True,
         )
-        self.local_acceptance_panel = LocalAcceptancePanel(self.core.root, python=self.core.settings.python)
+        self.local_acceptance_panel = LocalAcceptancePanel(
+            self.core.root,
+            python="" if self.smoke else python_candidate_for_ui(self.core.settings, self.core.root),
+        )
         self.local_acceptance_panel.models_requested.connect(lambda: self.core.probe("ollama"))
         self.local_acceptance_panel.dependency_requested.connect(self.open_tpa_dependencies)
         layout.addWidget(self.local_acceptance_panel)

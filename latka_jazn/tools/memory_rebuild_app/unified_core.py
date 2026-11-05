@@ -7,6 +7,7 @@ import sqlite3
 import tempfile
 
 from latka_jazn.memory.memory_tier_core_store import MemoryTierCoreStore
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
 from latka_jazn.tools.chat_export_reader import probe_json_source_kind, sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
@@ -84,18 +85,9 @@ class UnifiedCoreMixin(UnifiedMixinHost):
         return {"ok": True, "database": str(self.path), "schema_version": UNIFIED_SCHEMA_VERSION}
 
     def connect(self, *, read_only: bool = False) -> sqlite3.Connection:
-        if read_only:
-            con = sqlite3.connect(
-                f"file:{self.path.as_posix()}?mode=ro",
-                uri=True,
-                timeout=30,
-                factory=ClosingSQLiteConnection,
-            )
-        else:
-            con = sqlite3.connect(self.path, timeout=30, factory=ClosingSQLiteConnection)
-        con.row_factory = sqlite3.Row
+        connect = connect_runtime_readonly if read_only else connect_runtime_writable
+        con = connect(self.path, timeout_ms=30_000, factory=ClosingSQLiteConnection)
         con.execute("PRAGMA foreign_keys=ON")
-        con.execute("PRAGMA busy_timeout=30000")
         return con
 
     def checkpoint(self) -> None:

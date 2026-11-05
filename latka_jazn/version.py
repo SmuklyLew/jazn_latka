@@ -1,3 +1,27 @@
+# v116.0.34.94.6.98: Enforce the central safe SQLite policy for unified MEMORY and HTML checkpoint/settle writers.
+# v116.0.34.94.6.97: Route durable MCP task connections through the central safe SQLite journal policy.
+# v116.0.34.94.6.96: Distinguish masculine verb endings from instrumental nouns in the voice acceptance gate.
+# v116.0.34.94.6.95: Reject masculine own narration before candidate acceptance and allow one bounded semantic retry.
+# v116.0.34.94.6.94: Wait for one durable TPA completion in the local acceptance Qt regression.
+# v116.0.34.94.6.93: Refuse unsafe existing WAL before writable open and route rebuild stores through the central journal policy.
+# v116.0.34.94.6.92: Preserve the real ASGI receive channel after replaying a buffered MCP request.
+# v116.0.34.94.6.91: Bind chat, resume, final validator and operator launch to ROOT interpreter selection.
+# v116.0.34.94.6.90: Resolve future settings paths from strict existing ancestors during concurrent Windows mkdir.
+# v116.0.34.94.6.89: Prefer ROOT/.venv for JSS, MCP and TPA with verified operator override and safe fallback.
+# v116.0.34.94.6.88: Preserve diagnostic JSON field names while redacting values in capture and export.
+# v116.0.34.94.6.87: Preserve a bounded daemon refusal diagnosis after rotating large status logs.
+# v116.0.34.94.6.86: Diagnose refused acceptance resumes and guard explicit canonical recovery of dead owned daemons.
+# v116.0.34.94.6.85: Preserve native exclusive-listener assertions with cross-platform socket typing.
+# v116.0.34.94.6.84: Bind the Windows daemon TCP listener exclusively before creating runtime state.
+# v116.0.34.94.6.83: Require the full runtime identity gate in the JSS services readiness caption.
+# v116.0.34.94.6.82: Bind JSS daemon version evidence to the selected SYSTEM without falling back to the operator package version.
+# v116.0.34.94.6.81: Pin integrity verification ROOT once while retaining fresh member resolution, link checks and complete hashing.
+# v116.0.34.94.6.80: Preserve default TPA entrypoint compatibility and type the local HTTP test fixture.
+# v116.0.34.94.6.79: Bind isolated live TPA preflight and canonical runtime to one explicit local Ollama endpoint.
+# v116.0.34.94.6.78: Require all pytest phase receipts before sealing a passing evidence result.
+# v116.0.34.94.6.77: Declare lazy Windows service bindings for cross-platform static analysis.
+# v116.0.34.94.6.76: Keep managed interpreter paths out of the compact TPA summary while preserving full setup identity.
+# v116.0.34.94.6.75: Add native SCM supervisor hosting and root-bound Windows startup configuration.
 # v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
@@ -205,9 +229,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.74"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.98"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "recall-ollama-jss-status"
+PACKAGE_RELEASE_NAME = "memory-writer-safe-journal-policy"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -926,8 +926,18 @@ def daemon_chat_request_fingerprint(
 
 class JaznDaemonServer(ThreadingHTTPServer):
     daemon_threads = True
-    allow_reuse_address = True
+    # Winsock SO_REUSEADDR permits a second listener on an occupied address;
+    # unlike POSIX reuse it does not establish exclusive daemon ownership.
+    allow_reuse_address = os.name != "nt"
     block_on_close = False
+
+    def server_bind(self) -> None:
+        if os.name == "nt":
+            exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+            if exclusive is None:
+                raise OSError("Windows exclusive listener ownership is unavailable")
+            self.socket.setsockopt(socket.SOL_SOCKET, exclusive, 1)
+        super().server_bind()
 
     def __init__(
         self,

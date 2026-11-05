@@ -238,7 +238,7 @@ class SetupWizard(QWizard):
         """Discover installed executable paths without installation or implicit writes."""
         from .core import discovery
         from pathlib import Path
-        found = discovery(self.core.settings)
+        found = discovery(self.core.settings, self.core.root)
         updated: list[str] = []
         for key in ("python", "ollama", "cloudflared"):
             candidate = found.get(key)
@@ -259,7 +259,7 @@ class SetupWizard(QWizard):
         try:
             from .requirements_worker import setup_scope
             from .core import python_executable
-            if self.report.get("scope") != setup_scope(self.core.root, python_executable(self.core.settings)):
+            if self.report.get("scope") != setup_scope(self.core.root, python_executable(self.core.settings, self.core.root)):
                 raise StudioError("Interpreter lub wymagania zmieniły się; ponów kontrolę.")
             data = asdict(self.core.settings)
             data.update({key: field.text().strip() for key, field in self.setting_fields.items()})

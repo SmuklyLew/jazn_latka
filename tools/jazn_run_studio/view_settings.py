@@ -178,7 +178,7 @@ class SettingsViewMixin:
 
     def fill_discovered_defaults(self: Any) -> None:
         """Suggest detected executables only in empty draft fields; never start services."""
-        found = discovery(self.core.settings)
+        found = discovery(self.core.settings, self.core.root)
         changed: list[str] = []
         for name in ("python", "ollama", "cloudflared"):
             candidate = found.get(name)

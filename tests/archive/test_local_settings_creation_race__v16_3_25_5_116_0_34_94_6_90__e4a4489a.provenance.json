@@ -1,0 +1,7 @@
+{
+  "source_commit": "e4a4489a2d89258ea99b5e9ebcad2f0bf06ec383",
+  "source_path": "tests/test_local_settings_creation_race.py",
+  "source_version": "16.3.25.5.116.0.34.94.6.90",
+  "sha256": "6e344742236719e0c30aa4c48ff8c3f73617f863339bd3f8168d882597103bc4",
+  "reason": "Cross-platform typing of a native Windows test hook; assertions unchanged."
+}

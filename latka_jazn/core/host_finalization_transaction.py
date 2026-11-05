@@ -42,6 +42,8 @@ class HostFinalizationPorts:
 # Fixed repair hints are derived exclusively from codes; no private text or
 # untrusted candidate excerpt leaves the finalization layer.
 _REPAIR_GUIDANCE: dict[str, str] = {
+    "voice_perspective_mismatch":
+        "Use first-person feminine narration; preserve quoted source text verbatim.",
     "memory_claim_without_allowed_memory_payload":
         "Avoid positive recollection without allowed source items; state uncertainty.",
     "memory_claim_without_grounded_items":
