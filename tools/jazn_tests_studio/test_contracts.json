@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.102",
-  "active_definition_count": 3240,
+  "active_definition_count": 3243,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17012,6 +17012,71 @@
       "description_source": "source_identity",
       "line": 549
     },
+    "tests/test_dependency_studio.py::test_fresh_project_venv_installs_offline_and_marks_active": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_fresh_project_venv_installs_offline_and_marks_active",
+      "purpose": "Fresh project venv installs offline and marks active",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 583
+    },
+    "tests/test_dependency_studio.py::test_project_venv_refuses_existing_path_without_mutation": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_project_venv_refuses_existing_path_without_mutation",
+      "purpose": "Project venv refuses existing path without mutation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 597
+    },
+    "tests/test_dependency_studio.py::test_dependency_cli_project_layout_dry_run": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_dependency_cli_project_layout_dry_run",
+      "purpose": "Dependency cli project layout dry run",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 614
+    },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
       "name": "test_repeated_profile_flags_preserve_core_and_archive",
@@ -32234,11 +32299,11 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_refresh_keeps_last_good_evidence_and_uptime",
       "purpose": "Refresh keeps last good evidence and uptime",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -32249,16 +32314,16 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_model_listing_does_not_erase_fresh_generation_for_same_model",
       "purpose": "Model listing does not erase fresh generation for same model",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 111
     },
     "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_incomplete_identity": {
       "path": "tests/test_jss_service_table_readiness.py",
