@@ -64,7 +64,7 @@ class ServiceViewMixin:
                 emergency = menu.addAction("Wymuś zakończenie własnego procesu")
                 emergency.triggered.connect(
                     lambda _checked=False, s=service:
-                    self.guard(lambda: self.force_owned_service(s))
+                    self.guard(lambda: self.service(s, "force_stop"))
                 )
             config = menu.addAction("Konfiguracja")
             config.triggered.connect(lambda: self.navigate("Ustawienia"))
@@ -160,20 +160,6 @@ class ServiceViewMixin:
         self.service_selected_label.setText(service.upper() + " — " + note if service else note)
 
 
-    def force_owned_service(self: Any, service: str) -> None:
-        if service not in {"ollama", "gateway"}:
-            raise StudioError("Nie wolno wymuszać zakończenia tej usługi z JSS")
-        if QMessageBox.question(
-            self, "Awaryjne zakończenie procesu",
-            "Natychmiast zakończyć wyłącznie proces " + service
-            + " uruchomiony przez JSS? Nie dotyczy współdzielonej Ollamy "
-              "ani daemona Jaźni. Niezapisane dane mogą zostać utracone.",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        ) != QMessageBox.StandardButton.Yes:
-            return
-        self.core.force_kill_owned("service:" + service)
-
     def refresh_services(self: Any) -> None:
         """Explicit, read-only probes; no silent auto-start or PID adoption."""
         self.core.start_action("status")
@@ -187,6 +173,22 @@ class ServiceViewMixin:
 
 
     def service(self: Any, service: str, op: str) -> None:
+        # Emergency force-stop is restricted to handles owned by this JSS;
+        # keep the operation in the existing ServiceViewMixin method contract.
+        if op == "force_stop":
+            if service not in {"ollama", "gateway"}:
+                raise StudioError("Nie wolno wymuszać zakończenia tej usługi z JSS")
+            if QMessageBox.question(
+                self, "Awaryjne zakończenie procesu",
+                "Natychmiast zakończyć wyłącznie proces " + service
+                + " uruchomiony przez JSS? Nie dotyczy współdzielonej Ollamy "
+                  "ani daemona Jaźni. Niezapisane dane mogą zostać utracone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            ) != QMessageBox.StandardButton.Yes:
+                return
+            self.core.force_kill_owned("service:" + service)
+            return
         if service == "runtime":
             if op in {"stop", "restart"} and QMessageBox.question(self, "Runtime Jaźni", "Potwierdzić kanoniczny " + op + " runtime Jaźni?") != QMessageBox.StandardButton.Yes:
                 return

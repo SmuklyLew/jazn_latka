@@ -1,3 +1,4 @@
+# v116.0.34.94.6.103: Align startup/release identity and keep emergency service actions inside the owned JSS view boundary.
 # v116.0.34.94.6.102: Preserve JSS service evidence, report verified uptime and separate model generation probes.
 # v116.0.34.94.6.101: Integrate guided installer and verified Dependency Studio setup onto v100 runtime acceptance.
 # v116.0.34.94.6.99: Protect runtime-clock answers from Ollama rewriting.
@@ -232,7 +233,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.102"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.103"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "v102-operator-process-observability"
 PACKAGE_VERSION_FULL = (
