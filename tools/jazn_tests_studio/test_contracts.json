@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.75",
-  "active_definition_count": 3139,
+  "active_definition_count": 3145,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25074,6 +25074,120 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_only_verified_terminal_failure_can_be_archived": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_only_verified_terminal_failure_can_be_archived",
+      "purpose": "Only verified terminal failure can be archived",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_inconsistent_failure_proof_never_unblocks_chat": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_inconsistent_failure_proof_never_unblocks_chat",
+      "purpose": "Inconsistent failure proof never unblocks chat",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_chat_job_not_found_is_not_evidence_of_failure": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_chat_job_not_found_is_not_evidence_of_failure",
+      "purpose": "Chat job not found is not evidence of failure",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_restart_requires_fresh_failure_proof": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_restart_requires_fresh_failure_proof",
+      "purpose": "Restart requires fresh failure proof",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_terminal_recovery_tombstone_survives_ttl_and_another_persist": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_terminal_recovery_tombstone_survives_ttl_and_another_persist",
+      "purpose": "Terminal recovery tombstone survives ttl and another persist",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_unknown_request_remains_unknown": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_unknown_request_remains_unknown",
+      "purpose": "Unknown request remains unknown",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
     },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
