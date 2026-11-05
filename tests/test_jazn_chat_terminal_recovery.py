@@ -135,6 +135,61 @@ def test_terminal_recovery_tombstone_survives_ttl_and_another_persist(tmp_path: 
         server.server_close()
 
 
+
+def test_duplicate_submit_after_ttl_is_not_reexecuted(tmp_path: Path) -> None:
+    server = runtime_daemon.JaznDaemonServer(
+        ("127.0.0.1", 0), runtime_daemon.JaznDaemonHandler,
+        config=JaznConfig(root=tmp_path.resolve()),
+        marker_path=tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json",
+    )
+    message = "nie ponawiaj tej tury"
+    request_id = "studio-expired-idempotent"
+    channel = runtime_daemon.normalize_model_channel_config({})
+    fingerprint = runtime_daemon.daemon_chat_request_fingerprint(
+        user_text=message, session_id="studio-session", no_carryover=False,
+        client="daemon_conversation_client", command="--chat-ollama",
+        model_channel_config=channel, reset_session=False,
+    )
+    try:
+        failed = runtime_daemon.DaemonChatJob(
+            request_id=request_id, user_text="", input_field="message",
+            user_text_sha256=runtime_daemon.hashlib.sha256(message.encode()).hexdigest(),
+            session_id="studio-session", no_carryover=False,
+            client="daemon_conversation_client", command="--chat-ollama",
+            model_channel_config=channel, request_fingerprint=fingerprint,
+            status="failed", error="runtime_turn_not_accepted",
+            completed_at_utc=(datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+            result={"ok": False, "error_code": "runtime_turn_not_accepted", "request_id": request_id},
+        )
+        failed.done_event.set()
+        server.chat_jobs[request_id] = failed
+        assert server._persist_chat_jobs_locked(stage="test")
+        server._cleanup_chat_jobs_locked()
+        assert request_id not in server.chat_jobs
+        job, created, err = server.submit_chat_job(
+            user_text=message, input_field="message",
+            session_id="studio-session", no_carryover=False,
+            client="daemon_conversation_client", command="--chat-ollama",
+            model_channel_config=channel, request_id=request_id,
+        )
+        assert err is None and created is False
+        assert job is not None and job.status == "failed"
+        assert server._chat_queue.qsize() == 0
+        assert server.state.chat_job_submitted_count == 0
+
+        conflicting, created, err = server.submit_chat_job(
+            user_text="inny tekst", input_field="message",
+            session_id="studio-session", no_carryover=False,
+            client="daemon_conversation_client", command="--chat-ollama",
+            model_channel_config=channel, request_id=request_id,
+        )
+        assert conflicting is None and created is False
+        assert err is not None and err["error_code"] == "request_id_conflict"
+        assert server._chat_queue.qsize() == 0
+    finally:
+        server.server_close()
+
+
 def test_unknown_request_remains_unknown(tmp_path: Path) -> None:
     server = runtime_daemon.JaznDaemonServer(
         ("127.0.0.1", 0), runtime_daemon.JaznDaemonHandler,
