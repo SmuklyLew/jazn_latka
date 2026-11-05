@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from latka_jazn.core.handlers.time_awareness_handler import TimeAwarenessHandler
+from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight
 from latka_jazn.core.model_guided_response_synthesizer import (
     ModelGuidedResponseSynthesizer,
 )
@@ -65,7 +66,15 @@ def test_time_question_preserves_runtime_clock(trusted):
         route="time_awareness",
         cognitive_frame={},
         response_policy={"exact_runtime_required": False},
-        executor_preflight=SimpleNamespace(executor="local_model"),
+        executor_preflight=ModelExecutorPreflight(
+            executor="local_model",
+            available=True,
+            retry_allowed=False,
+            adapter_id="offline-ollama-test",
+            provider="ollama",
+            model="fixture",
+            reason="protected_runtime_time_test",
+        ),
     )
 
     assert output.used is False
