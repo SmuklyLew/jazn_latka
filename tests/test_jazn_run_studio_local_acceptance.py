@@ -98,22 +98,57 @@ def test_qt_acceptance_page_renders_without_live_runtime(roots, monkeypatch):
     system, _ = roots
     app = QApplication.instance() or QApplication([])
     panel = LocalAcceptancePanel(system)
-    assert panel.table.rowCount() >= 10
-    first = panel.table.item(0, 3)
-    assert first is not None and first.text() == "NOT_RUN"
-    # Missing interpreter/files produce a durable BLOCKED execution record,
-    # instead of letting a manual declaration masquerade as a test result.
-    import time
-    panel.python_field.clear()
-    panel.start(("gui-daemon",))
-    for _ in range(100):
+    from PySide6.QtCore import QCoreApplication, QEvent, QEventLoop, QTimer
+    from PySide6.QtTest import QSignalSpy
+
+    spy = QSignalSpy(panel.runner.completed)
+    assert spy.isValid()
+    loop = QEventLoop()
+    deadline = QTimer()
+    deadline.setSingleShot(True)
+    deadline.timeout.connect(loop.quit)
+    panel.runner.completed.connect(loop.quit)
+    try:
+        assert panel.table.rowCount() >= 10
+        first = panel.table.item(0, 3)
+        assert first is not None and first.text() == "NOT_RUN"
+        # completed is the durability barrier; QUEUED remains visible until
+        # SerialIO acknowledges the terminal snapshot on the GUI thread.
+        panel.python_field.clear()
+        panel.start(("gui-daemon",))
+        if spy.count() == 0:
+            # QSignalSpy.wait holds the GIL on some PySide builds, starving
+            # Python QRunnable I/O. QEventLoop.exec lets that worker progress.
+            deadline.start(15_000)
+            loop.exec()
+        deadline.stop()
+        assert spy.count() > 0, "TPA did not acknowledge its terminal snapshot"
+        assert spy.count() == 1
+        assert not panel.runner.active
+        assert not panel.runner.persistence_pending
+        assert not panel.runner.persistence_error
+        assert panel.report is not None
+        assert panel.report["results"][0]["status"] == "BLOCKED"
+        assert panel.report["results"][0]["full_gate"] == "NOT_RUN"
+        saved = panel.runner.store.load(panel.report["run_id"])
+        assert saved["results"][0]["status"] == "BLOCKED"
+        assert saved["results"][0]["full_gate"] == "NOT_RUN"
+        assert saved["finished_utc"]
+        assert spy.at(0)[0]["run_id"] == saved["run_id"]
         app.processEvents()
-        time.sleep(0.01)
-        if not panel.runner.active:
-            break
-    assert panel.report is not None
-    assert panel.report["results"][0]["status"] == "BLOCKED"
-    assert panel.report["results"][0]["full_gate"] == "NOT_RUN"
-    assert panel.runner.store.load(panel.report["run_id"])["results"][0]["status"] == "BLOCKED"
-    panel.close()
-    app.processEvents()
+        assert spy.count() == 1, "Duplicate TPA finalization"
+    finally:
+        # Even a failed assertion must release the panel only after its owned
+        # worker has returned and queued completion has been delivered.
+        if panel.runner.active:
+            panel.runner.stop()
+        if panel.runner.active or panel.runner.persistence_pending:
+            deadline.start(15_000)
+            loop.exec()
+        deadline.stop()
+        panel.close()
+        if not panel.runner.active and not panel.runner.persistence_pending:
+            panel.deleteLater()
+            QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        app.processEvents()
+        assert not panel.runner.active and not panel.runner.persistence_pending
