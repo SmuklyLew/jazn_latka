@@ -2213,6 +2213,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
         def existing_job_locked() -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
             existing = self.chat_jobs.get(normalized_id)
             if existing is None:
+                # The terminal in-memory cache can expire before the durable
+                # request ledger. Recover its identity before deciding that a
+                # submit with the same request_id is a *new* execution.
+                existing = self._read_expired_failed_chat_job_locked(normalized_id)
+                if existing is not None:
+                    self.chat_jobs[normalized_id] = existing
+            if existing is None:
                 return None, None
             same_request = existing.request_fingerprint == request_fingerprint
             if existing.request_fingerprint is None:
