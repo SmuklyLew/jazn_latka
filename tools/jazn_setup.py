@@ -292,6 +292,11 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     if args.mode != "repair" and _managed_matches(managed, profiles):
         return {"ok": True, "mode": "install", "state": "already_ready",
                 "python_executable": managed["python_executable"], "profiles": profiles}
+    if args.layout == "project" and (_venv_path(root).exists() or _venv_path(root).is_symlink()):
+        raise SetupError(
+            "Existing .venv cannot be overwritten. Use --layout managed "
+            "for a verified side-by-side recovery instead."
+        )
     online = args.online or args.mode == "online"
     if online and args.bundle:
         raise SetupError("Choose --bundle OR --online, not both")
@@ -327,7 +332,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     verification = _dependency_studio(root, "verify", "--bundle", str(bundle))
     installation = _dependency_studio(
         root, "install", "--bundle", str(bundle), "--profile", ",".join(profiles),
-        "--python-executable", str(_base_python()), "--offline", timeout=3600,
+        "--python-executable", str(_base_python()),
+        "--layout", args.layout, "--offline", timeout=3600,
     )
     python_path = str(installation.get("python_executable") or "")
     if not python_path or not Path(python_path).is_file():
@@ -345,6 +351,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         "profiles": profiles, "python_executable": python_path,
         "bundle": str(bundle), "bundle_verified": verification.get("ok") is True,
         "activation_marker_updated": installation.get("activation_marker_updated") is True,
+        "layout": args.layout,
         "next": {
             "core": f'"{python_path}" -X utf8 run.py host-preflight --json',
             "jss": f'"{python_path}" -X utf8 run_studio.py',
@@ -362,6 +369,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="One or more canonical Dependency Studio profiles, comma-separated")
     parser.add_argument("--bundle", default="", help="Exact existing verified wheelhouse directory")
     parser.add_argument("--online", action="store_true", help="Explicit operator-authorized bundle download")
+    parser.add_argument("--layout", choices=("project", "managed"), default="project",
+                        help="Fresh installs use ROOT/.venv; managed preserves side-by-side upgrades")
     parser.add_argument("--yes", action="store_true", help="Noninteractive operator approval")
     parser.add_argument("--json", action="store_true", help="Machine-readable result")
     return parser

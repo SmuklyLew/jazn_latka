@@ -121,6 +121,7 @@ def install_bundle(
     offline: bool = True,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     dry_run: bool = False,
+    project_venv: bool = False,
 ) -> dict[str, Any]:
     if not offline:
         raise DependencyStudioError("Dependency Studio installs only from a verified local wheelhouse; pass --offline")
@@ -165,7 +166,14 @@ def install_bundle(
         f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__"
         f"{manifest_sha[:12]}__{uuid.uuid4().hex[:12]}"
     )
-    env_root = envs_root / environment_identity
+    if project_venv:
+        # First installation only. Never relocate a venv or overwrite an
+        # existing environment, particularly while Windows uses its files.
+        env_root = project_root / ".venv"
+        envs_root = env_root
+        environment_identity = "project-venv__" + contract_fingerprint[:12]
+    else:
+        env_root = envs_root / environment_identity
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
@@ -183,6 +191,7 @@ def install_bundle(
         "dependency_contract_fingerprint": contract_fingerprint,
         "environment_identity": environment_identity,
         "fresh_environment": True,
+        "layout": "project" if project_venv else "managed",
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
@@ -198,8 +207,11 @@ def install_bundle(
         return {"ok": True, "dry_run": True, **plan}
 
     envs_root.mkdir(parents=True, exist_ok=True)
-    if env_root.exists():
-        raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    if env_root.exists() or env_root.is_symlink():
+        raise DependencyStudioError(
+            "Project .venv exists; refusing an unsafe in-place mutation"
+            if project_venv else f"Fresh managed environment path already exists: {env_root}"
+        )
     try:
         _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)
@@ -235,6 +247,7 @@ def install_bundle(
         "project_root": str(project_root),
         "environment_root": str(env_root),
         "environment_identity": environment_identity,
+        "layout": "project" if project_venv else "managed",
         "managed_environments_root": str(envs_root),
         "python_executable": str(env_python),
         "python_version": pyver,

@@ -577,3 +577,45 @@ def test_managed_environment_rejects_missing_venv_configuration(tmp_path: Path) 
     status = managed_environment_status(root)
     assert status["ready"] is False
     assert "venv_configuration_missing" in status["errors"]
+
+
+
+def test_fresh_project_venv_installs_offline_and_marks_active(tmp_path: Path) -> None:
+    root = _project(tmp_path, dependencies=["demo==1.0"])
+    bundle = _bundle(root, tmp_path / "project-bundle", profiles=["core"])
+    result = install_bundle(root, bundle, offline=True, project_venv=True)
+    assert result["layout"] == "project"
+    assert Path(result["environment_root"]) == root / ".venv"
+    assert result["activation_marker_updated"] is True
+    verified = managed_environment_status(root)
+    assert verified["ready"] is True, verified
+    assert Path(verified["environment_root"]) == root / ".venv"
+
+
+def test_project_venv_refuses_existing_path_without_mutation(tmp_path: Path) -> None:
+    from latka_jazn.dependencies.runtime import DependencyStudioError
+    root = _project(tmp_path, dependencies=["demo==1.0"])
+    bundle = _bundle(root, tmp_path / "project-bundle-existing", profiles=["core"])
+    planned = install_bundle(root, bundle, offline=True, project_venv=True, dry_run=True)
+    assert planned["environment_root"] == str(root / ".venv")
+    assert "--require-hashes" in planned["commands"]["install"]
+    assert "--no-index" in planned["commands"]["install"]
+    assert not (root / ".venv").exists()
+    (root / ".venv").mkdir()
+    keep = root / ".venv" / "keep.txt"
+    keep.write_text("untouched", encoding="utf-8")
+    with pytest.raises(DependencyStudioError, match="refusing an unsafe in-place mutation"):
+        install_bundle(root, bundle, offline=True, project_venv=True)
+    assert keep.read_text(encoding="utf-8") == "untouched"
+
+
+def test_dependency_cli_project_layout_dry_run(tmp_path: Path) -> None:
+    root = _project(tmp_path, dependencies=["demo==1.0"])
+    bundle = _bundle(root, tmp_path / "project-bundle-cli", profiles=["core"])
+    parser = build_parser()
+    args = parser.parse_args(["--root", str(root), "install", "--bundle", str(bundle),
+                              "--offline", "--layout", "project", "--dry-run"])
+    code, result = execute(args)
+    assert code == 0
+    assert result["layout"] == "project"
+    assert Path(result["environment_root"]) == root / ".venv"
