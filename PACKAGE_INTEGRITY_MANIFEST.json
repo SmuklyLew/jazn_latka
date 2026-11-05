@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "generated_at_utc": "2026-11-05T15:19:15+00:00",
-  "updated_at_utc": "2026-11-05T15:19:15+00:00",
+  "generated_at_utc": "2026-11-05T15:23:24+00:00",
+  "updated_at_utc": "2026-11-05T15:23:24+00:00",
   "start_file": "run.py",
-  "file_count": 3714,
-  "static_file_count": 3714,
+  "file_count": 3715,
+  "static_file_count": 3715,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -165,6 +165,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": ".github/workflows/installer-cross-platform-smoke.yml",
+      "size_bytes": 2001,
+      "sha256": "4b4a8fc3fb02bc00686f4f6f52935d8f5bf7ea42300152f1360374a8a27f7d9a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": ".github/workflows/javascript-node24-contract.yml",
       "size_bytes": 2977,
       "sha256": "3e5dd5ccf4c14a6399b06fdd0ab8e39ecf8f2eaf1dd594278d4228fd5e0017b5",
@@ -193,8 +202,8 @@
     },
     {
       "path": ".github/workflows/jazn-run-studio.yml",
-      "size_bytes": 11866,
-      "sha256": "1ed6c099f2ba68a74775af5248886285f8019bb1ceaab38866ad0cd1156ae66a",
+      "size_bytes": 12026,
+      "sha256": "232b2eab5262d6854225483bff6a6d3b8a28b271b1de3a8ac07f4fdf75cfadb2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -464,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3025,
-      "sha256": "fcb507460160f34483dd23d4b129810ab75e25b78f0e1184234a147757667865",
+      "sha256": "3710d1eb316b0edf0c195f223a51d7f5eeb7fe3a6ee29b83e070f1c166d86b1a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
