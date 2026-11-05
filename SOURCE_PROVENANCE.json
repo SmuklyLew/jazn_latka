@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d555c181b572c8407674716e5d24ec4ea3db62f6",
+  "base_merge_commit": "0dff5d2e5dedf5631d88cab55679b4ab552c5a26",
   "base_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "commit_date": "2026-11-05T15:17:55Z",
+  "commit_date": "2026-11-05T16:19:15+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-05T15:17:55+00:00",
+  "generated_at_utc": "2026-11-05T15:19:15+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "01961803d1460e19393dfe2a4cb9348253fa88d9",
+  "git_tree_sha": "f512582fed6e1534d94c81a13282a7c78fcc8e29",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d555c181b572c8407674716e5d24ec4ea3db62f6",
+    "source_commit": "0dff5d2e5dedf5631d88cab55679b4ab552c5a26",
     "source_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d555c181b572c8407674716e5d24ec4ea3db62f6",
+  "source_commit": "0dff5d2e5dedf5631d88cab55679b4ab552c5a26",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "tag": null,
