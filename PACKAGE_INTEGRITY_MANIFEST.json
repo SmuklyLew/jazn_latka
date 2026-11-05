@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
-  "package_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
-  "generated_at_utc": "2026-11-05T05:53:50+00:00",
-  "updated_at_utc": "2026-11-05T05:53:50+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+  "package_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+  "generated_at_utc": "2026-11-05T13:42:31+00:00",
+  "updated_at_utc": "2026-11-05T13:42:31+00:00",
   "start_file": "run.py",
-  "file_count": 3706,
-  "static_file_count": 3706,
+  "file_count": 3707,
+  "static_file_count": 3707,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2932,
-      "sha256": "072d616b8c0b644f3a268912ef00d7741eb6adb4b6ed57e3cf1db72ab90a6127",
+      "size_bytes": 2884,
+      "sha256": "0d943d73289ea6a6c2594d047e9fb62af5aa50a60126f86e78943eea87a12724",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6061,8 +6061,8 @@
     },
     {
       "path": "latka_jazn/core/handlers/time_awareness_handler.py",
-      "size_bytes": 2100,
-      "sha256": "8ef37110a7c7489c9305db669d399da1770ec7e091fee529d09fbc7a5ff9697f",
+      "size_bytes": 2124,
+      "sha256": "5c1bc5458d6235b2b25e317e848baff0be31a92d821c20c9c45aa4269c3dd949",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6826,8 +6826,8 @@
     },
     {
       "path": "latka_jazn/core/route_registry.py",
-      "size_bytes": 17417,
-      "sha256": "d745a154653781773910af5709d5d55c6348c0e7fb9df3a24ffe009fe2de18e8",
+      "size_bytes": 17416,
+      "sha256": "67243d5fe8cf351f80db66f703b9be54d86dfd092bbbc857dd86060a2066acfe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8851,8 +8851,8 @@
     },
     {
       "path": "latka_jazn/nlp/dialogue_intent_classifier.py",
-      "size_bytes": 84864,
-      "sha256": "08e30ffe62e7decb9fbc62b11e642dcef32d16c5dd909d9a8ca3c324c973867d",
+      "size_bytes": 85026,
+      "sha256": "475ed19055438de859d694c860ec6b34a56c1b265496bf55248a2658b44e5996",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9886,8 +9886,8 @@
     },
     {
       "path": "latka_jazn/resources/nlp/polish_dialogue_route_lexicon.json",
-      "size_bytes": 11850,
-      "sha256": "f0dd3493596415cfb1a31a62522b70deb50943bf8bfab924e7db2b076b59aa6a",
+      "size_bytes": 12018,
+      "sha256": "c6212cb62cc0f3225ac42f5410a8a5b13d245f9bf6c49ee9f074fde6346953fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26912,
-      "sha256": "2a87797eb5eba62434053571c2e813e865f58df9b13fe9df6ac7ac8f2eb927a7",
+      "size_bytes": 26904,
+      "sha256": "f09e6a55a337116824d17bf6bf2314785fde1c8a1bac6989735988c72166a728",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31791,6 +31791,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v100_runtime_time_routing.py",
+      "size_bytes": 1654,
+      "sha256": "e97ba31cef45a654dfef5bbe6a34b4db03d9bd5479e4be17f869cf0fcacdfd86",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -33809,11 +33818,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+  "release_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
-    "package_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
-    "release_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+    "package_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+    "release_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing"
   },
   "legacy_aliases": {
     "version": "release_version"
