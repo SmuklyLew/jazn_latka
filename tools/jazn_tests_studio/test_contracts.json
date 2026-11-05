@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.101",
-  "active_definition_count": 3236,
+  "system_version": "16.3.25.5.116.0.34.94.6.102",
+  "active_definition_count": 3238,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -32204,16 +32204,46 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_nonmodal_dialog_does_not_spawn_automatically",
       "purpose": "Nonmodal dialog does not spawn automatically",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
       "line": 61
+    },
+    "tests/test_jss_service_status_dialog.py::test_refresh_keeps_last_good_evidence_and_uptime": {
+      "path": "tests/test_jss_service_status_dialog.py",
+      "name": "test_refresh_keeps_last_good_evidence_and_uptime",
+      "purpose": "Refresh keeps last good evidence and uptime",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_jss_service_status_dialog.py::test_model_listing_does_not_erase_fresh_generation_for_same_model": {
+      "path": "tests/test_jss_service_status_dialog.py",
+      "name": "test_model_listing_does_not_erase_fresh_generation_for_same_model",
+      "purpose": "Model listing does not erase fresh generation for same model",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
     },
     "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_incomplete_identity": {
       "path": "tests/test_jss_service_table_readiness.py",
