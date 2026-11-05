@@ -65,6 +65,7 @@ class ChatViewMixin:
         self.button("Połącz", self.connect_local_chat, connection_row)
         self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), connection_row)
         self.button("Wznów wynik", self.resume_chat, connection_row)
+        self.button("Zamknij nieudaną turę", self.close_failed_chat, connection_row)
         controls.addLayout(connection_row)
         layout.addWidget(self.chat_controls)
         self.chat_controls_toggle.toggled.connect(self.chat_controls.setVisible)
@@ -132,3 +133,29 @@ class ChatViewMixin:
             from .chat import ChatClient
             self.core.chat = ChatClient(self.core)
         self.core.chat.resume()
+
+    def close_failed_chat(self: Any) -> None:
+        chat = self.core.chat
+        if chat is None or not chat.can_resolve_terminal_failure():
+            raise StudioError(
+                "Brak potwierdzonego terminalnego błędu. Samo chat_job_not_found "
+                "nie upoważnia do porzucenia checkpointu."
+            )
+        request_id = chat.pending
+        if not request_id:
+            raise StudioError("Brak oczekującego request_id")
+        choice = QMessageBox.question(
+            self, "Zamknięcie nieudanej tury",
+            "Daemon potwierdził terminalne niepowodzenie. "
+            "Zarchiwizować ten błąd i odblokować możliwość wysłania "
+            "nowej wiadomości? Poprzednia tura nie zostanie powtórzona.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if choice != QMessageBox.StandardButton.Yes:
+            return
+        chat.resolve_terminal_failure(request_id)
+        self.chat_state.setText(
+            "Nieudaną turę zarchiwizowano bez przypisania jej "
+            "zaakceptowanej odpowiedzi."
+        )
