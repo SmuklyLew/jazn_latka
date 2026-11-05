@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "generated_at_utc": "2026-11-05T16:55:14+00:00",
-  "updated_at_utc": "2026-11-05T16:55:14+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+  "package_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+  "generated_at_utc": "2026-11-05T18:50:45+00:00",
+  "updated_at_utc": "2026-11-05T18:50:45+00:00",
   "start_file": "run.py",
   "file_count": 3715,
   "static_file_count": 3715,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3020,
-      "sha256": "aed94b5a476782b6fbe59ce84ab9e90faba7ab0e1ed466a62864ab531ef82583",
+      "sha256": "cdb37c24310c9af567016ff7afe0fdce6ca1438edf8e1b584ed23d7f5e3d80ab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11506,8 +11506,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 27031,
-      "sha256": "d2e40268010ba4190c0f6c4ae54215f696b70952c299c1274912a24bcdb171f6",
+      "size_bytes": 27145,
+      "sha256": "4513dcbe3ebebef6c37c0e12197b0f0ab77ad23aac67bc0de5663b29f1403480",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28975,8 +28975,8 @@
     },
     {
       "path": "tests/test_jss_service_status_dialog.py",
-      "size_bytes": 3450,
-      "sha256": "9abeaef81065ae5bfdf825d9acedf1c780b5285ba10ff72ac8455766b8f1cb8a",
+      "size_bytes": 4941,
+      "sha256": "4fbdc8dcd5181f2fcf6bea2d334e5ec64e830d6d231a48dc155465d7a13b204f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32521,8 +32521,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 61943,
-      "sha256": "13f356bc43db01cd925f526551e9afd5a6aeee9f020bd3d267daa1c995b2072d",
+      "size_bytes": 62225,
+      "sha256": "2e19502cd3abe0397cf5cec78bf0192c41ae1f44337d93bdaf78c4f4660240b8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32611,8 +32611,8 @@
     },
     {
       "path": "tools/jazn_run_studio/probes.py",
-      "size_bytes": 6869,
-      "sha256": "dde14300d8dcf6fea5ae402b40a885d993f71e353891c05457e47ff3876b7dcb",
+      "size_bytes": 6894,
+      "sha256": "4863978380978094a28ddf021c1ed3a0c28371b0b1e294708a0735e5e5d76c08",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32665,8 +32665,8 @@
     },
     {
       "path": "tools/jazn_run_studio/service_status_dialog.py",
-      "size_bytes": 8496,
-      "sha256": "c16ee8095c8cafbd822037358fabacc3b438de14191e475fda06ae0fbefa53d3",
+      "size_bytes": 11605,
+      "sha256": "71de0e1811542f11d97f3bb1e33d5a44a1a4572f2970655cf4a75814dec0162a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32989,8 +32989,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_services.py",
-      "size_bytes": 14455,
-      "sha256": "dea119235bda2458523aca8034220a880b7b40512452affbb8ad0feb38da9f70",
+      "size_bytes": 14534,
+      "sha256": "0d3972b1037f430de048011861ad3ae054eb699d22acc6b8240d52ec7827d205",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33232,8 +33232,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2856669,
-      "sha256": "f540ec07a1114e98e14f845378260bb2a4b30f655562fec4fe0afa91ea841fa0",
+      "size_bytes": 2858047,
+      "sha256": "a98fa4d3d3e53d1278b69cbd05b00a7bb19746c8d1acd122ccb7f1c9c5578be4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33890,11 +33890,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+  "release_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-    "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-    "release_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+    "package_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+    "release_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability"
   },
   "legacy_aliases": {
     "version": "release_version"
