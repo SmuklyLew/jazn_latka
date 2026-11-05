@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-  "package_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-  "generated_at_utc": "2026-11-04T23:31:00+00:00",
-  "updated_at_utc": "2026-11-04T23:31:00+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
+  "package_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
+  "generated_at_utc": "2026-11-05T01:13:34+00:00",
+  "updated_at_utc": "2026-11-05T01:13:34+00:00",
   "start_file": "run.py",
-  "file_count": 3696,
-  "static_file_count": 3696,
+  "file_count": 3698,
+  "static_file_count": 3698,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2989,
-      "sha256": "d7f56e198a6f451d1b102e2ec047902ad4a54b9b6291a57782e1234b7187d3d4",
+      "size_bytes": 3007,
+      "sha256": "aed4388e1a3001e8c72d34e258961bbcfe846fe80d777f163925bd40bc5bedc8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26292,
-      "sha256": "24b9969cb0651c8d239c440b9309386c51819619f267edc5e9de96f0781143a1",
+      "size_bytes": 26391,
+      "sha256": "d37c316011d5f5bd117ab86dbd220d9d672032dc8620e61d412b9a9c589b8e4a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18960,6 +18960,24 @@
       "path": "tests/archive/test_jazn_run_studio_local_acceptance_v16_3_25_5_116_0_34_94_6_62.py",
       "size_bytes": 4923,
       "sha256": "704f126a6359eea459c0355685ebcb550989d4a89c04abd47d5bed346ea9f8d9",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_run_studio_local_acceptance_v16_3_25_5_116_0_34_94_6_93.provenance.json",
+      "size_bytes": 343,
+      "sha256": "d5821c64c7ff0578c46eed994e969ea4c36232425fd045e945a3ce66e6c07dd5",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_jazn_run_studio_local_acceptance_v16_3_25_5_116_0_34_94_6_93.py",
+      "size_bytes": 4931,
+      "sha256": "a4b4f42ef592ed68d7843100994ef703f4ed487ae62a6c8c5b29f8bf3c7b1928",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28300,8 +28318,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
-      "size_bytes": 4931,
-      "sha256": "a4b4f42ef592ed68d7843100994ef703f4ed487ae62a6c8c5b29f8bf3c7b1928",
+      "size_bytes": 6624,
+      "sha256": "396d6feb38032af07d649607033d12361f19c3132f4c9a12d1655cfcec9028dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33719,11 +33737,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
+  "release_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-    "package_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate",
-    "release_version": "16.3.25.5.116.0.34.94.6.93-sqlite-existing-wal-write-gate"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
+    "package_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression",
+    "release_version": "16.3.25.5.116.0.34.94.6.94-tpa-durable-completion-regression"
   },
   "legacy_aliases": {
     "version": "release_version"
