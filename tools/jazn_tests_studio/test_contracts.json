@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.102",
-  "active_definition_count": 3243,
+  "active_definition_count": 3244,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -32487,6 +32487,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 79
+    },
+    "tests/test_jss_supervisor_shutdown_gate.py::test_confirmed_inactive_requires_full_supervisor_status": {
+      "path": "tests/test_jss_supervisor_shutdown_gate.py",
+      "name": "test_confirmed_inactive_requires_full_supervisor_status",
+      "purpose": "Confirmed inactive requires full supervisor status",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 5
     },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
