@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
-  "generated_at_utc": "2026-11-05T15:15:08+00:00",
-  "updated_at_utc": "2026-11-05T15:15:08+00:00",
+  "generated_at_utc": "2026-11-05T15:17:55+00:00",
+  "updated_at_utc": "2026-11-05T15:17:55+00:00",
   "start_file": "run.py",
-  "file_count": 3710,
-  "static_file_count": 3710,
+  "file_count": 3714,
+  "static_file_count": 3714,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3020,
-      "sha256": "9406ec481a78f99f3d15e15f789903c494e8f4163fa5082e58c656b80da4fe31",
+      "sha256": "2439040dbc36eb957c189120c50cc9cdab62f93c0bead46820ee8f633f28383a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19182,6 +19182,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_ollama_runtime_time_guard__v16_3_25_5_116_0_34_94_6_100__0f630fee.provenance.json",
+      "size_bytes": 338,
+      "sha256": "ddc4bfac11fcfc176727225e6651a4a258f9da95fe60c90b9f504576c8132263",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_ollama_runtime_time_guard__v16_3_25_5_116_0_34_94_6_100__0f630fee.py",
+      "size_bytes": 3899,
+      "sha256": "23b3d4f0ed956604cbf74dcdcd3de5d821d51ad82dd06c8cbce70c5f377316d3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_package_distribution_cleanroom_activation_observability__source_v16_3_25_5_116_0_34_22.py",
       "size_bytes": 1192,
       "sha256": "4bf17d0ecdd43ef3fffa4aeb4c80ee25b76baf7eb42edf9eb902dc511a4f7715",
@@ -19356,6 +19374,24 @@
       "path": "tests/archive/test_runtime_stability_wake_state__pre_v16_3_25_5_116_0_34_22.py",
       "size_bytes": 24756,
       "sha256": "b00d7b4f13589fd978c7284a649f8234577ddec653fba1be00918e0bdf66595f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_time_routing__v16_3_25_5_116_0_34_94_6_100__0f630fee.provenance.json",
+      "size_bytes": 326,
+      "sha256": "cf9732c41713cc73d5bc4543ce99bf5833873e09a607436e01dbf6bc3c942904",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_runtime_time_routing__v16_3_25_5_116_0_34_94_6_100__0f630fee.py",
+      "size_bytes": 1654,
+      "sha256": "e97ba31cef45a654dfef5bbe6a34b4db03d9bd5479e4be17f869cf0fcacdfd86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30315,7 +30351,7 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
+      "path": "tests/test_ollama_runtime_time_guard.py",
       "size_bytes": 4222,
       "sha256": "ec82873f091b74a54aa9199d6a6acc0ba8fae5fac70896d15fa44163d6ddc8e7",
       "mutable_runtime": false,
@@ -31206,6 +31242,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_runtime_time_routing.py",
+      "size_bytes": 1654,
+      "sha256": "e97ba31cef45a654dfef5bbe6a34b4db03d9bd5479e4be17f869cf0fcacdfd86",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_runtime_turn_liveness.py",
       "size_bytes": 3474,
       "sha256": "3263329a612fd459e1bc168a7341c383c4b1128a6fb8e0d0ddd00eb05d79fc9f",
@@ -31803,15 +31848,6 @@
       "path": "tests/test_unified_conversation_runtime_authority.py",
       "size_bytes": 12113,
       "sha256": "f25f29e48c2402e32b8e996662dbd9b5ed2d116d32299c974f9ff13a1f200767",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
-      "path": "tests/test_v100_runtime_time_routing.py",
-      "size_bytes": 1654,
-      "sha256": "e97ba31cef45a654dfef5bbe6a34b4db03d9bd5479e4be17f869cf0fcacdfd86",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33187,8 +33223,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2856749,
-      "sha256": "e4397c727eae7929726c2f6d748f7bc7403e710b16ea4b40dc7bed86a1daec89",
+      "size_bytes": 2856669,
+      "sha256": "32a7a654e369d07c2ed689f8db3d8534b00fc35ef9561f5816f23fffe3acf890",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
