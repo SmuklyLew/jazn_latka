@@ -1,0 +1,7 @@
+{
+  "source_path": "tests/test_jazn_run_studio_local_acceptance.py",
+  "source_commit": "4a8bba1917b973d68195449fe0ea8dedb77e19b9",
+  "source_version": "16.3.25.5.116.0.34.94.6.93",
+  "sha256": "a4b4f42ef592ed68d7843100994ef703f4ed487ae62a6c8c5b29f8bf3c7b1928",
+  "reason": "Replace elapsed polling with completed signal durability barrier"
+}

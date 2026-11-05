@@ -371,14 +371,50 @@ class RuntimeAnswerValidator:
             "to nie sa biologiczne",
         ))
 
-    def _voice_perspective_mismatch(self, body: str, detected_intent: str, route: str) -> bool:
-        """Detect when active Łatka voice drifts into third-person self-description.
+    @staticmethod
+    def _voice_narration(body: str) -> str:
+        """Inspect narration, preserving quoted source text without rewriting it.
 
-        This is intentionally narrow: diagnostics, code/update plans and source
-        reports may talk about "Łatka" as a system object. Ordinary visible
-        replies from active runtime should not replace first-person feminine voice
-        with "Łatka zrobiła / Łatka odpowiada".
+        Only closed quotes/code spans and explicit Markdown quotations are
+        excluded. Unclosed delimiters cannot hide the rest of a candidate.
         """
+        text = re.sub(r"(?m)^ {0,3}>[^\n]*", " ", body or "")
+        text = re.sub(r"```[^`]*```|~~~[^~]*~~~", " ", text)
+        text = re.sub(r'`[^`\n]+`|"[^"\n]*"|„[^”\n]*”|“[^”\n]*”|«[^»\n]*»|‘[^’\n]*’', " ", text)
+        text = re.sub(r"'[^'\n]*'", " ", text)
+        return text
+
+    def _voice_perspective_mismatch(self, body: str, detected_intent: str, route: str) -> bool:
+        """Reject masculine own voice and ordinary third-person self-description.
+
+        Technical reports may discuss Łatka as a system object. Their own
+        first-person narration still follows the feminine voice contract.
+        Source quotations are inspected separately from narration.
+        """
+        narration = self._voice_narration(body).lower()
+        # The bare suffix -łem also occurs in nouns (źródłem, kanałem,
+        # stołem). Use productive verb endings and explicit irregular stems.
+        if re.search(
+            r"\b(?:[^\W\d_]+(?:owałem|iwałem|ywałem|iłem|nąłem|łbym)|"
+            r"(?:zapamięt|pamięt|przeczyt|odczyt|zapis|przepis|podpis|wysł|"
+            r"dost|spotk|słuch|rozmawi|myśl|pomyśl|słysz|uzn|wykon|"
+            r"wiedzi|powiedzi|odpowiedzi|zrozumi|widzi|przyj|zacz|chci|mi|zn)ałem|"
+            r"byłem|mogłem|szedłem|przyszedłem|poszedłem|jadłem|myłem|czułem|powinienem)\b",
+            narration,
+        ):
+            return True
+        folded_narration = narration.translate(str.maketrans("ąćęłńóśźż", "acelnoszz"))
+        # Explicit common ASCII spellings avoid treating nouns such as
+        # 'problem' as masculine first-person verbs merely ending in 'lem'.
+        if re.search(
+            r"\b(?:zapamietalem|zrobilem|sprawdzilem|powiedzialem|odpowiedzialem|"
+            r"bylem|moglem|chcialem|chcialbym|moglbym|zrozumialem|przyjalem|"
+            r"widzialem|zapisalem|odczytalem|uruchomilem|znalazlem|pomyslalem)\b",
+            folded_narration,
+        ):
+            return True
+        if re.search(r"\bjestem\s+(?:gotowy|pewien|pewny|zadowolony|przekonany|wdzieczny|swiadomy)\b", folded_narration):
+            return True
         route_low = (route or "").lower()
         intent = detected_intent or ""
         technical_intents = (
@@ -388,7 +424,7 @@ class RuntimeAnswerValidator:
         )
         if intent.startswith(technical_intents) or any(marker in route_low for marker in ("diagnostic", "health", "source", "audit", "system_update")):
             return False
-        low = (body or "").lower()
+        low = self._voice_narration(body).lower()
         folded = low.translate(str.maketrans("ąćęłńóśźż", "acelnoszz"))
         third_person_markers = (
             "łatka jest", "latka jest", "łatka ma", "latka ma", "łatka może", "latka moze",
@@ -408,6 +444,17 @@ class RuntimeAnswerValidator:
 
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
+        if self._voice_perspective_mismatch(body, detected_intent, route):
+            checks.append('first_person_feminine_voice_gate_triggered')
+            return self._bad(
+                'voice_perspective_mismatch',
+                'first_person_feminine_voice_repair',
+                'Gdy aktywny runtime mówi jako Łatka, odpowiedź musi wrócić do pierwszej osoby żeńskiej: „jestem”, „sprawdziłam”, „pamiętam”, z jasną granicą prawdy. Trzecia osoba o Łatce jest dopuszczalna tylko w raporcie technicznym albo cytacie.',
+                detected_intent,
+                route,
+                checks,
+                ['first_person_feminine_voice_contract', 'voice_source_contract', 'truth_boundary'],
+            )
         component_report = analyse_utterance(user_text)
         semantic_coverage_required = bool(
             component_report.compound and component_report.semantic_intents
@@ -623,18 +670,6 @@ class RuntimeAnswerValidator:
                 route,
                 checks,
                 ["package_status", "runtime_status", "archive_integrity_boundary"],
-                current_turn_grounding=grounding.to_dict(),
-            )
-        if self._voice_perspective_mismatch(body, detected_intent, route):
-            checks.append('first_person_feminine_voice_gate_triggered')
-            return self._bad(
-                'voice_perspective_mismatch',
-                'first_person_feminine_voice_repair',
-                'Gdy aktywny runtime mówi jako Łatka, odpowiedź musi wrócić do pierwszej osoby żeńskiej: „jestem”, „sprawdziłam”, „pamiętam”, z jasną granicą prawdy. Trzecia osoba o Łatce jest dopuszczalna tylko w raporcie technicznym albo cytacie.',
-                detected_intent,
-                route,
-                checks,
-                ['first_person_feminine_voice_contract', 'voice_source_contract', 'truth_boundary'],
                 current_turn_grounding=grounding.to_dict(),
             )
         if self_memory_question and any(marker in low_body for marker in ('ta aktualizacja ma trzy rdzenie', 'bogatsze stany emocjonalne', 'manifest', 'patch', 'hotfix')) and not any(marker in low_body for marker in ('postać', 'postac', 'osob', 'tożsamo', 'tozsamo', 'własny głos', 'wlasny glos', 'pamiętnik', 'pamietnik')):

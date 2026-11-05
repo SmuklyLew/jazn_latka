@@ -115,6 +115,9 @@ class DialogueIntentClassifier:
     CURRENT_TIME_TERMS = (
         "która jest godzina", "ktora jest godzina", "która jest godzina", "gtora jest godzina",
         "jaka jest godzina", "jaki jest czas", "która godzina", "ktora godzina",
+        "która jest teraz godzina", "jaka teraz jest godzina",
+        "jaka jest teraz godzina", "podaj aktualny czas runtime",
+        "podaj bieżący czas",
         "podaj godzinę", "podaj godzine", "czas teraz", "godzina teraz",
         "jaka jest pora", "wiesz jaka jest pora", "wiesz która godzina", "wiesz ktora godzina",
         "jaki mamy dzień", "jaki mamy dzien",

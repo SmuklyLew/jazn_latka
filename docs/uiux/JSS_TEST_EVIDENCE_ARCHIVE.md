@@ -83,6 +83,9 @@ Potwierdzenia częściowe są odczytywane po weryfikacji ostatniego kompletnego
 snapshotu. Czytnik sprawdza SHA-256, parę TXT/JSON, run_id, źródło, scenariusz,
 unikalność i kolejność faz. Widok jest wyliczany w pamięci, bez naprawy plików.
 PASS scenariusza wymaga setup, zaliczonego call oraz zaliczonego teardown.
+Końcowy snapshot również wymaga potwierdzenia wszystkich trzech faz. Przerwanie
+pytest podczas teardown po zaliczonym call zapisuje INTERRUPTED, nigdy PASS.
+Wcześniejszy FAIL lub ERROR pozostaje widoczny mimo późniejszego przerwania.
 Brak końcowej fazy pozostaje RUNNING z jawnym brakiem potwierdzenia zakończenia;
 czytnik nie wnioskuje o żywotności procesu. Brak jakiegokolwiek potwierdzenia
 pozostaje NOT_RUN, a FAIL/ERROR i SKIPPED nie stają się PASS. Niespójność lub

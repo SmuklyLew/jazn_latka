@@ -319,15 +319,57 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
             Path(name).unlink(missing_ok=True)
         return sha256(data).hexdigest()
 
-def python_executable(settings: Settings) -> str:
+def project_python_executable(root: Path) -> str | None:
+    """Read-only, fail-closed discovery of the Python environment owned by ROOT.
+
+    The base Python installation remains outside the project; ROOT/.venv is an
+    isolated, disposable set of dependencies, never a configuration store.
+    Do not install packages, follow a linked environment, or adopt a foreign
+    interpreter when a project environment exists but is incomplete.
+    """
+    venv = root / ".venv"
+    if not venv.exists() and not venv.is_symlink():
+        return None
+    if venv.is_symlink() or venv.is_junction() or not venv.is_dir():
+        raise StudioError("ROOT/.venv jest nieprawidłowym katalogiem lub dowiązaniem")
+    if not (venv / "pyvenv.cfg").is_file():
+        raise StudioError("ROOT/.venv nie ma pyvenv.cfg; odtwórz środowisko po weryfikacji")
+    candidate = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    if not candidate.is_file():
+        raise StudioError("ROOT/.venv nie ma interpretera; odtwórz środowisko po weryfikacji")
+    return str(candidate)
+
+
+def python_executable(settings: Settings, root: Path | None = None) -> str:
+    """Operator choice > explicit environment override > ROOT/.venv > host.
+
+    Do not change running daemon ownership or mutate any settings here.
+    """
     explicit = settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")
     if explicit:
         if not Path(explicit).is_absolute() or not Path(explicit).is_file():
             raise StudioError("Nieprawidłowy JAZN_STUDIO_PYTHON / interpreter")
         return explicit
+    if root is not None:
+        selected = project_python_executable(root)
+        if selected is not None:
+            return selected
     if getattr(sys, "frozen", False):
-        raise StudioError("Wersja EXE wymaga ścieżki do Pythona w ustawieniach lub JAZN_STUDIO_PYTHON")
+        raise StudioError("Wersja EXE wymaga ROOT/.venv lub jawnego interpretera Python")
     return sys.executable
+
+
+def python_candidate_for_ui(settings: Settings, root: Path) -> str:
+    """Present a refused choice in the GUI without switching to a foreign Python.
+
+    Process launch still uses python_executable() and fails closed. This helper
+    only supplies a visible candidate to the Test Catalog and TPA editors.
+    """
+    try:
+        return python_executable(settings, root)
+    except StudioError:
+        return (settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")
+                or str(root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")))
 
 
 def executable(explicit: str, name: str) -> str:
@@ -337,9 +379,23 @@ def executable(explicit: str, name: str) -> str:
     return str(Path(found).absolute())
 
 
-def discovery(settings: Settings) -> dict[str, Any]:
+def discovery(settings: Settings, root: Path | None = None) -> dict[str, Any]:
+    # Read-only: the GUI remains available even when ROOT/.venv needs repair.
+    try:
+        selected_python = python_executable(settings, root)
+        python_error = None
+    except StudioError as exc:
+        selected_python = None
+        python_error = str(exc)
+    source = ("operator" if settings.python else
+              "environment" if os.environ.get("JAZN_STUDIO_PYTHON") else
+              "project_venv" if root is not None and (root / ".venv").exists() else
+              "host_fallback")
     return {
-        "python": settings.python or os.environ.get("JAZN_STUDIO_PYTHON") or (None if getattr(sys, "frozen", False) else sys.executable),
+        "python": selected_python,
+        "python_error": python_error,
+        "python_source": source,
+        "dependencies_interpreter": sys.executable,
         "python_version": sys.version.split()[0],
         "ollama": settings.ollama or shutil.which("ollama"),
         "cloudflared": settings.cloudflared or shutil.which("cloudflared"),
@@ -414,7 +470,7 @@ def mcp_dependency_preflight(interpreter: str, root: Path) -> dict[str, bool]:
 
 def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) -> dict[str, Any]:
     """Keep separate proof of process, runtime root and package identity."""
-    from latka_jazn.version import PACKAGE_VERSION_FULL
+    from latka_jazn.core.version_source import read_runtime_version_from_version_py
     daemon = data.get("daemon")
     daemon = daemon if isinstance(daemon, dict) else {}
     ping = daemon.get("ping")
@@ -426,8 +482,8 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         isinstance(root, str) and bool(root)
         and Path(root).resolve() == expected_root.resolve()
     ) if expected_root is not None else None
-    # Compare live endpoint identity with the installed SYSTEM, not a historical
-    # marker.runtime_version_full. Old markers can survive a verified lifecycle
+    # Compare live identity with the selected SYSTEM's static version, not the
+    # operator package or a historical marker. Old markers can survive a verified lifecycle
     # transition, while an explicit mismatching live ping must still fail closed.
     system_version = data.get("runtime_version_full") or data.get("runtime_version")
     daemon_version = (
@@ -435,9 +491,11 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         or daemon.get("runtime_version_full")
         or daemon.get("runtime_version")
     )
-    version_matches = (
-        system_version == PACKAGE_VERSION_FULL
-        and daemon_version == PACKAGE_VERSION_FULL
+    expected_version = read_runtime_version_from_version_py(expected_root) if expected_root is not None else None
+    version_matches = bool(
+        expected_version
+        and system_version == expected_version
+        and daemon_version == expected_version
     ) if expected_root is not None else None
     # A canonical active_ready + ready core is positive *service readiness*,
     # never proof of model-generated speech or accepted finalization.
@@ -448,6 +506,7 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
     )
     return {
         "system_version": system_version,
+        "expected_system_version": expected_version,
         "daemon_version": daemon_version,
         "pid": daemon.get("pid"),
         "instance_id": daemon.get("daemon_instance_id"),
@@ -456,6 +515,10 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,
         "heartbeat_fresh": daemon.get("endpoint_heartbeat_fresh") is True,
         "active_state": daemon.get("active_state") or data.get("runtime_active_state"),
+        "active_state_reason": str(daemon.get("active_state_reason") or "not_observed")[:128],
+        "process_state": str(daemon.get("process_state") or "not_observed")[:128],
+        "identity_state": str(daemon.get("identity_state") or "not_observed")[:128],
+        "heartbeat_state": str(daemon.get("heartbeat_state") or "not_observed")[:128],
         "conversation_ready": conversation_ready,
         "root_matches": root_matches,
         "version_matches": version_matches,
@@ -546,6 +609,7 @@ class Controller:
         self.redactor = Redactor()
         self.jobs: dict[str, Job] = {}
         self.logs: dict[str, deque[str]] = {}
+        self._diagnostic_logs: deque[str] = deque(maxlen=2500)
         self.events: queue.Queue[tuple[str, str, Any]] = queue.Queue(maxsize=5000)
         # Terminal states, validated chat finals and helper results cannot be
         # discarded when a burst of diagnostic logs fills the bounded queue.
@@ -560,7 +624,24 @@ class Controller:
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
-            if kind == "log":
+            if kind == "daemon_diagnostic":
+                # Internal, fixed-schema scalar projection only. Raw child
+                # output always enters as "log" and cannot opt out of redaction
+                # by imitating a diagnostic prefix. Preserve public field names;
+                # credentials are redacted in values before JSON serialization.
+                if not isinstance(value, dict) or any(
+                    not isinstance(name, str) or type(item) not in (str, int, bool, type(None))
+                    for name, item in value.items()
+                ):
+                    raise StudioError("Nieprawidłowy format diagnozy daemona")
+                value = "JSS_DAEMON_DIAGNOSTIC " + json.dumps({
+                    name: self.redactor.text(item) if isinstance(item, str) else item
+                    for name, item in value.items()
+                }, ensure_ascii=False)
+                kind = "log"
+                self.logs.setdefault(key, deque(maxlen=2500)).append(value)
+                self._diagnostic_logs.append(value)
+            elif kind == "log":
                 value = self.redactor.text(str(value))
                 self.logs.setdefault(key, deque(maxlen=2500)).append(value)
             elif kind == "state" and isinstance(value, dict):
@@ -600,7 +681,7 @@ class Controller:
                 # restart is parsed directly by main.py; its options must not
                 # be hidden behind the compatibility separator.
                 args.extend(target)
-        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
+        return [python_executable(self.settings, self.root), "-X", "utf8", str(self.root / "run.py"), *args]
 
     def _reserve(self, key: str) -> Job:
         with self.lock:
@@ -641,7 +722,7 @@ class Controller:
                 return current
             job = self._reserve("setup:requirements")
             self.setup_observation = {}
-            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
+            self._launch(job, [python_executable(self.settings, self.root), "-X", "utf8", "-m",
                                "tools.jazn_run_studio.requirements_worker"], 600)
             return job
 
@@ -665,7 +746,7 @@ class Controller:
                 raise StudioError("Brak pliku Studio")
             entry[0] = str(script)
         job = self._reserve("studio:" + key)
-        self._launch(job, [python_executable(self.settings), "-X", "utf8", *entry], None)
+        self._launch(job, [python_executable(self.settings, self.root), "-X", "utf8", *entry], None)
         return job
 
     def ensure_ollama(self) -> Job:
@@ -707,7 +788,7 @@ class Controller:
             # The canonical CLI refuses MCP without an explicit security mode.
             # Studio owns only a local developer listener; public OAuth must be
             # configured through the separately validated deployment workflow.
-            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python))
+            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python), self.root)
             imports = mcp_dependency_preflight(mcp_interpreter, self.root)
             missing = [name for name, available in imports.items() if not available]
             if missing:
@@ -783,7 +864,7 @@ class Controller:
     def child_environment(self, *, profile: bool = False) -> dict[str, str]:
         env = environment()
         if profile and self.settings.runtime_profile == "operator":
-            result = run_external([python_executable(self.settings), "-X", "utf8", "-m",
+            result = run_external([python_executable(self.settings, self.root), "-X", "utf8", "-m",
                                   "tools.jazn_run_studio.studio_worker", "profile-env"], cwd=self.root, timeout=35)
             if result.returncode or len(result.stdout) > 32768:
                 raise StudioError("Walidacja profilu przyszłego uruchomienia nie powiodła się")
@@ -828,7 +909,7 @@ class Controller:
                 raise StudioError("Zbyt duże dane operacji")
         job = self._reserve("helper:" + mode + ":" + key)
         job.input_data = payload
-        argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
+        argv = [python_executable(self.settings, self.root), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
         if key:
             argv.append(key)
         self._launch(job, argv, 7200 if mode == "execute" else 45)
@@ -845,7 +926,7 @@ class Controller:
             raise StudioError("Nieznana inspekcja pamięci")
         if operation != "readiness" and not project:
             raise StudioError("Wybierz plik projektu pamięci")
-        argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+        argv = [python_executable(self.settings, self.root), "-X", "utf8", str(self.root / "run.py"),
                 "memory-inspection", "--root", str(self.root), "--operation", operation, "--json"]
         for option, value in (("project", project), ("reference", reference),
                               ("reference-sha256", reference_sha256), ("parent", parent),
@@ -1005,7 +1086,18 @@ class Controller:
                     job.state = "failed"
                     if job.error is None or job.error.startswith("process_exit:"):
                         job.error = "invalid_status_json"
-                self.emit(job.key, "evidence", daemon_evidence(value, expected_root=self.root))
+                evidence = daemon_evidence(value, expected_root=self.root)
+                self.emit(job.key, "evidence", evidence)
+                # Canonical status may exceed the rotating line buffer. Keep a
+                # bounded diagnosis after the raw log, including negative status
+                # on exit 1, so terminal operators never lose the refusal cause.
+                self.emit(job.key, "daemon_diagnostic", {
+                    "schema_version": "jazn_studio_daemon_diagnostic/v1",
+                    "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "root": str(self.root),
+                    **evidence,
+                    "process_events_log": str(workspace_runtime_path(self.root) / "daemon" / "process_events.jsonl"),
+                })
                 self.emit(job.key, "status_summary", status_summary(value))
                 self.emit(job.key, "memory_evidence", memory_evidence(value))
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
@@ -1093,8 +1185,16 @@ class Controller:
 
     def export_report(self, path: Path) -> None:
         path = _path_without_links(path.absolute())
+        with self.lock:
+            internal_diagnostics = set(self._diagnostic_logs)
+            report = self.report()
         def sanitized(value: Any) -> Any:
             if isinstance(value, str):
+                if value in internal_diagnostics:
+                    # Reapply any newly loaded secrets to values, preserving
+                    # the schema of internally created diagnostic log records.
+                    prefix = "JSS_DAEMON_DIAGNOSTIC "
+                    return prefix + json.dumps(sanitized(json.loads(value[len(prefix):])), ensure_ascii=False)
                 return self.redactor.text(value)
             if isinstance(value, dict):
                 return {k: sanitized(v) for k, v in value.items()}
@@ -1103,7 +1203,7 @@ class Controller:
             return value
         # Exclusive creation prevents silently replacing a source/config file.
         with path.open("x", encoding="utf-8") as stream:
-            json.dump(sanitized(self.report()), stream, ensure_ascii=False, indent=2)
+            json.dump(sanitized(report), stream, ensure_ascii=False, indent=2)
 
     def close(self) -> None:
         with self.lock:

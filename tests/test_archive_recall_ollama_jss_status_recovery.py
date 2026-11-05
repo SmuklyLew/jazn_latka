@@ -122,6 +122,9 @@ def test_jss_optional_services_do_not_turn_red_when_unconfigured() -> None:
 
 
 def test_jss_verified_live_daemon_does_not_use_historical_marker(tmp_path) -> None:
+    (tmp_path / "latka_jazn").mkdir()
+    (tmp_path / "latka_jazn/version.py").write_text(
+        f"PACKAGE_VERSION={PACKAGE_VERSION_FULL!r}\n", encoding="utf-8")
     record = {
         "resolved_active_root": str(tmp_path),
         "runtime_version_full": PACKAGE_VERSION_FULL,

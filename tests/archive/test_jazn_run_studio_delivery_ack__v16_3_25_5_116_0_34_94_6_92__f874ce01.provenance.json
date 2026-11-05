@@ -1,0 +1,7 @@
+{
+  "source_commit": "f874ce01970707601c49302177e39f863ce54ded",
+  "source_path": "tests/test_jazn_run_studio_delivery_ack.py",
+  "source_version": "16.3.25.5.116.0.34.94.6.92",
+  "sha256": "670ae4d1080d5e497cb90a39c6f381b71a7e54e958e8d69715a252676a126141",
+  "reason": "Mock accepts the existing resolver ROOT argument and verifies correct root; all finalization/ACK assertions preserved."
+}

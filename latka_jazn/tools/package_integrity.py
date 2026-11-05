@@ -14,6 +14,7 @@ from latka_jazn.core.version_source import read_runtime_version_from_version_py
 from latka_jazn.packaging.zip_resource_limits import validate_zip_resources
 from latka_jazn.tools.safe_paths import (
     UnsafeRelativePathError,
+    SafePathRoot,
     resolve_safe_path,
     resolve_safe_source,
     validate_safe_relative_path,
@@ -270,6 +271,11 @@ def path_is_forbidden(relative: str) -> bool:
         rel = validate_safe_relative_path(relative)
     except UnsafeRelativePathError:
         return True
+    return _canonical_path_is_forbidden(rel)
+
+
+def _canonical_path_is_forbidden(rel: str) -> bool:
+    """Apply static-file policy after the caller validated path syntax."""
     parts = [part for part in rel.split("/") if part]
     lower_parts = [part.lower() for part in parts]
     forbidden_roots = {name.lower() for name in FORBIDDEN_ROOT_NAMES}
@@ -537,16 +543,16 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
     verification_basis = "canonical_git_head_blobs" if git_head else "filesystem_bytes"
     seen: set[str] = set()
     prepared: list[tuple[dict[str, Any], str, Path]] = []
+    safe_root = SafePathRoot(root)
     for entry in entries:
         raw_relative = entry.get("path")
         relative = str(raw_relative) if raw_relative is not None else ""
         try:
-            canonical = validate_safe_relative_path(relative)
-            file_path = resolve_safe_path(root, canonical)
+            canonical, file_path = safe_root.resolve(relative)
         except UnsafeRelativePathError as exc:
             errors.append({"code": "unsafe_manifest_path", "path": relative, "detail": str(exc)})
             continue
-        if canonical in seen or path_is_forbidden(canonical):
+        if canonical in seen or _canonical_path_is_forbidden(canonical):
             errors.append({"code": "invalid_or_duplicate_manifest_path", "path": canonical})
             continue
         seen.add(canonical)
@@ -627,7 +633,7 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
                 canonical = validate_safe_relative_path(relative)
             except UnsafeRelativePathError:
                 continue
-            if not path_is_forbidden(canonical):
+            if not _canonical_path_is_forbidden(canonical):
                 actual_static_paths.add(canonical)
         for unexpected in sorted(actual_static_paths - seen):
             errors.append({"code": "unexpected_static_file", "path": unexpected})

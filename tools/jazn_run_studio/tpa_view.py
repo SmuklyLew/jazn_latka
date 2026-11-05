@@ -644,7 +644,10 @@ class TPAPanel(QWidget):
             counters = dict(Counter(s["last_attempt"]["status"] if s["last_attempt"] else "NOT_RUN" for s in self.case_state.values()))
         scope = " • historia: " + self.report["source"]["version"] if self.report and self.report["source"]["version"] != legacy.scope_version(self.root) else ""
         selected_python = self.runner.probe.get("python") or self.python_field.text()
-        python_label = " / ".join(Path(selected_python).parts[-3:]) if selected_python else "nie wybrano"
+        # The full executable path remains in the tooltip and editable setup.
+        # Managed environment identities can be arbitrarily long; keeping them
+        # in this compact header pushes the queue out of the minimum viewport.
+        python_label = Path(selected_python).name if selected_python else "nie wybrano"
         self.summary.setToolTip("Interpreter: " + (selected_python or "nie wybrano") + "\nRaporty: " + str(self.runner.store.base))
         view_label = "TPA — historia" if self.history_mode else "TPA — stan zbiorczy"
         self.summary.setText(view_label + " • SYSTEM " + legacy.scope_version(self.root).split("-", 1)[0] + scope + "\nPython: " + python_label
