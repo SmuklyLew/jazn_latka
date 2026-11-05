@@ -258,6 +258,7 @@ def connect_runtime_readonly(
     path: str | Path,
     *,
     timeout_ms: int = 10_000,
+    factory: type[sqlite3.Connection] = sqlite3.Connection,
 ) -> sqlite3.Connection:
     db_path = Path(path).expanduser().resolve()
     if not db_path.is_file():
@@ -266,6 +267,7 @@ def connect_runtime_readonly(
         _readonly_uri(db_path),
         uri=True,
         timeout=max(0.001, int(timeout_ms) / 1000),
+        factory=factory,
     )
     connection.row_factory = sqlite3.Row
     connection.execute(f"PRAGMA busy_timeout={max(1, int(timeout_ms))}")
@@ -280,6 +282,7 @@ def connect_runtime_writable(
     synchronous: str = DEFAULT_SYNCHRONOUS,
     isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
     check_same_thread: bool = True,
+    factory: type[sqlite3.Connection] = sqlite3.Connection,
     temp_store: str | None = None,
     cache_size: int | None = None,
 ) -> sqlite3.Connection:
@@ -300,6 +303,7 @@ def connect_runtime_writable(
             timeout=max(0.001, timeout_value / 1000),
             isolation_level=isolation_level,
             check_same_thread=check_same_thread,
+            factory=factory,
         )
         try:
             connection.row_factory = sqlite3.Row

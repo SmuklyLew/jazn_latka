@@ -1,3 +1,4 @@
+# v116.0.34.94.6.98: Enforce the central safe SQLite policy for unified MEMORY and HTML checkpoint/settle writers.
 # v116.0.34.94.6.97: Route durable MCP task connections through the central safe SQLite journal policy.
 # v116.0.34.94.6.96: Distinguish masculine verb endings from instrumental nouns in the voice acceptance gate.
 # v116.0.34.94.6.95: Reject masculine own narration before candidate acceptance and allow one bounded semantic retry.
@@ -228,9 +229,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.97"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.98"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "mcp-task-safe-journal-policy"
+PACKAGE_RELEASE_NAME = "memory-writer-safe-journal-policy"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.97",
-  "active_definition_count": 3217,
+  "system_version": "16.3.25.5.116.0.34.94.6.98",
+  "active_definition_count": 3219,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -45244,6 +45244,58 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 938
+    },
+    "tests/test_memory_sqlite_write_policy.py::test_memory_writer_refuses_existing_wal_before_open": {
+      "path": "tests/test_memory_sqlite_write_policy.py",
+      "name": "test_memory_writer_refuses_existing_wal_before_open",
+      "purpose": "Memory writer refuses existing wal before open",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.html_memory_ingest",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_utils",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_memory_sqlite_write_policy.py::test_central_connection_preserves_closing_factory": {
+      "path": "tests/test_memory_sqlite_write_policy.py",
+      "name": "test_central_connection_preserves_closing_factory",
+      "purpose": "Central connection preserves closing factory",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ProgrammingError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.html_memory_ingest",
+        "latka_jazn.tools.memory_rebuild_app.sqlite_utils",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
     },
     "tests/test_memory_streaming_attach_convergence.py::test_generator_v2_normalization_is_metadata_only": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
