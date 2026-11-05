@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "generated_at_utc": "2026-11-05T23:44:31+00:00",
-  "updated_at_utc": "2026-11-05T23:44:31+00:00",
+  "generated_at_utc": "2026-11-05T23:48:42+00:00",
+  "updated_at_utc": "2026-11-05T23:48:42+00:00",
   "start_file": "run.py",
-  "file_count": 3657,
-  "static_file_count": 3657,
+  "file_count": 3658,
+  "static_file_count": 3658,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2941,
-      "sha256": "9eba93f48c9a98df5308365e4c46ee598313245557522d9df58fa1109b7ca4e3",
+      "size_bytes": 2936,
+      "sha256": "02a1667a99d08b7020552bd910e508194bdf6d4cda59be1894befcf849caeab2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27786,6 +27786,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "size_bytes": 6259,
+      "sha256": "537d8e83e9ae61f8bfb3bf9ec49f63fdf390433328b40391dc7ec0aa042074ab",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
       "size_bytes": 5086,
       "sha256": "36e552df013579fbb960cf506f534596e2aa7d7b93aca3a2a848c10b1b2b37d6",
@@ -32710,8 +32719,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2778210,
-      "sha256": "358c2b719c8d2cd097b5329143ca8c162997a8c0a313f1ddc0ef74afb4d9c394",
+      "size_bytes": 2782689,
+      "sha256": "9bad85fd83c687a02c071d97db5c6c166f90253b7486a4b2d0f7ad9223ab7670",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
