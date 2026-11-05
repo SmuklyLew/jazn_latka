@@ -50,7 +50,7 @@ def test_no_implicit_network_or_install(tmp_path: Path, monkeypatch: pytest.Monk
     root = _fixture(tmp_path, monkeypatch)
     monkeypatch.setattr(setup, "_target", lambda: {"release_wheelhouse_target_supported": True})
     monkeypatch.setattr(setup, "_managed_status", lambda _root: {"ready": False})
-    with pytest.raises(setup.SetupError, match="Supply --bundle"):
+    with pytest.raises(setup.SetupError, match="No compatible verified offline wheelhouse"):
         setup.execute(setup.build_parser().parse_args(["install", "--yes"]))
     assert not (root / ".venv").exists()
 
@@ -162,4 +162,4 @@ def test_powershell_and_sh_preserve_installation_root() -> None:
     ps = (source_root / "setup.ps1").read_text(encoding="utf-8")
     assert 'dirname -- "$0"' in sh
     assert "Split-Path -Parent $MyInvocation.MyCommand.Path" in ps
-    assert "pip install" not in sh and "pip install" not in ps
+    assert "pip install" not in sh and "pip install" not in ps\n    assert "wizard" in ps and "wizard" in (source_root / "tools/jazn_setup.py").read_text(encoding="utf-8")
