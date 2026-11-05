@@ -133,7 +133,7 @@ def test_optional_profiles_must_not_reuse_core_only(
     monkeypatch.setattr(setup, "_managed_status", lambda _root: {
         "ready": True, "resolved_profiles": ["core"], "python_executable": "unused",
     })
-    with pytest.raises(setup.SetupError, match="Supply --bundle"):
+    with pytest.raises(setup.SetupError, match="No compatible verified offline wheelhouse"):
         setup.execute(setup.build_parser().parse_args(["install", "--profile", "mcp-http", "--yes"]))
 
 
@@ -157,9 +157,10 @@ def test_cli_returns_nonzero_for_unsupported_install(tmp_path: Path, monkeypatch
 
 def test_powershell_and_sh_preserve_installation_root() -> None:
     source_root = Path(__file__).resolve().parents[1]
-    assert "$PSScriptRoot" not in (source_root / "setup.ps1").read_text(encoding="utf-8") or True
     sh = (source_root / "setup.sh").read_text(encoding="utf-8")
     ps = (source_root / "setup.ps1").read_text(encoding="utf-8")
     assert 'dirname -- "$0"' in sh
     assert "Split-Path -Parent $MyInvocation.MyCommand.Path" in ps
-    assert "pip install" not in sh and "pip install" not in ps\n    assert "wizard" in ps and "wizard" in (source_root / "tools/jazn_setup.py").read_text(encoding="utf-8")
+    assert "pip install" not in sh and "pip install" not in ps
+    assert "wizard" in ps
+    assert "wizard" in (source_root / "tools/jazn_setup.py").read_text(encoding="utf-8")
