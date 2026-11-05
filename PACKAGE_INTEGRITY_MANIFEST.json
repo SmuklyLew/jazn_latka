@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
-  "package_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
-  "generated_at_utc": "2026-11-05T13:42:31+00:00",
-  "updated_at_utc": "2026-11-05T13:42:31+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+  "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+  "generated_at_utc": "2026-11-05T15:02:09+00:00",
+  "updated_at_utc": "2026-11-05T15:02:09+00:00",
   "start_file": "run.py",
-  "file_count": 3707,
-  "static_file_count": 3707,
+  "file_count": 3710,
+  "static_file_count": 3710,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2884,
-      "sha256": "0d943d73289ea6a6c2594d047e9fb62af5aa50a60126f86e78943eea87a12724",
+      "size_bytes": 3020,
+      "sha256": "97253d8f032e7ed83c5882737a21622182d8d53a880adc33b6baadcba43cd862",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4362,6 +4362,15 @@
       "path": "docs/tools/JAZN_HEART_SYSTEM.md",
       "size_bytes": 8419,
       "sha256": "bdadf075567031b86071110184368553fac624b6ebab161ba68373bbbf5d5329",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/tools/JAZN_INSTALLER.md",
+      "size_bytes": 6000,
+      "sha256": "1d0e505ac33d8a2b4c5b0de823ec6674ca67083282180b781906a838b57145c3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11497,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26904,
-      "sha256": "f09e6a55a337116824d17bf6bf2314785fde1c8a1bac6989735988c72166a728",
+      "size_bytes": 27031,
+      "sha256": "d2e40268010ba4190c0f6c4ae54215f696b70952c299c1274912a24bcdb171f6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11713,8 +11722,8 @@
     },
     {
       "path": "setup.ps1",
-      "size_bytes": 691,
-      "sha256": "f5c1dacb77067e10dec9e6e4c51fa1ecbe2b99458890e280a35fd49379b5e3b3",
+      "size_bytes": 1251,
+      "sha256": "21ae8f91ab1c7c608e956e872b862a85486aedec8bc78bbe357148ca3b747031",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11722,8 +11731,8 @@
     },
     {
       "path": "setup.sh",
-      "size_bytes": 553,
-      "sha256": "433cae1d7a7feb3e79d0eef7beac28e0aa3a89c4bc7bed0c2c34ed6a6a3e2811",
+      "size_bytes": 406,
+      "sha256": "e718d0a7401490d9b7a87125a1e95f555a9bba208d851ee2e2305915e3f47e98",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28506,6 +28515,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jazn_setup_installer.py",
+      "size_bytes": 7591,
+      "sha256": "8accc27c7220df97de43e77c56f6ac4de685101f3d71a7b7925858593509d61d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jazn_start_studio.py",
       "size_bytes": 4114,
       "sha256": "b6826d7ad45b89092e4c566197953ad9f1b44e4992a98ae33db79ea4453054e6",
@@ -33015,6 +33033,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tools/jazn_setup.py",
+      "size_bytes": 16780,
+      "sha256": "744f5d5d19132efd188750e95844a5d550712c7d160a956890639475ac150e49",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tools/jazn_start_studio.py",
       "size_bytes": 28298,
       "sha256": "122d16f497dd258adf7b2137b3e51f9099ef2b82f60d0862ed6c8f215f040c87",
@@ -33160,8 +33187,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2843462,
-      "sha256": "183332ada9240ffcf000b40d0e613d4a956921610ff493f905c990c3066eb54b",
+      "size_bytes": 2850218,
+      "sha256": "cacaafc03e55f5765a72f0b79cef830e20f084e0202dbf05eb3f8fe21b9c3966",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33818,11 +33845,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
+  "release_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
-    "package_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing",
-    "release_version": "16.3.25.5.116.0.34.94.6.100-nlp-runtime-time-routing"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+    "package_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio",
+    "release_version": "16.3.25.5.116.0.34.94.6.101-v100-guided-setup-dependency-studio"
   },
   "legacy_aliases": {
     "version": "release_version"
