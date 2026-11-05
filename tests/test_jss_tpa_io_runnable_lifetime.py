@@ -35,6 +35,8 @@ def test_serial_durable_callbacks_are_ordered_and_return_to_gui_thread() -> None
     lane = SerialIO(app)
     saved = []
     errors = []
+    settled = []
+    lane.settled.connect(lambda: settled.append((threading.get_ident(), len(saved))))
 
     for index in range(24):
         lane.submit(
@@ -47,6 +49,8 @@ def test_serial_durable_callbacks_are_ordered_and_return_to_gui_thread() -> None
     assert not errors
     assert [item[1][0] for item in saved] == list(range(24))
     assert all(item[0] == gui_thread and item[1][1] != gui_thread for item in saved)
+    # Settled is an ACK boundary: never before the last callback, exactly once.
+    assert settled == [(gui_thread, 24)]
 
 
 def test_failed_durable_write_aborts_dependent_callbacks() -> None:
@@ -54,6 +58,8 @@ def test_failed_durable_write_aborts_dependent_callbacks() -> None:
     lane = SerialIO(app)
     completed = []
     errors = []
+    settled = []
+    lane.settled.connect(lambda: settled.append(len(errors)))
 
     def fail() -> None:
         raise OSError("synthetic disk failure")
@@ -64,3 +70,4 @@ def test_failed_durable_write_aborts_dependent_callbacks() -> None:
 
     assert completed == []
     assert errors == ["OSError"]
+    assert settled == [1]
