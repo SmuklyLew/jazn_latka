@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
-  "package_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
-  "generated_at_utc": "2026-11-05T19:13:35+00:00",
-  "updated_at_utc": "2026-11-05T19:13:35+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
+  "package_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
+  "generated_at_utc": "2026-11-05T19:26:09+00:00",
+  "updated_at_utc": "2026-11-05T19:26:09+00:00",
   "start_file": "run.py",
   "file_count": 3719,
   "static_file_count": 3719,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3020,
-      "sha256": "6bbb4f05af1df6b2e36e0a51333d3248cd7f51b1b473c78dfa70c73406104f3d",
+      "sha256": "1b4d716d8e2eadbc82e669e9f7583562842e4c4d38e2e82f828ee222e1b98623",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -509,7 +509,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1956,
-      "sha256": "cf493acd6b53e0d865e5d70af2fde31f5ff40641c05f6394f2225a067466f9f5",
+      "sha256": "ca7e19e8ce6d8b7d73d2f628bfd2b4f6ab8ca236e854a6bc1b30244cd65eaceb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10013,7 +10013,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7910,
-      "sha256": "8779ef791050ba5a9fb45451a391938646df212bd25f5afafe9eb88d665ffc2b",
+      "sha256": "cccd3f03e17d1993634680df6c032bf22c4b81f070a2a8b8331881ecf35fb45c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11515,8 +11515,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 27145,
-      "sha256": "4513dcbe3ebebef6c37c0e12197b0f0ab77ad23aac67bc0de5663b29f1403480",
+      "size_bytes": 27269,
+      "sha256": "fa30354ed8bfb4f395d0c7680c71094d2fbf90c4e26c2c79167831e23f8c0c00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33016,8 +33016,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_services.py",
-      "size_bytes": 15595,
-      "sha256": "8e8876af53ae39f8537a36383965084fa1ef485c26faa7879b6d3a27aa7b432b",
+      "size_bytes": 15786,
+      "sha256": "3cd0a8f306a48f0910d81bceeb1a8bf8e9693abc15148a7d9aee690188b6fd13",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33071,7 +33071,7 @@
     {
       "path": "tools/jazn_run_studio/windows_version_info.txt",
       "size_bytes": 733,
-      "sha256": "22813d0447bb3c3f50ef8ee41f4e67e3025580d5887c8d73623ac1d3e23b2321",
+      "sha256": "404edc07d96793e316d0ac27dad7fa2e69efcc77fe91606c70620eb1d451e2ff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33269,7 +33269,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2862701,
-      "sha256": "da8054f8f6d3c7a6083f98323d3978ce8ed499420dabe7cb18cdc38f5bb78463",
+      "sha256": "ee8ff827ce5befdab9e3d0dff1ccc10a4ed8995bc931a1d4bae6eb8c62da2c0f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33926,11 +33926,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
+  "release_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
-    "package_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability",
-    "release_version": "16.3.25.5.116.0.34.94.6.102-v102-operator-process-observability"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
+    "package_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability",
+    "release_version": "16.3.25.5.116.0.34.94.6.103-v102-operator-process-observability"
   },
   "legacy_aliases": {
     "version": "release_version"
