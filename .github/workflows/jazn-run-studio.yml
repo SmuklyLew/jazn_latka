@@ -4,9 +4,13 @@ on:
   push:
     branches: ["fix/v116034946-worktree-tpa-isolation-20261026", "fix/jazn-v11603494-5-heart-system-mcp-windows-acceptance-20261026", "fix/jazn-v11603494-system-studio-diagnostics-20261026", "codex/jazn-run-studio", "fix/jazn-run-studio-windows-daemon-shutdown-20261023", "fix/jazn-run-studio-mcp-events-readiness-20261024", "fix/jazn-studio-p4-p5-evidence-gates-20261024", "fix/jazn-studio-part2-verified-ui-20261024", "fix/jazn-tpa-workbench-v11603486-20261025", "upgrade/v16-3-25-5-116-0-34-88-native-studios"]
   pull_request:
-    branches: [master, fix/jazn-v11603494-5-heart-system-mcp-windows-acceptance-20261026, fix/jazn-v11603493-system-studio-hardening-20261025, fix/jazn-v11603494-system-studio-diagnostics-20261026, fix/jazn-studio-local-acceptance-20261024]
+    branches: [master, wip/v100-nlp-runtime-time-routing-acceptance, fix/jazn-v11603494-5-heart-system-mcp-windows-acceptance-20261026, fix/jazn-v11603493-system-studio-hardening-20261025, fix/jazn-v11603494-system-studio-diagnostics-20261026, fix/jazn-studio-local-acceptance-20261024]
     paths:
       - "tools/jazn_run_studio/**"
+      - "tools/jazn_setup.py"
+      - "setup.ps1"
+      - "setup.sh"
+      - "tests/test_jazn_setup_installer.py"
       - "jazn_run_studio.py"
       - "run_studio.py"
       - "tests/test_heart_system*.py"
