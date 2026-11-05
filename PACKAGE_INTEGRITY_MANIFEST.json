@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-  "package_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-  "generated_at_utc": "2026-11-05T01:40:18+00:00",
-  "updated_at_utc": "2026-11-05T01:40:18+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+  "package_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+  "generated_at_utc": "2026-11-05T01:52:31+00:00",
+  "updated_at_utc": "2026-11-05T01:52:31+00:00",
   "start_file": "run.py",
-  "file_count": 3704,
-  "static_file_count": 3704,
+  "file_count": 3705,
+  "static_file_count": 3705,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "0efc98da4506b5d99c088561d34ca50b930223c7ae26c9d446e3d465bd8fce8a",
+      "size_bytes": 3007,
+      "sha256": "865a940c152c961d6342accad79a4b15323fe45205cb6f260026022a4fcf083c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "b687ab902cc738d6e33171791ab43ff3d7c2eb829f57bbea5ae6f9117c1a2860",
+      "size_bytes": 1953,
+      "sha256": "c954300ffa676a27e216fb56a7fbd470a79de4b96b8e288ff063b13d8cc3c66b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7528,8 +7528,8 @@
     },
     {
       "path": "latka_jazn/db/runtime_sqlite.py",
-      "size_bytes": 13223,
-      "sha256": "535e279dcc8ab6985f57af9c539b3e9e5e1b2bff21e9896711fee6956a996432",
+      "size_bytes": 13397,
+      "sha256": "ba61c5b40a7a706be7970ec672f75d99ad0db2528f0c4bf33b0ad2b15dca3652",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8095,8 +8095,8 @@
     },
     {
       "path": "latka_jazn/memory/html_memory_ingest.py",
-      "size_bytes": 38062,
-      "sha256": "34cd457025df8cd2abb5590ba8fcd179d2b826ac591d0b532032a16984f38360",
+      "size_bytes": 38107,
+      "sha256": "912138c1a8cc6a7daa1fbe80ff3a7c58d0e20d48ef65f858a29b1d335f48a86e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9986,7 +9986,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "8121e97fd351b54b17f9de4cecd05c5c0d82084e0f182f18f6812480ce788a28",
+      "sha256": "97a74fed5117d17617e4f70c02feee2bee417e7be65ad700023be0c02acfe83e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11110,8 +11110,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/unified_core.py",
-      "size_bytes": 16307,
-      "sha256": "d2eeb6fd36c74a111fe1dd244357a8592f2ae290d11bec77587089780ae9b7df",
+      "size_bytes": 16149,
+      "sha256": "306d0559d8fc6848d583633b48bf190650ebc464dd748e5159a43131561c122f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26718,
-      "sha256": "5e7ce60cc218fe802d111a796046f018d106893210cd95cc58b4bf4340746cb0",
+      "size_bytes": 26838,
+      "sha256": "e5cb05a88b5242f2afd8f706a73ad9b998e094c09e5a42d0587b33013e58fdcf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30045,6 +30045,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_sqlite_write_policy.py",
+      "size_bytes": 2284,
+      "sha256": "ef890c2827e4530e301602ec0c4827eeb87c76a1e69bc9b0186592bacbf7ef98",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_streaming_attach_convergence.py",
       "size_bytes": 14472,
       "sha256": "82db30be4beda8270f49847766f097c38edaa74beb8a70a043af96941feccb75",
@@ -33133,8 +33142,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2841536,
-      "sha256": "fa6e25d239decddc7de78c646a90e97b7022afa862fa7c6ded4391639ab8da12",
+      "size_bytes": 2843462,
+      "sha256": "183332ada9240ffcf000b40d0e613d4a956921610ff493f905c990c3066eb54b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33791,11 +33800,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+  "release_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-    "package_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-    "release_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+    "package_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+    "release_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy"
   },
   "legacy_aliases": {
     "version": "release_version"
