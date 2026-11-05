@@ -1,3 +1,4 @@
+# v116.0.34.94.6.96: Distinguish masculine verb endings from instrumental nouns in the voice acceptance gate.
 # v116.0.34.94.6.95: Reject masculine own narration before candidate acceptance and allow one bounded semantic retry.
 # v116.0.34.94.6.94: Wait for one durable TPA completion in the local acceptance Qt regression.
 # v116.0.34.94.6.93: Refuse unsafe existing WAL before writable open and route rebuild stores through the central journal policy.
@@ -226,9 +227,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.95"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.96"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "feminine-voice-finalization-gate"
+PACKAGE_RELEASE_NAME = "feminine-voice-verb-boundary"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

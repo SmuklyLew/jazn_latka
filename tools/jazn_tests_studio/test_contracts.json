@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.95",
+  "system_version": "16.3.25.5.116.0.34.94.6.96",
   "active_definition_count": 3213,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -55387,7 +55387,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_runtime_feminine_voice_gate.py::test_dedicated_handler_or_technical_route_cannot_bypass_masculine_gate": {
       "path": "tests/test_runtime_feminine_voice_gate.py",
@@ -55409,7 +55409,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 54
     },
     "tests/test_runtime_feminine_voice_gate.py::test_voice_rejection_has_one_retry_and_preserves_other_integrity_gates": {
       "path": "tests/test_runtime_feminine_voice_gate.py",
@@ -55431,7 +55431,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 60
     },
     "tests/test_runtime_feminine_voice_gate.py::test_real_voice_validator_rejection_never_reaches_finalizer": {
       "path": "tests/test_runtime_feminine_voice_gate.py",
@@ -55455,7 +55455,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 67
     },
     "tests/test_runtime_full_turn.py::test_full_runtime_turn_commits_transactionally_without_legacy_fanout": {
       "path": "tests/test_runtime_full_turn.py",

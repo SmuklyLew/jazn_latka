@@ -42,6 +42,8 @@ def test_masculine_narration_is_rejected_before_acceptance(text):
     "Przykład: `Zapamiętałem`. Potwierdziłam odbiór.",
     "Przytoczyłam: 'Zapamiętałem'.",
     "To problem z modelem i plikiem.",
+    "Źródłem jest zapis przekazany kanałem transportowym.",
+    "Nad stołem, pod kołem i za czołem. Z materiałem i popiołem.",
 ])
 def test_feminine_narration_and_quoted_source_are_preserved(text):
     result = validate(text)

@@ -392,7 +392,16 @@ class RuntimeAnswerValidator:
         Source quotations are inspected separately from narration.
         """
         narration = self._voice_narration(body).lower()
-        if re.search(r"\b[^\W\d_]*(?:łem|łbym)\b|\bpowinienem\b", narration):
+        # The bare suffix -łem also occurs in nouns (źródłem, kanałem,
+        # stołem). Use productive verb endings and explicit irregular stems.
+        if re.search(
+            r"\b(?:[^\W\d_]+(?:owałem|iwałem|ywałem|iłem|nąłem|łbym)|"
+            r"(?:zapamięt|pamięt|przeczyt|odczyt|zapis|przepis|podpis|wysł|"
+            r"dost|spotk|słuch|rozmawi|myśl|pomyśl|słysz|uzn|wykon|"
+            r"wiedzi|powiedzi|odpowiedzi|zrozumi|widzi|przyj|zacz|chci|mi|zn)ałem|"
+            r"byłem|mogłem|szedłem|przyszedłem|poszedłem|jadłem|myłem|czułem|powinienem)\b",
+            narration,
+        ):
             return True
         folded_narration = narration.translate(str.maketrans("ąćęłńóśźż", "acelnoszz"))
         # Explicit common ASCII spellings avoid treating nouns such as
