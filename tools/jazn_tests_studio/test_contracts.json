@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.103",
-  "active_definition_count": 3244,
+  "system_version": "16.3.25.5.116.0.34.94.6.104",
+  "active_definition_count": 3250,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30984,6 +30984,61 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jss_daemon_diagnostic_float_contract.py::test_diagnostic_accepts_finite_fractional_seconds": {
+      "path": "tests/test_jss_daemon_diagnostic_float_contract.py",
+      "name": "test_diagnostic_accepts_finite_fractional_seconds",
+      "purpose": "Diagnostic accepts finite fractional seconds",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_jss_daemon_diagnostic_float_contract.py::test_diagnostic_rejects_nonfinite_and_non_scalar_values": {
+      "path": "tests/test_jss_daemon_diagnostic_float_contract.py",
+      "name": "test_diagnostic_rejects_nonfinite_and_non_scalar_values",
+      "purpose": "Diagnostic rejects nonfinite and non scalar values",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_jss_daemon_diagnostic_float_contract.py::test_real_status_subprocess_reaches_terminal_event_with_float_uptime": {
+      "path": "tests/test_jss_daemon_diagnostic_float_contract.py",
+      "name": "test_real_status_subprocess_reaches_terminal_event_with_float_uptime",
+      "purpose": "Real status subprocess reaches terminal event with float uptime",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
       "name": "test_manifest_precedes_execution_and_all_22_have_txt_json",
@@ -32324,6 +32379,51 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 111
+    },
+    "tests/test_jss_service_status_hydration_qt.py::test_open_after_probes_uses_same_session_evidence_without_rechecking": {
+      "path": "tests/test_jss_service_status_hydration_qt.py",
+      "name": "test_open_after_probes_uses_same_session_evidence_without_rechecking",
+      "purpose": "Open after probes uses same session evidence without rechecking",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_jss_service_status_hydration_qt.py::test_hydration_preserves_observation_age_and_does_not_forge_green": {
+      "path": "tests/test_jss_service_status_hydration_qt.py",
+      "name": "test_hydration_preserves_observation_age_and_does_not_forge_green",
+      "purpose": "Hydration preserves observation age and does not forge green",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_jss_service_status_hydration_qt.py::test_failed_status_precedes_newer_verified_evidence": {
+      "path": "tests/test_jss_service_status_hydration_qt.py",
+      "name": "test_failed_status_precedes_newer_verified_evidence",
+      "purpose": "Failed status precedes newer verified evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
     },
     "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_incomplete_identity": {
       "path": "tests/test_jss_service_table_readiness.py",

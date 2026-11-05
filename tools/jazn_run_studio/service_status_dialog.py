@@ -138,16 +138,17 @@ class ServiceStatusDialog(QDialog):
         self.render_statuses()
         self._request_refresh()
 
-    def observe(self, key: str, kind: str, value: object) -> None:
+    def observe(self, key: str, kind: str, value: object, *, observed_at: float | None = None) -> None:
+        # Replayed samples retain their capture age, so old green never becomes fresh.
+        now = time.monotonic() if observed_at is None else observed_at
         if kind == "evidence" and isinstance(value, dict):
             for service in ("server", "runtime"):
-                self.samples[service] = (time.monotonic(), dict(value))
+                self.samples[service] = (now, dict(value))
                 self.failures.discard(service)
         elif kind == "probe" and isinstance(value, dict):
             service = {"gateway": "mcp", "ollama": "ollama"}.get(str(value.get("service", "")))
             if service:
                 sample = dict(value)
-                now = time.monotonic()
                 if service == "ollama":
                     model = str(sample.get("selected_model") or "")
                     if key == "probe:ollama_generate" and sample.get("generation_verified") is True and model:

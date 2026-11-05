@@ -13,7 +13,7 @@ VSVersionInfo(
         StringStruct('InternalName', 'JaznRunStudio'),
         StringStruct('OriginalFilename', 'JaznRunStudio.exe'),
         StringStruct('ProductName', 'Jaźń Studio'),
-        StringStruct('ProductVersion', '16.3.25.5.116.0.34.94.6.103')
+        StringStruct('ProductVersion', '16.3.25.5.116.0.34.94.6.104')
       ])
     ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])

@@ -12,6 +12,7 @@ from hashlib import sha256
 from importlib.util import find_spec
 import json
 import logging
+import math
 from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
@@ -636,14 +637,16 @@ class Controller:
                 # by imitating a diagnostic prefix. Preserve public field names;
                 # credentials are redacted in values before JSON serialization.
                 if not isinstance(value, dict) or any(
-                    not isinstance(name, str) or type(item) not in (str, int, bool, type(None))
+                    (not isinstance(name, str)
+                     or type(item) not in (str, int, bool, float, type(None))
+                     or (type(item) is float and not math.isfinite(item)))
                     for name, item in value.items()
                 ):
                     raise StudioError("Nieprawidłowy format diagnozy daemona")
                 value = "JSS_DAEMON_DIAGNOSTIC " + json.dumps({
                     name: self.redactor.text(item) if isinstance(item, str) else item
                     for name, item in value.items()
-                }, ensure_ascii=False)
+                }, ensure_ascii=False, allow_nan=False)
                 kind = "log"
                 self.logs.setdefault(key, deque(maxlen=2500)).append(value)
                 self._diagnostic_logs.append(value)
@@ -1079,33 +1082,39 @@ class Controller:
                 self.emit(job.key, "supervisor_evidence",
                           supervisor_summary(supervisor, command_ok=job.state == "succeeded"))
             if job.key == "status":
-                # A canonical negative status is still an observation. Publish
-                # it even on exit 1; malformed output must invalidate old green
-                # evidence instead of leaving a stale readiness claim visible.
-                from .status_summary import status_summary
                 try:
-                    value = json.loads(raw)
-                    if not isinstance(value, dict):
-                        raise ValueError("status_shape")
-                except ValueError:
-                    value = {}
+                    # A canonical negative status is still an observation. Publish
+                    # it even on exit 1; malformed output must invalidate old green
+                    # evidence instead of leaving a stale readiness claim visible.
+                    from .status_summary import status_summary
+                    try:
+                        value = json.loads(raw)
+                        if not isinstance(value, dict):
+                            raise ValueError("status_shape")
+                    except ValueError:
+                        value = {}
+                        job.state = "failed"
+                        if job.error is None or job.error.startswith("process_exit:"):
+                            job.error = "invalid_status_json"
+                    evidence = daemon_evidence(value, expected_root=self.root)
+                    self.emit(job.key, "evidence", evidence)
+                    # Canonical status may exceed the rotating line buffer. Keep a
+                    # bounded diagnosis after the raw log, including negative status
+                    # on exit 1, so terminal operators never lose the refusal cause.
+                    self.emit(job.key, "daemon_diagnostic", {
+                        "schema_version": "jazn_studio_daemon_diagnostic/v1",
+                        "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+                        "root": str(self.root),
+                        **evidence,
+                        "process_events_log": str(workspace_runtime_path(self.root) / "daemon" / "process_events.jsonl"),
+                    })
+                    self.emit(job.key, "status_summary", status_summary(value))
+                    self.emit(job.key, "memory_evidence", memory_evidence(value))
+                except (StudioError, OSError, ValueError, TypeError, OverflowError) as exc:
+                    # Fail closed, but always reach the worker terminal-state event.
                     job.state = "failed"
-                    if job.error is None or job.error.startswith("process_exit:"):
-                        job.error = "invalid_status_json"
-                evidence = daemon_evidence(value, expected_root=self.root)
-                self.emit(job.key, "evidence", evidence)
-                # Canonical status may exceed the rotating line buffer. Keep a
-                # bounded diagnosis after the raw log, including negative status
-                # on exit 1, so terminal operators never lose the refusal cause.
-                self.emit(job.key, "daemon_diagnostic", {
-                    "schema_version": "jazn_studio_daemon_diagnostic/v1",
-                    "observed_at_utc": datetime.now(timezone.utc).isoformat(),
-                    "root": str(self.root),
-                    **evidence,
-                    "process_events_log": str(workspace_runtime_path(self.root) / "daemon" / "process_events.jsonl"),
-                })
-                self.emit(job.key, "status_summary", status_summary(value))
-                self.emit(job.key, "memory_evidence", memory_evidence(value))
+                    job.error = "status_diagnostic_error:" + type(exc).__name__
+                    self.emit(job.key, "log", "Nieprawidłowa diagnostyka: " + type(exc).__name__)
             if job.state == "succeeded" and job.key.startswith(("helper:schema:", "helper:preview:", "helper:profile-")):
                 try:
                     self.emit(job.key, "helper", json.loads(raw))

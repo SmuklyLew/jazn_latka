@@ -277,7 +277,14 @@ class ServiceViewMixin:
     def open_service_status(self: Any) -> None:
         """Display the read-only, non-modal service indicators."""
         if self.service_status_dialog is None:
-            self.service_status_dialog = ServiceStatusDialog(self, lambda: self.guard(self.refresh_services))
+            dialog = ServiceStatusDialog(self, lambda: self.guard(self.refresh_services))
+            # Replay only bounded observations from this JSS session, with
+            # their original age. Opening is read-only and cannot restart probes.
+            for (key, kind), (observed_at, sample) in sorted(
+                self.service_status_history.items(), key=lambda item: item[1][0]
+            ):
+                dialog.observe(key, kind, sample, observed_at=observed_at)
+            self.service_status_dialog = dialog
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
