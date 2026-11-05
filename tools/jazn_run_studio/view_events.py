@@ -159,6 +159,7 @@ class EventViewMixin:
                 else:
                     self.core.confirm_visible_turn(value)
                     self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
+                self.update_chat_progress()
             elif kind == "helper":
                 if key == "helper:version-inspect:":
                     self.version_panel.receive(value)

@@ -10,6 +10,7 @@ import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
+import time
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -37,6 +38,17 @@ class ChatViewMixin:
         self.chat_state.setWordWrap(True)
         self.chat_state.setObjectName("workbenchChatStatus")
         layout.addWidget(self.chat_state)
+        self.chat_progress = QLabel("")
+        self.chat_progress.setObjectName("workbenchChatProgress")
+        self.chat_progress.setAccessibleName("Czas oczekiwania i identyfikator aktywnej tury")
+        self.chat_progress.setWordWrap(True)
+        self.chat_progress.hide()
+        layout.addWidget(self.chat_progress)
+        self._chat_progress_tick = 0
+        self.chat_progress_timer = QTimer(self)
+        self.chat_progress_timer.setInterval(1000)
+        self.chat_progress_timer.timeout.connect(self.update_chat_progress)
+        self.chat_progress_timer.start()
 
         # The conversation is the focus of this view. Technical connection
         # controls remain discoverable without occupying half the editor.
@@ -125,6 +137,7 @@ class ChatViewMixin:
         self.conversation.appendPlainText("Ty:\n" + text + "\n")
         self.message.clear()
         self.chat_state.setText("Oczekiwanie na wynik: " + request)
+        self.update_chat_progress()
 
 
     def resume_chat(self: Any) -> None:
@@ -132,3 +145,30 @@ class ChatViewMixin:
             from .chat import ChatClient
             self.core.chat = ChatClient(self.core)
         self.core.chat.resume()
+        self.update_chat_progress()
+
+
+
+    def update_chat_progress(self: Any) -> None:
+        """Visual elapsed time only, never a fabricated model progress fraction."""
+        chat = self.core.chat
+        pending = chat.pending if chat is not None else None
+        if not pending:
+            self.chat_progress.hide()
+            self.send_button.setEnabled(True)
+            return
+        self.send_button.setEnabled(False)
+        self._chat_progress_tick += 1
+        dots = "." * (1 + self._chat_progress_tick % 3)
+        started_at = chat.started_at
+        if isinstance(started_at, (int, float)) and started_at > 0:
+            elapsed = max(0, int(time.monotonic() - started_at))
+            duration = f"{elapsed // 60:02}:{elapsed % 60:02}"
+        else:
+            duration = "nieznany po odzyskaniu sesji"
+        self.chat_progress.setText(
+            f"Oczekiwanie na wynik{dots} • {duration} • request_id: {pending}\n"
+            "Etap generacji niepotwierdzony; użyj Wznów wynik dla tej samej tury. "
+            "Kolejna wiadomość nie zostanie wysłana, dopóki ta nie zostanie rozstrzygnięta."
+        )
+        self.chat_progress.show()

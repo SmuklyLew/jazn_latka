@@ -83,3 +83,20 @@ def test_color_palette_cancel_keeps_draft(window, monkeypatch) -> None:
     before = (window.fields["accent"].text(), window.theme.currentText())
     window.choose_custom_color()
     assert (window.fields["accent"].text(), window.theme.currentText()) == before
+
+
+
+def test_pending_chat_progress_is_elapsed_wait_not_claim_of_generation(window) -> None:
+    from types import SimpleNamespace
+    import time
+
+    window.core.chat = SimpleNamespace(pending="studio-turn-test", started_at=time.monotonic() - 3)
+    window.update_chat_progress()
+    assert not window.send_button.isEnabled()
+    assert "studio-turn-test" in window.chat_progress.text()
+    assert "Etap generacji niepotwierdzony" in window.chat_progress.text()
+    window.core.chat.pending = None
+    window.update_chat_progress()
+    assert window.send_button.isEnabled()
+    assert not window.chat_progress.isVisible()
+    window.core.chat = None
