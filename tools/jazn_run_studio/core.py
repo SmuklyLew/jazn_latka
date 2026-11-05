@@ -1121,6 +1121,19 @@ class Controller:
                 raise StudioError("Brak aktywnego procesu należącego do tego Studio")
             job.cancel.set()
 
+    def force_kill_owned(self, key: str) -> None:
+        """Emergency kill of a tracked JSS service handle, never a PID lookup."""
+        if key not in {"service:ollama", "service:gateway"}:
+            raise StudioError("Tylko procesy usług uruchomione przez to Studio")
+        with self.lock:
+            job = self.jobs.get(key)
+            if job is None or job.done.is_set() or job.proc is None or job.proc.poll() is not None:
+                raise StudioError("Brak aktywnego procesu należącego do tego Studio")
+            proc = job.proc
+            job.cancel.set()
+        proc.kill()
+        self.emit(key, "log", "Wymuszono zakończenie własnego procesu JSS; status potwierdzi worker")
+
     def restart_service(self, service: str) -> None:
         key = "service:" + service
         self.stop_owned(key)

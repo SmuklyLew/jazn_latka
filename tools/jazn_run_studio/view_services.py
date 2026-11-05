@@ -60,6 +60,12 @@ class ServiceViewMixin:
                 for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
                     action = menu.addAction(label)
                     action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
+            if service in {"ollama", "gateway"}:
+                emergency = menu.addAction("Wymuś zakończenie własnego procesu")
+                emergency.triggered.connect(
+                    lambda _checked=False, s=service:
+                    self.guard(lambda: self.force_owned_service(s))
+                )
             config = menu.addAction("Konfiguracja")
             config.triggered.connect(lambda: self.navigate("Ustawienia"))
             logs = menu.addAction("Logi")
@@ -153,6 +159,20 @@ class ServiceViewMixin:
         }.get(service, "wybierz moduł")
         self.service_selected_label.setText(service.upper() + " — " + note if service else note)
 
+
+    def force_owned_service(self: Any, service: str) -> None:
+        if service not in {"ollama", "gateway"}:
+            raise StudioError("Nie wolno wymuszać zakończenia tej usługi z JSS")
+        if QMessageBox.question(
+            self, "Awaryjne zakończenie procesu",
+            "Natychmiast zakończyć wyłącznie proces " + service
+            + " uruchomiony przez JSS? Nie dotyczy współdzielonej Ollamy "
+              "ani daemona Jaźni. Niezapisane dane mogą zostać utracone.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        ) != QMessageBox.StandardButton.Yes:
+            return
+        self.core.force_kill_owned("service:" + service)
 
     def refresh_services(self: Any) -> None:
         """Explicit, read-only probes; no silent auto-start or PID adoption."""
