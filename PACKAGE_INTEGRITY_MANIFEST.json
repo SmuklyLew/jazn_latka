@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
-  "package_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
-  "generated_at_utc": "2026-11-05T01:26:46+00:00",
-  "updated_at_utc": "2026-11-05T01:26:46+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+  "package_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+  "generated_at_utc": "2026-11-05T01:32:39+00:00",
+  "updated_at_utc": "2026-11-05T01:32:39+00:00",
   "start_file": "run.py",
-  "file_count": 3701,
-  "static_file_count": 3701,
+  "file_count": 3702,
+  "static_file_count": 3702,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2977,
-      "sha256": "a2912da7043700e44c24420b94c43a352d0c6d85f13487f5a1c57a3ef59703f1",
+      "sha256": "924eb2ef4e5790529a4237920063474ed5fcf1cb8b16e9a4fb8df01a77b053bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -500,7 +500,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "6ac43a9d149566e0c1999c89f61d6be5e5d2728a4af1d5abfab8243dbea7019e",
+      "sha256": "b687ab902cc738d6e33171791ab43ff3d7c2eb829f57bbea5ae6f9117c1a2860",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7528,8 +7528,8 @@
     },
     {
       "path": "latka_jazn/db/runtime_sqlite.py",
-      "size_bytes": 12897,
-      "sha256": "c3224d9dcd1dd1e56aa0ed823c4b37fe1d4a495e9a82456e2de28331878c93d6",
+      "size_bytes": 13223,
+      "sha256": "535e279dcc8ab6985f57af9c539b3e9e5e1b2bff21e9896711fee6956a996432",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7816,8 +7816,8 @@
     },
     {
       "path": "latka_jazn/mcp/task_resume.py",
-      "size_bytes": 39311,
-      "sha256": "a14ae7aedeffb94c2cdafff06b6e73ce49526e609bfcdb3b4086a715de9f3b3d",
+      "size_bytes": 37257,
+      "sha256": "e9c6f5794615531ad26e061fbcc59c2408e8dea15248c3a00c3daf6fd090b34f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9986,7 +9986,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "bad53e398911b42e647163045c6cb612f741c29bc83401ff392650c9abb880b4",
+      "sha256": "8121e97fd351b54b17f9de4cecd05c5c0d82084e0f182f18f6812480ce788a28",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26614,
-      "sha256": "a7ea700cec86f6f8256b8b8d1f7386e5ad88849e78c3892561a0e31ef4448965",
+      "size_bytes": 26718,
+      "sha256": "5e7ce60cc218fe802d111a796046f018d106893210cd95cc58b4bf4340746cb0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29451,6 +29451,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_mcp_task_sqlite_journal_policy.py",
+      "size_bytes": 2717,
+      "sha256": "1262b7efeff1d98565a79de746f7e0afb61e87d3ee7d1a52491d655e43913e82",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_attach_preflight_version.py",
       "size_bytes": 911,
       "sha256": "5de1090653c5410c98775a17a54fb1630eba2cfbbe3fad28627384727dfd7281",
@@ -33106,8 +33115,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2838326,
-      "sha256": "1f4ee5d8dff34865449c25e45bb2bcf494e13476a551434e2c6faac0e2f50f82",
+      "size_bytes": 2841536,
+      "sha256": "fa6e25d239decddc7de78c646a90e97b7022afa862fa7c6ded4391639ab8da12",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33764,11 +33773,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
+  "release_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
-    "package_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary",
-    "release_version": "16.3.25.5.116.0.34.94.6.96-feminine-voice-verb-boundary"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+    "package_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
+    "release_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy"
   },
   "legacy_aliases": {
     "version": "release_version"
