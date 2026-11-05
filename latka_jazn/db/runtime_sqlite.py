@@ -229,16 +229,25 @@ def runtime_sqlite_capabilities() -> dict[str, Any]:
     }
 
 
+def _sqlite_uri_path(path: str | Path) -> str:
+    resolved = str(Path(path).expanduser().resolve()).replace("\\", "/")
+    # Windows resolution can expose the extended namespace under concurrent
+    # opens. It is a filesystem prefix, never a SQLite URI authority named '?'.
+    if resolved.lower().startswith("//?/unc/"):
+        return "//" + resolved[8:]
+    if resolved.startswith("//?/"):
+        return resolved[4:]
+    return resolved
+
+
 def readonly_sqlite_uri(path: str | Path) -> str:
     """Return a percent-encoded SQLite read-only URI that also works on Windows."""
-    resolved = str(Path(path).expanduser().resolve()).replace("\\", "/")
-    return "file:" + quote(resolved, safe="/:" ) + "?mode=ro"
+    return "file:" + quote(_sqlite_uri_path(path), safe="/:") + "?mode=ro"
 
 
 def writable_sqlite_uri(path: str | Path) -> str:
     """Return an encoded create-or-open URI and enable URI-aware ATTACH calls."""
-    resolved = str(Path(path).expanduser().resolve()).replace("\\", "/")
-    return "file:" + quote(resolved, safe="/:") + "?mode=rwc"
+    return "file:" + quote(_sqlite_uri_path(path), safe="/:") + "?mode=rwc"
 
 
 def _readonly_uri(path: str | Path) -> str:
