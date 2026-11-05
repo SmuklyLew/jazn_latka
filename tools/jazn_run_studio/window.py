@@ -304,11 +304,12 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
                     )
                     event.ignore()
                     return
-                if self.supervisor_observation.get("supervisor_active") is True:
+                if self.supervisor_observation.get("inactive_confirmed") is not True:
                     QMessageBox.warning(
-                        self, "Aktywny supervisor",
-                        "Przed zatrzymaniem daemona wyłącz kanonicznie supervisor, "
-                        "aby uniknąć automatycznego restartu."
+                        self, "Supervisor niezweryfikowany lub aktywny",
+                        "Zanim zatrzymasz daemon, potwierdź osobno nieaktywny "
+                        "supervisor tej instancji. W przeciwnym razie daemon "
+                        "może zostać uruchomiony ponownie."
                     )
                     event.ignore()
                     return
