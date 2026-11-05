@@ -31865,7 +31865,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -31880,7 +31880,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 124
     },
     "tests/test_jss_project_interpreter_chat.py::test_connect_and_resume_select_project_interpreter": {
       "path": "tests/test_jss_project_interpreter_chat.py",
