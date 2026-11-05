@@ -48435,8 +48435,8 @@
       "description_source": "source_identity",
       "line": 39
     },
-    "tests/test_ollama_time_awareness_clock_guard_v99.py::test_time_question_preserves_runtime_clock": {
-      "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
+    "tests/test_ollama_runtime_time_guard.py::test_time_question_preserves_runtime_clock": {
+      "path": "tests/test_ollama_runtime_time_guard.py",
       "name": "test_time_question_preserves_runtime_clock",
       "purpose": "Time question preserves runtime clock",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
@@ -48461,8 +48461,8 @@
       "description_source": "source_identity",
       "line": 45
     },
-    "tests/test_ollama_time_awareness_clock_guard_v99.py::test_answer_without_runtime_time_is_rejected": {
-      "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
+    "tests/test_ollama_runtime_time_guard.py::test_answer_without_runtime_time_is_rejected": {
+      "path": "tests/test_ollama_runtime_time_guard.py",
       "name": "test_answer_without_runtime_time_is_rejected",
       "purpose": "Answer without runtime time is rejected",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -48485,13 +48485,15 @@
       "description_source": "source_identity",
       "line": 120
     },
-    "tests/test_ollama_time_awareness_clock_guard_v99.py::test_ordinary_greeting_remains_model_eligible": {
-      "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
+    "tests/test_ollama_runtime_time_guard.py::test_ordinary_greeting_remains_model_eligible": {
+      "path": "tests/test_ollama_runtime_time_guard.py",
       "name": "test_ordinary_greeting_remains_model_eligible",
       "purpose": "Ordinary greeting remains model eligible",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
@@ -60322,6 +60324,98 @@
       "description_source": "source_identity",
       "line": 44
     },
+    "tests/test_runtime_time_routing.py::test_time_route": {
+      "path": "tests/test_runtime_time_routing.py",
+      "name": "test_time_route",
+      "purpose": "Time route",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_runtime_time_routing.py::test_unrelated_route": {
+      "path": "tests/test_runtime_time_routing.py",
+      "name": "test_unrelated_route",
+      "purpose": "Unrelated route",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_runtime_time_routing.py::test_legacy_intent": {
+      "path": "tests/test_runtime_time_routing.py",
+      "name": "test_legacy_intent",
+      "purpose": "Legacy intent",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_runtime_time_routing.py::test_protected_intents": {
+      "path": "tests/test_runtime_time_routing.py",
+      "name": "test_protected_intents",
+      "purpose": "Protected intents",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.time_awareness_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
     "tests/test_runtime_turn_liveness.py::test_memory_experience_policy_allows_grounded_memory_content": {
       "path": "tests/test_runtime_turn_liveness.py",
       "name": "test_memory_experience_policy_allows_grounded_memory_content",
@@ -66962,98 +67056,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_v100_runtime_time_routing.py::test_time_route": {
-      "path": "tests/test_v100_runtime_time_routing.py",
-      "name": "test_time_route",
-      "purpose": "Time route",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.time_awareness_handler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 18
-    },
-    "tests/test_v100_runtime_time_routing.py::test_unrelated_route": {
-      "path": "tests/test_v100_runtime_time_routing.py",
-      "name": "test_unrelated_route",
-      "purpose": "Unrelated route",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.time_awareness_handler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 28
-    },
-    "tests/test_v100_runtime_time_routing.py::test_legacy_intent": {
-      "path": "tests/test_v100_runtime_time_routing.py",
-      "name": "test_legacy_intent",
-      "purpose": "Legacy intent",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.time_awareness_handler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 33
-    },
-    "tests/test_v100_runtime_time_routing.py::test_protected_intents": {
-      "path": "tests/test_v100_runtime_time_routing.py",
-      "name": "test_protected_intents",
-      "purpose": "Protected intents",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.time_awareness_handler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 38
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
