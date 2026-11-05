@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
-  "package_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
-  "generated_at_utc": "2026-11-05T01:52:31+00:00",
-  "updated_at_utc": "2026-11-05T01:52:31+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+  "package_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+  "generated_at_utc": "2026-11-05T05:53:50+00:00",
+  "updated_at_utc": "2026-11-05T05:53:50+00:00",
   "start_file": "run.py",
-  "file_count": 3705,
-  "static_file_count": 3705,
+  "file_count": 3706,
+  "static_file_count": 3706,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 3007,
-      "sha256": "865a940c152c961d6342accad79a4b15323fe45205cb6f260026022a4fcf083c",
+      "size_bytes": 2932,
+      "sha256": "072d616b8c0b644f3a268912ef00d7741eb6adb4b6ed57e3cf1db72ab90a6127",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6457,8 +6457,8 @@
     },
     {
       "path": "latka_jazn/core/model_guided_response_synthesizer.py",
-      "size_bytes": 11065,
-      "sha256": "e0e334ea1ce5fa6c42fd778ab869dc2c9745025d47baeef8f6d4447d250a0cb5",
+      "size_bytes": 11100,
+      "sha256": "08e0e74857b9a0383b132a1a7d360e697886c0f31b49b7d457e11ff983994ded",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26838,
-      "sha256": "e5cb05a88b5242f2afd8f706a73ad9b998e094c09e5a42d0587b33013e58fdcf",
+      "size_bytes": 26912,
+      "sha256": "2a87797eb5eba62434053571c2e813e865f58df9b13fe9df6ac7ac8f2eb927a7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30297,6 +30297,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_ollama_time_awareness_clock_guard_v99.py",
+      "size_bytes": 3899,
+      "sha256": "23b3d4f0ed956604cbf74dcdcd3de5d821d51ad82dd06c8cbce70c5f377316d3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_ollama_turn_stability_nlp.py",
       "size_bytes": 4514,
       "sha256": "9d09964517f7f4672d2392146bfae6ddaad373a2602574ebaad28781344f6656",
@@ -33800,11 +33809,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
+  "release_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
-    "package_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy",
-    "release_version": "16.3.25.5.116.0.34.94.6.98-memory-writer-safe-journal-policy"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+    "package_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard",
+    "release_version": "16.3.25.5.116.0.34.94.6.99-ollama-time-awareness-clock-guard"
   },
   "legacy_aliases": {
     "version": "release_version"
