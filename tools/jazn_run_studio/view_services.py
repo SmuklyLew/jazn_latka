@@ -259,4 +259,5 @@ class ServiceViewMixin:
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
-        self.service_status_dialog.request_refresh()
+        # Merely opening this window must not clear evidence or start a probe.
+        self.service_status_dialog.render_statuses()

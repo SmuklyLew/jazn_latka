@@ -69,7 +69,7 @@ def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict
         raise ValueError("Invalid Ollama model list")
     names = [entry["name"] for entry in entries]
     return {"service": "ollama", "endpoint_reachable": True, "models": names,
-            "selected_model_present": model in names if model else None,
+            "selected_model": model, "selected_model_present": model in names if model else None,
             "generation_verified": False, "accepted_visible_turn": False}
 
 

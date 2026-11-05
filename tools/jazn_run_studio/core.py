@@ -510,6 +510,12 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "daemon_version": daemon_version,
         "pid": daemon.get("pid"),
         "instance_id": daemon.get("daemon_instance_id"),
+        "uptime_seconds": next(
+            (v for v in (ping.get("uptime_seconds"), daemon.get("uptime_seconds"),
+                         data.get("uptime_seconds"))
+             if isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0),
+            None,
+        ),
         "endpoint_reachable": daemon.get("endpoint_reachable") is True,
         "process_identity_confirmed": daemon.get("process_identity_confirmed") is True,
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,

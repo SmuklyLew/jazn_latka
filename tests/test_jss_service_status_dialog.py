@@ -86,6 +86,38 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
 
     panel.request_refresh()
     assert host.refresh_count == 1
-    assert "Niezweryfikowany" in panel.indicators["server"][1].text()
+    assert "Błąd" in panel.indicators["server"][1].text()
+    assert "trwa sprawdzanie" in panel.indicators["server"][1].text()
+    panel.close()
+    host.close()
+
+
+def test_refresh_keeps_last_good_evidence_and_uptime() -> None:
+    host = QWidget()
+    panel = ServiceStatusDialog(host, lambda: None)
+    panel.observe("status", "evidence", {**_runtime_evidence(),
+                  "pid": 32812, "uptime_seconds": 3333.0})
+    assert "Działa" in panel.indicators["server"][1].text()
+    assert "00:55:33" in panel.indicators["server"][1].text()
+    assert "32812" in panel.indicators["server"][1].text()
+    panel.request_refresh()
+    assert "Działa" in panel.indicators["server"][1].text()
+    panel.close()
+    host.close()
+
+
+def test_model_listing_does_not_erase_fresh_generation_for_same_model() -> None:
+    host = QWidget()
+    panel = ServiceStatusDialog(host, lambda: None)
+    generated = {"service": "ollama", "endpoint_reachable": True,
+                 "selected_model": "gemma3:latest",
+                 "selected_model_present": True, "generation_verified": True}
+    panel.observe("probe:ollama_generate", "probe", generated)
+    assert "Działa" in panel.indicators["ollama"][1].text()
+    panel.observe("probe:ollama", "probe", {**generated, "generation_verified": False})
+    assert "Działa" in panel.indicators["ollama"][1].text()
+    panel.observe("probe:ollama", "probe", {**generated, "selected_model": "other",
+                  "generation_verified": False})
+    assert "Niezweryfikowany" in panel.indicators["ollama"][1].text()
     panel.close()
     host.close()

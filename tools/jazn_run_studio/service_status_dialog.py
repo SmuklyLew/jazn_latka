@@ -86,6 +86,8 @@ class ServiceStatusDialog(QDialog):
         self.resize(520, 330)
         self.samples: dict[str, tuple[float, dict[str, Any]]] = {}
         self.failures: set[str] = set()
+        self.refresh_started: float | None = None
+        self.ollama_generation: tuple[float, str] | None = None
         self.indicators: dict[str, tuple[QLabel, QLabel]] = {}
 
         layout = QVBoxLayout(self)
@@ -131,8 +133,8 @@ class ServiceStatusDialog(QDialog):
     def request_refresh(self) -> None:
         # A click is an explicit request for the existing nonblocking Controller
         # jobs; never call HTTP or lifecycle directly in this widget.
-        self.samples.clear()
-        self.failures.clear()
+        # Preserve the last observation while a new asynchronous probe runs.
+        self.refresh_started = time.monotonic()
         self.render_statuses()
         self._request_refresh()
 
@@ -144,7 +146,24 @@ class ServiceStatusDialog(QDialog):
         elif kind == "probe" and isinstance(value, dict):
             service = {"gateway": "mcp", "ollama": "ollama"}.get(str(value.get("service", "")))
             if service:
-                self.samples[service] = (time.monotonic(), dict(value))
+                sample = dict(value)
+                now = time.monotonic()
+                if service == "ollama":
+                    model = str(sample.get("selected_model") or "")
+                    if key == "probe:ollama_generate" and sample.get("generation_verified") is True and model:
+                        self.ollama_generation = (now, model)
+                    elif (sample.get("generation_verified") is not True
+                          and self.ollama_generation is not None
+                          and model == self.ollama_generation[1]
+                          and now - self.ollama_generation[0] <= MAX_OBSERVATION_AGE_SECONDS
+                          and sample.get("endpoint_reachable") is True
+                          and sample.get("selected_model_present") is True):
+                        # A lightweight list-models probe must not erase a
+                        # still-fresh successful generation test of this model.
+                        sample["generation_verified"] = True
+                    else:
+                        sample["generation_verified"] = sample.get("generation_verified") is True
+                self.samples[service] = (now, sample)
                 self.failures.discard(service)
         elif kind == "state" and isinstance(value, dict) and value.get("state") == "failed":
             failed_service = {"status": ("server", "runtime"),
@@ -160,6 +179,8 @@ class ServiceStatusDialog(QDialog):
             }
             if not (key.startswith("probe:") and str(value.get("error") or "") in unready):
                 self.failures.update(failed_service)
+        if kind in {"evidence", "probe"} or kind == "state" and isinstance(value, dict) and value.get("state") in {"failed", "succeeded"}:
+            self.refresh_started = None
         # Keep the read-only projection current while hidden as well: opening
         # or reopening the window must not briefly expose an earlier sample.
         self.render_statuses()
@@ -174,6 +195,28 @@ class ServiceStatusDialog(QDialog):
                 failed=key in self.failures,
                 age_seconds=now - observed[0] if observed else 0.0,
             )
+            if key == "ollama" and observed is not None and self.ollama_generation is not None:
+                # A later endpoint-only sample cannot extend generation proof.
+                generated_at, generated_model = self.ollama_generation
+                model = str(observed[1].get("selected_model") or "")
+                if model != generated_model or now - generated_at > MAX_OBSERVATION_AGE_SECONDS:
+                    downgraded = {**observed[1], "generation_verified": False}
+                    state, detail = assess_service(
+                        key, downgraded, failed=key in self.failures,
+                        age_seconds=now - observed[0])
+            if key == "server" and observed is not None:
+                uptime = observed[1].get("uptime_seconds")
+                pid = observed[1].get("pid")
+                if isinstance(uptime, (int, float)) and not isinstance(uptime, bool) and uptime >= 0:
+                    # Do not extrapolate past the last fresh observation.
+                    seconds = int(uptime + min(now - observed[0], MAX_OBSERVATION_AGE_SECONDS))
+                    detail += f" • czas działania {seconds // 3600:02}:{seconds % 3600 // 60:02}:{seconds % 60:02}"
+                if isinstance(pid, int) and pid > 0:
+                    detail += f" • PID {pid}"
+            if observed is not None and now - observed[0] > MAX_OBSERVATION_AGE_SECONDS:
+                detail += f" • ostatni pomiar {int(now - observed[0])} s temu"
+            if self.refresh_started is not None and now - self.refresh_started < 30.0:
+                detail += " • trwa sprawdzanie"
             circle, caption = self.indicators[key]
             circle.setStyleSheet("color: " + STATUS_COLORS[state] + "; font-size: 19px;")
             circle.setAccessibleName(STATUS_LABELS[state])
