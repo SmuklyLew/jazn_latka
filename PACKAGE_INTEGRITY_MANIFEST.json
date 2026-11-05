@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
   "runtime_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
   "package_version": "16.3.25.5.116.0.34.94.6.97-mcp-task-safe-journal-policy",
-  "generated_at_utc": "2026-11-05T01:32:39+00:00",
-  "updated_at_utc": "2026-11-05T01:32:39+00:00",
+  "generated_at_utc": "2026-11-05T01:40:18+00:00",
+  "updated_at_utc": "2026-11-05T01:40:18+00:00",
   "start_file": "run.py",
-  "file_count": 3702,
-  "static_file_count": 3702,
+  "file_count": 3704,
+  "static_file_count": 3704,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2977,
-      "sha256": "924eb2ef4e5790529a4237920063474ed5fcf1cb8b16e9a4fb8df01a77b053bf",
+      "sha256": "0efc98da4506b5d99c088561d34ca50b930223c7ae26c9d446e3d465bd8fce8a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19119,6 +19119,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_mcp_task_sqlite_journal_policy_v16_3_25_5_116_0_34_94_6_97.provenance.json",
+      "size_bytes": 362,
+      "sha256": "0deffc8f23ef3a58a3b733940ce325638a7052149af8bf85b6b3f437a2b82286",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/test_mcp_task_sqlite_journal_policy_v16_3_25_5_116_0_34_94_6_97.py",
+      "size_bytes": 2717,
+      "sha256": "1262b7efeff1d98565a79de746f7e0afb61e87d3ee7d1a52491d655e43913e82",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_memory_rebuild_source_union_v16_3_25_3_1.py",
       "size_bytes": 8403,
       "sha256": "e262760de7ba3cfef431ecefba2edc8d83cb95b18c0377f92f284c7bf3f2ea7c",
@@ -29452,8 +29470,8 @@
     },
     {
       "path": "tests/test_mcp_task_sqlite_journal_policy.py",
-      "size_bytes": 2717,
-      "sha256": "1262b7efeff1d98565a79de746f7e0afb61e87d3ee7d1a52491d655e43913e82",
+      "size_bytes": 2949,
+      "sha256": "0ee3adbeefa94a6781271ff6698275ad5ee260343e85bf088f8cd7e2c5dcc4b4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
