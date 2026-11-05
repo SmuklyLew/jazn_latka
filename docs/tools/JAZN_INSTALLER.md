@@ -33,7 +33,7 @@ The `mcp-http` dependency profile only installs library dependencies. It does
 ## Quick start — Linux (glibc x86-64)
 
 ```bash
-PYTHON=python3.14 sh ./setup.sh doctor --json
+PYTHON=python3.14 sh ./setup.sh wizard\nPYTHON=python3.14 sh ./setup.sh doctor --json
 PYTHON=python3.14 sh ./setup.sh install --profile core,run-studio --online
 PYTHON=python3.14 sh ./setup.sh verify --profile core --json
 ```
