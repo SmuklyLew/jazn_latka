@@ -385,6 +385,8 @@ def run_window(core: Controller, *, smoke: bool = False) -> int:
     app = QApplication.instance() or QApplication([])
     if not isinstance(app, QApplication):
         raise StudioError("Istniejąca instancja Qt nie jest aplikacją GUI")
+    app.setApplicationName("JaznRunStudio")
+    app.setApplicationDisplayName("Jaźń — Serce Systemu")
     splash = None
     if not smoke:
         from .workbench_theme import workbench_colors

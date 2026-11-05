@@ -1,0 +1,21 @@
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(16, 3, 25, 5), prodvers=(16, 3, 25, 5),
+    mask=0x3f, flags=0x0, OS=0x40004,
+    fileType=0x1, subtype=0x0, date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable('040904B0', [
+        StringStruct('CompanyName', 'Jaźń'),
+        StringStruct('FileDescription', 'Jaźń — Serce Systemu / JSS'),
+        StringStruct('FileVersion', '16.3.25.5'),
+        StringStruct('InternalName', 'JaznRunStudio'),
+        StringStruct('OriginalFilename', 'JaznRunStudio.exe'),
+        StringStruct('ProductName', 'Jaźń Studio'),
+        StringStruct('ProductVersion', '16.3.25.5.116.0.34.94.6.102')
+      ])
+    ]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)
