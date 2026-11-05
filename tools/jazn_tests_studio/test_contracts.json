@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.75",
-  "active_definition_count": 3145,
+  "active_definition_count": 3146,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25171,6 +25171,24 @@
       "description_source": "source_identity",
       "line": 100
     },
+    "tests/test_jazn_chat_terminal_recovery.py::test_duplicate_submit_after_ttl_is_not_reexecuted": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_duplicate_submit_after_ttl_is_not_reexecuted",
+      "purpose": "Duplicate submit after ttl is not reexecuted",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
     "tests/test_jazn_chat_terminal_recovery.py::test_unknown_request_remains_unknown": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
       "name": "test_unknown_request_remains_unknown",
@@ -25187,7 +25205,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 193
     },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
