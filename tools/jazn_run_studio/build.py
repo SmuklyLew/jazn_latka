@@ -34,6 +34,11 @@ def main() -> int:
             "--workpath", str(output / "build"), "--specpath", str(output),
             "--paths", str(root), str(root / "jazn_run_studio.py")]
     argv[3:3] = ["--copy-metadata", "PySide6-Essentials", "--copy-metadata", "shiboken6"]
+    if os.name == "nt":
+        # Task Manager displays PE version-resource descriptions for frozen EXEs.
+        # A regular python.exe daemon remains python.exe; never rename Python.
+        argv[-1:-1] = ["--version-file",
+                       str(Path(__file__).with_name("windows_version_info.txt"))]
     env = dict(os.environ)
     if os.name == "nt":
         # Dependency scanning must not pick Git/other tools' incompatible ICU

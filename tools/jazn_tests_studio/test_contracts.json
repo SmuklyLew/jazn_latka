@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.101",
-  "active_definition_count": 3236,
+  "system_version": "16.3.25.5.116.0.34.94.6.103",
+  "active_definition_count": 3244,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17012,6 +17012,71 @@
       "description_source": "source_identity",
       "line": 549
     },
+    "tests/test_dependency_studio.py::test_fresh_project_venv_installs_offline_and_marks_active": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_fresh_project_venv_installs_offline_and_marks_active",
+      "purpose": "Fresh project venv installs offline and marks active",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 583
+    },
+    "tests/test_dependency_studio.py::test_project_venv_refuses_existing_path_without_mutation": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_project_venv_refuses_existing_path_without_mutation",
+      "purpose": "Project venv refuses existing path without mutation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 597
+    },
+    "tests/test_dependency_studio.py::test_dependency_cli_project_layout_dry_run": {
+      "path": "tests/test_dependency_studio.py",
+      "name": "test_dependency_cli_project_layout_dry_run",
+      "purpose": "Dependency cli project layout dry run",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.readiness",
+        "latka_jazn.dependencies.runtime",
+        "latka_jazn.tools.dependency_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 614
+    },
     "tests/test_dependency_studio_repeated_profiles.py::test_repeated_profile_flags_preserve_core_and_archive": {
       "path": "tests/test_dependency_studio_repeated_profiles.py",
       "name": "test_repeated_profile_flags_preserve_core_and_archive",
@@ -28493,6 +28558,21 @@
       "description_source": "source_identity",
       "line": 74
     },
+    "tests/test_jazn_run_studio_part2_operator_qt.py::test_pending_chat_progress_is_elapsed_wait_not_claim_of_generation": {
+      "path": "tests/test_jazn_run_studio_part2_operator_qt.py",
+      "name": "test_pending_chat_progress_is_elapsed_wait_not_claim_of_generation",
+      "purpose": "Pending chat progress is elapsed wait not claim of generation",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
     "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_uses_only_read_only_status_and_probe_contracts": {
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
       "name": "test_refresh_uses_only_read_only_status_and_probe_contracts",
@@ -31785,7 +31865,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -31800,7 +31880,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 124
     },
     "tests/test_jss_project_interpreter_chat.py::test_connect_and_resume_select_project_interpreter": {
       "path": "tests/test_jss_project_interpreter_chat.py",
@@ -32204,16 +32284,46 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_nonmodal_dialog_does_not_spawn_automatically",
       "purpose": "Nonmodal dialog does not spawn automatically",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
       "line": 61
+    },
+    "tests/test_jss_service_status_dialog.py::test_refresh_keeps_last_good_evidence_and_uptime": {
+      "path": "tests/test_jss_service_status_dialog.py",
+      "name": "test_refresh_keeps_last_good_evidence_and_uptime",
+      "purpose": "Refresh keeps last good evidence and uptime",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 95
+    },
+    "tests/test_jss_service_status_dialog.py::test_model_listing_does_not_erase_fresh_generation_for_same_model": {
+      "path": "tests/test_jss_service_status_dialog.py",
+      "name": "test_model_listing_does_not_erase_fresh_generation_for_same_model",
+      "purpose": "Model listing does not erase fresh generation for same model",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
     },
     "tests/test_jss_service_table_readiness.py::test_table_does_not_confirm_incomplete_identity": {
       "path": "tests/test_jss_service_table_readiness.py",
@@ -32377,6 +32487,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 79
+    },
+    "tests/test_jss_supervisor_shutdown_gate.py::test_confirmed_inactive_requires_full_supervisor_status": {
+      "path": "tests/test_jss_supervisor_shutdown_gate.py",
+      "name": "test_confirmed_inactive_requires_full_supervisor_status",
+      "purpose": "Confirmed inactive requires full supervisor status",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 5
     },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
@@ -33031,6 +33156,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 11
+    },
+    "tests/test_jss_windows_version_resource_contract.py::test_windows_studio_branding_is_for_the_frozen_app_only": {
+      "path": "tests/test_jss_windows_version_resource_contract.py",
+      "name": "test_windows_studio_branding_is_for_the_frozen_app_only",
+      "purpose": "Windows studio branding is for the frozen app only",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 5
     },
     "tests/test_knowledge_fabric.py::test_selective_retrieval_reuses_hybrid_fts5": {
       "path": "tests/test_knowledge_fabric.py",

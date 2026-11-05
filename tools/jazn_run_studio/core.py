@@ -510,6 +510,12 @@ def daemon_evidence(data: dict[str, Any], *, expected_root: Path | None = None) 
         "daemon_version": daemon_version,
         "pid": daemon.get("pid"),
         "instance_id": daemon.get("daemon_instance_id"),
+        "uptime_seconds": next(
+            (v for v in (ping.get("uptime_seconds"), daemon.get("uptime_seconds"),
+                         data.get("uptime_seconds"))
+             if isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0),
+            None,
+        ),
         "endpoint_reachable": daemon.get("endpoint_reachable") is True,
         "process_identity_confirmed": daemon.get("process_identity_confirmed") is True,
         "endpoint_identity_matches": daemon.get("endpoint_identity_matches") is True,
@@ -1114,6 +1120,19 @@ class Controller:
             if job is None or job.done.is_set() or job.proc is None or job.proc.poll() is not None:
                 raise StudioError("Brak aktywnego procesu należącego do tego Studio")
             job.cancel.set()
+
+    def force_kill_owned(self, key: str) -> None:
+        """Emergency kill of a tracked JSS service handle, never a PID lookup."""
+        if key not in {"service:ollama", "service:gateway"}:
+            raise StudioError("Tylko procesy usług uruchomione przez to Studio")
+        with self.lock:
+            job = self.jobs.get(key)
+            if job is None or job.done.is_set() or job.proc is None or job.proc.poll() is not None:
+                raise StudioError("Brak aktywnego procesu należącego do tego Studio")
+            proc = job.proc
+            job.cancel.set()
+        proc.kill()
+        self.emit(key, "log", "Wymuszono zakończenie własnego procesu JSS; status potwierdzi worker")
 
     def restart_service(self, service: str) -> None:
         key = "service:" + service

@@ -7,6 +7,8 @@ param(
     [string[]]$Profile = @(),
     [string]$Bundle = "",
     [switch]$Online,
+    [ValidateSet("project", "managed")]
+    [string]$Layout = "project",
     [switch]$Yes,
     [switch]$Json
 )
@@ -28,6 +30,7 @@ foreach ($name in $Profile) {
 }
 if (-not [string]::IsNullOrWhiteSpace($Bundle)) { $ArgsList += @("--bundle", $Bundle) }
 if ($Online) { $ArgsList += "--online" }
+$ArgsList += @("--layout", $Layout)
 if ($Yes) { $ArgsList += "--yes" }
 if ($Json) { $ArgsList += "--json" }
 

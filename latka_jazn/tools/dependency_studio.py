@@ -82,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--profile", action="append")
     child.add_argument("--python-executable")
     child.add_argument("--environment-root", type=Path)
+    child.add_argument("--layout", choices=("project", "managed"), default="managed")
     child.add_argument("--offline", action="store_true")
     child.add_argument("--dry-run", action="store_true")
 
@@ -136,7 +137,7 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         if not ns.offline: raise DependencyStudioError("Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse.")
         profiles = _profile_list(ns.profile, default=activation_profile_names(root))
         bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(root, profiles=profiles, wheelhouse_root=wheelhouse)
-        payload = install_bundle(root, bundle, python_executable=ns.python_executable, environments_root=ns.environment_root, offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run)); payload["command"] = "install"
+        payload = install_bundle(root, bundle, python_executable=ns.python_executable, environments_root=ns.environment_root, project_venv=ns.layout == "project", offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run)); payload["command"] = "install"
         return (0 if payload.get("ok") else 6), payload
     if ns.command == "benchmark":
         payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload

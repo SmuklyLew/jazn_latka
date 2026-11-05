@@ -6,7 +6,7 @@ import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
-from typing import Callable
+from typing import Any, Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QDesktopServices, QIcon, QKeySequence, QPainter, QPixmap
@@ -44,6 +44,8 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         super().__init__()
         self.core = core
         self.smoke = smoke
+        self._shutdown_choice: str | None = None
+        self._shutdown_stop_job: Any = None
         # One dock in production; preserve the legacy smoke-test route.
         self.unified_operator_mode = not smoke
         from .core import load_settings
@@ -273,6 +275,74 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.show_log(key)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        # Closing a GUI does not implicitly authorize stopping persistent Jaźń.
+        if not self.smoke and self._shutdown_choice is None:
+            box = QMessageBox(self)
+            box.setWindowTitle("Zamykanie Jaźni Studio")
+            box.setText("Co chcesz zakończyć?")
+            box.setInformativeText(
+                "Zamknięcie JSS pozostawi persistent daemon aktywny. "
+                "Zatrzymanie daemona użyje kanonicznego polecenia wyłącznie "
+                "dla tej instancji. Współdzielone procesy pozostaną nietknięte."
+            )
+            only_gui = box.addButton("Zamknij tylko JSS", QMessageBox.ButtonRole.AcceptRole)
+            stop_runtime = box.addButton(
+                "Zatrzymaj daemon i zamknij JSS", QMessageBox.ButtonRole.DestructiveRole
+            )
+            box.addButton("Anuluj", QMessageBox.ButtonRole.RejectRole)
+            box.setDefaultButton(only_gui)
+            box.exec()
+            choice = box.clickedButton()
+            if choice == only_gui:
+                self._shutdown_choice = "gui"
+            elif choice == stop_runtime:
+                if self.core.chat is not None and self.core.chat.pending:
+                    QMessageBox.warning(
+                        self, "Nierozstrzygnięta tura",
+                        "Najpierw rozstrzygnij poprzedni request_id. "
+                        "Nie zatrzymano daemona ani nie ponowiono wiadomości."
+                    )
+                    event.ignore()
+                    return
+                if self.supervisor_observation.get("inactive_confirmed") is not True:
+                    QMessageBox.warning(
+                        self, "Supervisor niezweryfikowany lub aktywny",
+                        "Zanim zatrzymasz daemon, potwierdź osobno nieaktywny "
+                        "supervisor tej instancji. W przeciwnym razie daemon "
+                        "może zostać uruchomiony ponownie."
+                    )
+                    event.ignore()
+                    return
+                try:
+                    self._shutdown_stop_job = self.core.start_action("stop")
+                except (OSError, ValueError, StudioError) as exc:
+                    QMessageBox.warning(self, "Stop odrzucony", self.core.redactor.text(str(exc)))
+                    event.ignore()
+                    return
+                self._shutdown_choice = "runtime"
+                event.ignore()
+                QTimer.singleShot(250, self.close)
+                return
+            else:
+                event.ignore()
+                return
+        if self._shutdown_choice == "runtime":
+            job = self._shutdown_stop_job
+            if job is None or not job.done.is_set():
+                event.ignore()
+                QTimer.singleShot(250, self.close)
+                return
+            if job.state != "succeeded":
+                self._shutdown_choice = None
+                self._shutdown_stop_job = None
+                QMessageBox.warning(
+                    self, "Zatrzymanie niepotwierdzone",
+                    "Nie potwierdzono zakończenia daemona. JSS pozostaje otwarte; "
+                    "sprawdź log i status. Nie używaj przypadkowego PID."
+                )
+                event.ignore()
+                return
+            self._shutdown_choice = "runtime_stopped"
         if not self.local_acceptance_panel.shutdown():
             event.ignore()
             QTimer.singleShot(100, self.close)
@@ -286,12 +356,6 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
                 event.ignore()
                 return
         if not self.smoke and not self.configuration_panel.may_discard():
-            event.ignore()
-            return
-        with self.core.lock:
-            active = any(not j.done.is_set() for j in self.core.jobs.values())
-        if active and not self.core.closed and not self.smoke and QMessageBox.question(self, "Zamknięcie Studio",
-                "Zakończyć zadania i procesy uruchomione przez Studio? Daemon jest zarządzany osobną komendą runtime.") != QMessageBox.StandardButton.Yes:
             event.ignore()
             return
         # The interactive terminal is a separate operator-owned subprocess,
@@ -322,6 +386,8 @@ def run_window(core: Controller, *, smoke: bool = False) -> int:
     app = QApplication.instance() or QApplication([])
     if not isinstance(app, QApplication):
         raise StudioError("Istniejąca instancja Qt nie jest aplikacją GUI")
+    app.setApplicationName("JaznRunStudio")
+    app.setApplicationDisplayName("Jaźń — Serce Systemu")
     splash = None
     if not smoke:
         from .workbench_theme import workbench_colors

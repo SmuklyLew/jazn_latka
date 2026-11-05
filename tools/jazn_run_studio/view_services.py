@@ -60,6 +60,12 @@ class ServiceViewMixin:
                 for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
                     action = menu.addAction(label)
                     action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
+            if service in {"ollama", "gateway"}:
+                emergency = menu.addAction("Wymuś zakończenie własnego procesu")
+                emergency.triggered.connect(
+                    lambda _checked=False, s=service:
+                    self.guard(lambda: self.service(s, "force_stop"))
+                )
             config = menu.addAction("Konfiguracja")
             config.triggered.connect(lambda: self.navigate("Ustawienia"))
             logs = menu.addAction("Logi")
@@ -167,6 +173,22 @@ class ServiceViewMixin:
 
 
     def service(self: Any, service: str, op: str) -> None:
+        # Emergency force-stop is restricted to handles owned by this JSS;
+        # keep the operation in the existing ServiceViewMixin method contract.
+        if op == "force_stop":
+            if service not in {"ollama", "gateway"}:
+                raise StudioError("Nie wolno wymuszać zakończenia tej usługi z JSS")
+            if QMessageBox.question(
+                self, "Awaryjne zakończenie procesu",
+                "Natychmiast zakończyć wyłącznie proces " + service
+                + " uruchomiony przez JSS? Nie dotyczy współdzielonej Ollamy "
+                  "ani daemona Jaźni. Niezapisane dane mogą zostać utracone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            ) != QMessageBox.StandardButton.Yes:
+                return
+            self.core.force_kill_owned("service:" + service)
+            return
         if service == "runtime":
             if op in {"stop", "restart"} and QMessageBox.question(self, "Runtime Jaźni", "Potwierdzić kanoniczny " + op + " runtime Jaźni?") != QMessageBox.StandardButton.Yes:
                 return
@@ -259,4 +281,5 @@ class ServiceViewMixin:
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
-        self.service_status_dialog.request_refresh()
+        # Merely opening this window must not clear evidence or start a probe.
+        self.service_status_dialog.render_statuses()
