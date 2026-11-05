@@ -8,7 +8,7 @@ import time
 import pytest
 
 pytest.importorskip("PySide6")
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QEventLoop, QTimer
 from PySide6.QtWidgets import QApplication, QFileDialog
 
 from tools.jazn_run_studio.tpa_reports import utc
@@ -85,12 +85,25 @@ def test_manual_commit_is_background_and_adopted_only_after_ack(manual_panel, tm
         assert not panel.observe_button.isEnabled() and not panel.proof_button.isEnabled()
         assert panel.shutdown() is False
     finally:
+        # The worker ACK is queued to Qt's GUI thread. A real nested event
+        # loop gives that notification a fair chance to arrive; repeated
+        # processEvents() calls are not a reliable cross-thread wait on Qt.
+        # Do not infer success merely because the worker was unblocked.
+        completion_loop = QEventLoop()
+        timeout = QTimer()
+        timeout.setSingleShot(True)
+        lane = panel.manual_io
+        lane.settled.connect(completion_loop.quit)
+        timeout.timeout.connect(completion_loop.quit)
+        timeout.start(5000)
         release.set()
-        deadline = time.monotonic() + 5
-        while getattr(panel, "manual_io", None) is not None and panel.manual_io.pending and time.monotonic() < deadline:
-            app.processEvents()
-            time.sleep(0.005)
-        timer.stop()
+        try:
+            if lane.pending:
+                completion_loop.exec()
+        finally:
+            timeout.stop()
+            lane.settled.disconnect(completion_loop.quit)
+            timer.stop()
     assert not panel.manual_io.pending
     assert report["results"][0] is held_row
     assert panel.observe_button.isEnabled() and panel.proof_button.isEnabled()
