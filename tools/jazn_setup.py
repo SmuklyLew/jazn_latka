@@ -133,6 +133,12 @@ def _probe_venv(root: Path) -> dict[str, Any]:
     return status
 
 
+def _operator_python(root: Path) -> Path:
+    """Use only the verified project's .venv or a system base interpreter."""
+    current = _probe_venv(root)
+    return _venv_python(root) if current["ready"] else _base_python()
+
+
 def _read_declarations(root: Path) -> dict[str, Any]:
     data = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
     result: dict[str, Any] = {}
@@ -148,7 +154,7 @@ def _read_declarations(root: Path) -> dict[str, Any]:
 
 def _dependency_studio(root: Path, operation: str, *options: str, timeout: int = 1800) -> dict[str, Any]:
     command = [
-        str(_base_python()), "-X", "utf8", "-m",
+        str(_operator_python(root)), "-X", "utf8", "-m",
         "latka_jazn.tools.dependency_studio",
         "--root", str(root), "--json", operation, *options,
     ]
@@ -168,7 +174,7 @@ def _dependency_studio(root: Path, operation: str, *options: str, timeout: int =
 
 def _managed_status(root: Path) -> dict[str, Any]:
     command = [
-        str(_base_python()), "-X", "utf8", "-c",
+        str(_operator_python(root)), "-X", "utf8", "-c",
         "import json,sys; from latka_jazn.dependencies.runtime import managed_environment_status;"
         "print(json.dumps(managed_environment_status(sys.argv[1])))", str(root),
     ]
@@ -232,8 +238,10 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return {
             "ok": True, "mode": "doctor", "root": str(root), "target": target,
             "local_venv": _probe_venv(root), "core_declarations": _read_declarations(root),
-            "managed_environment": _managed_status(root),
-            "note": "Read-only inspection. Does not prove daemon/Ollama/MCP readiness.",
+            "managed_environment": (managed := _managed_status(root)),
+            "environment_ready": bool(managed.get("ready")),
+            "status": "ready" if managed.get("ready") else "requires_setup",
+            "note": "Inspection succeeded; environment_ready is independent of daemon/Ollama/MCP.",
         }
     if args.mode == "venv":
         _confirm(args.yes, False)
@@ -325,7 +333,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
-        print("Jaźń setup:", "PASS" if result.get("ok") else "BLOCKED")
+        label = ("INSPECTED" if args.mode in {"doctor", "preflight"} and result.get("ok")
+                 else "PASS" if result.get("ok") else "BLOCKED")
+        print("Jaźń setup:", label)
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return code
 
