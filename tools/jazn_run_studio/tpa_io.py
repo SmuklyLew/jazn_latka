@@ -32,6 +32,12 @@ class _Work(QRunnable):
 
 class SerialIO(QObject):
     """Execute ordered immutable work inputs; callbacks stay on the Qt thread."""
+
+    # Emitted on the owner (GUI) thread only after the last persisted
+    # operation's ACK/failure handler has run and the lane is truly idle.
+    # Callers can await this signal in a Qt event loop instead of polling
+    # processEvents(), which may starve queued cross-thread notifications.
+    settled = Signal()
     def __init__(self, parent: QObject):
         super().__init__(parent)
         self.queue: deque = deque()
@@ -82,6 +88,8 @@ class SerialIO(QObject):
                 assert done is not None
                 done(payload["value"])
             self._pump()
+            if not self.pending:
+                self.settled.emit()
         finally:
             if completed_job is not None:
                 # Deletion via the sender's event loop, never synchronously in
