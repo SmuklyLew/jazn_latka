@@ -157,6 +157,7 @@ class ChatViewMixin:
             self.chat_progress.hide()
             self.send_button.setEnabled(True)
             return
+        assert chat is not None
         self.send_button.setEnabled(False)
         self._chat_progress_tick += 1
         dots = "." * (1 + self._chat_progress_tick % 3)
