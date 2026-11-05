@@ -1,0 +1,7 @@
+{
+  "source_path": "tests/test_mcp_task_sqlite_journal_policy.py",
+  "source_commit": "7ddc57e5ac2ee0d08e3f701e1654b60d003e9bd1",
+  "source_version": "16.3.25.5.116.0.34.94.6.97",
+  "sha256": "1262b7efeff1d98565a79de746f7e0afb61e87d3ee7d1a52491d655e43913e82",
+  "reason": "Scope Windows URI namespace simulation to the owning module instead of global pathlib"
+}

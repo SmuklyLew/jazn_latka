@@ -48,8 +48,15 @@ def test_task_store_keeps_wal_available_on_fixed_library(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("uri", [database.readonly_sqlite_uri, database.writable_sqlite_uri])
 def test_extended_windows_path_is_not_encoded_as_uri_authority(monkeypatch, uri):
-    from pathlib import Path
-    # Simulate the namespace returned by Windows Path.resolve; this also
-    # protects Linux CI without requiring a Windows filesystem there.
-    monkeypatch.setattr(Path, "resolve", lambda self: Path("//?/D:/synthetic folder/task.sqlite3"))
+    # Scope the simulated Windows namespace to the SQLite module. Patching
+    # pathlib.Path.resolve globally would also redirect durable pytest receipts
+    # emitted before fixture teardown, correctly tripping their path guard.
+    class NamespacePath:
+        def __init__(self, value):
+            pass
+        def expanduser(self):
+            return self
+        def resolve(self):
+            return "//?/D:/synthetic folder/task.sqlite3"
+    monkeypatch.setattr(database, "Path", NamespacePath)
     assert uri("ignored").startswith("file:D:/synthetic%20folder/task.sqlite3?mode=")
