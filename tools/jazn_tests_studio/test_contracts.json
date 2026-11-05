@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.93",
+  "system_version": "16.3.25.5.116.0.34.94.6.94",
   "active_definition_count": 3208,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -27868,13 +27868,13 @@
       "path": "tests/test_jazn_run_studio_local_acceptance.py",
       "name": "test_qt_acceptance_page_renders_without_live_runtime",
       "purpose": "Qt acceptance page renders without live runtime",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 17,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
