@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "d910cad8ab9ad38c20469bab1fde36f452b8497e",
+  "base_merge_commit": "10f5962360e3e97ae706df0bb47ea5b6180a4d4b",
   "base_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "commit_date": "2026-11-06T14:35:34Z",
+  "commit_date": "2026-11-06T17:39:31+01:00",
   "dirty": false,
-  "generated_at_utc": "2026-11-06T14:35:34+00:00",
+  "generated_at_utc": "2026-11-06T16:39:31+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "bbce7fe8f405c20a43a0276c8f39e242b8b7a220",
+  "git_tree_sha": "e3980fbde6eb08174834c46452e721b593dd048f",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "d910cad8ab9ad38c20469bab1fde36f452b8497e",
+    "source_commit": "10f5962360e3e97ae706df0bb47ea5b6180a4d4b",
     "source_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "d910cad8ab9ad38c20469bab1fde36f452b8497e",
+  "source_commit": "10f5962360e3e97ae706df0bb47ea5b6180a4d4b",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "tag": null,
