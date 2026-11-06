@@ -244,7 +244,10 @@ class ChatViewMixin:
             from latka_jazn.core.conversation_state_store import ConversationStateStore
             try:
                 projection = ConversationStateStore(self.core.root).load_context_projection(
-                    session_id, max_turns=80, max_chars=160000)
+                    # UI history must not use the model's small context
+                    # budget to truncate visible user/assistant messages.
+                    # Only pagination (80 whole turns) limits this view.
+                    session_id, max_turns=80, max_chars=1_000_000_000)
             except (OSError, ValueError, RuntimeError):
                 projection = {"session_id": session_id, "turns": [], "error": "history_unavailable"}
             self._chat_history_loader.arrived.emit(session_id, generation, projection)
