@@ -39,7 +39,7 @@ INSTALL_LINKS = {
 
 class DashboardViewMixin:
     def _dashboard(self: Any) -> None:
-        layout = self.page("Pulpit", "JAŹŃ / STARTER    •    Sprawdź środowisko, wybierz usługę i obserwuj wynik.")
+        layout = self.page("Pulpit", "Stan systemu i bezpieczne przejście do rozmowy. Uruchamianie oraz zatrzymywanie procesów znajdziesz wyłącznie w Usługi i procesy.")
         self.button("Kreator konfiguracji…", self.open_setup, layout)
         self.dashboard_summary: dict[str, QLabel] = {}
         self.quick_runtime_ready = False
@@ -51,11 +51,12 @@ class DashboardViewMixin:
         self.quick_start_status.setWordWrap(True)
         layout.addWidget(self.quick_start_status)
         steps = QHBoxLayout()
-        self.button("1. Uruchom runtime", lambda: self.action("start"), steps)
-        self.button("Sprawdź runtime", lambda: self.action("status"), steps)
-        self.button("2. Uruchom / sprawdź Ollama", self.core.ensure_ollama, steps)
-        self.button("Sprawdź generację", lambda: self.core.probe("ollama_generate"), steps)
+        self.button("1. Sprawdź runtime (odczyt)", lambda: self.action("status"), steps)
+        self.button("2. Sprawdź generację Ollama", lambda: self.core.probe("ollama_generate"), steps)
+        self.button("Stany usług — monitor", self.open_service_status, steps)
         layout.addLayout(steps)
+        self.button("Sterowanie procesami (Start / Stop / Restart) — osobny panel",
+                    lambda: self.navigate("Usługi i procesy"), layout)
         self.button("Sprawdź gotowość lokalną (bez uruchamiania usług)",
                     self.check_local_readiness, layout)
         chat_steps = QHBoxLayout()
@@ -99,7 +100,7 @@ class DashboardViewMixin:
             layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
-        self.button("Stan usług", self.refresh_services, row)
+        self.button("Stany usług — monitor", self.open_service_status, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))
