@@ -334,25 +334,61 @@ def inspect_current_requirements(root: Path | str, requirements: Sequence[str]) 
     return statuses
 
 
-def default_local_python_root(root: Path | str) -> Path:
-    """Return host-level mutable dependency state, never a directory inside active_root."""
-    from latka_jazn.core.runtime_root import workspace_runtime_path
+def root_local_resources_enabled(root: Path | str) -> bool:
+    """Opt into ROOT-local installation state without moving a legacy daemon.
 
+    Fresh SYSTEM releases ship ROOT/local_resources/README.md; existing
+    installations keep their host workspace until an explicit JSS preparation.
+    """
     project_root = Path(root).expanduser().resolve()
+    resources = project_root / "local_resources"
+    if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
+        raise DependencyStudioError("unsafe_root_local_resources_link")
+    return resources.is_dir()
+
+
+def default_local_python_root(root: Path | str) -> Path:
+    project_root = Path(root).expanduser().resolve()
+    if root_local_resources_enabled(project_root):
+        return project_root / "local_resources" / "python"
+    from latka_jazn.core.runtime_root import workspace_runtime_path
     return workspace_runtime_path(project_root) / "local_resources" / "python"
 
 
 def default_wheelhouse_root(root: Path | str) -> Path:
+    project_root = Path(root).expanduser().resolve()
+    if root_local_resources_enabled(project_root):
+        return project_root / "local_resources" / "wheelhouse"
     return default_local_python_root(root) / "wheelhouse"
 
 
 def default_environments_root(root: Path | str) -> Path:
     explicit = os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS")
-    return Path(explicit).expanduser().resolve() if explicit else default_local_python_root(root) / "environments"
+    if explicit:
+        return Path(explicit).expanduser().resolve()
+    project_root = Path(root).expanduser().resolve()
+    if root_local_resources_enabled(project_root):
+        return project_root / ".venv"
+    return default_local_python_root(root) / "environments"
 
 
 def environment_marker_path(root: Path | str) -> Path:
     return default_local_python_root(root) / ENVIRONMENT_MARKER_NAME
+
+
+def legacy_environment_marker_path(root: Path | str) -> Path:
+    from latka_jazn.core.runtime_root import workspace_runtime_path
+    project_root = Path(root).expanduser().resolve()
+    return workspace_runtime_path(project_root) / "local_resources" / "python" / ENVIRONMENT_MARKER_NAME
+
+
+def existing_environment_marker_path(root: Path | str) -> Path:
+    """Prefer verified new ROOT state, preserve legacy state for read-only migration."""
+    primary = environment_marker_path(root)
+    if primary.is_file():
+        return primary
+    legacy = legacy_environment_marker_path(root)
+    return legacy if legacy.is_file() else primary
 
 
 def current_platform_alias() -> str:
