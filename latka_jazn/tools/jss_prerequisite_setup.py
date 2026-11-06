@@ -45,6 +45,18 @@ def root_paths(root: str | Path) -> dict[str, Path]:
     }
 
 
+def prepare_resources(root: str | Path, *, approved: bool) -> dict[str, Any]:
+    if not approved:
+        raise ProvisioningError("explicit_operator_approval_required")
+    paths = root_paths(root)
+    for name in ("resources", "wheelhouse", "python", "ollama", "models", "nlp", "manifests"):
+        target = paths[name]
+        if target.is_symlink() or (hasattr(target, "is_junction") and target.is_junction()):
+            raise ProvisioningError("local_resources_link_not_allowed")
+        target.mkdir(parents=True, exist_ok=True)
+    return {"ok": True, "state": "root_resources_prepared", "resources": str(paths["resources"])}
+
+
 def venv_python(root: str | Path) -> Path:
     folder = root_paths(root)["venv"]
     return folder / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
@@ -97,6 +109,8 @@ def prepare_venv(root: str | Path, *, base_python: str, approved: bool) -> dict[
     paths = root_paths(root)
     target = paths["venv"]
     target_python = venv_python(root)
+    if target.is_symlink() or (hasattr(target, "is_junction") and target.is_junction()):
+        raise ProvisioningError("root_venv_link_not_allowed")
     if target.exists():
         if not (target / "pyvenv.cfg").is_file() or not python_314(target_python):
             raise ProvisioningError("existing_root_venv_invalid_manual_recovery_required")
@@ -250,6 +264,54 @@ def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool) -> dict[str, Any]
     return {"ok": True, "model": model, "state": "downloaded"}
 
 
+def install_python_windows(*, approved: bool) -> dict[str, Any]:
+    if not approved:
+        raise ProvisioningError("explicit_operator_approval_required")
+    if os.name != "nt":
+        raise ProvisioningError("windows_only")
+    winget = shutil.which("winget")
+    if not winget:
+        raise ProvisioningError("winget_missing_use_official_python_installer")
+    result = subprocess.run([
+        winget, "install", "--id", "Python.Python.3.14", "--exact",
+        "--accept-source-agreements", "--accept-package-agreements",
+    ], capture_output=True, timeout=1200, check=False)
+    if result.returncode:
+        raise ProvisioningError("python_winget_install_failed")
+    return {"ok": True, "state": "installer_completed_recheck_required"}
+
+
+def start_ollama(*, approved: bool, launch: str = "cli") -> dict[str, Any]:
+    if not approved:
+        raise ProvisioningError("explicit_operator_approval_required")
+    if ollama_api("GET", "/api/tags", timeout=2).get("ok") is True:
+        return {"ok": True, "state": "already_running"}
+    executable = detect_ollama()
+    if not executable:
+        raise ProvisioningError("ollama_not_installed")
+    if launch not in {"cli", "app"}:
+        raise ProvisioningError("unsupported_ollama_launch_mode")
+    if launch == "app":
+        if os.name != "nt":
+            raise ProvisioningError("ollama_app_windows_only")
+        # Ollama's Windows GUI is independent of the CLI server process.
+        candidate = Path(executable).with_name("Ollama app.exe")
+        if not candidate.is_file():
+            raise ProvisioningError("ollama_app_executable_missing")
+        command = [str(candidate)]
+    else:
+        command = [executable, "serve"]
+    flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL, creationflags=flags)
+    except OSError as exc:
+        raise ProvisioningError("ollama_process_start_failed") from exc
+    # Starting a process is not evidence of API readiness.
+    return {"ok": True, "state": "spawned_unverified", "pid": process.pid,
+            "requires_followup_api_check": True}
+
+
 def install_ollama_windows(*, approved: bool) -> dict[str, Any]:
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
@@ -272,6 +334,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("inspect")
+    prepare = sub.add_parser("prepare-resources")
+    prepare.add_argument("--yes", action="store_true")
     for name in ("prepare-venv", "download-deps"):
         operation = sub.add_parser(name)
         operation.add_argument("--python", required=True)
@@ -279,15 +343,23 @@ def main(argv: list[str] | None = None) -> int:
     install = sub.add_parser("install-offline")
     install.add_argument("--bundle", required=True)
     install.add_argument("--yes", action="store_true")
-    for name in ("install-ollama", "pull-model"):
+    for name in ("install-python", "install-ollama", "start-ollama", "pull-model"):
         operation = sub.add_parser(name)
         operation.add_argument("--yes", action="store_true")
         if name == "pull-model":
             operation.add_argument("--model", default=DEFAULT_MODEL)
+        if name == "start-ollama":
+            operation.add_argument("--launch", choices=("cli", "app"), default="cli")
     args = parser.parse_args(argv)
     try:
         if args.command == "inspect":
             data = inspect(args.root)
+        elif args.command == "prepare-resources":
+            data = prepare_resources(args.root, approved=args.yes)
+        elif args.command == "install-python":
+            data = install_python_windows(approved=args.yes)
+        elif args.command == "start-ollama":
+            data = start_ollama(approved=args.yes, launch=args.launch)
         elif args.command == "prepare-venv":
             data = prepare_venv(args.root, base_python=args.python, approved=args.yes)
         elif args.command == "download-deps":
