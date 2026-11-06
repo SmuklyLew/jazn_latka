@@ -1,7 +1,7 @@
 """Nonblocking first-run wizard; uses existing controller and settings owner."""
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 import json
 import shutil
@@ -36,6 +36,8 @@ class SetupWizard(QWizard):
                  completed: Callable[[str], None], parent: QWidget | None = None):
         super().__init__(parent)
         self.core, self.save, self.completed = core, save, completed
+        self._original_python_setting = core.settings.python
+        self._provisional_python_setting = ""
         self.setWindowTitle("Jaźń — Serce Systemu / Pierwsze uruchomienie")
         self.resize(780, 590)
         self.setButtonText(QWizard.WizardButton.BackButton, "Wstecz")
@@ -360,6 +362,10 @@ class SetupWizard(QWizard):
                 candidate = self.core.root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
                 if candidate.is_file():
                     self.setting_fields["python"].setText(str(candidate))
+                    # In-memory only; the user still explicitly approves
+                    # persistence in the wizard's final configuration step.
+                    self.core.settings = replace(self.core.settings, python=str(candidate))
+                    self._provisional_python_setting = str(candidate)
             if ok and self.provision_command in {"prepare-venv", "install-offline", "download-deps"}:
                 self.retry()
             if ok and self.provision_command in {"pull-model", "start-ollama", "install-ollama"}:
@@ -470,6 +476,9 @@ class SetupWizard(QWizard):
             QMessageBox.warning(self, "Instalacja w toku",
                                 "Zakończ aktualną operację przygotowania środowiska przed zamknięciem kreatora.")
             return
+        if (self._provisional_python_setting
+                and self.core.settings.python == self._provisional_python_setting):
+            self.core.settings = replace(self.core.settings, python=self._original_python_setting)
         self.finished_setup = True
         self.timer.stop()
         # The shared read may finish normally; closing a dialog does not stop
