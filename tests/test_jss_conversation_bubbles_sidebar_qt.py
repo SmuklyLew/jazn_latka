@@ -43,8 +43,12 @@ def test_native_bubbles_have_own_alignment_role_and_timestamp(window) -> None:
     user_row, assistant_row = transcript.bubbles
     assert user_row.objectName() == "jssUserBubbleRow"
     assert assistant_row.objectName() == "jssAssistantBubbleRow"
-    assert user_row.layout().itemAt(0).spacerItem() is not None
-    assert assistant_row.layout().itemAt(1).spacerItem() is not None
+    user_layout, assistant_layout = user_row.layout(), assistant_row.layout()
+    assert user_layout is not None and assistant_layout is not None
+    user_first = user_layout.itemAt(0)
+    assistant_last = assistant_layout.itemAt(1)
+    assert user_first is not None and user_first.spacerItem() is not None
+    assert assistant_last is not None and assistant_last.spacerItem() is not None
     user_header = user_row.findChild(QLabel, "jssBubbleHeader")
     assistant_header = assistant_row.findChild(QLabel, "jssBubbleHeader")
     assert user_header is not None and assistant_header is not None
