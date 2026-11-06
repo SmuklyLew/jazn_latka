@@ -181,9 +181,12 @@ class ChatViewMixin:
         """Metadata only; real message content stays in canonical SYSTEM."""
         if self.core.chat is None:
             return
+        session_id = getattr(self.core.chat, "session_id", None)
+        if not isinstance(session_id, str) or not session_id:
+            return  # Synthetic transports in compatibility tests.
         from .chat_session_catalog import remember_session
         try:
-            remember_session(self.core.root, self.core.chat.session_id)
+            remember_session(self.core.root, session_id)
             self.refresh_local_conversations()
         except (OSError, ValueError, StudioError):
             self._record_chat_diagnostic(
