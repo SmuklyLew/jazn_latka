@@ -265,6 +265,11 @@ memory_rebuild_settings.json
 /latka_jazn/local_resources/
 
 
+# ROOT-local downloaded resources are generated/installed by the operator.
+# Keep the directory documentation, never commit binaries/models or private data.
+/local_resources/*
+!/local_resources/README.md
+
 # ------------------------------------------------------------
 # 17. Local pytest integration state
 # ------------------------------------------------------------
