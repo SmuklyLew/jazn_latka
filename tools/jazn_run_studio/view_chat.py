@@ -9,6 +9,7 @@ import json
 import os
 from dataclasses import asdict, replace
 from pathlib import Path
+from datetime import datetime, timezone
 import queue
 from typing import Callable
 
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
 from .service_status_dialog import ServiceStatusDialog
+from .chat_bubbles import ChatTranscript
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
 
@@ -77,8 +79,7 @@ class ChatViewMixin:
                 "Połączenie i model ▾" if opened else "Połączenie i model ▸"))
         self.chat_controls.hide()
 
-        self.conversation = QPlainTextEdit()
-        self.conversation.setReadOnly(True)
+        self.conversation = ChatTranscript()
         self.conversation.setObjectName("workbenchChatTranscript")
         self.conversation.setAccessibleName("Historia lokalnej rozmowy")
         self.conversation.setPlaceholderText(
@@ -200,7 +201,9 @@ class ChatViewMixin:
             raise StudioError("Najpierw połącz czat")
         text = self.message.toPlainText()
         request = self.core.chat.send(text)
-        self.conversation.appendPlainText("Ty:\n" + text + "\n")
+        self.conversation.append_message(
+            "user", text, timestamp=datetime.now(timezone.utc),
+            timestamp_kind="wysłano")
         self.message.clear()
         self._record_chat_diagnostic("Oczekiwanie na wynik: " + request)
         self._begin_chat_activity(request, "Jaźń obsługuje wiadomość")
