@@ -252,7 +252,16 @@ class ServiceViewMixin:
         if self.service_status_dialog is None:
             def quiet_readonly_refresh() -> None:
                 try:
-                    self.refresh_services()
+                    # Only read-only status and lightweight passive HTTP
+                    # observations. Never start Ollama, MCP or the daemon,
+                    # and never generate a model answer in the monitor.
+                    self.core.start_action("status")
+                    if self.supervisor_observation.get("active") is not False:
+                        self.core.start_action("supervisor")
+                    self.core.probe("ollama", observe_only=True)
+                    self.core.probe("gateway", observe_only=True)
+                    if self.core.settings.cloudflare_url:
+                        self.core.probe("cloudflare", observe_only=True)
                 except (OSError, ValueError, RuntimeError):
                     # Timer-driven observation cannot produce recurring
                     # modal dialogs or trigger a lifecycle fallback.
