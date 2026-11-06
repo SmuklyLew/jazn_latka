@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 import json
+import shutil
 import sys
 from typing import Callable
 
@@ -97,7 +98,11 @@ class SetupWizard(QWizard):
         pull_models = QPushButton("Pobierz wybrane modele Ollama")
         pull_models.clicked.connect(lambda _checked=False: self.provision("pull-model"))
         provision_layout.addWidget(pull_models)
-        optional.addWidget(provisioning)
+        provision_scroll = QScrollArea()
+        provision_scroll.setWidgetResizable(True)
+        provision_scroll.setMinimumHeight(180)
+        provision_scroll.setWidget(provisioning)
+        optional.addWidget(provision_scroll, 1)
 
         for key, label in (("ollama", "Sprawdź endpoint i modele Ollama"), ("gateway", "Sprawdź lokalny MCP")):
             button = QPushButton(label)
@@ -208,6 +213,7 @@ class SetupWizard(QWizard):
         self.provision_process: QProcess | None = None
         self.provision_buffer = ""
         self.provision_command = ""
+        self.provision_native = False
         self.provision_remaining_models: list[str] = []
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.poll)
@@ -266,12 +272,21 @@ class SetupWizard(QWizard):
         self._start_provision_process(command, extra)
 
     def _start_provision_process(self, command: str, extra: list[str]) -> None:
+        native_winget = False
         try:
             python = self._setup_python()
         except StudioError as exc:
-            self.provision_result.setText(self.core.redactor.text(str(exc)))
-            return
+            if command in {"install-python", "install-ollama"} and sys.platform == "win32":
+                python = shutil.which("winget") or ""
+                native_winget = bool(python)
+            else:
+                self.provision_result.setText(self.core.redactor.text(str(exc)))
+                return
+            if not native_winget:
+                self.provision_result.setText("Brak Pythona i WinGet. Potrzebny oficjalny bootstrap SYSTEM.")
+                return
         self.provision_command = command
+        self.provision_native = native_winget
         self.provision_buffer = ""
         process = QProcess(self)
         process.setWorkingDirectory(str(self.core.root))
@@ -282,12 +297,17 @@ class SetupWizard(QWizard):
             lambda _error: self.provision_result.setText("Nie udało się uruchomić instalatora JSS.")
         )
         self.provision_process = process
-        arguments = [
-            "-X", "utf8", "-m", "latka_jazn.tools.jss_prerequisite_setup",
-            "--root", str(self.core.root), command, *extra,
-        ]
-        if command != "inspect":
-            arguments.append("--yes")
+        if native_winget:
+            package = "Python.Python.3.14" if command == "install-python" else "Ollama.Ollama"
+            arguments = ["install", "--id", package, "--exact",
+                         "--accept-source-agreements", "--accept-package-agreements"]
+        else:
+            arguments = [
+                "-X", "utf8", "-m", "latka_jazn.tools.jss_prerequisite_setup",
+                "--root", str(self.core.root), command, *extra,
+            ]
+            if command != "inspect":
+                arguments.append("--yes")
         self.provision_result.setText("Trwa operacja: " + command + " (nie zmienia daemona).")
         process.start(python, arguments)
 
@@ -304,7 +324,11 @@ class SetupWizard(QWizard):
             result = json.loads(self.provision_buffer)
         except (ValueError, TypeError):
             result = {}
-        ok = exit_code == 0 and result.get("ok", True) is True
+        ok = exit_code == 0 and (
+            self.provision_native or result.get("ok", True) is True
+        )
+        if self.provision_native and ok:
+            result = {"state": "winget_completed_recheck_required"}
         self.provision_result.setText(
             ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
             + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
@@ -317,6 +341,10 @@ class SetupWizard(QWizard):
             self._start_provision_process("pull-model", ["--model", model])
         else:
             self.provision_remaining_models.clear()
+            if ok and self.provision_command == "install-offline":
+                candidate = self.core.root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+                if candidate.is_file():
+                    self.setting_fields["python"].setText(str(candidate))
             if ok and self.provision_command in {"prepare-venv", "install-offline", "download-deps"}:
                 self.retry()
             if ok and self.provision_command in {"pull-model", "start-ollama", "install-ollama"}:
