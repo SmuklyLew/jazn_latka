@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-  "package_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-  "generated_at_utc": "2026-11-06T17:19:00+00:00",
-  "updated_at_utc": "2026-11-06T17:19:00+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "generated_at_utc": "2026-11-06T17:28:03+00:00",
+  "updated_at_utc": "2026-11-06T17:28:03+00:00",
   "start_file": "run.py",
   "file_count": 3662,
   "static_file_count": 3662,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2972,
-      "sha256": "b45f54a3a12c5fb8d1f1697a45aa449173168cfb1851a791a38bdc0eda5307e2",
+      "sha256": "2f475b51a4332b43ec4905a96a283b86567191c8af6ffb5ca4104eae1f8192d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -500,7 +500,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "9065c9916e56fbce39987744f71abfe9e7bb9f24d7234db5d2481cf5bfc3feb5",
+      "sha256": "4dfba2fb4b82e7ad87a30a200133851fdad961d86830a7b6ae4ee754c83593e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9923,7 +9923,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "171cf6b724602f169e5ded3a66eb14e71a9e8abfc31e824b4e13265b30f244ee",
+      "sha256": "c0e28b224b60a0dd5ccfe320c51b23403dd8bd12d441cfc5d254b869019379d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11425,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24482,
-      "sha256": "69516280e368e174fcece026b525e510d3d4839c5881f16f6b08e4756f75b447",
+      "size_bytes": 24593,
+      "sha256": "c47379370636407d7e010c492ab7d10680590a46c7daac7712db44f864e944a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32756,7 +32756,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2790776,
-      "sha256": "5e6260c1a224e3a1bc76e693e7f54106259c5641a594ec8edeea005a9d4f0b7b",
+      "sha256": "598ac8e32241e96e7410fd1f60d4303ccb497da4660b487330b2ec2a2b079fc3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33413,11 +33413,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
+  "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-    "package_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-    "release_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+    "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+    "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor"
   },
   "legacy_aliases": {
     "version": "release_version"
