@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.76",
-  "active_definition_count": 3154,
+  "active_definition_count": 3155,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31685,6 +31685,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 50
+    },
+    "tests/test_jss_readonly_service_monitor_ui.py::test_absent_optional_mcp_is_observed_without_gui_error_or_replay": {
+      "path": "tests/test_jss_readonly_service_monitor_ui.py",
+      "name": "test_absent_optional_mcp_is_observed_without_gui_error_or_replay",
+      "purpose": "Absent optional mcp is observed without gui error or replay",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
