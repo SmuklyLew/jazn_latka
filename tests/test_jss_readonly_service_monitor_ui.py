@@ -56,3 +56,26 @@ def test_dashboard_has_no_mutating_start_shortcuts(window) -> None:
     assert "self.core.ensure_ollama" not in source
     assert "Sterowanie procesami" in source
     assert "Stany usług — monitor" in source
+
+
+def test_absent_optional_mcp_is_observed_without_gui_error_or_replay(window, monkeypatch) -> None:
+    from tools.jazn_run_studio import probes
+
+    def missing_gateway(_port: str) -> dict:
+        raise ConnectionRefusedError("optional endpoint not running")
+
+    monkeypatch.setattr(probes, "gateway", missing_gateway)
+    previous_chat_state = window.chat_state.text()
+
+    job = window.core.probe("gateway", observe_only=True)
+    assert job.done.wait(5)
+    assert job.state == "succeeded"
+    assert job.error is None
+
+    window.poll()
+    assert window.chat_state.text() == previous_chat_state
+    observed = window.workspace.observations.get("gateway", {})
+    assert observed.get("endpoint_reachable") is False
+    assert observed.get("ready") is False
+    # No daemon/message submission and no auto-launch of optional MCP.
+    assert window.core.chat is None
