@@ -56,7 +56,12 @@ def test_mcp_and_ollama_display_bounded_claims() -> None:
                                      "selected_model_present": True,
                                      "generation_verified": True})[0] == "good"
     assert assess_service("ollama", None, failed=True)[0] == "bad"
-    assert assess_service("mcp", None, failed=True)[0] == "warn"
+    # A missing optional service is only an unverified capability, but an
+    # unexpected failed probe is a real failure and must remain visible.
+    assert assess_service("mcp", None)[0] == "warn"
+    assert assess_service("mcp", None, failed=True)[0] == "bad"
+    assert assess_service("mcp_https", None, failed=True)[0] == "bad"
+    assert assess_service("supervisor", None, failed=True)[0] == "bad"
     assert assess_service("mcp_https", {"endpoint_reachable": True})[0] == "warn"
     assert assess_service("mcp_https", {"endpoint_reachable": True, "ready": True,
                                         "authenticated_mcp_ready": True,
