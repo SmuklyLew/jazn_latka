@@ -294,6 +294,12 @@ class ChatViewMixin:
         if not create and known is not None and known["daemon_url"] != self.core.settings.daemon_url:
             raise StudioError("Rozmowa należy do innego endpointu; nie przełączono sesji")
         client = self.core.chat if self.core.chat is not None else ChatClient(self.core)
+        if (not create and client.session_id == session_id
+                and self._selected_chat_session_id == session_id):
+            # Clicking the current conversation is navigation, not a
+            # dangerous session transition during an in-flight request.
+            self.navigate("Czat lokalny")
+            return
         if not create and known is None and client.session_id != session_id:
             raise StudioError("Rozmowa nie ma zweryfikowanego powiązania z daemonem")
         client.select_session(session_id)
