@@ -292,13 +292,11 @@ class ChatViewMixin:
                       if entry["session_id"] == session_id), None)
         if not create and known is not None and known["daemon_url"] != self.core.settings.daemon_url:
             raise StudioError("Rozmowa należy do innego endpointu; nie przełączono sesji")
-        if not create and known is None:
-            current_sid = self.core.chat.session_id if self.core.chat is not None else None
-            if current_sid != session_id:
-                raise StudioError("Rozmowa nie ma zweryfikowanego powiązania z daemonem")
-        if self.core.chat is None:
-            self.core.chat = ChatClient(self.core)
-        self.core.chat.select_session(session_id)
+        client = self.core.chat if self.core.chat is not None else ChatClient(self.core)
+        if not create and known is None and client.session_id != session_id:
+            raise StudioError("Rozmowa nie ma zweryfikowanego powiązania z daemonem")
+        client.select_session(session_id)
+        self.core.chat = client
         remember_session(self.core.root, session_id, self.core.chat.daemon_url)
         self._selected_chat_session_id = session_id
         self._end_chat_activity()
