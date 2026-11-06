@@ -30544,11 +30544,11 @@
       "path": "tests/test_jss_activity_containers_qt.py",
       "name": "test_activity_containers_are_distinct_and_do_not_drop_pages",
       "purpose": "Activity containers are distinct and do not drop pages",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -30568,7 +30568,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 25
+      "line": 29
     },
     "tests/test_jss_batch_pytest_qt.py::test_batch_evidence_uses_operator_state_and_exact_interpreter": {
       "path": "tests/test_jss_batch_pytest_qt.py",
