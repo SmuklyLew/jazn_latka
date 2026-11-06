@@ -30,7 +30,8 @@ OWNERS = {
         "select_local_model",
         "connect_local_chat",
         "send_chat",
-        "resume_chat"
+        "resume_chat",
+        "close_failed_chat"
     ],
     "view_studios.py": [
         "_diagnostics",

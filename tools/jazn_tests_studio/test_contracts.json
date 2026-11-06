@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.74",
-  "active_definition_count": 3139,
+  "system_version": "16.3.25.5.116.0.34.94.6.75",
+  "active_definition_count": 3151,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -25075,6 +25075,138 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jazn_chat_terminal_recovery.py::test_only_verified_terminal_failure_can_be_archived": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_only_verified_terminal_failure_can_be_archived",
+      "purpose": "Only verified terminal failure can be archived",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_inconsistent_failure_proof_never_unblocks_chat": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_inconsistent_failure_proof_never_unblocks_chat",
+      "purpose": "Inconsistent failure proof never unblocks chat",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_chat_job_not_found_is_not_evidence_of_failure": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_chat_job_not_found_is_not_evidence_of_failure",
+      "purpose": "Chat job not found is not evidence of failure",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_restart_requires_fresh_failure_proof": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_restart_requires_fresh_failure_proof",
+      "purpose": "Restart requires fresh failure proof",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_terminal_recovery_tombstone_survives_ttl_and_another_persist": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_terminal_recovery_tombstone_survives_ttl_and_another_persist",
+      "purpose": "Terminal recovery tombstone survives ttl and another persist",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_duplicate_submit_after_ttl_is_not_reexecuted": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_duplicate_submit_after_ttl_is_not_reexecuted",
+      "purpose": "Duplicate submit after ttl is not reexecuted",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_jazn_chat_terminal_recovery.py::test_unknown_request_remains_unknown": {
+      "path": "tests/test_jazn_chat_terminal_recovery.py",
+      "name": "test_unknown_request_remains_unknown",
+      "purpose": "Unknown request remains unknown",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 193
+    },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
       "name": "test_worker_aborts_if_file_changes_after_gui_sha_validation",
@@ -31396,7 +31528,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -31411,7 +31543,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 124
     },
     "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
       "path": "tests/test_jss_pytest_evidence_plugin.py",
@@ -47041,6 +47173,101 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 71
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_previous_user_words_are_sent_in_user_role_not_derived_goal": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_previous_user_words_are_sent_in_user_role_not_derived_goal",
+      "purpose": "Previous user words are sent in user role not derived goal",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_recent_three_accepted_turns_override_older_and_derived_history": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_recent_three_accepted_turns_override_older_and_derived_history",
+      "purpose": "Recent three accepted turns override older and derived history",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_legacy_dialogue_pair_is_used_only_without_accepted_projection": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_legacy_dialogue_pair_is_used_only_without_accepted_projection",
+      "purpose": "Legacy dialogue pair is used only without accepted projection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_empty_history_is_not_invented_and_internal_goal_is_not_user_role": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_empty_history_is_not_invented_and_internal_goal_is_not_user_role",
+      "purpose": "Empty history is not invented and internal goal is not user role",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload",
+      "purpose": "History compiler keeps bounded recent turns and suppresses raw payload",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_ollama_chat_experience.py::test_chat_ollama_numbered_model_picker_uses_selected_number": {
       "path": "tests/test_ollama_chat_experience.py",
