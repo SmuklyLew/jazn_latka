@@ -186,7 +186,7 @@ class ChatViewMixin:
             return  # Synthetic transports in compatibility tests.
         from .chat_session_catalog import remember_session
         try:
-            remember_session(self.core.root, session_id)
+            remember_session(self.core.root, session_id, self.core.chat.daemon_url)
             self.refresh_local_conversations()
         except (OSError, ValueError, StudioError):
             self._record_chat_diagnostic(
@@ -216,7 +216,8 @@ class ChatViewMixin:
                 pass
         known = {entry["session_id"] for entry in sessions}
         if current and current not in known:
-            sessions.insert(0, {"session_id": current, "created_at_utc": ""})
+            sessions.insert(0, {"session_id": current, "created_at_utc": "",
+                                "daemon_url": self.core.settings.daemon_url})
         self.chat_session_list.blockSignals(True)
         self.chat_session_list.clear()
         for entry in sessions:
@@ -280,16 +281,25 @@ class ChatViewMixin:
             self._record_chat_diagnostic(
                 "Załadowano wyłącznie najnowsze zweryfikowane tury; starsze pozostają w kanonicznym magazynie.")
 
-    def select_local_conversation(self: Any, session_id: str) -> None:
-        """Switch sessions only after a clean transport shutdown."""
-        from .chat_session_catalog import SESSION_ID, remember_session
+    def select_local_conversation(self: Any, session_id: str,
+                                  *, create: bool = False) -> None:
+        """Never transfer a conversation between daemon endpoint identities."""
+        from .chat_session_catalog import SESSION_ID, remember_session, load_sessions
         from .chat import ChatClient
         if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
             raise StudioError("Nieprawidłowy identyfikator rozmowy")
+        known = next((entry for entry in load_sessions(self.core.root)
+                      if entry["session_id"] == session_id), None)
+        if not create and known is not None and known["daemon_url"] != self.core.settings.daemon_url:
+            raise StudioError("Rozmowa należy do innego endpointu; nie przełączono sesji")
+        if not create and known is None:
+            current_sid = self.core.chat.session_id if self.core.chat is not None else None
+            if current_sid != session_id:
+                raise StudioError("Rozmowa nie ma zweryfikowanego powiązania z daemonem")
         if self.core.chat is None:
             self.core.chat = ChatClient(self.core)
         self.core.chat.select_session(session_id)
-        remember_session(self.core.root, session_id)
+        remember_session(self.core.root, session_id, self.core.chat.daemon_url)
         self._selected_chat_session_id = session_id
         self._end_chat_activity()
         self.refresh_local_conversations()
@@ -299,7 +309,7 @@ class ChatViewMixin:
     def new_local_conversation(self: Any) -> None:
         """New local session ID, never a clone/replay of a pending request."""
         session_id = "studio-" + uuid4().hex
-        self.select_local_conversation(session_id)
+        self.select_local_conversation(session_id, create=True)
         self._record_chat_diagnostic(
             "Nowa rozmowa jest gotowa do połączenia. Nie wysłano żadnej wiadomości.")
 
