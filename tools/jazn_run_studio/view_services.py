@@ -31,9 +31,9 @@ from typing import Any
 
 class ServiceViewMixin:
     def _services(self: Any) -> None:
-        layout = self.page("Usługi i procesy", "Status, własność procesu i gotowość są niezależnymi dowodami. Start/Stop/Restart korzystają z kanonicznych kontrolerów.")
+        layout = self.page("Usługi i procesy", "Panel operatorski: tutaj świadomie sterujesz procesami. Podgląd usług nie wykonuje Start/Stop/Restart; monitor działa w osobnym oknie Stany usług.")
         self.services_table = QTableWidget(6, 6)
-        self.services_table.setHorizontalHeaderLabels(["Usługa", "Status", "PID", "Port", "Readiness", "Akcje"])
+        self.services_table.setHorizontalHeaderLabels(["Usługa", "Status", "PID", "Port", "Readiness", "Podgląd"])
         self.services_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.services_table.horizontalHeader().setStretchLastSection(False)
         self.services_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
@@ -54,19 +54,13 @@ class ServiceViewMixin:
             self.services_table.setCellWidget(row, 1, status)
             for column in (2, 3, 4):
                 self.services_table.setItem(row, column, QTableWidgetItem("—"))
-            button = QPushButton("Akcje ▾")
-            menu = QMenu(button)
-            if service in {"runtime", "ollama", "gateway"}:
-                for op, label in (("start", "Start"), ("stop", "Stop"), ("restart", "Restart")):
-                    action = menu.addAction(label)
-                    action.triggered.connect(lambda _checked=False, s=service, o=op: self.guard(lambda: self.service(s, o)))
-            config = menu.addAction("Konfiguracja")
-            config.triggered.connect(lambda: self.navigate("Ustawienia"))
-            logs = menu.addAction("Logi")
-            logs.triggered.connect(lambda _checked=False, s=service: self.show_log("status" if s in {"runtime", "memory"} else "supervisor" if s == "supervisor" else "service:" + s))
-            details = menu.addAction("Szczegóły / odśwież")
-            details.triggered.connect(lambda _checked=False, s=service: self.guard(lambda: self.inspect_service(s)))
-            button.setMenu(menu)
+            # The per-row affordance never starts/stops a service. Explicit
+            # lifecycle controls live below the table, with ownership checks.
+            button = QPushButton("Odczytaj")
+            button.setAccessibleName("Odczytaj stan usługi " + title)
+            button.clicked.connect(
+                lambda _checked=False, s=service: self.guard(lambda: self.inspect_service(s))
+            )
             self.services_table.setCellWidget(row, 5, button)
         self.services_table.setColumnWidth(0, 105)
         self.services_table.setColumnWidth(1, 190)
@@ -75,14 +69,17 @@ class ServiceViewMixin:
         self.services_table.setColumnWidth(5, 85)
         self.services_table.verticalHeader().setDefaultSectionSize(64)
         layout.addWidget(self.services_table)
-        self.service_selected_label = QLabel("Wybierz moduł i dostępną operację.")
+        control_heading = QLabel("Sterowanie procesami — tylko po świadomym wyborze usługi")
+        control_heading.setObjectName("jssServiceOperatorHeading")
+        layout.addWidget(control_heading)
+        self.service_selected_label = QLabel("Wybierz usługę. Start / Stop / Restart są operacjami operatorskimi, nie funkcją monitora.")
         self.service_selected_label.setWordWrap(True)
         layout.addWidget(self.service_selected_label)
         controls = QHBoxLayout()
         self.service_start_button = self.button("Start", lambda: self.selected_service_action("start"), controls)
         self.service_stop_button = self.button("Stop", lambda: self.selected_service_action("stop"), controls)
         self.service_restart_button = self.button("Restart", lambda: self.selected_service_action("restart"), controls)
-        self.button("Status", lambda: self.selected_service_action("inspect"), controls)
+        self.button("Odczytaj stan", lambda: self.selected_service_action("inspect"), controls)
         self.button("Logi", lambda: self.show_log(
             "status" if self.selected_service() in {"runtime", "memory"} else
             "supervisor" if self.selected_service() == "supervisor" else
@@ -165,6 +162,16 @@ class ServiceViewMixin:
         else:
             self.update_service_summary("cloudflare", "Nie skonfigurowano • brak adresu HTTPS")
 
+
+    def refresh_service_monitor(self: Any) -> None:
+        """Quiet read-only monitor refresh. Never open modal errors on a timer."""
+        try:
+            self.refresh_services()
+        except (OSError, ValueError, RuntimeError):
+            # The background monitor must neither stop Qt nor pop dialogs
+            # for an optional, absent or momentarily unavailable service.
+            self.core.emit("service-monitor", "log",
+                           "Nie udało się odczytać wszystkich usług; poprzednie dowody wygasną.")
 
     def service(self: Any, service: str, op: str) -> None:
         if service == "runtime":
@@ -253,7 +260,7 @@ class ServiceViewMixin:
     def open_service_status(self: Any) -> None:
         """Display the read-only, non-modal service indicators."""
         if self.service_status_dialog is None:
-            self.service_status_dialog = ServiceStatusDialog(self, lambda: self.guard(self.refresh_services))
+            self.service_status_dialog = ServiceStatusDialog(self, self.refresh_service_monitor)
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
