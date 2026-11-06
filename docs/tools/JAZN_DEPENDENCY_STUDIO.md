@@ -18,32 +18,44 @@ The Studio is not a second package manager. It orchestrates standard Python `ven
 8. `activation_ready=True` requires the activation dependency profiles to be satisfied by the current interpreter or a verified managed environment.
 9. SHA-256 and recorded package metadata prove local byte identity relative to the manifest; they do not certify upstream package safety or legal compatibility.
 
-## Canonical local paths
+## Canonical local paths (JSS ROOT-local installation migration, WIP)
 
-Default root (outside the active/versioned source tree):
-
-```text
-<host workspace_runtime>/local_resources/python/
-```
-
-Layout:
+New SYSTEM roots ship a versioned `ROOT/local_resources/README.md`, which
+selects the ROOT-local installer layout while leaving daemon/MEMORY workspaces
+untouched:
 
 ```text
-python/
-├─ wheelhouse/
-│  ├─ core+archive+pdf__windows-x64__py312__<resolution>/
-│  │  ├─ *.whl
-│  │  ├─ JAZN_WHEELHOUSE_MANIFEST.json
-│  │  └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
-│  └─ ...
-├─ environments/
-│  └─ <platform>__py<major-minor>__<manifest-sha>/
-└─ JAZN_DEPENDENCY_ENVIRONMENT.json
+<verified SYSTEM ROOT>/
+├─ .venv/                            # target-machine-generated Python environment
+└─ local_resources/
+   ├─ README.md                      # versioned description (no binary packages)
+   ├─ python/
+   │  └─ JAZN_DEPENDENCY_ENVIRONMENT.json
+   ├─ wheelhouse/
+   │  └─ core+run-studio__windows-x64__py314__<resolution>/
+   │     ├─ *.whl
+   │     ├─ JAZN_WHEELHOUSE_MANIFEST.json
+   │     └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
+   ├─ ollama/
+   ├─ models/
+   ├─ nlp/
+   └─ manifests/
 ```
 
-The root is resolved by `workspace_runtime_path(<jazn_root>)`; it is shared host state, not versioned source. The historical `<jazn_root>/latka_jazn/local_resources/` location is not the default. Releases transport wheelhouse bundles as immutable dependency sidecar ZIPs described by `JAZN_DEPENDENCY_SET.json`; ready-made `venv`/`site-packages` trees remain non-transportable runtime state.
+Legacy installations that do not have `ROOT/local_resources/` retain their
+previous `workspace_runtime/local_resources/python/` locations. When the
+new root is prepared, read-only discovery still checks a legacy activation
+marker if the new marker is missing. No old environment, daemon state,
+checkpoint or MEMORY is moved automatically. `JAZN_DEPENDENCY_ENVIRONMENTS`
+remains an explicit override, and ROOT/.venv is never deleted by generic
+Dependency Studio GC.
 
-Set `JAZN_DEPENDENCY_WHEELHOUSE` to an explicit external wheelhouse when the bundle should live outside the runtime root.
+The venv is created locally, not shipped or copied from a different machine.
+A verified wheelhouse can be transported as a target-specific release sidecar,
+but source Git intentionally excludes wheels and model data. The first-run JSS
+installer provides explicit offline and online operations. This branch is
+still under integration: native clean-room packaging must confirm the complete
+`core+run-studio` offline wheelhouse before release.
 
 ## Profiles
 
