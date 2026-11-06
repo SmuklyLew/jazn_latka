@@ -23,8 +23,9 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
                    age_seconds: float = 0.0) -> tuple[str, str]:
     """Classify explicit evidence only. No PID-only or model-name-only green."""
     if failed:
-        if key in {"mcp", "mcp_https", "supervisor"}:
-            return "warn", "Brak aktualnego odczytu opcjonalnej usługi"
+        # The observer distinguishes a normal "not ready" response from an
+        # unexpected probe failure before calling assess_service(). Only the
+        # latter enters the failures set; optionality cannot hide a real fault.
         return "bad", "Ostatnia kontrola zakończyła się niepowodzeniem"
     if evidence is None:
         return "warn", "Nie sprawdzono — użyj Odśwież"
