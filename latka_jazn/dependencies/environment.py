@@ -205,12 +205,12 @@ def install_bundle(
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
 
-    if env_root.exists():
-        raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
-    managed_root.mkdir(parents=True, exist_ok=True)
     if root_local_venv and (env_root.is_symlink() or
                             (hasattr(env_root, "is_junction") and env_root.is_junction())):
         raise DependencyStudioError("unsafe_root_venv_link")
+    if env_root.exists():
+        raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    managed_root.mkdir(parents=True, exist_ok=True)
     try:
         _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)
