@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget,
 )
@@ -26,6 +26,12 @@ def visible_time(value: datetime | str | None) -> str:
     if not isinstance(value, datetime) or value.tzinfo is None:
         return "czas nieznany"
     return value.astimezone(WARSAW).strftime("%d.%m.%Y, %H:%M")
+
+
+class HistoryDelivery(QObject):
+    """Private Qt signal; historical message text bypasses shared diagnostics."""
+
+    arrived = Signal(str, int, object)
 
 
 class ChatTranscript(QScrollArea):
