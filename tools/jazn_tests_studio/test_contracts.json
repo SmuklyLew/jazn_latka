@@ -30705,7 +30705,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 116
+      "line": 118
     },
     "tests/test_jss_chat_workbench_qt.py::test_local_chat_transcript_and_composer_are_primary_surfaces": {
       "path": "tests/test_jss_chat_workbench_qt.py",
@@ -31712,7 +31712,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 118
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -31727,7 +31727,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 124
+      "line": 134
     },
     "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
       "path": "tests/test_jss_pytest_evidence_plugin.py",
