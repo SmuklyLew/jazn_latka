@@ -44,7 +44,7 @@ def load_sessions(root: Path) -> list[dict[str, str]]:
         if (not isinstance(sid, str) or SESSION_ID.fullmatch(sid) is None
                 or not isinstance(created, str) or len(created) > 48
                 or not isinstance(endpoint, str)
-                or re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{1,5}", endpoint) is None
+                or re.fullmatch(r"http://127\.0\.0\.1:[0-9]{1,5}", endpoint) is None
                 or not 1 <= int(endpoint.rsplit(":", 1)[-1]) <= 65535):
             raise StudioError("Nieprawidłowe metadane sesji")
         try:
@@ -64,7 +64,7 @@ def load_sessions(root: Path) -> list[dict[str, str]]:
 def remember_session(root: Path, session_id: str,
                      daemon_url: str) -> list[dict[str, str]]:
     if (not isinstance(daemon_url, str)
-            or re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{1,5}", daemon_url) is None
+            or re.fullmatch(r"http://127\.0\.0\.1:[0-9]{1,5}", daemon_url) is None
             or not 1 <= int(daemon_url.rsplit(":", 1)[-1]) <= 65535):
         raise StudioError("Nieprawidłowy endpoint katalogu sesji")
     if SESSION_ID.fullmatch(session_id) is None:
