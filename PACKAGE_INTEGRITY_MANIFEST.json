@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "generated_at_utc": "2026-11-06T14:35:34+00:00",
-  "updated_at_utc": "2026-11-06T14:35:34+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "generated_at_utc": "2026-11-06T17:28:03+00:00",
+  "updated_at_utc": "2026-11-06T17:28:03+00:00",
   "start_file": "run.py",
-  "file_count": 3659,
-  "static_file_count": 3659,
+  "file_count": 3662,
+  "static_file_count": 3662,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2936,
-      "sha256": "77785badaa7135147ad853d217e6b3dc0a995f6f8c32c662fa1dff777b33d251",
+      "size_bytes": 2972,
+      "sha256": "2f475b51a4332b43ec4905a96a283b86567191c8af6ffb5ca4104eae1f8192d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1942,
-      "sha256": "d901232ddf6a0882b470d7130e8e945fcea5700c249cdfb68d20fc6395e250ac",
+      "size_bytes": 1948,
+      "sha256": "4dfba2fb4b82e7ad87a30a200133851fdad961d86830a7b6ae4ee754c83593e0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9923,7 +9923,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "35822461767c639af7141cd7122bfc85ae974c1d21a68741347f9ee8ef3b97e6",
+      "sha256": "c0e28b224b60a0dd5ccfe320c51b23403dd8bd12d441cfc5d254b869019379d0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11425,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24332,
-      "sha256": "71cd031ff5d19bab0ea6007cedb8bbe1124932141687f7d716b870e3662fcf0e",
+      "size_bytes": 24593,
+      "sha256": "c47379370636407d7e010c492ab7d10680590a46c7daac7712db44f864e944a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -18912,6 +18912,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_jss_service_status_dialog_v16_3_25_5_116_0_34_94_6_75.py",
+      "size_bytes": 3450,
+      "sha256": "9abeaef81065ae5bfdf825d9acedf1c780b5285ba10ff72ac8455766b8f1cb8a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_62.py",
       "size_bytes": 7911,
       "sha256": "96547efd336d98900c5535b215dfd78d9af1a7299035f1b6e43a4bafad523743",
@@ -23952,6 +23961,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.76-before-unexpected-error-classification/test_jss_service_status_dialog.py",
+      "size_bytes": 5724,
+      "sha256": "c7aaaa607896c3826e708b5954fdb63702554ddcaa8852e00b72d0256e496f19",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -28605,9 +28623,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_readonly_service_monitor_ui.py",
+      "size_bytes": 3014,
+      "sha256": "6b8b2e92a71d0272e2167f2c5eb1095529f1a294bd968474bcafe1cd44fa48af",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_service_status_dialog.py",
-      "size_bytes": 3450,
-      "sha256": "9abeaef81065ae5bfdf825d9acedf1c780b5285ba10ff72ac8455766b8f1cb8a",
+      "size_bytes": 6063,
+      "sha256": "c13897785f925601d3eab6df316021157d59fb1d5e9efa7fc257d7d4cb631e5c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32026,8 +32053,8 @@
     },
     {
       "path": "tools/jazn_run_studio/core.py",
-      "size_bytes": 56461,
-      "sha256": "129855f0afb08a384969fd8344e77765ce74c5a6e51d1dc8855a2cdff0367cdd",
+      "size_bytes": 57924,
+      "sha256": "a4f5f8cb85d22ef48672249d2bdeecf92a3fdbf7ff2eab42d41fa47967807a5a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32170,8 +32197,8 @@
     },
     {
       "path": "tools/jazn_run_studio/service_status_dialog.py",
-      "size_bytes": 8496,
-      "sha256": "c16ee8095c8cafbd822037358fabacc3b438de14191e475fda06ae0fbefa53d3",
+      "size_bytes": 12282,
+      "sha256": "dee20b54190cc0ac950091c821290df03765addd945394ff61f227c7bf9fb606",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32467,8 +32494,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_dashboard.py",
-      "size_bytes": 7868,
-      "sha256": "798acf3c9d6d28ac5f637e9879a3147070745c5df16bb8ffefd02fef0f7f019b",
+      "size_bytes": 8033,
+      "sha256": "a83f536ee67d308546090937d5ac8fe2915c73e500750821e00249b46f3c9062",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32476,8 +32503,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_events.py",
-      "size_bytes": 16953,
-      "sha256": "1235a6e95c531ea2536f9660cff26f7c8f9ccb072eee09dd15fda3c87cc467a5",
+      "size_bytes": 17366,
+      "sha256": "7d11539ad2e30210d7a233b4a95d92942075bb46c84acafddf7dc8a0bd17032f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32494,8 +32521,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_services.py",
-      "size_bytes": 14450,
-      "sha256": "a7631b2a22c4d99c68e76d1678f90cb18dfbe9a6a214e62266015df959542f60",
+      "size_bytes": 15261,
+      "sha256": "f5ce9dc4950c182d752a2b4c06cfae3ea6bb30ee966a7b3bc4d5df1ab253c494",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32728,8 +32755,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2787985,
-      "sha256": "fc151976b82e597d6384bf8c42cb97f18b797a0aefd1e794b5f44bc1d25a8dd6",
+      "size_bytes": 2790776,
+      "sha256": "598ac8e32241e96e7410fd1f60d4303ccb497da4660b487330b2ec2a2b079fc3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33386,11 +33413,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
+  "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-    "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-    "release_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+    "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+    "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor"
   },
   "legacy_aliases": {
     "version": "release_version"

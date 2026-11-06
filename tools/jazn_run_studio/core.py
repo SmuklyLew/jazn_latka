@@ -725,10 +725,17 @@ class Controller:
         self._launch(job, argv, None)
         return job
 
-    def probe(self, key: str) -> Job:
+    def probe(self, key: str, *, observe_only: bool = False) -> Job:
+        """Use passive service observations without a failed operator action.
+
+        An unavailable optional endpoint is a negative observation, not a
+        runtime error or a reason to start an unowned process.
+        """
         from . import probes
         settings = self.settings
-        fingerprint = sha256(json.dumps(asdict(settings), sort_keys=True).encode()).hexdigest()
+        if observe_only and key not in {"ollama", "gateway", "cloudflare"}:
+            raise StudioError("Monitor może odczytywać tylko usługi bez generowania")
+        fingerprint = sha256(json.dumps([asdict(settings), observe_only], sort_keys=True).encode()).hexdigest()
         calls = {"ollama": lambda: probes.ollama(settings.model),
                  "ollama_generate": lambda: probes.ollama_generation(settings.model),
                  "gateway": lambda: probes.gateway(settings.mcp_port),
@@ -748,25 +755,47 @@ class Controller:
             try:
                 job.state = "running"
                 evidence = calls[key]()
+                if observe_only:
+                    evidence = {**evidence, "monitor_only": True}
                 self.emit(job.key, "probe", evidence)
-                self.emit(job.key, "log", json.dumps(evidence, ensure_ascii=False))
+                if not observe_only:
+                    self.emit(job.key, "log", json.dumps(evidence, ensure_ascii=False))
                 # A reachable endpoint or successful probe execution is not proof
                 # of service readiness. Preserve the evidence event, but keep
                 # the operator job red when the selected capability is absent.
                 if key in {"gateway", "cloudflare"} and evidence.get("ready") is not True:
-                    job.state, job.error = "failed", "service_not_ready"
+                    if observe_only:
+                        job.state = "succeeded"
+                    else:
+                        job.state, job.error = "failed", "service_not_ready"
                 elif key in {"ollama", "ollama_generate"} and evidence.get("selected_model_present") is False:
-                    job.state, job.error = ("failed", "ollama_models_empty" if not evidence.get("models")
-                                             else "selected_model_missing")
+                    if observe_only:
+                        job.state = "succeeded"
+                    else:
+                        job.state, job.error = ("failed", "ollama_models_empty" if not evidence.get("models")
+                                                 else "selected_model_missing")
                 elif key == "ollama_generate" and evidence.get("generation_verified") is not True:
                     job.state, job.error = "failed", "ollama_generation_unverified"
                 else:
                     job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
-                from .problem_guidance import probe_failure_code, explain_failure
-                job.state, job.error = "failed", probe_failure_code(exc)
-                guidance = explain_failure(job.key, job.error)
-                self.emit(job.key, "log", guidance.title + ". " + guidance.remedy)
+                if observe_only:
+                    # Read-only watcher cannot pollute the operator error
+                    # journal with repeated connection_refused from unstarted
+                    # optional components. Never claim service readiness.
+                    self.emit(job.key, "probe", {
+                        "service": key,
+                        "monitor_only": True,
+                        "endpoint_reachable": False,
+                        "ready": False,
+                        "accepted_visible_turn": False,
+                    })
+                    job.state = "succeeded"
+                else:
+                    from .problem_guidance import probe_failure_code, explain_failure
+                    job.state, job.error = "failed", probe_failure_code(exc)
+                    guidance = explain_failure(job.key, job.error)
+                    self.emit(job.key, "log", guidance.title + ". " + guidance.remedy)
             finally:
                 job.finished = time.time()
                 job.done.set()

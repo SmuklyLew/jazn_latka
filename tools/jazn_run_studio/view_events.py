@@ -42,7 +42,10 @@ class EventViewMixin:
                 except queue.Empty:
                     break
             self.workspace.observe(key, kind, value)
-            if self.service_status_dialog is not None and kind in {"evidence", "probe", "state"}:
+            if self.service_status_dialog is not None and kind in {
+                "evidence", "probe", "state", "supervisor_evidence",
+                "memory_evidence", "status_summary",
+            }:
                 self.service_status_dialog.observe(key, kind, value)
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
@@ -119,6 +122,11 @@ class EventViewMixin:
                     else:
                         detail = "Nieskonfigurowana / niezweryfikowana • sprawdź ustawienia i probe"
                     self.update_service_summary(str(service), detail)
+                if value.get("monitor_only") is True:
+                    # A passive service ping is not a model-selection or
+                    # chat-generation event. It must never replace the
+                    # pending chat state or erase an explicit generation gate.
+                    continue
                 if service == "ollama":
                     names = value.get("models", [])
                     if isinstance(names, list):
