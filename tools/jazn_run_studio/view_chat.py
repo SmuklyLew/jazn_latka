@@ -208,7 +208,8 @@ class ChatViewMixin:
                 if checkpoint.is_file() and checkpoint.stat().st_size <= 4096:
                     saved = json.loads(checkpoint.read_text(encoding="utf-8"))
                     value = saved.get("session_id")
-                    if isinstance(value, str):
+                    if (isinstance(value, str)
+                            and saved.get("daemon_url") == self.core.settings.daemon_url):
                         from .chat_session_catalog import SESSION_ID
                         if SESSION_ID.fullmatch(value):
                             current = value
