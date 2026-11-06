@@ -117,20 +117,15 @@ def prepare_venv(root: str | Path, *, base_python: str, approved: bool) -> dict[
         return {"ok": True, "state": "existing_venv_reused", "python": str(target_python)}
     if not python_314(base_python):
         raise ProvisioningError("python_3_14_required")
-    try:
-        outcome = subprocess.run(
-            [str(base_python), "-I", "-m", "venv", str(target)],
-            capture_output=True, text=True, encoding="utf-8",
-            errors="replace", timeout=180, check=False,
-        )
-        if outcome.returncode or not python_314(target_python):
-            raise ProvisioningError("venv_creation_failed")
-    except Exception:
-        # Only remove the fresh directory created by this call. Never touch
-        # an existing environment, MEMORY, or a daemon workspace.
-        if target.exists():
-            shutil.rmtree(target)
-        raise
+    outcome = subprocess.run(
+        [str(base_python), "-I", "-m", "venv", str(target)],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=180, check=False,
+    )
+    if outcome.returncode or not python_314(target_python):
+        # Preserve incomplete state for explicit recovery; never delete an
+        # unexpectedly concurrent operator-owned directory.
+        raise ProvisioningError("venv_creation_failed_manual_recovery_required")
     return {"ok": True, "state": "created", "python": str(target_python)}
 
 
@@ -160,6 +155,10 @@ def _verify_bundle(root: str | Path, bundle: str | Path) -> tuple[Path, Path]:
 def install_offline(root: str | Path, *, bundle: str | Path, approved: bool) -> dict[str, Any]:
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
+    from latka_jazn.core.runtime_root import active_runtime_marker_path
+    marker = active_runtime_marker_path(root_paths(root)["root"])
+    if marker.is_file():
+        raise ProvisioningError("runtime_marker_present_verify_live_state_before_install")
     directory, requirements = _verify_bundle(root, bundle)
     python = venv_python(root)
     if not python_314(python):
@@ -282,7 +281,7 @@ def install_python_windows(*, approved: bool) -> dict[str, Any]:
     if not winget:
         raise ProvisioningError("winget_missing_use_official_python_installer")
     result = subprocess.run([
-        winget, "install", "--id", "Python.Python.3.14", "--exact",
+        winget, "install", "--id", "Python.Python.3.14", "--exact", "--source", "winget",
         "--accept-source-agreements", "--accept-package-agreements",
     ], capture_output=True, timeout=1200, check=False)
     if result.returncode:
@@ -330,7 +329,7 @@ def install_ollama_windows(*, approved: bool) -> dict[str, Any]:
     if not winget:
         raise ProvisioningError("winget_missing_use_official_ollama_installer")
     result = subprocess.run([
-        winget, "install", "--id", "Ollama.Ollama", "--exact",
+        winget, "install", "--id", "Ollama.Ollama", "--exact", "--source", "winget",
         "--accept-source-agreements", "--accept-package-agreements",
     ], capture_output=True, timeout=1200, check=False)
     if result.returncode:
