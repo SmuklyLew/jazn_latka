@@ -235,7 +235,11 @@ def install_bundle(
         if missing:
             raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
     except Exception:
-        shutil.rmtree(env_root, ignore_errors=True)
+        # A uniquely named old-style managed venv is disposable. ROOT/.venv
+        # is path-stable operator state; preserve a partial installation for
+        # explicit recovery instead of deleting it after a failed check.
+        if not root_local_venv:
+            shutil.rmtree(env_root, ignore_errors=True)
         raise
 
     marker: dict[str, Any] = {
