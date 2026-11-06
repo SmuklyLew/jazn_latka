@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
   "runtime_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
   "package_version": "16.3.25.5.116.0.34.94.6.76-jss-readonly-service-monitor",
-  "generated_at_utc": "2026-11-06T16:58:15+00:00",
-  "updated_at_utc": "2026-11-06T16:58:15+00:00",
+  "generated_at_utc": "2026-11-06T17:19:00+00:00",
+  "updated_at_utc": "2026-11-06T17:19:00+00:00",
   "start_file": "run.py",
-  "file_count": 3661,
-  "static_file_count": 3661,
+  "file_count": 3662,
+  "static_file_count": 3662,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "9d9cbc4cf3914b3eb4cc5f5704f64a0d7b1fef591606cfee9b649257c66a153e",
+      "size_bytes": 2972,
+      "sha256": "b45f54a3a12c5fb8d1f1697a45aa449173168cfb1851a791a38bdc0eda5307e2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -23961,6 +23961,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.76-before-unexpected-error-classification/test_jss_service_status_dialog.py",
+      "size_bytes": 5724,
+      "sha256": "c7aaaa607896c3826e708b5954fdb63702554ddcaa8852e00b72d0256e496f19",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34_pre_host_capability_repair/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2598,
       "sha256": "849e28cdbc94eaf12662b15bd6f7e49e2e37cbf9c053ea404948384e818d62ce",
@@ -28624,8 +28633,8 @@
     },
     {
       "path": "tests/test_jss_service_status_dialog.py",
-      "size_bytes": 5724,
-      "sha256": "c7aaaa607896c3826e708b5954fdb63702554ddcaa8852e00b72d0256e496f19",
+      "size_bytes": 6063,
+      "sha256": "c13897785f925601d3eab6df316021157d59fb1d5e9efa7fc257d7d4cb631e5c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32188,8 +32197,8 @@
     },
     {
       "path": "tools/jazn_run_studio/service_status_dialog.py",
-      "size_bytes": 12177,
-      "sha256": "d7f9b81929b841453d67482a2e58c3ea51a58dcedeac323d7144547941580399",
+      "size_bytes": 12282,
+      "sha256": "dee20b54190cc0ac950091c821290df03765addd945394ff61f227c7bf9fb606",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32747,7 +32756,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2790776,
-      "sha256": "5f6810b23d790d944e048afe9b925ae57521a963f734e3c243561c7cea92af5b",
+      "sha256": "5e6260c1a224e3a1bc76e693e7f54106259c5641a594ec8edeea005a9d4f0b7b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
