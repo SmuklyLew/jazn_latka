@@ -163,16 +163,6 @@ class ServiceViewMixin:
             self.update_service_summary("cloudflare", "Nie skonfigurowano • brak adresu HTTPS")
 
 
-    def refresh_service_monitor(self: Any) -> None:
-        """Quiet read-only monitor refresh. Never open modal errors on a timer."""
-        try:
-            self.refresh_services()
-        except (OSError, ValueError, RuntimeError):
-            # The background monitor must neither stop Qt nor pop dialogs
-            # for an optional, absent or momentarily unavailable service.
-            self.core.emit("service-monitor", "log",
-                           "Nie udało się odczytać wszystkich usług; poprzednie dowody wygasną.")
-
     def service(self: Any, service: str, op: str) -> None:
         if service == "runtime":
             if op in {"stop", "restart"} and QMessageBox.question(self, "Runtime Jaźni", "Potwierdzić kanoniczny " + op + " runtime Jaźni?") != QMessageBox.StandardButton.Yes:
@@ -260,7 +250,15 @@ class ServiceViewMixin:
     def open_service_status(self: Any) -> None:
         """Display the read-only, non-modal service indicators."""
         if self.service_status_dialog is None:
-            self.service_status_dialog = ServiceStatusDialog(self, self.refresh_service_monitor)
+            def quiet_readonly_refresh() -> None:
+                try:
+                    self.refresh_services()
+                except (OSError, ValueError, RuntimeError):
+                    # Timer-driven observation cannot produce recurring
+                    # modal dialogs or trigger a lifecycle fallback.
+                    self.core.emit("service-monitor", "log",
+                                   "Monitor: niepełny odczyt usług; sprawdź ponownie.")
+            self.service_status_dialog = ServiceStatusDialog(self, quiet_readonly_refresh)
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
