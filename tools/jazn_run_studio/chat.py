@@ -44,10 +44,14 @@ class ChatClient:
             for key in ("session_id", "request_id"):
                 if saved.get(key) is not None and not fullmatch(r"[A-Za-z0-9_-]{1,128}", saved[key]):
                     raise StudioError("Nieprawidłowy identyfikator checkpointu")
-            if saved.get("request_id") and saved.get("daemon_url") != self.daemon_url:
-                raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
-            self.session_id = saved["session_id"]
-            self.pending = saved.get("request_id")
+            if saved.get("daemon_url") != self.daemon_url:
+                if saved.get("request_id"):
+                    raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
+                # A completed conversation from a different endpoint must not
+                # silently become the local history of a newly chosen daemon.
+            else:
+                self.session_id = saved["session_id"]
+                self.pending = saved.get("request_id")
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
