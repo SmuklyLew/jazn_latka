@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
-  "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
-  "generated_at_utc": "2026-11-06T18:18:14+00:00",
-  "updated_at_utc": "2026-11-06T18:18:14+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+  "package_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+  "generated_at_utc": "2026-11-06T18:24:21+00:00",
+  "updated_at_utc": "2026-11-06T18:24:21+00:00",
   "start_file": "run.py",
-  "file_count": 3662,
-  "static_file_count": 3662,
+  "file_count": 3663,
+  "static_file_count": 3663,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "a4720907afd904f11a1b3d51fed77ba11d792fdc478d2607c929c687d70c8698",
+      "size_bytes": 2954,
+      "sha256": "86c9c94e474f64e2cf0d797d9324bd0084e9d9e5cfb144add5a53d2abfdb0435",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "4dfba2fb4b82e7ad87a30a200133851fdad961d86830a7b6ae4ee754c83593e0",
+      "size_bytes": 1945,
+      "sha256": "5475b13f9632c0095066fb6f41bc36c322e63e58b94d6a5753f26771bb1cf45a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9923,7 +9923,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "c0e28b224b60a0dd5ccfe320c51b23403dd8bd12d441cfc5d254b869019379d0",
+      "sha256": "26a7c273d0fce7d1c87e8e3e61656a5ed934fe6039a4671cd5dd057cd9e4ead2",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11425,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24593,
-      "sha256": "c47379370636407d7e010c492ab7d10680590a46c7daac7712db44f864e944a4",
+      "size_bytes": 24731,
+      "sha256": "2a3b9dfdebd72f166a03b9ba43ded619406f536a0a0ddaae49973f0e0d67bc89",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28488,6 +28488,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_chat_activity_history_qt.py",
+      "size_bytes": 5326,
+      "sha256": "506ed4472c8c7829ebef9ff8ab26a424ad3c4c56d614a6d6a949b800954df1bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_chat_workbench_qt.py",
       "size_bytes": 996,
       "sha256": "bd59487bb890689d392ece254e1f485260eff093576b467df001fa64b3b650c6",
@@ -32503,8 +32512,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_events.py",
-      "size_bytes": 17366,
-      "sha256": "7d11539ad2e30210d7a233b4a95d92942075bb46c84acafddf7dc8a0bd17032f",
+      "size_bytes": 19126,
+      "sha256": "2c8798c54bf1bb8d503d5bcaeb7614d779f7670f7947c280dd4257ded3c1a35a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32755,8 +32764,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2790776,
-      "sha256": "598ac8e32241e96e7410fd1f60d4303ccb497da4660b487330b2ec2a2b079fc3",
+      "size_bytes": 2794234,
+      "sha256": "8f93b7fff9881b2cb4b3fa712f53846f3c136192ae27319f59b0f46264030493",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33413,11 +33422,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
+  "release_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
-    "package_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor",
-    "release_version": "16.3.25.5.116.0.34.94.6.77-jss-readonly-service-monitor"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+    "package_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+    "release_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history"
   },
   "legacy_aliases": {
     "version": "release_version"
