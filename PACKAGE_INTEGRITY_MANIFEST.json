@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "runtime_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
   "package_version": "16.3.25.5.116.0.34.94.6.75-chat-terminal-recovery",
-  "generated_at_utc": "2026-11-05T23:58:37+00:00",
-  "updated_at_utc": "2026-11-05T23:58:37+00:00",
+  "generated_at_utc": "2026-11-06T13:20:42+00:00",
+  "updated_at_utc": "2026-11-06T13:20:42+00:00",
   "start_file": "run.py",
   "file_count": 3658,
   "static_file_count": 3658,
@@ -464,7 +464,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2936,
-      "sha256": "91164a1387df7b5cab688a82e608c9d2d4ffa002e56216fefa751da7272f4cff",
+      "sha256": "5b313906cbc1bd179fa41e189b3d93268c27e976ff5cfea12d831aa766b1bddf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9923,7 +9923,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "fe753809216710237b557fb3456db55ef36ba428da80498e0564c49a78fe6e2e",
+      "sha256": "35822461767c639af7141cd7122bfc85ae974c1d21a68741347f9ee8ef3b97e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28579,8 +28579,8 @@
     },
     {
       "path": "tests/test_jss_modular_view_boundaries.py",
-      "size_bytes": 3993,
-      "sha256": "cb078e6356f9a5585ce5c914f025be61fa986090b739de753cbf4505cad8c5a8",
+      "size_bytes": 4022,
+      "sha256": "1c9fa9ae7206561cff5ee88642c29700d2608bc257a093e811860447a6d4c0af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32720,7 +32720,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2783422,
-      "sha256": "3c1e433bcbf82693a5fe65534fbd248afa63e2b3dff3a7e990531a3dbda66233",
+      "sha256": "be65cb44e21a1c088b5992e916ea35bfa2a31cee90bd5af26f92771a61e4392e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
