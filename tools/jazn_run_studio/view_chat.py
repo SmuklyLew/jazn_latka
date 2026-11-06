@@ -36,7 +36,10 @@ class ChatViewMixin:
             "Rozłączony. Wybierz model w ustawieniach, uruchom runtime i Ollamę, a następnie połącz.")
         self.chat_state.setWordWrap(True)
         self.chat_state.setObjectName("workbenchChatStatus")
-        layout.addWidget(self.chat_state)
+        # Transport diagnostics belong to the collapsible operations history,
+        # not the conversation header. Existing callers/tests still receive
+        # the most recent chat_state without exposing raw request IDs.
+        self.chat_state.setAccessibleName("Ostatni techniczny status rozmowy")
 
         # The conversation is the focus of this view. Technical connection
         # controls remain discoverable without occupying half the editor.
@@ -82,6 +85,44 @@ class ChatViewMixin:
             "Tutaj pojawią się wiadomości i odpowiedzi pochodzące z zaakceptowanych tur.")
         self.conversation.setMinimumHeight(220)
         layout.addWidget(self.conversation, 3)
+
+        # Non-authoritative UI activity: a timer is a visual heartbeat, NOT
+        # evidence of daemon admission, model thinking or accepted finalization.
+        self.chat_activity = QLabel("")
+        self.chat_activity.setObjectName("workbenchChatActivity")
+        self.chat_activity.setAccessibleName("Postęp obsługi wiadomości")
+        self.chat_activity.setWordWrap(True)
+        self.chat_activity.hide()
+        layout.addWidget(self.chat_activity)
+        self._chat_activity_request = None
+        self._chat_activity_message = ""
+        self._chat_activity_frame = 0
+        self.chat_activity_timer = QTimer(self)
+        self.chat_activity_timer.setInterval(450)
+        self.chat_activity_timer.timeout.connect(self._animate_chat_activity)
+
+        self.chat_history_toggle = QPushButton("Historia operacji ▸")
+        self.chat_history_toggle.setCheckable(True)
+        self.chat_history_toggle.setAccessibleName("Pokaż lub ukryj historię techniczną rozmowy")
+        layout.addWidget(self.chat_history_toggle)
+        self.chat_history_panel = QWidget()
+        chat_history_layout = QVBoxLayout(self.chat_history_panel)
+        chat_history_layout.setContentsMargins(0, 0, 0, 4)
+        chat_history_layout.addWidget(self.chat_state)
+        self.chat_operation_history = QPlainTextEdit()
+        self.chat_operation_history.setObjectName("workbenchChatOperationHistory")
+        self.chat_operation_history.setAccessibleName("Historia zdarzeń transportu i request ID")
+        self.chat_operation_history.setReadOnly(True)
+        self.chat_operation_history.setMaximumBlockCount(150)
+        self.chat_operation_history.setMaximumHeight(95)
+        chat_history_layout.addWidget(self.chat_operation_history)
+        layout.addWidget(self.chat_history_panel)
+        self.chat_history_toggle.toggled.connect(self.chat_history_panel.setVisible)
+        self.chat_history_toggle.toggled.connect(
+            lambda opened: self.chat_history_toggle.setText(
+                "Historia operacji ▾" if opened else "Historia operacji ▸"))
+        self.chat_history_panel.hide()
+
         composer = QHBoxLayout()
         self.message = QPlainTextEdit()
         self.message.setObjectName("workbenchChatComposer")
@@ -93,6 +134,41 @@ class ChatViewMixin:
         self.send_button.setObjectName("jssPrimaryAction")
         layout.addLayout(composer)
 
+    def _record_chat_diagnostic(self: Any, message: str) -> None:
+        """Keep raw transport identifiers only in the opted-in history."""
+        safe = self.core.redactor.text(str(message))[:500]
+        self.chat_state.setText(safe)
+        self.chat_operation_history.appendPlainText(safe)
+
+    def _animate_chat_activity(self: Any) -> None:
+        if self._chat_activity_request is None:
+            self.chat_activity_timer.stop()
+            return
+        self._chat_activity_frame = (self._chat_activity_frame + 1) % 4
+        dots = "." * (self._chat_activity_frame or 3)
+        self.chat_activity.setText(self._chat_activity_message + dots)
+
+    def _begin_chat_activity(self: Any, request: str, message: str) -> None:
+        """Start a purely visual indicator, never a second runtime request."""
+        self._chat_activity_request = request
+        self._chat_activity_message = message
+        self._chat_activity_frame = 0
+        self.chat_activity.setText(message + "...")
+        self.chat_activity.show()
+        self.chat_activity_timer.start()
+        self.send_button.setEnabled(False)
+
+    def _end_chat_activity(self: Any, warning: str = "") -> None:
+        self._chat_activity_request = None
+        self.chat_activity_timer.stop()
+        if warning:
+            self.chat_activity.setText(warning)
+            self.chat_activity.show()
+        else:
+            self.chat_activity.hide()
+            self.chat_activity.clear()
+        chat = self.core.chat
+        self.send_button.setEnabled(chat is None or not chat.pending)
 
     def select_local_model(self: Any) -> None:
         """Only change future chat configuration, never an outstanding request."""
@@ -104,7 +180,8 @@ class ChatViewMixin:
                 (chat.job is not None and not chat.job.done.is_set())):
             raise StudioError("Zakończ lub rozłącz obecną rozmowę przed zmianą modelu; nie porzucaj request_id")
         self.apply_settings(replace(self.core.settings, model=chosen))
-        self.chat_state.setText("Wybrano model " + chosen + ". Połącz czat, aby sprawdzić rzeczywistą generację.")
+        self._record_chat_diagnostic(
+            "Wybrano model " + chosen + ". Połącz czat, aby sprawdzić rzeczywistą generację.")
 
 
     def connect_local_chat(self: Any) -> None:
@@ -125,7 +202,8 @@ class ChatViewMixin:
         request = self.core.chat.send(text)
         self.conversation.appendPlainText("Ty:\n" + text + "\n")
         self.message.clear()
-        self.chat_state.setText("Oczekiwanie na wynik: " + request)
+        self._record_chat_diagnostic("Oczekiwanie na wynik: " + request)
+        self._begin_chat_activity(request, "Jaźń obsługuje wiadomość")
 
 
     def resume_chat(self: Any) -> None:
@@ -133,6 +211,8 @@ class ChatViewMixin:
             from .chat import ChatClient
             self.core.chat = ChatClient(self.core)
         self.core.chat.resume()
+        if self.core.chat.pending:
+            self._begin_chat_activity(self.core.chat.pending, "Sprawdzanie poprzedniego wyniku")
 
     def close_failed_chat(self: Any) -> None:
         chat = self.core.chat
@@ -155,7 +235,8 @@ class ChatViewMixin:
         if choice != QMessageBox.StandardButton.Yes:
             return
         chat.resolve_terminal_failure(request_id)
-        self.chat_state.setText(
+        self._end_chat_activity()
+        self._record_chat_diagnostic(
             "Nieudaną turę zarchiwizowano bez przypisania jej "
             "zaakceptowanej odpowiedzi."
         )
