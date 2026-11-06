@@ -40,8 +40,12 @@ def load_sessions(root: Path) -> list[dict[str, str]]:
         if not isinstance(item, dict):
             raise StudioError("Nieprawidłowy rekord sesji")
         sid, created = item.get("session_id"), item.get("created_at_utc")
+        endpoint = item.get("daemon_url")
         if (not isinstance(sid, str) or SESSION_ID.fullmatch(sid) is None
-                or not isinstance(created, str) or len(created) > 48):
+                or not isinstance(created, str) or len(created) > 48
+                or not isinstance(endpoint, str)
+                or re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{1,5}", endpoint) is None
+                or not 1 <= int(endpoint.rsplit(":", 1)[-1]) <= 65535):
             raise StudioError("Nieprawidłowe metadane sesji")
         try:
             parsed = datetime.fromisoformat(created)
@@ -52,19 +56,29 @@ def load_sessions(root: Path) -> list[dict[str, str]]:
         if sid in seen:
             raise StudioError("Zduplikowana tożsamość sesji")
         seen.add(sid)
-        result.append({"session_id": sid, "created_at_utc": created})
+        result.append({"session_id": sid, "created_at_utc": created,
+                       "daemon_url": endpoint})
     return result
 
 
-def remember_session(root: Path, session_id: str) -> list[dict[str, str]]:
+def remember_session(root: Path, session_id: str,
+                     daemon_url: str) -> list[dict[str, str]]:
+    if (not isinstance(daemon_url, str)
+            or re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{1,5}", daemon_url) is None
+            or not 1 <= int(daemon_url.rsplit(":", 1)[-1]) <= 65535):
+        raise StudioError("Nieprawidłowy endpoint katalogu sesji")
     if SESSION_ID.fullmatch(session_id) is None:
         raise StudioError("Nieprawidłowy identyfikator sesji")
     path = catalog_path(root)
     current = load_sessions(root)
-    if not any(row["session_id"] == session_id for row in current):
+    previous = next((row for row in current if row["session_id"] == session_id), None)
+    if previous is not None and previous["daemon_url"] != daemon_url:
+        raise StudioError("Sesja należy do innego endpointu; odrzucono zmianę trasy")
+    if previous is None:
         current.insert(0, {
             "session_id": session_id,
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            "daemon_url": daemon_url,
         })
     if len(current) > 100:
         # Keep the oldest metadata rather than silently losing a session.
