@@ -237,7 +237,8 @@ def ollama_api(method: str, route: str, *, payload: dict[str, Any] | None = None
         return {"ok": False, "error_code": "ollama_unreachable_or_invalid"}
 
 
-def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool) -> dict[str, Any]:
+def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool,
+                progress: Any = None) -> dict[str, Any]:
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
     if not MODEL_NAME.fullmatch(model):
@@ -257,6 +258,14 @@ def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool) -> dict[str, Any]
                 if item.get("error"):
                     raise ProvisioningError("ollama_pull_rejected")
                 last = item
+                if callable(progress):
+                    completed, total = item.get("completed"), item.get("total")
+                    progress({
+                        "model": model,
+                        "status": str(item.get("status") or "")[:100],
+                        "completed": completed if isinstance(completed, int) else None,
+                        "total": total if isinstance(total, int) else None,
+                    })
     except (OSError, HTTPError, URLError, json.JSONDecodeError) as exc:
         raise ProvisioningError("ollama_pull_failed") from exc
     if last.get("status") != "success":
@@ -369,7 +378,12 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "install-ollama":
             data = install_ollama_windows(approved=args.yes)
         else:
-            data = ollama_pull(model=args.model, approved=args.yes)
+            data = ollama_pull(
+                model=args.model, approved=args.yes,
+                progress=lambda event: print(
+                    json.dumps({"progress": event}, ensure_ascii=False), flush=True
+                ),
+            )
     except ProvisioningError as exc:
         print(json.dumps({"ok": False, "error_code": str(exc)}, ensure_ascii=False))
         return 1
