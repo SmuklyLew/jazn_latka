@@ -64,6 +64,32 @@ class ChatClient:
         finally:
             Path(name).unlink(missing_ok=True)
 
+    def select_session(self, session_id: str) -> None:
+        """Change the selected conversation only with no live or pending turn.
+
+        The daemon is never asked to replay or move a request. A session may
+        be reselected only while its transport is disconnected.
+        """
+        from .chat_session_catalog import SESSION_ID
+        if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
+            raise StudioError("Nieprawidłowy identyfikator rozmowy")
+        with self.lock:
+            if (self.pending or self._awaiting_gui_ack
+                    or (self.job is not None and not self.job.done.is_set())):
+                raise StudioError(
+                    "Najpierw rozstrzygnij turę i rozłącz transport; sesja nie zostanie zmieniona")
+            if session_id == self.session_id:
+                return
+            previous = self.session_id
+            self.session_id = session_id
+            self.job = None
+            self._confirmed_failed = None
+            try:
+                self._save()
+            except OSError:
+                self.session_id = previous
+                raise
+
     def _require_same_endpoint(self) -> None:
         if self.core.settings.daemon_url != self.daemon_url:
             raise StudioError("Zmieniono endpoint daemona; rozłącz klienta i rozstrzygnij poprzednią turę przed ponownym połączeniem")
