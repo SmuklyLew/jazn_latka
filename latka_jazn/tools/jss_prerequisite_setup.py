@@ -66,7 +66,7 @@ def python_314(executable: str | Path) -> bool:
     try:
         outcome = subprocess.run(
             [str(executable), "-I", "-c",
-             "import sys; raise SystemExit(0 if sys.version_info[:2] == (3,14) else 3)"],
+             "import sys,struct; raise SystemExit(0 if (sys.version_info[:2] == (3,14) and sys.implementation.name == 'cpython' and struct.calcsize('P') == 8) else 3)"],
             capture_output=True, timeout=12, check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
@@ -130,7 +130,7 @@ def prepare_venv(root: str | Path, *, base_python: str, approved: bool) -> dict[
 
 
 def _verify_bundle(root: str | Path, bundle: str | Path) -> tuple[Path, Path]:
-    from latka_jazn.dependencies.common import LOCK_NAME, MANIFEST_NAME
+    from latka_jazn.dependencies.common import LOCK_NAME, MANIFEST_NAME, current_platform_alias
     from latka_jazn.dependencies.wheelhouse import verify_bundle, read_manifest
 
     directory = Path(bundle).expanduser().resolve()
@@ -144,9 +144,12 @@ def _verify_bundle(root: str | Path, bundle: str | Path) -> tuple[Path, Path]:
     target = manifest.get("target") if isinstance(manifest, dict) else None
     if not isinstance(target, dict) or target.get("python_version") != "3.14":
         raise ProvisioningError("wheelhouse_python_target_mismatch")
-    if target.get("alias") != ("windows-x64" if os.name == "nt" else "linux-x64"):
+    host_alias = current_platform_alias()
+    if host_alias not in {"windows-x64", "linux-x64"} or target.get("alias") != host_alias:
         raise ProvisioningError("wheelhouse_platform_target_mismatch")
     profiles = set(str(item) for item in (manifest.get("resolved_profiles") or manifest.get("profiles") or []))
+    if target.get("implementation") != "cp" or target.get("abi") != "cp314":
+        raise ProvisioningError("wheelhouse_cpython_abi_mismatch")
     if not {"core", "run-studio"}.issubset(profiles):
         raise ProvisioningError("core_and_run_studio_profiles_required")
     return directory, directory / LOCK_NAME
