@@ -317,12 +317,27 @@ class SetupWizard(QWizard):
             chunk = bytes(process.readAllStandardOutput()).decode("utf-8", "replace")
             # Operator only sees bounded, sanitized status rather than raw pip/installer output.
             self.provision_buffer = (self.provision_buffer + chunk)[-32768:]
+            for line in chunk.splitlines():
+                try:
+                    event = json.loads(line)
+                except (ValueError, TypeError):
+                    continue
+                if isinstance(event, dict) and isinstance(event.get("progress"), dict):
+                    progress = event["progress"]
+                    status = str(progress.get("status") or "")[:100]
+                    completed, total = progress.get("completed"), progress.get("total")
+                    percent = (
+                        f" — {completed * 100 // total}%"
+                        if isinstance(completed, int) and isinstance(total, int) and total > 0
+                        else ""
+                    )
+                    self.provision_result.setText("Model Ollama: " + status + percent)
 
     def _provision_finished(self, exit_code: int, _status: object) -> None:
         self._provision_output()
         try:
-            result = json.loads(self.provision_buffer)
-        except (ValueError, TypeError):
+            result = json.loads(self.provision_buffer.strip().splitlines()[-1])
+        except (ValueError, TypeError, IndexError):
             result = {}
         ok = exit_code == 0 and (
             self.provision_native or result.get("ok", True) is True
