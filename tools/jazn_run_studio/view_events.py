@@ -122,6 +122,11 @@ class EventViewMixin:
                     else:
                         detail = "Nieskonfigurowana / niezweryfikowana • sprawdź ustawienia i probe"
                     self.update_service_summary(str(service), detail)
+                if value.get("monitor_only") is True:
+                    # A passive service ping is not a model-selection or
+                    # chat-generation event. It must never replace the
+                    # pending chat state or erase an explicit generation gate.
+                    continue
                 if service == "ollama":
                     names = value.get("models", [])
                     if isinstance(names, list):
