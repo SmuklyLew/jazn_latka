@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.78",
-  "active_definition_count": 3160,
+  "system_version": "16.3.25.5.116.0.34.94.6.79",
+  "active_definition_count": 3167,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -30721,6 +30721,115 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 8
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_warsaw_header_converts_utc_without_renaming_history": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_warsaw_header_converts_utc_without_renaming_history",
+      "purpose": "Warsaw header converts utc without renaming history",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_native_bubbles_have_own_alignment_role_and_timestamp": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_native_bubbles_have_own_alignment_role_and_timestamp",
+      "purpose": "Native bubbles have own alignment role and timestamp",
+      "expected": "Pytest completes this contract cleanly and all 16 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 16,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_chat_activity_group_replaces_module_links_with_sessions": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_chat_activity_group_replaces_module_links_with_sessions",
+      "purpose": "Chat activity group replaces module links with sessions",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_new_session_is_real_and_cannot_discard_pending_request": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_new_session_is_real_and_cannot_discard_pending_request",
+      "purpose": "New session is real and cannot discard pending request",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_session_index_rejects_cross_daemon_reassociation": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_session_index_rejects_cross_daemon_reassociation",
+      "purpose": "Session index rejects cross daemon reassociation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_historical_accepted_turn_does_not_forge_original_send_time": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_historical_accepted_turn_does_not_forge_original_send_time",
+      "purpose": "Historical accepted turn does not forge original send time",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_sidebar_conversation_index_has_no_user_message_content": {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "name": "test_sidebar_conversation_index_has_no_user_message_content",
+      "purpose": "Sidebar conversation index has no user message content",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
