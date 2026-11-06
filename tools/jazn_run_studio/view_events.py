@@ -145,15 +145,34 @@ class EventViewMixin:
                         if self.setup_wizard is not None:
                             self.setup_wizard.set_installed_models(names)
                     if not names:
-                        self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
+                        self._record_chat_diagnostic(
+                            "Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
                     else:
-                        self.chat_state.setText(
+                        self._record_chat_diagnostic(
                             "Modele Ollama: " + ", ".join(names) + ". Generacja: " +
                             ("potwierdzona w API (nie jest to odpowiedź Jaźni)." if value.get("generation_verified") is True
                              else "niezweryfikowana.")
                         )
             elif kind == "chat_state":
-                self.chat_state.setText(str(value))
+                message = str(value)
+                self._record_chat_diagnostic(message)
+                chat = self.core.chat
+                if (chat is not None and self._chat_activity_request == chat.pending
+                        and self._chat_activity_request is not None):
+                    # A finished/uncertain attempt is not ongoing generation.
+                    # Keep the original request and checkpoint for manual
+                    # settlement; never present unaccepted text as Łatka.
+                    if chat.can_resolve_terminal_failure():
+                        self._end_chat_activity(
+                            "Nieudana tura — szczegóły w Historii operacji.")
+                    elif message.startswith((
+                        "Błąd transportu", "Runtime zgłosił błąd",
+                        "Brak zaakceptowanej", "Transport zamknięty",
+                        "Oczekiwanie przekroczyło", "Wynik nadal oczekuje",
+                        "Potwierdzona nieudana tura",
+                    )):
+                        self._end_chat_activity(
+                            "Wynik nierozstrzygnięty — sprawdź Historię operacji.")
             elif kind == "chat_final":
                 self.conversation.appendPlainText(value["text"] + "\n")
                 # A checkpoint is acknowledged only after the actual GUI append.
@@ -163,10 +182,16 @@ class EventViewMixin:
                         raise StudioError("Transport rozmowy nie jest dostępny")
                     self.core.chat.acknowledge_final(value["request_id"])
                 except (OSError, StudioError):
-                    self.chat_state.setText("Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
+                    self._end_chat_activity(
+                        "Potwierdzenie wyświetlenia nieudane — zobacz Historię operacji.")
+                    self._record_chat_diagnostic(
+                        "Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
                 else:
                     self.core.confirm_visible_turn(value)
-                    self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
+                    self._end_chat_activity()
+                    self._record_chat_diagnostic(
+                        "Zaakceptowano wynik • tura " + str(value["turn_id"]) +
+                        " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
                 if key == "helper:version-inspect:":
                     self.version_panel.receive(value)
@@ -236,6 +261,11 @@ class EventViewMixin:
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)
+                if (key in {"chat", "chat:resume"} and
+                        value.get("state") in {"failed", "stopped"} and
+                        self._chat_activity_request is not None):
+                    self._end_chat_activity(
+                        "Transport przerwany — sprawdź Historię operacji.")
                 if key.startswith("service:ollama"):
                     self.quick_generation_ready = False
                     self.refresh_quick_start()
