@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.75",
-  "active_definition_count": 3146,
+  "active_definition_count": 3151,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -47173,6 +47173,101 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 71
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_previous_user_words_are_sent_in_user_role_not_derived_goal": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_previous_user_words_are_sent_in_user_role_not_derived_goal",
+      "purpose": "Previous user words are sent in user role not derived goal",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_recent_three_accepted_turns_override_older_and_derived_history": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_recent_three_accepted_turns_override_older_and_derived_history",
+      "purpose": "Recent three accepted turns override older and derived history",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_legacy_dialogue_pair_is_used_only_without_accepted_projection": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_legacy_dialogue_pair_is_used_only_without_accepted_projection",
+      "purpose": "Legacy dialogue pair is used only without accepted projection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_empty_history_is_not_invented_and_internal_goal_is_not_user_role": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_empty_history_is_not_invented_and_internal_goal_is_not_user_role",
+      "purpose": "Empty history is not invented and internal goal is not user role",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_ollama_accepted_history_roles_regression.py::test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload": {
+      "path": "tests/test_ollama_accepted_history_roles_regression.py",
+      "name": "test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload",
+      "purpose": "History compiler keeps bounded recent turns and suppresses raw payload",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 143
     },
     "tests/test_ollama_chat_experience.py::test_chat_ollama_numbered_model_picker_uses_selected_number": {
       "path": "tests/test_ollama_chat_experience.py",
