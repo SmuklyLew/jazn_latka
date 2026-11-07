@@ -6,6 +6,7 @@ on:
       - master
       - "update/**"
       - "fix/**"
+      - "integrate/**"
       - "hotfix/**"
       - "upgrade/**"
       - "release/**"
