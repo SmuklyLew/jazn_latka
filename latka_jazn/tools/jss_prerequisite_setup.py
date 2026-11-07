@@ -74,6 +74,33 @@ def python_314(executable: str | Path) -> bool:
     return outcome.returncode == 0
 
 
+def discover_python_314(preferred: str | None = None) -> str:
+    """Resolve an actual compatible interpreter, not an unverified command name."""
+    candidates = [
+        preferred, sys.executable, shutil.which("python3.14"),
+        shutil.which("python"), shutil.which("python3"),
+    ]
+    if os.name == "nt":
+        local = Path(os.environ.get("LOCALAPPDATA") or ".")
+        candidates.append(str(local / "Programs" / "Python" / "Python314" / "python.exe"))
+        launcher = shutil.which("py")
+        if launcher:
+            try:
+                probe = subprocess.run(
+                    [launcher, "-3.14", "-c", "import sys; print(sys.executable)"],
+                    capture_output=True, text=True, timeout=15, check=False,
+                )
+            except (OSError, subprocess.TimeoutExpired):
+                pass
+            else:
+                if probe.returncode == 0:
+                    candidates.append(probe.stdout.strip())
+    for item in candidates:
+        if item and python_314(item):
+            return str(item)
+    raise ProvisioningError("python_3_14_not_detected_install_official_runtime")
+
+
 def inspect(root: str | Path) -> dict[str, Any]:
     paths = root_paths(root)
     executable = venv_python(root)
@@ -350,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--yes", action="store_true")
     for name in ("prepare-venv", "download-deps"):
         operation = sub.add_parser(name)
-        operation.add_argument("--python", required=True)
+        operation.add_argument("--python")
         operation.add_argument("--yes", action="store_true")
     install = sub.add_parser("install-offline")
     install.add_argument("--bundle", required=True)
@@ -373,9 +400,17 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "start-ollama":
             data = start_ollama(approved=args.yes, launch=args.launch)
         elif args.command == "prepare-venv":
-            data = prepare_venv(args.root, base_python=args.python, approved=args.yes)
+            if not args.yes:
+                raise ProvisioningError("explicit_operator_approval_required")
+            data = prepare_venv(
+                args.root, base_python=discover_python_314(args.python), approved=True
+            )
         elif args.command == "download-deps":
-            data = download_dependencies(args.root, base_python=args.python, approved=args.yes)
+            if not args.yes:
+                raise ProvisioningError("explicit_operator_approval_required")
+            data = download_dependencies(
+                args.root, base_python=discover_python_314(args.python), approved=True
+            )
         elif args.command == "install-offline":
             data = install_offline(args.root, bundle=args.bundle, approved=args.yes)
         elif args.command == "install-ollama":
