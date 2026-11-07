@@ -89,6 +89,31 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.sidebar_heading.setObjectName("workbenchSidebarGroup")
         sidebar_layout.addWidget(self.sidebar_heading)
         sidebar_layout.addWidget(self.nav, 1)
+        # Chat mode uses this dedicated conversation list instead of three
+        # configuration pages. The existing nav/page indexes stay unchanged.
+        self.chat_sidebar = QWidget(self.sidebar)
+        self.chat_sidebar.setObjectName("jssConversationSidebar")
+        chat_sidebar_layout = QVBoxLayout(self.chat_sidebar)
+        chat_sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        self.new_chat_button = QPushButton("＋ Nowa rozmowa")
+        self.new_chat_button.setAccessibleName("Nowa rozmowa lokalnej Jaźni")
+        self.new_chat_button.clicked.connect(
+            lambda _checked=False: self.guard(self.new_local_conversation))
+        chat_sidebar_layout.addWidget(self.new_chat_button)
+        self.chat_session_list = QListWidget(self.chat_sidebar)
+        self.chat_session_list.setObjectName("jssConversationList")
+        self.chat_session_list.setAccessibleName("Historia sesji lokalnych")
+        self.chat_session_list.setToolTip(
+            "Tylko rzeczywiste sesje; przełączanie wymaga rozłączenia transportu i braku zaległych tur")
+        self.chat_session_list.itemActivated.connect(
+            lambda item: self.guard(lambda: self.select_local_conversation(
+                str(item.data(Qt.ItemDataRole.UserRole)))))
+        self.chat_session_list.itemClicked.connect(
+            lambda item: self.guard(lambda: self.select_local_conversation(
+                str(item.data(Qt.ItemDataRole.UserRole)))))
+        chat_sidebar_layout.addWidget(self.chat_session_list, 1)
+        self.chat_sidebar.hide()
+        sidebar_layout.addWidget(self.chat_sidebar, 1)
         self.sidebar_footnote = QLabel("Runtime • gotowość niezweryfikowana")
         self.sidebar_footnote.setObjectName("workbenchFootnote")
         self.sidebar_footnote.setWordWrap(True)
@@ -200,6 +225,7 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.service_status_dialog: ServiceStatusDialog | None = None
         self.operator_status.clicked.connect(lambda: self.workspace.show(0))
         self._workspace_menu()
+        self.refresh_local_conversations()
         self.settings_baseline = self.settings_draft()
         self.setup_wizard = None
         self.layout_state = {}

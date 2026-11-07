@@ -31,7 +31,17 @@ OWNERS = {
         "connect_local_chat",
         "send_chat",
         "resume_chat",
-        "close_failed_chat"
+        "close_failed_chat",
+        "_animate_chat_activity",
+        "_begin_chat_activity",
+        "_end_chat_activity",
+        "_record_chat_diagnostic",
+        "_remember_active_chat_session",
+        "refresh_local_conversations",
+        "_load_local_chat_history",
+        "_present_chat_history",
+        "select_local_conversation",
+        "new_local_conversation",
     ],
     "view_studios.py": [
         "_diagnostics",

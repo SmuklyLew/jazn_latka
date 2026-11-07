@@ -68,13 +68,13 @@ class CommandPalette(QDialog):
 # Dedicated view containers; the existing QListWidget/QStackedWidget indices remain stable.
 ACTIVITY_GROUPS = {
     "Pulpit": ("Pulpit",),
-    "Czat": ("Czat lokalny", "Modele AI", "Połączenie z ChatGPT"),
-    "Usługi": ("Usługi i procesy", "Diagnostyka"),
+    "Czat": ("Czat lokalny",),
+    "Usługi": ("Usługi i procesy", "Diagnostyka", "Połączenie z ChatGPT"),
     "MEMORY": ("Dowody MEMORY",),
     "Testy i TPA": ("Katalog testów", "TPA"),
     "Studia": ("Studia Jaźni", "Konfiguracja Qt", "Wersje Qt"),
     "Developer": ("Developer",),
-    "Ustawienia": ("Ustawienia", "O programie"),
+    "Ustawienia": ("Ustawienia", "Modele AI", "O programie"),
 }
 ACTIVITY_ICONS = dict(zip(ACTIVITY_GROUPS, (
     "dashboard", "chat", "services", "memory", "tests", "studios", "developer", "settings"
@@ -215,7 +215,13 @@ class WorkbenchShell(QObject):
         for row in range(self.host.nav.count()):
             item = self.host.nav.item(row)
             item.setHidden(text not in item.text().casefold() if text else item.text() not in visible)
-        self.host.sidebar_heading.setText(self.active_group.upper())
+        is_chat = self.active_group == "Czat"
+        self.host.nav.setVisible(not is_chat)
+        self.host.chat_sidebar.setVisible(is_chat)
+        self.host.sidebar_heading.setText("ROZMOWY" if is_chat else self.active_group.upper())
+        for index in range(self.host.chat_session_list.count()):
+            item = self.host.chat_session_list.item(index)
+            item.setHidden(bool(text and text not in item.text().casefold()))
         for group, action in self.activity_actions.items():
             action.setChecked(group == self.active_group)
 
