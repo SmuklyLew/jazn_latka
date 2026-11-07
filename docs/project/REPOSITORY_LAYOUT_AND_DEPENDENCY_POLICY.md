@@ -18,6 +18,8 @@ osłabiałoby kontrakt portable/offline runtime.
 Nie przenoś stabilnych ścieżek operatorskich tylko po to, aby upodobnić repo do
 innego szablonu projektu.
 
+`AGENTS*.md` i dokumenty `docs/` służą programistom, hostom i operatorom; nie stanowią implementacji funkcji Jaźni. Zachowanie systemu musi wynikać z wykonywalnych modułów i zweryfikowanych danych stanu. Manifest/provenance służą programowej kontroli integralności i pochodzenia wydania, a nie zastępują mechanizmów runtime. Nie interpretuj opisu architektury, deklaracji w UI ani testu ze starego SHA jako dowodu działającej capability.
+
 ## 2. Kanoniczne role katalogów
 
 ```text

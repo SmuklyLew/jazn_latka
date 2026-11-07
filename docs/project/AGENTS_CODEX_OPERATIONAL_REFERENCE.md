@@ -1,6 +1,6 @@
 # AGENTS_CODEX_OPERATIONAL_REFERENCE.md — szczegółowa referencja operacyjna
 
-To szczegółowa referencja procedur dla zmian kodu, testów, dokumentacji, konfiguracji i Git. Bieżący routing należy do `AGENTS.md`, a podstawowe zasady programowania do `AGENTS.codex.md`. Wczytaj ten dokument **w całości tylko wtedy, gdy zadanie wymaga szczegółowych procedur**, a stosuj wyłącznie właściwe sekcje; nie jest drugim konkurencyjnym zestawem instrukcji, pamięcią ani runtime Jaźni.
+To szczegółowa referencja procedur dla zmian kodu, testów, dokumentacji, konfiguracji i Git. Bieżący routing należy do `AGENTS.md`, a podstawowe zasady programowania do `AGENTS.codex.md`. Wczytaj ten dokument **w całości tylko wtedy, gdy zadanie wymaga szczegółowych procedur**, a stosuj wyłącznie właściwe sekcje; nie jest drugim konkurencyjnym zestawem instrukcji, pamięcią ani runtime Jaźni. Nie odczytuj go przy zwykłej rozmowie systemu ani nie traktuj opisanych procedur jako wykonywalnych funkcji.
 
 Jeżeli zadanie dotyczy także hostowania lub weryfikacji runtime w ChatGPT, `AGENTS.chatgpt.md` obowiązuje równolegle wyłącznie dla tej odpowiedzialności. Jeżeli dotyczy integracji Ollamy, `AGENTS.ollama.md` jest źródłem kontraktu backendu, ale zmiany repozytoryjne nadal wykonuj według tego pliku.
 
@@ -34,7 +34,7 @@ Natywny mechanizm discovery Codex opiera się na `AGENTS.md` / `AGENTS.override.
 
 ## 2. Zasada architektoniczna: edytor nie jest runtime
 
-Zmiana kodu, testu, promptu, dokumentacji albo modelu nie jest sama w sobie aktywacją Jaźni i nie tworzy ciągłości runtime.
+Zmiana kodu, testu, promptu, dokumentacji albo modelu nie jest sama w sobie aktywacją Jaźni i nie tworzy ciągłości runtime. AGENTS-y sterują **pracą agenta programującego**, a nie przebiegiem poznawczym Jaźni. Manifest/provenance są wejściem weryfikatora integralności, nigdy mechanizmem emocji, pamięci, decyzji czy finalizacji. Jeżeli funkcja jest opisana, ale nie da się wskazać kodu wywoływanego w runtime i dowodu wykonania, jej stan to `unverified`, nie `PASS`.
 
 Dla zmian dotyczących wykonania zachowuj kanoniczny przebieg:
 
@@ -76,6 +76,12 @@ python -X utf8 run.py doctor --json
 ```
 
 Jeżeli executor hosta nie potrafi utworzyć procesu, nie przedstawiaj tego jako błędu kodu repozytorium. Zanotuj ograniczenie i użyj dostępnego CI dopiero po zapisaniu zmian.
+
+### Kontynuacja istniejącego PR i kontrola kosztu
+
+Jeżeli operator wskazał otwarty PR, potwierdź jego HEAD, Draft/merge status, diff oraz bieżące statusy CI. Naprawiaj awarie w kolejności zależności (wspólna przyczyna → test celowany → szersza regresja), zachowując już przeniesione linie zmian. Zielone CI z poprzedniego SHA nie zalicza aktualnego HEAD. Nie nadpisuj gałęzi źródłowej ani nie scalaj PR bez osobnej zgody.
+
+Progi pięciogodzinnej puli 60/65/70%, oddzielny limit tygodniowy i zasady postępowania przy `usage_unknown` są w `AGENTS.codex.md` — nie utrzymuj drugiego, rozbieżnego licznika. Stan wykorzystania odczytuj tylko z rzeczywistego hosta. Checkpoint musi umożliwiać wznowienie bez ponownej analizy całego repo.
 
 ## 4. Granice danych i ciągłości
 
@@ -122,7 +128,7 @@ Na pushu do `master`, `hotfix/*`, `fix/*`, `update/*`, `upgrade/*` i `tools/upgr
 
 ## 6. Walidacja
 
-Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych.
+Dobierz testy do zakresu, ale nie pomijaj kontroli podstawowych. Dla pracy nad czerwonym PR najpierw ustal aktualny błąd z logów bieżącego HEAD, potem dobierz testy pod konkretną przyczynę. Nie zamieniaj błędów pobrania zależności/środowiska na fałszywe sukcesy, a niewykonane kontrole oznacz jako niewykonane.
 
 Dla samych instrukcji i dokumentacji:
 
