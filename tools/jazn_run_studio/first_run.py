@@ -246,11 +246,9 @@ class SetupWizard(QWizard):
                 return
             extra = ["--bundle", chosen]
         elif command in {"prepare-venv", "download-deps"}:
-            try:
-                extra = ["--python", self._setup_python()]
-            except StudioError as exc:
-                self.provision_result.setText(self.core.redactor.text(str(exc)))
-                return
+            # Resolve Python 3.14 inside the setup helper. JSS itself may still
+            # be running with the older interpreter used to display this UI.
+            extra = []
         elif command == "start-ollama-app":
             extra = ["--launch", "app"]
             command = "start-ollama"
