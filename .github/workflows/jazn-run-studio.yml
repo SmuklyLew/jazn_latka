@@ -94,6 +94,8 @@ jobs:
           tests/test_jss_root_local_dependencies.py
           tests/test_jss_root_prerequisite_setup.py
           tests/test_jss_first_run_provisioning_qt.py
+          tests/test_dependency_run_studio_glibc_policy.py
+          tests/test_jazn_tpa_v105_windows_acceptance.py
       - name: Materialize and verify native optional test evidence wheels
         run: >-
           python -X utf8 -m latka_jazn.tools.dependency_studio
