@@ -267,6 +267,34 @@ def ollama_api(method: str, route: str, *, payload: dict[str, Any] | None = None
         return {"ok": False, "error_code": "ollama_unreachable_or_invalid"}
 
 
+def verify_model_generation(model: str = DEFAULT_MODEL) -> dict[str, Any]:
+    """Probe Ollama generation; never imply an accepted Jaźń turn."""
+    if not MODEL_NAME.fullmatch(model):
+        raise ProvisioningError("invalid_model_name")
+    response = ollama_api(
+        "POST", "/api/chat",
+        payload={
+            "model": model,
+            "messages": [{"role": "user", "content": "Odpowiedz jednym słowem: gotowe."}],
+            "stream": False,
+            "options": {"num_predict": 24},
+        },
+        timeout=180,
+    )
+    message = response.get("message")
+    content = message.get("content") if isinstance(message, dict) else None
+    ready = bool(
+        response.get("ok") is True and response.get("done") is True
+        and isinstance(content, str) and content.strip()
+    )
+    return {
+        "ok": ready,
+        "model": model,
+        "state": "ollama_generation_verified" if ready else "ollama_generation_unverified",
+        "runtime_turn_accepted": None,
+    }
+
+
 def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool,
                 progress: Any = None) -> dict[str, Any]:
     if not approved:
@@ -300,7 +328,11 @@ def ollama_pull(*, model: str = DEFAULT_MODEL, approved: bool,
         raise ProvisioningError("ollama_pull_failed") from exc
     if last.get("status") != "success":
         raise ProvisioningError("ollama_pull_unconfirmed")
-    return {"ok": True, "model": model, "state": "downloaded"}
+    check = verify_model_generation(model)
+    if check.get("ok") is not True:
+        raise ProvisioningError("model_downloaded_generation_unverified")
+    return {"ok": True, "model": model, "state": "downloaded_and_generated",
+            "runtime_turn_accepted": None}
 
 
 def install_python_windows(*, approved: bool) -> dict[str, Any]:
