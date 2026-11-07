@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
 import tempfile
@@ -31,6 +32,7 @@ class ChatClient:
         self.daemon_options = daemon_cli_options(core.settings)
         # A final stays pending until the GUI confirms its presentation.
         self._awaiting_gui_ack: str | None = None
+        self._confirmed_failed: dict[str, str] | None = None
         self.started_at = 0.0
         self.job: Job | None = None
         self.checkpoint = _path_without_links(settings_path(core.root).with_name("chat-checkpoint.json"))
@@ -42,10 +44,14 @@ class ChatClient:
             for key in ("session_id", "request_id"):
                 if saved.get(key) is not None and not fullmatch(r"[A-Za-z0-9_-]{1,128}", saved[key]):
                     raise StudioError("Nieprawidłowy identyfikator checkpointu")
-            if saved.get("request_id") and saved.get("daemon_url") != self.daemon_url:
-                raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
-            self.session_id = saved["session_id"]
-            self.pending = saved.get("request_id")
+            if saved.get("daemon_url") != self.daemon_url:
+                if saved.get("request_id"):
+                    raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
+                # A completed conversation from a different endpoint must not
+                # silently become the local history of a newly chosen daemon.
+            else:
+                self.session_id = saved["session_id"]
+                self.pending = saved.get("request_id")
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
@@ -61,6 +67,32 @@ class ChatClient:
             os.replace(name, self.checkpoint)
         finally:
             Path(name).unlink(missing_ok=True)
+
+    def select_session(self, session_id: str) -> None:
+        """Change the selected conversation only with no live or pending turn.
+
+        The daemon is never asked to replay or move a request. A session may
+        be reselected only while its transport is disconnected.
+        """
+        from .chat_session_catalog import SESSION_ID
+        if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
+            raise StudioError("Nieprawidłowy identyfikator rozmowy")
+        with self.lock:
+            if (self.pending or self._awaiting_gui_ack
+                    or (self.job is not None and not self.job.done.is_set())):
+                raise StudioError(
+                    "Najpierw rozstrzygnij turę i rozłącz transport; sesja nie zostanie zmieniona")
+            if session_id == self.session_id:
+                return
+            previous = self.session_id
+            self.session_id = session_id
+            self.job = None
+            self._confirmed_failed = None
+            try:
+                self._save()
+            except OSError:
+                self.session_id = previous
+                raise
 
     def _require_same_endpoint(self) -> None:
         if self.core.settings.daemon_url != self.daemon_url:
@@ -148,6 +180,7 @@ class ChatClient:
             if job is None or job.proc is None or job.proc.poll() is not None or job.proc.stdin is None:
                 raise StudioError("Najpierw połącz lokalny czat")
             self.pending = "studio-turn-" + uuid4().hex
+            self._confirmed_failed = None
             self._save()  # Durable identity before any bytes can reach runtime.
             payload = {"message": message, "session_id": self.session_id, "request_id": self.pending}
             try:
@@ -164,11 +197,48 @@ class ChatClient:
         if not request:
             self.core.emit("chat", "chat_state", "Odebrano diagnostykę transportu bez aktywnego żądania.")
             return
-        if payload.get("error_code") and payload.get("ok") is False:
-            code = str(payload["error_code"])
+        nested = payload.get("result")
+        candidate = nested if isinstance(nested, dict) else payload
+        code_value = payload.get("error_code") or candidate.get("error_code")
+        if (payload.get("ok") is False or candidate.get("ok") is False) and code_value:
+            code = str(code_value)
             if not code.isascii() or not code.replace("_", "").isalnum() or len(code) > 100:
                 code = "runtime_error"
-            self.core.emit("chat", "chat_state", "Runtime zgłosił błąd: " + code + ". Zachowano request_id; użyj Wznów wynik.")
+            job_value = payload.get("daemon_job")
+            job = job_value if isinstance(job_value, dict) else payload
+            job_result = job.get("result")
+            result = job_result if isinstance(job_result, dict) else {}
+            confirmed = bool(
+                job.get("request_id") == request
+                and job.get("session_id") == self.session_id
+                and job.get("job_status") == "failed"
+                and job.get("done") is True
+                and job.get("ok") is False
+                and result.get("ok") is False
+                and result.get("error_code") == code
+                and job.get("completed_at_utc")
+                and not job.get("awaiting_host_finalization")
+                and not job.get("phase_result_ready")
+                and not any(job.get(key) for key in (
+                    "host_turn_id", "host_trace_id", "host_request_contract_hash"
+                ))
+            )
+            with self.lock:
+                if self.pending == request:
+                    self._confirmed_failed = (
+                        {"request_id": request, "session_id": self.session_id,
+                         "error_code": code, "daemon_url": self.daemon_url,
+                         "completed_at_utc": str(job["completed_at_utc"])}
+                        if confirmed else None
+                    )
+            message = (
+                "Potwierdzona nieudana tura: " + code +
+                ". Bez ponawiania wiadomości możesz wybrać Zamknij nieudaną turę."
+                if confirmed else
+                "Runtime zgłosił błąd: " + code +
+                ". Brak potwierdzenia terminalnego wyniku; zachowano request_id."
+            )
+            self.core.emit("chat", "chat_state", message)
             return
         # No unaccepted candidate or user prompt is sent into the shared log registry.
         checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
@@ -207,6 +277,58 @@ class ChatClient:
                 self.started_at = previous_started
                 raise
             self._awaiting_gui_ack = None
+
+    def can_resolve_terminal_failure(self) -> bool:
+        with self.lock:
+            return bool(self.pending and self._awaiting_gui_ack is None
+                        and self._confirmed_failed is not None
+                        and self._confirmed_failed.get("request_id") == self.pending)
+
+    def resolve_terminal_failure(self, request_id: str) -> None:
+        """Operator-only archive of an authenticated terminal failure, not a final ACK."""
+        from re import fullmatch
+
+        with self.lock:
+            proof = self._confirmed_failed
+            if (not request_id or fullmatch(r"[A-Za-z0-9_-]{1,128}", request_id) is None
+                    or self.pending != request_id or self._awaiting_gui_ack is not None
+                    or proof is None or proof.get("request_id") != request_id
+                    or proof.get("session_id") != self.session_id
+                    or proof.get("daemon_url") != self.daemon_url):
+                raise StudioError("Brak potwierdzonej terminalnej porażki dla tej tury")
+            archive = _path_without_links(
+                self.checkpoint.with_name("chat-terminal-failure-" + request_id + ".json")
+            )
+            if archive.is_file():
+                try:
+                    existing = json.loads(archive.read_text(encoding="utf-8"))
+                except (OSError, ValueError, UnicodeError) as exc:
+                    raise StudioError("Nie można zweryfikować archiwum błędu") from exc
+                if any(existing.get(key) != value for key, value in proof.items()):
+                    raise StudioError("Archiwum nie odpowiada bieżącej turze")
+            else:
+                data = {"schema_version": "jss_chat_failed_ack/v1", **proof,
+                        "operator_acknowledged_at_utc": datetime.now(timezone.utc).isoformat(),
+                        "automatic_replay_performed": False,
+                        "accepted_finalization_claimed": False,
+                        "contains_user_text": False}
+                fd, name = tempfile.mkstemp(dir=archive.parent, prefix=".chat-failed-")
+                try:
+                    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                        json.dump(data, stream, ensure_ascii=False)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                    os.replace(name, archive)
+                finally:
+                    Path(name).unlink(missing_ok=True)
+            old_started = self.started_at
+            self.pending, self.started_at = None, 0.0
+            try:
+                self._save()
+            except OSError:
+                self.pending, self.started_at = request_id, old_started
+                raise
+            self._confirmed_failed = None
 
     def resume(self) -> None:
         request = self.pending

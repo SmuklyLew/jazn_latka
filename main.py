@@ -2587,7 +2587,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.add_argument("--target-root", type=Path, required=True)
         parser.add_argument("--daemon-host", default="127.0.0.1")
         parser.add_argument("--daemon-port", type=int, default=8787)
-        parser.add_argument("--startup-timeout", type=float, default=12.0)
+        parser.add_argument("--startup-timeout", type=float, default=DEFAULT_START_TIMEOUT_SECONDS)
         parser.add_argument("--stop-timeout", type=float, default=5.0)
         parser.add_argument("--json", action="store_true")
         ns = parser.parse_args(args[1:])

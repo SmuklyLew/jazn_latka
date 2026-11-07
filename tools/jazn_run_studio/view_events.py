@@ -9,6 +9,7 @@ import json
 import os
 from dataclasses import asdict, replace
 from pathlib import Path
+from datetime import datetime, timezone
 import queue
 from typing import Callable
 
@@ -42,7 +43,10 @@ class EventViewMixin:
                 except queue.Empty:
                     break
             self.workspace.observe(key, kind, value)
-            if self.service_status_dialog is not None and kind in {"evidence", "probe", "state"}:
+            if self.service_status_dialog is not None and kind in {
+                "evidence", "probe", "state", "supervisor_evidence",
+                "memory_evidence", "status_summary",
+            }:
                 self.service_status_dialog.observe(key, kind, value)
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
@@ -119,6 +123,11 @@ class EventViewMixin:
                     else:
                         detail = "Nieskonfigurowana / niezweryfikowana • sprawdź ustawienia i probe"
                     self.update_service_summary(str(service), detail)
+                if value.get("monitor_only") is True:
+                    # A passive service ping is not a model-selection or
+                    # chat-generation event. It must never replace the
+                    # pending chat state or erase an explicit generation gate.
+                    continue
                 if service == "ollama":
                     names = value.get("models", [])
                     if isinstance(names, list):
@@ -137,17 +146,39 @@ class EventViewMixin:
                         if self.setup_wizard is not None:
                             self.setup_wizard.set_installed_models(names)
                     if not names:
-                        self.chat_state.setText("Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
+                        self._record_chat_diagnostic(
+                            "Ollama odpowiada, lecz nie widzi żadnego modelu. Sprawdź OLLAMA_MODELS i użytkownika usługi; niczego automatycznie nie pobierano.")
                     else:
-                        self.chat_state.setText(
+                        self._record_chat_diagnostic(
                             "Modele Ollama: " + ", ".join(names) + ". Generacja: " +
                             ("potwierdzona w API (nie jest to odpowiedź Jaźni)." if value.get("generation_verified") is True
                              else "niezweryfikowana.")
                         )
             elif kind == "chat_state":
-                self.chat_state.setText(str(value))
+                message = str(value)
+                self._record_chat_diagnostic(message)
+                chat = self.core.chat
+                if (chat is not None and self._chat_activity_request == chat.pending
+                        and self._chat_activity_request is not None):
+                    # A finished/uncertain attempt is not ongoing generation.
+                    # Keep the original request and checkpoint for manual
+                    # settlement; never present unaccepted text as Łatka.
+                    if chat.can_resolve_terminal_failure():
+                        self._end_chat_activity(
+                            "Nieudana tura — szczegóły w Historii operacji.")
+                    elif message.startswith((
+                        "Błąd transportu", "Runtime zgłosił błąd",
+                        "Brak zaakceptowanej", "Transport zamknięty",
+                        "Oczekiwanie przekroczyło", "Wynik nadal oczekuje",
+                        "Potwierdzona nieudana tura",
+                    )):
+                        self._end_chat_activity(
+                            "Wynik nierozstrzygnięty — sprawdź Historię operacji.")
             elif kind == "chat_final":
-                self.conversation.appendPlainText(value["text"] + "\n")
+                self.conversation.append_message(
+                    "assistant", value["text"],
+                    timestamp=datetime.now(timezone.utc),
+                    timestamp_kind="odebrano i wyświetlono")
                 # A checkpoint is acknowledged only after the actual GUI append.
                 # Without this ACK a restart can poll the same canonical result.
                 try:
@@ -155,10 +186,16 @@ class EventViewMixin:
                         raise StudioError("Transport rozmowy nie jest dostępny")
                     self.core.chat.acknowledge_final(value["request_id"])
                 except (OSError, StudioError):
-                    self.chat_state.setText("Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
+                    self._end_chat_activity(
+                        "Potwierdzenie wyświetlenia nieudane — zobacz Historię operacji.")
+                    self._record_chat_diagnostic(
+                        "Wynik pokazano, lecz nie zapisano potwierdzenia. Wznów ten sam request_id.")
                 else:
                     self.core.confirm_visible_turn(value)
-                    self.chat_state.setText("Zaakceptowano wynik • tura " + str(value["turn_id"]) + " • ślad " + str(value["trace_id"]))
+                    self._end_chat_activity()
+                    self._record_chat_diagnostic(
+                        "Zaakceptowano wynik • tura " + str(value["turn_id"]) +
+                        " • ślad " + str(value["trace_id"]))
             elif kind == "helper":
                 if key == "helper:version-inspect:":
                     self.version_panel.receive(value)
@@ -228,6 +265,11 @@ class EventViewMixin:
                     self.log_view("Zdarzenia").appendPlainText(line)
                     if value["state"] == "failed":
                         self.log_view("Błędy").appendPlainText(line)
+                if (key in {"chat", "chat:resume"} and
+                        value.get("state") in {"failed", "stopped"} and
+                        self._chat_activity_request is not None):
+                    self._end_chat_activity(
+                        "Transport przerwany — sprawdź Historię operacji.")
                 if key.startswith("service:ollama"):
                     self.quick_generation_ready = False
                     self.refresh_quick_start()

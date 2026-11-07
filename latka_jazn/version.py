@@ -1,3 +1,15 @@
+# v116.0.34.94.6.110: Correct cleanroom unprovisioned negative gate, await durable Qt TPA refusal and allow verified Windows cold startup.
+# v116.0.34.94.6.109: Keep managed ROOT-local install state out of source exports, consistent with the static integrity boundary.
+# v116.0.34.94.6.108: Separate managed root-local install state from static package hashes; sync startup identity and TPA checklist regression.
+# v116.0.34.94.6.107: Repair glibc version comparison, early locked cross-target validation and TPA regression test contracts.
+# v116.0.34.94.6.106: Separate Qt/JSS glibc 2.34 floor from core 2.17 and prepare 22 Windows TPA cases.
+# v116.0.34.94.6.105: staged JSS V104 + V80 convergence; release metadata not yet synchronized.
+# v116.0.34.94.6.80: Integrate root-local Python/JSS prerequisites after V79 (WIP; no release acceptance yet).
+# v116.0.34.94.6.79: Timestamped chat bubbles, metadata-only conversation list, safe session selection and relocated integrations.
+# v116.0.34.94.6.78: Put technical chat statuses in opt-in history and show truthful animated local activity without affecting finalization.
+# v116.0.34.94.6.77: Restore explicit failure classification for unexpectedly failing optional-service probes.
+# v116.0.34.94.6.76: Separate read-only service observer from operator controls and monitor all service capabilities without lifecycle changes.
+# v116.0.34.94.6.75: Preserve terminal chat recovery metadata past cache TTL and expose unclassified runtime rejection diagnostics.
 # v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
@@ -205,9 +217,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.74"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.110"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "recall-ollama-jss-status"
+PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

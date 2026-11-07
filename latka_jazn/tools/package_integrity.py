@@ -275,6 +275,15 @@ def path_is_forbidden(relative: str) -> bool:
     forbidden_roots = {name.lower() for name in FORBIDDEN_ROOT_NAMES}
     if not parts or lower_parts[0] in forbidden_roots:
         return True
+    # ROOT/.venv and two explicitly managed ROOT/local_resources subtrees are
+    # installed after package extraction. They are NOT static release payload.
+    # Dependency Studio validates the installed wheelhouse/venv separately;
+    # do not exclude the local_resources root or arbitrary new code files.
+    if lower_parts[0] == ".venv" or tuple(lower_parts[:2]) in {
+        ("local_resources", "python"),
+        ("local_resources", "wheelhouse"),
+    }:
+        return True
     name = parts[-1]
     lower_name = name.lower()
     if lower_name in {item.lower() for item in FORBIDDEN_FILE_NAMES}:

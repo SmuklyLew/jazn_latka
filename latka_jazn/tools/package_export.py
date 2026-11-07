@@ -275,6 +275,15 @@ def forbidden_package_reason(rel: str) -> str | None:
     # case-insensitive Windows, including explicitly supplied package plans.
     if rel.casefold() == "build" or rel.casefold().startswith("build/"):
         return "generated build directory must never enter a source package"
+    # Match the static integrity boundary: Dependency Studio creates these
+    # directories after SYSTEM extraction; never export them as source files.
+    # The tracked local_resources/README.md remains part of the static package.
+    parts_lower = rel.casefold().split("/")
+    if parts_lower[0] == ".venv" or (
+        len(parts_lower) >= 2 and parts_lower[0] == "local_resources"
+        and parts_lower[1] in {"python", "wheelhouse"}
+    ):
+        return "installation-owned dependencies must not enter SYSTEM packages"
     if rel.casefold() == ".settings_local" or rel.casefold().startswith(".settings_local/"):
         return "private operator settings cannot enter SYSTEM packages"
     parts = set(Path(rel).parts)

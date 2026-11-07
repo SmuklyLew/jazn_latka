@@ -18,32 +18,72 @@ The Studio is not a second package manager. It orchestrates standard Python `ven
 8. `activation_ready=True` requires the activation dependency profiles to be satisfied by the current interpreter or a verified managed environment.
 9. SHA-256 and recorded package metadata prove local byte identity relative to the manifest; they do not certify upstream package safety or legal compatibility.
 
-## Canonical local paths
+## Canonical local paths (JSS ROOT-local installation migration, WIP)
 
-Default root (outside the active/versioned source tree):
-
-```text
-<host workspace_runtime>/local_resources/python/
-```
-
-Layout:
+New SYSTEM roots ship a versioned `ROOT/local_resources/README.md`, which
+selects the ROOT-local installer layout while leaving daemon/MEMORY workspaces
+untouched:
 
 ```text
-python/
-├─ wheelhouse/
-│  ├─ core+archive+pdf__windows-x64__py312__<resolution>/
-│  │  ├─ *.whl
-│  │  ├─ JAZN_WHEELHOUSE_MANIFEST.json
-│  │  └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
-│  └─ ...
-├─ environments/
-│  └─ <platform>__py<major-minor>__<manifest-sha>/
-└─ JAZN_DEPENDENCY_ENVIRONMENT.json
+<verified SYSTEM ROOT>/
+├─ .venv/                            # target-machine-generated Python environment
+└─ local_resources/
+   ├─ README.md                      # versioned description (no binary packages)
+   ├─ python/
+   │  └─ JAZN_DEPENDENCY_ENVIRONMENT.json
+   ├─ wheelhouse/
+   │  └─ core+run-studio__windows-x64__py314__<resolution>/
+   │     ├─ *.whl
+   │     ├─ JAZN_WHEELHOUSE_MANIFEST.json
+   │     └─ JAZN_WHEELHOUSE_REQUIREMENTS.txt
+   ├─ ollama/
+   ├─ models/
+   ├─ nlp/
+   └─ manifests/
 ```
 
-The root is resolved by `workspace_runtime_path(<jazn_root>)`; it is shared host state, not versioned source. The historical `<jazn_root>/latka_jazn/local_resources/` location is not the default. Releases transport wheelhouse bundles as immutable dependency sidecar ZIPs described by `JAZN_DEPENDENCY_SET.json`; ready-made `venv`/`site-packages` trees remain non-transportable runtime state.
+Legacy installations that do not have `ROOT/local_resources/` retain their
+previous `workspace_runtime/local_resources/python/` locations. When the
+new root is prepared, read-only discovery still checks a legacy activation
+marker if the new marker is missing. No old environment, daemon state,
+checkpoint or MEMORY is moved automatically. `JAZN_DEPENDENCY_ENVIRONMENTS`
+remains an explicit override, and ROOT/.venv is never deleted by generic
+Dependency Studio GC.
 
-Set `JAZN_DEPENDENCY_WHEELHOUSE` to an explicit external wheelhouse when the bundle should live outside the runtime root.
+The venv is created locally, not shipped or copied from a different machine.
+A verified wheelhouse can be transported as a target-specific release sidecar,
+but source Git intentionally excludes wheels and model data. The first-run JSS
+installer provides explicit offline and online operations. This branch is
+still under integration: native clean-room packaging must confirm the complete
+`core+run-studio` offline wheelhouse before release.
+
+## Profile-aware Linux x64 compatibility (V106, acceptance pending)
+
+The release keeps two distinct, checked binary-compatibility floors rather than
+silently widening every environment's minimum. The **core/CLI** target remains
+`glibc >= 2.17` (`manylinux_2_17_x86_64` and older compatibility aliases).
+The **run-studio / Qt** target uses **`glibc >= 2.34`** because the official
+PySide6-Essentials 6.12.0 Linux x86-64 wheel is
+`cp310-abi3-manylinux_2_34_x86_64`.
+
+Dependency Studio expands profile includes before selecting the pip platform
+set. `core+run-studio` declares `minimum_libc_version: 2.34` and accepts
+the tags from manylinux 2.34 downwards. A core-only bundle still declares
+`minimum_libc_version: 2.17`. The native download and target-specific
+manifest remain SHA-256-verified. Installation refuses a selected Linux
+interpreter running below the declared minimum; presence of Python does not
+override Qt's compatibility contract.
+
+This is a **new CI integration**, not a claim that Linux packaging is already
+PASS. Windows x64 and Linux glibc x64 / Python 3.12, 3.13, 3.14 package
+builds and hash-locked offline installation must pass at the actual head SHA.
+Native release .venv remains generated on the target machine, not shipped
+as an installed site-packages directory.
+
+Official sources:
+- https://pypi.org/project/PySide6-Essentials/6.12.0/
+- https://peps.python.org/pep-0600/
+- https://pip.pypa.io/en/stable/cli/pip_download/
 
 ## Profiles
 
@@ -216,7 +256,7 @@ Neither layer may silently download resources during a conversation turn.
 
 `jazn_dependency_wheelhouse/v3` adds explicit materialization mode, minimum libc policy and the complete pip-platform selector set to the v2 integrity inventory. It uses PyPA `packaging` after dependency handoff for PEP 440 requirements, wheel filename parsing and compatibility tags. The pre-handoff bootstrap remains stdlib-only, so an ambient interpreter does not need `packaging` merely to discover a managed environment or a transported sidecar.
 
-Each release dependency artifact contains one verified wheelhouse for exactly one target. A target records friendly alias plus Python version, implementation, ABI, platform family, architecture, libc family, minimum libc version, accepted pip platforms and the compatible tag set. `.25.5.17` release support is Windows x86-64 and Linux glibc x86-64 for Python 3.12, 3.13 and 3.14. Linux x64 uses the glibc 2.17 baseline (`manylinux_2_17_x86_64` / `manylinux2014_x86_64`). Linux musl, ARM and macOS cross-targets are not release-supported until a policy and native clean-room acceptance exist.
+Each release dependency artifact contains one verified wheelhouse for exactly one target. A target records friendly alias plus Python version, implementation, ABI, platform family, architecture, libc family, minimum libc version, accepted pip platforms and the compatible tag set. `.25.5.17` release support is Windows x86-64 and Linux glibc x86-64 for Python 3.12, 3.13 and 3.14. Linux x64 **core/CLI** uses the glibc 2.17 baseline (`manylinux_2_17_x86_64` / `manylinux2014_x86_64`). The `run-studio` Qt profile has an independent glibc 2.34 minimum (see above). Linux musl, ARM and macOS cross-targets are not release-supported until a policy and native clean-room acceptance exist.
 
 The system package carries `JAZN_DEPENDENCY_SET.json`; dependency artifacts remain sibling files. Discovery verifies package-set metadata and outer SHA before extracting a sidecar, then verifies the inner wheelhouse and hash lock. A wrong Python/platform/libc bundle is rejected before pip is invoked.
 
