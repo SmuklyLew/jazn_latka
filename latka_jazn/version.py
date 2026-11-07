@@ -1,3 +1,4 @@
+# v116.0.34.94.6.113: Restore isolated acceptance identity/recovery and pre-finalization voice gates; split native Tk GUI processes.
 # v116.0.34.94.6.112: Restore native SCM supervisor adapter, explicit CLI service route and fail-closed Windows owner plan.
 # v116.0.34.94.6.111: Restore V104 existing-WAL refusal, safe SQLite storage routing and Windows settings path race guard.
 # v116.0.34.94.6.110: Correct cleanroom unprovisioned negative gate, await durable Qt TPA refusal and allow verified Windows cold startup.
@@ -219,7 +220,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.112"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.113"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
