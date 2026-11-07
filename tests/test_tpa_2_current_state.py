@@ -6,6 +6,7 @@ import pytest
 
 from tools.jazn_run_studio.tpa_current_state import current_state
 from tools.jazn_run_studio.tpa_guidance import record_observation
+from tools.jazn_run_studio.tpa_catalog import scenario
 from tools.jazn_run_studio.tpa_reports import RunStore, safe_child
 
 
@@ -97,7 +98,7 @@ def test_damaged_junit_blocks_projection_without_rewriting_claim(store, damage):
 def test_full_acceptance_hashes_are_rechecked_after_restart(store):
     report = completed(store)
     row = report["results"][0]
-    record_observation(store, report, "config-persistence", [0, 1, 2, 3], "Synthetic human observation", [row["junit"]], "PASS")
+    record_observation(store, report, "config-persistence", list(range(len(scenario("config-persistence")["guide"]))), "Synthetic human observation", [row["junit"]], "PASS")
     state = current_state(RunStore(store.root), report["source"])["config-persistence"]
     assert state["full"]["status"] == "PASS"
     # Still parseable valid JUnit, but not the material the operator accepted.

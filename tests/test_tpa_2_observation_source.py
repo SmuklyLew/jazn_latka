@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication
 
 from tools.jazn_run_studio.tpa_engine import TPARunner
 from tools.jazn_run_studio.tpa_guidance import record_observation
+from tools.jazn_run_studio.tpa_catalog import scenario
 from tests.test_jazn_tpa_execution_qt import wait_until
 from tests.test_tpa_2_sources import repo, command
 
@@ -27,12 +28,13 @@ def test_observation_is_bound_to_verified_copy_even_if_studio_version_changes(re
     row = report["results"][0]
     assert row["status"] == "PASS"
     (repo / "latka_jazn/version.py").write_text('PACKAGE_VERSION="9.9.9"', encoding="utf-8")
+    complete_steps = list(range(len(scenario("config-persistence")["guide"])))
     with pytest.raises(ValueError, match="SHA"):
-        record_observation(runner.store, report, "config-persistence", [0, 1, 2, 3], "observed", [row["junit"]], "PASS")
+        record_observation(runner.store, report, "config-persistence", complete_steps, "observed", [row["junit"]], "PASS")
     source = Path(report["environment"]["execution_root"])
     runner.check_ready(source_root=source)
     wait_until(lambda: not runner.active)
-    observation = record_observation(runner.store, report, "config-persistence", [0, 1, 2, 3], "observed",
+    observation = record_observation(runner.store, report, "config-persistence", complete_steps, "observed",
                                      [row["junit"]], "PASS", verified_source=runner.probe["source"])
     assert observation["run_id"] == report["run_id"]
     assert observation["source"]["version"] != "9.9.9"

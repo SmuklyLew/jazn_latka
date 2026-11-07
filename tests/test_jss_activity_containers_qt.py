@@ -19,7 +19,11 @@ def test_activity_containers_are_distinct_and_do_not_drop_pages(window) -> None:
                for i in range(window.nav.count()))
     window.navigate("Czat lokalny")
     assert shell.activity_actions["Czat"].isChecked()
-    assert window.sidebar_heading.text() == "CZAT"
+    assert window.sidebar_heading.text() == "ROZMOWY"
+    assert window.nav.isHidden()
+    assert not window.chat_sidebar.isHidden()
+    assert window.workbench.group_for_section("Modele AI") == "Ustawienia"
+    assert window.workbench.group_for_section("Połączenie z ChatGPT") == "Usługi"
 
 
 def test_small_window_keeps_activity_bar_when_sidebar_is_collapsed(window) -> None:

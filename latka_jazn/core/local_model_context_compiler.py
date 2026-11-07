@@ -31,6 +31,7 @@ SECTION_BUDGETS: dict[str, int] = {
     "output_instructions": 2_400,
     "token_budget_hint": 120,
     "dialogue_context": 2_400,
+    "conversation_history": 5_200,
     "self_state_runtime": 1_000,
     "turn_response_policy": 2_200,
     "full_canon_model_context": 5_600,
@@ -210,6 +211,34 @@ def _prepare_memory_items(value: Any, *, user_text: str) -> list[Any]:
     return deduped[:12]
 
 
+def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
+    """Keep the most recent accepted turns, separately from internal goals.
+
+    The full verified records remain in ConversationStateStore. This bounded
+    projection carries source-bound user/assistant turns to local model chat.
+    """
+    if not isinstance(value, Mapping):
+        return {}
+    raw_turns = value.get("turns")
+    if not isinstance(raw_turns, (list, tuple)):
+        return {}
+    selected: list[dict[str, str]] = []
+    for item in raw_turns[-3:]:
+        if not isinstance(item, Mapping):
+            continue
+        user_text = str(item.get("user_text") or "").strip()[:900]
+        assistant_text = str(item.get("assistant_text") or "").strip()[:600]
+        if not user_text and not assistant_text:
+            continue
+        selected.append({
+            "turn_id": str(item.get("turn_id") or "")[:96],
+            "user_text": user_text,
+            "assistant_text": assistant_text,
+            "source": str(item.get("source") or "runtime")[:64],
+        })
+    return {"turns": selected} if selected else {}
+
+
 def _safe_identifier(value: Any) -> str:
     text = str(value or "").strip()
     text = re.sub(r"[^0-9A-Za-z_.:/-]+", "_", text).strip("_")
@@ -333,6 +362,8 @@ def compile_local_model_context(
             section = prepared_memory_items
         elif key == "full_canon_model_context":
             section = _prepare_full_canon(section)
+        elif key == "conversation_history":
+            section = _recent_accepted_conversation(section)
         budget = SECTION_BUDGETS[key]
         fitted, truncated = _fit_value(section, budget=budget)
         if fitted not in (None, "", [], {}):
@@ -380,6 +411,7 @@ def compile_local_model_context(
                 "nlg_plan",
                 "turn_response_policy",
                 "output_instructions",
+                "conversation_history",
                 "required_reference_ids",
             )
             if compact.get(key) not in (None, "", [], {})

@@ -332,6 +332,19 @@ def _verify_bundle_full(bundle_dir: Path | str) -> dict[str, Any]:
     if manifest.get("schema_version") != WHEELHOUSE_SCHEMA:
         errors.append({"code": "manifest_schema_unsupported"})
     target = _mapping(manifest.get("target"))
+    resolved_profiles = set(str(name) for name in
+                            (manifest.get("resolved_profiles") or manifest.get("profiles") or []))
+    if target.get("alias") == "linux-x64":
+        from .common import LINUX_GLIBC_MINIMUM, LINUX_RUN_STUDIO_GLIBC_MINIMUM
+        expected_minimum = (
+            LINUX_RUN_STUDIO_GLIBC_MINIMUM if "run-studio" in resolved_profiles
+            else LINUX_GLIBC_MINIMUM
+        )
+        if target.get("minimum_libc_version") != expected_minimum:
+            errors.append({"code": "linux_profile_libc_floor_mismatch"})
+        if "run-studio" in resolved_profiles and "manylinux_2_34_x86_64" not in (
+                target.get("compatible_pip_platforms") or []):
+            errors.append({"code": "linux_gui_platform_tags_missing"})
     target_tags = set(str(tag) for tag in target.get("compatible_platform_tags") or [])
     files = _list(manifest.get("files"))
     expected: set[str] = set()
@@ -517,11 +530,23 @@ def download_bundle(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     project_root = Path(root).resolve()
-    target = target_spec(platform_alias, python_version)
+    input_lock = Path(lock_file).expanduser().resolve() if lock_file is not None else None
+    # Reject unpinned cross-target requests before reading an optional
+    # dependency registry or creating any wheelhouse directories.
+    if input_lock is None:
+        host_target = target_spec(platform_alias, python_version)
+        if not target_is_current_host(host_target):
+            raise DependencyStudioError(
+                "Cross-target dependency materialization requires a canonical, fully pinned SHA-256 lock"
+            )
+    expanded_profiles = expand_profile_names(project_root, profile_names)
+    target = target_spec(
+        platform_alias, python_version,
+        requires_run_studio="run-studio" in expanded_profiles,
+    )
     executable = str(python_executable or sys.executable)
     wheelhouse = Path(wheelhouse_root).resolve() if wheelhouse_root else default_wheelhouse_root(project_root)
     stage = wheelhouse / f".download-{uuid.uuid4().hex}"
-    input_lock = Path(lock_file).expanduser().resolve() if lock_file is not None else None
     is_native = target_is_current_host(target)
     if input_lock is None and not is_native:
         raise DependencyStudioError(

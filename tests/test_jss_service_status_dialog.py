@@ -56,6 +56,23 @@ def test_mcp_and_ollama_display_bounded_claims() -> None:
                                      "selected_model_present": True,
                                      "generation_verified": True})[0] == "good"
     assert assess_service("ollama", None, failed=True)[0] == "bad"
+    # A missing optional service is only an unverified capability, but an
+    # unexpected failed probe is a real failure and must remain visible.
+    assert assess_service("mcp", None)[0] == "warn"
+    assert assess_service("mcp", None, failed=True)[0] == "bad"
+    assert assess_service("mcp_https", None, failed=True)[0] == "bad"
+    assert assess_service("supervisor", None, failed=True)[0] == "bad"
+    assert assess_service("mcp_https", {"endpoint_reachable": True})[0] == "warn"
+    assert assess_service("mcp_https", {"endpoint_reachable": True, "ready": True,
+                                        "authenticated_mcp_ready": True,
+                                        "runtime_ready": True})[0] == "good"
+    assert assess_service("supervisor", {"ready": True, "identity_confirmed": True,
+                                         "heartbeat_fresh": True})[0] == "good"
+    assert assess_service("supervisor", {"active": False})[0] == "warn"
+    assert assess_service("memory", {"mode": "off"})[0] == "warn"
+    assert assess_service("memory", {"full_autobiographical_recall_ready": True,
+                                     "continuity_ready": True})[0] == "good"
+    assert assess_service("memory", {"memory_search_ready": True})[0] == "warn"
 
 
 def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
@@ -77,7 +94,7 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
     panel = ServiceStatusDialog(host, lambda: host.guard(host.refresh_services))
     assert not panel.isModal()
     assert host.refresh_count == 0
-    assert len(panel.indicators) == 4
+    assert len(panel.indicators) == 7
 
     panel.observe("status", "evidence", _runtime_evidence())
     assert "Działa" in panel.indicators["runtime"][1].text()
@@ -86,6 +103,32 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
 
     panel.request_refresh()
     assert host.refresh_count == 1
-    assert "Niezweryfikowany" in panel.indicators["server"][1].text()
+    # Retain the last sample until its replacement arrives, rather than
+    # briefly claiming that an existing observation never happened.
+    assert "Błąd" in panel.indicators["server"][1].text()
+    panel.observe("status", "evidence", _runtime_evidence())
+    assert "Działa" in panel.indicators["server"][1].text()
+    panel.observe("supervisor", "supervisor_evidence",
+                  {"ready": True, "identity_confirmed": True, "heartbeat_fresh": True})
+    assert "Działa" in panel.indicators["supervisor"][1].text()
+    panel.observe("status", "status_summary", {"memory": "wyłączona przez konfigurację (off)"})
+    panel.observe("status", "memory_evidence", {"memory_search_ready": False,
+                                                 "continuity_ready": False})
+    assert "wyłączona konfiguracją" in panel.indicators["memory"][1].text()
+    panel.observe("probe:cloudflare", "probe", {"service": "cloudflare",
+                                                "endpoint_reachable": True})
+    assert "HTTPS dostępny" in panel.indicators["mcp_https"][1].text()
+
+    assert not panel.monitor_timer.isActive()
+    panel.show()
+    app.processEvents()
+    assert panel.monitor_timer.isActive()
+    panel._monitor_once()
+    assert host.refresh_count == 2
+    panel.hide()
+    app.processEvents()
+    assert not panel.monitor_timer.isActive()
+    panel._monitor_once()
+    assert host.refresh_count == 2
     panel.close()
     host.close()
