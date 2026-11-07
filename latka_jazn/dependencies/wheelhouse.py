@@ -530,6 +530,15 @@ def download_bundle(
     dry_run: bool = False,
 ) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    input_lock = Path(lock_file).expanduser().resolve() if lock_file is not None else None
+    # Reject unpinned cross-target requests before reading an optional
+    # dependency registry or creating any wheelhouse directories.
+    if input_lock is None:
+        host_target = target_spec(platform_alias, python_version)
+        if not target_is_current_host(host_target):
+            raise DependencyStudioError(
+                "Cross-target dependency materialization requires a canonical, fully pinned SHA-256 lock"
+            )
     expanded_profiles = expand_profile_names(project_root, profile_names)
     target = target_spec(
         platform_alias, python_version,
@@ -538,7 +547,6 @@ def download_bundle(
     executable = str(python_executable or sys.executable)
     wheelhouse = Path(wheelhouse_root).resolve() if wheelhouse_root else default_wheelhouse_root(project_root)
     stage = wheelhouse / f".download-{uuid.uuid4().hex}"
-    input_lock = Path(lock_file).expanduser().resolve() if lock_file is not None else None
     is_native = target_is_current_host(target)
     if input_lock is None and not is_native:
         raise DependencyStudioError(

@@ -1,3 +1,4 @@
+# v116.0.34.94.6.107: Repair glibc version comparison, early locked cross-target validation and TPA regression test contracts.
 # v116.0.34.94.6.106: Separate Qt/JSS glibc 2.34 floor from core 2.17 and prepare 22 Windows TPA cases.
 # v116.0.34.94.6.105: staged JSS V104 + V80 convergence; release metadata not yet synchronized.
 # v116.0.34.94.6.80: Integrate root-local Python/JSS prerequisites after V79 (WIP; no release acceptance yet).
@@ -213,7 +214,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.106"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.107"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

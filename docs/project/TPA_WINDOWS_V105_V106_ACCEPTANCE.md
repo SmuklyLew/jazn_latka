@@ -1,3 +1,7 @@
+# Aktualizacja robocza V107 (PR #464)
+
+Zasady 22 scenariuszy i wymogi dowodowe pozostają obowiązujące. Wersja V107 poprawia walidację zależności i testy; historyczne wyniki dla poprzednich SHA/wersji nie oznaczają odbioru V107. Wszystkie nieuruchomione próby operatora nadal mają status `NOT_RUN`.
+
 # TPA — Windows acceptance after V74 → V105/V106 convergence
 
 Status: **OPERATOR ACCEPTANCE PENDING**. This file is guidance, **not evidence
