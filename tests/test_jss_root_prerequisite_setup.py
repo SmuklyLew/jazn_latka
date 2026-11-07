@@ -166,3 +166,43 @@ def test_offline_install_refuses_unconfirmed_activation(
     )
     with pytest.raises(setup.ProvisioningError, match="activation_not_confirmed"):
         setup.install_offline(root, bundle=directory, approved=True)
+
+
+def test_discover_python_314_prefers_verified_interpreter(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(setup.sys, "executable", "/other/python")
+    monkeypatch.setattr(setup.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(setup, "python_314", lambda item: str(item) == "/test/python314")
+    assert setup.discover_python_314("/test/python314") == "/test/python314"
+
+
+def test_discover_python_314_fails_closed_without_compatible_interpreter(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(setup, "python_314", lambda _item: False)
+    monkeypatch.setattr(setup.shutil, "which", lambda _name: None)
+    with pytest.raises(setup.ProvisioningError, match="python_3_14_not_detected"):
+        setup.discover_python_314()
+
+
+def test_ollama_generation_requires_nonempty_finished_response(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    requests: list[tuple[str, str]] = []
+
+    def fake_api(method: str, route: str, **_kwargs: object) -> dict[str, object]:
+        requests.append((method, route))
+        return {"ok": True, "done": True, "message": {"content": "gotowe"}}
+
+    monkeypatch.setattr(setup, "ollama_api", fake_api)
+    result = setup.verify_model_generation("gemma3:latest")
+    assert result["ok"] is True
+    assert result["runtime_turn_accepted"] is None
+    assert requests == [("POST", "/api/chat")]
+
+    monkeypatch.setattr(
+        setup, "ollama_api", lambda *_a, **_k:
+        {"ok": True, "done": False, "message": {"content": "gotowe"}},
+    )
+    assert setup.verify_model_generation()["ok"] is False
