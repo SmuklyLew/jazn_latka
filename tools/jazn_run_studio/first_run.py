@@ -316,7 +316,7 @@ class SetupWizard(QWizard):
     def _provision_output(self) -> None:
         process = self.provision_process
         if process is not None:
-            chunk = bytes(process.readAllStandardOutput()).decode("utf-8", "replace")
+            chunk = process.readAllStandardOutput().data().decode("utf-8", "replace")
             # Operator only sees bounded, sanitized status rather than raw pip/installer output.
             self.provision_buffer = (self.provision_buffer + chunk)[-32768:]
             for line in chunk.splitlines():
