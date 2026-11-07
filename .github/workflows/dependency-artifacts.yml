@@ -135,10 +135,17 @@ jobs:
           set -euo pipefail
           wheelhouse_root="$RUNNER_TEMP/jazn-jss-wheelhouse"
           result="$RUNNER_TEMP/jss-dependency-download.json"
-          python -X utf8 -m latka_jazn.tools.dependency_studio \
+          if python -X utf8 -m latka_jazn.tools.dependency_studio \
             --root . --wheelhouse-root "$wheelhouse_root" --json \
             download --profile core --profile run-studio \
-            --python-version "${{ inputs.python-version }}" --platform current > "$result"
+            --python-version "${{ inputs.python-version }}" --platform current > "$result"; then
+            :
+          else
+            download_status=$?
+            echo "Native core+run-studio download failed (exit=$download_status)." >&2
+            cat "$result" >&2
+            exit "$download_status"
+          fi
           bundle_dir="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$result")"
           echo "bundle_dir=$bundle_dir" >> "$GITHUB_OUTPUT"
           python -X utf8 -m latka_jazn.tools.dependency_studio \
