@@ -202,6 +202,28 @@ def workbench_stylesheet(theme: str, accent: str, *, system_dark: bool = False) 
             font-family: 'Segoe UI', 'DejaVu Sans', sans-serif;
         }}
         QLabel#workbenchChatStatus {{ color: {c.muted}; padding: 6px 8px; }}
+        QScrollArea#workbenchChatTranscript, QWidget#jssChatMessageCanvas {{
+            background: {c.editor}; border: 0;
+        }}
+        QFrame#jssUserBubble {{
+            background: {c.hover}; border: 1px solid {c.accent};
+            border-radius: 14px;
+        }}
+        QFrame#jssAssistantBubble {{
+            background: {c.surface}; border: 1px solid {c.border};
+            border-radius: 14px;
+        }}
+        QLabel#jssBubbleHeader {{
+            color: {c.muted}; font-size: {metrics.small_points}pt; font-weight: 600;
+            padding: 0;
+        }}
+        QLabel#jssBubbleContent {{
+            color: {c.text}; font-size: {metrics.body_points + 1}pt;
+            padding: 0;
+        }}
+        QLabel#jssChatPlaceholder {{
+            color: {c.muted}; padding: 24px;
+        }}
 
         QSplitter::handle {{ background: {c.border}; border: 1px solid {c.hover}; }}
         QSplitter::handle:hover {{ background: {c.accent}; }}

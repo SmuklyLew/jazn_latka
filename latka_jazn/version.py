@@ -1,3 +1,9 @@
+# v116.0.34.94.6.80: Integrate root-local Python/JSS prerequisites after V79 (WIP; no release acceptance yet).
+# v116.0.34.94.6.79: Timestamped chat bubbles, metadata-only conversation list, safe session selection and relocated integrations.
+# v116.0.34.94.6.78: Put technical chat statuses in opt-in history and show truthful animated local activity without affecting finalization.
+# v116.0.34.94.6.77: Restore explicit failure classification for unexpectedly failing optional-service probes.
+# v116.0.34.94.6.76: Separate read-only service observer from operator controls and monitor all service capabilities without lifecycle changes.
+# v116.0.34.94.6.75: Preserve terminal chat recovery metadata past cache TTL and expose unclassified runtime rejection diagnostics.
 # v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
@@ -205,9 +211,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.74"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.80"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "recall-ollama-jss-status"
+PACKAGE_RELEASE_NAME = "jss-root-local-bootstrap"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
