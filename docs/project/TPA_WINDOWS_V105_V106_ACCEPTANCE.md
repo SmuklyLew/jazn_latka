@@ -1,3 +1,7 @@
+# Aktualizacja robocza V108 (PR #464)
+
+Oddzielono zarządzany stan instalacji ROOT/.venv, ROOT/local_resources/python i ROOT/local_resources/wheelhouse od inwentarza niezmiennych plików SYSTEM. Kontrola wszystkich chronionych plików oraz odmowa nieznanego kodu pozostają obowiązujące. Testy TPA wymagają kompletnej aktualnej checklisty i dowodu dla bieżącego SHA; nie zmieniono historycznych wyników operatora.
+
 # Aktualizacja robocza V107 (PR #464)
 
 Zasady 22 scenariuszy i wymogi dowodowe pozostają obowiązujące. Wersja V107 poprawia walidację zależności i testy; historyczne wyniki dla poprzednich SHA/wersji nie oznaczają odbioru V107. Wszystkie nieuruchomione próby operatora nadal mają status `NOT_RUN`.
