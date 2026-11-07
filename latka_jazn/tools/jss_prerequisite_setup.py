@@ -142,7 +142,9 @@ def _verify_bundle(root: str | Path, bundle: str | Path) -> tuple[Path, Path]:
         raise ProvisioningError("wheelhouse_verification_failed")
     manifest = read_manifest(directory / MANIFEST_NAME)
     target = manifest.get("target") if isinstance(manifest, dict) else None
-    if not isinstance(target, dict) or target.get("python_version") != "3.14":
+    if not isinstance(target, dict):
+        raise ProvisioningError("wheelhouse_target_invalid")
+    if target.get("python_version") != "3.14":
         raise ProvisioningError("wheelhouse_python_target_mismatch")
     host_alias = current_platform_alias()
     if host_alias not in {"windows-x64", "linux-x64"} or target.get("alias") != host_alias:
