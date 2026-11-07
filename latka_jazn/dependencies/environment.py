@@ -190,7 +190,7 @@ def install_bundle(
         "hash_lock_sha256": lock_sha,
         "dependency_contract_fingerprint": contract_fingerprint,
         "environment_identity": environment_identity,
-        "fresh_environment": True,
+        "fresh_environment": not prepared_root_venv if not dry_run else True,
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
@@ -208,11 +208,28 @@ def install_bundle(
     if root_local_venv and (env_root.is_symlink() or
                             (hasattr(env_root, "is_junction") and env_root.is_junction())):
         raise DependencyStudioError("unsafe_root_venv_link")
-    if env_root.exists():
+    if root_local_venv:
+        from latka_jazn.core.runtime_root import active_runtime_marker_path
+        if active_runtime_marker_path(project_root).is_file():
+            raise DependencyStudioError("active_runtime_marker_present_no_venv_mutation")
+        if environment_marker_path(project_root).is_file() or existing_environment_marker_path(project_root).is_file():
+            raise DependencyStudioError("existing_activation_marker_requires_staged_upgrade")
+    prepared_root_venv = bool(root_local_venv and env_root.is_dir())
+    if env_root.exists() and not prepared_root_venv:
         raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    if prepared_root_venv:
+        if not (env_root / "pyvenv.cfg").is_file() or not env_python.is_file():
+            raise DependencyStudioError("root_venv_incomplete_manual_recovery_required")
+        if (env_root / ENVIRONMENT_MARKER_NAME).exists():
+            raise DependencyStudioError("root_venv_already_marked_requires_staged_upgrade")
+        prepared_probe = _probe_python(str(env_python))
+        if any(prepared_probe.get(key) != probe.get(key) for key in
+               ("platform", "python_version", "implementation", "abi", "libc_family")):
+            raise DependencyStudioError("root_venv_interpreter_target_mismatch")
     managed_root.mkdir(parents=True, exist_ok=True)
     try:
-        _run(create, cwd=project_root, timeout=timeout_seconds)
+        if not prepared_root_venv:
+            _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)
         pip_check = _run([str(env_python), "-m", "pip", "check"], cwd=project_root, timeout=timeout_seconds)
         smoke_code = (
