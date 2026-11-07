@@ -10,7 +10,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "package-distribution-cleanroom.yml"
 def _handoff_step() -> str:
     text = WORKFLOW.read_text(encoding="utf-8")
     start = text.index("      - name: Dependency-empty run.py performs verified offline handoff")
-    end = text.index("      - name: Reject package when dependency sidecar is absent", start)
+    end = text.index("      - name: Preserve cleanroom startup evidence on failure", start)
     return text[start:end]
 
 
@@ -43,9 +43,16 @@ def test_activation_checks_capture_exit_code_then_fail_closed() -> None:
     assert 'set -e' in activation
     assert 'test "$start_rc" -eq 0' in activation
     assert 'assert p.get("ok") is True' in activation
+    assert 'assert p.get("daemon_instance_id")' in activation
+    assert 'status_after_rc=$?' in activation
+    assert 'test "$status_after_rc" -eq 0' in activation
     assert 'assert p.get("runtime_core_ready") is True' in activation
     assert 'assert p.get("runtime_write_ready") is True' in activation
+    assert 'd.get("active_state") == "active_trusted"' in activation
+    assert 'd.get("endpoint_reachable") is True' in activation
+    assert 'd.get("heartbeat_fresh") is True' in activation
     assert 'assert st.get("voice_live_ready") is True' in activation
+    assert activation.index('test "$start_rc" -eq 0') < activation.index('status_after_rc=$?')
 
 
 def test_cleanroom_uses_isolated_bootstrap_python_without_site_packages() -> None:
