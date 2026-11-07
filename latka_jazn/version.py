@@ -1,3 +1,4 @@
+# v116.0.34.94.6.105: staged JSS V104 + V80 convergence; release metadata not yet synchronized.
 # v116.0.34.94.6.80: Integrate root-local Python/JSS prerequisites after V79 (WIP; no release acceptance yet).
 # v116.0.34.94.6.79: Timestamped chat bubbles, metadata-only conversation list, safe session selection and relocated integrations.
 # v116.0.34.94.6.78: Put technical chat statuses in opt-in history and show truthful animated local activity without affecting finalization.
@@ -211,9 +212,9 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.80"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.105"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "jss-root-local-bootstrap"
+PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )
