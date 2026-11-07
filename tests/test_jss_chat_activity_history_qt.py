@@ -107,7 +107,9 @@ def test_terminal_error_stops_spinner_but_preserves_request(window) -> None:
     assert fake.pending == "studio-turn-synthetic"
     assert fake.sent == ["Testowa wiadomość bez prywatnych danych."]
     assert not window.chat_activity_timer.isActive()
-    assert "Historia operacji" in window.chat_activity.text()
+    # The live error points to the opted-in technical log; keep the natural
+    # Polish declension ("w Historii operacji") as a strict UI regression.
+    assert "Historii operacji" in window.chat_activity.text()
     assert not window.send_button.isEnabled()
     assert "runtime_turn_not_accepted" in window.chat_operation_history.toPlainText()
     assert "runtime_turn_not_accepted" not in window.conversation.toPlainText()

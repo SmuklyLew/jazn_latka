@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
-  "package_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
-  "generated_at_utc": "2026-11-06T18:24:21+00:00",
-  "updated_at_utc": "2026-11-06T18:24:21+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
+  "package_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
+  "generated_at_utc": "2026-11-06T19:23:46+00:00",
+  "updated_at_utc": "2026-11-06T19:23:46+00:00",
   "start_file": "run.py",
-  "file_count": 3663,
-  "static_file_count": 3663,
+  "file_count": 3668,
+  "static_file_count": 3668,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -463,8 +463,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2954,
-      "sha256": "86c9c94e474f64e2cf0d797d9324bd0084e9d9e5cfb144add5a53d2abfdb0435",
+      "size_bytes": 2996,
+      "sha256": "b3866d23216dc436eaf593a6b0e99fe181068e23df05e87e9ac6e6199767b14c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +499,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1945,
-      "sha256": "5475b13f9632c0095066fb6f41bc36c322e63e58b94d6a5753f26771bb1cf45a",
+      "size_bytes": 1952,
+      "sha256": "8b8937e09b533a94387001942d2e50656109745cede35b6614ff5e775c0c0268",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9923,7 +9923,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7909,
-      "sha256": "26a7c273d0fce7d1c87e8e3e61656a5ed934fe6039a4671cd5dd057cd9e4ead2",
+      "sha256": "c39e4be0cbc65e24ef6ac891b931e4651688cfe5b4d1e3ba6bf938c3f16f3c13",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11425,8 +11425,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 24731,
-      "sha256": "2a3b9dfdebd72f166a03b9ba43ded619406f536a0a0ddaae49973f0e0d67bc89",
+      "size_bytes": 24869,
+      "sha256": "4aac0aea2e966d70584ea578784f04c26e947a6031fbaa340362336bc6e1778f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -25590,6 +25590,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v79_ci_contract_before_fixes/test_jss_chat_activity_history_qt.py",
+      "size_bytes": 5326,
+      "sha256": "506ed4472c8c7829ebef9ff8ab26a424ad3c4c56d614a6d6a949b800954df1bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v79_ci_contract_before_fixes/test_jss_modular_view_boundaries.py",
+      "size_bytes": 4022,
+      "sha256": "1c9fa9ae7206561cff5ee88642c29700d2608bc257a093e811860447a6d4c0af",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/version_16_3_25_5_115_17/test_chatgpt_capability_loader_convergence.py",
       "size_bytes": 2692,
       "sha256": "24dd2bbd03158d5659635a2ae655d385e5e66751710c4c9328278079d79cceef",
@@ -28471,8 +28489,8 @@
     },
     {
       "path": "tests/test_jss_activity_containers_qt.py",
-      "size_bytes": 1424,
-      "sha256": "8e8b765a2fa56daa7965320856cc176648cb97b28850c3aa07d190ebd9e4be79",
+      "size_bytes": 1666,
+      "sha256": "c5c01a69703d8ad646fcf3c0756db11f31b95f44dd1087500c6cdec8eacbfb8e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28489,8 +28507,8 @@
     },
     {
       "path": "tests/test_jss_chat_activity_history_qt.py",
-      "size_bytes": 5326,
-      "sha256": "506ed4472c8c7829ebef9ff8ab26a424ad3c4c56d614a6d6a949b800954df1bd",
+      "size_bytes": 5477,
+      "sha256": "19919eb0f2cde8cb0b42c99f77a83f6b44adbc50f65ddfe2fb6a57896687142e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28500,6 +28518,15 @@
       "path": "tests/test_jss_chat_workbench_qt.py",
       "size_bytes": 996,
       "sha256": "bd59487bb890689d392ece254e1f485260eff093576b467df001fa64b3b650c6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
+      "size_bytes": 6439,
+      "sha256": "04ed8e6aef550a8a1b327e3347d1a1b54f7b43badf1fab55f0b96de938849255",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28606,8 +28633,8 @@
     },
     {
       "path": "tests/test_jss_modular_view_boundaries.py",
-      "size_bytes": 4022,
-      "sha256": "1c9fa9ae7206561cff5ee88642c29700d2608bc257a093e811860447a6d4c0af",
+      "size_bytes": 4374,
+      "sha256": "809aae6ea1d2424dbf10b06b4e0900f7f103f45836c9ee66ad44bdff7a843067",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32026,8 +32053,17 @@
     },
     {
       "path": "tools/jazn_run_studio/chat.py",
-      "size_bytes": 17691,
-      "sha256": "9e41df220efd21653a9cca99a0d39217f1c950703ee2085cbdf14fe0f2c84c34",
+      "size_bytes": 19047,
+      "sha256": "66092eb6e162a61f5f2bea772c192f3d91b774d6f835a62e10fb483379c549b6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/chat_bubbles.py",
+      "size_bytes": 5193,
+      "sha256": "5b5928286a93a5c68e0033f0c857ecab59398a35cfa2565c6e70b9867922f20e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32037,6 +32073,15 @@
       "path": "tools/jazn_run_studio/chat_protocol.py",
       "size_bytes": 1263,
       "sha256": "a6d45dacb66b8464c09f4255348d175642d1285332155ae794a39adddf1007bd",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tools/jazn_run_studio/chat_session_catalog.py",
+      "size_bytes": 4238,
+      "sha256": "1e97ed6039a32493cc29a37ef88437a65f68048442940e859928966dec2d30e3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32494,8 +32539,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_chat.py",
-      "size_bytes": 12138,
-      "sha256": "881e6805cfdc8bfe16e992a7af9a38c77063e14ea81eb9bd2b9bbf042290d79e",
+      "size_bytes": 20800,
+      "sha256": "b6734992470b8bc8055a41fadd4d810daaeefdfea716d7acf200c402b4c72d2a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32512,8 +32557,8 @@
     },
     {
       "path": "tools/jazn_run_studio/view_events.py",
-      "size_bytes": 19126,
-      "sha256": "2c8798c54bf1bb8d503d5bcaeb7614d779f7670f7947c280dd4257ded3c1a35a",
+      "size_bytes": 19312,
+      "sha256": "99e4b7002b73372f37ca338c80ef81b3c09692c461cb597a65856a52afdccd0e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32575,8 +32620,8 @@
     },
     {
       "path": "tools/jazn_run_studio/window.py",
-      "size_bytes": 16230,
-      "sha256": "bc923faa1a9ada1d528799113f5cd813c133da2ba6d70325399cedac6d3d9f8a",
+      "size_bytes": 17878,
+      "sha256": "f7efeca30e2c85bf195176bdbeb743fc395c47a73b0fae44859f44202b3ede00",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32593,8 +32638,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_shell.py",
-      "size_bytes": 14615,
-      "sha256": "68150c05153083748f4a9dcd51d6e1a0f21ddbafa18eb9c5189b7d6539b74d01",
+      "size_bytes": 14987,
+      "sha256": "f7bb33b600bd3677f671a61a32cb3bc9d2c7d1e5f898320d23c45b164c57b7fa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32602,8 +32647,8 @@
     },
     {
       "path": "tools/jazn_run_studio/workbench_theme.py",
-      "size_bytes": 13830,
-      "sha256": "5e0ae5c433a1a57a440b4e16ff32276f2b97da5b370c108e10dce64f0e40d4ad",
+      "size_bytes": 14640,
+      "sha256": "08572a6ef159a0fb7f297cdd64df81614da33c4eed800f18ed1bd2c055979cc1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32764,8 +32809,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2794234,
-      "sha256": "8f93b7fff9881b2cb4b3fa712f53846f3c136192ae27319f59b0f46264030493",
+      "size_bytes": 2799299,
+      "sha256": "074d794e6a543ed38a6055ee42c2bfb77f103fe5c6e1f2fcccfa0f2d0de87f04",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33422,11 +33467,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
+  "release_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
-    "package_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history",
-    "release_version": "16.3.25.5.116.0.34.94.6.78-jss-chat-activity-history"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
+    "package_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar",
+    "release_version": "16.3.25.5.116.0.34.94.6.79-jss-conversation-bubbles-sidebar"
   },
   "legacy_aliases": {
     "version": "release_version"

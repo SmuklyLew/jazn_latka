@@ -44,10 +44,14 @@ class ChatClient:
             for key in ("session_id", "request_id"):
                 if saved.get(key) is not None and not fullmatch(r"[A-Za-z0-9_-]{1,128}", saved[key]):
                     raise StudioError("Nieprawidłowy identyfikator checkpointu")
-            if saved.get("request_id") and saved.get("daemon_url") != self.daemon_url:
-                raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
-            self.session_id = saved["session_id"]
-            self.pending = saved.get("request_id")
+            if saved.get("daemon_url") != self.daemon_url:
+                if saved.get("request_id"):
+                    raise StudioError("Checkpoint pochodzi z innego albo niezweryfikowanego endpointu; nie wznawiaj na obcym daemonie")
+                # A completed conversation from a different endpoint must not
+                # silently become the local history of a newly chosen daemon.
+            else:
+                self.session_id = saved["session_id"]
+                self.pending = saved.get("request_id")
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
@@ -63,6 +67,32 @@ class ChatClient:
             os.replace(name, self.checkpoint)
         finally:
             Path(name).unlink(missing_ok=True)
+
+    def select_session(self, session_id: str) -> None:
+        """Change the selected conversation only with no live or pending turn.
+
+        The daemon is never asked to replay or move a request. A session may
+        be reselected only while its transport is disconnected.
+        """
+        from .chat_session_catalog import SESSION_ID
+        if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
+            raise StudioError("Nieprawidłowy identyfikator rozmowy")
+        with self.lock:
+            if (self.pending or self._awaiting_gui_ack
+                    or (self.job is not None and not self.job.done.is_set())):
+                raise StudioError(
+                    "Najpierw rozstrzygnij turę i rozłącz transport; sesja nie zostanie zmieniona")
+            if session_id == self.session_id:
+                return
+            previous = self.session_id
+            self.session_id = session_id
+            self.job = None
+            self._confirmed_failed = None
+            try:
+                self._save()
+            except OSError:
+                self.session_id = previous
+                raise
 
     def _require_same_endpoint(self) -> None:
         if self.core.settings.daemon_url != self.daemon_url:

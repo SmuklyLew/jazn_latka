@@ -9,6 +9,7 @@ import json
 import os
 from dataclasses import asdict, replace
 from pathlib import Path
+from datetime import datetime, timezone
 import queue
 from typing import Callable
 
@@ -174,7 +175,10 @@ class EventViewMixin:
                         self._end_chat_activity(
                             "Wynik nierozstrzygnięty — sprawdź Historię operacji.")
             elif kind == "chat_final":
-                self.conversation.appendPlainText(value["text"] + "\n")
+                self.conversation.append_message(
+                    "assistant", value["text"],
+                    timestamp=datetime.now(timezone.utc),
+                    timestamp_kind="odebrano i wyświetlono")
                 # A checkpoint is acknowledged only after the actual GUI append.
                 # Without this ACK a restart can poll the same canonical result.
                 try:
