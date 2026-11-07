@@ -62,7 +62,7 @@ def glibc_version_at_least(actual: str, minimum: str) -> bool:
         return False
     if not re.fullmatch(r"[0-9]+\.[0-9]+", str(minimum)):
         return False
-    return tuple(map(int, actual.split("."))) >= tuple(map(int, minimum))
+    return tuple(map(int, actual.split("."))) >= tuple(map(int, minimum.split(".")))
 
 
 class DependencyStudioError(RuntimeError):
