@@ -157,144 +157,29 @@ def _verify_bundle(root: str | Path, bundle: str | Path) -> tuple[Path, Path]:
     return directory, directory / LOCK_NAME
 
 
-def _record_verified_environment(root: str | Path, directory: Path,
-                                 requirements_path: Path, python: Path) -> dict[str, Any]:
-    """Commit the canonical v2 marker only after pip+imports+inventory verification."""
-    from latka_jazn.dependencies.common import (
-        ENVIRONMENT_SCHEMA, MANIFEST_NAME, activation_profile_names,
-        canonicalize_distribution_name, current_libc_family, current_platform_alias,
-        dependency_contract_fingerprint, distribution_name_from_requirement,
-        environment_marker_path, import_name_for_distribution, runtime_version,
-    )
-    from latka_jazn.dependencies.wheelhouse import read_manifest, sha256_file
-
-    root_dir = root_paths(root)["root"]
-    manifest = read_manifest(directory / MANIFEST_NAME)
-    if not isinstance(manifest, dict):
-        raise ProvisioningError("verified_manifest_missing")
-    profiles = [str(value) for value in (manifest.get("resolved_profiles") or
-                                         manifest.get("profiles") or [])]
-    if not set(activation_profile_names(root_dir)).issubset(set(profiles)):
-        raise ProvisioningError("activation_profiles_missing")
-    fingerprint = dependency_contract_fingerprint(root_dir, profiles)
-    if fingerprint != str(manifest.get("dependency_contract_fingerprint") or ""):
-        raise ProvisioningError("dependency_contract_mismatch")
-    requirements = [str(req) for req in manifest.get("requirements") or []]
-    imports = sorted({import_name_for_distribution(root_dir, distribution_name_from_requirement(req))
-                      for req in requirements})
-    if not imports or any(not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", name) for name in imports):
-        raise ProvisioningError("unsafe_or_empty_import_smoke")
-    smoke_code = (
-        "import importlib,json; names=" + json.dumps(imports) +
-        "; print(json.dumps({n:bool(importlib.import_module(n)) for n in names}))"
-    )
-    smoke = subprocess.run([str(python), "-X", "utf8", "-c", smoke_code],
-                           cwd=root_dir, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", timeout=300, check=False)
-    if smoke.returncode:
-        raise ProvisioningError("direct_requirement_import_failed")
-    try:
-        import_smoke = json.loads(smoke.stdout)
-    except json.JSONDecodeError as exc:
-        raise ProvisioningError("import_smoke_invalid_json") from exc
-    if not isinstance(import_smoke, dict) or not all(x is True for x in import_smoke.values()):
-        raise ProvisioningError("import_smoke_not_ready")
-
-    inspection = subprocess.run(
-        [str(python), "-m", "pip", "inspect", "--local"],
-        cwd=root_dir, capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=300, check=False,
-    )
-    if inspection.returncode:
-        raise ProvisioningError("pip_inspect_failed")
-    try:
-        inspected = json.loads(inspection.stdout)
-    except json.JSONDecodeError as exc:
-        raise ProvisioningError("pip_inspect_invalid_json") from exc
-    if not isinstance(inspected, dict):
-        raise ProvisioningError("pip_inspect_invalid_shape")
-    inventory: dict[str, str] = {}
-    for item in inspected.get("installed") or []:
-        metadata = item.get("metadata") if isinstance(item, dict) else {}
-        if isinstance(metadata, dict) and metadata.get("name") and metadata.get("version"):
-            inventory[canonicalize_distribution_name(str(metadata["name"]))] = str(metadata["version"])
-    expected = {
-        canonicalize_distribution_name(str(item["name"])): str(item["version"])
-        for item in manifest.get("resolved_distributions") or []
-        if isinstance(item, dict) and item.get("name") and item.get("version")
-    }
-    if not expected or any(inventory.get(name) != version for name, version in expected.items()):
-        raise ProvisioningError("pip_inventory_mismatch")
-
-    path = environment_marker_path(root_dir)
-    env_marker = root_dir / ".venv" / "JAZN_DEPENDENCY_ENVIRONMENT.json"
-    if path.exists() or env_marker.exists():
-        raise ProvisioningError("environment_marker_exists_use_explicit_repair")
-    payload: dict[str, Any] = {
-        "schema_version": ENVIRONMENT_SCHEMA,
-        "created_for_runtime_version": runtime_version(),
-        "dependency_contract_fingerprint": fingerprint,
-        "ready": True,
-        "project_root": str(root_dir),
-        "environment_root": str(root_dir / ".venv"),
-        "environment_identity": "root-local-py314-" + sha256_file(directory / MANIFEST_NAME)[:12],
-        "managed_environments_root": str(root_dir),
-        "python_executable": str(python),
-        "python_version": "3.14",
-        "platform": current_platform_alias(),
-        "implementation": "cp",
-        "abi": "cp314",
-        "libc_family": current_libc_family(),
-        "profiles": list(manifest.get("profiles") or []),
-        "resolved_profiles": profiles,
-        "requirements": requirements,
-        "wheelhouse_bundle": str(directory),
-        "wheelhouse_manifest_sha256": sha256_file(directory / MANIFEST_NAME),
-        "hash_lock_sha256": sha256_file(requirements_path),
-        "pip_check": "No broken requirements found.",
-        "import_smoke": import_smoke,
-        "pip_inspect": inspected,
-        "installed_inventory": inventory,
-        "truth_boundary": "Ready after verified offline wheelhouse, pip check, imports and inventory.",
-    }
-    for destination in (env_marker, path):
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        temporary = destination.with_suffix(destination.suffix + ".tmp")
-        if temporary.exists():
-            raise ProvisioningError("environment_marker_staging_conflict")
-        temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True),
-                             encoding="utf-8")
-        os.replace(temporary, destination)
-    return {"marker_path": str(path), "environment_root": str(root_dir / ".venv"),
-            "installed_distributions": len(expected)}
-
-
 def install_offline(root: str | Path, *, bundle: str | Path, approved: bool) -> dict[str, Any]:
+    """Install exclusively through canonical Dependency Studio verification."""
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
-    from latka_jazn.core.runtime_root import active_runtime_marker_path
-    marker = active_runtime_marker_path(root_paths(root)["root"])
-    if marker.is_file():
-        raise ProvisioningError("runtime_marker_present_verify_live_state_before_install")
-    directory, requirements = _verify_bundle(root, bundle)
+    directory, _requirements = _verify_bundle(root, bundle)
     python = venv_python(root)
     if not python_314(python):
         raise ProvisioningError("root_venv_python_314_missing")
-    commands = (
-        [str(python), "-m", "pip", "install", "--disable-pip-version-check",
-         "--no-index", "--only-binary=:all:", "--require-hashes",
-         "--find-links", str(directory), "-r", str(requirements)],
-        [str(python), "-m", "pip", "check"],
-    )
-    for command in commands:
-        result = subprocess.run(command, cwd=root_paths(root)["root"],
-                                capture_output=True, text=True, encoding="utf-8",
-                                errors="replace", timeout=1800, check=False)
-        if result.returncode:
-            raise ProvisioningError("offline_install_or_pip_check_failed")
-    receipt = _record_verified_environment(root, directory, requirements, python)
-    return {"ok": True, "state": "installed_verified_and_marked",
-            "python": str(python), **receipt}
+    from latka_jazn.dependencies.common import DependencyStudioError
+    from latka_jazn.dependencies.environment import install_bundle
+
+    try:
+        result = install_bundle(root, directory, python_executable=str(python), offline=True)
+    except DependencyStudioError as exc:
+        raise ProvisioningError("canonical_offline_dependency_install_failed") from exc
+    if result.get("ok") is not True or result.get("activation_marker_updated") is not True:
+        raise ProvisioningError("canonical_activation_not_confirmed")
+    return {
+        "ok": True, "state": "installed_verified_and_marked",
+        "python": str(python),
+        "environment_root": str(result.get("environment_root") or ""),
+        "marker_path": str(result.get("activation_marker_path") or ""),
+    }
 
 
 def download_dependencies(root: str | Path, *, base_python: str, approved: bool) -> dict[str, Any]:
