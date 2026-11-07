@@ -114,3 +114,55 @@ def test_cli_inspect_returns_json(root: Path, monkeypatch: pytest.MonkeyPatch, c
     parsed = json.loads(capsys.readouterr().out)
     assert parsed["schema_version"] == "jazn_jss_prerequisites/v1"
     assert parsed["default_model"] == "gemma3:latest"
+
+
+def test_offline_install_delegates_to_canonical_dependency_studio(
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from latka_jazn.dependencies import environment
+
+    directory = root / "local_resources" / "wheelhouse" / "fixture"
+    directory.mkdir(parents=True)
+    python = setup.venv_python(root)
+    python.parent.mkdir(parents=True)
+    python.write_bytes(b"fixture")
+    monkeypatch.setattr(setup, "python_314", lambda _: True)
+    monkeypatch.setattr(setup, "_verify_bundle", lambda *_args: (directory, directory / "lock"))
+    calls: list[tuple[object, ...]] = []
+
+    def fake_install(*args: object, **kwargs: object) -> dict[str, object]:
+        calls.append((*args, kwargs))
+        return {
+            "ok": True,
+            "activation_marker_updated": True,
+            "environment_root": str(root / ".venv"),
+            "activation_marker_path": str(root / "local_resources" / "python" / "JAZN_DEPENDENCY_ENVIRONMENT.json"),
+        }
+
+    monkeypatch.setattr(environment, "install_bundle", fake_install)
+    result = setup.install_offline(root, bundle=directory, approved=True)
+    assert result["state"] == "installed_verified_and_marked"
+    assert len(calls) == 1
+    assert calls[0][0] == root
+    assert calls[0][1] == directory
+    assert calls[0][2] == {"python_executable": str(python), "offline": True}
+
+
+def test_offline_install_refuses_unconfirmed_activation(
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from latka_jazn.dependencies import environment
+
+    directory = root / "local_resources" / "wheelhouse" / "fixture"
+    directory.mkdir(parents=True)
+    python = setup.venv_python(root)
+    python.parent.mkdir(parents=True)
+    python.write_bytes(b"fixture")
+    monkeypatch.setattr(setup, "python_314", lambda _: True)
+    monkeypatch.setattr(setup, "_verify_bundle", lambda *_args: (directory, directory / "lock"))
+    monkeypatch.setattr(
+        environment, "install_bundle",
+        lambda *_args, **_kwargs: {"ok": True, "activation_marker_updated": False},
+    )
+    with pytest.raises(setup.ProvisioningError, match="activation_not_confirmed"):
+        setup.install_offline(root, bundle=directory, approved=True)
