@@ -57,6 +57,34 @@ installer provides explicit offline and online operations. This branch is
 still under integration: native clean-room packaging must confirm the complete
 `core+run-studio` offline wheelhouse before release.
 
+## Profile-aware Linux x64 compatibility (V106, acceptance pending)
+
+The release keeps two distinct, checked binary-compatibility floors rather than
+silently widening every environment's minimum. The **core/CLI** target remains
+`glibc >= 2.17` (`manylinux_2_17_x86_64` and older compatibility aliases).
+The **run-studio / Qt** target uses **`glibc >= 2.34`** because the official
+PySide6-Essentials 6.12.0 Linux x86-64 wheel is
+`cp310-abi3-manylinux_2_34_x86_64`.
+
+Dependency Studio expands profile includes before selecting the pip platform
+set. `core+run-studio` declares `minimum_libc_version: 2.34` and accepts
+the tags from manylinux 2.34 downwards. A core-only bundle still declares
+`minimum_libc_version: 2.17`. The native download and target-specific
+manifest remain SHA-256-verified. Installation refuses a selected Linux
+interpreter running below the declared minimum; presence of Python does not
+override Qt's compatibility contract.
+
+This is a **new CI integration**, not a claim that Linux packaging is already
+PASS. Windows x64 and Linux glibc x64 / Python 3.12, 3.13, 3.14 package
+builds and hash-locked offline installation must pass at the actual head SHA.
+Native release .venv remains generated on the target machine, not shipped
+as an installed site-packages directory.
+
+Official sources:
+- https://pypi.org/project/PySide6-Essentials/6.12.0/
+- https://peps.python.org/pep-0600/
+- https://pip.pypa.io/en/stable/cli/pip_download/
+
 ## Profiles
 
 The canonical registry is:
@@ -228,7 +256,7 @@ Neither layer may silently download resources during a conversation turn.
 
 `jazn_dependency_wheelhouse/v3` adds explicit materialization mode, minimum libc policy and the complete pip-platform selector set to the v2 integrity inventory. It uses PyPA `packaging` after dependency handoff for PEP 440 requirements, wheel filename parsing and compatibility tags. The pre-handoff bootstrap remains stdlib-only, so an ambient interpreter does not need `packaging` merely to discover a managed environment or a transported sidecar.
 
-Each release dependency artifact contains one verified wheelhouse for exactly one target. A target records friendly alias plus Python version, implementation, ABI, platform family, architecture, libc family, minimum libc version, accepted pip platforms and the compatible tag set. `.25.5.17` release support is Windows x86-64 and Linux glibc x86-64 for Python 3.12, 3.13 and 3.14. Linux x64 uses the glibc 2.17 baseline (`manylinux_2_17_x86_64` / `manylinux2014_x86_64`). Linux musl, ARM and macOS cross-targets are not release-supported until a policy and native clean-room acceptance exist.
+Each release dependency artifact contains one verified wheelhouse for exactly one target. A target records friendly alias plus Python version, implementation, ABI, platform family, architecture, libc family, minimum libc version, accepted pip platforms and the compatible tag set. `.25.5.17` release support is Windows x86-64 and Linux glibc x86-64 for Python 3.12, 3.13 and 3.14. Linux x64 **core/CLI** uses the glibc 2.17 baseline (`manylinux_2_17_x86_64` / `manylinux2014_x86_64`). The `run-studio` Qt profile has an independent glibc 2.34 minimum (see above). Linux musl, ARM and macOS cross-targets are not release-supported until a policy and native clean-room acceptance exist.
 
 The system package carries `JAZN_DEPENDENCY_SET.json`; dependency artifacts remain sibling files. Discovery verifies package-set metadata and outer SHA before extracting a sidecar, then verifies the inner wheelhouse and hash lock. A wrong Python/platform/libc bundle is rejected before pip is invoked.
 
