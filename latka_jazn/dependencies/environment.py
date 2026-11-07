@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import platform as platform_module
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,7 @@ from .common import (
     current_implementation_tag,
     current_libc_family,
     current_platform_alias,
+    glibc_version_at_least,
     default_environments_root,
     default_wheelhouse_root,
     dependency_contract_fingerprint,
@@ -78,7 +80,8 @@ def _probe_python(executable: str) -> dict[str, str]:
         "impl=('cp' if sys.implementation.name=='cpython' else 'pp' if sys.implementation.name=='pypy' else sys.implementation.name[:2]);"
         "abi=(f'cp{sys.version_info.major}{sys.version_info.minor}{getattr(sys,\"abiflags\",\"\")}' if impl=='cp' else '');"
         "print(json.dumps({'python_version':f'{sys.version_info.major}.{sys.version_info.minor}',"
-        "'platform':t.get((s,m),f'{s}-{m}'),'libc_family':lf,'implementation':impl,'abi':abi,'executable':sys.executable}))"
+        "'platform':t.get((s,m),f'{s}-{m}'),'libc_family':lf,'libc_version':platform.libc_ver()[1],"
+        "'implementation':impl,'abi':abi,'executable':sys.executable}))"
     )
     completed = _run([executable, "-X", "utf8", "-c", code], cwd=Path.cwd(), timeout=30)
     payload = json.loads(completed.stdout)
@@ -146,8 +149,15 @@ def install_bundle(
         raise DependencyStudioError("Wheelhouse Python implementation does not match selected interpreter")
     if str(target.get("abi") or "") != str(probe.get("abi") or ""):
         raise DependencyStudioError("Wheelhouse Python ABI does not match selected interpreter")
-    if probe["platform"].startswith("linux-") and str(target.get("libc_family") or "") != probe["libc_family"]:
-        raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
+    if probe["platform"].startswith("linux-"):
+        if str(target.get("libc_family") or "") != probe["libc_family"]:
+            raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
+        minimum = str(target.get("minimum_libc_version") or "")
+        if not glibc_version_at_least(probe.get("libc_version", ""), minimum):
+            raise DependencyStudioError(
+                "no_compatible_dependency_bundle: selected interpreter requires "
+                f"glibc >= {minimum or 'declared release minimum'}"
+            )
 
     requirements = [str(item) for item in manifest.get("requirements") or []]
     import_names = [
@@ -274,6 +284,7 @@ def install_bundle(
         "implementation": probe.get("implementation"),
         "abi": probe.get("abi"),
         "libc_family": probe.get("libc_family"),
+        "minimum_libc_version": target.get("minimum_libc_version"),
         "profiles": plan["profiles"],
         "resolved_profiles": plan["resolved_profiles"],
         "requirements": requirements,
@@ -357,8 +368,13 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
         errors.append("environment_implementation_changed_reinstall_required")
     if str(marker.get("abi") or "") != str(current_abi_tag() or ""):
         errors.append("environment_abi_changed_reinstall_required")
-    if current_platform_alias().startswith("linux-") and str(marker.get("libc_family") or "") != current_libc_family():
-        errors.append("environment_libc_changed_reinstall_required")
+    if current_platform_alias().startswith("linux-"):
+        if str(marker.get("libc_family") or "") != current_libc_family():
+            errors.append("environment_libc_changed_reinstall_required")
+        minimum = marker.get("minimum_libc_version")
+        if minimum is not None and not glibc_version_at_least(
+                platform_module.libc_ver()[1], str(minimum)):
+            errors.append("environment_libc_version_below_bundle_minimum")
 
     profiles = list(marker.get("resolved_profiles") or marker.get("profiles") or [])
     try:
