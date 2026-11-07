@@ -186,3 +186,45 @@ jobs:
           path: ${{ runner.temp }}/studio-build/dist/JaznRunStudio/
           if-no-files-found: error
           retention-days: 7
+
+  root_venv_offline:
+    name: ROOT/.venv offline setup (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.14"
+      - name: Install baseline builder (not installer dependencies)
+        run: python -m pip install -e . pytest
+      - name: Download verified native core+run-studio wheelhouse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --wheelhouse-root local_resources/wheelhouse --json \
+            download --profile core --profile run-studio \
+            --python-version 3.14 --platform current > "$RUNNER_TEMP/jss-download.json"
+          bundle="$(python -c 'import json,sys; print(json.load(open(sys.argv[1],encoding="utf-8"))["bundle_dir"])' "$RUNNER_TEMP/jss-download.json")"
+          python -X utf8 -m latka_jazn.tools.dependency_studio --root . --json verify --bundle "$bundle"
+          echo "JAZN_VERIFIED_BUNDLE=$bundle" >> "$GITHUB_ENV"
+      - name: Install and verify ROOT/.venv entirely offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --json install --bundle "$JAZN_VERIFIED_BUNDLE" --offline
+          python -X utf8 -c 'from latka_jazn.dependencies.environment import managed_environment_status; report=managed_environment_status("."); print(report); assert report["ready"]'
+          if [ "$RUNNER_OS" = Windows ]; then
+            .venv/Scripts/python.exe -m pip check
+          else
+            .venv/bin/python -m pip check
+          fi
