@@ -1,13 +1,30 @@
 """Nonblocking first-run provisioning controls are explicit and never auto-install."""
 from __future__ import annotations
 
+from pathlib import Path
 import pytest
 
 pytest.importorskip("PySide6")
 
-from PySide6.QtWidgets import QMessageBox
-from tests.test_jazn_run_studio_layout import window  # noqa: F401
+from PySide6.QtWidgets import QApplication, QMessageBox
+from tools.jazn_run_studio.core import Controller, Settings
+from tools.jazn_run_studio.window import Window
 from tools.jazn_run_studio.first_run import SetupWizard
+
+
+@pytest.fixture
+def window(tmp_path: Path):
+    app = QApplication.instance() or QApplication([])
+    (tmp_path / "latka_jazn").mkdir()
+    (tmp_path / "latka_jazn" / "version.py").touch()
+    (tmp_path / "run.py").touch()
+    (tmp_path / "main.py").touch()
+    core = Controller(tmp_path, Settings(theme="dark"))
+    result = Window(core, smoke=True)
+    result.show()
+    yield result
+    result.close()
+    app.processEvents()
 
 
 def test_wizard_offers_root_local_setup_and_gemma3_default(window) -> None:
