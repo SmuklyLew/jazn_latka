@@ -238,6 +238,32 @@ jobs:
           echo "runtime_dir=$runtime_dir" >> "$GITHUB_OUTPUT"
           echo "package_dir=$package_dir" >> "$GITHUB_OUTPUT"
 
+      # Negative acceptance must run on the fresh unpacked SYSTEM, before
+      # Dependency Studio provisions a valid managed venv. Merely hiding the
+      # sidecar *after* a successful install must not revoke installed offline
+      # dependencies; that was a false-negative test on Linux.
+      - name: Reject fresh unprovisioned package when dependency sidecar is absent
+        shell: bash
+        env:
+          JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
+          BARE_PYTHON: ${{ steps.bare_python.outputs.path }}
+        run: |
+          set -euo pipefail
+          package_dir="${{ steps.extract.outputs.package_dir }}"
+          sidecar="$(find "$package_dir" -maxdepth 1 -name '*.dependencies-*.zip' -print -quit)"
+          test -n "$sidecar"
+          cd "${{ steps.extract.outputs.runtime_dir }}"
+          test ! -e ".venv"
+          mv "$sidecar" "$sidecar.hidden"
+          trap 'mv "$sidecar.hidden" "$sidecar"' EXIT
+          set +e
+          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/no-sidecar.out"
+          test "$rc" -ne 0
+          grep -Eq "no_compatible_verified_dependency_bundle|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
+
       - name: Dependency-empty run.py performs verified offline handoff
         shell: bash
         env:
@@ -338,35 +364,6 @@ jobs:
           set -e
           cat "$RUNNER_TEMP/stop.json"
           test "$stop_rc" -eq 0
-
-      - name: Reject package when dependency sidecar is absent
-        shell: bash
-        env:
-          JAZN_PACKAGE_SOURCE_DIR: ${{ steps.extract.outputs.package_dir }}
-          BARE_PYTHON: ${{ steps.bare_python.outputs.path }}
-        run: |
-          set -euo pipefail
-          package_dir="${{ steps.extract.outputs.package_dir }}"
-          sidecar="$(find "$package_dir" -maxdepth 1 -name '*.dependencies-*.zip' -print -quit)"
-          test -n "$sidecar"
-          mv "$sidecar" "$sidecar.hidden"
-          cd "${{ steps.extract.outputs.runtime_dir }}"
-          dependency_state="$(python - <<'PY'
-          from pathlib import Path
-          from latka_jazn.core.runtime_root import workspace_runtime_path
-          print(workspace_runtime_path(Path.cwd()) / "local_resources" / "python")
-          PY
-          )"
-          test -n "$dependency_state"
-          rm -rf "$dependency_state"
-          set +e
-          "$BARE_PYTHON" run.py start --json > "$RUNNER_TEMP/no-sidecar.out" 2>&1
-          rc=$?
-          set -e
-          cat "$RUNNER_TEMP/no-sidecar.out"
-          mv "$sidecar.hidden" "$sidecar"
-          test "$rc" -ne 0
-          grep -q "no_compatible_verified_dependency_bundle\|dependencies_missing_no_verified_wheelhouse" "$RUNNER_TEMP/no-sidecar.out"
 
       - name: Preserve cleanroom startup evidence on failure
         if: failure()

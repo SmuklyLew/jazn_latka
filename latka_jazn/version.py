@@ -1,3 +1,4 @@
+# v116.0.34.94.6.110: Correct cleanroom unprovisioned negative gate, await durable Qt TPA refusal and allow verified Windows cold startup.
 # v116.0.34.94.6.109: Keep managed ROOT-local install state out of source exports, consistent with the static integrity boundary.
 # v116.0.34.94.6.108: Separate managed root-local install state from static package hashes; sync startup identity and TPA checklist regression.
 # v116.0.34.94.6.107: Repair glibc version comparison, early locked cross-target validation and TPA regression test contracts.
@@ -216,7 +217,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.109"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.110"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

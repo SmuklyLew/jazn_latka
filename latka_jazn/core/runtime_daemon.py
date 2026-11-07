@@ -82,7 +82,11 @@ from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_ver
 DEFAULT_DAEMON_HOST = "127.0.0.1"
 DEFAULT_DAEMON_PORT = 8787
 DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 30.0
-DEFAULT_START_TIMEOUT_SECONDS = 12.0
+# A Windows cold-start does protected manifest checks, creates runtime-write
+# state and imports the Qt-capable runtime before HTTP can bind. The previous
+# 12s cap killed a healthy fresh daemon on hosted Windows runners before
+# endpoint_bound. Keep a finite limit and require verified /live identity.
+DEFAULT_START_TIMEOUT_SECONDS = 45.0 if os.name == "nt" else 12.0
 DEFAULT_STOP_TIMEOUT_SECONDS = 5.0
 DEFAULT_PROCESS_TERMINATION_GRACE_SECONDS = 1.5
 _NATIVE_DAEMON_LIFECYCLE_IDENTITY_V2 = True
