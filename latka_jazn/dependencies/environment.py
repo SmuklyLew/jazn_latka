@@ -174,6 +174,7 @@ def install_bundle(
     )
     env_root = envs_root if root_local_venv else envs_root / environment_identity
     managed_root = envs_root.parent if root_local_venv else envs_root
+    prepared_root_venv = bool(root_local_venv and env_root.is_dir())
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
@@ -190,7 +191,7 @@ def install_bundle(
         "hash_lock_sha256": lock_sha,
         "dependency_contract_fingerprint": contract_fingerprint,
         "environment_identity": environment_identity,
-        "fresh_environment": not prepared_root_venv if not dry_run else True,
+        "fresh_environment": not prepared_root_venv,
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
@@ -214,7 +215,6 @@ def install_bundle(
             raise DependencyStudioError("active_runtime_marker_present_no_venv_mutation")
         if environment_marker_path(project_root).is_file() or existing_environment_marker_path(project_root).is_file():
             raise DependencyStudioError("existing_activation_marker_requires_staged_upgrade")
-    prepared_root_venv = bool(root_local_venv and env_root.is_dir())
     if env_root.exists() and not prepared_root_venv:
         raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
     if prepared_root_venv:
