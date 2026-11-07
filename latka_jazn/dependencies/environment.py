@@ -27,6 +27,8 @@ from .common import (
     dependency_contract_fingerprint,
     distribution_name_from_requirement,
     environment_marker_path,
+    existing_environment_marker_path,
+    root_local_resources_enabled,
     import_name_for_distribution,
     inspect_current_requirements,
     resolve_profile_requirements,
@@ -159,13 +161,19 @@ def install_bundle(
     if not contract_fingerprint:
         raise DependencyStudioError("Wheelhouse manifest is missing dependency_contract_fingerprint")
     envs_root = Path(environments_root).resolve() if environments_root else default_environments_root(project_root)
+    root_local_venv = (
+        environments_root is None
+        and not os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS")
+        and root_local_resources_enabled(project_root)
+    )
     alias = probe["platform"]
     pyver = probe["python_version"]
     environment_identity = (
         f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__"
         f"{manifest_sha[:12]}__{uuid.uuid4().hex[:12]}"
     )
-    env_root = envs_root / environment_identity
+    env_root = envs_root if root_local_venv else envs_root / environment_identity
+    managed_root = envs_root.parent if root_local_venv else envs_root
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
@@ -175,7 +183,7 @@ def install_bundle(
     ]
     plan: dict[str, Any] = {
         "environment_root": str(env_root),
-        "managed_environments_root": str(envs_root),
+        "managed_environments_root": str(managed_root),
         "python_executable": str(env_python),
         "bundle_dir": str(bundle),
         "manifest_sha256": manifest_sha,
@@ -197,9 +205,12 @@ def install_bundle(
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
 
-    envs_root.mkdir(parents=True, exist_ok=True)
+    if root_local_venv and (env_root.is_symlink() or
+                            (hasattr(env_root, "is_junction") and env_root.is_junction())):
+        raise DependencyStudioError("unsafe_root_venv_link")
     if env_root.exists():
         raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    managed_root.mkdir(parents=True, exist_ok=True)
     try:
         _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)
@@ -224,7 +235,11 @@ def install_bundle(
         if missing:
             raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
     except Exception:
-        shutil.rmtree(env_root, ignore_errors=True)
+        # A uniquely named old-style managed venv is disposable. ROOT/.venv
+        # is path-stable operator state; preserve a partial installation for
+        # explicit recovery instead of deleting it after a failed check.
+        if not root_local_venv:
+            shutil.rmtree(env_root, ignore_errors=True)
         raise
 
     marker: dict[str, Any] = {
@@ -235,7 +250,7 @@ def install_bundle(
         "project_root": str(project_root),
         "environment_root": str(env_root),
         "environment_identity": environment_identity,
-        "managed_environments_root": str(envs_root),
+        "managed_environments_root": str(managed_root),
         "python_executable": str(env_python),
         "python_version": pyver,
         "platform": alias,
@@ -280,7 +295,7 @@ def install_bundle(
 
 def managed_environment_status(root: Path | str) -> dict[str, Any]:
     project_root = Path(root).resolve()
-    marker_path = environment_marker_path(project_root)
+    marker_path = existing_environment_marker_path(project_root)
     marker = read_manifest(marker_path)
     if marker is None:
         return {"ready": False, "status": "marker_missing", "marker_path": str(marker_path)}
@@ -372,7 +387,7 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
     managed = managed_environment_status(project_root)
     managed_profiles = set(str(item) for item in managed.get("resolved_profiles") or [])
     managed_covers = set(profiles).issubset(managed_profiles)
-    marker = read_manifest(environment_marker_path(project_root)) or {}
+    marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     try:
         managed_py_ok = tuple(int(part) for part in str(marker.get("python_version") or "").split(".")[:2]) >= (3, 12)
     except (TypeError, ValueError):
@@ -463,8 +478,16 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
 def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
     envs_root = default_environments_root(project_root)
-    marker = read_manifest(environment_marker_path(project_root)) or {}
+    marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     active = str(marker.get("environment_root") or "")
+    if root_local_resources_enabled(project_root) and envs_root == project_root / ".venv":
+        return {
+            "ok": True, "dry_run": dry_run,
+            "managed_environments_root": str(envs_root),
+            "active_environment": active or None,
+            "gc_candidates": [], "removed": [],
+            "policy": "root_venv_is_not_a_collection; manual verified replacement only",
+        }
     active_path = Path(active).resolve() if active else None
     candidates: list[str] = []
     removed: list[str] = []
