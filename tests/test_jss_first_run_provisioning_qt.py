@@ -46,7 +46,7 @@ def test_venv_provision_requires_explicit_confirmation(window, monkeypatch) -> N
     monkeypatch.setattr(QMessageBox, "question",
                         lambda *_a, **_k: QMessageBox.StandardButton.Yes)
     wizard.provision("prepare-venv")
-    assert commands == [("prepare-venv", ["--python", "C:/Python314/python.exe"])]
+    assert commands == [("prepare-venv", [])]
 
 
 def test_multi_model_queue_is_validated_before_any_download(window, monkeypatch) -> None:
