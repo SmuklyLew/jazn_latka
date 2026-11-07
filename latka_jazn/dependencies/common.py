@@ -26,6 +26,9 @@ ENVIRONMENT_MARKER_NAME = "JAZN_DEPENDENCY_ENVIRONMENT.json"
 DEPENDENCY_SET_NAME = "JAZN_DEPENDENCY_SET.json"
 DEFAULT_TIMEOUT_SECONDS = 1800
 LINUX_GLIBC_MINIMUM = "2.17"
+# Qt for Python 6.12 publishes Linux x86-64 wheels with a manylinux_2_34
+# floor. The core/CLI retains its independent glibc 2.17 compatibility.
+LINUX_RUN_STUDIO_GLIBC_MINIMUM = "2.34"
 # A glibc 2.17 target accepts wheels whose declared minimum is 2.17 or older.
 # Keep the PEP 600 spellings and the bounded legacy aliases explicit so pip's
 # candidate selection and the post-download tag verifier use the same set.
@@ -47,6 +50,19 @@ LINUX_X64_PIP_PLATFORMS = (
     "manylinux_2_5_x86_64",
     "manylinux1_x86_64",
 )
+LINUX_RUN_STUDIO_X64_PIP_PLATFORMS = (
+    *(f"manylinux_2_{minor}_x86_64" for minor in range(34, 17, -1)),
+    *LINUX_X64_PIP_PLATFORMS,
+)
+
+
+def glibc_version_at_least(actual: str, minimum: str) -> bool:
+    """Conservative release/host compatibility check, not a wheel verifier."""
+    if not re.fullmatch(r"[0-9]+\.[0-9]+", str(actual)):
+        return False
+    if not re.fullmatch(r"[0-9]+\.[0-9]+", str(minimum)):
+        return False
+    return tuple(map(int, actual.split("."))) >= tuple(map(int, minimum))
 
 
 class DependencyStudioError(RuntimeError):
@@ -496,11 +512,16 @@ def target_is_current_host(target: TargetSpec) -> bool:
     if target.implementation != current_implementation_tag():
         return False
     if target.platform_family == "linux":
-        return target.libc_family == current_libc_family()
+        if target.libc_family != current_libc_family():
+            return False
+        minimum = target.minimum_libc_version
+        if minimum is not None:
+            return glibc_version_at_least(platform_module.libc_ver()[1], minimum)
     return True
 
 
-def target_spec(platform_alias: str | None, python_version: str | None) -> TargetSpec:
+def target_spec(platform_alias: str | None, python_version: str | None, *,
+                requires_run_studio: bool = False) -> TargetSpec:
     py = normalize_python_version(python_version)
     alias = str(platform_alias or "current").strip().lower()
     current_alias = current_platform_alias()
@@ -526,10 +547,19 @@ def target_spec(platform_alias: str | None, python_version: str | None) -> Targe
             raise DependencyStudioError(
                 "no_compatible_dependency_bundle: linux-x64 release target requires glibc"
             )
-        pip_platforms = LINUX_X64_PIP_PLATFORMS
+        pip_platforms = (LINUX_RUN_STUDIO_X64_PIP_PLATFORMS if requires_run_studio
+                         else LINUX_X64_PIP_PLATFORMS)
         abi = abi or f"cp{digits}"
         libc = "glibc"
-        minimum_libc_version = LINUX_GLIBC_MINIMUM
+        minimum_libc_version = (LINUX_RUN_STUDIO_GLIBC_MINIMUM if requires_run_studio
+                                else LINUX_GLIBC_MINIMUM)
+        if native_target and not glibc_version_at_least(
+                platform_module.libc_ver()[1], minimum_libc_version):
+            raise DependencyStudioError(
+                "no_compatible_dependency_bundle: linux-x64 "
+                f"{'JSS/Qt' if requires_run_studio else 'core'} requires "
+                f"glibc >= {minimum_libc_version}"
+            )
     elif alias in {"linux-arm64", "macos-x64", "macos-arm64"}:
         # ARM Linux and macOS remain native-only until their release policies and
         # clean-room matrices are explicitly accepted.
