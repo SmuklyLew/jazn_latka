@@ -1,8 +1,8 @@
 # Jaźń / JSS — ROOT-local prerequisites and self-contained first-run installer
 
-Status: **IMPLEMENTATION IN PROGRESS; NOT RELEASE-READY** (2026-11-06).
+Status: **POST-V79 INTEGRATION IN PROGRESS; NOT RELEASE-READY** (2026-11-07).
 Base `master`: `5adef1d6e3c911f9ccd0bf884b32c0364c866481`.
-Branch: `codex/jss-root-local-resources-venv-ollama-20261106`.
+Source branch: `codex/jss-root-local-resources-venv-ollama-20261106` (preserved).\nIntegration branch: `integrate/v116-0-34-94-6-80-jss-root-bootstrap-after-v79` (V80, based on merged V79 code).
 No tests or release sync may be recorded as PASS without a real executor/CI log.
 
 ## User requirements and intended truth boundaries
@@ -56,15 +56,15 @@ be read as fallback; no data migration or deletion occurs automatically.
 - [x] Ollama /api/tags inspection, default gemma3:latest pull and model selection.
 - [x] Nonblocking QProcess integration in JSS first-run wizard.
 - [x] Initial unit/Qt regression tests committed, awaiting execution.
-- [ ] Complete root-.venv activation marker/inventory parity with Dependency Studio v2.
-- [ ] Verified offline core+run-studio **binary wheelhouse included in packaged distribution** for supported targets; source repo must NOT ship random wheels or portable venv.
+- [x] Delegate ROOT/.venv offline installs to the existing canonical Dependency Studio verifier/activation path (tests pending).
+- [x] Add CI workflow steps for native core+run-studio wheelhouse build, offline install and packaging as a release-package sidecar (not yet run/tested).\n- [ ] Confirm verified offline core+run-studio **binary wheelhouse included in actual published distribution** for supported targets; source repo must NOT ship random wheels or portable venv.
 - [ ] Python bootstrap entrypoint works on a machine without Python/PySide6 and remains compatible with packaged JSS.
 - [ ] Explicit, safe repair/update/rollback of existing ROOT/.venv, including live-daemon coordination.
 - [ ] Configure optional ROOT/local_resources/models location via OLLAMA_MODELS without changing already running external Ollama.
-- [ ] End-to-end model generation acceptance after installation.
+- [x] Add a real local Ollama /api/chat generation probe after each successful model pull (E2E evidence not yet gathered).\n- [ ] Confirm real end-to-end model generation acceptance on Windows.
 - [ ] Test on clean Windows x64 Python 3.14 (CLI, JSS GUI, WinGet, Ollama, two turns, reconnect/resume).
 - [ ] Linux/Windows compatibility and full regression gates.
-- [ ] Canonical package version bump and release_metadata_sync from a real executor.
+- [x] Reserve V80 version after merged V79; source-branch history remains untouched.\n- [ ] Canonical release_metadata_sync from a real executor.
 - [ ] Release manifests, provenance, dependency sidecar hashes, CI and distribution acceptance.
 
 ## Required acceptance evidence (none claimed as PASS yet)
