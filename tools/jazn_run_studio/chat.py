@@ -103,7 +103,7 @@ class ChatClient:
     def connection_command(self) -> list[str]:
         self._require_same_endpoint()
         return [python_executable(self.core.settings), "-X", "utf8", str(self.core.root / "run.py"),
-                "--chat-ollama", *self.daemon_options,
+                "--chat-ollama", "--ensure-daemon", *self.daemon_options,
                 "--ollama-model", self.core.settings.model, "--session-id", self.session_id]
 
     def resume_command(self, request: str) -> list[str]:

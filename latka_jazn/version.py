@@ -1,4 +1,4 @@
-# v116.0.34.94.6.114: Preserve bounded JSS resume diagnostics and isolate ambient Ollama regression settings.
+# v116.0.34.94.6.114: Require the canonical daemon for JSS, preserve bounded resume diagnostics and isolate ambient model settings.
 # v116.0.34.94.6.113: Restore isolated acceptance identity/recovery and pre-finalization voice gates; split native Tk GUI processes.
 # v116.0.34.94.6.112: Restore native SCM supervisor adapter, explicit CLI service route and fail-closed Windows owner plan.
 # v116.0.34.94.6.111: Restore V104 existing-WAL refusal, safe SQLite storage routing and Windows settings path race guard.

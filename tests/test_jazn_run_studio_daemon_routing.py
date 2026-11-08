@@ -41,6 +41,8 @@ def test_gui_chat_uses_canonical_command_and_pinned_endpoint(system: Path) -> No
     client = ChatClient(controller)
     command = client.connection_command()
     assert "--chat-ollama" in command
+    assert "--ensure-daemon" in command
+    assert "--no-ensure-daemon" not in command
     assert "chat-ollama" not in command
     assert command[-4:] == ["--ollama-model", "gemma3:latest", "--session-id", client.session_id]
     assert command[command.index("--daemon-port")+1] == "8877"
