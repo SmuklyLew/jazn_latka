@@ -106,11 +106,15 @@ def test_qt_acceptance_page_renders_without_live_runtime(roots, monkeypatch):
     import time
     panel.python_field.clear()
     panel.start(("gui-daemon",))
-    for _ in range(100):
+    # The isolated RunStore persists asynchronously on a worker. A fixed
+    # one-second loop can observe the durable record while still QUEUED on a
+    # loaded Windows runner. Wait for the actual terminal state, not a delay.
+    deadline = time.monotonic() + 30
+    while panel.runner.active and time.monotonic() < deadline:
         app.processEvents()
         time.sleep(0.01)
-        if not panel.runner.active:
-            break
+    app.processEvents()
+    assert not panel.runner.active, "TPA refusal did not finish persisting within the bounded wait"
     assert panel.report is not None
     assert panel.report["results"][0]["status"] == "BLOCKED"
     assert panel.report["results"][0]["full_gate"] == "NOT_RUN"

@@ -26,6 +26,28 @@ def local_settings_enabled(system_root: Path) -> bool:
     return (root / ".settings").is_dir()
 
 
+def _resolve_future_path(path: Path) -> Path:
+    """Resolve the existing ancestor strictly, then append missing components.
+
+    Windows non-strict realpath may retain a device prefix if concurrent
+    mkdir changes ERROR_PATH_NOT_FOUND into ERROR_FILE_NOT_FOUND between
+    its first lookup and prefix-removal probe. Strict resolution has no
+    missing-path fallback, so both sides use one canonical representation.
+    Permission errors and other failures must remain errors.
+    """
+    current = path
+    missing: list[str] = []
+    while True:
+        try:
+            resolved = current.resolve(strict=True)
+            return resolved.joinpath(*reversed(missing))
+        except FileNotFoundError:
+            if current == current.parent:
+                raise
+            missing.append(current.name)
+            current = current.parent
+
+
 def verify_local_descendant(path: Path, layout: LocalSettingsLayout) -> Path:
     raw = Path(path).expanduser().absolute()
     if ".." in Path(path).parts or not raw.is_relative_to(layout.local):
@@ -37,13 +59,17 @@ def verify_local_descendant(path: Path, layout: LocalSettingsLayout) -> Path:
         current = current / part
         if _redirected(current):
             raise ValueError("Local settings descendant is redirected")
-    # Compare canonical paths on both sides. On Windows an already-created
-    # descendant may be resolved through a physical volume/mount spelling
-    # while its parent was constructed lexically during concurrent creation.
-    # The redirect checks above still reject links/junctions on every
-    # descendant; comparing an unresolved parent is not a security boundary.
-    resolved_root = layout.local.resolve()
-    resolved = raw.resolve()
+    resolved_root = _resolve_future_path(layout.local)
+    resolved = _resolve_future_path(raw)
+    # A concurrently created component must still satisfy the same redirect
+    # policy; do not accept a link installed after the first inspection.
+    current = layout.local
+    if _redirected(current):
+        raise ValueError("Local settings root cannot be a link or junction")
+    for part in raw.relative_to(layout.local).parts:
+        current = current / part
+        if _redirected(current):
+            raise ValueError("Local settings descendant is redirected")
     if not resolved.is_relative_to(resolved_root):
         raise ValueError("Local settings path resolves outside its root")
     return resolved

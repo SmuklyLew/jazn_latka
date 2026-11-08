@@ -10,7 +10,13 @@ import sys
 
 from .core import ACTION_BY_KEY, Controller, discovery, load_settings
 from latka_jazn.core.system_config import apply_system_config
-from latka_jazn.core.acceptance_layout import acceptance_environment, validate_resumed_daemon
+from latka_jazn.core.acceptance_layout import (
+    acceptance_environment, validate_resumed_daemon, validate_isolated_daemon_start,
+)
+
+ISOLATED_DIAGNOSTIC_ACTIONS = frozenset({
+    "version", "preflight", "status", "doctor", "model", "memory", "supervisor",
+})
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -40,7 +46,12 @@ def main(argv: list[str] | None = None) -> int:
             core = Controller(args.root)
             if args.isolated_acceptance:
                 assert layout is not None
-                validate_resumed_daemon(layout, core.settings.daemon_url)
+                if args.run == "start":
+                    # Explicit operator intent: only own verified/dead instance.
+                    # Do not delete the marker or replay pending requests.
+                    validate_isolated_daemon_start(layout, core.settings.daemon_url)
+                elif not args.check and args.run not in ISOLATED_DIAGNOSTIC_ACTIONS:
+                    validate_resumed_daemon(layout, core.settings.daemon_url)
             if args.check:
                 print(json.dumps(discovery(core.settings), ensure_ascii=False, indent=2))
                 return 0

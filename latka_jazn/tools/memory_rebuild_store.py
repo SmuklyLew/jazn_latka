@@ -6,18 +6,17 @@ from typing import Any, Iterator, Self
 import sqlite3
 
 from latka_jazn.tools.memory_rebuild_common import TRUTH_BOUNDARY, sqlite_check
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable
 
 
 class Store:
     def __init__(self, path: Path, schema: str, meta_table: str, schema_name: str) -> None:
         self.path = path.resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = sqlite3.connect(self.path, isolation_level=None, timeout=30)
-        self.con.row_factory = sqlite3.Row
-        self.con.execute("PRAGMA foreign_keys=ON")
-        self.con.execute("PRAGMA busy_timeout=10000")
-        self.con.execute("PRAGMA journal_mode=WAL")
-        self.con.execute("PRAGMA synchronous=NORMAL")
+        self.con = connect_runtime_writable(
+            self.path, isolation_level=None, timeout_ms=10_000,
+            synchronous="NORMAL",
+        )
         self.con.executescript(schema)
         self.con.execute(f"INSERT OR REPLACE INTO {meta_table}(key,value) VALUES('schema_version',?)", (schema_name,))
         self.con.execute(f"INSERT OR REPLACE INTO {meta_table}(key,value) VALUES('truth_boundary',?)", (TRUTH_BOUNDARY,))
