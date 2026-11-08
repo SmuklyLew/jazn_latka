@@ -100,6 +100,10 @@ def test_chat_job_not_found_is_not_evidence_of_failure(
     client.resume()
     assert job.done.wait(5)
     assert job.error == "resume_exit:1:chat_job_not_found"
+    assert any(
+        key == "chat:resume" and kind == "log" and "chat_job_not_found" in str(value)
+        for key, kind, value in core.events
+    )
     assert not client.can_resolve_terminal_failure()
     assert client.pending == "studio-turn-1"
 

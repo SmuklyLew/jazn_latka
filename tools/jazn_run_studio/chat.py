@@ -367,5 +367,12 @@ class ChatClient:
             finally:
                 job.finished = time.time()
                 job.done.set()
+                # This is redacted, bounded state-only telemetry, not protocol
+                # stdout or user text. It also makes chat:resume discoverable
+                # in the operator's Output / Logi source selector.
+                self.core.emit(
+                    "chat:resume", "log",
+                    f"{job.state}: {job.error or 'no_error'}",
+                )
                 self.core.emit("chat:resume", "state", job.snapshot())
         threading.Thread(target=worker, daemon=True).start()
