@@ -25414,13 +25414,13 @@
       "path": "tests/test_jazn_chat_terminal_recovery.py",
       "name": "test_chat_job_not_found_is_not_evidence_of_failure",
       "purpose": "Chat job not found is not evidence of failure",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -25448,7 +25448,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 111
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_terminal_recovery_tombstone_survives_ttl_and_another_persist": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25468,7 +25468,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 121
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_duplicate_submit_after_ttl_is_not_reexecuted": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25488,7 +25488,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 156
+      "line": 160
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_unknown_request_remains_unknown": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25508,7 +25508,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 210
+      "line": 214
     },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
@@ -31289,11 +31289,11 @@
       "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
       "name": "test_chat_activity_group_replaces_module_links_with_sessions",
       "purpose": "Chat activity group replaces module links with sessions",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -31315,7 +31315,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 78
+      "line": 82
     },
     "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_session_index_rejects_cross_daemon_reassociation": {
       "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
@@ -31332,7 +31332,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 102
     },
     "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_historical_accepted_turn_does_not_forge_original_send_time": {
       "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
@@ -31347,7 +31347,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 111
     },
     "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_sidebar_conversation_index_has_no_user_message_content": {
       "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
@@ -31362,7 +31362,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 133
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
