@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.114-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.114-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.114-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-08T22:26:18+00:00",
-  "updated_at_utc": "2026-11-08T22:26:18+00:00",
+  "generated_at_utc": "2026-11-08T22:29:09+00:00",
+  "updated_at_utc": "2026-11-08T22:29:09+00:00",
   "start_file": "run.py",
-  "file_count": 3707,
-  "static_file_count": 3707,
+  "file_count": 3709,
+  "static_file_count": 3709,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2954,
-      "sha256": "c8881012137b1302187b4f1e3a3ab6cfafc96608277d04246a337741b2c1ed7e",
+      "sha256": "2d7c6ad24e81aafda15feb74883939620532b6b547534a0e4686696ae96ff883",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11488,8 +11488,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26203,
-      "sha256": "7ce744f79c0c9d499258986c435f338c11fb0619d80ed86c6a0596a2a69e873d",
+      "size_bytes": 26225,
+      "sha256": "35b59209583859a89da8d09f3954b3d5a2d94795c258259fb9b0d0d186cf4070",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -24006,6 +24006,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.114-before-jss-daemon-only/PROVENANCE.md",
+      "size_bytes": 448,
+      "sha256": "00dc5b596b24f7cb9fc0a770b1b8489c85d4537668df9677ac01af880cdb391c",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v16.3.25.5.116.0.34.94.6.114-before-jss-daemon-only/test_jazn_run_studio_daemon_routing.py",
+      "size_bytes": 4905,
+      "sha256": "d0261e574b22fe4bfdbfeaa94af30e714ad49d5e40394ea8e88a5a076ebdd597",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.5.116.0.34.94.6.12/test_heart_system_dashboard_before_continuity_contract.py",
       "size_bytes": 3692,
       "sha256": "7f312a25466d439a5324e7387abe4d5ffa1e53a02cde715e490b50ae5c89ee35",
@@ -28309,8 +28327,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_daemon_routing.py",
-      "size_bytes": 4905,
-      "sha256": "d0261e574b22fe4bfdbfeaa94af30e714ad49d5e40394ea8e88a5a076ebdd597",
+      "size_bytes": 4992,
+      "sha256": "f71b0a2151af973bfa395664b3931b41cbd498f50d396b4f432e70ecb30da507",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32395,8 +32413,8 @@
     },
     {
       "path": "tools/jazn_run_studio/chat.py",
-      "size_bytes": 19378,
-      "sha256": "3d54655cc633f507144f68fdf5e789ca72ef7cd128eb2157c1d313cd63bdccfc",
+      "size_bytes": 19397,
+      "sha256": "6482168d78b812702f016e6bc7668ebfa6249b3795c090d68d5afc0614ab5fa9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33161,7 +33179,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2864219,
-      "sha256": "51604768473e7f529f02f6f3a1b959a9b3d1cd54c83a378956263f92bc19a34d",
+      "sha256": "6c2a3d6c597dd1de8dc5e81a5d1443851bab3fad5becc06cb9533d1e9f72908f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
