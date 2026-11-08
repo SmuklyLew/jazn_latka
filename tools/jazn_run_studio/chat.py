@@ -348,7 +348,13 @@ class ChatClient:
                 self.receive(payload)
                 job.returncode = done.returncode
                 if done.returncode:
-                    job.state, job.error = "failed", "resume_exit:" + str(done.returncode)
+                    code = payload.get("error_code")
+                    label = str(code or "")
+                    if not (label.isascii() and 1 <= len(label) <= 100
+                            and label.replace("_", "").isalnum()):
+                        label = ""
+                    suffix = ":" + label if label else ""
+                    job.state, job.error = "failed", f"resume_exit:{done.returncode}{suffix}"
                 elif self.pending is None or self._awaiting_gui_ack == request:
                     job.state = "succeeded"
                 elif payload.get("done") is False or payload.get("phase_result_ready") is False:

@@ -4,6 +4,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+from subprocess import CompletedProcess
+from threading import Event
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -81,8 +84,22 @@ def test_inconsistent_failure_proof_never_unblocks_chat(
 def test_chat_job_not_found_is_not_evidence_of_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    client, _core = _client(tmp_path, monkeypatch)
-    client.receive({"ok": False, "error_code": "chat_job_not_found", "request_id": client.pending})
+    client, core = _client(tmp_path, monkeypatch)
+    missing = {"ok": False, "error_code": "chat_job_not_found", "request_id": client.pending}
+    client.receive(missing)
+    assert not client.can_resolve_terminal_failure()
+    assert client.pending == "studio-turn-1"
+    job = SimpleNamespace(state="reserved", error=None, returncode=None,
+                          finished=None, done=Event())
+    job.snapshot = lambda: {"state": job.state, "error": job.error}
+    monkeypatch.setattr(core, "_reserve", lambda _name: job, raising=False)
+    monkeypatch.setattr(
+        studio_chat, "run",
+        lambda *_args, **_kwargs: CompletedProcess([], 1, json.dumps(missing), ""),
+    )
+    client.resume()
+    assert job.done.wait(5)
+    assert job.error == "resume_exit:1:chat_job_not_found"
     assert not client.can_resolve_terminal_failure()
     assert client.pending == "studio-turn-1"
 
