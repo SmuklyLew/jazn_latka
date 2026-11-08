@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.113",
+  "system_version": "16.3.25.5.116.0.34.94.6.114",
   "active_definition_count": 3247,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -25372,7 +25372,8 @@
       "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "archive"
+        "archive",
+        "repository"
       ],
       "markers": [],
       "assertion_count": 8,
@@ -25383,7 +25384,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 48
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_inconsistent_failure_proof_never_unblocks_chat": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25391,7 +25392,9 @@
       "purpose": "Inconsistent failure proof never unblocks chat",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [
         "parametrize"
       ],
@@ -25405,17 +25408,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 68
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_chat_job_not_found_is_not_evidence_of_failure": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
       "name": "test_chat_job_not_found_is_not_evidence_of_failure",
       "purpose": "Chat job not found is not evidence of failure",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -25423,7 +25428,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 84
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_restart_requires_fresh_failure_proof": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25431,7 +25436,9 @@
       "purpose": "Restart requires fresh failure proof",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -25441,7 +25448,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 107
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_terminal_recovery_tombstone_survives_ttl_and_another_persist": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25449,7 +25456,9 @@
       "purpose": "Terminal recovery tombstone survives ttl and another persist",
       "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 11,
       "expected_exceptions": [],
@@ -25459,7 +25468,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 117
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_duplicate_submit_after_ttl_is_not_reexecuted": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25467,7 +25476,9 @@
       "purpose": "Duplicate submit after ttl is not reexecuted",
       "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 9,
       "expected_exceptions": [],
@@ -25477,7 +25488,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 156
     },
     "tests/test_jazn_chat_terminal_recovery.py::test_unknown_request_remains_unknown": {
       "path": "tests/test_jazn_chat_terminal_recovery.py",
@@ -25485,7 +25496,9 @@
       "purpose": "Unknown request remains unknown",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
@@ -25495,7 +25508,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 193
+      "line": 210
     },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
@@ -63377,7 +63390,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 27
     },
     "tests/test_speech_adapter_route_resolution.py::test_requested_discovery_runs_once_and_default_factory_remains_compatible": {
       "path": "tests/test_speech_adapter_route_resolution.py",
@@ -63400,7 +63413,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 43
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
