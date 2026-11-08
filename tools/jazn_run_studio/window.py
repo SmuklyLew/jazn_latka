@@ -96,6 +96,7 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         chat_sidebar_layout = QVBoxLayout(self.chat_sidebar)
         chat_sidebar_layout.setContentsMargins(0, 0, 0, 0)
         self.new_chat_button = QPushButton("＋ Nowa rozmowa")
+        self.new_chat_button.setProperty("heartKeepSingleLine", True)
         self.new_chat_button.setAccessibleName("Nowa rozmowa lokalnej Jaźni")
         self.new_chat_button.clicked.connect(
             lambda _checked=False: self.guard(self.new_local_conversation))

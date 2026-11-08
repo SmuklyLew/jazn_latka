@@ -61,6 +61,10 @@ class VisualSystem(QObject):
             form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
             form.setSpacing(self.metrics.gap)
         for button in self.root.findChildren(QPushButton):
+            # Stable navigation/action labels are semantic UI contracts. Reflow
+            # may change their geometry, but must not rewrite their text().
+            if button.property("heartKeepSingleLine") is True:
+                continue
             original = button.property("heartOriginalText")
             if not isinstance(original, str) or button.text() != button.property("heartRenderedText"):
                 original = button.text()

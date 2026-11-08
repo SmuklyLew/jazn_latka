@@ -67,6 +67,10 @@ def test_chat_activity_group_replaces_module_links_with_sessions(window) -> None
     assert not window.chat_sidebar.isHidden()
     assert window.nav.isHidden()
     assert window.sidebar_heading.text() == "ROZMOWY"
+    # The generic responsive layout must preserve this navigation control's
+    # canonical label, including after an explicit reflow.
+    assert window.new_chat_button.property("heartKeepSingleLine") is True
+    window.visual_system.reflow()
     assert window.new_chat_button.text() == "＋ Nowa rozmowa"
     assert window.workbench.group_for_section("Modele AI") == "Ustawienia"
     assert window.workbench.group_for_section("Połączenie z ChatGPT") == "Usługi"
