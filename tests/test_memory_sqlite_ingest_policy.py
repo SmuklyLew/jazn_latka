@@ -24,7 +24,9 @@ def _make_wal(path: Path) -> None:
 
 
 def _unified(path: Path) -> UnifiedCoreMixin:
-    instance = UnifiedCoreMixin()
+    # Exercise the isolated mixin without its composed host constructor.
+    # UnifiedMixinHost declares __init__(path) for type checking only.
+    instance = object.__new__(UnifiedCoreMixin)
     instance.path = path
     return instance
 
