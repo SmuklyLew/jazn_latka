@@ -38,6 +38,7 @@ def test_install_button_is_only_shown_for_known_missing_capabilities(wizard):
         {"name": "MCP: uvicorn", "state": "OPTIONAL_MISSING"},
         {"name": "MCP: tzdata", "state": "PASS"},
         {"name": "Unknown: arbitrary", "state": "OPTIONAL_MISSING"},
+        {"name": "packaging", "state": "FAIL"},
     ]
     wizard._render_setup_rows(rows)
     assert wizard.table.columnCount() == 5
@@ -45,6 +46,7 @@ def test_install_button_is_only_shown_for_known_missing_capabilities(wizard):
     assert wizard.table.cellWidget(1, 4).text() == "Zainstaluj…"
     assert wizard.table.cellWidget(2, 4) is None
     assert wizard.table.cellWidget(3, 4) is None
+    assert wizard.table.cellWidget(4, 4).text() == "Zainstaluj…"
     wizard._render_setup_rows([{"name": "Testy: pytest", "state": "PASS"}])
     assert wizard.table.cellWidget(0, 4) is None
     assert wizard.provision_process is None
