@@ -1,10 +1,10 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-09T01:07:57+00:00",
-  "updated_at_utc": "2026-11-09T01:07:57+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-09T01:37:31+00:00",
+  "updated_at_utc": "2026-11-09T01:37:31+00:00",
   "start_file": "run.py",
   "file_count": 3723,
   "static_file_count": 3723,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2959,
-      "sha256": "8cf7a79a1971b3a6658978483ea2dd1a6312cf5ca67a3d65b58377adbe6650fe",
+      "sha256": "e64a1222ea2567f1f6e4c9dfa5185e941be72b10e1735fc2c500b5aaadce15bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -509,7 +509,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1945,
-      "sha256": "a6c14729adcb52f92a643e983c93b1c2f7cfacd67d41bc62eb666de913368b8a",
+      "sha256": "372c87dde6267396883cfefaf3ecf6fc7f75a6f52a712d18683490dd75374f23",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10004,7 +10004,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7910,
-      "sha256": "919645bf3b363727e455c153dd847e41d950c137316db71cec39d71210f98175",
+      "sha256": "34bc6c6768bafa20dd2bbe3125db37ad4faf73a71e35dcc56b1fe0214b1abad0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10399,8 +10399,8 @@
     },
     {
       "path": "latka_jazn/tools/dependency_studio.py",
-      "size_bytes": 13490,
-      "sha256": "2faa17e194cf168ea5a9b40eaa641e04c307076d03c9bc962974bebce5080991",
+      "size_bytes": 13491,
+      "sha256": "0edc0eb9ab4f710f613029ba0471fbe2b3ecc2b0666677e5870c18d2dc652d93",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11516,7 +11516,7 @@
     {
       "path": "latka_jazn/version.py",
       "size_bytes": 26421,
-      "sha256": "99e39ba00ecdaa3104fc3ed85dc315da4974610dce0de916511e94f2af5260e4",
+      "sha256": "ea64841c1a80acd7c8b3277950a23d780a2a4ec4073725f082b04752c4bebebf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33305,7 +33305,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2883458,
-      "sha256": "aa4c60201e607af8ac046b64c0f910c85e291c6c6cb877d47e68eb2dc1573bdc",
+      "sha256": "dc7c34623138c844e4a148eb586a63e53773522f3df2c07b67c99a5154fa7245",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33962,11 +33962,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.116-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.117-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
