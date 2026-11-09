@@ -70,6 +70,17 @@ jobs:
           git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git remote get-url origin
 
+      # Audit dispatches must prove that both generated artifacts were already
+      # committed for this exact HEAD. They must not silently validate a
+      # locally rewritten artifact that is absent from the source branch.
+      - name: Require committed audit-branch catalog and metadata
+        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/audit/')
+        shell: bash
+        run: |
+          python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --check
+          python -X utf8 -m latka_jazn.tools.release_metadata_sync \
+            --root . --base-branch master --check --json
+
       - name: Synchronize active Test Studio catalog before release metadata
         # On integrate/* and audit/* the source branch is not mutated by CI.
         # Catalog and metadata are materialized in isolated validation checkouts.
