@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.118",
+  "system_version": "16.3.25.5.116.0.34.94.6.119",
   "active_definition_count": 3274,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -17154,8 +17154,8 @@
       "description_source": "source_identity",
       "line": 549
     },
-    "tests/test_dependency_studio_layout_contract_v116.py::test_project_layout_preserves_root_local_venv_selection": {
-      "path": "tests/test_dependency_studio_layout_contract_v116.py",
+    "tests/test_dependency_studio_layout_contract.py::test_project_layout_preserves_root_local_venv_selection": {
+      "path": "tests/test_dependency_studio_layout_contract.py",
       "name": "test_project_layout_preserves_root_local_venv_selection",
       "purpose": "Project layout preserves root local venv selection",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -17171,8 +17171,8 @@
       "description_source": "source_identity",
       "line": 30
     },
-    "tests/test_dependency_studio_layout_contract_v116.py::test_managed_layout_uses_distinct_root_local_environment_collection": {
-      "path": "tests/test_dependency_studio_layout_contract_v116.py",
+    "tests/test_dependency_studio_layout_contract.py::test_managed_layout_uses_distinct_root_local_environment_collection": {
+      "path": "tests/test_dependency_studio_layout_contract.py",
       "name": "test_managed_layout_uses_distinct_root_local_environment_collection",
       "purpose": "Managed layout uses distinct root local environment collection",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -17188,8 +17188,8 @@
       "description_source": "source_identity",
       "line": 39
     },
-    "tests/test_dependency_studio_layout_contract_v116.py::test_explicit_project_layout_rejects_ambient_managed_override": {
-      "path": "tests/test_dependency_studio_layout_contract_v116.py",
+    "tests/test_dependency_studio_layout_contract.py::test_explicit_project_layout_rejects_ambient_managed_override": {
+      "path": "tests/test_dependency_studio_layout_contract.py",
       "name": "test_explicit_project_layout_rejects_ambient_managed_override",
       "purpose": "Explicit project layout rejects ambient managed override",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -17207,8 +17207,8 @@
       "description_source": "source_identity",
       "line": 48
     },
-    "tests/test_dependency_studio_layout_contract_v116.py::test_explicit_project_layout_rejects_conflicting_custom_root": {
-      "path": "tests/test_dependency_studio_layout_contract_v116.py",
+    "tests/test_dependency_studio_layout_contract.py::test_explicit_project_layout_rejects_conflicting_custom_root": {
+      "path": "tests/test_dependency_studio_layout_contract.py",
       "name": "test_explicit_project_layout_rejects_conflicting_custom_root",
       "purpose": "Explicit project layout rejects conflicting custom root",
       "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
@@ -33170,8 +33170,8 @@
       "description_source": "source_identity",
       "line": 79
     },
-    "tests/test_jss_supervisor_inactive_evidence_v116.py::test_confirmed_inactive_supervisor_is_not_ready": {
-      "path": "tests/test_jss_supervisor_inactive_evidence_v116.py",
+    "tests/test_jss_supervisor_inactive_evidence.py::test_confirmed_inactive_supervisor_is_not_ready": {
+      "path": "tests/test_jss_supervisor_inactive_evidence.py",
       "name": "test_confirmed_inactive_supervisor_is_not_ready",
       "purpose": "Confirmed inactive supervisor is not ready",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -33185,8 +33185,8 @@
       "description_source": "source_identity",
       "line": 21
     },
-    "tests/test_jss_supervisor_inactive_evidence_v116.py::test_incomplete_inactive_evidence_never_confirms_stop": {
-      "path": "tests/test_jss_supervisor_inactive_evidence_v116.py",
+    "tests/test_jss_supervisor_inactive_evidence.py::test_incomplete_inactive_evidence_never_confirms_stop": {
+      "path": "tests/test_jss_supervisor_inactive_evidence.py",
       "name": "test_incomplete_inactive_evidence_never_confirms_stop",
       "purpose": "Incomplete inactive evidence never confirms stop",
       "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
@@ -33202,8 +33202,8 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_jss_supervisor_inactive_evidence_v116.py::test_active_supervisor_requires_identity_heartbeat_and_command_success": {
-      "path": "tests/test_jss_supervisor_inactive_evidence_v116.py",
+    "tests/test_jss_supervisor_inactive_evidence.py::test_active_supervisor_requires_identity_heartbeat_and_command_success": {
+      "path": "tests/test_jss_supervisor_inactive_evidence.py",
       "name": "test_active_supervisor_requires_identity_heartbeat_and_command_success",
       "purpose": "Active supervisor requires identity heartbeat and command success",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
@@ -45812,6 +45812,96 @@
       "description_source": "source_identity",
       "line": 154
     },
+    "tests/test_memory_sqlite_ingest_policy.py::test_unified_memory_new_database_uses_central_rollback_mode": {
+      "path": "tests/test_memory_sqlite_ingest_policy.py",
+      "name": "test_unified_memory_new_database_uses_central_rollback_mode",
+      "purpose": "Unified memory new database uses central rollback mode",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory",
+        "latka_jazn.tools.memory_rebuild_app.unified_core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_memory_sqlite_ingest_policy.py::test_unified_memory_refuses_unsafe_existing_wal_without_changes": {
+      "path": "tests/test_memory_sqlite_ingest_policy.py",
+      "name": "test_unified_memory_refuses_unsafe_existing_wal_without_changes",
+      "purpose": "Unified memory refuses unsafe existing wal without changes",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory",
+        "latka_jazn.tools.memory_rebuild_app.unified_core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_maintenance_rejects_unsafe_existing_wal": {
+      "path": "tests/test_memory_sqlite_ingest_policy.py",
+      "name": "test_html_memory_maintenance_rejects_unsafe_existing_wal",
+      "purpose": "Html memory maintenance rejects unsafe existing wal",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory",
+        "latka_jazn.tools.memory_rebuild_app.unified_core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_backup_uses_readonly_source_and_preserves_source": {
+      "path": "tests/test_memory_sqlite_ingest_policy.py",
+      "name": "test_html_memory_backup_uses_readonly_source_and_preserves_source",
+      "purpose": "Html memory backup uses readonly source and preserves source",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory",
+        "latka_jazn.tools.memory_rebuild_app.unified_core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
     "tests/test_memory_sqlite_test04.py::test_powershell_operator_has_fail_closed_contract": {
       "path": "tests/test_memory_sqlite_test04.py",
       "name": "test_powershell_operator_has_fail_closed_contract",
@@ -46262,96 +46352,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 938
-    },
-    "tests/test_memory_sqlite_v116_ingest_policy.py::test_unified_memory_new_database_uses_central_rollback_mode": {
-      "path": "tests/test_memory_sqlite_v116_ingest_policy.py",
-      "name": "test_unified_memory_new_database_uses_central_rollback_mode",
-      "purpose": "Unified memory new database uses central rollback mode",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.db",
-        "latka_jazn.memory",
-        "latka_jazn.tools.memory_rebuild_app.unified_core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 32
-    },
-    "tests/test_memory_sqlite_v116_ingest_policy.py::test_unified_memory_refuses_unsafe_existing_wal_without_changes": {
-      "path": "tests/test_memory_sqlite_v116_ingest_policy.py",
-      "name": "test_unified_memory_refuses_unsafe_existing_wal_without_changes",
-      "purpose": "Unified memory refuses unsafe existing wal without changes",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "OperationalError"
-      ],
-      "targets": [
-        "latka_jazn.db",
-        "latka_jazn.memory",
-        "latka_jazn.tools.memory_rebuild_app.unified_core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 47
-    },
-    "tests/test_memory_sqlite_v116_ingest_policy.py::test_html_memory_maintenance_rejects_unsafe_existing_wal": {
-      "path": "tests/test_memory_sqlite_v116_ingest_policy.py",
-      "name": "test_html_memory_maintenance_rejects_unsafe_existing_wal",
-      "purpose": "Html memory maintenance rejects unsafe existing wal",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [
-        "OperationalError"
-      ],
-      "targets": [
-        "latka_jazn.db",
-        "latka_jazn.memory",
-        "latka_jazn.tools.memory_rebuild_app.unified_core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 58
-    },
-    "tests/test_memory_sqlite_v116_ingest_policy.py::test_html_memory_backup_uses_readonly_source_and_preserves_source": {
-      "path": "tests/test_memory_sqlite_v116_ingest_policy.py",
-      "name": "test_html_memory_backup_uses_readonly_source_and_preserves_source",
-      "purpose": "Html memory backup uses readonly source and preserves source",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "contract",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.db",
-        "latka_jazn.memory",
-        "latka_jazn.tools.memory_rebuild_app.unified_core"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 70
     },
     "tests/test_memory_streaming_attach_convergence.py::test_generator_v2_normalization_is_metadata_only": {
       "path": "tests/test_memory_streaming_attach_convergence.py",
@@ -53481,8 +53481,8 @@
       "description_source": "source_identity",
       "line": 15
     },
-    "tests/test_release_audit_dispatch_nonmutating_v118.py::test_audit_dispatch_skips_both_mutating_generated_artifact_steps": {
-      "path": "tests/test_release_audit_dispatch_nonmutating_v118.py",
+    "tests/test_release_audit_dispatch_nonmutating.py::test_audit_dispatch_skips_both_mutating_generated_artifact_steps": {
+      "path": "tests/test_release_audit_dispatch_nonmutating.py",
       "name": "test_audit_dispatch_skips_both_mutating_generated_artifact_steps",
       "purpose": "Audit dispatch skips both mutating generated artifact steps",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
@@ -53498,8 +53498,8 @@
       "description_source": "source_identity",
       "line": 23
     },
-    "tests/test_release_audit_dispatch_nonmutating_v118.py::test_audit_dispatch_retains_metadata_and_catalog_validation": {
-      "path": "tests/test_release_audit_dispatch_nonmutating_v118.py",
+    "tests/test_release_audit_dispatch_nonmutating.py::test_audit_dispatch_retains_metadata_and_catalog_validation": {
+      "path": "tests/test_release_audit_dispatch_nonmutating.py",
       "name": "test_audit_dispatch_retains_metadata_and_catalog_validation",
       "purpose": "Audit dispatch retains metadata and catalog validation",
       "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
@@ -53515,8 +53515,8 @@
       "description_source": "source_identity",
       "line": 36
     },
-    "tests/test_release_audit_dispatch_nonmutating_v118.py::test_audit_is_not_added_to_automatic_push_branch_triggers": {
-      "path": "tests/test_release_audit_dispatch_nonmutating_v118.py",
+    "tests/test_release_audit_dispatch_nonmutating.py::test_audit_is_not_added_to_automatic_push_branch_triggers": {
+      "path": "tests/test_release_audit_dispatch_nonmutating.py",
       "name": "test_audit_is_not_added_to_automatic_push_branch_triggers",
       "purpose": "Audit is not added to automatic push branch triggers",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
