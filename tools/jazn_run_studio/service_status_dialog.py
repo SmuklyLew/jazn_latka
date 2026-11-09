@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 STATUS_COLORS = {"good": "#32C77A", "warn": "#E8A13B", "bad": "#E2525D"}
 STATUS_LABELS = {"good": "Działa", "warn": "Niezweryfikowany / ograniczony", "bad": "Błąd"}
 MAX_OBSERVATION_AGE_SECONDS = 45.0
+from .core import OLLAMA_GENERATION_PROOF_SECONDS
 
 
 def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = False,
@@ -85,6 +86,11 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
         return "warn", "Brak dowodu recall i ciągłości MEMORY"
 
     if key == "ollama":
+        proof_age = evidence.get("generation_evidence_age_seconds")
+        if (proof_age is not None and (
+                not isinstance(proof_age, (int, float))
+                or proof_age + age_seconds > OLLAMA_GENERATION_PROOF_SECONDS)):
+            return "warn", "API odpowiada; ostatni dowód generowania wygasł — ponów test"
         if evidence.get("endpoint_reachable") is not True:
             return "warn", "Brak dowodu dostępności API"
         if evidence.get("selected_model_present") is False:

@@ -67,6 +67,7 @@ class OperatorWorkspace:
         self.host = window
         self.observations: dict[str, dict[str, Any]] = {}
         self.failures: dict[str, dict[str, Any]] = {}
+        self.warnings: dict[str, dict[str, Any]] = {}
         self.completed = 0
         self.dock_height = 300  # operator-resizable height, not a fixed pane
         self.dock = QDockWidget("Narzędzia operatora", window)
@@ -405,6 +406,12 @@ class OperatorWorkspace:
             self.refresh_technical()
 
     def observe(self, key: str, kind: str, value: Any) -> None:
+        if kind == "monitor_issue" and isinstance(value, dict):
+            if value.get("state") == "warning":
+                self.warnings[key] = dict(value)
+            elif value.get("state") == "resolved":
+                self.warnings.pop(key, None)
+            self.render_problems()
         if kind in {"evidence", "probe", "memory_evidence"} and isinstance(value, dict):
             service = (
                 "runtime" if kind == "evidence" else
@@ -423,12 +430,14 @@ class OperatorWorkspace:
         self.problems.clear()
         query = self.problem_search.text().casefold().strip()
         groups: dict[str, QTreeWidgetItem] = {}
-        for key, value in sorted(self.failures.items()):
+        entries = [(key, value, False) for key, value in self.failures.items()]
+        entries += [(key, value, True) for key, value in self.warnings.items()]
+        for key, value, warning in sorted(entries, key=lambda row: row[0]):
             reason = self.host.core.redactor.text(str(value.get("error") or "niepowodzenie operacji"))
             guide = explain_failure(key, reason)
             if query and query not in (key + " " + reason + " " + guide.title + " " + guide.remedy).casefold():
                 continue
-            category = "Usługi opcjonalne" if key.startswith("probe:") else "Runtime" if key in {"status", "start", "stop", "restart"} else "Operacje"
+            category = "Monitoring usług" if warning else "Usługi opcjonalne" if key.startswith("probe:") else "Runtime" if key in {"status", "start", "stop", "restart"} else "Operacje"
             if category not in groups:
                 groups[category] = QTreeWidgetItem(self.problems, [category])
             raw_stamp = value.get("finished") or value.get("started")
@@ -437,18 +446,25 @@ class OperatorWorkspace:
                          if isinstance(raw_stamp, (int, float)) and raw_stamp > 0 else "brak czasu")
             except (OSError, OverflowError, ValueError):
                 stamp = "nieprawidłowy czas"
-            level = "Ostrzeżenie" if category == "Usługi opcjonalne" else "Błąd"
-            target = "Usługi i procesy" if category in {"Runtime", "Usługi opcjonalne"} else "Diagnostyka"
-            item = QTreeWidgetItem(groups[category], [level + " • " + key, guide.title, stamp, guide.module])
+            level = "Ostrzeżenie" if warning or category == "Usługi opcjonalne" else "Błąd"
+            target = "Usługi i procesy" if category in {"Runtime", "Usługi opcjonalne", "Monitoring usług"} else "Diagnostyka"
+            item = QTreeWidgetItem(groups[category], [
+                level + " • " + key,
+                "Ograniczenie: " + reason if warning else guide.title,
+                stamp, "Monitor usług" if warning else guide.module,
+            ])
             item.setToolTip(1, guide.remedy)
             item.setData(0, Qt.ItemDataRole.UserRole, target)
             item.setData(1, Qt.ItemDataRole.UserRole, guide.remedy)
             item.setData(2, Qt.ItemDataRole.UserRole, reason)
             item.setData(3, Qt.ItemDataRole.UserRole, key)
         self.problems.expandAll()
-        self.problem_summary.setText(f"Problemy: {len(self.failures)} • wykonane kontrole: {self.completed}" if self.failures else
-                                    "Nie wykryto problemów w wykonanych kontrolach." if self.completed else
-                                    "Nie wykonano kontroli. Brak potwierdzonej diagnozy.")
+        total = len(self.failures) + len(self.warnings)
+        self.problem_summary.setText(
+            f"Problemy: {total} • wykonane kontrole: {self.completed}" if total else
+            "Nie wykryto problemów w wykonanych kontrolach." if self.completed else
+            "Nie wykonano kontroli. Brak potwierdzonej diagnozy."
+        )
 
     def show_problem_guidance(self) -> None:
         item = self.problems.currentItem()
@@ -528,4 +544,4 @@ class OperatorWorkspace:
         for console in self.consoles:
             console.refresh()
         active = sum(j["state"] in {"starting", "running", "stopping"} for j in jobs)
-        self.host.operator_status.setText(f"Problemy: {len(self.failures)}  •  Zadania: {active}")
+        self.host.operator_status.setText(f"Problemy: {len(self.failures) + len(self.warnings)}  •  Zadania: {active}")
