@@ -46045,7 +46045,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 34
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_unified_memory_refuses_unsafe_existing_wal_without_changes": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -46068,7 +46068,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 49
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_maintenance_rejects_unsafe_existing_wal": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -46093,7 +46093,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 60
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_backup_uses_readonly_source_and_preserves_source": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -46114,7 +46114,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 72
     },
     "tests/test_memory_sqlite_test04.py::test_powershell_operator_has_fail_closed_contract": {
       "path": "tests/test_memory_sqlite_test04.py",
