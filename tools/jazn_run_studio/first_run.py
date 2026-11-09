@@ -20,6 +20,10 @@ from .core import Controller, Settings, StudioError
 _ROW_PROFILES = {
     "Testy: pytest": ("core,run-studio,test-evidence", "python"),
     **{
+        name: ("core,run-studio", "python")
+        for name in ("tzdata", "packaging", "PySide6-Essentials")
+    },
+    **{
         "MCP: " + module: ("core,mcp-http", "mcp_python")
         for module in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
     },
@@ -252,7 +256,7 @@ class SetupWizard(QWizard):
             for j, key in enumerate(("name", "state", "detail", "remedy")):
                 self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
             name = str(row.get("name") or "")
-            if row.get("state") == "OPTIONAL_MISSING" and name in _ROW_PROFILES:
+            if row.get("state") in {"OPTIONAL_MISSING", "FAIL"} and name in _ROW_PROFILES:
                 button = QPushButton("Zainstaluj…")
                 button.setAccessibleName("Zainstaluj zależność: " + name)
                 button.clicked.connect(
@@ -263,7 +267,7 @@ class SetupWizard(QWizard):
     def install_missing(self, name: str) -> None:
         spec = _ROW_PROFILES.get(name)
         if spec is None or not any(
-            row.get("name") == name and row.get("state") == "OPTIONAL_MISSING"
+            row.get("name") == name and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
             for row in self.report.get("rows", [])
         ):
             return
@@ -341,9 +345,7 @@ class SetupWizard(QWizard):
         process.readyReadStandardOutput.connect(self._row_read)
         process.readyReadStandardError.connect(lambda: process.readAllStandardError())
         process.finished.connect(self._row_finished)
-        process.errorOccurred.connect(
-            lambda _error: self.stage.setText("Nie można uruchomić Dependency Studio.")
-        )
+        process.errorOccurred.connect(self._row_error)
         self.provision_process = process
         self.stage.setText(
             ("Pobieranie i weryfikowanie: " if stage == "download" else "Instalacja offline: ")
@@ -351,6 +353,14 @@ class SetupWizard(QWizard):
         )
         # QProcess receives explicit argv; no shell or arbitrary package names.
         process.start(self._row_python, arguments)
+
+    def _row_error(self, _error: object) -> None:
+        process = self.provision_process
+        if process is not None and process.state() == QProcess.ProcessState.NotRunning:
+            self.provision_process = None
+            self._row_stage = ""
+            process.deleteLater()
+        self.stage.setText("Nie można uruchomić Dependency Studio.")
 
     def _row_read(self) -> None:
         if self.provision_process is not None:
