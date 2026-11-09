@@ -32364,7 +32364,9 @@
       "purpose": "No selected executable means no downloader or confirmation dialog.",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "mcp"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
