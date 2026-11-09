@@ -32332,11 +32332,11 @@
       "path": "tests/test_jss_first_run_row_install.py",
       "name": "test_install_button_is_only_shown_for_known_missing_capabilities",
       "purpose": "Only allowlisted missing rows have an installation action.",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -32356,7 +32356,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 53
+      "line": 55
     },
     "tests/test_jss_first_run_row_install.py::test_missing_mcp_interpreter_is_refused_before_confirmation": {
       "path": "tests/test_jss_first_run_row_install.py",
@@ -32373,7 +32373,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 78
+      "line": 80
     },
     "tests/test_jss_first_run_row_install.py::test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected": {
       "path": "tests/test_jss_first_run_row_install.py",
@@ -32388,7 +32388,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 91
+      "line": 93
     },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",
