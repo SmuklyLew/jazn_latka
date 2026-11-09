@@ -66,10 +66,17 @@ def supervisor_summary(data: dict[str, Any], *, command_ok: bool = True) -> dict
     identity = state.get("supervisor_identity_confirmed") is True
     heartbeat = state.get("supervisor_heartbeat_fresh") is True
     pid = state.get("supervisor_pid")
+    inactive_confirmed = (
+        state.get("schema_version") == "persistent_runtime_supervisor/v1"
+        and state.get("supervisor_active") is False
+        and state.get("supervisor_pid_alive") is False
+        and state.get("supervisor_identity_state") == "not_alive"
+    )
     return {
         "service": "supervisor",
         "ready": command_ok and state.get("ok") is True and active and identity and heartbeat,
         "active": active,
+        "inactive_confirmed": inactive_confirmed,
         "identity_confirmed": identity,
         "heartbeat_fresh": heartbeat,
         "pid": pid if type(pid) is int and pid > 0 else None,
