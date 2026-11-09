@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-09T04:21:30+00:00",
-  "updated_at_utc": "2026-11-09T04:21:30+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-09T11:29:15+00:00",
+  "updated_at_utc": "2026-11-09T11:29:15+00:00",
   "start_file": "run.py",
-  "file_count": 3725,
-  "static_file_count": 3725,
+  "file_count": 3726,
+  "static_file_count": 3726,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -472,8 +472,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2959,
-      "sha256": "9b2a3d80bb9428bed9eb68a072c7f1aa7b8274654a4aca51993aedff98a62a50",
+      "size_bytes": 2954,
+      "sha256": "f9210b22066fcf4cd78fc432ec5151ab6db1d345355479d4c172fd8ba2390dac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11515,8 +11515,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 26721,
-      "sha256": "77d76597506887d70b5ff4ec8c098bc7ccd1ae8c4283582e992adeb6bada6227",
+      "size_bytes": 26817,
+      "sha256": "b99d33e0e3870efaababdc32c203d1498b98806f2620e28639de9f0e17429015",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29001,6 +29001,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "size_bytes": 4828,
+      "sha256": "aac1790a24611a99a8d510e973c4736b099369344acdc6e3790596368e55b720",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_manual_evidence_commit.py",
       "size_bytes": 3445,
       "sha256": "d112830201ab1150dab056cd3c50fb3252875c69b8c496532e7342d3645ebbba",
@@ -32638,8 +32647,8 @@
     },
     {
       "path": "tools/jazn_run_studio/first_run.py",
-      "size_bytes": 24667,
-      "sha256": "aed97af70e4f20d9f2904f32870329e7af45f72ee659f2a0b479d173bf6f6508",
+      "size_bytes": 33596,
+      "sha256": "555209540bbac7e9bc51c4fe632a103b776cc4ee37859cfff553477c561862a0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33322,8 +33331,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2889032,
-      "sha256": "07bf4ef45f02cf5f27471874cfcc56d39b26d3d8931c99aef96f6045d927f81d",
+      "size_bytes": 2891973,
+      "sha256": "50ffcf27186927bc176ae698c5a6e2afbab835b10d974a626c66c4225087abe9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33980,11 +33989,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.120-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.121-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
