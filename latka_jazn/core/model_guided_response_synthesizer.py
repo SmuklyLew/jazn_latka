@@ -44,6 +44,7 @@ class ModelGuidedResponseSynthesizer:
         "external_research_request",
         "dictionary_network_lookup_request",
         "current_time_question",
+        "time_awareness_question",
         "creative_text_formatting",
         "runtime_health_check",
         "runtime_health_check_after_update",
