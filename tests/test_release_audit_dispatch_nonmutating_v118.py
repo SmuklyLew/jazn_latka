@@ -42,6 +42,9 @@ def test_audit_dispatch_retains_metadata_and_catalog_validation() -> None:
     )
     assert text.count(guard) == 5
     assert "Synchronize canonical release metadata after generated catalog" in text
+    assert "Require committed audit-branch catalog and metadata" in text
+    assert "sync_contract_catalog.py --check" in text
+    assert "--root . --base-branch master --check --json" in text
     assert "Verify synchronization is idempotent" in text
     assert '[[ "$GITHUB_REF" == refs/heads/audit/* ]]' in text
     assert '-like "refs/heads/audit/*"' in text
