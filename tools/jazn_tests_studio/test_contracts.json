@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.114",
-  "active_definition_count": 3247,
+  "system_version": "16.3.25.5.116.0.34.94.6.115",
+  "active_definition_count": 3252,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -35401,6 +35401,27 @@
       "description_source": "source_identity",
       "line": 10
     },
+    "tests/test_mcp_http_body_replay_lifetime.py::test_sdk_delegation_waits_for_real_disconnect_after_replayed_body": {
+      "path": "tests/test_mcp_http_body_replay_lifetime.py",
+      "name": "test_sdk_delegation_waits_for_real_disconnect_after_replayed_body",
+      "purpose": "Sdk delegation waits for real disconnect after replayed body",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.http_tasks_bridge"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_mcp_http_cli.py::test_mcp_http_cli_is_explicitly_loopback_dev_only": {
       "path": "tests/test_mcp_http_cli.py",
       "name": "test_mcp_http_cli_is_explicitly_loopback_dev_only",
@@ -37089,6 +37110,91 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 40
+    },
+    "tests/test_mcp_task_sqlite_journal_policy.py::test_task_store_uses_rollback_on_unfixed_sqlite": {
+      "path": "tests/test_mcp_task_sqlite_journal_policy.py",
+      "name": "test_task_store_uses_rollback_on_unfixed_sqlite",
+      "purpose": "Task store uses rollback on unfixed sqlite",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_mcp_task_sqlite_journal_policy.py::test_task_store_refuses_existing_unsafe_wal_before_open": {
+      "path": "tests/test_mcp_task_sqlite_journal_policy.py",
+      "name": "test_task_store_refuses_existing_unsafe_wal_before_open",
+      "purpose": "Task store refuses existing unsafe wal before open",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_mcp_task_sqlite_journal_policy.py::test_task_store_keeps_wal_available_on_fixed_library": {
+      "path": "tests/test_mcp_task_sqlite_journal_policy.py",
+      "name": "test_task_store_keeps_wal_available_on_fixed_library",
+      "purpose": "Task store keeps wal available on fixed library",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
+    },
+    "tests/test_mcp_task_sqlite_journal_policy.py::test_extended_windows_path_is_not_encoded_as_uri_authority": {
+      "path": "tests/test_mcp_task_sqlite_journal_policy.py",
+      "name": "test_extended_windows_path_is_not_encoded_as_uri_authority",
+      "purpose": "Extended windows path is not encoded as uri authority",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "mcp",
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.mcp.task_resume"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
     },
     "tests/test_memory_attach_preflight_version.py::test_memory_attach_rejects_verified_preflight_without_runtime_version": {
       "path": "tests/test_memory_attach_preflight_version.py",

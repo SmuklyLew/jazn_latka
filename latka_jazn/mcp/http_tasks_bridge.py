@@ -401,7 +401,10 @@ class ModernTasksHttpBridge:
                 if not replayed:
                     replayed = True
                     return {"type": "http.request", "body": body, "more_body": False}
-                return {"type": "http.disconnect"}
+                # Exhausting the buffered body does not close the connection.
+                # Keep the SDK's JSON/SSE response alive until the ASGI server
+                # reports the actual disconnect; replay the body only once.
+                return await receive()
 
             await self.app(scope, replay_receive, send)
             return
