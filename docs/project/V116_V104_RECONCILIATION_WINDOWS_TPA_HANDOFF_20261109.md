@@ -27,9 +27,9 @@ Official references: https://www.sqlite.org/wal.html ; https://docs.python.org/3
 Keep the existing 22 IDs, TPARunner and RunStore; no duplicate runner.
 
 Existing cases now include added regressions:
-- studio-memory, studio-memory-rebuild, studio-chat-import: tests/test_memory_sqlite_v116_ingest_policy.py
-- studio-dependencies: tests/test_dependency_studio_layout_contract_v116.py
-- studio-start: tests/test_jss_supervisor_inactive_evidence_v116.py
+- studio-memory, studio-memory-rebuild, studio-chat-import: tests/test_memory_sqlite_ingest_policy.py
+- studio-dependencies: tests/test_dependency_studio_layout_contract.py
+- studio-start: tests/test_jss_supervisor_inactive_evidence.py
 - ollama-two-turns: tests/test_tpa_local_ollama_endpoint.py and tests/test_runtime_time_routing.py
 - chat-resume: existing tests/test_runtime_feminine_voice_gate.py
 
