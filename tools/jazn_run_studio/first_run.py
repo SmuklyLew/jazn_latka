@@ -435,13 +435,21 @@ class SetupWizard(QWizard):
         marker = Path(str(payload.get("environment_marker_path") or ""))
         provided = set(payload.get("profiles") or [])
         expected = set(self._row_profiles.split(","))
+        # Full release activation is sufficient for the legacy managed install
+        # contract. Optional MCP environments instead have their own verified
+        # marker and need not activate the complete runtime dependency profile.
+        verified = (
+            payload.get("activation_marker_updated") is True
+            or (
+                payload.get("state") in {"environment_ready", "optional_environment_ready"}
+                and expected.issubset(provided)
+                and marker.is_absolute() and marker.is_file()
+                and marker.resolve().is_relative_to(managed)
+            )
+        )
         ready = (
-            payload.get("state") in {"environment_ready", "optional_environment_ready"}
-            and expected.issubset(provided)
-            and interpreter.is_absolute() and interpreter.is_file()
+            verified and interpreter.is_absolute() and interpreter.is_file()
             and interpreter.resolve().is_relative_to(managed)
-            and marker.is_absolute() and marker.is_file()
-            and marker.resolve().is_relative_to(managed)
         )
         self._row_stage = ""
         if not ready:
