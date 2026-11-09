@@ -154,7 +154,7 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             environments_root=environment_root, offline=True,
             timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run),
         )
-        payload["command"] = "install
+        payload["command"] = "install"
         return (0 if payload.get("ok") else 6), payload
     if ns.command == "benchmark":
         payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload
