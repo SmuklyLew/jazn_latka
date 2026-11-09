@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.120",
-  "active_definition_count": 3279,
+  "system_version": "16.3.25.5.116.0.34.94.6.121",
+  "active_definition_count": 3283,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -32327,6 +32327,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 69
+    },
+    "tests/test_jss_first_run_row_install.py::test_install_button_is_only_shown_for_known_missing_capabilities": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_install_button_is_only_shown_for_known_missing_capabilities",
+      "purpose": "Only allowlisted missing rows have an installation action.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 34
+    },
+    "tests/test_jss_first_run_row_install.py::test_operator_denial_never_starts_install_and_valid_approval_selects_profile": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_operator_denial_never_starts_install_and_valid_approval_selects_profile",
+      "purpose": "Cancel must be side-effect free; approval selects only the known profile.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 53
+    },
+    "tests/test_jss_first_run_row_install.py::test_missing_mcp_interpreter_is_refused_before_confirmation": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_missing_mcp_interpreter_is_refused_before_confirmation",
+      "purpose": "No selected executable means no downloader or confirmation dialog.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 78
+    },
+    "tests/test_jss_first_run_row_install.py::test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected",
+      "purpose": "Only activated environments inside the isolated managed root may be selected.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 91
     },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",
