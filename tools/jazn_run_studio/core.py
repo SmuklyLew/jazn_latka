@@ -1093,6 +1093,13 @@ class Controller:
                 except ValueError:
                     supervisor = {}
                     job.state, job.error = "failed", "invalid_supervisor_status_json"
+                from .status_summary import inactive_supervisor_status_read
+                # CLI exit 1 may report a *verified inactive* optional supervisor.
+                # It is a successful observation, not proof of active supervision.
+                if inactive_supervisor_status_read(
+                    supervisor, returncode=job.returncode, error=job.error
+                ):
+                    job.state, job.error = "succeeded", None
                 projection = supervisor_summary(supervisor, command_ok=job.state == "succeeded")
                 if job.state == "failed":
                     projection["probe_error_code"] = job.error or "supervisor_status_failed"
