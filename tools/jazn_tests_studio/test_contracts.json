@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.123",
-  "active_definition_count": 3287,
+  "active_definition_count": 3291,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33224,6 +33224,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 87
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_generation_evidence_remains_green_across_passive_polls_but_expires": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_generation_evidence_remains_green_across_passive_polls_but_expires",
+      "purpose": "Generation evidence remains green across passive polls but expires",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_live_passive_probe_preserves_proof_without_generating": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_live_passive_probe_preserves_proof_without_generating",
+      "purpose": "Live passive probe preserves proof without generating",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_offline_probe_creates_single_operator_problem_and_recovery": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_offline_probe_creates_single_operator_problem_and_recovery",
+      "purpose": "Offline probe creates single operator problem and recovery",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_failed_supervisor_stays_visible_in_problems_and_output": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_failed_supervisor_stays_visible_in_problems_and_output",
+      "purpose": "Failed supervisor stays visible in problems and output",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
