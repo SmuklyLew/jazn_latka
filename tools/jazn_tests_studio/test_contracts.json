@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.122",
-  "active_definition_count": 3283,
+  "active_definition_count": 3287,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31435,6 +31435,83 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 133
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_json_summary_bounded_and_parsable": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_dependency_json_summary_bounded_and_parsable",
+      "purpose": "Large installer metadata is omitted from the first-run machine response.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 35
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_process_failure_is_visible_in_operator_logs": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_dependency_process_failure_is_visible_in_operator_logs",
+      "purpose": "Missing subprocess JSON must leave a bounded failure event for the operator.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 53
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_profile_does_not_require_global_activation": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_optional_mcp_profile_does_not_require_global_activation",
+      "purpose": "A marked isolated MCP environment may be selected even without global activation.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 69
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_profile_rejects_foreign_marker": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_optional_profile_rejects_foreign_marker",
+      "purpose": "A marker outside the managed dependency folder cannot authorize interpreter change.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 99
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
