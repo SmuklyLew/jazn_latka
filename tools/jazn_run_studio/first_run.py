@@ -239,6 +239,7 @@ class SetupWizard(QWizard):
         self._row_setting = ""
         self._row_python = ""
         self._row_output = ""
+        self._row_stderr = ""
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
@@ -314,7 +315,7 @@ class SetupWizard(QWizard):
         wheelhouse = default_wheelhouse_root(root).resolve()
         arguments = [
             "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
-            "--root", str(root), "--wheelhouse-root", str(wheelhouse), "--json",
+            "--root", str(root), "--wheelhouse-root", str(wheelhouse), "--json-summary",
         ]
         if stage == "download":
             arguments += [
@@ -339,11 +340,11 @@ class SetupWizard(QWizard):
             self._row_stage = ""
             self.stage.setText("Odmowa: nieprawidłowa operacja.")
             return
-        self._row_stage, self._row_output = stage, ""
+        self._row_stage, self._row_output, self._row_stderr = stage, "", ""
         process = QProcess(self)
         process.setWorkingDirectory(str(root))
         process.readyReadStandardOutput.connect(self._row_read)
-        process.readyReadStandardError.connect(lambda: process.readAllStandardError())
+        process.readyReadStandardError.connect(self._row_read_stderr)
         process.finished.connect(self._row_finished)
         process.errorOccurred.connect(self._row_error)
         self.provision_process = process
@@ -351,62 +352,100 @@ class SetupWizard(QWizard):
             ("Pobieranie i weryfikowanie: " if stage == "download" else "Instalacja offline: ")
             + self._row_name
         )
+        self.core.emit("setup:dependency-row", "log", f"{stage}: {self._row_name} — rozpoczęto")
         # QProcess receives explicit argv; no shell or arbitrary package names.
         process.start(self._row_python, arguments)
+
+    def _row_read_stderr(self) -> None:
+        if self.provision_process is not None:
+            chunk = bytes(self.provision_process.readAllStandardError().data()).decode(
+                "utf-8", "replace"
+            )
+            # Kept only in memory. Raw installer output is never written to operator logs.
+            self._row_stderr = (self._row_stderr + chunk)[-8192:]
 
     def _row_error(self, _error: object) -> None:
         process = self.provision_process
         if process is not None and process.state() == QProcess.ProcessState.NotRunning:
+            stage = self._row_stage
             self.provision_process = None
             self._row_stage = ""
             process.deleteLater()
-        self.stage.setText("Nie można uruchomić Dependency Studio.")
+            if stage:
+                self._row_failure(stage, "process_start_failed", -1, "")
 
     def _row_read(self) -> None:
         if self.provision_process is not None:
             chunk = bytes(self.provision_process.readAllStandardOutput().data()).decode(
                 "utf-8", "replace"
             )
-            self._row_output = (self._row_output + chunk)[-262144:]
+            self._row_output = (self._row_output + chunk)[-65536:]
+
+    def _row_failure(self, stage: str, code: str, exit_code: int, detail: str) -> None:
+        # Persist bounded, redacted metadata through the canonical operator channel.
+        detail = self.core.redactor.text(detail.strip().splitlines()[-1] if detail.strip() else "")[:160]
+        reason = f"{stage}/{code}, exit={exit_code}"
+        if detail:
+            reason += ": " + detail
+        reason = self.core.redactor.text(reason)[:245]
+        self.core.emit(
+            "setup:dependency-row", "state",
+            {"state": "failed", "error": reason, "returncode": int(exit_code)},
+        )
+        self.core.emit("setup:dependency-row", "log", reason)
+        self.stage.setText("Instalacja nieudana: " + reason)
 
     def _row_finished(self, exit_code: int, _status: object) -> None:
+        stage = self._row_stage
+        if not stage:
+            return  # A process_start_failed event already owns the failure.
         self._row_read()
+        self._row_read_stderr()
         try:
             payload = json.loads(self._row_output.strip())
         except (TypeError, ValueError):
             payload = {}
-        stage = self._row_stage
         process, self.provision_process = self.provision_process, None
         if process is not None:
             process.deleteLater()
+        if not isinstance(payload, dict):
+            payload = {}
         if exit_code != 0 or payload.get("ok") is not True:
             self._row_stage = ""
-            reason = str(payload.get("error_type") or "invalid_dependency_result")
-            self.stage.setText("Instalacja nieudana: " + self.core.redactor.text(reason)[:100])
+            error_type = str(payload.get("error_type") or "invalid_dependency_result")[:80]
+            detail = str(payload.get("error") or self._row_stderr or "")
+            self._row_failure(stage, error_type, exit_code, detail)
             return
         if stage == "download":
             bundle = payload.get("bundle_dir")
             if not isinstance(bundle, str) or not bundle.strip():
                 self._row_stage = ""
-                self.stage.setText("Nie zwrócono zweryfikowanego bundle.")
+                self._row_failure(stage, "bundle_path_missing", exit_code, "")
                 return
+            self.core.emit("setup:dependency-row", "log", "Zweryfikowano bundle: " + self._row_name)
             self._start_row_step("install", Path(bundle))
             return
         if stage != "install":
             self._row_stage = ""
-            self.stage.setText("Nieoczekiwany stan instalacji.")
+            self._row_failure(stage, "unexpected_installer_stage", exit_code, "")
             return
         managed = (self.core.root.resolve() / ".settings_local" / "acceptance"
                    / "dependency_environments").resolve()
         interpreter = Path(str(payload.get("python_executable") or ""))
+        marker = Path(str(payload.get("environment_marker_path") or ""))
+        provided = set(payload.get("profiles") or [])
+        expected = set(self._row_profiles.split(","))
         ready = (
-            payload.get("activation_marker_updated") is True
+            payload.get("state") in {"environment_ready", "optional_environment_ready"}
+            and expected.issubset(provided)
             and interpreter.is_absolute() and interpreter.is_file()
             and interpreter.resolve().is_relative_to(managed)
+            and marker.is_absolute() and marker.is_file()
+            and marker.resolve().is_relative_to(managed)
         )
         self._row_stage = ""
         if not ready:
-            self.stage.setText("Brak potwierdzonego nowego interpretera.")
+            self._row_failure(stage, "managed_environment_not_verified", exit_code, "")
             return
         resolved = str(interpreter.resolve())
         self.setting_fields[self._row_setting].setText(resolved)
@@ -416,6 +455,14 @@ class SetupWizard(QWizard):
             self.retry()
         else:
             self._provisional_mcp_python_setting = resolved
+        self.core.emit(
+            "setup:dependency-row", "state",
+            {"state": "succeeded", "error": None, "returncode": 0},
+        )
+        self.core.emit(
+            "setup:dependency-row", "log",
+            "Weryfikacja nowego środowiska zakończona: " + self._row_name,
+        )
         self.stage.setText(
             "Zainstalowano: " + self._row_name
             + ". Zatwierdź interpreter w kroku C. "
