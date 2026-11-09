@@ -23,9 +23,8 @@ class NoRedirect(HTTPRedirectHandler):
 def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     parts = urlsplit(url)
     local = (parts.scheme == "http" and parts.hostname == "127.0.0.1"
-             and ((parts.port == 11434 and parts.path == "/api/tags")
-                  or (parts.port is not None and 1024 <= parts.port <= 65535
-                      and parts.path == "/readyz")))
+             and parts.port is not None and 1024 <= parts.port <= 65535
+             and parts.path in {"/api/tags", "/readyz"})
 
     remote = parts.scheme == "https" and str(parts.hostname or "").endswith(".workers.dev") and parts.port in {None, 443}
     if not (local or remote) or parts.username or parts.password or parts.query or parts.fragment:
@@ -52,14 +51,25 @@ def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     return code, data
 
 
-def ollama(model: str = "") -> dict[str, Any]:
-    code, payload = read_json("http://127.0.0.1:11434/api/tags")
+def ollama_api_base(value: str) -> str:
+    """Accept only an explicit loopback API, without credentials or URL suffixes."""
+    parts = urlsplit(value)
+    if (parts.scheme != "http" or parts.hostname != "127.0.0.1"
+            or parts.port is None or not 1024 <= parts.port <= 65535
+            or parts.username or parts.password or parts.path not in {"", "/"}
+            or parts.query or parts.fragment):
+        raise ValueError("Unsupported local Ollama API base")
+    return f"http://127.0.0.1:{parts.port}"
+
+
+def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict[str, Any]:
+    code, payload = read_json(ollama_api_base(api_base) + "/api/tags")
     entries = payload.get("models")
     if code != 200 or not isinstance(entries, list) or any(not isinstance(m, dict) or not isinstance(m.get("name"), str) for m in entries):
         raise ValueError("Invalid Ollama model list")
     names = [entry["name"] for entry in entries]
     return {"service": "ollama", "endpoint_reachable": True, "models": names,
-            "selected_model_present": model in names if model else None,
+            "selected_model": model, "selected_model_present": model in names if model else None,
             "generation_verified": False, "accepted_visible_turn": False}
 
 
