@@ -17,7 +17,7 @@ REGRESSIONS = {
     "offline-exe": ("tests/test_jazn_run_studio_bundle_integrity.py",),
     "ui-accessibility": ("tests/test_jazn_run_studio_workbench_qt.py",),
     "studio-system": ("tests/test_jazn_operator_studio.py",),
-    "studio-start": ("tests/test_jazn_start_studio_dashboard.py", "tests/test_jss_supervisor_inactive_evidence.py"),
+    "studio-start": ("tests/test_jazn_start_studio_dashboard.py", "tests/test_jss_supervisor_inactive_evidence.py", "tests/test_jss_root_selection.py"),
     "studio-configuration": ("tests/test_jazn_run_studio_configuration_native_qt.py",),
     "studio-memory": ("tests/test_memory_studio_step_workflows.py", "tests/test_memory_sqlite_ingest_policy.py"),
     "studio-memory-rebuild": ("tests/test_memory_rebuild_p0_studio.py", "tests/test_memory_sqlite_ingest_policy.py"),
