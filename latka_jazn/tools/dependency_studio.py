@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any, Sequence
@@ -11,6 +12,7 @@ from latka_jazn.tools.application_shell import (
     run_guarded, run_text_studio, run_tui_studio, run_window_studio,
 )
 from latka_jazn.version import PACKAGE_VERSION
+from latka_jazn.dependencies.common import default_local_python_root, root_local_resources_enabled
 
 from latka_jazn.dependencies.runtime import (
     DependencyStudioError,
@@ -82,6 +84,7 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--profile", action="append")
     child.add_argument("--python-executable")
     child.add_argument("--environment-root", type=Path)
+    child.add_argument("--layout", choices=("project", "managed"), default=None)
     child.add_argument("--offline", action="store_true")
     child.add_argument("--dry-run", action="store_true")
 
@@ -136,7 +139,22 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         if not ns.offline: raise DependencyStudioError("Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse.")
         profiles = _profile_list(ns.profile, default=activation_profile_names(root))
         bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(root, profiles=profiles, wheelhouse_root=wheelhouse)
-        payload = install_bundle(root, bundle, python_executable=ns.python_executable, environments_root=ns.environment_root, offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run)); payload["command"] = "install"
+        environment_root = ns.environment_root
+        if ns.layout == "project":
+            # Never redirect an explicitly requested ROOT/.venv to another path.
+            if environment_root is not None or os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS"):
+                raise DependencyStudioError("project_layout_conflicts_with_environment_override")
+            if not root_local_resources_enabled(root):
+                raise DependencyStudioError("project_layout_requires_root_local_resources")
+        elif ns.layout == "managed" and environment_root is None:
+            if not os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS") and root_local_resources_enabled(root):
+                environment_root = default_local_python_root(root) / "environments"
+        payload = install_bundle(
+            root, bundle, python_executable=ns.python_executable,
+            environments_root=environment_root, offline=True,
+            timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run),
+        )
+        payload["command"] = "install
         return (0 if payload.get("ok") else 6), payload
     if ns.command == "benchmark":
         payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload
