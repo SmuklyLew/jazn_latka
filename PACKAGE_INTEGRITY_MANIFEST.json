@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.122-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.122-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.122-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-09T18:28:23+00:00",
-  "updated_at_utc": "2026-11-09T18:28:23+00:00",
+  "generated_at_utc": "2026-11-09T18:31:21+00:00",
+  "updated_at_utc": "2026-11-09T18:31:21+00:00",
   "start_file": "run.py",
-  "file_count": 3726,
-  "static_file_count": 3726,
+  "file_count": 3727,
+  "static_file_count": 3727,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2954,
-      "sha256": "70256c3e1d82dcb78c4d173c25bc58ff96576522ad6b7d739e4bcae55c2e0a8b",
+      "sha256": "f30e63e88e412646a05788ceb1cd8637fd604755868304584177991bdff08c4c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28902,6 +28902,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "size_bytes": 5006,
+      "sha256": "7473ffa606c3088726a2b6c4c21eafc11326888cbe96f862b7f0920fafb21de3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_jss_evidence_archive.py",
       "size_bytes": 8941,
       "sha256": "aa7a8785e735ce20770c40e49f33321a743be9dc391bb00fadeaed0430cc0f83",
@@ -32647,8 +32656,8 @@
     },
     {
       "path": "tools/jazn_run_studio/first_run.py",
-      "size_bytes": 36380,
-      "sha256": "85f253d7212d6ed8d800768b42322a810694f09132fc999d8224abf1e9a5775a",
+      "size_bytes": 36765,
+      "sha256": "45dcae87f6ef634b749228ac0ee500c4cf57d2935f3bbacdc5c3a4db2c6dfe90",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33331,8 +33340,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2891973,
-      "sha256": "f431e2216ce118639073adefd4554b04f75082993df03f2772d0b91ad17f8216",
+      "size_bytes": 2895112,
+      "sha256": "b729439ca4f6ff1bce04889ac90d132ddb8de7575c27be2031de8063752120c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
