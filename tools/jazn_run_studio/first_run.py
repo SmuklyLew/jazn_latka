@@ -16,6 +16,15 @@ from PySide6.QtWidgets import (
 
 from .core import Controller, Settings, StudioError
 
+# Only declared, maintained profiles are installable from the wizard.
+_ROW_PROFILES = {
+    "Testy: pytest": ("core,run-studio,test-evidence", "python"),
+    **{
+        "MCP: " + module: ("core,mcp-http", "mcp_python")
+        for module in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
+    },
+}
+
 
 class CheckPage(QWizardPage):
     def __init__(self, title: str, parent: QWidget | None = None):
@@ -37,7 +46,9 @@ class SetupWizard(QWizard):
         super().__init__(parent)
         self.core, self.save, self.completed = core, save, completed
         self._original_python_setting = core.settings.python
+        self._original_mcp_python_setting = core.settings.mcp_python
         self._provisional_python_setting = ""
+        self._provisional_mcp_python_setting = ""
         self.setWindowTitle("Jaźń — Serce Systemu / Pierwsze uruchomienie")
         self.resize(780, 590)
         self.setButtonText(QWizard.WizardButton.BackButton, "Wstecz")
@@ -53,8 +64,9 @@ class SetupWizard(QWizard):
         self.progress.setRange(0, 0)
         self.progress.hide()
         layout.addWidget(self.progress)
-        self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa"])
+        self.table = QTableWidget(0, 5)
+        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa", "Instalacja"])
+        self.table.setColumnWidth(4, 125)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.table)
@@ -217,6 +229,12 @@ class SetupWizard(QWizard):
         self.provision_command = ""
         self.provision_native = False
         self.provision_remaining_models: list[str] = []
+        self._row_stage = ""
+        self._row_name = ""
+        self._row_profiles = ""
+        self._row_setting = ""
+        self._row_python = ""
+        self._row_output = ""
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
@@ -225,6 +243,174 @@ class SetupWizard(QWizard):
     def _setup_python(self) -> str:
         from .core import python_executable
         return python_executable(self.core.settings)
+
+    def _render_setup_rows(self, rows: list[dict]) -> None:
+        # Resetting the rows removes stale buttons after a successful recheck.
+        self.table.setRowCount(0)
+        self.table.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, key in enumerate(("name", "state", "detail", "remedy")):
+                self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
+            name = str(row.get("name") or "")
+            if row.get("state") == "OPTIONAL_MISSING" and name in _ROW_PROFILES:
+                button = QPushButton("Zainstaluj…")
+                button.setAccessibleName("Zainstaluj zależność: " + name)
+                button.clicked.connect(
+                    lambda _checked=False, selected=name: self.install_missing(selected)
+                )
+                self.table.setCellWidget(i, 4, button)
+
+    def install_missing(self, name: str) -> None:
+        spec = _ROW_PROFILES.get(name)
+        if spec is None or not any(
+            row.get("name") == name and row.get("state") == "OPTIONAL_MISSING"
+            for row in self.report.get("rows", [])
+        ):
+            return
+        if self._row_stage or (
+            self.provision_process is not None
+            and self.provision_process.state() != QProcess.ProcessState.NotRunning
+        ):
+            self.stage.setText("Inna operacja instalacji jeszcze trwa.")
+            return
+        profiles, setting = spec
+        try:
+            python = (
+                (self.setting_fields["mcp_python"].text().strip()
+                 or self.core.settings.mcp_python or self._setup_python())
+                if setting == "mcp_python" else self._setup_python()
+            )
+            if not Path(python).is_absolute() or not Path(python).is_file():
+                raise StudioError("Wybrany interpreter nie istnieje.")
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.stage.setText(self.core.redactor.text(str(exc)))
+            return
+        from latka_jazn.dependencies.common import default_wheelhouse_root
+        wheelhouse = default_wheelhouse_root(self.core.root)
+        approved = QMessageBox.question(
+            self, "Zgoda na instalację zależności",
+            f"Brak: {name}\nProfile: {profiles}\nInterpreter bazowy: {python}\n"
+            f"Wheelhouse: {wheelhouse}\n\n"
+            "Pobrać pakiety i zbudować zweryfikowany wheelhouse, a następnie "
+            "zainstalować offline do NOWEGO, izolowanego środowiska? "
+            "Może korzystać z internetu. Nie zmienia aktywnego .venv, MEMORY "
+            "ani daemona. Nowy interpreter będzie wymagał zatwierdzenia w kroku C.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if approved != QMessageBox.StandardButton.Yes:
+            return
+        self._row_name, self._row_profiles = name, profiles
+        self._row_setting, self._row_python = setting, python
+        self._start_row_step("download")
+
+    def _start_row_step(self, stage: str, bundle: Path | None = None) -> None:
+        from latka_jazn.dependencies.common import default_wheelhouse_root
+        root = self.core.root.resolve()
+        wheelhouse = default_wheelhouse_root(root).resolve()
+        arguments = [
+            "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
+            "--root", str(root), "--wheelhouse-root", str(wheelhouse), "--json",
+        ]
+        if stage == "download":
+            arguments += [
+                "download", "--profile", self._row_profiles,
+                "--platform", "current", "--python-executable", self._row_python,
+            ]
+        elif stage == "install" and bundle is not None:
+            candidate = bundle.resolve()
+            if not candidate.is_dir() or not candidate.is_relative_to(wheelhouse):
+                self._row_stage = ""
+                self.stage.setText("Odmowa: nieprawidłowy katalog wheelhouse.")
+                return
+            arguments += [
+                "install", "--bundle", str(candidate),
+                "--profile", self._row_profiles,
+                "--python-executable", self._row_python,
+                "--environment-root",
+                str(root / ".settings_local" / "acceptance" / "dependency_environments"),
+                "--offline",
+            ]
+        else:
+            self._row_stage = ""
+            self.stage.setText("Odmowa: nieprawidłowa operacja.")
+            return
+        self._row_stage, self._row_output = stage, ""
+        process = QProcess(self)
+        process.setWorkingDirectory(str(root))
+        process.readyReadStandardOutput.connect(self._row_read)
+        process.readyReadStandardError.connect(lambda: process.readAllStandardError())
+        process.finished.connect(self._row_finished)
+        process.errorOccurred.connect(
+            lambda _error: self.stage.setText("Nie można uruchomić Dependency Studio.")
+        )
+        self.provision_process = process
+        self.stage.setText(
+            ("Pobieranie i weryfikowanie: " if stage == "download" else "Instalacja offline: ")
+            + self._row_name
+        )
+        # QProcess receives explicit argv; no shell or arbitrary package names.
+        process.start(self._row_python, arguments)
+
+    def _row_read(self) -> None:
+        if self.provision_process is not None:
+            chunk = bytes(self.provision_process.readAllStandardOutput().data()).decode(
+                "utf-8", "replace"
+            )
+            self._row_output = (self._row_output + chunk)[-262144:]
+
+    def _row_finished(self, exit_code: int, _status: object) -> None:
+        self._row_read()
+        try:
+            payload = json.loads(self._row_output.strip())
+        except (TypeError, ValueError):
+            payload = {}
+        stage = self._row_stage
+        process, self.provision_process = self.provision_process, None
+        if process is not None:
+            process.deleteLater()
+        if exit_code != 0 or payload.get("ok") is not True:
+            self._row_stage = ""
+            reason = str(payload.get("error_type") or "invalid_dependency_result")
+            self.stage.setText("Instalacja nieudana: " + self.core.redactor.text(reason)[:100])
+            return
+        if stage == "download":
+            bundle = payload.get("bundle_dir")
+            if not isinstance(bundle, str) or not bundle.strip():
+                self._row_stage = ""
+                self.stage.setText("Nie zwrócono zweryfikowanego bundle.")
+                return
+            self._start_row_step("install", Path(bundle))
+            return
+        if stage != "install":
+            self._row_stage = ""
+            self.stage.setText("Nieoczekiwany stan instalacji.")
+            return
+        managed = (self.core.root.resolve() / ".settings_local" / "acceptance"
+                   / "dependency_environments").resolve()
+        interpreter = Path(str(payload.get("python_executable") or ""))
+        ready = (
+            payload.get("activation_marker_updated") is True
+            and interpreter.is_absolute() and interpreter.is_file()
+            and interpreter.resolve().is_relative_to(managed)
+        )
+        self._row_stage = ""
+        if not ready:
+            self.stage.setText("Brak potwierdzonego nowego interpretera.")
+            return
+        resolved = str(interpreter.resolve())
+        self.setting_fields[self._row_setting].setText(resolved)
+        self.core.settings = replace(self.core.settings, **{self._row_setting: resolved})
+        if self._row_setting == "python":
+            self._provisional_python_setting = resolved
+            self.retry()
+        else:
+            self._provisional_mcp_python_setting = resolved
+        self.stage.setText(
+            "Zainstalowano: " + self._row_name
+            + ". Zatwierdź interpreter w kroku C. "
+            "Dla MCP ponów kontrolę po zapisaniu konfiguracji."
+        )
 
     def provision(self, command: str) -> None:
         from latka_jazn.tools.jss_prerequisite_setup import MODEL_NAME
@@ -417,10 +603,7 @@ class SetupWizard(QWizard):
             self.requirements.mark(ok)
             self.stage.setText("Wymagania sprawdzone." if ok else "Wymagane składniki wymagają naprawy. Szczegóły poniżej; można anulować i otworzyć diagnostykę.")
             rows = report.get("rows", [])
-            self.table.setRowCount(len(rows))
-            for i, row in enumerate(rows):
-                for j, key in enumerate(("name", "state", "detail", "remedy")):
-                    self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
+            self._render_setup_rows(rows)
             found = report.get("discovery", {})
             self.integration_summary.setText("\n".join(
                 name + ": " + ("zainstalowane — " + str(found[name]) if found.get(name) else "nie znaleziono")
@@ -448,6 +631,9 @@ class SetupWizard(QWizard):
         )
 
     def accept(self) -> None:
+        if self.provision_process is not None and self.provision_process.state() != QProcess.ProcessState.NotRunning:
+            self.notice.setText("Zakończ instalację przed zapisaniem konfiguracji.")
+            return
         if not self.report.get("required_ok") or not self.consent.isChecked():
             self.notice.setText("Wymagana pozytywna kontrola Studio i zgoda na zapis konfiguracji.")
             return
@@ -477,6 +663,9 @@ class SetupWizard(QWizard):
         if (self._provisional_python_setting
                 and self.core.settings.python == self._provisional_python_setting):
             self.core.settings = replace(self.core.settings, python=self._original_python_setting)
+        if (self._provisional_mcp_python_setting
+                and self.core.settings.mcp_python == self._provisional_mcp_python_setting):
+            self.core.settings = replace(self.core.settings, mcp_python=self._original_mcp_python_setting)
         self.finished_setup = True
         self.timer.stop()
         # The shared read may finish normally; closing a dialog does not stop
