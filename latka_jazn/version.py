@@ -1,3 +1,4 @@
+# v116.0.34.94.6.118: Keep audit-branch release CI non-mutating while validating complete gates.
 # v116.0.34.94.6.116: Restore V104 memory/TPA/NLP contracts and safe JSS dependency layout.
 # v116.0.34.94.6.115: Restore ASGI connection lifetime and central SQLite policy for durable MCP tasks.
 # v116.0.34.94.6.114: Require the canonical daemon for JSS, preserve bounded resume diagnostics and isolate ambient model settings.
@@ -223,7 +224,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.117"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.118"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
