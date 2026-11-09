@@ -71,16 +71,16 @@ jobs:
           git remote get-url origin
 
       - name: Synchronize active Test Studio catalog before release metadata
-        # On integrate/* the source branch is not mutated by CI. The catalog
-        # is staged only in isolated validation checkouts after metadata sync.
-        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/')
+        # On integrate/* and audit/* the source branch is not mutated by CI.
+        # Catalog and metadata are materialized in isolated validation checkouts.
+        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/') && !startsWith(github.ref, 'refs/heads/audit/')
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
-      # Integration branches intentionally use the same non-mutating,
-      # locally materialized validation path as pull requests. Protected
-      # release branches retain their original automatic commit/push policy.
+      # Integration and audit branches use the same non-mutating validation
+      # path as pull requests. Protected release branches retain their
+      # automatic commit/push policy.
       - name: Commit synchronized Test Studio catalog locally
-        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/') && !startsWith(github.ref, 'refs/heads/audit/')
         shell: bash
         run: |
           target_branch="${GITHUB_REF#refs/heads/}"
@@ -131,7 +131,7 @@ jobs:
           --json
 
       - name: Commit release metadata and push the generated sequence once
-        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/') && !startsWith(github.ref, 'refs/heads/audit/')
         shell: bash
         run: |
           target_branch="${GITHUB_REF#refs/heads/}"
@@ -181,10 +181,10 @@ jobs:
           --json
 
       - name: Upload synchronized PR metadata
-        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: synchronized-release-metadata-${{ github.event.pull_request.head.sha }}
+          name: synchronized-release-metadata-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             SOURCE_PROVENANCE.json
             PACKAGE_INTEGRITY_MANIFEST.json
@@ -244,7 +244,7 @@ jobs:
           npm install --global pyright@1.1.411
 
       - name: Materialize canonical PR metadata locally
-        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         run: >-
           python -X utf8 -m latka_jazn.tools.release_metadata_sync
           --root .
@@ -253,7 +253,7 @@ jobs:
           --json
 
       - name: Materialize Test Studio catalog locally for PR validation
-        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
       - name: Install Qt libraries for full-suite GUI coverage
@@ -328,7 +328,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] || [[ "$GITHUB_REF" == refs/heads/integrate/* ]]; then
+          if [ "${{ github.event_name }}" = "pull_request" ] || [[ "$GITHUB_REF" == refs/heads/integrate/* ]] || [[ "$GITHUB_REF" == refs/heads/audit/* ]]; then
             git checkout -- \
               SOURCE_PROVENANCE.json \
               PACKAGE_INTEGRITY_MANIFEST.json \
@@ -369,7 +369,7 @@ jobs:
           python -m pip install -e . pytest
 
       - name: Materialize canonical PR metadata locally
-        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         shell: pwsh
         run: >-
           python -X utf8 -m latka_jazn.tools.release_metadata_sync
@@ -379,7 +379,7 @@ jobs:
           --json
 
       - name: Materialize Test Studio catalog locally for PR validation
-        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/')
+        if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         shell: pwsh
         run: python -X utf8 tools/jazn_tests_studio/sync_contract_catalog.py --write
 
@@ -454,7 +454,7 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          if ("${{ github.event_name }}" -eq "pull_request" -or "${{ github.ref }}" -like "refs/heads/integrate/*") {
+          if ("${{ github.event_name }}" -eq "pull_request" -or "${{ github.ref }}" -like "refs/heads/integrate/*" -or "${{ github.ref }}" -like "refs/heads/audit/*") {
             $generatedPaths = @(
               "SOURCE_PROVENANCE.json",
               "PACKAGE_INTEGRITY_MANIFEST.json",
@@ -531,7 +531,7 @@ jobs:
 
   finalization:
     name: release finalization
-    if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/')
+    if: github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/heads/integrate/') && !startsWith(github.ref, 'refs/heads/audit/')
     needs: [manifest_sync, verify_ubuntu, verify_windows]
     runs-on: ubuntu-latest
     timeout-minutes: 30
