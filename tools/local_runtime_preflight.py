@@ -58,13 +58,19 @@ def _optional_tk_probe(python: str, root: Path) -> dict[str, Any]:
 def _optional_mcp_probe(python: str, root: Path) -> dict[str, Any]:
     # A dependency probe is not authentication or transport readiness.
     script = (
-        "import importlib,importlib.metadata,json;"
-        "names=('mcp','pydantic','starlette','uvicorn');"
-        "result={};"
-        "exec('for n in names:\\n try:\\n  importlib.import_module(n)\\n"
-        "  result[n]=importlib.metadata.version(n)\\n"
-        " except Exception:\\n  result[n]=None');"
-        "print(json.dumps(result))"
+        "import importlib, importlib.metadata, json\n"
+        "names = ('mcp', 'pydantic', 'starlette', 'uvicorn')\n"
+        "result = {}\n"
+        "for name in names:\n"
+        "    try:\n"
+        "        importlib.import_module(name)\n"
+        "        if name == 'mcp':\n"
+        "            from mcp.server import MCPServer\n"
+        "            from mcp.server.mcpserver import RequestStateSecurity\n"
+        "        result[name] = importlib.metadata.version(name)\n"
+        "    except Exception:\n"
+        "        result[name] = None\n"
+        "print(json.dumps(result))\n"
     )
     run = _run([python, "-I", "-X", "utf8", "-c", script], root, 15)
     if not run.get("ok"):
