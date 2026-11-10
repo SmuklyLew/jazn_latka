@@ -41,17 +41,19 @@ def test_windows_studio_sessions_cleanly_release_callbacks_in_both_orders(
                     assert app.heading.cget("text") == label
                 assert app._page == "diagnostics"
             else:
-                def button(label: str) -> ttk.Button:
-                    for frame in app.content.winfo_children():
+                assert app is not None
+
+                def button(label: str, workspace: DesktopWorkspace) -> ttk.Button:
+                    for frame in workspace.content.winfo_children():
                         for widget in frame.winfo_children():
                             if isinstance(widget, ttk.Button) and widget.cget("text") == label:
                                 return widget
                     pytest.fail(f"Missing quick-action button: {label}")
 
-                button("Otwórz projekt").invoke()
+                button("Otwórz projekt", app).invoke()
                 assert app._page == "projects"
                 app.open_page("home")
-                button("Skonfiguruj ścieżki").invoke()
+                button("Skonfiguruj ścieżki", app).invoke()
                 assert app._page == "paths"
         finally:
             root.destroy()

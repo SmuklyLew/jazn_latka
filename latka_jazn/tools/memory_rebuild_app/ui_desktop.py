@@ -169,14 +169,17 @@ class TkStudioDialogs:
             self._drain_after_id = self.root.after(60, self._drain)
 
     def _on_ui(self, fn: Callable[[], Any]) -> Any:
+        if current_thread() is main_thread():
+            with self._request_lock:
+                if self._closed:
+                    raise RuntimeError("Studio pamięci zostało zamknięte.")
+            # Callback may close the window: do not hold the queue lock.
+            return fn()
+        done, output = Event(), {}
         with self._request_lock:
             if self._closed:
                 raise RuntimeError("Studio pamięci zostało zamknięte.")
-            if current_thread() is not main_thread():
-                done, output = Event(), {}
-                self._requests.put((fn, done, output))
-            else:
-                return fn()
+            self._requests.put((fn, done, output))
         done.wait()
         if "exception" in output:
             raise output["exception"]
