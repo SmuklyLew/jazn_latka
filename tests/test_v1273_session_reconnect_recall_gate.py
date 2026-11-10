@@ -6,6 +6,7 @@ import pytest
 
 from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+from latka_jazn.core.handlers.ordinary_dialogue_handler import OrdinaryDialogueHandler
 from latka_jazn.core.memory_intent_contract import (
     analyze_memory_intent,
     is_session_dialogue_reference,
@@ -135,3 +136,54 @@ def test_terminal_displays_only_hash_validated_accepted_final() -> None:
     assert visible in output.getvalue()
     assert shell._last_user_text == "Jaką liczbę podałem wcześniej?"
     assert shell._last_visible_text == visible
+
+
+def test_grounded_session_dialogue_candidate_uses_prior_turns_not_autobiography() -> None:
+    history = {
+        "selected_turn_count": 2,
+        "turns": [
+            {"user_text": "Moja liczba testowa to 47.", "assistant_text": "Rozumiem."},
+            {"user_text": "Jaka byla liczba?", "assistant_text": "47."},
+        ],
+    }
+    result = OrdinaryDialogueHandler().handle(
+        RECONNECT_QUESTION,
+        {
+            "intent": "contextual_continuation_question",
+            "canonical_dialogue_cutover": True,
+            "route_entry": {"route": "ordinary_dialogue"},
+            "conversation_history": history,
+        },
+    )
+    constraints = result.data["response_candidate"]["constraints"]
+    assert "use_only_accepted_current_session_turns" in constraints
+    assert "do_not_treat_conversation_history_as_autobiographical_memory" in constraints
+    assert "current_turn_only" not in constraints
+    assert "accepted_session_context_empty" not in constraints
+
+
+def test_missing_session_history_is_not_silently_treated_as_evidence() -> None:
+    result = OrdinaryDialogueHandler().handle(
+        RECONNECT_QUESTION,
+        {
+            "intent": "contextual_continuation_question",
+            "canonical_dialogue_cutover": True,
+            "route_entry": {"route": "ordinary_dialogue"},
+            "conversation_history": {"turns": [], "selected_turn_count": 0},
+        },
+    )
+    constraints = result.data["response_candidate"]["constraints"]
+    assert "accepted_session_context_empty" in constraints
+    assert "if_prior_message_missing_disclose_unavailable_without_guessing" in constraints
+
+
+def test_terminal_never_rewrites_hash_accepted_duplicate_into_latka_voice() -> None:
+    visible = "🕒 2026-11-10 18:01:55\n🌿 Łatka\n\n47."
+    fake = _FakeDaemonClient(_accepted(visible))
+    output = io.StringIO()
+    shell = LatkaRuntimeShell(fake, stdin=io.StringIO(), stdout=output, session_id="reconnect")
+    shell._handle_default("Pierwsza wiadomosc")
+    shell._handle_default("Druga wiadomosc")
+    assert output.getvalue().count(visible) == 1
+    assert "[runtime_turn_display_blocked] repeated_accepted_final" in output.getvalue()
+    assert shell._last_user_text == "Pierwsza wiadomosc"
