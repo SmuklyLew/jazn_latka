@@ -32,6 +32,17 @@ def _suppress_internal_handler_evidence(state: TurnPipelineState, engine: JaznEn
     )
 
 
+def _validate_recovery_body(state: TurnPipelineState, engine: JaznEngine):
+    """Reuse the same grounded answer gate for recovered user-visible text."""
+    return engine.runtime_answer_validator.validate(
+        user_text=state.request.text,
+        body=state.body,
+        route=str(state.decision_dict.get("route") or ""),
+        detected_intent=str(state.detected_dialogue_intent),
+        conversation_history=state.request.client_context.get("conversation_history"),
+    )
+
+
 class RecoveryPolicy:
     """Turn-local recovery policy over the existing runtime services."""
 
@@ -133,13 +144,7 @@ class RecoveryPolicy:
                     state.decision_dict["requires_host_model"] = not state.model_replied
                     state.decision_dict["runtime_answer_quality"] = state.runtime_answer_quality
                     state.decision_dict["model_generated"] = False
-                    state.answer_validation = engine.runtime_answer_validator.validate(
-                        user_text=state.request.text,
-                        body=state.body,
-                        route=str(state.decision_dict.get("route") or ""),
-                        detected_intent=str(state.detected_dialogue_intent),
-                        conversation_history=state.request.client_context.get("conversation_history"),
-                    )
+                    state.answer_validation = _validate_recovery_body(state, engine)
             else:
                 state.decision_dict["fallback_classification"] = "not_fallback"
                 state.decision_dict["requires_host_model"] = False
