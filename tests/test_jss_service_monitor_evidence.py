@@ -150,3 +150,17 @@ def test_failed_supervisor_stays_visible_in_problems_and_output(window):
     assert "monitor:supervisor" in workspace.warnings
     assert workspace.problems.topLevelItemCount() == 2
     assert "process_exit:1" in " ".join(core.logs["supervisor"])
+
+
+def test_dialog_immediately_discards_old_model_proof(window):
+    from tools.jazn_run_studio.service_status_dialog import ServiceStatusDialog
+
+    panel = ServiceStatusDialog(window, lambda: None)
+    panel.observe("probe:ollama_generate", "probe", {
+        **_ollama(), "generation_verified": True,
+        "generation_evidence_age_seconds": 0.0,
+    })
+    assert "Działa" in panel.indicators["ollama"][1].text()
+    panel.invalidate_ollama_model()
+    assert "Niezweryfikowany" in panel.indicators["ollama"][1].text()
+    panel.close()

@@ -221,8 +221,16 @@ class SettingsViewMixin:
 
 
     def apply_settings(self: Any, settings: Settings, *, appearance_only: bool = False) -> None:
+        previous_model = self.core.settings.model
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
+        if previous_model != settings.model:
+            # A success for a different Ollama model cannot certify this one.
+            with self.core.lock:
+                self.core.ollama_generation_proof = None
+            self.workspace.observations.pop("ollama", None)
+            if self.service_status_dialog is not None:
+                self.service_status_dialog.invalidate_ollama_model()
         if not appearance_only:
             self.quick_runtime_ready = False
             self.quick_generation_ready = False

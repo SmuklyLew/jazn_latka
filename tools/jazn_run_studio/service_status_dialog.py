@@ -192,6 +192,12 @@ class ServiceStatusDialog(QDialog):
         # arrives. Clearing first would temporarily misrepresent a live daemon.
         self._request_refresh()
 
+    def invalidate_ollama_model(self) -> None:
+        """Drop old model evidence immediately when operator changes selection."""
+        self.samples.pop("ollama", None)
+        self.failures.discard("ollama")
+        self.render_statuses()
+
     def observe(self, key: str, kind: str, value: object) -> None:
         if kind == "evidence" and isinstance(value, dict) and key == "status":
             for service in ("server", "runtime"):
