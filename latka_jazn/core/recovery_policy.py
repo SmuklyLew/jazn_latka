@@ -28,6 +28,7 @@ def _suppress_internal_handler_evidence(state: TurnPipelineState, engine: JaznEn
         body=state.body,
         route=str(state.decision_dict.get("route") or ""),
         detected_intent=str(state.detected_dialogue_intent),
+        conversation_history=state.request.client_context.get("conversation_history"),
     )
 
 
@@ -67,6 +68,7 @@ class RecoveryPolicy:
                             response={**state.retry_synthesis.adapter_response, "text": state.retry_body},
                             route=str(state.decision_dict.get("route") or ""),
                             detected_intent=str(state.detected_dialogue_intent),
+                            conversation_history=state.request.client_context.get("conversation_history"),
                             template_origin=state.retry_template,
                         )
                     else:
@@ -75,6 +77,7 @@ class RecoveryPolicy:
                             body=state.retry_body,
                             route=str(state.decision_dict.get("route") or ""),
                             detected_intent=str(state.detected_dialogue_intent),
+                            conversation_history=state.request.client_context.get("conversation_history"),
                         )
                     if state.retry_validation.accepted and not state.retry_template.get("template_id"):
                         state.body = state.retry_body
@@ -135,6 +138,7 @@ class RecoveryPolicy:
                         body=state.body,
                         route=str(state.decision_dict.get("route") or ""),
                         detected_intent=str(state.detected_dialogue_intent),
+                        conversation_history=state.request.client_context.get("conversation_history"),
                     )
             else:
                 state.decision_dict["fallback_classification"] = "not_fallback"
@@ -165,7 +169,8 @@ class RecoveryPolicy:
                 state.decision_dict["runtime_answer_quality"] = "topic_aligned"
             state.body, state.continuity_badge_report = engine.continuity_badge_policy.apply(state.body, state.decision_dict)
             state.answer_validation = engine.runtime_answer_validator.validate(
-                user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent)
+                user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent),
+                conversation_history=state.request.client_context.get("conversation_history"),
             )
             if state.answer_validation.must_regenerate and state.answer_validation.repair_body and not state.preserve_handler_body:
                 state.body = engine.guard.enforce(state.answer_validation.repair_body.strip())
@@ -173,7 +178,8 @@ class RecoveryPolicy:
                 state.decision_dict["runtime_answer_quality"] = "mismatch_repaired"
                 state.body, state.continuity_badge_report = engine.continuity_badge_policy.apply(state.body, state.decision_dict)
                 state.answer_validation = engine.runtime_answer_validator.validate(
-                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent)
+                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent),
+                    conversation_history=state.request.client_context.get("conversation_history"),
                 )
                 state.repair_used = True
             elif state.answer_validation.must_regenerate and state.preserve_handler_body:
@@ -182,7 +188,8 @@ class RecoveryPolicy:
                     "validation": state.answer_validation.to_dict(),
                 }
                 state.answer_validation = engine.runtime_answer_validator.validate(
-                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent)
+                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent),
+                    conversation_history=state.request.client_context.get("conversation_history"),
                 )
                 state.decision_dict["runtime_answer_quality"] = "topic_aligned"
 
@@ -206,7 +213,8 @@ class RecoveryPolicy:
                 state.decision_dict["repair_synthesis"] = state.synthesis.to_dict()
                 state.repair_used = True
                 state.answer_validation = engine.runtime_answer_validator.validate(
-                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent)
+                    user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent),
+                    conversation_history=state.request.client_context.get("conversation_history"),
                 )
 
     def classify_result(self, state: TurnPipelineState) -> None:
