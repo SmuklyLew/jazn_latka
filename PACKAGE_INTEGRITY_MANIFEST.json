@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-10T05:33:39+00:00",
-  "updated_at_utc": "2026-11-10T05:33:39+00:00",
+  "generated_at_utc": "2026-11-10T05:45:55+00:00",
+  "updated_at_utc": "2026-11-10T05:45:55+00:00",
   "start_file": "run.py",
-  "file_count": 3737,
-  "static_file_count": 3737,
+  "file_count": 3739,
+  "static_file_count": 3739,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2959,
-      "sha256": "c3c8e377d89fbbf2b484ffa7a293966446a4b8f9efb9714ec48e964c12343da6",
+      "sha256": "be7f3c3ef1ee21a7edfd59f0bfa677598acf7e271be16591eaa12557792298c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -15987,6 +15987,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.94.6.127__253c644587a4/MANIFEST.json",
+      "size_bytes": 465,
+      "sha256": "04d15876ecdcb5c8f02f677e6e87081a49b92728b8ca5a7605277490ce796550",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.94.6.127__253c644587a4/test_private_python_launchers.py",
+      "size_bytes": 2474,
+      "sha256": "d0426e505ec03a5d5ef0036933074d0033d42a25614bc4baf02cf860611be149",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/branches/16.3.25.5.66__9a714a53c6e3/MANIFEST.json",
       "size_bytes": 543,
       "sha256": "de6b4a10b901dfd02290c54e1229edfb1eff21542dd6c006706e1a6def60117a",
@@ -30865,8 +30883,8 @@
     },
     {
       "path": "tests/test_private_python_launchers.py",
-      "size_bytes": 2474,
-      "sha256": "d0426e505ec03a5d5ef0036933074d0033d42a25614bc4baf02cf860611be149",
+      "size_bytes": 2473,
+      "sha256": "ef1cd04ada33427a6f54cbae2504567a6c7be60694cd18c6dd813ea3fb4a82fc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
