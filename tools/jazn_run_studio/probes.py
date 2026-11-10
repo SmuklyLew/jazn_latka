@@ -77,6 +77,17 @@ def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict
             "generation_verified": False, "accepted_visible_turn": False}
 
 
+def _ollama_process_count(output: str, *, windows: bool) -> int:
+    """Parse native process names without changing or spoofing the host OS."""
+    if windows:
+        names = [row[0].strip().casefold()
+                 for row in csv.reader(output.splitlines()) if row]
+    else:
+        names = [Path(line.strip()).name.casefold()
+                 for line in output.splitlines() if line.strip()]
+    return sum(name in {"ollama.exe", "ollama app.exe", "ollama"} for name in names)
+
+
 def ollama_process(executable: str = "") -> dict[str, Any]:
     """Read-only OS process inventory; not proof of a reachable API or model."""
     if sys.platform == "win32":
@@ -92,13 +103,7 @@ def ollama_process(executable: str = "") -> dict[str, Any]:
         raise OSError("ollama_process_inventory_failed")
     if len(result.stdout) > 1_048_576:
         raise OSError("ollama_process_inventory_too_large")
-    if sys.platform == "win32":
-        names = [row[0].strip().casefold()
-                 for row in csv.reader(result.stdout.splitlines()) if row]
-    else:
-        names = [Path(line.strip()).name.casefold()
-                 for line in result.stdout.splitlines() if line.strip()]
-    count = sum(n in {"ollama.exe", "ollama app.exe", "ollama"} for n in names)
+    count = _ollama_process_count(result.stdout, windows=sys.platform == "win32")
     installed = bool((executable and Path(executable).is_file())
                      or shutil.which("ollama"))
     return {

@@ -184,16 +184,12 @@ def test_ollama_process_probe_is_passive_and_reports_stopped(window, monkeypatch
     assert "monitor:ollama_process" in window.core.logs
 
 
-def test_process_inventory_on_off_is_independent_from_api(window, monkeypatch):
-    import subprocess
-    monkeypatch.setattr(probes.sys, "platform", "win32")
-    monkeypatch.setattr(probes.subprocess, "run",
-                        lambda *a, **k: subprocess.CompletedProcess(
-                            a[0], 0, '"ollama.exe","340","Console","1","100 K"\\n', ""))
-    result = probes.ollama_process()
-    assert result["process_running"] is True
-    assert result["generation_verified"] is False
-    monkeypatch.setattr(probes.subprocess, "run",
-                        lambda *a, **k: subprocess.CompletedProcess(
-                            a[0], 0, '"other.exe","340","Console","1","100 K"\\n', ""))
-    assert probes.ollama_process()["process_running"] is False
+def test_process_inventory_on_off_is_independent_from_api():
+    # Parse both OS-native process listings without spoofing global sys.platform
+    # (which breaks stdlib win32-specific discovery on Linux).
+    windows_on = '"ollama.exe","340","Console","1","100 K"\n'
+    windows_off = '"other.exe","340","Console","1","100 K"\n'
+    assert probes._ollama_process_count(windows_on, windows=True) == 1
+    assert probes._ollama_process_count(windows_off, windows=True) == 0
+    assert probes._ollama_process_count("ollama app.exe\n", windows=False) == 1
+    assert probes._ollama_process_count("other\n", windows=False) == 0

@@ -27,7 +27,10 @@ def test_service_observer_buttons_are_only_refresh_and_close() -> None:
     panel = ServiceStatusDialog(host, lambda: seen.append("read-only-poll"))
     labels = {button.text() for button in panel.findChildren(QPushButton)}
     assert labels == {"Odśwież stany", "Zamknij"}
-    assert len(panel.indicators) == 7
+    assert set(panel.indicators) == {
+        "server", "runtime", "ollama_process", "ollama",
+        "mcp", "mcp_https", "supervisor", "memory",
+    }
     panel.request_refresh()
     assert seen == ["read-only-poll"]
     panel.close()
