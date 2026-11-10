@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 import pytest
-from latka_jazn.core.acceptance_layout import resolve_acceptance_layout
+from latka_jazn.core.acceptance_layout import acceptance_temp_parent, resolve_acceptance_layout
 from latka_jazn.core.runtime_root import (
     active_runtime_marker_path, default_runtime_workspace_path, workspace_runtime_path,
 )
@@ -109,6 +109,22 @@ def test_modern_acceptance_runtime_is_inside_local_settings(tmp_path, monkeypatc
     assert layout.operator.is_relative_to(root)
     assert layout.memory.is_relative_to(root)
     assert layout.runtime != workspace_runtime_path(root)
+
+
+def test_nested_tpa_acceptance_base_is_owned_and_external_base_denied(tmp_path, monkeypatch):
+    root = prepared(tmp_path)
+    (root / ".settings").mkdir()
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.delenv("JAZN_MEMORY_ROOT", raising=False)
+    parent = acceptance_temp_parent(root)
+    assert parent == root / ".settings_local" / "acceptance"
+    nested = parent / "jazn_tpa_fixture"
+    nested.mkdir()
+    layout = resolve_acceptance_layout(root, base=nested)
+    assert layout.runtime == nested / "runtime"
+    assert layout.operator == nested / "operator"
+    with pytest.raises(ValueError, match="acceptance_runtime_outside_root"):
+        resolve_acceptance_layout(root, base=tmp_path / "outside")
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="Requires native Windows PowerShell")
