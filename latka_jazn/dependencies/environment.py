@@ -447,6 +447,34 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
 
 def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    # Prefer a verified ROOT/.venv even if the host Python already has the core
+    # packages. The private venv is never created or modified implicitly.
+    from .private_python import private_python_status
+    private = private_python_status(project_root)
+    if private["present"]:
+        if not private["ready"]:
+            return {
+                "ok": False, "state": "private_python_invalid",
+                "reexec_python": None, "private_python": private,
+            }
+        if not private["current"]:
+            return {
+                "ok": True, "state": "private_python_handoff",
+                "reexec_python": private["python_executable"],
+                "private_python": private,
+            }
+        # Re-check requirements after handoff, including on Windows where the
+        # existing process handoff sets JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE.
+        status = dependency_activation_status(project_root)
+        if status["current_interpreter_ready"] is True:
+            return {
+                "ok": True, "state": "private_python_active",
+                "reexec_python": None, "private_python": private, "status": status,
+            }
+        return {
+            "ok": False, "state": "private_python_dependencies_missing",
+            "reexec_python": None, "private_python": private, "status": status,
+        }
     if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
         return {"ok": True, "state": "reexec_guard_active", "reexec_python": None}
     status = dependency_activation_status(project_root)
