@@ -62,7 +62,7 @@ its removal.
 
 ## Evidence and acceptance gates
 
-- Targeted Python tests: `tests/test_v1274_root_local_workspace_layout.py`.
+- Targeted Python tests: `tests/test_root_local_workspace_layout.py`.
 - Windows PowerShell parity is verified only by the Windows-specific
   regression in that file, not by a Linux PASS.
 - Existing workspace, acceptance, security and installer regression
