@@ -27,9 +27,11 @@ Ten router i runbooki są instrukcjami **dla hosta/operatora/agenta programując
 
 Wczytuj dokumentację według rzeczywistego zakresu zadania.
 
-- Rozmowa i transport ChatGPT: `AGENTS.chatgpt.md`.
-- Programowanie, testy i repozytorium: `AGENTS.codex.md`.
-- Backend Ollama: `AGENTS.ollama.md`.
+- Rozmowa i transport ChatGPT: wczytaj `AGENTS.chatgpt.md`; przy pracach programistycznych w tej integracji wczytaj równocześnie `AGENTS.codex.md`.
+- Programowanie, testy, CI, dokumentacja techniczna, Git i PR: **przed rozpoczęciem pracy wczytaj w całości** `AGENTS.codex.md`. To jest obowiązkowy runbook zadania, nie tylko wskazówka nawigacyjna.
+- Backend Ollama: wczytaj `AGENTS.ollama.md`; przy zmianach kodu, testów i konfiguracji repozytorium wczytaj też `AGENTS.codex.md`.
+
+Codex może automatycznie odnajdywać `AGENTS.md`, lecz nazwy `AGENTS.codex.md`, `AGENTS.chatgpt.md` i `AGENTS.ollama.md` są niestandardowe: powyższy routing oznacza obowiązek ich jawnego odczytu stosownie do zadania. Nie ładuj niepowiązanych runbooków.
 - Szczegółowe kontrakty finalizacji: `docs/runtime/TURN_FINALIZATION_CONTRACTS.md`.
 - Architektura repozytorium i zależności: `docs/project/REPOSITORY_LAYOUT_AND_DEPENDENCY_POLICY.md`.
 
