@@ -35,6 +35,12 @@ class DialogueRouter:
             previous_task_state=state.previous_task_state if state.carryover_allowed else None,
             context_age_seconds=state.prior_context_age_seconds,
             carryover_allowed=state.carryover_allowed,
+            conversation_history_available=bool(
+                state.carryover_allowed
+                and isinstance(state.ctx.get("conversation_history"), dict)
+                and state.ctx["conversation_history"].get("selected_turn_count", 0) > 0
+                and state.ctx["conversation_history"].get("turns")
+            ),
         )
         state.dialogue_intent_report = state.dialogue_intent_result.to_dict()
         engine._record_intent_diagnostic(state.turn_context, state.dialogue_intent_result)
