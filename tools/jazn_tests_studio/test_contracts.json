@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3341,
+  "active_definition_count": 3342,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -68971,6 +68971,28 @@
       "description_source": "source_identity",
       "line": 102
     },
+    "tests/test_v1274_root_local_workspace_layout.py::test_nested_tpa_acceptance_base_is_owned_and_external_base_denied": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_nested_tpa_acceptance_base_is_owned_and_external_base_denied",
+      "purpose": "Nested tpa acceptance base is owned and external base denied",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
+    },
     "tests/test_v1274_root_local_workspace_layout.py::test_windows_launcher_matches_python_for_modern_root": {
       "path": "tests/test_v1274_root_local_workspace_layout.py",
       "name": "test_windows_launcher_matches_python_for_modern_root",
@@ -68992,7 +69014,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 131
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
