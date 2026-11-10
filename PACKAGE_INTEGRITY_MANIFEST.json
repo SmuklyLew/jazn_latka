@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-10T05:31:33+00:00",
-  "updated_at_utc": "2026-11-10T05:31:33+00:00",
+  "generated_at_utc": "2026-11-10T05:33:39+00:00",
+  "updated_at_utc": "2026-11-10T05:33:39+00:00",
   "start_file": "run.py",
-  "file_count": 3736,
-  "static_file_count": 3736,
+  "file_count": 3737,
+  "static_file_count": 3737,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2959,
-      "sha256": "bf6bcabe612348cf83fa318cfcb67292a4a1afe78365c1225ba18f9ab0685c45",
+      "sha256": "c3c8e377d89fbbf2b484ffa7a293966446a4b8f9efb9714ec48e964c12343da6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7600,8 +7600,8 @@
     },
     {
       "path": "latka_jazn/dependencies/environment.py",
-      "size_bytes": 28663,
-      "sha256": "9435e3480e4fd50943625745573945a8d6ea648066dc0611317d58d206c7304a",
+      "size_bytes": 29008,
+      "sha256": "9bebb5d0583fceb90601d270604f2973727da61d78c727c8152a4c4918ff87ab",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11758,8 +11758,8 @@
     },
     {
       "path": "run_studio.py",
-      "size_bytes": 995,
-      "sha256": "646daf5a36326da99a05d166da8ecc6fcceadf4248111f3e1247f56db83ff265",
+      "size_bytes": 1182,
+      "sha256": "eb0b240c0ab819a629384d3c6b9c4e473d281532d3078459ac3daf3b2ed6f2b7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30855,6 +30855,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_private_python_handoff_guard.py",
+      "size_bytes": 1422,
+      "sha256": "c5a9f3fc380f974de77bbf838f985bdc99593d61441d07992b9604aa0e904b33",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_private_python_launchers.py",
       "size_bytes": 2474,
       "sha256": "d0426e505ec03a5d5ef0036933074d0033d42a25614bc4baf02cf860611be149",
@@ -33421,8 +33430,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2917497,
-      "sha256": "1e995df98ca8075b90c9642763ab200ce2a2bfa0b556bc2f3a11cbcf1231191e",
+      "size_bytes": 2918938,
+      "sha256": "f490eb8be83ad0fe7420e7451437b3ba84cc6d972d3731f251cc775e278abd06",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
