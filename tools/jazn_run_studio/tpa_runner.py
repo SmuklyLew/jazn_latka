@@ -62,6 +62,7 @@ def isolated_environment(folder: Path, root: Path | None = None) -> QProcessEnvi
     env.insert("JAZN_OPERATOR_STATE_ROOT", str(layout.operator))
     env.insert("JAZN_MEMORY_ROOT", str(layout.memory))
     env.insert("JAZN_MEMORY_MODE", "off")
+    env.insert("JAZN_STUDIO_ACCEPTANCE_PROFILE", "isolated")
     env.insert("PYTHONUTF8", "1")
     env.insert("PYTHONDONTWRITEBYTECODE", "1")
     env.insert("PYTEST_DISABLE_PLUGIN_AUTOLOAD", "1")
