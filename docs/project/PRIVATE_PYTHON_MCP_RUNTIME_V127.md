@@ -52,7 +52,7 @@ Pythona na maszynie klienta.
 ## Wskazówki dla operatora (PowerShell)
 
 ```powershell
-$root = "D:\.AI\jazn_latka_v126_tpa"
+$root = (Get-Location).Path  # uruchom w checkout aktualnej galezi V127
 $py = Join-Path $root ".venv\Scripts\python.exe"
 & $py -X utf8 -c "import sys; print(sys.executable, sys.prefix, sys.base_prefix)"
 & $py -X utf8 -m pip check
