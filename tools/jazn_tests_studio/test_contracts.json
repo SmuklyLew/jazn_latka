@@ -38663,7 +38663,7 @@
       "path": "tests/test_memory_desktop_tk_lifecycle_windows.py",
       "name": "test_windows_studio_sessions_cleanly_release_callbacks_in_both_orders",
       "purpose": "Windows studio sessions cleanly release callbacks in both orders",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "memory",
@@ -38674,7 +38674,7 @@
         "parametrize",
         "skipif"
       ],
-      "assertion_count": 8,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.application_shell",
