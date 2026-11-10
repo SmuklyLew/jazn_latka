@@ -187,6 +187,7 @@ class RuntimeAnswerValidator:
         route: str,
         detected_intent: str,
         template_origin: dict[str, Any] | None = None,
+        conversation_history: dict[str, Any] | None = None,
     ) -> RuntimeAnswerValidation:
         """Validate adapter output as a candidate, never as authoritative runtime text."""
         payload = response if isinstance(response, dict) else (
@@ -229,6 +230,7 @@ class RuntimeAnswerValidator:
             body=body,
             route=route,
             detected_intent=detected_intent,
+            conversation_history=conversation_history,
         )
         result.checks.insert(0, "model_adapter_response_validated_by_runtime")
         return result
@@ -442,7 +444,7 @@ class RuntimeAnswerValidator:
         )
         return not any(marker in folded for marker in first_person_feminine)
 
-    def validate(self, *, user_text: str, body: str, route: str, detected_intent: str) -> RuntimeAnswerValidation:
+    def validate(self, *, user_text: str, body: str, route: str, detected_intent: str, conversation_history: dict[str, Any] | None = None) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
         component_report = analyse_utterance(user_text)
         semantic_coverage_required = bool(
@@ -452,6 +454,7 @@ class RuntimeAnswerValidator:
             user_text=user_text,
             body=body,
             coverage_required=semantic_coverage_required,
+            conversation_history=conversation_history,
         )
         if component_report.compound and not semantic_coverage_required:
             legacy_missing_components = missing_component_evidence(body, component_report.components)
