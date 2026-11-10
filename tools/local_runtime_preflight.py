@@ -32,6 +32,53 @@ def _ollama(base: str) -> dict[str, Any]:
     except Exception as e:
         return {"ok": False, "url": url, "error": f"{type(e).__name__}: {e}"}
 
+def _private_environment_report(root: Path) -> dict[str, Any]:
+    # This tool may be launched directly as a script, with tools/ on sys.path.
+    project = Path(__file__).resolve().parents[1]
+    if str(project) not in sys.path:
+        sys.path.insert(0, str(project))
+    from latka_jazn.dependencies.private_python import private_python_status
+    return private_python_status(root)
+
+
+def _optional_tk_probe(python: str, root: Path) -> dict[str, Any]:
+    # No GUI display on a headless Linux CI worker is not a broken Tcl/Tk install.
+    import os
+    if sys.platform != "win32" and not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+        return {"status": "not_checked", "reason": "no_graphical_display", "required_for_core": False}
+    script = ("import json,tkinter as tk;"
+              "r=tk.Tk();"
+              "print(json.dumps({'tcl_tk_version':str(r.tk.call('info','patchlevel'))}));"
+              "r.destroy()")
+    run = _run([python, "-I", "-X", "utf8", "-c", script], root, 15)
+    return {"status": "pass" if run.get("ok") else "fail", "required_for_core": False,
+            "probe": run}
+
+
+def _optional_mcp_probe(python: str, root: Path) -> dict[str, Any]:
+    # A dependency probe is not authentication or transport readiness.
+    script = (
+        "import importlib,importlib.metadata,json;"
+        "names=('mcp','pydantic','starlette','uvicorn');"
+        "result={};"
+        "exec('for n in names:\\n try:\\n  importlib.import_module(n)\\n"
+        "  result[n]=importlib.metadata.version(n)\\n"
+        " except Exception:\\n  result[n]=None');"
+        "print(json.dumps(result))"
+    )
+    run = _run([python, "-I", "-X", "utf8", "-c", script], root, 15)
+    if not run.get("ok"):
+        return {"status": "unavailable", "required_for_core": False, "probe": run}
+    try:
+        versions = json.loads(run.get("stdout") or "{}")
+        ok = isinstance(versions, dict) and all(versions.get(n) for n in ("mcp", "pydantic", "starlette", "uvicorn"))
+    except (TypeError, ValueError):
+        ok, versions = False, {}
+    return {"status": "imports_present" if ok else "imports_missing",
+            "required_for_core": False, "versions": versions,
+            "truth_boundary": "Import presence does not certify the pinned MCP SDK API, auth, or remote readiness."}
+
+
 def build_report(root: Path, *, ollama_base_url="http://127.0.0.1:11434",
                  run_diagnostics=True) -> dict[str, Any]:
     root = root.resolve()
@@ -72,8 +119,16 @@ def build_report(root: Path, *, ollama_base_url="http://127.0.0.1:11434",
     else:
         report["run_py"] = {"skipped": True}
 
+    private = _private_environment_report(root)
+    report["private_python"] = private
+    selected = str(private["python_executable"]) if private["ready"] else sys.executable
+    report["tk_gui"] = _optional_tk_probe(selected, root)
+    report["mcp_imports"] = _optional_mcp_probe(selected, root)
     report["ollama"] = _ollama(ollama_base_url)
-    report["ok"] = bool(report["python"]["ok"] and all(files.values()))
+    report["ok"] = bool(
+        report["python"]["ok"] and all(files.values())
+        and (not private["present"] or private["ready"])
+    )
     report["truth_boundary"] = (
         "preflight ok certifies only Python/canonical-file baseline. "
         "It does not certify a live daemon, writable memory, live Ollama, "
