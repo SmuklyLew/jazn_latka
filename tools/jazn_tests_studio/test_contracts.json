@@ -69412,18 +69412,18 @@
     "tests/test_windows_launchers_contract.py::test_windows_cmd_launcher_is_root_relative_and_venv_independent": {
       "path": "tests/test_windows_launchers_contract.py",
       "name": "test_windows_cmd_launcher_is_root_relative_and_venv_independent",
-      "purpose": "Windows cmd launcher is root relative and venv independent",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "purpose": "A complete ROOT-local venv wins; an incomplete one must fail closed.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "windows"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
-      "description_source": "source_identity",
+      "description_source": "native_docstring",
       "line": 6
     },
     "tests/test_windows_supervisor_host.py::test_plan_binds_one_root_to_a_noninteractive_boot_task_and_native_service": {
