@@ -8,7 +8,7 @@ from typing import Any, Mapping
 import json
 import os
 
-from latka_jazn.core.runtime_root import RuntimeRootNotFoundError, find_runtime_root
+from latka_jazn.core.runtime_root import RuntimeRootNotFoundError, find_runtime_root, workspace_runtime_path
 from latka_jazn.tools.application_shell.operator_paths import (
     legacy_read_path, operator_file, validate_operator_path,
 )
@@ -183,8 +183,10 @@ def resolve_settings_path(
 
     workspace = os.environ.get("JAZN_RUNTIME_WORKSPACE_DIR", "").strip()
     if workspace:
+        # Operators may use the canonical $ROOT/ relative token; never treat it
+        # as a literal filesystem directory or silently bypass ROOT confinement.
         return _validate_settings_destination(
-            Path(workspace).expanduser() / DEFAULT_SETTINGS_FILENAME, system_root,
+            workspace_runtime_path(system_root) / DEFAULT_SETTINGS_FILENAME, system_root,
         )
 
     return _validate_settings_destination(
