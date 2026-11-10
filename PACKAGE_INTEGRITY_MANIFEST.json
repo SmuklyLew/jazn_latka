@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-10T05:23:10+00:00",
-  "updated_at_utc": "2026-11-10T05:23:10+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-10T05:31:33+00:00",
+  "updated_at_utc": "2026-11-10T05:31:33+00:00",
   "start_file": "run.py",
-  "file_count": 3735,
-  "static_file_count": 3735,
+  "file_count": 3736,
+  "static_file_count": 3736,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -445,8 +445,8 @@
     },
     {
       "path": "JAZN.cmd",
-      "size_bytes": 1751,
-      "sha256": "2dc5c9de68b3759607600270ab868d4b0dd7445e095d53fd91eb7e65f38ddb9f",
+      "size_bytes": 2328,
+      "sha256": "ba01949dd465c6c5b0a9170c8be469da3ae8abbf935f036b6ad0d8a7f4c06c33",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -472,8 +472,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2954,
-      "sha256": "1cfe5b74fd60689da53e6fec7c65afc54f1616e80abbdad195c831b8b4ad65ef",
+      "size_bytes": 2959,
+      "sha256": "bf6bcabe612348cf83fa318cfcb67292a4a1afe78365c1225ba18f9ab0685c45",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2578,8 +2578,8 @@
     },
     {
       "path": "docs/project/PRIVATE_PYTHON_MCP_RUNTIME_V127.md",
-      "size_bytes": 3695,
-      "sha256": "55194ad4942b1e1b5d032e77b3eef0c369ae3f48856cfcc5d1ea1bd02637cefd",
+      "size_bytes": 3730,
+      "sha256": "6513d29ee08b37b9796f9bea6e897bcac053b876a3eb6f418015098bbf5851bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -4504,8 +4504,8 @@
     },
     {
       "path": "jazn",
-      "size_bytes": 5642,
-      "sha256": "9f673876b2b8ac7cc8abc416eb8241cd6a9c93de4de0ef4e461b37514d58e8d0",
+      "size_bytes": 6137,
+      "sha256": "8f6c604e099696e55171708aa78983c264da7fad9df8d0f877204d630ca9211b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11533,8 +11533,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 27370,
-      "sha256": "8f6e897b5df1217f405ee1b75d73f710eb1ff568a9096fbde438fbbb2fca788e",
+      "size_bytes": 27505,
+      "sha256": "2c07db7dfc3ea973ea8153a9e0f7f757638297e4c09ad5f1033abdc258b32b1c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30855,6 +30855,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_private_python_launchers.py",
+      "size_bytes": 2474,
+      "sha256": "d0426e505ec03a5d5ef0036933074d0033d42a25614bc4baf02cf860611be149",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_private_python_selection.py",
       "size_bytes": 5366,
       "sha256": "8449b66278f38e34dc06c6036707ff92865e435c1f04b5e2f1fc8d59cb2daddc",
@@ -33412,8 +33421,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2915322,
-      "sha256": "e6af0911d323e80b205926c0874b11e04f614e4e848258baea9cb6785ccf0294",
+      "size_bytes": 2917497,
+      "sha256": "1e995df98ca8075b90c9642763ab200ce2a2bfa0b556bc2f3a11cbcf1231191e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33493,8 +33502,8 @@
     },
     {
       "path": "tools/local_runtime_preflight.py",
-      "size_bytes": 4385,
-      "sha256": "617f2ad7658296438ae8c72ceec60881a5abc1bdae7e595031c0568c8f7819fa",
+      "size_bytes": 7328,
+      "sha256": "b32c73f75a0229b1f7ca7eedde84e57b34b5a9d3c5f4b77b32ad14ba4c883fcb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -34070,11 +34079,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.126-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
