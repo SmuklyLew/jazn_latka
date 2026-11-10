@@ -23,7 +23,8 @@ def _within(path: Path, parent: Path) -> bool:
 
 def validate_operator_path(path: str | Path, system_root: Path, *, directory: bool = False,
                            allow_memory_settings: bool = False,
-                           allow_acceptance_operator: bool = False) -> Path:
+                           allow_acceptance_operator: bool = False,
+                           acceptance_operator_root: Path | None = None) -> Path:
     """Validate an explicit path after resolving symlinks and Windows junctions."""
     raw = Path(path).expanduser()
     if not raw.is_absolute() or ".." in raw.parts:
@@ -55,9 +56,18 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
     if local_settings_enabled(system) and local_raw.is_relative_to(system / ".settings_local"):
         layout = resolve_local_settings_layout(system)
         ordinary = local_raw.is_relative_to(layout.operator)
+        authorized_acceptance = layout.acceptance / "operator"
+        if acceptance_operator_root is not None:
+            proposed = Path(acceptance_operator_root).expanduser()
+            if not proposed.is_absolute() or not proposed.absolute().is_relative_to(layout.acceptance):
+                raise OperatorPathError("Nieautoryzowany katalog operatora odbioru")
+            try:
+                authorized_acceptance = verify_local_descendant(proposed, layout)
+            except ValueError as exc:
+                raise OperatorPathError("Niebezpieczny katalog operatora odbioru") from exc
         acceptance = (
             allow_acceptance_operator
-            and local_raw.is_relative_to(layout.acceptance / "operator")
+            and local_raw.is_relative_to(authorized_acceptance)
         )
         if not (ordinary or acceptance):
             raise OperatorPathError(
