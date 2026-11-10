@@ -418,6 +418,10 @@ jobs:
           tests/test_lexical_intelligence.py
           tests/test_operational_learning_memory.py
           tests/test_external_dictionary.py
+          tests/test_memory_desktop_gui_smoke.py
+          tests/test_memory_desktop_actions_windows.py
+          tests/test_memory_desktop_tk_lifecycle.py
+          tests/test_memory_desktop_tk_lifecycle_windows.py
 
       - name: Upload Windows pytest report on failure
         if: failure()
