@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.126",
-  "active_definition_count": 3307,
+  "active_definition_count": 3314,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -52833,6 +52833,142 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 55
+    },
+    "tests/test_private_python_selection.py::test_absent_private_environment_keeps_legacy_selector": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_absent_private_environment_keeps_legacy_selector",
+      "purpose": "Absent private environment keeps legacy selector",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_private_python_selection.py::test_incomplete_private_environment_fails_closed_before_probe": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_incomplete_private_environment_fails_closed_before_probe",
+      "purpose": "Incomplete private environment fails closed before probe",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_private_python_selection.py::test_private_probe_uses_exact_interpreter_without_pip": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_private_probe_uses_exact_interpreter_without_pip",
+      "purpose": "Private probe uses exact interpreter without pip",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_private_python_selection.py::test_python_probe_rejects_interpreter_from_another_venv": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_python_probe_rejects_interpreter_from_another_venv",
+      "purpose": "Python probe rejects interpreter from another venv",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_private_python_selection.py::test_healthy_private_venv_precedes_global_python": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_healthy_private_venv_precedes_global_python",
+      "purpose": "Healthy private venv precedes global python",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_private_python_selection.py::test_private_venv_rechecks_core_after_windows_handoff_guard": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_private_venv_rechecks_core_after_windows_handoff_guard",
+      "purpose": "Private venv rechecks core after windows handoff guard",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_private_python_selection.py::test_broken_private_venv_never_falls_back_to_global_python": {
+      "path": "tests/test_private_python_selection.py",
+      "name": "test_broken_private_venv_never_falls_back_to_global_python",
+      "purpose": "Broken private venv never falls back to global python",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
     },
     "tests/test_process_identity.py::test_process_fingerprint_binds_current_pid_to_creation_identity": {
       "path": "tests/test_process_identity.py",
