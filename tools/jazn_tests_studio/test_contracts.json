@@ -56431,13 +56431,13 @@
       "path": "tests/test_root_local_workspace_layout.py",
       "name": "test_nested_tpa_acceptance_base_is_owned_and_external_base_denied",
       "purpose": "Nested tpa acceptance base is owned and external base denied",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [
         "ValueError"
       ],
@@ -56469,7 +56469,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 132
     },
     "tests/test_root_local_workspace_layout.py::test_nested_acceptance_operator_cannot_redirect_to_arbitrary_tree": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56492,7 +56492,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 150
     },
     "tests/test_root_local_workspace_layout.py::test_windows_launcher_matches_python_for_modern_root": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56516,7 +56516,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 163
     },
     "tests/test_route_dispatcher_fallback_diagnostics.py::test_dispatcher_marks_unresolved_handler_as_typed_fallback": {
       "path": "tests/test_route_dispatcher_fallback_diagnostics.py",
