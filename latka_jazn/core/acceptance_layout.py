@@ -45,6 +45,13 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
     parent = (Path(base).expanduser() if base is not None
               else local_layout.acceptance if local_layout is not None
               else Path.home() / ".jazn" / "acceptance" / identity).resolve()
+    if (system / "local_resources").is_dir():
+        # Fresh installations do not allow even temporary TPA runtimes to
+        # escape ROOT.  They live under a verified private acceptance tree.
+        if (local_layout is None or not (
+            parent == local_layout.acceptance or parent.is_relative_to(local_layout.acceptance)
+        )):
+            raise ValueError("acceptance_runtime_outside_root")
     if session_id is not None and not re.fullmatch(r"[0-9a-f]{32}", session_id):
         raise ValueError("Nieprawidłowy identyfikator testowej sesji runtime")
     runtime = (parent / "runtime" / session_id).resolve() if session_id else (parent / "runtime").resolve()
@@ -91,6 +98,23 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
         acceptance_operator_root=operator if local_layout is not None else None,
     )
     return AcceptanceLayout(system, runtime, operator, memory)
+
+
+def acceptance_temp_parent(system_root: Path) -> Path | None:
+    """Return owned TPA temp parent for a prepared ROOT; legacy roots use OS temp."""
+    system = Path(system_root).expanduser().resolve()
+    if not (system / "local_resources").is_dir():
+        return None
+    from latka_jazn.core.local_settings_layout import (
+        resolve_local_settings_layout,
+        verify_local_descendant,
+    )
+    layout = resolve_local_settings_layout(system)
+    destination = layout.acceptance
+    verify_local_descendant(destination, layout)
+    destination.mkdir(parents=True, exist_ok=True)
+    verify_local_descendant(destination, layout)
+    return destination
 
 
 def _owned_session_id(system_root: Path) -> str:
