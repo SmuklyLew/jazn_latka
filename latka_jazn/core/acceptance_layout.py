@@ -63,9 +63,14 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
         candidate = Path(configured_memory).expanduser()
         protected.add(candidate.resolve() if candidate.is_absolute()
                       else (workspace_runtime_path(system) / candidate).resolve())
-    # A narrowly owned .settings_local/acceptance path is allowed within
-    # SYSTEM; MEMORY and workspace paths remain forbidden.
-    if local_layout is not None and parent == local_layout.acceptance:
+    # A narrowly owned acceptance directory is permitted below ROOT, even
+    # for uniquely named temporary TPA runs; never overlap production runtime.
+    if local_layout is not None and (
+        parent == local_layout.acceptance
+        or parent.is_relative_to(local_layout.acceptance)
+    ):
+        from latka_jazn.core.local_settings_layout import verify_local_descendant
+        verify_local_descendant(parent, local_layout)
         protected.discard(system)
     for forbidden in protected:
         resolved = forbidden.resolve()
@@ -83,6 +88,7 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
     validate_operator_path(
         operator, system, directory=True,
         allow_acceptance_operator=local_layout is not None,
+        acceptance_operator_root=operator if local_layout is not None else None,
     )
     return AcceptanceLayout(system, runtime, operator, memory)
 
