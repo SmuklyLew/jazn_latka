@@ -19,7 +19,7 @@ from latka_jazn.nlp.control_text import extract_intent_control_text
 from latka_jazn.nlp.external_tool_context import ExternalToolContextParser
 from latka_jazn.core.route_contract_matrix import RouteContractMatrix
 from latka_jazn.core.dialogue_task_state import DialogueTaskStateResolver
-from latka_jazn.core.memory_intent_contract import analyze_memory_intent
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent, is_session_dialogue_reference
 from latka_jazn.version import PACKAGE_VERSION, schema_version, version_number
 
 DIACRITIC_MAP = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
@@ -411,6 +411,7 @@ class DialogueIntentClassifier:
         previous_task_state: dict[str, Any] | None = None,
         context_age_seconds: int | None = None,
         carryover_allowed: bool = True,
+        conversation_history_available: bool = False,
     ) -> DialogueIntentReport:
         control_report=extract_intent_control_text(text)
         control_text=control_report.control_text
@@ -618,6 +619,27 @@ class DialogueIntentClassifier:
                 ["user_corrects_previous_answer_context_not_runtime_health"],
                 0.94, speech_act=speech.speech_act,
                 question_object="current_turn_feedback",
+            )
+
+        # Dialogue context is not autobiographical MEMORY. The routing decision
+        # carries an explicit evidence bit but never invents a prior turn.
+        if (
+            is_session_dialogue_reference(control_text)
+            and not explicit_update_directive
+            and not (has_system and has_diag)
+        ):
+            return report(
+                norm, folded, "contextual_continuation_question",
+                [
+                    "session_dialogue_reference_not_autobiographical_recall",
+                    (
+                        "accepted_session_history_available"
+                        if conversation_history_available and carryover_allowed
+                        else "accepted_session_history_unavailable"
+                    ),
+                ], 0.97,
+                speech_act=speech.speech_act,
+                question_object="session_dialogue_history",
             )
 
         task_has_memory_anchor = bool(
