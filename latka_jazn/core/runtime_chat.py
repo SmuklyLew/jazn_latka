@@ -253,7 +253,12 @@ class LatkaRuntimeShell(cmd.Cmd):
                 )
                 return True
             visible = envelope.final_visible_text or envelope.final_response_contract.get("final_visible_text", "")
-        visible = self._protect_against_repeated_visible_text(user_text=text, visible_text=visible)
+        # A repetition guard may block display, but it must never rewrite a
+        # hash-verified final into a new text while retaining runtime authorship.
+        protected = self._protect_against_repeated_visible_text(user_text=text, visible_text=visible)
+        if protected != (visible or "").strip():
+            self._write("[runtime_turn_display_blocked] repeated_accepted_final")
+            return False
         self._write(visible)
         self._last_user_text = text
         self._last_visible_text = visible
