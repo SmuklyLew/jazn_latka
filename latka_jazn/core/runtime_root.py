@@ -154,7 +154,10 @@ def workspace_runtime_path(
     # New/prepared installs are ROOT-contained even with an explicit override.
     # Old bare roots remain readable as before; refusing an external override
     # here never removes or migrates any old workspace, marker, or MEMORY.
-    if (runtime_root / "local_resources").is_dir():
+    resources = runtime_root / "local_resources"
+    if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
+        raise ValueError("unsafe_root_local_resources_link")
+    if resources.is_dir():
         if resolved == runtime_root or not resolved.is_relative_to(runtime_root):
             raise ValueError("workspace_escapes_root")
     return resolved
