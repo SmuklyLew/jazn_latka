@@ -184,6 +184,7 @@ def operator_file(app_id: str, system_root: Path, filename: str, *, per_system: 
         checked = validate_operator_path(
             temporary, system_root,
             allow_acceptance_operator=acceptance_mode,
+            acceptance_operator_root=acceptance_root,
         )
         if not _within(checked, base):
             raise OperatorPathError(f"Plik tymczasowy wyprowadza poza katalog aplikacji: {temporary}")
