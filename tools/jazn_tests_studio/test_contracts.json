@@ -32358,22 +32358,22 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 31
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_inspect_does_not_request_mutation_approval": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
       "name": "test_inspect_does_not_request_mutation_approval",
       "purpose": "Inspect does not request mutation approval",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_venv_provision_requires_explicit_confirmation": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
@@ -32388,7 +32388,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 79
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_multi_model_queue_is_validated_before_any_download": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
@@ -32403,7 +32403,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 96
     },
     "tests/test_jss_first_run_row_install.py::test_install_button_is_only_shown_for_known_missing_capabilities": {
       "path": "tests/test_jss_first_run_row_install.py",
@@ -33259,11 +33259,11 @@
       "path": "tests/test_jss_service_monitor_evidence.py",
       "name": "test_offline_probe_creates_single_operator_problem_and_recovery",
       "purpose": "Offline probe creates single operator problem and recovery",
-      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 13,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -33283,7 +33283,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 139
     },
     "tests/test_jss_service_monitor_evidence.py::test_dialog_immediately_discards_old_model_proof": {
       "path": "tests/test_jss_service_monitor_evidence.py",
@@ -33298,7 +33298,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 155
+      "line": 156
     },
     "tests/test_jss_service_monitor_evidence.py::test_ollama_process_probe_is_passive_and_reports_stopped": {
       "path": "tests/test_jss_service_monitor_evidence.py",
@@ -33313,7 +33313,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 169
+      "line": 170
     },
     "tests/test_jss_service_monitor_evidence.py::test_process_inventory_on_off_is_independent_from_api": {
       "path": "tests/test_jss_service_monitor_evidence.py",
@@ -33328,7 +33328,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 187
+      "line": 188
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
