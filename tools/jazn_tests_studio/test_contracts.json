@@ -31325,7 +31325,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 32
     },
     "tests/test_jss_chat_transport_close_truth.py::test_unexpected_transport_exit_without_request_reports_error_not_resumable": {
       "path": "tests/test_jss_chat_transport_close_truth.py",
@@ -31340,7 +31340,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 39
+      "line": 42
     },
     "tests/test_jss_chat_transport_close_truth.py::test_disconnect_with_pending_request_preserves_resume_instruction": {
       "path": "tests/test_jss_chat_transport_close_truth.py",
@@ -31355,7 +31355,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 52
     },
     "tests/test_jss_chat_transport_close_truth.py::test_disconnect_awaiting_gui_ack_does_not_claim_unaccepted_turn": {
       "path": "tests/test_jss_chat_transport_close_truth.py",
@@ -31370,7 +31370,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 63
     },
     "tests/test_jss_chat_transport_close_truth.py::test_protocol_error_only_suggests_resume_if_request_exists": {
       "path": "tests/test_jss_chat_transport_close_truth.py",
@@ -31387,7 +31387,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 76
     },
     "tests/test_jss_chat_workbench_qt.py::test_local_chat_transcript_and_composer_are_primary_surfaces": {
       "path": "tests/test_jss_chat_workbench_qt.py",
