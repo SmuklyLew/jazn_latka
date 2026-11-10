@@ -8,7 +8,7 @@ from latka_jazn.version import generation_mode, schema_version
 class OrdinaryDialogueHandler:
     name = "OrdinaryDialogueHandler"
     route = "ordinary_dialogue"
-    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','negative_feedback_without_update_request','positive_feedback_current_turn','current_time_question')
+    handled_intents = ('ordinary_conversation','standalone_greeting','casual_greeting','casual_feedback','expressive_reaction','short_free_dialogue','sleep_closure_statement','ordinary_workday_report','negative_feedback_current_turn','negative_feedback_without_update_request','positive_feedback_current_turn','current_time_question','contextual_continuation_question')
 
     META_SIGNATURES = (
         'jaźń jako warstwa', 'jazn jako warstwa', 'warstwa pamięci', 'warstwa pamieci',
@@ -131,6 +131,17 @@ class OrdinaryDialogueHandler:
         ctx=context or {}
         intent=ctx.get('intent','ordinary_conversation')
         if ctx.get('canonical_dialogue_cutover') is True and intent != 'current_time_question':
+            history = json_object(ctx.get('conversation_history'))
+            accepted_session_turns = history.get('turns') if isinstance(history.get('turns'), list) else []
+            session_history_constraints = (
+                [
+                    'use_only_accepted_current_session_turns',
+                    'do_not_treat_conversation_history_as_autobiographical_memory',
+                    'if_prior_message_missing_disclose_unavailable_without_guessing',
+                ]
+                if intent == 'contextual_continuation_question'
+                else []
+            )
             return RouteHandlerResult(
                 self.name, str(json_object(ctx.get('route_entry')).get('route') or self.route), '',
                 intent=intent, generation_mode='structured_candidate',
@@ -140,6 +151,8 @@ class OrdinaryDialogueHandler:
                       'response_candidate': {'user_text': text, 'intent': intent,
                                              'constraints': (
                           ['current_turn_only', 'no_invented_recall', 'no_background_presence_claim']
+                          + session_history_constraints
+                          + (['accepted_session_context_empty'] if intent == 'contextual_continuation_question' and not accepted_session_turns else [])
                           + (['acknowledge_chat_already_open_do_not_suggest_new_chat']
                              if intent == 'negative_feedback_current_turn'
                              and 'nowy czat' in self._fold(text)
