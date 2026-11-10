@@ -234,9 +234,10 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
+# v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.2"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.3"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
