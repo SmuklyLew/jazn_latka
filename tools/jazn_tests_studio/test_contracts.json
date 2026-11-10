@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.125",
-  "active_definition_count": 3302,
+  "system_version": "16.3.25.5.116.0.34.94.6.126",
+  "active_definition_count": 3305,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38658,6 +38658,71 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 21
+    },
+    "tests/test_memory_desktop_tk_lifecycle_windows.py::test_windows_studio_sessions_cleanly_release_callbacks_in_both_orders": {
+      "path": "tests/test_memory_desktop_tk_lifecycle_windows.py",
+      "name": "test_windows_studio_sessions_cleanly_release_callbacks_in_both_orders",
+      "purpose": "Windows studio sessions cleanly release callbacks in both orders",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "parametrize",
+        "skipif"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_memory_desktop_tk_shutdown.py::test_dialog_shutdown_cancels_timer_and_releases_waiting_worker": {
+      "path": "tests/test_memory_desktop_tk_shutdown.py",
+      "name": "test_dialog_shutdown_cancels_timer_and_releases_waiting_worker",
+      "purpose": "Dialog shutdown cancels timer and releases waiting worker",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_memory_desktop_tk_shutdown.py::test_workspace_shutdown_is_idempotent_and_cancels_both_timers": {
+      "path": "tests/test_memory_desktop_tk_shutdown.py",
+      "name": "test_workspace_shutdown_is_idempotent_and_cancels_both_timers",
+      "purpose": "Workspace shutdown is idempotent and cancels both timers",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
     },
     "tests/test_memory_desktop_workspace.py::test_window_routes_to_native_canonical_workspace": {
       "path": "tests/test_memory_desktop_workspace.py",
