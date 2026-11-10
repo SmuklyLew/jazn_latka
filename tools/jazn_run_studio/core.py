@@ -537,6 +537,25 @@ def write_error_record(root: Path, key: str, snapshot: dict[str, Any], redactor:
     return filename
 
 
+# Generation evidence expires independently of read-only model-list checks.
+OLLAMA_GENERATION_PROOF_SECONDS = 180.0
+
+
+def retain_ollama_generation(
+    evidence: dict[str, Any], proof: tuple[str, float] | None, now: float
+) -> dict[str, Any]:
+    if (proof is None or evidence.get("endpoint_reachable") is not True
+            or evidence.get("selected_model_present") is not True
+            or evidence.get("selected_model") != proof[0]):
+        return evidence
+    age = max(0.0, now - proof[1])
+    if age > OLLAMA_GENERATION_PROOF_SECONDS:
+        return evidence
+    return {**evidence, "generation_verified": True,
+            "generation_evidence_age_seconds": age,
+            "generation_basis": "recent_explicit_local_api_probe"}
+
+
 class Controller:
     """Bounded job and event registry; work never runs on the GUI thread."""
 
@@ -557,6 +576,8 @@ class Controller:
         self.setup_observation: dict[str, Any] = {}
         # Only a validated final, shown in Qt and durably acknowledged, sets this.
         self.accepted_turn_proof: dict[str, str] | None = None
+        self.ollama_generation_proof: tuple[str, float] | None = None
+        self.monitor_conditions: dict[str, str] = {}
 
     def emit(self, key: str, kind: str, value: Any) -> None:
         with self.lock:
@@ -568,6 +589,14 @@ class Controller:
                 if value.get("error"):
                     value["error"] = self.redactor.text(str(value["error"]))
                 if value.get("state") == "failed":
+                    reason = str(value.get("error") or "unspecified")[:160]
+                    # Preserve the selected probe transcript; report diagnostics separately.
+                    if key.startswith("probe:"):
+                        entry = "[" + key + "] BŁĄD operacji: " + reason
+                        self.logs.setdefault("studio:errors", deque(maxlen=2500)).append(entry)
+                        self.critical_events.put(("studio:errors", "log", entry))
+                    else:
+                        self.logs.setdefault(key, deque(maxlen=2500)).append("BŁĄD operacji: " + reason)
                     try:
                         write_error_record(self.root, key, value, self.redactor)
                     except (OSError, StudioError):
@@ -641,8 +670,11 @@ class Controller:
                 return current
             job = self._reserve("setup:requirements")
             self.setup_observation = {}
-            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
-                               "tools.jazn_run_studio.requirements_worker"], 600)
+            argv = [python_executable(self.settings), "-X", "utf8", "-m",
+                    "tools.jazn_run_studio.requirements_worker"]
+            if self.settings.mcp_python:
+                argv.extend(("--mcp-python", self.settings.mcp_python))
+            self._launch(job, argv, 600)
             return job
 
     def git_status(self) -> Job:
@@ -725,6 +757,25 @@ class Controller:
         self._launch(job, argv, None)
         return job
 
+    def _monitor_condition(self, service: str, reason: str | None) -> None:
+        """Emit only changes, not a new log on every 30-second monitor tick."""
+        with self.lock:
+            if self.monitor_conditions.get(service) == reason:
+                return
+            if reason is None:
+                self.monitor_conditions.pop(service, None)
+            else:
+                self.monitor_conditions[service] = reason
+        key = "monitor:" + service
+        self.emit(key, "monitor_issue", {
+            "state": "warning" if reason is not None else "resolved",
+            "service": service, "error": reason, "observed_at": time.time(),
+        })
+        self.emit(key, "log", (
+            "Ograniczenie usługi: " + reason if reason is not None
+            else "Weryfikacja usługi ponownie zakończona powodzeniem"
+        ))
+
     def probe(self, key: str, *, observe_only: bool = False) -> Job:
         """Use passive service observations without a failed operator action.
 
@@ -733,10 +784,11 @@ class Controller:
         """
         from . import probes
         settings = self.settings
-        if observe_only and key not in {"ollama", "gateway", "cloudflare"}:
+        if observe_only and key not in {"ollama", "ollama_process", "gateway", "cloudflare"}:
             raise StudioError("Monitor może odczytywać tylko usługi bez generowania")
         fingerprint = sha256(json.dumps([asdict(settings), observe_only], sort_keys=True).encode()).hexdigest()
         calls = {"ollama": lambda: probes.ollama(settings.model),
+                 "ollama_process": lambda: probes.ollama_process(settings.ollama),
                  "ollama_generate": lambda: probes.ollama_generation(settings.model),
                  "gateway": lambda: probes.gateway(settings.mcp_port),
                  "cloudflare": lambda: probes.cloudflare(settings.cloudflare_url),
@@ -755,6 +807,38 @@ class Controller:
             try:
                 job.state = "running"
                 evidence = calls[key]()
+                if key == "ollama_generate":
+                    with self.lock:
+                        self.ollama_generation_proof = (
+                            (settings.model, time.monotonic())
+                            if evidence.get("generation_verified") is True
+                            and evidence.get("selected_model_present") is True else None
+                        )
+                    if self.ollama_generation_proof:
+                        evidence = {**evidence, "generation_evidence_age_seconds": 0.0}
+                elif key == "ollama":
+                    with self.lock:
+                        if (self.ollama_generation_proof is not None
+                                and self.ollama_generation_proof[0] != settings.model):
+                            self.ollama_generation_proof = None
+                        if (evidence.get("endpoint_reachable") is not True
+                                or evidence.get("selected_model_present") is False):
+                            self.ollama_generation_proof = None
+                        proof = self.ollama_generation_proof
+                    evidence = retain_ollama_generation(evidence, proof, time.monotonic())
+                if key == "ollama_process":
+                    self._monitor_condition(key, "process_not_running"
+                                            if evidence.get("process_running") is False else None)
+                if key in {"ollama", "gateway", "cloudflare"}:
+                    issue = (
+                        "api_unreachable" if evidence.get("endpoint_reachable") is False
+                        else "selected_model_missing"
+                        if key == "ollama" and evidence.get("selected_model_present") is False
+                        else "service_not_ready"
+                        if key in {"gateway", "cloudflare"} and evidence.get("ready") is not True
+                        else None
+                    )
+                    self._monitor_condition(key, issue)
                 if observe_only:
                     evidence = {**evidence, "monitor_only": True}
                 self.emit(job.key, "probe", evidence)
@@ -779,21 +863,25 @@ class Controller:
                 else:
                     job.state = "succeeded"
             except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                from .problem_guidance import probe_failure_code, explain_failure
+                code = probe_failure_code(exc)
+                if key in {"ollama", "ollama_generate"}:
+                    with self.lock:
+                        self.ollama_generation_proof = None
+                if key in {"ollama", "ollama_process", "gateway", "cloudflare"}:
+                    self._monitor_condition(key, code)
                 if observe_only:
-                    # Read-only watcher cannot pollute the operator error
-                    # journal with repeated connection_refused from unstarted
-                    # optional components. Never claim service readiness.
+                    # No red terminal failure for an optional, unstarted
+                    # service; retain the warning in Operator Tools instead.
                     self.emit(job.key, "probe", {
-                        "service": key,
-                        "monitor_only": True,
-                        "endpoint_reachable": False,
-                        "ready": False,
+                        "service": key, "monitor_only": True,
+                        "endpoint_reachable": False, "ready": False,
+                        "probe_error_code": code,
                         "accepted_visible_turn": False,
                     })
                     job.state = "succeeded"
                 else:
-                    from .problem_guidance import probe_failure_code, explain_failure
-                    job.state, job.error = "failed", probe_failure_code(exc)
+                    job.state, job.error = "failed", code
                     guidance = explain_failure(job.key, job.error)
                     self.emit(job.key, "log", guidance.title + ". " + guidance.remedy)
             finally:
@@ -1018,8 +1106,22 @@ class Controller:
                 except ValueError:
                     supervisor = {}
                     job.state, job.error = "failed", "invalid_supervisor_status_json"
-                self.emit(job.key, "supervisor_evidence",
-                          supervisor_summary(supervisor, command_ok=job.state == "succeeded"))
+                from .status_summary import inactive_supervisor_status_read
+                # CLI exit 1 may report a *verified inactive* optional supervisor.
+                # It is a successful observation, not proof of active supervision.
+                if inactive_supervisor_status_read(
+                    supervisor, returncode=job.returncode, error=job.error
+                ):
+                    job.state, job.error = "succeeded", None
+                projection = supervisor_summary(supervisor, command_ok=job.state == "succeeded")
+                if job.state == "failed":
+                    projection["probe_error_code"] = job.error or "supervisor_status_failed"
+                    self._monitor_condition("supervisor", projection["probe_error_code"])
+                elif projection.get("inactive_confirmed") is True:
+                    self._monitor_condition("supervisor", "supervisor_inactive")
+                else:
+                    self._monitor_condition("supervisor", None)
+                self.emit(job.key, "supervisor_evidence", projection)
             if job.key == "status":
                 # A canonical negative status is still an observation. Publish
                 # it even on exit 1; malformed output must invalidate old green

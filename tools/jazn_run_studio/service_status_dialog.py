@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 STATUS_COLORS = {"good": "#32C77A", "warn": "#E8A13B", "bad": "#E2525D"}
 STATUS_LABELS = {"good": "Działa", "warn": "Niezweryfikowany / ograniczony", "bad": "Błąd"}
 MAX_OBSERVATION_AGE_SECONDS = 45.0
+from .core import OLLAMA_GENERATION_PROOF_SECONDS
 
 
 def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = False,
@@ -84,7 +85,21 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
             return "warn", "Wyszukiwanie dostępne, ciągłość niepotwierdzona"
         return "warn", "Brak dowodu recall i ciągłości MEMORY"
 
+    if key == "ollama_process":
+        if evidence.get("process_observed") is not True:
+            return "warn", "Nie potwierdzono odczytu procesu"
+        if evidence.get("process_running") is True:
+            return "good", "Proces Ollama włączony (API sprawdzane osobno)"
+        if evidence.get("process_running") is False:
+            return "warn", "Proces Ollama wyłączony"
+        return "warn", "Nieznany stan procesu"
+
     if key == "ollama":
+        proof_age = evidence.get("generation_evidence_age_seconds")
+        if (proof_age is not None and (
+                not isinstance(proof_age, (int, float))
+                or proof_age + age_seconds > OLLAMA_GENERATION_PROOF_SECONDS)):
+            return "warn", "API odpowiada; ostatni dowód generowania wygasł — ponów test"
         if evidence.get("endpoint_reachable") is not True:
             return "warn", "Brak dowodu dostępności API"
         if evidence.get("selected_model_present") is False:
@@ -103,7 +118,8 @@ class ServiceStatusDialog(QDialog):
     SERVICES = (
         ("server", "Serwer Jaźni / daemon"),
         ("runtime", "Runtime rozmów"),
-        ("ollama", "Ollama i wybrany model"),
+        ("ollama_process", "Ollama — proces systemowy"),
+        ("ollama", "Ollama — API i wybrany model"),
         ("mcp", "MCP lokalne"),
         ("mcp_https", "MCP HTTPS / OAuth"),
         ("supervisor", "Supervisor"),
@@ -186,6 +202,12 @@ class ServiceStatusDialog(QDialog):
         # arrives. Clearing first would temporarily misrepresent a live daemon.
         self._request_refresh()
 
+    def invalidate_ollama_model(self) -> None:
+        """Drop old model evidence immediately when operator changes selection."""
+        self.samples.pop("ollama", None)
+        self.failures.discard("ollama")
+        self.render_statuses()
+
     def observe(self, key: str, kind: str, value: object) -> None:
         if kind == "evidence" and isinstance(value, dict) and key == "status":
             for service in ("server", "runtime"):
@@ -210,6 +232,7 @@ class ServiceStatusDialog(QDialog):
         elif kind == "probe" and isinstance(value, dict):
             service = {
                 "gateway": "mcp", "ollama": "ollama",
+                "ollama_process": "ollama_process",
                 "cloudflare": "mcp_https",
             }.get(str(value.get("service", "")))
             if service:
@@ -222,6 +245,7 @@ class ServiceStatusDialog(QDialog):
                 "probe:gateway": ("mcp",),
                 "probe:cloudflare": ("mcp_https",),
                 "probe:ollama": ("ollama",),
+                "probe:ollama_process": ("ollama_process",),
                 "probe:ollama_generate": ("ollama",),
             }.get(key, ())
             # A completed optional probe can truthfully report "not ready"

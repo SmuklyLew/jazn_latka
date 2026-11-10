@@ -1,3 +1,7 @@
+# v116.0.34.94.6.124: Preserve exact log export, recheck isolated MCP profiles and observe Ollama process. 
+# v116.0.34.94.6.123: Keep fresh Ollama generation evidence and report service monitor conditions.
+# v116.0.34.94.6.122: Bound Dependency Studio JSON, record installation failures and accept isolated MCP evidence.
+# v116.0.34.94.6.121: Add consent-gated install action per missing dependency in JSS first-run.
 # v116.0.34.94.6.120: Fix Studio checkout-root selection with scoped JAZN_ROOT for child processes.
 # v116.0.34.94.6.119: Rename release-coupled test files to stable purpose names; retain CI governance.
 # v116.0.34.94.6.118: Keep audit-branch release CI non-mutating while validating complete gates.
@@ -226,7 +230,7 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.120"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.124"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

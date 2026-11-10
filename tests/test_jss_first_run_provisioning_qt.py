@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import pytest
 
 pytest.importorskip("PySide6")
@@ -47,6 +48,32 @@ def test_inspect_does_not_request_mutation_approval(window, monkeypatch) -> None
     )
     wizard.provision("inspect")
     assert commands == [("inspect", [])]
+    from tools.jazn_run_studio.first_run import _provision_result_ok
+
+    report = {
+        "schema_version": "jazn_jss_prerequisites/v1",
+        "ready": False, "python_314_ready": False,
+        "ollama_api_ready": False, "models": [],
+    }
+    assert _provision_result_ok("inspect", report, exit_code=0, native_winget=False)
+    assert not _provision_result_ok("inspect", report, exit_code=1, native_winget=False)
+    assert not _provision_result_ok("prepare-venv", report, exit_code=0, native_winget=False)
+    assert not _provision_result_ok(
+        "inspect", {"schema_version": "unknown"}, exit_code=0, native_winget=False
+    )
+    wizard.provision_command = "inspect"
+    wizard.provision_native = False
+    wizard.provision_buffer = json.dumps(report)
+    wizard._provision_finished(0, None)
+    assert "Sprawdzono ROOT/.venv/Ollama" in wizard.provision_result.text()
+    assert "wymaga przygotowania" in wizard.provision_result.text()
+    with window.core.lock:
+        events = list(window.core.events.queue)
+    assert any(
+        key == "setup:provision" and kind == "state"
+        and value.get("state") == "succeeded"
+        for key, kind, value in events
+    )
 
 
 def test_venv_provision_requires_explicit_confirmation(window, monkeypatch) -> None:

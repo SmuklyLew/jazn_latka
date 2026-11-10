@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.120",
-  "active_definition_count": 3279,
+  "system_version": "16.3.25.5.116.0.34.94.6.124",
+  "active_definition_count": 3297,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28651,11 +28651,11 @@
       "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
       "name": "test_problem_activation_opens_matching_source_and_full_export",
       "purpose": "Problem activation opens matching source and full export",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -31436,6 +31436,83 @@
       "description_source": "source_identity",
       "line": 133
     },
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_json_summary_bounded_and_parsable": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_dependency_json_summary_bounded_and_parsable",
+      "purpose": "Large installer metadata is omitted from the first-run machine response.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 35
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_process_failure_is_visible_in_operator_logs": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_dependency_process_failure_is_visible_in_operator_logs",
+      "purpose": "Missing subprocess JSON must leave a bounded failure event for the operator.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 53
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_profile_does_not_require_global_activation": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_optional_mcp_profile_does_not_require_global_activation",
+      "purpose": "A marked isolated MCP environment may be selected even without global activation.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 69
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_profile_rejects_foreign_marker": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_optional_profile_rejects_foreign_marker",
+      "purpose": "A marker outside the managed dependency folder cannot authorize interpreter change.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 99
+    },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
       "name": "test_manifest_precedes_execution_and_all_22_have_txt_json",
@@ -32281,22 +32358,22 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 31
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_inspect_does_not_request_mutation_approval": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
       "name": "test_inspect_does_not_request_mutation_approval",
       "purpose": "Inspect does not request mutation approval",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_venv_provision_requires_explicit_confirmation": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
@@ -32311,7 +32388,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 79
     },
     "tests/test_jss_first_run_provisioning_qt.py::test_multi_model_queue_is_validated_before_any_download": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
@@ -32326,7 +32403,69 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 96
+    },
+    "tests/test_jss_first_run_row_install.py::test_install_button_is_only_shown_for_known_missing_capabilities": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_install_button_is_only_shown_for_known_missing_capabilities",
+      "purpose": "Only allowlisted missing rows have an installation action.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 34
+    },
+    "tests/test_jss_first_run_row_install.py::test_operator_denial_never_starts_install_and_valid_approval_selects_profile": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_operator_denial_never_starts_install_and_valid_approval_selects_profile",
+      "purpose": "Cancel must be side-effect free; approval selects only the known profile.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 55
+    },
+    "tests/test_jss_first_run_row_install.py::test_missing_mcp_interpreter_is_refused_before_confirmation": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_missing_mcp_interpreter_is_refused_before_confirmation",
+      "purpose": "No selected executable means no downloader or confirmation dialog.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 80
+    },
+    "tests/test_jss_first_run_row_install.py::test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected",
+      "purpose": "Only activated environments inside the isolated managed root may be selected.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 93
     },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",
@@ -32518,7 +32657,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 40
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_dashboard_has_no_mutating_start_shortcuts": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -32533,7 +32672,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 53
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_absent_optional_mcp_is_observed_without_gui_error_or_replay": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -32550,7 +32689,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 64
     },
     "tests/test_jss_root_local_dependencies.py::test_fresh_root_local_resources_selects_root_venv": {
       "path": "tests/test_jss_root_local_dependencies.py",
@@ -33086,6 +33225,111 @@
       "description_source": "source_identity",
       "line": 87
     },
+    "tests/test_jss_service_monitor_evidence.py::test_generation_evidence_remains_green_across_passive_polls_but_expires": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_generation_evidence_remains_green_across_passive_polls_but_expires",
+      "purpose": "Generation evidence remains green across passive polls but expires",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_live_passive_probe_preserves_proof_without_generating": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_live_passive_probe_preserves_proof_without_generating",
+      "purpose": "Live passive probe preserves proof without generating",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_offline_probe_creates_single_operator_problem_and_recovery": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_offline_probe_creates_single_operator_problem_and_recovery",
+      "purpose": "Offline probe creates single operator problem and recovery",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_failed_supervisor_stays_visible_in_problems_and_output": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_failed_supervisor_stays_visible_in_problems_and_output",
+      "purpose": "Failed supervisor stays visible in problems and output",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_dialog_immediately_discards_old_model_proof": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_dialog_immediately_discards_old_model_proof",
+      "purpose": "Dialog immediately discards old model proof",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 156
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_ollama_process_probe_is_passive_and_reports_stopped": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_ollama_process_probe_is_passive_and_reports_stopped",
+      "purpose": "Ollama process probe is passive and reports stopped",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 170
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_process_inventory_on_off_is_independent_from_api": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_process_inventory_on_off_is_independent_from_api",
+      "purpose": "Process inventory on off is independent from api",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 188
+    },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_status_requires_live_identity_and_conversation_capability",
@@ -33122,11 +33366,11 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_nonmodal_dialog_does_not_spawn_automatically",
       "purpose": "Nonmodal dialog does not spawn automatically",
-      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 17,
+      "assertion_count": 19,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -33245,6 +33489,28 @@
       "description_source": "source_identity",
       "line": 79
     },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_provisional_mcp_python_is_checked_before_settings_commit": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_provisional_mcp_python_is_checked_before_settings_commit",
+      "purpose": "Provisional mcp python is checked before settings commit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
     "tests/test_jss_supervisor_inactive_evidence.py::test_confirmed_inactive_supervisor_is_not_ready": {
       "path": "tests/test_jss_supervisor_inactive_evidence.py",
       "name": "test_confirmed_inactive_supervisor_is_not_ready",
@@ -33291,6 +33557,36 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 41
+    },
+    "tests/test_jss_supervisor_inactive_status_read.py::test_inactive_optional_supervisor_read_is_not_a_failed_operation": {
+      "path": "tests/test_jss_supervisor_inactive_status_read.py",
+      "name": "test_inactive_optional_supervisor_read_is_not_a_failed_operation",
+      "purpose": "Inactive optional supervisor read is not a failed operation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_jss_supervisor_inactive_status_read.py::test_supervisor_json_and_transport_failures_stay_errors": {
+      "path": "tests/test_jss_supervisor_inactive_status_read.py",
+      "name": "test_supervisor_json_and_transport_failures_stay_errors",
+      "purpose": "Supervisor json and transport failures stay errors",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
@@ -45906,7 +46202,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 34
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_unified_memory_refuses_unsafe_existing_wal_without_changes": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -45929,7 +46225,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 49
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_maintenance_rejects_unsafe_existing_wal": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -45954,7 +46250,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 60
     },
     "tests/test_memory_sqlite_ingest_policy.py::test_html_memory_backup_uses_readonly_source_and_preserves_source": {
       "path": "tests/test_memory_sqlite_ingest_policy.py",
@@ -45975,7 +46271,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 72
     },
     "tests/test_memory_sqlite_test04.py::test_powershell_operator_has_fail_closed_contract": {
       "path": "tests/test_memory_sqlite_test04.py",

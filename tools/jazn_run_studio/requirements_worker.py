@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 import os
+import argparse
 from pathlib import Path
 import platform
 import sys
@@ -19,7 +20,7 @@ def setup_scope(root: Path, python: str) -> str:
     return digest.hexdigest()
 
 
-def inspect_requirements(root: Path) -> dict[str, Any]:
+def inspect_requirements(root: Path, *, mcp_python_override: str | None = None) -> dict[str, Any]:
     from packaging.specifiers import SpecifierSet
     import tomllib
     from latka_jazn.dependencies.common import resolve_profile_requirements, inspect_current_requirements
@@ -75,7 +76,7 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
     try:
         configured, _digest = load_settings(root)
         mcp_python = python_executable(
-            Settings(python=configured.mcp_python or configured.python or sys.executable)
+            Settings(python=mcp_python_override or configured.mcp_python or configured.python or sys.executable)
         )
         mcp_checks = mcp_dependency_preflight(mcp_python, root)
     except (OSError, ValueError, RuntimeError) as exc:
@@ -100,8 +101,13 @@ def inspect_requirements(root: Path) -> dict[str, Any]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mcp-python", default=None)
+    args = parser.parse_args()
     try:
-        print(json.dumps(inspect_requirements(Path.cwd()), ensure_ascii=False))
+        print(json.dumps(inspect_requirements(
+            Path.cwd(), mcp_python_override=args.mcp_python,
+        ), ensure_ascii=False))
         return 0
     except (OSError, ValueError, RuntimeError) as exc:
         print(json.dumps({"schema": "jazn_studio_setup/v1", "required_ok": False,

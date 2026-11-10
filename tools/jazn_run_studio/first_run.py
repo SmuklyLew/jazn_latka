@@ -16,6 +16,19 @@ from PySide6.QtWidgets import (
 
 from .core import Controller, Settings, StudioError
 
+# Only declared, maintained profiles are installable from the wizard.
+_ROW_PROFILES = {
+    "Testy: pytest": ("core,run-studio,test-evidence", "python"),
+    **{
+        name: ("core,run-studio", "python")
+        for name in ("tzdata", "packaging", "PySide6-Essentials")
+    },
+    **{
+        "MCP: " + module: ("core,mcp-http", "mcp_python")
+        for module in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
+    },
+}
+
 
 class CheckPage(QWizardPage):
     def __init__(self, title: str, parent: QWidget | None = None):
@@ -31,13 +44,33 @@ class CheckPage(QWizardPage):
         self.completeChanged.emit()
 
 
+def _provision_result_ok(command: str, result: dict, *, exit_code: int,
+                         native_winget: bool) -> bool:
+    """Validate the per-command contract; inspection is read-only evidence."""
+    if exit_code != 0:
+        return False
+    if native_winget:
+        return True
+    if command == "inspect":
+        return (
+            result.get("schema_version") == "jazn_jss_prerequisites/v1"
+            and isinstance(result.get("ready"), bool)
+            and isinstance(result.get("python_314_ready"), bool)
+            and isinstance(result.get("ollama_api_ready"), bool)
+            and isinstance(result.get("models"), list)
+        )
+    return result.get("ok") is True
+
+
 class SetupWizard(QWizard):
     def __init__(self, core: Controller, save: Callable[[Settings], None],
                  completed: Callable[[str], None], parent: QWidget | None = None):
         super().__init__(parent)
         self.core, self.save, self.completed = core, save, completed
         self._original_python_setting = core.settings.python
+        self._original_mcp_python_setting = core.settings.mcp_python
         self._provisional_python_setting = ""
+        self._provisional_mcp_python_setting = ""
         self.setWindowTitle("Jaźń — Serce Systemu / Pierwsze uruchomienie")
         self.resize(780, 590)
         self.setButtonText(QWizard.WizardButton.BackButton, "Wstecz")
@@ -53,8 +86,9 @@ class SetupWizard(QWizard):
         self.progress.setRange(0, 0)
         self.progress.hide()
         layout.addWidget(self.progress)
-        self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa"])
+        self.table = QTableWidget(0, 5)
+        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa", "Instalacja"])
+        self.table.setColumnWidth(4, 125)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.table)
@@ -217,6 +251,13 @@ class SetupWizard(QWizard):
         self.provision_command = ""
         self.provision_native = False
         self.provision_remaining_models: list[str] = []
+        self._row_stage = ""
+        self._row_name = ""
+        self._row_profiles = ""
+        self._row_setting = ""
+        self._row_python = ""
+        self._row_output = ""
+        self._row_stderr = ""
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
@@ -225,6 +266,245 @@ class SetupWizard(QWizard):
     def _setup_python(self) -> str:
         from .core import python_executable
         return python_executable(self.core.settings)
+
+    def _render_setup_rows(self, rows: list[dict]) -> None:
+        # Resetting the rows removes stale buttons after a successful recheck.
+        self.table.setRowCount(0)
+        self.table.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, key in enumerate(("name", "state", "detail", "remedy")):
+                self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
+            name = str(row.get("name") or "")
+            if row.get("state") in {"OPTIONAL_MISSING", "FAIL"} and name in _ROW_PROFILES:
+                button = QPushButton("Zainstaluj…")
+                button.setAccessibleName("Zainstaluj zależność: " + name)
+                button.clicked.connect(
+                    lambda _checked=False, selected=name: self.install_missing(selected)
+                )
+                self.table.setCellWidget(i, 4, button)
+
+    def install_missing(self, name: str) -> None:
+        spec = _ROW_PROFILES.get(name)
+        if spec is None or not any(
+            row.get("name") == name and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
+            for row in self.report.get("rows", [])
+        ):
+            return
+        if self._row_stage or (
+            self.provision_process is not None
+            and self.provision_process.state() != QProcess.ProcessState.NotRunning
+        ):
+            self.stage.setText("Inna operacja instalacji jeszcze trwa.")
+            return
+        profiles, setting = spec
+        try:
+            python = (
+                (self.setting_fields["mcp_python"].text().strip()
+                 or self.core.settings.mcp_python or self._setup_python())
+                if setting == "mcp_python" else self._setup_python()
+            )
+            if not Path(python).is_absolute() or not Path(python).is_file():
+                raise StudioError("Wybrany interpreter nie istnieje.")
+        except (OSError, ValueError, RuntimeError) as exc:
+            self.stage.setText(self.core.redactor.text(str(exc)))
+            return
+        from latka_jazn.dependencies.common import default_wheelhouse_root
+        wheelhouse = default_wheelhouse_root(self.core.root)
+        approved = QMessageBox.question(
+            self, "Zgoda na instalację zależności",
+            f"Brak: {name}\nProfile: {profiles}\nInterpreter bazowy: {python}\n"
+            f"Wheelhouse: {wheelhouse}\n\n"
+            "Pobrać pakiety i zbudować zweryfikowany wheelhouse, a następnie "
+            "zainstalować offline do NOWEGO, izolowanego środowiska? "
+            "Może korzystać z internetu. Nie zmienia aktywnego .venv, MEMORY "
+            "ani daemona. Nowy interpreter będzie wymagał zatwierdzenia w kroku C.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if approved != QMessageBox.StandardButton.Yes:
+            return
+        self._row_name, self._row_profiles = name, profiles
+        self._row_setting, self._row_python = setting, python
+        self._start_row_step("download")
+
+    def _start_row_step(self, stage: str, bundle: Path | None = None) -> None:
+        from latka_jazn.dependencies.common import default_wheelhouse_root
+        root = self.core.root.resolve()
+        wheelhouse = default_wheelhouse_root(root).resolve()
+        arguments = [
+            "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
+            "--root", str(root), "--wheelhouse-root", str(wheelhouse), "--json-summary",
+        ]
+        if stage == "download":
+            arguments += [
+                "download", "--profile", self._row_profiles,
+                "--platform", "current", "--python-executable", self._row_python,
+            ]
+        elif stage == "install" and bundle is not None:
+            candidate = bundle.resolve()
+            if not candidate.is_dir() or not candidate.is_relative_to(wheelhouse):
+                self._row_stage = ""
+                self.stage.setText("Odmowa: nieprawidłowy katalog wheelhouse.")
+                return
+            arguments += [
+                "install", "--bundle", str(candidate),
+                "--profile", self._row_profiles,
+                "--python-executable", self._row_python,
+                "--environment-root",
+                str(root / ".settings_local" / "acceptance" / "dependency_environments"),
+                "--offline",
+            ]
+        else:
+            self._row_stage = ""
+            self.stage.setText("Odmowa: nieprawidłowa operacja.")
+            return
+        self._row_stage, self._row_output, self._row_stderr = stage, "", ""
+        process = QProcess(self)
+        process.setWorkingDirectory(str(root))
+        process.readyReadStandardOutput.connect(self._row_read)
+        process.readyReadStandardError.connect(self._row_read_stderr)
+        process.finished.connect(self._row_finished)
+        process.errorOccurred.connect(self._row_error)
+        self.provision_process = process
+        self.stage.setText(
+            ("Pobieranie i weryfikowanie: " if stage == "download" else "Instalacja offline: ")
+            + self._row_name
+        )
+        self.core.emit("setup:dependency-row", "log", f"{stage}: {self._row_name} — rozpoczęto")
+        # QProcess receives explicit argv; no shell or arbitrary package names.
+        process.start(self._row_python, arguments)
+
+    def _row_read_stderr(self) -> None:
+        if self.provision_process is not None:
+            chunk = bytes(self.provision_process.readAllStandardError().data()).decode(
+                "utf-8", "replace"
+            )
+            # Kept only in memory. Raw installer output is never written to operator logs.
+            self._row_stderr = (self._row_stderr + chunk)[-8192:]
+
+    def _row_error(self, _error: object) -> None:
+        process = self.provision_process
+        if process is not None and process.state() == QProcess.ProcessState.NotRunning:
+            stage = self._row_stage
+            self.provision_process = None
+            self._row_stage = ""
+            process.deleteLater()
+            if stage:
+                self._row_failure(stage, "process_start_failed", -1, "")
+
+    def _row_read(self) -> None:
+        if self.provision_process is not None:
+            chunk = bytes(self.provision_process.readAllStandardOutput().data()).decode(
+                "utf-8", "replace"
+            )
+            self._row_output = (self._row_output + chunk)[-65536:]
+
+    def _row_failure(self, stage: str, code: str, exit_code: int, detail: str) -> None:
+        # Persist bounded, redacted metadata through the canonical operator channel.
+        detail = self.core.redactor.text(detail.strip().splitlines()[-1] if detail.strip() else "")[:160]
+        reason = f"{stage}/{code}, exit={exit_code}"
+        if detail:
+            reason += ": " + detail
+        reason = self.core.redactor.text(reason)[:245]
+        self.core.emit(
+            "setup:dependency-row", "state",
+            {"state": "failed", "error": reason, "returncode": int(exit_code)},
+        )
+        self.core.emit("setup:dependency-row", "log", reason)
+        self.stage.setText("Instalacja nieudana: " + reason)
+
+    def _row_finished(self, exit_code: int, _status: object) -> None:
+        stage = self._row_stage
+        if not stage:
+            return  # A process_start_failed event already owns the failure.
+        self._row_read()
+        self._row_read_stderr()
+        # An installer may emit progress before its final machine summary.
+        # Never infer success from an exit code or an arbitrary log line.
+        payload: dict = {}
+        for line in reversed(self._row_output.splitlines()):
+            line = line.strip()
+            if not (line.startswith("{") and line.endswith("}")):
+                continue
+            try:
+                candidate = json.loads(line)
+            except (TypeError, ValueError):
+                continue
+            if isinstance(candidate, dict) and type(candidate.get("ok")) is bool:
+                payload = candidate
+                break
+        process, self.provision_process = self.provision_process, None
+        if process is not None:
+            process.deleteLater()
+        if not isinstance(payload, dict):
+            payload = {}
+        if exit_code != 0 or payload.get("ok") is not True:
+            self._row_stage = ""
+            error_type = str(payload.get("error_type") or "invalid_dependency_result")[:80]
+            detail = str(payload.get("error") or self._row_stderr or "")
+            self._row_failure(stage, error_type, exit_code, detail)
+            return
+        if stage == "download":
+            bundle = payload.get("bundle_dir")
+            if not isinstance(bundle, str) or not bundle.strip():
+                self._row_stage = ""
+                self._row_failure(stage, "bundle_path_missing", exit_code, "")
+                return
+            self.core.emit("setup:dependency-row", "log", "Zweryfikowano bundle: " + self._row_name)
+            self._start_row_step("install", Path(bundle))
+            return
+        if stage != "install":
+            self._row_stage = ""
+            self._row_failure(stage, "unexpected_installer_stage", exit_code, "")
+            return
+        managed = (self.core.root.resolve() / ".settings_local" / "acceptance"
+                   / "dependency_environments").resolve()
+        interpreter = Path(str(payload.get("python_executable") or ""))
+        marker = Path(str(payload.get("environment_marker_path") or ""))
+        provided = set(payload.get("profiles") or [])
+        expected = set(self._row_profiles.split(","))
+        # Full release activation is sufficient for the legacy managed install
+        # contract. Optional MCP environments instead have their own verified
+        # marker and need not activate the complete runtime dependency profile.
+        verified = (
+            payload.get("activation_marker_updated") is True
+            or (
+                payload.get("state") in {"environment_ready", "optional_environment_ready"}
+                and expected.issubset(provided)
+                and marker.is_absolute() and marker.is_file()
+                and marker.resolve().is_relative_to(managed)
+            )
+        )
+        ready = (
+            verified and interpreter.is_absolute() and interpreter.is_file()
+            and interpreter.resolve().is_relative_to(managed)
+        )
+        self._row_stage = ""
+        if not ready:
+            self._row_failure(stage, "managed_environment_not_verified", exit_code, "")
+            return
+        resolved = str(interpreter.resolve())
+        self.setting_fields[self._row_setting].setText(resolved)
+        self.core.settings = replace(self.core.settings, **{self._row_setting: resolved})
+        if self._row_setting == "python":
+            self._provisional_python_setting = resolved
+            self.retry()
+        else:
+            self._provisional_mcp_python_setting = resolved
+            self.retry()  # Verify the selected provisional interpreter, before saving.
+        self.core.emit(
+            "setup:dependency-row", "state",
+            {"state": "succeeded", "error": None, "returncode": 0},
+        )
+        self.core.emit(
+            "setup:dependency-row", "log",
+            "Weryfikacja nowego środowiska zakończona: " + self._row_name,
+        )
+        self.stage.setText(
+            "Zainstalowano: " + self._row_name
+            + ". Zatwierdź interpreter w kroku C. "
+            "Dla MCP ponów kontrolę po zapisaniu konfiguracji."
+        )
 
     def provision(self, command: str) -> None:
         from latka_jazn.tools.jss_prerequisite_setup import MODEL_NAME
@@ -339,15 +619,34 @@ class SetupWizard(QWizard):
             result = json.loads(self.provision_buffer.strip().splitlines()[-1])
         except (ValueError, TypeError, IndexError):
             result = {}
-        ok = exit_code == 0 and (
-            self.provision_native or result.get("ok", True) is True
+        ok = _provision_result_ok(
+            self.provision_command, result, exit_code=exit_code,
+            native_winget=self.provision_native,
         )
+        if not ok:
+            reason = self.core.redactor.text(
+                str(result.get("error_code") or result.get("state") or "invalid_provision_result")
+            )[:120]
+            self.core.emit("setup:provision", "state",
+                           {"state": "failed", "error": reason, "returncode": exit_code})
         if self.provision_native and ok:
             result = {"state": "winget_completed_recheck_required"}
-        self.provision_result.setText(
-            ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
-            + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
-        )
+        if ok:
+            self.core.emit("setup:provision", "state",
+                           {"state": "succeeded", "error": None, "returncode": 0})
+        if ok and self.provision_command == "inspect":
+            self.provision_result.setText(
+                "Sprawdzono ROOT/.venv/Ollama (tylko odczyt) — "
+                + ("Python 3.14: gotowy" if result["python_314_ready"]
+                   else "Python 3.14: wymaga przygotowania")
+                + "; " + ("Ollama API: dostępne" if result["ollama_api_ready"]
+                          else "Ollama API: niedostępne")
+            )
+        else:
+            self.provision_result.setText(
+                ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
+                + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
+            )
         process, self.provision_process = self.provision_process, None
         if process is not None:
             process.deleteLater()
@@ -417,10 +716,7 @@ class SetupWizard(QWizard):
             self.requirements.mark(ok)
             self.stage.setText("Wymagania sprawdzone." if ok else "Wymagane składniki wymagają naprawy. Szczegóły poniżej; można anulować i otworzyć diagnostykę.")
             rows = report.get("rows", [])
-            self.table.setRowCount(len(rows))
-            for i, row in enumerate(rows):
-                for j, key in enumerate(("name", "state", "detail", "remedy")):
-                    self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
+            self._render_setup_rows(rows)
             found = report.get("discovery", {})
             self.integration_summary.setText("\n".join(
                 name + ": " + ("zainstalowane — " + str(found[name]) if found.get(name) else "nie znaleziono")
@@ -448,6 +744,9 @@ class SetupWizard(QWizard):
         )
 
     def accept(self) -> None:
+        if self.provision_process is not None and self.provision_process.state() != QProcess.ProcessState.NotRunning:
+            self.notice.setText("Zakończ instalację przed zapisaniem konfiguracji.")
+            return
         if not self.report.get("required_ok") or not self.consent.isChecked():
             self.notice.setText("Wymagana pozytywna kontrola Studio i zgoda na zapis konfiguracji.")
             return
@@ -477,6 +776,9 @@ class SetupWizard(QWizard):
         if (self._provisional_python_setting
                 and self.core.settings.python == self._provisional_python_setting):
             self.core.settings = replace(self.core.settings, python=self._original_python_setting)
+        if (self._provisional_mcp_python_setting
+                and self.core.settings.mcp_python == self._provisional_mcp_python_setting):
+            self.core.settings = replace(self.core.settings, mcp_python=self._original_mcp_python_setting)
         self.finished_setup = True
         self.timer.stop()
         # The shared read may finish normally; closing a dialog does not stop

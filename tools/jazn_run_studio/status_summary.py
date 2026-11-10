@@ -82,3 +82,15 @@ def supervisor_summary(data: dict[str, Any], *, command_ok: bool = True) -> dict
         "pid": pid if type(pid) is int and pid > 0 else None,
         "accepted_visible_turn": False,
     }
+
+
+def inactive_supervisor_status_read(
+    payload: dict[str, Any], *, returncode: int | None, error: str | None
+) -> bool:
+    """Accept only the documented exit-1 inactive snapshot as a status read."""
+    result = supervisor_summary(payload, command_ok=False)
+    return (
+        result["inactive_confirmed"] is True
+        and returncode == 1
+        and error == "process_exit:1"
+    )
