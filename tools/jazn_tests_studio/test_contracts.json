@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127",
-  "active_definition_count": 3319,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.1",
+  "active_definition_count": 3324,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -63069,6 +63069,102 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 122
+    },
+    "tests/test_session_conversation_coverage_grounding.py::test_grounded_inflected_polish_answer_covers_both_components": {
+      "path": "tests/test_session_conversation_coverage_grounding.py",
+      "name": "test_grounded_inflected_polish_answer_covers_both_components",
+      "purpose": "Grounded inflected polish answer covers both components",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_session_conversation_coverage_grounding.py::test_missing_conflicting_or_partial_answer_still_fails_closed": {
+      "path": "tests/test_session_conversation_coverage_grounding.py",
+      "name": "test_missing_conflicting_or_partial_answer_still_fails_closed",
+      "purpose": "Missing conflicting or partial answer still fails closed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_session_conversation_coverage_grounding.py::test_missing_or_unverified_session_history_does_not_certify_reply": {
+      "path": "tests/test_session_conversation_coverage_grounding.py",
+      "name": "test_missing_or_unverified_session_history_does_not_certify_reply",
+      "purpose": "Missing or unverified session history does not certify reply",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
+    },
+    "tests/test_session_conversation_coverage_grounding.py::test_validator_propagates_session_history_without_memory_claim": {
+      "path": "tests/test_session_conversation_coverage_grounding.py",
+      "name": "test_validator_propagates_session_history_without_memory_claim",
+      "purpose": "Validator propagates session history without memory claim",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
+    },
+    "tests/test_session_conversation_coverage_grounding.py::test_unrelated_question_does_not_get_session_coverage": {
+      "path": "tests/test_session_conversation_coverage_grounding.py",
+      "name": "test_unrelated_question_does_not_get_session_coverage",
+      "purpose": "Unrelated question does not get session coverage",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.component_coverage_ledger",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 104
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_manifest_keeps_single_database_compatibility": {
       "path": "tests/test_shard_manifest_fail_closed.py",
