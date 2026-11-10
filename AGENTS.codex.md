@@ -10,6 +10,10 @@
 - Zachowaj cudze zmiany; przed ryzykowną operacją zabezpiecz punkt przywracania. Nie rozszerzaj zakresu bez potrzeby.
 - Jeśli zlecono kontynuację konkretnego PR, pracuj na jego gałęzi HEAD, sprawdź aktualne CI i zależności od gałęzi bazowej. Nie twórz zamiennego brancha, nie przepisuj historii i nie uznawaj Draft za gotowy do merge.
 
+- **Domyślne źródło kodu:** pracuj na lokalnym drzewie roboczym Git faktycznie dostępnym w środowisku Codexa; nie pobieraj ponownie repozytorium ani pojedynczych plików przez GitHub API, gdy aktualne pliki są dostępne lokalnie. GitHub służy przede wszystkim synchronizacji, push, PR i kontroli CI. W pracy wyłącznie zdalnej dopuszczalne są odczyty GitHub API; nie udawaj wtedy dostępu do lokalnego worktree.
+- **Nowe zadanie i synchronizacja:** przed tworzeniem nowej gałęzi, o ile środowisko oferuje Git, zweryfikuj `git remote -v`, lokalny HEAD, aktualne zmiany i wykonaj celowany `git fetch` właściwej gałęzi bazowej. Porównaj lokalny i zdalny HEAD; na wskazanym SHA utwórz osobny branch, chyba że zadanie dotyczy kontynuacji istniejącego PR. `git fetch` nie oznacza merge ani upoważnienia do zmiany drzewa roboczego. Nie wykonuj automatycznie `git pull`, `reset --hard`, `git clean`, destrukcyjnego rebase ani force-push. W razie ograniczeń sieciowych przedstaw stan i nie zgaduj aktualności.
+- **Środowiska są odrębne:** Codex Cloud nie musi widzieć plików Windows użytkownika; korzystaj wyłącznie z aktualnie dostępnych i zweryfikowanych ścieżek. Przed zmianą istniejącego worktree z cudzymi modyfikacjami zachowaj ich stan i nie przełączaj go destrukcyjnie.
+
 ## 2. Selektywny odczyt i oszczędzanie kontekstu
 
 **Najpierw lokalizuj, potem wczytuj. Nie czytaj całego repozytorium na zapas.**
@@ -21,6 +25,10 @@
 5. Nie ładuj zbiorczo `memory/`, `workspace_runtime/`, historii Git, archiwów, baz, binariów, logów ani eksportów SYSTEM. Nie powielaj w kontekście długich wyników narzędzi; wystarczą istotne ścieżki, linie i wyniki. Nie powtarzaj niepotrzebnie odczytów.
 
 Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralności danych, testów i bezpieczeństwa.
+
+### Weryfikacja wiedzy zewnętrznej
+
+- Jeżeli rozwiązanie zależy od aktualnego API, standardu, zachowania biblioteki, zagrożenia bezpieczeństwa lub wyników badań, sprawdź źródła pierwotne (dokumentacja producenta, specyfikacja, publikacja) i dołącz odnośniki do raportu. Oddziel obserwację z kodu od rekomendacji i hipotez. Przy drobnej zmianie redakcyjnej nie wykonuj zbędnego przeszukiwania internetu.
 
 ### Budżet sesji Codex
 
@@ -46,7 +54,7 @@ Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralno
 
 ## 5. Testy i historyczne snapshoty
 
-- Wykonuj najpierw testy celowane; szerszą regresję dobieraj do ryzyka, a wymagany pełny zestaw do gate integracyjnego lub release. Stosuj komendy i dodatkowe kontrole z referencyjnego runbooka zależnie od rodzaju zmiany.
+- Wykonuj najpierw testy celowane; szerszą regresję dobieraj do ryzyka, a wymagany pełny zestaw do gate integracyjnego lub release. Stosuj komendy i dodatkowe kontrole z referencyjnego runbooka zależnie od rodzaju zmiany. Zachowuj pełne logi diagnostyczne w bezpiecznej lokalizacji, a do kontekstu modelu przekazuj przede wszystkim wyniki i fragmenty błędów potrzebne do diagnozy; nie zapisuj sekretów ani danych prywatnych.
 - Dla czerwonego CI na PR zacznij od błędów **aktualnego HEAD**, znajdź wspólną przyczynę i powtórz testy dotknięte poprawką; nie uruchamiaj pełnej macierzy przy każdej drobnej iteracji. Pełny wymagany gate pozostaje warunkiem odbioru.
 - `tests/archive/` jest append-only i poza domyślną kolekcją. Przed zmianą istniejącego aktywnego testu zachowaj zatwierdzony oryginał bajt w bajt, z wersją i provenance. Nie archiwizuj testu tylko z powodu nazwy; zamiennik musi chronić co najmniej ten sam kontrakt.
 - Przy zmianach samych instrukcji sprawdź spójność odwołań, format oraz `git diff --check`, jeśli masz terminal; nie uruchamiaj niepotrzebnie całego runtime. Limit `docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt` wynosi <= 5000 znaków — sprawdź przy zmianach loadera lub jego generatora.
