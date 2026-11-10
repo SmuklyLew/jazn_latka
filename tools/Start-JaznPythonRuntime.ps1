@@ -22,7 +22,9 @@ function Assert-ChildPath([string]$Base, [string]$Candidate) {
 }
 
 function Get-WorkspaceRoot([string]$AppRoot) {
+    $modern = Test-Path -LiteralPath (Join-Path $AppRoot "local_resources") -PathType Container
     $configured = [string]$env:JAZN_RUNTIME_WORKSPACE_DIR
+    $resolved = $null
     if (-not [string]::IsNullOrWhiteSpace($configured)) {
         $portable = $configured.Replace([char]92, '/')
         if ($portable.StartsWith('$ROOT/', [StringComparison]::Ordinal) -or
@@ -35,26 +37,62 @@ function Get-WorkspaceRoot([string]$AppRoot) {
                 throw "unsafe_root_relative_workspace"
             }
             $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $suffix))
-            $prefix = ([IO.Path]::GetFullPath($AppRoot).TrimEnd([char[]]@([char]92, [char]47))) + [IO.Path]::DirectorySeparatorChar
-            if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
-                throw "workspace_escapes_root"
+        }
+        elseif ([IO.Path]::IsPathRooted($configured)) {
+            $resolved = [IO.Path]::GetFullPath($configured)
+        }
+        else {
+            $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot $configured))
+        }
+    }
+    elseif ($modern) {
+        $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
+    }
+    else {
+        # Existing bare/host-managed roots keep their historical locations.
+        $parent = Split-Path -Parent $AppRoot
+        if ((Split-Path -Leaf $parent) -ieq "workspace_runtime") {
+            $resolved = [IO.Path]::GetFullPath($parent)
+        }
+        elseif ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
+            $resolved = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
+        }
+        elseif ((Split-Path -Leaf $AppRoot) -ieq "jazn_latka_master") {
+            $resolved = [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
+        }
+        else {
+            $resolved = [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
+        }
+    }
+
+    if ($modern) {
+        # The Windows launcher must agree with Python's ROOT-local policy.
+        # Reject both lexical escapes and Windows reparse-point redirects.
+        $rootFull = [IO.Path]::GetFullPath($AppRoot).TrimEnd([char[]]@([char]92, [char]47))
+        $prefix = $rootFull + [IO.Path]::DirectorySeparatorChar
+        if (-not $resolved.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "workspace_escapes_root"
+        }
+        foreach ($pathToCheck in @($rootFull, (Join-Path $rootFull "local_resources"))) {
+            $item = Get-Item -LiteralPath $pathToCheck -Force -ErrorAction Stop
+            if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "unsafe_root_workspace_redirect"
             }
-            return $resolved
         }
-        if ([IO.Path]::IsPathRooted($configured)) {
-            return [IO.Path]::GetFullPath($configured)
+        $relative = $resolved.Substring($prefix.Length)
+        $current = $rootFull
+        foreach ($segment in $relative.Split([char[]]@([char]92, [char]47),
+                                                [StringSplitOptions]::RemoveEmptyEntries)) {
+            $current = Join-Path $current $segment
+            if (Test-Path -LiteralPath $current) {
+                $item = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+                if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                    throw "unsafe_root_workspace_redirect"
+                }
+            }
         }
-        return [IO.Path]::GetFullPath((Join-Path $AppRoot $configured))
     }
-    $parent = Split-Path -Parent $AppRoot
-    if ((Split-Path -Leaf $parent) -ieq "workspace_runtime") { return [IO.Path]::GetFullPath($parent) }
-    if ((Split-Path -Leaf $parent) -in @("runtime_roots", "runtime-roots")) {
-        return [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $parent) "workspace_runtime"))
-    }
-    if ((Split-Path -Leaf $AppRoot) -ieq "jazn_latka_master") {
-        return [IO.Path]::GetFullPath((Join-Path $AppRoot "workspace_runtime"))
-    }
-    return [IO.Path]::GetFullPath((Join-Path $parent "workspace_runtime"))
+    return $resolved
 }
 
 function Assert-RuntimeSetIntegrity([string]$AppRoot, [string]$SetPath) {
