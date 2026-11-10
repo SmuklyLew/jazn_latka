@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3344,
+  "active_definition_count": 3345,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -8799,7 +8799,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 139
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_finalizer_loads_all_immutable_fields_from_pending_store": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8825,7 +8825,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 179
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_mcp_finalizer_schema_rejects_host_supplied_identity_fields": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8852,7 +8852,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 227
+      "line": 230
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_status_reads_runtime_write_readiness_from_live_ping": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8879,7 +8879,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 250
+      "line": 253
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_complete_host_contract_is_valid_intermediate_runtime_state": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8907,7 +8907,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 258
+      "line": 261
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_mcp_finalizer_schema_accepts_bounded_external_tool_evidence": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8933,7 +8933,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 291
+      "line": 294
     },
     "tests/test_chatgpt_mcp_two_phase_protocol.py::test_finalizer_forwards_external_tool_evidence_without_host_identity_fields": {
       "path": "tests/test_chatgpt_mcp_two_phase_protocol.py",
@@ -8960,7 +8960,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 304
+      "line": 307
     },
     "tests/test_chatgpt_memory_maintenance_contract.py::test_chatgpt_runbook_keeps_memory_attach_and_recovery_in_one_maintenance_window": {
       "path": "tests/test_chatgpt_memory_maintenance_contract.py",
@@ -37441,7 +37441,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 125
+      "line": 130
     },
     "tests/test_mcp_task_lifecycle_bounds.py::test_negative_task_ttl_is_rejected": {
       "path": "tests/test_mcp_task_lifecycle_bounds.py",
@@ -37462,7 +37462,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 154
     },
     "tests/test_mcp_task_principal_isolation.py::test_task_owner_is_persisted_and_isolation_survives_reopen": {
       "path": "tests/test_mcp_task_principal_isolation.py",
@@ -56261,7 +56261,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56284,7 +56285,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56309,7 +56311,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56332,7 +56335,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56353,7 +56357,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56378,7 +56383,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56399,7 +56405,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56421,7 +56428,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56444,7 +56452,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56465,7 +56474,8 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
@@ -56488,11 +56498,37 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 150
+    },
+    "tests/test_root_local_workspace_layout.py::test_root_token_memory_settings_uses_isolated_workspace_and_no_extra_write_authority": {
+      "path": "tests/test_root_local_workspace_layout.py",
+      "name": "test_root_token_memory_settings_uses_isolated_workspace_and_no_extra_write_authority",
+      "purpose": "Root token memory settings uses isolated workspace and no extra write authority",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 162
     },
     "tests/test_root_local_workspace_layout.py::test_windows_launcher_matches_python_for_modern_root": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56512,11 +56548,12 @@
       "targets": [
         "latka_jazn.core.acceptance_layout",
         "latka_jazn.core.runtime_root",
-        "latka_jazn.tools.application_shell.operator_paths"
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.memory_rebuild_app.settings"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 163
+      "line": 200
     },
     "tests/test_route_dispatcher_fallback_diagnostics.py::test_dispatcher_marks_unresolved_handler_as_typed_fallback": {
       "path": "tests/test_route_dispatcher_fallback_diagnostics.py",
