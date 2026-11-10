@@ -44,6 +44,24 @@ class CheckPage(QWizardPage):
         self.completeChanged.emit()
 
 
+def _provision_result_ok(command: str, result: dict, *, exit_code: int,
+                         native_winget: bool) -> bool:
+    """Validate the per-command contract; inspection is read-only evidence."""
+    if exit_code != 0:
+        return False
+    if native_winget:
+        return True
+    if command == "inspect":
+        return (
+            result.get("schema_version") == "jazn_jss_prerequisites/v1"
+            and isinstance(result.get("ready"), bool)
+            and isinstance(result.get("python_314_ready"), bool)
+            and isinstance(result.get("ollama_api_ready"), bool)
+            and isinstance(result.get("models"), list)
+        )
+    return result.get("ok") is True
+
+
 class SetupWizard(QWizard):
     def __init__(self, core: Controller, save: Callable[[Settings], None],
                  completed: Callable[[str], None], parent: QWidget | None = None):
@@ -601,8 +619,9 @@ class SetupWizard(QWizard):
             result = json.loads(self.provision_buffer.strip().splitlines()[-1])
         except (ValueError, TypeError, IndexError):
             result = {}
-        ok = exit_code == 0 and (
-            self.provision_native or result.get("ok") is True
+        ok = _provision_result_ok(
+            self.provision_command, result, exit_code=exit_code,
+            native_winget=self.provision_native,
         )
         if not ok:
             reason = self.core.redactor.text(
@@ -612,10 +631,22 @@ class SetupWizard(QWizard):
                            {"state": "failed", "error": reason, "returncode": exit_code})
         if self.provision_native and ok:
             result = {"state": "winget_completed_recheck_required"}
-        self.provision_result.setText(
-            ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
-            + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
-        )
+        if ok:
+            self.core.emit("setup:provision", "state",
+                           {"state": "succeeded", "error": None, "returncode": 0})
+        if ok and self.provision_command == "inspect":
+            self.provision_result.setText(
+                "Sprawdzono ROOT/.venv/Ollama (tylko odczyt) — "
+                + ("Python 3.14: gotowy" if result["python_314_ready"]
+                   else "Python 3.14: wymaga przygotowania")
+                + "; " + ("Ollama API: dostępne" if result["ollama_api_ready"]
+                          else "Ollama API: niedostępne")
+            )
+        else:
+            self.provision_result.setText(
+                ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
+                + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
+            )
         process, self.provision_process = self.provision_process, None
         if process is not None:
             process.deleteLater()

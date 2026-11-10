@@ -440,7 +440,7 @@ class OperatorWorkspace:
             category = "Monitoring usług" if warning else "Usługi opcjonalne" if key.startswith("probe:") else "Runtime" if key in {"status", "start", "stop", "restart"} else "Operacje"
             if category not in groups:
                 groups[category] = QTreeWidgetItem(self.problems, [category])
-            raw_stamp = value.get("finished") or value.get("started")
+            raw_stamp = value.get("finished") or value.get("started") or value.get("observed_at")
             try:
                 stamp = (datetime.fromtimestamp(raw_stamp, timezone.utc).astimezone().strftime("%H:%M:%S")
                          if isinstance(raw_stamp, (int, float)) and raw_stamp > 0 else "brak czasu")

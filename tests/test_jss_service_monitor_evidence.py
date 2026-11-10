@@ -120,6 +120,7 @@ def test_offline_probe_creates_single_operator_problem_and_recovery(window, monk
     assert "monitor:ollama" in workspace.warnings
     assert workspace.problems.topLevelItemCount() == 1
     assert "Problemy: 1" in workspace.problem_summary.text()
+    assert workspace.problems.topLevelItem(0).child(0).text(2) != "brak czasu"
 
     monkeypatch.setattr(probes, "ollama", _ollama)
     job = core.probe("ollama", observe_only=True)
