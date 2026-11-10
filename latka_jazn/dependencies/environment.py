@@ -458,6 +458,12 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
                 "reexec_python": None, "private_python": private,
             }
         if not private["current"]:
+            # Windows venv redirectors must never cause repeated handoff.
+            if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
+                return {
+                    "ok": False, "state": "private_python_handoff_not_established",
+                    "reexec_python": None, "private_python": private,
+                }
             return {
                 "ok": True, "state": "private_python_handoff",
                 "reexec_python": private["python_executable"],
