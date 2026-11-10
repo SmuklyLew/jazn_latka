@@ -401,10 +401,20 @@ class SetupWizard(QWizard):
             return  # A process_start_failed event already owns the failure.
         self._row_read()
         self._row_read_stderr()
-        try:
-            payload = json.loads(self._row_output.strip())
-        except (TypeError, ValueError):
-            payload = {}
+        # An installer may emit progress before its final machine summary.
+        # Never infer success from an exit code or an arbitrary log line.
+        payload: dict = {}
+        for line in reversed(self._row_output.splitlines()):
+            line = line.strip()
+            if not (line.startswith("{") and line.endswith("}")):
+                continue
+            try:
+                candidate = json.loads(line)
+            except (TypeError, ValueError):
+                continue
+            if isinstance(candidate, dict) and type(candidate.get("ok")) is bool:
+                payload = candidate
+                break
         process, self.provision_process = self.provision_process, None
         if process is not None:
             process.deleteLater()
@@ -463,6 +473,7 @@ class SetupWizard(QWizard):
             self.retry()
         else:
             self._provisional_mcp_python_setting = resolved
+            self.retry()  # Verify the selected provisional interpreter, before saving.
         self.core.emit(
             "setup:dependency-row", "state",
             {"state": "succeeded", "error": None, "returncode": 0},
@@ -591,8 +602,14 @@ class SetupWizard(QWizard):
         except (ValueError, TypeError, IndexError):
             result = {}
         ok = exit_code == 0 and (
-            self.provision_native or result.get("ok", True) is True
+            self.provision_native or result.get("ok") is True
         )
+        if not ok:
+            reason = self.core.redactor.text(
+                str(result.get("error_code") or result.get("state") or "invalid_provision_result")
+            )[:120]
+            self.core.emit("setup:provision", "state",
+                           {"state": "failed", "error": reason, "returncode": exit_code})
         if self.provision_native and ok:
             result = {"state": "winget_completed_recheck_required"}
         self.provision_result.setText(

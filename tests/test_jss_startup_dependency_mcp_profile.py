@@ -103,3 +103,32 @@ def test_optional_mcp_failures_never_block_gui_setup(
     assert len(rows) == 6
     assert all(item["state"] == "OPTIONAL_MISSING" and item["required"] is False
                for item in rows)
+
+
+def test_provisional_mcp_python_is_checked_before_settings_commit(monkeypatch, tmp_path):
+    from tools.jazn_run_studio import requirements_worker
+    from latka_jazn.dependencies import common
+    from latka_jazn.tools import package_integrity
+    from latka_jazn.core import system_config
+
+    (tmp_path / "pyproject.toml").write_text(
+        "[project]\nname='test'\nrequires-python='>=3.12'\n", encoding="utf-8")
+    monkeypatch.setattr(common, "resolve_profile_requirements", lambda *_a: [])
+    monkeypatch.setattr(common, "inspect_current_requirements", lambda *_a: [])
+    monkeypatch.setattr(package_integrity, "verify_package_integrity_manifest",
+                        lambda *_a: {"ok": True, "errors": []})
+    monkeypatch.setattr(system_config, "read_system_config", lambda *_a: {})
+    monkeypatch.setattr(core, "load_settings",
+                        lambda *_a: (Settings(mcp_python=sys.executable), None))
+    seen = []
+    def check(python, root):
+        seen.append(python)
+        return {name: True for name in MODULES}
+    monkeypatch.setattr(core, "mcp_dependency_preflight", check)
+    candidate = str(Path(sys.executable).resolve())
+    report = requirements_worker.inspect_requirements(
+        tmp_path, mcp_python_override=candidate)
+    assert seen == [candidate]
+    assert report["mcp"]["ready"] is True
+    assert all(row["state"] == "PASS" for row in report["rows"]
+               if row["name"].startswith("MCP: "))

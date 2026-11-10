@@ -85,6 +85,15 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
             return "warn", "Wyszukiwanie dostępne, ciągłość niepotwierdzona"
         return "warn", "Brak dowodu recall i ciągłości MEMORY"
 
+    if key == "ollama_process":
+        if evidence.get("process_observed") is not True:
+            return "warn", "Nie potwierdzono odczytu procesu"
+        if evidence.get("process_running") is True:
+            return "good", "Proces Ollama włączony (API sprawdzane osobno)"
+        if evidence.get("process_running") is False:
+            return "warn", "Proces Ollama wyłączony"
+        return "warn", "Nieznany stan procesu"
+
     if key == "ollama":
         proof_age = evidence.get("generation_evidence_age_seconds")
         if (proof_age is not None and (
@@ -109,7 +118,8 @@ class ServiceStatusDialog(QDialog):
     SERVICES = (
         ("server", "Serwer Jaźni / daemon"),
         ("runtime", "Runtime rozmów"),
-        ("ollama", "Ollama i wybrany model"),
+        ("ollama_process", "Ollama — proces systemowy"),
+        ("ollama", "Ollama — API i wybrany model"),
         ("mcp", "MCP lokalne"),
         ("mcp_https", "MCP HTTPS / OAuth"),
         ("supervisor", "Supervisor"),
@@ -222,6 +232,7 @@ class ServiceStatusDialog(QDialog):
         elif kind == "probe" and isinstance(value, dict):
             service = {
                 "gateway": "mcp", "ollama": "ollama",
+                "ollama_process": "ollama_process",
                 "cloudflare": "mcp_https",
             }.get(str(value.get("service", "")))
             if service:
@@ -234,6 +245,7 @@ class ServiceStatusDialog(QDialog):
                 "probe:gateway": ("mcp",),
                 "probe:cloudflare": ("mcp_https",),
                 "probe:ollama": ("ollama",),
+                "probe:ollama_process": ("ollama_process",),
                 "probe:ollama_generate": ("ollama",),
             }.get(key, ())
             # A completed optional probe can truthfully report "not ready"

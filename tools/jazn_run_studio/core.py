@@ -590,7 +590,13 @@ class Controller:
                     value["error"] = self.redactor.text(str(value["error"]))
                 if value.get("state") == "failed":
                     reason = str(value.get("error") or "unspecified")[:160]
-                    self.logs.setdefault(key, deque(maxlen=2500)).append("BŁĄD operacji: " + reason)
+                    # Preserve the selected probe transcript; report diagnostics separately.
+                    if key.startswith("probe:"):
+                        entry = "[" + key + "] BŁĄD operacji: " + reason
+                        self.logs.setdefault("studio:errors", deque(maxlen=2500)).append(entry)
+                        self.critical_events.put(("studio:errors", "log", entry))
+                    else:
+                        self.logs.setdefault(key, deque(maxlen=2500)).append("BŁĄD operacji: " + reason)
                     try:
                         write_error_record(self.root, key, value, self.redactor)
                     except (OSError, StudioError):
@@ -664,8 +670,11 @@ class Controller:
                 return current
             job = self._reserve("setup:requirements")
             self.setup_observation = {}
-            self._launch(job, [python_executable(self.settings), "-X", "utf8", "-m",
-                               "tools.jazn_run_studio.requirements_worker"], 600)
+            argv = [python_executable(self.settings), "-X", "utf8", "-m",
+                    "tools.jazn_run_studio.requirements_worker"]
+            if self.settings.mcp_python:
+                argv.extend(("--mcp-python", self.settings.mcp_python))
+            self._launch(job, argv, 600)
             return job
 
     def git_status(self) -> Job:
@@ -775,10 +784,11 @@ class Controller:
         """
         from . import probes
         settings = self.settings
-        if observe_only and key not in {"ollama", "gateway", "cloudflare"}:
+        if observe_only and key not in {"ollama", "ollama_process", "gateway", "cloudflare"}:
             raise StudioError("Monitor może odczytywać tylko usługi bez generowania")
         fingerprint = sha256(json.dumps([asdict(settings), observe_only], sort_keys=True).encode()).hexdigest()
         calls = {"ollama": lambda: probes.ollama(settings.model),
+                 "ollama_process": lambda: probes.ollama_process(settings.ollama),
                  "ollama_generate": lambda: probes.ollama_generation(settings.model),
                  "gateway": lambda: probes.gateway(settings.mcp_port),
                  "cloudflare": lambda: probes.cloudflare(settings.cloudflare_url),
@@ -816,6 +826,9 @@ class Controller:
                             self.ollama_generation_proof = None
                         proof = self.ollama_generation_proof
                     evidence = retain_ollama_generation(evidence, proof, time.monotonic())
+                if key == "ollama_process":
+                    self._monitor_condition(key, "process_not_running"
+                                            if evidence.get("process_running") is False else None)
                 if key in {"ollama", "gateway", "cloudflare"}:
                     issue = (
                         "api_unreachable" if evidence.get("endpoint_reachable") is False
@@ -855,7 +868,7 @@ class Controller:
                 if key in {"ollama", "ollama_generate"}:
                     with self.lock:
                         self.ollama_generation_proof = None
-                if key in {"ollama", "gateway", "cloudflare"}:
+                if key in {"ollama", "ollama_process", "gateway", "cloudflare"}:
                     self._monitor_condition(key, code)
                 if observe_only:
                     # No red terminal failure for an optional, unstarted

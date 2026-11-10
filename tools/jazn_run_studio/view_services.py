@@ -258,6 +258,7 @@ class ServiceViewMixin:
                     self.core.start_action("status")
                     if self.supervisor_observation.get("active") is not False:
                         self.core.start_action("supervisor")
+                    self.core.probe("ollama_process", observe_only=True)
                     self.core.probe("ollama", observe_only=True)
                     self.core.probe("gateway", observe_only=True)
                     if self.core.settings.cloudflare_url:

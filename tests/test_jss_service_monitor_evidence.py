@@ -164,3 +164,36 @@ def test_dialog_immediately_discards_old_model_proof(window):
     panel.invalidate_ollama_model()
     assert "Niezweryfikowany" in panel.indicators["ollama"][1].text()
     panel.close()
+
+
+def test_ollama_process_probe_is_passive_and_reports_stopped(window, monkeypatch):
+    calls = []
+    def inventory(path):
+        calls.append(path)
+        return {"service": "ollama_process", "process_observed": True,
+                "process_running": False, "program_installed": True}
+    monkeypatch.setattr(probes, "ollama_process", inventory)
+    job = window.core.probe("ollama_process", observe_only=True)
+    assert job.done.wait(5)
+    assert job.state == "succeeded"
+    values = [value for key, kind, value in list(window.core.events.queue)
+              if key == "probe:ollama_process" and kind == "probe"]
+    assert values[-1]["monitor_only"] is True
+    assert values[-1]["process_running"] is False
+    assert calls == [window.core.settings.ollama]
+    assert "monitor:ollama_process" in window.core.logs
+
+
+def test_process_inventory_on_off_is_independent_from_api(window, monkeypatch):
+    import subprocess
+    monkeypatch.setattr(probes.sys, "platform", "win32")
+    monkeypatch.setattr(probes.subprocess, "run",
+                        lambda *a, **k: subprocess.CompletedProcess(
+                            a[0], 0, '"ollama.exe","340","Console","1","100 K"\\n', ""))
+    result = probes.ollama_process()
+    assert result["process_running"] is True
+    assert result["generation_verified"] is False
+    monkeypatch.setattr(probes.subprocess, "run",
+                        lambda *a, **k: subprocess.CompletedProcess(
+                            a[0], 0, '"other.exe","340","Console","1","100 K"\\n', ""))
+    assert probes.ollama_process()["process_running"] is False

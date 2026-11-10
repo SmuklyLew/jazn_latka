@@ -94,7 +94,17 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
     panel = ServiceStatusDialog(host, lambda: host.guard(host.refresh_services))
     assert not panel.isModal()
     assert host.refresh_count == 0
-    assert len(panel.indicators) == 7
+    assert len(panel.indicators) == 8
+    panel.observe("probe:ollama_process", "probe", {
+        "service": "ollama_process", "process_observed": True,
+        "process_running": True,
+    })
+    assert "włączony" in panel.indicators["ollama_process"][1].text()
+    panel.observe("probe:ollama_process", "probe", {
+        "service": "ollama_process", "process_observed": True,
+        "process_running": False,
+    })
+    assert "wyłączony" in panel.indicators["ollama_process"][1].text()
 
     panel.observe("status", "evidence", _runtime_evidence())
     assert "Działa" in panel.indicators["runtime"][1].text()

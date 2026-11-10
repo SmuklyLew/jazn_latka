@@ -6,6 +6,10 @@ from http.client import HTTPException
 import os
 import re
 import ssl
+import csv
+import subprocess
+import shutil
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
@@ -71,6 +75,39 @@ def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict
     return {"service": "ollama", "endpoint_reachable": True, "models": names,
             "selected_model": model, "selected_model_present": model in names if model else None,
             "generation_verified": False, "accepted_visible_turn": False}
+
+
+def ollama_process(executable: str = "") -> dict[str, Any]:
+    """Read-only OS process inventory; not proof of a reachable API or model."""
+    if sys.platform == "win32":
+        system32 = Path(os.environ.get("SystemRoot", "C:\\Windows")) / "System32" / "tasklist.exe"
+        command = [str(system32), "/FO", "CSV", "/NH"]
+    else:
+        command = ["ps", "-A", "-o", "comm="]
+    result = subprocess.run(
+        command, capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=6, check=False,
+    )
+    if result.returncode != 0:
+        raise OSError("ollama_process_inventory_failed")
+    if len(result.stdout) > 1_048_576:
+        raise OSError("ollama_process_inventory_too_large")
+    if sys.platform == "win32":
+        names = [row[0].strip().casefold()
+                 for row in csv.reader(result.stdout.splitlines()) if row]
+    else:
+        names = [Path(line.strip()).name.casefold()
+                 for line in result.stdout.splitlines() if line.strip()]
+    count = sum(n in {"ollama.exe", "ollama app.exe", "ollama"} for n in names)
+    installed = bool((executable and Path(executable).is_file())
+                     or shutil.which("ollama"))
+    return {
+        "service": "ollama_process", "process_observed": True,
+        "process_running": count > 0, "process_count": count,
+        "program_installed": installed, "api_verified": False,
+        "generation_verified": False, "accepted_visible_turn": False,
+        "observation_basis": "os_process_name_inventory",
+    }
 
 
 def ollama_generation(model: str) -> dict[str, Any]:

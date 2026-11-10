@@ -90,5 +90,6 @@ def test_problem_activation_opens_matching_source_and_full_export(window, monkey
     monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *args: (str(target), ""))
     window.workspace.export_output()
     assert target.read_text(encoding="utf-8") == "[probe:ollama] " + full_line
+    assert any("connection_refused" in line for line in window.core.logs["studio:errors"])
     assert full_line in str(window.core.report())
     assert full_line in window.logs["probe:ollama"].toPlainText()
