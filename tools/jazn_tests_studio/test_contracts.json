@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3342,
+  "active_definition_count": 3344,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -36040,10 +36040,12 @@
       "markers": [],
       "assertion_count": 10,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 85
     },
     "tests/test_mcp_http_dependency_profile.py::test_mcp_http_profile_maps_public_ingress_dependencies_without_promoting_core": {
       "path": "tests/test_mcp_http_dependency_profile.py",
@@ -56258,11 +56260,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
     },
     "tests/test_root_local_workspace_layout.py::test_modern_managed_layout_is_root_local": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56280,11 +56283,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 41
     },
     "tests/test_root_local_workspace_layout.py::test_modern_explicit_escape_is_denied": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56304,11 +56308,12 @@
       ],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 49
     },
     "tests/test_root_local_workspace_layout.py::test_modern_absolute_external_override_cannot_adopt_old_marker": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56326,11 +56331,12 @@
       ],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 56
     },
     "tests/test_root_local_workspace_layout.py::test_root_local_explicit_workspace_supported": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56346,11 +56352,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 67
     },
     "tests/test_root_local_workspace_layout.py::test_modern_redirected_workspace_or_resources_is_rejected": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56370,11 +56377,12 @@
       ],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 77
     },
     "tests/test_root_local_workspace_layout.py::test_bare_legacy_root_keeps_existing_layout": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56390,11 +56398,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 92
+      "line": 93
     },
     "tests/test_root_local_workspace_layout.py::test_modern_acceptance_runtime_is_inside_local_settings": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56411,11 +56420,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 103
     },
     "tests/test_root_local_workspace_layout.py::test_nested_tpa_acceptance_base_is_owned_and_external_base_denied": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56433,11 +56443,56 @@
       ],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 114
+      "line": 115
+    },
+    "tests/test_root_local_workspace_layout.py::test_nested_acceptance_operator_can_write_only_under_its_owned_root": {
+      "path": "tests/test_root_local_workspace_layout.py",
+      "name": "test_nested_acceptance_operator_can_write_only_under_its_owned_root",
+      "purpose": "Nested acceptance operator can write only under its owned root",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 131
+    },
+    "tests/test_root_local_workspace_layout.py::test_nested_acceptance_operator_cannot_redirect_to_arbitrary_tree": {
+      "path": "tests/test_root_local_workspace_layout.py",
+      "name": "test_nested_acceptance_operator_cannot_redirect_to_arbitrary_tree",
+      "purpose": "Nested acceptance operator cannot redirect to arbitrary tree",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
     },
     "tests/test_root_local_workspace_layout.py::test_windows_launcher_matches_python_for_modern_root": {
       "path": "tests/test_root_local_workspace_layout.py",
@@ -56456,11 +56511,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.acceptance_layout",
-        "latka_jazn.core.runtime_root"
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 162
     },
     "tests/test_route_dispatcher_fallback_diagnostics.py::test_dispatcher_marks_unresolved_handler_as_typed_fallback": {
       "path": "tests/test_route_dispatcher_fallback_diagnostics.py",
