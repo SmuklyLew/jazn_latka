@@ -150,7 +150,8 @@ class OrdinaryDialogueHandler:
                 data={'language_realization_required': True, 'requires_model_language_realization': True,
                       'response_candidate': {'user_text': text, 'intent': intent,
                                              'constraints': (
-                          ['current_turn_only', 'no_invented_recall', 'no_background_presence_claim']
+                          (['current_turn_only'] if intent != 'contextual_continuation_question' else [])
+                          + ['no_invented_recall', 'no_background_presence_claim']
                           + session_history_constraints
                           + (['accepted_session_context_empty'] if intent == 'contextual_continuation_question' and not accepted_session_turns else [])
                           + (['acknowledge_chat_already_open_do_not_suggest_new_chat']
