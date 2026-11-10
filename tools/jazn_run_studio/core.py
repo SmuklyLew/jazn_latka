@@ -327,7 +327,12 @@ def python_executable(settings: Settings) -> str:
         return explicit
     if getattr(sys, "frozen", False):
         raise StudioError("Wersja EXE wymaga ścieżki do Pythona w ustawieniach lub JAZN_STUDIO_PYTHON")
-    return sys.executable
+    from latka_jazn.dependencies.private_python import selected_private_python
+    try:
+        private = selected_private_python(Path(__file__).resolve().parents[2])
+    except RuntimeError as exc:
+        raise StudioError("Prywatny interpreter Jaźni jest niegotowy: " + str(exc)) from exc
+    return private or sys.executable
 
 
 def executable(explicit: str, name: str) -> str:
