@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.3",
-  "active_definition_count": 3332,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.4",
+  "active_definition_count": 3341,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -68797,6 +68797,202 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 180
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_versioned_roots_never_adopt_sibling_workspace": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_versioned_roots_never_adopt_sibling_workspace",
+      "purpose": "Modern versioned roots never adopt sibling workspace",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_managed_layout_is_root_local": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_managed_layout_is_root_local",
+      "purpose": "Modern managed layout is root local",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_explicit_escape_is_denied": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_explicit_escape_is_denied",
+      "purpose": "Modern explicit escape is denied",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_absolute_external_override_cannot_adopt_old_marker": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_absolute_external_override_cannot_adopt_old_marker",
+      "purpose": "Modern absolute external override cannot adopt old marker",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_root_local_explicit_workspace_supported": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_root_local_explicit_workspace_supported",
+      "purpose": "Root local explicit workspace supported",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_redirected_workspace_or_resources_is_rejected": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_redirected_workspace_or_resources_is_rejected",
+      "purpose": "Modern redirected workspace or resources is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_bare_legacy_root_keeps_existing_layout": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_bare_legacy_root_keeps_existing_layout",
+      "purpose": "Bare legacy root keeps existing layout",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_modern_acceptance_runtime_is_inside_local_settings": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_modern_acceptance_runtime_is_inside_local_settings",
+      "purpose": "Modern acceptance runtime is inside local settings",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_v1274_root_local_workspace_layout.py::test_windows_launcher_matches_python_for_modern_root": {
+      "path": "tests/test_v1274_root_local_workspace_layout.py",
+      "name": "test_windows_launcher_matches_python_for_modern_root",
+      "purpose": "Windows launcher matches python for modern root",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.acceptance_layout",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
