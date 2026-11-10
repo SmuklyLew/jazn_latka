@@ -39,13 +39,17 @@ def resolve_acceptance_layout(system_root: Path, *, base: Path | None = None,
     from latka_jazn.core.local_settings_layout import (
         local_settings_enabled, resolve_local_settings_layout,
     )
+    # A prepared ROOT needs a verified local-settings layout even when the
+    # test runner supplies a nested acceptance base. Legacy explicit external
+    # bases intentionally retain their historical behavior.
+    modern = (system / "local_resources").is_dir()
     local_layout = (resolve_local_settings_layout(system)
-                    if base is None and local_settings_enabled(system)
+                    if (base is None or modern) and local_settings_enabled(system)
                     else None)
     parent = (Path(base).expanduser() if base is not None
               else local_layout.acceptance if local_layout is not None
               else Path.home() / ".jazn" / "acceptance" / identity).resolve()
-    if (system / "local_resources").is_dir():
+    if modern:
         # Fresh installations do not allow even temporary TPA runtimes to
         # escape ROOT.  They live under a verified private acceptance tree.
         if (local_layout is None or not (
