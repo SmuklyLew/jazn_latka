@@ -48,7 +48,8 @@ def main() -> int:
         runtime_root, operator_root, memory_root = output / "runtime", output / "operator", output / "memory"
     os.environ.update(JAZN_OPERATOR_STATE_ROOT=str(operator_root),
                       JAZN_RUNTIME_WORKSPACE_DIR=str(runtime_root),
-                      JAZN_MEMORY_ROOT=str(memory_root), JAZN_MEMORY_MODE="off")
+                      JAZN_MEMORY_ROOT=str(memory_root), JAZN_MEMORY_MODE="off",
+                      JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated")
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QScrollArea
