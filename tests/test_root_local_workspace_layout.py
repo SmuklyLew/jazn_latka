@@ -118,6 +118,7 @@ def test_nested_tpa_acceptance_base_is_owned_and_external_base_denied(tmp_path, 
     monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
     monkeypatch.delenv("JAZN_MEMORY_ROOT", raising=False)
     parent = acceptance_temp_parent(root)
+    assert parent is not None
     assert parent == root / ".settings_local" / "acceptance"
     nested = parent / "jazn_tpa_fixture"
     nested.mkdir()
