@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127",
-  "active_definition_count": 3317,
+  "active_definition_count": 3319,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -52833,6 +52833,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 55
+    },
+    "tests/test_private_python_handoff_guard.py::test_handoff_guard_prevents_recursive_reexec": {
+      "path": "tests/test_private_python_handoff_guard.py",
+      "name": "test_handoff_guard_prevents_recursive_reexec",
+      "purpose": "Handoff guard prevents recursive reexec",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_private_python_handoff_guard.py::test_studio_launcher_rejects_repeated_handoff_before_reexec": {
+      "path": "tests/test_private_python_handoff_guard.py",
+      "name": "test_studio_launcher_rejects_repeated_handoff_before_reexec",
+      "purpose": "Studio launcher rejects repeated handoff before reexec",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
     },
     "tests/test_private_python_launchers.py::test_windows_launcher_prefers_private_venv_before_host_python": {
       "path": "tests/test_private_python_launchers.py",
