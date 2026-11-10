@@ -81,6 +81,18 @@ def default_runtime_workspace_path(root: Path) -> Path:
     """
 
     runtime_root = Path(root).expanduser().resolve()
+    # A prepared modern SYSTEM owns its workspace within its own ROOT.  Do not
+    # silently adopt the sibling workspace of another checkout/daemon.
+    resources = runtime_root / "local_resources"
+    if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
+        raise ValueError("unsafe_root_local_resources_link")
+    if resources.is_dir():
+        candidate = (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+        if candidate == runtime_root or not candidate.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+        return candidate
+    # Bare historical roots retain their legacy resolution until an explicit,
+    # identity-verified operator migration; never move their state implicitly.
     parent = runtime_root.parent
     if parent.name.casefold() == WORKSPACE_RUNTIME_DIR_NAME.casefold():
         return parent.resolve()
@@ -138,7 +150,14 @@ def workspace_runtime_path(
             raise ValueError("workspace_escapes_root")
         return candidate
     candidate = Path(raw_text).expanduser()
-    return candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
+    resolved = candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
+    # New/prepared installs are ROOT-contained even with an explicit override.
+    # Old bare roots remain readable as before; refusing an external override
+    # here never removes or migrates any old workspace, marker, or MEMORY.
+    if (runtime_root / "local_resources").is_dir():
+        if resolved == runtime_root or not resolved.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+    return resolved
 
 
 def runtime_state_path(root: Path, configured: str | Path) -> Path:
