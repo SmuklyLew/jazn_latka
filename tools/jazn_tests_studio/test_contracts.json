@@ -32657,7 +32657,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 40
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_dashboard_has_no_mutating_start_shortcuts": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -32672,7 +32672,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 53
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_absent_optional_mcp_is_observed_without_gui_error_or_replay": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -32689,7 +32689,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 64
     },
     "tests/test_jss_root_local_dependencies.py::test_fresh_root_local_resources_selects_root_venv": {
       "path": "tests/test_jss_root_local_dependencies.py",
@@ -33231,9 +33231,7 @@
       "purpose": "Generation evidence remains green across passive polls but expires",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 6,
       "expected_exceptions": [],
@@ -33248,9 +33246,7 @@
       "purpose": "Live passive probe preserves proof without generating",
       "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 10,
       "expected_exceptions": [],
@@ -33265,9 +33261,7 @@
       "purpose": "Offline probe creates single operator problem and recovery",
       "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 13,
       "expected_exceptions": [],
@@ -33282,9 +33276,7 @@
       "purpose": "Failed supervisor stays visible in problems and output",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 4,
       "expected_exceptions": [],
@@ -33299,9 +33291,7 @@
       "purpose": "Dialog immediately discards old model proof",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -33316,9 +33306,7 @@
       "purpose": "Ollama process probe is passive and reports stopped",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 6,
       "expected_exceptions": [],
@@ -33331,13 +33319,11 @@
       "path": "tests/test_jss_service_monitor_evidence.py",
       "name": "test_process_inventory_on_off_is_independent_from_api",
       "purpose": "Process inventory on off is independent from api",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
