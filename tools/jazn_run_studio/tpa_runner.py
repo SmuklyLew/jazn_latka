@@ -18,7 +18,7 @@ from typing import Any
 from PySide6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, Signal
 
 from latka_jazn.tools.application_shell.operator_paths import operator_file
-from latka_jazn.core.acceptance_layout import resolve_acceptance_layout
+from latka_jazn.core.acceptance_layout import acceptance_temp_parent, resolve_acceptance_layout
 from .core import Redactor
 from .local_acceptance import scope_version
 
@@ -108,7 +108,7 @@ class SafeTPARunner(QObject):
         self.reason = ""
         self.output = ""
         self.started = datetime.now(timezone.utc).isoformat()
-        self.tmp = tempfile.TemporaryDirectory(prefix="jazn_tpa_")
+        self.tmp = tempfile.TemporaryDirectory(prefix="jazn_tpa_", dir=acceptance_temp_parent(self.root))
         isolated = Path(self.tmp.name)
         try:
             child_environment = isolated_environment(isolated, self.root)
