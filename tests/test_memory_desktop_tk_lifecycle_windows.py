@@ -70,7 +70,10 @@ def test_two_windows_release_owned_callbacks_without_gc(
                 _exercise_pages(app, root)
             else:
                 _exercise_actions(app)
-            scheduled = {app._updates_after_id, app.dialogs._drain_after_id} - {None}
+            scheduled = {
+                timer for timer in (app._updates_after_id, app.dialogs._drain_after_id)
+                if timer is not None
+            }
             assert len(scheduled) == 2
         finally:
             # Deliberately bypass WM_DELETE_WINDOW as existing tests do.
