@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127",
-  "active_definition_count": 3314,
+  "active_definition_count": 3317,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -52833,6 +52833,58 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 55
+    },
+    "tests/test_private_python_launchers.py::test_windows_launcher_prefers_private_venv_before_host_python": {
+      "path": "tests/test_private_python_launchers.py",
+      "name": "test_windows_launcher_prefers_private_venv_before_host_python",
+      "purpose": "Windows launcher prefers private venv before host python",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_private_python_launchers.py::test_posix_launcher_prefers_private_venv_before_host_python": {
+      "path": "tests/test_private_python_launchers.py",
+      "name": "test_posix_launcher_prefers_private_venv_before_host_python",
+      "purpose": "Posix launcher prefers private venv before host python",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_private_python_launchers.py::test_optional_mcp_and_tk_probes_never_promote_core_readiness": {
+      "path": "tests/test_private_python_launchers.py",
+      "name": "test_optional_mcp_and_tk_probes_never_promote_core_readiness",
+      "purpose": "Optional mcp and tk probes never promote core readiness",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_private_python_selection.py::test_absent_private_environment_keeps_legacy_selector": {
       "path": "tests/test_private_python_selection.py",
