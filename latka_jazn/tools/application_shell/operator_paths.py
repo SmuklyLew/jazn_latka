@@ -75,7 +75,21 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
             allow_acceptance_operator
             and local_raw.is_relative_to(authorized_acceptance)
         )
-        if not (ordinary or acceptance):
+        # An explicitly selected ROOT-local runtime workspace may itself
+        # live inside .settings_local/acceptance during an isolated test.
+        # Only these two exact Memory Rebuild sidecars are exceptions; the
+        # parent directory is never granted general operator-write access.
+        memory_settings = (
+            allow_memory_settings and not directory and target == local_raw
+            and any(
+                local_raw in {
+                    workspace / "memory_rebuild_settings.json",
+                    workspace / "memory_rebuild_settings.json.tmp",
+                }
+                for workspace in workspaces
+            )
+        )
+        if not (ordinary or acceptance or memory_settings):
             raise OperatorPathError(
                 "Zapis operatora poza autoryzowanym poddrzewem"
             )
