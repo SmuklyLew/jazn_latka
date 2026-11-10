@@ -137,7 +137,7 @@ class ChatClient:
                             self.receive(payload)
                     except (OSError, ValueError, subprocess.SubprocessError):
                         job.error = "chat_protocol_error"
-                        self.core.emit("chat", "chat_state", "Błąd transportu. Zachowano request_id; użyj Wznów wynik.")
+                        self._emit_transport_protocol_error()
                         job.cancel.set()
                 thread = threading.Thread(target=reader, daemon=True)
                 thread.start()
@@ -166,8 +166,37 @@ class ChatClient:
                 job.finished = time.time()
                 job.done.set()
                 self.core.emit("chat", "state", job.snapshot())
-                self.core.emit("chat", "chat_state", "Transport zamknięty. Nierozstrzygnięte żądanie zachowano do wznowienia.")
+                self._emit_transport_closed(failed=bool(job.error))
         threading.Thread(target=worker, daemon=True).start()
+
+    def _emit_transport_protocol_error(self) -> None:
+        """A protocol failure is not evidence of a request when none is pending."""
+        with self.lock:
+            pending = self.pending is not None
+        message = (
+            "Błąd transportu. Zachowano request_id; użyj Wznów wynik."
+            if pending else
+            "Błąd transportu bez aktywnego żądania. Brak request_id do wznowienia."
+        )
+        self.core.emit("chat", "chat_state", message)
+
+    def _emit_transport_closed(self, *, failed: bool) -> None:
+        """Report pending/accepted/idle state without replay or checkpoint mutation."""
+        with self.lock:
+            pending = self.pending
+            awaiting_gui_ack = bool(pending and self._awaiting_gui_ack == pending)
+        if awaiting_gui_ack:
+            message = (
+                "Transport zamknięty. Zaakceptowany wynik oczekuje na "
+                "potwierdzenie w Studio; zachowano request_id."
+            )
+        elif pending:
+            message = "Transport zamknięty. Nierozstrzygnięte żądanie zachowano do wznowienia."
+        elif failed:
+            message = "Transport zamknięty z błędem. Brak oczekującego żądania do wznowienia."
+        else:
+            message = "Transport zamknięty. Brak nierozstrzygniętego żądania w tej sesji."
+        self.core.emit("chat", "chat_state", message)
 
     def send(self, message: str) -> str:
         self._require_same_endpoint()
