@@ -18,9 +18,25 @@ i historycznymi testami, nie kodem staging w workspace.
    domyślnie otrzymuje własny `$ROOTDIR/workspace_runtime`.
    Nigdy nie adopuje automatycznie PID, MEMORY, sesji ani heartbeat
    zapisanych wcześniej w wspólnym katalogu rodzeństwa.
-4. Pozostałe historyczne/host-managed ROOT zachowują swoje dotychczasowe
-   reguły kompatybilności. Zmiana domyślnej ścieżki nie przenosi
-   istniejących plików i nie oznacza gotowości daemona.
+4. **V127.4 — nowe/przygotowane ROOT** (katalog `local_resources/`
+   obecny w wydaniu) domyślnie używają wyłącznie
+   `$ROOTDIR/workspace_runtime`, również gdy ROOT jest nazwany wersją lub
+   znajduje się pod `runtime_roots/`. Dwa ROOT mają dwa odrębne markery,
+   tokeny, sesje i katalogi runtime. Jawny override
+   `JAZN_RUNTIME_WORKSPACE_DIR` w nowym ROOT musi wskazywać fizycznie pod
+   tym samym ROOT; absolutne ścieżki zewnętrzne, `..`, symlinki i junctions
+   wyprowadzające katalog poza ROOT są odrzucane.
+5. **Historyczne ROOT bez `local_resources/`** zachowują reguły
+   kompatybilności, również dawny zewnętrzny workspace. Zmiana kodu
+   nie oznacza automatycznej migracji i nigdy nie przenosi prywatnych
+   danych, markerów, tokenów ani aktywnych procesów.
+6. Istniejąca instalacja korzystająca z zewnętrznego workspace
+   wymaga **jawnego, odrębnego planu migracji operatorskiej**. Nie wolno
+   po prostu zmienić ENV i uruchomić tego samego daemona: przed przenosinami
+   należy potwierdzić root, instancję, finalizacje i zamknięcie daemona,
+   wykonać zweryfikowaną kopię bezpieczeństwa i skontrolować ownership
+   SQLite/WAL/SHM. Nowy ROOT ma odmawiać użycia starego zewnętrznego
+   workspace, zamiast przejmować go na podstawie samej ścieżki.
 
 ## Izolowany odbiór operatorski
 

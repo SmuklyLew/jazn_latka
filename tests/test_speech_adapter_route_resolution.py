@@ -16,6 +16,9 @@ def config(tmp_path, monkeypatch):
                        "JAZN_ASSUME_CHATGPT_HOST":"0", "JAZN_ALLOW_PAID_OPENAI":"0",
                        "JAZN_MODEL_GUIDED_SPEECH":"1", "JAZN_LLM_ROUTE_SKIP_LOCAL_PROBE":"0"}.items():
         monkeypatch.setenv(key,value)
+    # A real JSS/Ollama model configured in the parent shell is not part of this contract.
+    monkeypatch.delenv("JAZN_OLLAMA_MODEL", raising=False)
+    monkeypatch.delenv("JAZN_LOCAL_LLM_MODEL", raising=False)
     return JaznConfig(root=tmp_path, model_adapter="null", llm_route_mode="auto",
                       local_model_name="", allow_network=False)
 

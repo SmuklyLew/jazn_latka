@@ -7,9 +7,9 @@ from .local_acceptance import CATALOG, STUDIO_CATALOG
 # command, private database or test expression is interpolated into a shell.
 REGRESSIONS = {
     "gui-daemon": ("tests/test_jazn_run_studio_daemon_routing.py",),
-    "ollama-two-turns": ("tests/test_jazn_run_studio_chat_contract.py",),
+    "ollama-two-turns": ("tests/test_jazn_run_studio_chat_contract.py", "tests/test_tpa_local_ollama_endpoint.py", "tests/test_runtime_time_routing.py"),
     "chat-reconnect": ("tests/test_jazn_run_studio_reconnect_acceptance_qt.py",),
-    "chat-resume": ("tests/test_jazn_run_studio_delivery_ack.py",),
+    "chat-resume": ("tests/test_jazn_run_studio_delivery_ack.py", "tests/test_runtime_feminine_voice_gate.py"),
     "daemon-restart": ("tests/test_heart_system_public_restart.py",),
     "smoke-isolation": ("tests/test_package_smoke_workspace_isolation.py",),
     "config-persistence": ("tests/test_jazn_system_root_config.py",),
@@ -17,16 +17,16 @@ REGRESSIONS = {
     "offline-exe": ("tests/test_jazn_run_studio_bundle_integrity.py",),
     "ui-accessibility": ("tests/test_jazn_run_studio_workbench_qt.py",),
     "studio-system": ("tests/test_jazn_operator_studio.py",),
-    "studio-start": ("tests/test_jazn_start_studio_dashboard.py",),
+    "studio-start": ("tests/test_jazn_start_studio_dashboard.py", "tests/test_jss_supervisor_inactive_evidence.py", "tests/test_jss_root_selection.py"),
     "studio-configuration": ("tests/test_jazn_run_studio_configuration_native_qt.py",),
-    "studio-memory": ("tests/test_memory_studio_step_workflows.py",),
-    "studio-memory-rebuild": ("tests/test_memory_rebuild_p0_studio.py",),
+    "studio-memory": ("tests/test_memory_studio_step_workflows.py", "tests/test_memory_sqlite_ingest_policy.py"),
+    "studio-memory-rebuild": ("tests/test_memory_rebuild_p0_studio.py", "tests/test_memory_sqlite_ingest_policy.py"),
     "studio-test-studio": ("tests/test_tests_studio_run_history_p1.py",),
     "studio-generator": ("tests/test_jazn_pack_generator_studio_portability.py",),
-    "studio-dependencies": ("tests/test_dependency_studio_repeated_profiles.py",),
+    "studio-dependencies": ("tests/test_dependency_studio_repeated_profiles.py", "tests/test_dependency_studio_layout_contract.py"),
     "studio-python-runtime": ("tests/test_jazn_run_studio_integrations.py",),
     "studio-version-rebuild": ("tests/test_jazn_run_studio_version_native_qt.py",),
-    "studio-chat-import": ("tests/test_memory_studio_step_workflows.py",),
+    "studio-chat-import": ("tests/test_memory_studio_step_workflows.py", "tests/test_memory_sqlite_ingest_policy.py"),
     "studio-memory-restore": ("tests/test_memory_restore_tool.py",),
 }
 LIVE_CASES = frozenset({"gui-daemon", "ollama-two-turns", "chat-reconnect", "chat-resume", "daemon-restart"})
@@ -69,6 +69,36 @@ PROCEDURES = {
 }
 
 
+
+# These steps are presented inside the existing 22 scenarios. They are not
+# new auto-PASS gates and they never mutate historical operator evidence.
+# RunStore/TPA triage decides whether an older SHA is NIEAKTUALNE.
+WINDOWS_V105_CHECKS = {
+    "gui-daemon": "Windows: zweryfikuj prywatne ROOT/.venv, ROOT/local_resources i startup-preflight; uruchom tylko izolowany daemon, a blokadę pakietów zapisz jako BLOCKED.",
+    "ollama-two-turns": "Windows: sprawdź oficjalną instalację Ollamy, dostępny model gemma3:latest i próbę /api/chat; dopiero potem wykonaj dwie tury Jaźni z potwierdzoną finalizacją.",
+    "chat-reconnect": "Windows: zamknij wyłącznie testowy klient JSS, ponownie połącz endpoint i potwierdź ten sam session_id, bez duplikatu wiadomości.",
+    "chat-resume": "Windows: zachowaj oryginalny request_id; po zerwaniu transportu odczytaj wynik i potwierdź jednorazowy ACK po wyświetleniu.",
+    "daemon-restart": "Windows: przed restartem porównaj owner PID i instance_id; restart tylko kontrolowanej testowej instancji, bez zatrzymywania obcych usług.",
+    "smoke-isolation": "Windows: porównaj SHA-256 i znaczniki operatora przed/po; MEMORY i działający daemon mają pozostać bez zmian.",
+    "config-persistence": "Windows: odtwórz testowy profil po restarcie JSS, sprawdź ROOT/.venv i ROOT/local_resources bez ręcznych ENV; nie migruj produkcyjnego ROOT.",
+    "studios-parity": "Windows: zbierz 12 osobnych odbiorów studio-* dla tego samego HEAD; brak natywnego Qt workflow oznacz BLOCKED.",
+    "offline-exe": "Windows VM: odłącz sieć po zweryfikowaniu wheelhouse core+run-studio, sprawdź instalację ROOT/.venv, uruchomienie JSS EXE i dowody bez pobierania PyPI.",
+    "ui-accessibility": "Windows: sprawdź DPI 100/150/200%, fokus, klawiaturę i brak przyciętych kontrolek również w kreatorze instalacyjnym.",
+    "studio-system": "Windows: sprawdź odczyt wersji SYSTEM, manifest, provenance, audit i odmowę niezweryfikowanego ROOT.",
+    "studio-start": "Windows: sprawdź wykrywanie i status Python/Ollama oraz kanoniczny start/status/stop własnego daemona; port lub PID nie oznacza readiness.",
+    "studio-configuration": "Windows: przejdź preview zmian, save/reload/restore, konflikt CAS i ochronę niezapisanych pól; zachowaj ścieżki operatora.",
+    "studio-memory": "Windows: wyłącznie syntetyczne dane; sprawdź role baz, provenance, walidację i brak naruszenia prywatnej MEMORY.",
+    "studio-memory-rebuild": "Windows: wykonaj plan/validate/cancel/export na syntetycznej bazie z weryfikacją ścieżek i raportu.",
+    "studio-test-studio": "Windows: uruchom izolowany podtest, sprawdź anulowanie, historię SHA, oddzielne JUnit/JSON/TXT oraz brak fałszywego PASS.",
+    "studio-generator": "Windows: zweryfikuj SYSTEM/ZIP, rozdziel i połącz części, sprawdź SHA i błędną część bez publikowania prywatnej MEMORY.",
+    "studio-dependencies": "Windows: zbuduj/zweryfikuj wheelhouse core+run-studio, zainstaluj go offline w nowym ROOT/.venv i wykonaj pip check, import smoke i audyt locka.",
+    "studio-python-runtime": "Windows: wykryj CPython 3.14 x64, przygotuj ROOT/.venv, odmów błędnej wersji/ABI, sprawdź powtórne uruchomienie bez pobierania.",
+    "studio-version-rebuild": "Windows: potwierdź wersję, właściwy base SHA, preview, backup i canonical release metadata; nie edytuj ręcznie manifestu.",
+    "studio-chat-import": "Windows: syntetyczny eksport, plan/import/verify i zabezpieczenie przed duplikacją; nie używaj prywatnych rozmów.",
+    "studio-memory-restore": "Windows: syntetyczny baseline, scan/plan/compare/backup/restore tylko w testowym katalogu po wyraźnym potwierdzeniu.",
+}
+
+
 def execution_map() -> list[dict]:
     """Each catalogue row has executable regression and a distinct full gate."""
     items = []
@@ -83,6 +113,7 @@ def execution_map() -> list[dict]:
         steps = [
             "Uruchom przypisany podtest regresyjny i otwórz jego wynik oraz JUnit.",
             *PROCEDURES[key],
+            "Windows V105 / TPA: " + WINDOWS_V105_CHECKS[key],
             "Dołącz raport obserwacji i porównaj z kryterium: " + original["expected"],
         ]
         limitations = "Podtest na danych syntetycznych. Nie potwierdza pełnego odbioru ani migracji Studio."

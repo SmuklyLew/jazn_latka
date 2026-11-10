@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import cmd
+import io
 import json
 import sys
 from dataclasses import dataclass, asdict
@@ -216,6 +217,15 @@ class LatkaRuntimeShell(cmd.Cmd):
                     + (f" (request_id={request_id})." if request_id else ".")
                 )
                 return False
+            # Reuse the existing local final renderer. A candidate carrying
+            # final_visible_text is not an accepted, hash-bound runtime answer.
+            # Avoid feeding rejected text into terminal carryover after reconnect.
+            from latka_jazn.core.chat_command_contract import write_local_ollama_visible_reply
+            validated = io.StringIO()
+            if not write_local_ollama_visible_reply(validated, result):
+                self._write("[runtime_turn_rejected] " + validated.getvalue().strip())
+                return False
+            visible = validated.getvalue()
         else:
             try:
                 envelope = run_with_runtime_turn_timeout(
@@ -243,7 +253,12 @@ class LatkaRuntimeShell(cmd.Cmd):
                 )
                 return True
             visible = envelope.final_visible_text or envelope.final_response_contract.get("final_visible_text", "")
-        visible = self._protect_against_repeated_visible_text(user_text=text, visible_text=visible)
+        # A repetition guard may block display, but it must never rewrite a
+        # hash-verified final into a new text while retaining runtime authorship.
+        protected = self._protect_against_repeated_visible_text(user_text=text, visible_text=visible)
+        if protected != (visible or "").strip():
+            self._write("[runtime_turn_display_blocked] repeated_accepted_final")
+            return False
         self._write(visible)
         self._last_user_text = text
         self._last_visible_text = visible

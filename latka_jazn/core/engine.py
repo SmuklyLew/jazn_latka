@@ -1976,6 +1976,11 @@ class JaznEngine:
             "timestamp_contract": frame.get("timestamp_contract") if isinstance(frame.get("timestamp_contract"), dict) else {},
             "turn_context_carryover": frame.get("turn_context_carryover") if isinstance(frame.get("turn_context_carryover"), dict) else {},
             "previous_user_text": prior_user_text if carryover_allowed else None,
+            "conversation_history": (
+                client_context.get("conversation_history")
+                if carryover_allowed and isinstance(client_context.get("conversation_history"), dict)
+                else {}
+            ),
             "previous_detected_intent": prior_detected_intent if carryover_allowed else None,
             "previous_runtime_route": prior_runtime_route if carryover_allowed else None,
             "previous_task_state": previous_task_state if carryover_allowed else {},

@@ -82,7 +82,11 @@ from latka_jazn.version import PACKAGE_VERSION, PACKAGE_VERSION_FULL, schema_ver
 DEFAULT_DAEMON_HOST = "127.0.0.1"
 DEFAULT_DAEMON_PORT = 8787
 DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 30.0
-DEFAULT_START_TIMEOUT_SECONDS = 12.0
+# A Windows cold-start does protected manifest checks, creates runtime-write
+# state and imports the Qt-capable runtime before HTTP can bind. The previous
+# 12s cap killed a healthy fresh daemon on hosted Windows runners before
+# endpoint_bound. Keep a finite limit and require verified /live identity.
+DEFAULT_START_TIMEOUT_SECONDS = 45.0 if os.name == "nt" else 12.0
 DEFAULT_STOP_TIMEOUT_SECONDS = 5.0
 DEFAULT_PROCESS_TERMINATION_GRACE_SECONDS = 1.5
 _NATIVE_DAEMON_LIFECYCLE_IDENTITY_V2 = True
@@ -1276,6 +1280,49 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_finalization_gate_wait_seconds": job.host_finalization_gate_wait_seconds,
                 "host_finalization_error_code": job.host_finalization_error_code,
             })
+        # Failed, phase-1-recoverable turns must remain discoverable even after
+        # their *in-memory* TTL.  Keep the metadata-only record from the
+        # previous durable snapshot when a separate job is persisted later.
+        # A terminal success or reconciliation still takes precedence over
+        # any historical rejection for the same request ID.
+        live_ids = set(self.chat_jobs)
+        if self._chat_state_path.is_file():
+            previous = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
+            if not isinstance(previous, dict) or not isinstance(previous.get("jobs"), list):
+                raise ValueError("invalid_chat_recovery_metadata")
+            for raw in previous["jobs"]:
+                if not isinstance(raw, dict):
+                    continue
+                request_id = str(raw.get("request_id") or "")
+                if (not request_id or request_id in live_ids
+                        or raw.get("status") != "failed"
+                        or str(raw.get("error") or raw.get("result_error_code") or "")
+                        != "runtime_turn_not_accepted"
+                        or not raw.get("request_fingerprint")
+                        or not raw.get("completed_at_utc")
+                        or "user_text" in raw):
+                    continue
+                # Copy only known metadata keys. No user prompt or response
+                # is resurrected, stored, or exposed by the durable tombstone.
+                keys = (
+                    "request_id", "request_fingerprint", "user_text_sha256",
+                    "input_field", "session_id", "no_carryover", "client",
+                    "command", "model_channel_config", "reset_session",
+                    "created_at_utc", "started_at_utc", "completed_at_utc",
+                    "status", "error", "result_error_code",
+                    "recovery_disposition", "last_heartbeat_at_utc",
+                    "execution_timeout_seconds", "timeout_profile",
+                    "phase_result_ready_at_utc", "host_turn_id", "host_trace_id",
+                    "host_request_contract_hash", "host_request_expires_at_utc",
+                    "host_finalization_reason", "host_finalization_attempt_count",
+                    "previous_request_id", "previous_runtime_turn_id",
+                    "previous_trace_id", "host_finalization_gate_state",
+                    "host_finalization_gate_wait_started_at_utc",
+                    "host_finalization_gate_wait_seconds",
+                    "host_finalization_error_code",
+                )
+                recoverable.append({key: raw.get(key) for key in keys})
+                live_ids.add(request_id)
         write_json_atomic(
             self._chat_state_path,
             {
@@ -2170,6 +2217,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
         def existing_job_locked() -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
             existing = self.chat_jobs.get(normalized_id)
             if existing is None:
+                # The terminal in-memory cache can expire before the durable
+                # request ledger. Recover its identity before deciding that a
+                # submit with the same request_id is a *new* execution.
+                existing = self._read_expired_failed_chat_job_locked(normalized_id)
+                if existing is not None:
+                    self.chat_jobs[normalized_id] = existing
+            if existing is None:
                 return None, None
             same_request = existing.request_fingerprint == request_fingerprint
             if existing.request_fingerprint is None:
@@ -2279,10 +2333,73 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self.start_chat_worker()
         return job, created, None
 
+    def _read_expired_failed_chat_job_locked(self, request_id: str) -> DaemonChatJob | None:
+        """Rehydrate only a durable terminal rejection, never replay the user text.
+
+        A memory TTL is a cache-eviction policy, not evidence that the
+        original daemon request never existed. Invalid metadata fails closed.
+        """
+        try:
+            payload = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return None
+        jobs = payload.get("jobs") if isinstance(payload, dict) else None
+        if not isinstance(jobs, list):
+            return None
+        for raw in jobs:
+            if not isinstance(raw, dict) or raw.get("request_id") != request_id:
+                continue
+            if (raw.get("status") != "failed"
+                    or str(raw.get("error") or raw.get("result_error_code") or "")
+                    != "runtime_turn_not_accepted"
+                    or not isinstance(raw.get("request_fingerprint"), str)
+                    or not raw.get("request_fingerprint")
+                    or not _parse_iso_utc(raw.get("completed_at_utc"))):
+                return None
+            try:
+                job = DaemonChatJob(
+                    request_id=request_id,
+                    user_text="",
+                    input_field=str(raw.get("input_field") or "recovered_metadata"),
+                    session_id=str(raw["session_id"]) if raw.get("session_id") is not None else None,
+                    no_carryover=bool(raw.get("no_carryover")),
+                    client=str(raw.get("client") or "daemon_http"),
+                    command=str(raw.get("command") or "--chat"),
+                    model_channel_config=normalize_model_channel_config(
+                        raw.get("model_channel_config")
+                        if isinstance(raw.get("model_channel_config"), dict) else {}
+                    ),
+                    reset_session=bool(raw.get("reset_session")),
+                    request_fingerprint=raw["request_fingerprint"],
+                    user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
+                    created_at_utc=str(raw.get("created_at_utc") or ""),
+                    started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
+                    completed_at_utc=str(raw["completed_at_utc"]),
+                    status="failed",
+                    error="runtime_turn_not_accepted",
+                    recovery_disposition="durable_terminal_rejection_rehydrated",
+                    result={
+                        "ok": False,
+                        "error_code": "runtime_turn_not_accepted",
+                        "request_id": request_id,
+                        "automatic_replay_performed": False,
+                        "recovery_disposition": "durable_terminal_rejection_rehydrated",
+                    },
+                )
+            except (ValueError, TypeError):
+                return None
+            job.done_event.set()
+            return job
+        return None
+
     def get_chat_job(self, request_id: str) -> DaemonChatJob | None:
         with self._chat_jobs_lock:
             self._cleanup_chat_jobs_locked()
             job = self.chat_jobs.get(str(request_id))
+            if job is None:
+                job = self._read_expired_failed_chat_job_locked(str(request_id))
+                if job is not None:
+                    self.chat_jobs[job.request_id] = job
             changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
                 changed = True
@@ -2762,7 +2879,30 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     self.state.chat_job_completed_count += 1
                 else:
                     job.status = "failed"
-                    job.error = str(result.get("error_code") or "runtime_turn_not_accepted")
+                    source_error = str(result.get("error_code") or "").strip()
+                    if not source_error:
+                        # A failed runtime result without a code is not a
+                        # transport timeout. Preserve that distinction and
+                        # keep the original missing-code evidence explicit.
+                        result["error_code"] = "runtime_turn_not_accepted"
+                        result["runtime_turn_failure"] = {
+                            "diagnostic_code": "runtime_result_failed_without_error_code",
+                            "source_error_code_present": False,
+                            "execution_state": (
+                                str(result.get("execution_state"))
+                                if str(result.get("execution_state") or "").isascii()
+                                and str(result.get("execution_state") or "").replace("_", "").isalnum()
+                                and len(str(result.get("execution_state") or "")) <= 64
+                                else "unspecified"
+                            ),
+                            "answer_ok": result.get("answer_ok") is True,
+                            "runtime_truth_gate_ok": (
+                                isinstance(result.get("runtime_truth_gate"), dict)
+                                and result["runtime_truth_gate"].get("ok") is True
+                            ),
+                            "contains_user_text": False,
+                        }
+                    job.error = source_error or "runtime_turn_not_accepted"
                     self.state.chat_job_failed_count += 1
         except RuntimeTurnTimeoutError as exc:
             if session is not None:

@@ -29,6 +29,8 @@ def test_canonical_turn_never_calls_legacy_compose_or_ordinary_template(tmp_path
         monkeypatch.setenv(name, "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
     monkeypatch.setenv("JAZN_LLM_ROUTE_SKIP_LOCAL_PROBE", "1")
+    monkeypatch.delenv("JAZN_OLLAMA_MODEL", raising=False)
+    monkeypatch.delenv("JAZN_LOCAL_LLM_MODEL", raising=False)
     def forbidden(*args, **kwargs):
         raise AssertionError("legacy dialogue was invoked by the canonical turn")
     monkeypatch.setattr(ConversationResponder, "compose", forbidden)

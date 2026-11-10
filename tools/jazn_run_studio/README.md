@@ -55,6 +55,26 @@ Nie ukończono pełnej migracji 12 aplikacji. Kryteria i rzeczywisty stan są w
 Windows, w szczególności rzeczywistego zapisu profilu z konfliktem CAS,
 ścieżek w prywatnym ROOT, DPI ani wybranego modelu Ollama.
 
+## Wybór SYSTEM ROOT przy starcie JSS (V120)
+
+Przy uruchomieniu źródłowego `run_studio.py` bez opcji `--root` JSS
+wybiera SYSTEM zawierający własny kod (`tools/jazn_run_studio/app.py`).
+Odziedziczone `JAZN_ROOT` z innego checkoutu nie może przekierować
+GUI do obcego SYSTEM ani profilu odbioru. Jawne `--root PATH` nadal
+ma pierwszeństwo nad wartością domyślną. W spakowanym EXE zachowano
+dotychczasowy wybór `JAZN_ROOT`, a następnie bieżącego katalogu.
+
+Preflight zależności i główny parser wybierają tę samą ścieżkę.
+W czasie sesji aplikacja przekazuje wybrany, rozwiązany ROOT do procesów
+potomnych przez kontekst procesowy `JAZN_ROOT`, a po zamknięciu przywraca
+pierwotną wartość. Nie zmienia zmiennych użytkownika w Windows.
+
+To nie jest automatyczna migracja profilu odbioru. Jeżeli istniejący
+`acceptance_profile.json` ma niezgodny ROOT, wersję lub session_id,
+JSS nadal odmawia jego przejęcia. Zachowaj poprzednią historię TPA i
+użyj osobnej sesji/worktree przy przejściu na nowe wydanie. Nigdy
+nie usuwaj tego profilu ani markerów daemona jako obejścia.
+
 ## Izolowany odbiór lokalny (.94.6)
 
 Nowa opcja `--isolated-acceptance` jest przeznaczona do GUI/TPA

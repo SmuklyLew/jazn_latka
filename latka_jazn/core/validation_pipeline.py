@@ -24,11 +24,13 @@ class ValidationPipeline:
                 response={**state.model_synthesis.adapter_response, "text": state.body},
                 route=str(state.decision_dict.get("route") or ""),
                 detected_intent=str(state.detected_dialogue_intent),
+                conversation_history=state.request.client_context.get("conversation_history"),
                 template_origin=state.template_origin,
             )
         else:
             state.first_validation = engine.runtime_answer_validator.validate(
-                user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent)
+                user_text=state.request.text, body=state.body, route=str(state.decision_dict.get("route") or ""), detected_intent=str(state.detected_dialogue_intent),
+                conversation_history=state.request.client_context.get("conversation_history"),
             )
         engine._record_validation_diagnostic(
             state.turn_context,

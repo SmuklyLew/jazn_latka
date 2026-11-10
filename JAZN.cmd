@@ -18,7 +18,22 @@ if exist "%JAZN_RUNTIME_SET%" (
     exit /b %errorlevel%
 )
 
-rem Thin/developer fallback: only used when no private runtime-set contract is present.
+rem Prefer the checkout-owned venv before any host-wide Python discovery.
+rem A present but incomplete .venv is an error, never a silent global fallback.
+if exist "%JAZN_ROOT%.venv" (
+    if not exist "%JAZN_ROOT%.venv\pyvenv.cfg" (
+        echo [JAZN] Niekompletne ROOT\.venv: brak pyvenv.cfg. 1>&2
+        exit /b 78
+    )
+    if not exist "%JAZN_ROOT%.venv\Scripts\python.exe" (
+        echo [JAZN] Niekompletne ROOT\.venv: brak Scripts\python.exe. 1>&2
+        exit /b 78
+    )
+    "%JAZN_ROOT%.venv\Scripts\python.exe" -X utf8 "%JAZN_ROOT%run.py" %*
+    exit /b %errorlevel%
+)
+
+rem Thin/developer fallback: only used when neither runtime-set nor .venv exists.
 where py.exe >nul 2>nul
 if not errorlevel 1 (
     py.exe -3 -X utf8 -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else 3)" >nul 2>nul

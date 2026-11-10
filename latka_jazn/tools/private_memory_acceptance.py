@@ -686,7 +686,9 @@ def run_isolated_daemon_continuity(
         )
     run_root = work_root.expanduser().resolve() / f"run-{uuid.uuid4().hex}"
     runtime_root = run_root / "runtime"
-    workspace = run_root / "workspace_runtime"
+    # Isolated continuity uses a fresh, staged SYSTEM; its runtime state
+    # belongs within that SYSTEM, never in a sibling of the active root.
+    workspace = runtime_root / "workspace_runtime"
     staging = create_system_smoke_staging(source_runtime_root, runtime_root)
     workspace.mkdir(parents=True, exist_ok=True)
     _write_json(workspace / "memory_source_registry.json", {

@@ -7,9 +7,19 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_runtime_workspace_for_each_test(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Keep the host-level singleton isolated between independent test cases."""
+    """Keep each test's workspace inside its resolved SYSTEM ROOT.
 
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
+    The V127.4 production resolver refuses external workspace overrides.
+    Give every pytest case a unique ROOT-relative acceptance path so even
+    subprocesses bound to the real checkout cannot adopt a live daemon or
+    write to a shared workspace. Tests of legacy external roots explicitly
+    remove or replace this override.
+    """
+
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/pytest_runtime_" + tmp_path.name,
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)

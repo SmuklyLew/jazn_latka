@@ -12,10 +12,13 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from urllib import error, request
 
 import pytest
+
+from latka_jazn.core.acceptance_layout import acceptance_temp_parent
 
 pytest.importorskip("mcp")
 pytest.importorskip("uvicorn")
@@ -63,7 +66,25 @@ def _stop_tree(proc: subprocess.Popen[str]) -> None:
         proc.wait(timeout=5)
 
 
-def test_real_runpy_mcp_http_listener_and_catalog_are_responsive(tmp_path: Path) -> None:
+@pytest.fixture
+def mcp_child_env():
+    """Subprocesses use one temporary runtime strictly below this SYSTEM ROOT.
+
+    Never inherit an unrelated host/pytest workspace or adopt daemon markers.
+    The fixture cleans its own directory only after the listener is stopped.
+    """
+    parent = acceptance_temp_parent(PROJECT_ROOT)
+    assert parent is not None
+    with tempfile.TemporaryDirectory(prefix="jazn-mcp-smoke-", dir=parent) as work:
+        env = dict(os.environ)
+        env["JAZN_RUNTIME_WORKSPACE_DIR"] = str(Path(work) / "runtime")
+        env["JAZN_MEMORY_MODE"] = "off"
+        yield env
+
+
+def test_real_runpy_mcp_http_listener_and_catalog_are_responsive(
+    tmp_path: Path, mcp_child_env: dict[str, str],
+) -> None:
     port = _free_port()
     url = f"http://127.0.0.1:{port}"
     log_path = tmp_path / "mcp-http-process.log"
@@ -78,11 +99,12 @@ def test_real_runpy_mcp_http_listener_and_catalog_are_responsive(tmp_path: Path)
             proc = subprocess.Popen(
                 cmd, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT,
                 text=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                env=mcp_child_env,
             )
         else:
             proc = subprocess.Popen(
                 cmd, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT,
-                text=True, start_new_session=True,
+                text=True, start_new_session=True, env=mcp_child_env,
             )
         try:
             deadline = time.monotonic() + 25
@@ -113,6 +135,7 @@ def test_real_runpy_mcp_http_listener_and_catalog_are_responsive(tmp_path: Path)
                  "mcp-probe", "--url", f"{url}/mcp", "--timeout", "10",
                  "--check-chatgpt-tool-catalog", "--json"],
                 cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=22,
+                env=mcp_child_env,
                 check=False,
             )
             assert probe.returncode == 0, probe.stderr[-1500:] + probe.stdout[-1500:]

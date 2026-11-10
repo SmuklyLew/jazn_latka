@@ -1,6 +1,6 @@
 # AGENTS.codex.md — runbook pracy nad kodem Jaźni
 
-`AGENTS.codex.md` jest projektowym runbookiem pracy nad kodem, testami, konfiguracją, dokumentacją i Git. Uzupełnia `AGENTS.md` i obowiązuje każdego agenta kodującego. Nie jest promptem osobowości ani dowodem aktywnego runtime. Szczegółowe procedury operacyjne: `docs/project/AGENTS_CODEX_OPERATIONAL_REFERENCE.md` — wczytaj pełny dokument tylko wtedy, gdy zadanie go wymaga; stosuj właściwe sekcje.
+`AGENTS.codex.md` jest projektowym runbookiem pracy nad kodem, testami, konfiguracją, dokumentacją i Git. Uzupełnia `AGENTS.md` i obowiązuje każdego agenta kodującego. Nie jest promptem osobowości, częścią logiki Jaźni ani dowodem aktywnego runtime. Wymaganie opisowe przekładaj na implementację i test; nie zaliczaj funkcji na podstawie Markdown, manifestu, zielonego testu nieaktualnego SHA lub samej obecności elementu GUI. Szczegółowe procedury operacyjne: `docs/project/AGENTS_CODEX_OPERATIONAL_REFERENCE.md` — wczytaj pełny dokument tylko wtedy, gdy zadanie go wymaga; stosuj właściwe sekcje.
 
 ## 1. Instrukcje i stan repozytorium
 
@@ -8,6 +8,7 @@
 - `AGENTS.codex.md` ma nazwę niestandardową: Codex nie musi odkryć jej automatycznie. Korzystaj z odwołania w głównym `AGENTS.md` lub jawnej konfiguracji.
 - Przed edycją ustal cel, zakres, branch, HEAD i stan Git: `git status --short`, `git branch --show-current`, `git rev-parse HEAD`. Przy dostępie tylko przez GitHub API potwierdź ref i SHA, ale nie udawaj znajomości lokalnego worktree.
 - Zachowaj cudze zmiany; przed ryzykowną operacją zabezpiecz punkt przywracania. Nie rozszerzaj zakresu bez potrzeby.
+- Jeśli zlecono kontynuację konkretnego PR, pracuj na jego gałęzi HEAD, sprawdź aktualne CI i zależności od gałęzi bazowej. Nie twórz zamiennego brancha, nie przepisuj historii i nie uznawaj Draft za gotowy do merge.
 
 ## 2. Selektywny odczyt i oszczędzanie kontekstu
 
@@ -20,6 +21,13 @@
 5. Nie ładuj zbiorczo `memory/`, `workspace_runtime/`, historii Git, archiwów, baz, binariów, logów ani eksportów SYSTEM. Nie powielaj w kontekście długich wyników narzędzi; wystarczą istotne ścieżki, linie i wyniki. Nie powtarzaj niepotrzebnie odczytów.
 
 Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralności danych, testów i bezpieczeństwa.
+
+### Budżet sesji Codex
+
+- Cel operatora: wykorzystać **nie więcej niż 70% puli pięciogodzinnej**, pozostawiając 30% rezerwy. Pulę tygodniową monitoruj oddzielnie; liczba tokenów kontekstu i czas pracy nie są procentem zużycia limitu konta.
+- Sprawdzaj wiarygodny licznik hosta na początku i między istotnymi etapami, nie w każdej turze. Przy 60% przygotuj checkpoint; od 65% nie zaczynaj dużego etapu; przy 70% zakończ bezpiecznie bieżącą atomową operację i zatrzymaj nowe zadania. Nie przerywaj w połowie zapisu ani operacji wymagającej doprowadzenia do spójnego stanu.
+- Jeśli host nie udostępnia licznika, raportuj `usage_unknown`: nie zgaduj procentu i nie twórz pozornego automatycznego strażnika. Dziel pracę na małe, mierzalne etapy i pozostaw punkt wznowienia.
+- Nie zużywaj wywołań modelu wyłącznie do szacowania limitu. Nie kupuj kredytów, nie wykonuj płatnych API ani resetów limitu bez jawnego zlecenia.
 
 ## 3. Plan, architektura i granice odpowiedzialności
 
@@ -39,6 +47,7 @@ Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralno
 ## 5. Testy i historyczne snapshoty
 
 - Wykonuj najpierw testy celowane; szerszą regresję dobieraj do ryzyka, a wymagany pełny zestaw do gate integracyjnego lub release. Stosuj komendy i dodatkowe kontrole z referencyjnego runbooka zależnie od rodzaju zmiany.
+- Dla czerwonego CI na PR zacznij od błędów **aktualnego HEAD**, znajdź wspólną przyczynę i powtórz testy dotknięte poprawką; nie uruchamiaj pełnej macierzy przy każdej drobnej iteracji. Pełny wymagany gate pozostaje warunkiem odbioru.
 - `tests/archive/` jest append-only i poza domyślną kolekcją. Przed zmianą istniejącego aktywnego testu zachowaj zatwierdzony oryginał bajt w bajt, z wersją i provenance. Nie archiwizuj testu tylko z powodu nazwy; zamiennik musi chronić co najmniej ten sam kontrakt.
 - Przy zmianach samych instrukcji sprawdź spójność odwołań, format oraz `git diff --check`, jeśli masz terminal; nie uruchamiaj niepotrzebnie całego runtime. Limit `docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt` wynosi <= 5000 znaków — sprawdź przy zmianach loadera lub jego generatora.
 - Nie deklaruj niewykonanych testów ani kontroli. Brak executora oznacza ograniczenie środowiska, nie błąd kodu ani zaliczony test.
@@ -56,4 +65,5 @@ Oszczędność tokenów jest celem pomocniczym, nigdy ważniejszym od integralno
 - Oddzielaj `execution_status`, `full_gate_status`, realny odbiór i aktualność SHA. Końcowy odbiór wymaga pełnej wymaganej macierzy; testy celowane, zapis commita i screenshoty jej nie zastępują.
 
 - Przy dłuższej pracy informuj krótko o etapach, bez zalewania rozmowy logami i bez obietnic pracy w tle.
+- Przed przerwaniem większego zadania pozostaw zwięzły checkpoint: branch/HEAD, ukończony zakres, zmienione pliki, dowody i niezaliczone testy, następny bezpieczny krok. Korzystaj z tego checkpointu zamiast ponownej pełnej analizy repozytorium.
 - Podaj zmienione pliki, wyniki rzeczywiście uruchomionych kontroli, ograniczenia i ryzyka. Branch i SHA commita podawaj tylko po rzeczywistym zapisie. Oddziel fakty od założeń.

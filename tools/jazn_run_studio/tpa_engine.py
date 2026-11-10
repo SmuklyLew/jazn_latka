@@ -13,7 +13,7 @@ from collections.abc import Callable
 
 from PySide6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, Signal
 
-from latka_jazn.core.acceptance_layout import resolve_acceptance_layout
+from latka_jazn.core.acceptance_layout import acceptance_temp_parent, resolve_acceptance_layout
 from .core import Redactor
 from .external import environment
 from .tpa_catalog import LIVE_CASES, execution_map, scenario
@@ -64,6 +64,7 @@ def isolated_environment(folder: Path, root: Path) -> QProcessEnvironment:
             values.pop(key)
     values.update(JAZN_RUNTIME_WORKSPACE_DIR=str(layout.runtime), JAZN_OPERATOR_STATE_ROOT=str(layout.operator),
                   JAZN_MEMORY_ROOT=str(layout.memory), JAZN_MEMORY_MODE="off",
+                   JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated",
                   JAZN_NETWORK_TIME_FIRST="0", JAZN_NETWORK_TIME_IN_TURN="0",
                   PYTHONUTF8="1", PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
                   PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", QT_QPA_PLATFORM="offscreen")
@@ -354,7 +355,7 @@ class TPARunner(QObject):
             self._probe_done(refusal)
             return
         try:
-            self.temp = tempfile.TemporaryDirectory(prefix="jazn-tpa-")
+            self.temp = tempfile.TemporaryDirectory(prefix="jazn-tpa-", dir=acceptance_temp_parent(self.root))
             self.process.setProcessEnvironment(isolated_environment(Path(self.temp.name), self.root))
         except (OSError, ValueError) as exc:
             self._probe_done({"ok": False, "reason": "Niepoprawna izolacja ścieżek: " + type(exc).__name__})

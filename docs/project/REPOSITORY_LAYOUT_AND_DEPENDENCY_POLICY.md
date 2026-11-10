@@ -18,6 +18,8 @@ osłabiałoby kontrakt portable/offline runtime.
 Nie przenoś stabilnych ścieżek operatorskich tylko po to, aby upodobnić repo do
 innego szablonu projektu.
 
+`AGENTS*.md` i dokumenty `docs/` służą programistom, hostom i operatorom; nie stanowią implementacji funkcji Jaźni. Zachowanie systemu musi wynikać z wykonywalnych modułów i zweryfikowanych danych stanu. Manifest/provenance służą programowej kontroli integralności i pochodzenia wydania, a nie zastępują mechanizmów runtime. Nie interpretuj opisu architektury, deklaracji w UI ani testu ze starego SHA jako dowodu działającej capability.
+
 ## 2. Kanoniczne role katalogów
 
 ```text
@@ -27,6 +29,8 @@ innego szablonu projektu.
 ├─ AGENTS*.md                     # routing i runbooki hostów/agentów
 ├─ pyproject.toml                 # kanoniczne deklaracje zależności Pythona
 ├─ requirements.txt               # compatibility/cache marker, nie drugie źródło deps
+├─ .venv/                         # opcjonalne środowisko ROOT, tworzone na tej maszynie
+├─ local_resources/               # zweryfikowane zasoby instalatora, bez prywatnej MEMORY
 ├─ latka_jazn/                    # importowalny kod systemu
 │  ├─ bootstrap/                  # discovery/materializacja/recovery
 │  ├─ core/                       # runtime, gates, routing, lifecycle i kontrakty tury
@@ -56,17 +60,22 @@ read-only for backward compatibility until an explicit verified migration.
 
 ### Rozdzielenie linked worktree i TPA (od .94.6)
 
-`jazn_latka_master` zachowuje domyślne
-`$ROOTDIR/workspace_runtime`; istniejące instalacje bez markerów Git
-zachowują swoje historyczne reguły. Git linked worktree rozpoznawany
-przez plik `.git` (zamiast katalogu głównego checkoutu) dostaje własny
-`$ROOTDIR/workspace_runtime` i nie korzysta niejawnie z markerów
-produkcyjnego daemona we wspólnym katalogu rodzeństwa.
-Jawne `JAZN_RUNTIME_WORKSPACE_DIR` nadal wygrywa nad domyślnym
-wyborem. Nie przenosi się istniejących baz, checkpointów ani PID.
+Od V127.4 **każdy nowy/przygotowany ROOT zawierający
+`local_resources/`** otrzymuje własne
+`$ROOTDIR/workspace_runtime`, niezależnie od nazwy katalogu i typu
+checkoutu. `JAZN_RUNTIME_WORKSPACE_DIR` może wskazać tylko katalog
+wewnątrz tego samego ROOT: absolutny override poza ROOT, traversale,
+symlinki lub junctions wyprowadzające workspace poza ROOT są
+odrzucane. Stare, nieprzygotowane checkouty bez `local_resources/`
+zachowują historyczne reguły, ale nie są automatycznie migrowane.
+Dla każdej instalacji trzeba osobno zweryfikować `active_root`,
+marker instancji, sesje i heartbeat; sama nazwa katalogu nie wystarcza.
 
-TPA przez `run_studio.py --isolated-acceptance` korzysta z odrębnego
-lokalnego runtime na sesję i trwałego stanu operatora poza SYSTEM.
+TPA przez `run_studio.py --isolated-acceptance` w nowym ROOT
+korzysta z `ROOT/.settings_local/acceptance`; tymczasowe przebiegi
+testowe i ich prywatne runtime nie mogą opuszczać ROOT. Historyczne
+instalacje mogą zachować poprzednią izolację poza SYSTEM do czasu
+jawnej migracji.
 MEMORY ma tryb `off` oraz osobną testową lokalizację; sekrety
 MEMORY/MCP nie są dziedziczone. Próba nałożenia ścieżek z SYSTEM,
 MEMORY lub aktywnym workspace musi skończyć się jawnie błędem.
@@ -117,6 +126,24 @@ do activation-required `core`, ponieważ zwykły start i dialog runtime nie impo
 `pypdf`. Standardowy release sidecar jawnie obejmuje `core+archive+pdf`, więc
 obsługa PDF pozostaje dostarczana jako zweryfikowany, hash-locked wheel bez
 wprowadzania sieciowego `pip install` do bootstrapu.
+
+### Kontrakt instalacyjny V106 (wdrożenie i odbiór w toku)
+
+W nowym SYSTEM `ROOT/local_resources/README.md` jest wersjonowanym opisem.
+Katalogi `python/`, `wheelhouse/`, `ollama/`, `models/`, `nlp/` i
+`manifests/` powstają przy jawnym działaniu operatora; prywatne modele,
+instalatory oraz środowisko `ROOT/.venv/` nie są kopiowane z komputera twórcy
+do Git. Stara instalacja V74 i host-level `workspace_runtime/` pozostają
+nietknięte do czasu bezpiecznej migracji.
+
+Dla Linux x64 profil rdzenia zachowuje glibc >= 2.17; profil
+`run-studio` (Qt/PySide6 6.12) wymaga glibc >= 2.34.
+Pobranie wheelhouse, weryfikacja i instalacja używają jawnego kontraktu
+docelowej platformy i hash lock; runtime nigdy nie pobiera bibliotek w
+trakcie rozmowy. Szczegóły: `docs/tools/JAZN_DEPENDENCY_STUDIO.md`.
+Odbiór systemu na Windows należy do niezmienionych 22 scenariuszy TPA,
+uzupełnionych o aktualne kroki; stare SHA są oznaczane nieaktualnymi bez
+zmiany ich historycznego wyniku.
 
 ## 5. ChatGPT
 

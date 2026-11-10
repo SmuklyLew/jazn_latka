@@ -375,6 +375,8 @@ def supervisor_status(root: Path) -> dict[str, Any]:
     }
 
 def supervisor_installation_plan(root: Path, *, python_executable: str | None = None) -> dict[str, Any]:
+    from latka_jazn.core.windows_supervisor import windows_supervisor_plan
+
     runtime_root = Path(root).expanduser().resolve()
     python = str(python_executable or os.environ.get("JAZN_SUPERVISOR_PYTHON") or "python")
     command = [
@@ -391,6 +393,7 @@ def supervisor_installation_plan(root: Path, *, python_executable: str | None = 
         "package_version": PACKAGE_VERSION_FULL,
         "root": str(runtime_root),
         "supervisor_command": command,
+        "windows_configuration": windows_supervisor_plan(runtime_root, command),
         "windows_task_scheduler": {
             "recommended": True,
             "trigger": "AtStartup",

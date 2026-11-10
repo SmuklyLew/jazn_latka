@@ -90,7 +90,7 @@ class RouteRegistry:
         "short_free_dialogue": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "contextual_continuation_question": ("ordinary_dialogue", "OrdinaryDialogueHandler"),
         "sleep_closure_statement": ("sleep_closure", "OrdinaryDialogueHandler"),
-        "current_time_question": ("current_time", "OrdinaryDialogueHandler"),
+        "current_time_question": ("time_awareness", "TimeAwarenessHandler"),
         "substantive_question_about_last_year": ("memory_experience_recall", "MemoryExperienceRecallHandler"),
         "current_hotfix_for_stale_nlp_route": ("legacy_diagnostic_only", "RuntimeDiagnosticHandler"),
         "memory_experience_question": ("memory_experience_recall", "MemoryExperienceRecallHandler"),

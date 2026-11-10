@@ -28,6 +28,23 @@ def test_system_export_does_not_include_mixed_case_build_tree(tmp_path: Path) ->
         "PACKAGE_VERSION = 'stale'\n", encoding="utf-8",
     )
     (root / "run.py").write_text("# canonical\n", encoding="utf-8")
+    (root / "local_resources").mkdir()
+    (root / "local_resources" / "README.md").write_text("Static documentation\n", encoding="utf-8")
+    generated_paths = (
+        ".venv/Lib/site-packages/example.py",
+        "local_resources/python/JAZN_DEPENDENCY_ENVIRONMENT.json",
+        "local_resources/wheelhouse/synthetic/example.whl",
+    )
+    for relative in generated_paths:
+        generated = root / relative
+        generated.parent.mkdir(parents=True, exist_ok=True)
+        generated.write_text("synthetic disposable content\n", encoding="utf-8")
+        assert package_integrity.path_is_forbidden(relative)
+        assert package_export.forbidden_package_reason(relative)
+        with pytest.raises(package_export.PackagePlanValidationError):
+            package_export.validate_package_plan([relative])
+    assert not package_integrity.path_is_forbidden("local_resources/README.md")
+    assert package_export.forbidden_package_reason("local_resources/README.md") is None
     for mode in ("system", "github_source_safe"):
         paths = [rel for _path, rel in package_export.build_package_plan(root, mode)]
-        assert paths == ["run.py"]
+        assert paths == ["local_resources/README.md", "run.py"]

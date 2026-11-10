@@ -119,11 +119,91 @@ def _matches_any(folded_body: str, markers: tuple[str, ...]) -> bool:
     return any(_fold(marker) in folded_body for marker in markers)
 
 
+# Short-session recall is distinct from autobiographical MEMORY.  The runner
+# supplies this projection from ConversationStateStore's verified accepted turns.
+_SESSION_SOURCE = "workspace_runtime/conversation_state per-turn accepted records"
+
+
+def _accepted_session_questions(history: dict[str, Any] | None) -> list[str]:
+    if not isinstance(history, dict) or history.get("source_of_truth") != _SESSION_SOURCE:
+        return []
+    turns = history.get("turns")
+    if not isinstance(turns, list) or not turns:
+        return []
+    count = len(turns)
+    # A compacted or partial projection cannot prove the "first" utterance.
+    if (history.get("selected_turn_count") != count
+            or history.get("total_turn_count") != count
+            or history.get("omitted_turn_count") != 0):
+        return []
+    if any(
+        not isinstance(turn, dict)
+        or not str(turn.get("turn_id") or "").strip()
+        or not str(turn.get("user_text") or "").strip()
+        or not str(turn.get("assistant_text") or "").strip()
+        or not str(turn.get("accepted_at_utc") or "").strip()
+        for turn in turns
+    ):
+        return []
+    return [str(turn["user_text"]) for turn in turns]
+
+
+def _grounded_session_component(
+    component: QuestionComponent,
+    body: str,
+    first_turns: list[str],
+) -> str | None:
+    """Narrow evidence for two current-session recall slots; never infer facts."""
+    if not first_turns:
+        return None
+    question = _fold(component.text)
+    answer = _fold(body)
+
+    # "Jakie słowo testowe podałem wcześniej?" must return the actual
+    # value in a *verified accepted* prior user turn, not merely repeat
+    # a question anchor or guess a value from the model response.
+    if (re.search(r"\bjakie\s+slowo\s+testowe\b", question)
+            and any(marker in question for marker in ("wczesniej", "poprzedni", "poprzedniej"))):
+        originals = []
+        for previous in first_turns:
+            originals.extend(re.findall(
+                r"\bslowem\s+testowym\s+(?:jest|byl[ao]?)\s+[\"„«]?([a-z0-9_-]{3,64})\b",
+                _fold(previous),
+            ))
+        if len(originals) != 1:
+            return None
+        expected = originals[0]
+        answers = re.findall(
+            r"\b(?:slowem\s+testowym|slowo\s+testowe)\s+(?:jest|byl[ao]?|to)\s+[\"„«]?([a-z0-9_-]{3,64})\b",
+            answer,
+        )
+        if (not answers or any(value != expected for value in answers)
+                or re.search(r"\bnie\s+" + re.escape(expected) + r"\b", answer)):
+            return None
+        return "accepted_session_test_word"
+
+    # A question about the very first user question is answered only when
+    # both of its verified topics occur in the reply. This deliberately
+    # refuses unknown topics rather than using approximate similarity.
+    if ("przypomnij" in question and "zapytalem" in question
+            and "pierwsz" in question and "wiadomosci" in question):
+        first = _fold(first_turns[0])
+        if (re.search(r"\brozmaw\w*\b", first) is None
+                or re.search(r"\bmodel\w*\b", first) is None):
+            return None
+        if (re.search(r"\brozmaw\w*\b", answer)
+                and re.search(r"\bmodel\w*\b", answer)
+                and re.search(r"\b(?:zapytal\w*|pytal\w*|pierwsz\w*\s+wiadomosci)\b", answer)):
+            return "accepted_session_first_question"
+    return None
+
+
 def build_component_coverage_ledger(
     *,
     user_text: str,
     body: str,
     coverage_required: bool,
+    conversation_history: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a fail-closed per-component coverage ledger for visible output.
 
@@ -139,6 +219,7 @@ def build_component_coverage_ledger(
     components = list(report.question_components)
     folded_body = _fold(body)
     records: list[ComponentCoverageRecord] = []
+    prior_questions = _accepted_session_questions(conversation_history)
 
     for component in components:
         semantic_intents = [str(value) for value in component.semantic_intents]
@@ -147,6 +228,7 @@ def build_component_coverage_ledger(
         matched: list[str] = []
         missing: list[str] = []
         evidence: list[str] = []
+        grounded_session = _grounded_session_component(component, body, prior_questions)
 
         for intent in semantic_intents:
             markers = _INTENT_MARKERS.get(intent, ())
@@ -184,7 +266,12 @@ def build_component_coverage_ledger(
         else:
             covered = not missing and bool(matched or anchor_hits)
 
-        if covered:
+        if grounded_session:
+            status = "covered"
+            matched.extend(intent for intent in missing if intent == "memory_recall")
+            missing = [intent for intent in missing if intent != "memory_recall"]
+            evidence.append(f"grounded:{grounded_session}")
+        elif covered:
             status = "covered"
         elif gap_applies:
             status = "evidence_gap"

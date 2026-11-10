@@ -105,6 +105,9 @@ def test_gateway_sends_private_daemon_capability_token(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # Bind the auth probe to the same ROOT-owned workspace that holds the
+    # synthetic daemon token; never consult a different test's environment.
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
     token_path = tmp_path / "workspace_runtime" / "daemon" / "capability.token"
     token_path.parent.mkdir(parents=True)
     token_path.write_text("daemon-secret\n", encoding="utf-8")

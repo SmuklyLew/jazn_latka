@@ -1,3 +1,32 @@
+# V127.2: preserve safe Windows launcher and real Tk GUI gates; extract bounded recovery helper.
+# v116.0.34.94.6.127.1: Ground Polish short-session recall coverage in accepted conversation state; retain fail-closed guards.
+# v116.0.34.94.6.126: Cancel owned Tk polling callbacks and release waiting dialogs on Memory Studio teardown.
+# v116.0.34.94.6.125: Report truthful chat transport close and protocol failure states without inventing pending turns.
+# v116.0.34.94.6.124: Preserve exact log export, recheck isolated MCP profiles and observe Ollama process. 
+# v116.0.34.94.6.123: Keep fresh Ollama generation evidence and report service monitor conditions.
+# v116.0.34.94.6.122: Bound Dependency Studio JSON, record installation failures and accept isolated MCP evidence.
+# v116.0.34.94.6.121: Add consent-gated install action per missing dependency in JSS first-run.
+# v116.0.34.94.6.120: Fix Studio checkout-root selection with scoped JAZN_ROOT for child processes.
+# v116.0.34.94.6.119: Rename release-coupled test files to stable purpose names; retain CI governance.
+# v116.0.34.94.6.118: Keep audit-branch release CI non-mutating while validating complete gates.
+# v116.0.34.94.6.116: Restore V104 memory/TPA/NLP contracts and safe JSS dependency layout.
+# v116.0.34.94.6.115: Restore ASGI connection lifetime and central SQLite policy for durable MCP tasks.
+# v116.0.34.94.6.114: Require the canonical daemon for JSS, preserve bounded resume diagnostics and isolate ambient model settings.
+# v116.0.34.94.6.113: Restore isolated acceptance identity/recovery and pre-finalization voice gates; split native Tk GUI processes.
+# v116.0.34.94.6.112: Restore native SCM supervisor adapter, explicit CLI service route and fail-closed Windows owner plan.
+# v116.0.34.94.6.111: Restore V104 existing-WAL refusal, safe SQLite storage routing and Windows settings path race guard.
+# v116.0.34.94.6.110: Correct cleanroom unprovisioned negative gate, await durable Qt TPA refusal and allow verified Windows cold startup.
+# v116.0.34.94.6.109: Keep managed ROOT-local install state out of source exports, consistent with the static integrity boundary.
+# v116.0.34.94.6.108: Separate managed root-local install state from static package hashes; sync startup identity and TPA checklist regression.
+# v116.0.34.94.6.107: Repair glibc version comparison, early locked cross-target validation and TPA regression test contracts.
+# v116.0.34.94.6.106: Separate Qt/JSS glibc 2.34 floor from core 2.17 and prepare 22 Windows TPA cases.
+# v116.0.34.94.6.105: staged JSS V104 + V80 convergence; release metadata not yet synchronized.
+# v116.0.34.94.6.80: Integrate root-local Python/JSS prerequisites after V79 (WIP; no release acceptance yet).
+# v116.0.34.94.6.79: Timestamped chat bubbles, metadata-only conversation list, safe session selection and relocated integrations.
+# v116.0.34.94.6.78: Put technical chat statuses in opt-in history and show truthful animated local activity without affecting finalization.
+# v116.0.34.94.6.77: Restore explicit failure classification for unexpectedly failing optional-service probes.
+# v116.0.34.94.6.76: Separate read-only service observer from operator controls and monitor all service capabilities without lifecycle changes.
+# v116.0.34.94.6.75: Preserve terminal chat recovery metadata past cache TTL and expose unclassified runtime rejection diagnostics.
 # v116.0.34.94.6.74: Gate archive recall by author proof, add local Ollama preview, fix JSS status and dependency regression, and synchronize MCP deployment identity.
 # v116.0.34.94.6.73: Verify selected MCP interpreter, audit optional dependencies at JSS startup, and guide safe recovery.
 # v116.0.34.94.6.72: Persist manual TPA evidence off Qt and adopt reports only after durable acknowledgement.
@@ -205,9 +234,12 @@ from typing import Any
 # v115.18.1 hardened Configuration Studio profiles, path safety, launch and GUI.
 # v115.21.9 hardens root-scoped workspace resolution and legacy compatibility.
 # No private MEMORY contents or active daemon data are included.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.74"
+# v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
+# v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
+# no automatic private environment mutation or MEMORY relocation.
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.4"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
-PACKAGE_RELEASE_NAME = "recall-ollama-jss-status"
+PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
     f"{PACKAGE_VERSION}-{PACKAGE_RELEASE_NAME}" if PACKAGE_RELEASE_NAME else PACKAGE_VERSION
 )

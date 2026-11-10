@@ -71,10 +71,15 @@ jobs:
       # though the GUI test passed in a fresh Python process. Keep these
       # acceptance tests mandatory, but execute them before the omnibus suite
       # in their own Python interpreter; do not silently skip GUI coverage.
-      - name: Run native Memory Studio GUI tests in isolated Python process
+      # Both native GUI acceptance cases remain mandatory. Tcl/Tk can retain
+      # interpreter-local state across Tk.destroy() inside one pytest process.
+      # Each case receives a fresh Python/Tcl interpreter, never a skipped test.
+      - name: Run native Memory Studio GUI tests in separate Python processes
         shell: pwsh
         run: |
-          python -X utf8 -m pytest -q -ra --tb=short tests/test_memory_desktop_actions_windows.py tests/test_memory_desktop_gui_smoke.py
+          python -X utf8 -m pytest -q -ra --tb=short tests/test_memory_desktop_actions_windows.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -X utf8 -m pytest -q -ra --tb=short tests/test_memory_desktop_gui_smoke.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # PR events may race with source-branch catalog sync or check out a test
