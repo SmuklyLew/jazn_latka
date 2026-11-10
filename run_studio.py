@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import sys
 
 
@@ -15,6 +16,9 @@ def main() -> int:
         print("Jaźń: private_python_invalid: " + str(private["state"]), file=sys.stderr)
         return 78
     if private["ready"] and not private["current"]:
+        if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
+            print("Jaźń: private_python_handoff_not_established", file=sys.stderr)
+            return 78
         from latka_jazn.dependencies.process_handoff import handoff_to_managed_python
 
         return handoff_to_managed_python(
