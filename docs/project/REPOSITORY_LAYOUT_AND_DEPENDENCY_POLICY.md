@@ -60,17 +60,22 @@ read-only for backward compatibility until an explicit verified migration.
 
 ### Rozdzielenie linked worktree i TPA (od .94.6)
 
-`jazn_latka_master` zachowuje domyślne
-`$ROOTDIR/workspace_runtime`; istniejące instalacje bez markerów Git
-zachowują swoje historyczne reguły. Git linked worktree rozpoznawany
-przez plik `.git` (zamiast katalogu głównego checkoutu) dostaje własny
-`$ROOTDIR/workspace_runtime` i nie korzysta niejawnie z markerów
-produkcyjnego daemona we wspólnym katalogu rodzeństwa.
-Jawne `JAZN_RUNTIME_WORKSPACE_DIR` nadal wygrywa nad domyślnym
-wyborem. Nie przenosi się istniejących baz, checkpointów ani PID.
+Od V127.4 **każdy nowy/przygotowany ROOT zawierający
+`local_resources/`** otrzymuje własne
+`$ROOTDIR/workspace_runtime`, niezależnie od nazwy katalogu i typu
+checkoutu. `JAZN_RUNTIME_WORKSPACE_DIR` może wskazać tylko katalog
+wewnątrz tego samego ROOT: absolutny override poza ROOT, traversale,
+symlinki lub junctions wyprowadzające workspace poza ROOT są
+odrzucane. Stare, nieprzygotowane checkouty bez `local_resources/`
+zachowują historyczne reguły, ale nie są automatycznie migrowane.
+Dla każdej instalacji trzeba osobno zweryfikować `active_root`,
+marker instancji, sesje i heartbeat; sama nazwa katalogu nie wystarcza.
 
-TPA przez `run_studio.py --isolated-acceptance` korzysta z odrębnego
-lokalnego runtime na sesję i trwałego stanu operatora poza SYSTEM.
+TPA przez `run_studio.py --isolated-acceptance` w nowym ROOT
+korzysta z `ROOT/.settings_local/acceptance`; tymczasowe przebiegi
+testowe i ich prywatne runtime nie mogą opuszczać ROOT. Historyczne
+instalacje mogą zachować poprzednią izolację poza SYSTEM do czasu
+jawnej migracji.
 MEMORY ma tryb `off` oraz osobną testową lokalizację; sekrety
 MEMORY/MCP nie są dziedziczone. Próba nałożenia ścieżek z SYSTEM,
 MEMORY lub aktywnym workspace musi skończyć się jawnie błędem.
