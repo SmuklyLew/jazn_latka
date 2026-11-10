@@ -379,6 +379,35 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e . pytest
 
+      - name: Validate Windows Tcl/Tk resources and GUI startup
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $base = (& python -X utf8 -c "import sys; print(sys.base_prefix)").Trim()
+          $assets = Join-Path $base "tcl"
+          if (-not (Test-Path -LiteralPath $assets -PathType Container)) {
+            throw "Python Tcl/Tk resources are absent from the selected interpreter: $assets"
+          }
+          $tcl = @(Get-ChildItem -LiteralPath $assets -Directory | Where-Object {
+            $_.Name -like "tcl*" -and (Test-Path -LiteralPath (Join-Path $_.FullName "init.tcl") -PathType Leaf)
+          })
+          $tk = @(Get-ChildItem -LiteralPath $assets -Directory | Where-Object {
+            $_.Name -like "tk*" -and (Test-Path -LiteralPath (Join-Path $_.FullName "tk.tcl") -PathType Leaf)
+          })
+          if ($tcl.Count -ne 1 -or $tk.Count -ne 1) {
+            throw "Expected one readable Tcl and Tk resource folder under $assets"
+          }
+          Get-Content -LiteralPath (Join-Path $tcl[0].FullName "init.tcl") -Raw -ErrorAction Stop | Out-Null
+          Get-Content -LiteralPath (Join-Path $tk[0].FullName "tk.tcl") -Raw -ErrorAction Stop | Out-Null
+          $env:TCL_LIBRARY = $tcl[0].FullName
+          $env:TK_LIBRARY = $tk[0].FullName
+          "TCL_LIBRARY=$env:TCL_LIBRARY" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "TK_LIBRARY=$env:TK_LIBRARY" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          python -X utf8 tools/windows/check_tk_runtime.py
+          if ($LASTEXITCODE -ne 0) {
+            throw "Live Windows Tk preflight failed."
+          }
+
       - name: Materialize canonical PR metadata locally
         if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/integrate/') || startsWith(github.ref, 'refs/heads/audit/')
         shell: pwsh
@@ -419,16 +448,25 @@ jobs:
           tests/test_operational_learning_memory.py
           tests/test_external_dictionary.py
           tests/test_memory_desktop_gui_smoke.py
-          tests/test_memory_desktop_actions_windows.py
           tests/test_memory_desktop_tk_lifecycle.py
           tests/test_memory_desktop_tk_lifecycle_windows.py
+
+      - name: Real desktop quick actions in isolated Tk interpreter
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          --junitxml="${{ runner.temp }}/pytest-windows-tk-actions.xml"
+          tests/test_memory_desktop_actions_windows.py
 
       - name: Upload Windows pytest report on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pytest-windows-failure
-          path: ${{ runner.temp }}/pytest-windows.xml
+          path: |
+            ${{ runner.temp }}/pytest-windows.xml
+            ${{ runner.temp }}/pytest-windows-tk-actions.xml
           if-no-files-found: ignore
           retention-days: 3
 
