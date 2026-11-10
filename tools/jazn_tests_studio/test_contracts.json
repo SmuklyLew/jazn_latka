@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.123",
-  "active_definition_count": 3294,
+  "system_version": "16.3.25.5.116.0.34.94.6.124",
+  "active_definition_count": 3297,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28651,11 +28651,11 @@
       "path": "tests/test_jazn_run_studio_part2_collapsed_qt.py",
       "name": "test_problem_activation_opens_matching_source_and_full_export",
       "purpose": "Problem activation opens matching source and full export",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -33231,7 +33231,9 @@
       "purpose": "Generation evidence remains green across passive polls but expires",
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 6,
       "expected_exceptions": [],
@@ -33246,7 +33248,9 @@
       "purpose": "Live passive probe preserves proof without generating",
       "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 10,
       "expected_exceptions": [],
@@ -33261,7 +33265,9 @@
       "purpose": "Offline probe creates single operator problem and recovery",
       "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 13,
       "expected_exceptions": [],
@@ -33276,7 +33282,9 @@
       "purpose": "Failed supervisor stays visible in problems and output",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 4,
       "expected_exceptions": [],
@@ -33291,7 +33299,9 @@
       "purpose": "Dialog immediately discards old model proof",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
@@ -33299,6 +33309,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 155
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_ollama_process_probe_is_passive_and_reports_stopped": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_ollama_process_probe_is_passive_and_reports_stopped",
+      "purpose": "Ollama process probe is passive and reports stopped",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 169
+    },
+    "tests/test_jss_service_monitor_evidence.py::test_process_inventory_on_off_is_independent_from_api": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_process_inventory_on_off_is_independent_from_api",
+      "purpose": "Process inventory on off is independent from api",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 187
     },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
@@ -33336,11 +33380,11 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_nonmodal_dialog_does_not_spawn_automatically",
       "purpose": "Nonmodal dialog does not spawn automatically",
-      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 17,
+      "assertion_count": 19,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -33458,6 +33502,28 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 79
+    },
+    "tests/test_jss_startup_dependency_mcp_profile.py::test_provisional_mcp_python_is_checked_before_settings_commit": {
+      "path": "tests/test_jss_startup_dependency_mcp_profile.py",
+      "name": "test_provisional_mcp_python_is_checked_before_settings_commit",
+      "purpose": "Provisional mcp python is checked before settings commit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "mcp",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.dependencies",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
     },
     "tests/test_jss_supervisor_inactive_evidence.py::test_confirmed_inactive_supervisor_is_not_ready": {
       "path": "tests/test_jss_supervisor_inactive_evidence.py",
