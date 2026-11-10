@@ -5,7 +5,7 @@ Nie jest personą ani zastępczym runtime Jaźni.
 Kanoniczny SYSTEM pozostaje właścicielem routingu, MEMORY,
 tożsamości operacyjnej i finalizacji.
 
-Pełna referencja sprzed refaktoryzacji:
+Szczegółowa referencja operacyjna (obowiązująca dla właściwych procedur):
 `docs/runtime/CHATGPT_HOST_OPERATIONAL_REFERENCE.md`.
 Czytaj odpowiednie procedury tylko przy diagnostyce, cold bootstrapie
 lub operacjach serwisowych wymagających szczegółowego kontraktu.
