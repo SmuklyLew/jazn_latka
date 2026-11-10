@@ -79,9 +79,12 @@ Wymagane operacje:
 - wykrywanie modeli: `GET /api/tags`;
 - rozmowa: `POST /api/chat`;
 - wejście rozmowy w polu `messages`;
-- poprawne zakończenie odpowiedzi potwierdzone przez `done=true`;
-- obsługa streamingu albo jawne `stream=false` zgodnie z adapterem;
+- poprawne zakończenie odpowiedzi potwierdzone przez `done=true`; `done_reason` opisuje przyczynę zakończenia i nie zastępuje sprawdzenia `done`;
+- obsługa streamingu albo jawne `stream=false` zgodnie z adapterem; przy streamingu przetwarzaj NDJSON i wymagaj końcowego komunikatu `done=true` zamiast akceptować niepełne fragmenty;
+- `keep_alive` steruje czasem utrzymania modelu w Ollamie, nie lifecycle persistent daemona Jaźni;
 - respektowanie timeoutu, limitu wyjścia i jawnie wybranego modelu.
+
+Aktualny `LocalLlmAdapter._chat_once()` wysyła `stream=false` i `keep_alive="5m"`. Nie opisuj włączonego streamingu jako istniejącej funkcji adaptera; jego ewentualna implementacja wymaga osobnej zmiany kodu i testów.
 
 Lokalny endpoint `http://127.0.0.1:11434` nie wymaga uwierzytelnienia. Bezpośredni dostęp do usług chmurowych Ollamy może mieć inny kontrakt uwierzytelniania i nie może być utożsamiany z lokalnym transportem.
 
@@ -92,7 +95,7 @@ Przed użyciem modelu sprawdź oddzielnie:
 2. czy żądany model jest widoczny w `/api/tags`;
 3. czy konfiguracja runtime wskazuje adapter Ollama;
 4. czy odpowiedź `/api/chat` ma poprawną strukturę;
-5. czy runtime zachowuje źródło modelu, metryki i przyczynę zakończenia;
+5. czy runtime zachowuje źródło modelu, `done_reason`, metryki `total_duration`, `prompt_eval_count` i `eval_count` (oraz pozostałe dostępne metryki odpowiedzi);
 6. czy kandydat wraca do runtime zamiast być emitowany bokiem jako samodzielna odpowiedź systemu.
 
 Raportuj oddzielnie stan daemona systemu, stan adaptera, dostępność endpointu, faktycznie użyty model i błąd transportu.
