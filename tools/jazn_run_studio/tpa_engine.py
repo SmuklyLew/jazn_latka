@@ -64,6 +64,7 @@ def isolated_environment(folder: Path, root: Path) -> QProcessEnvironment:
             values.pop(key)
     values.update(JAZN_RUNTIME_WORKSPACE_DIR=str(layout.runtime), JAZN_OPERATOR_STATE_ROOT=str(layout.operator),
                   JAZN_MEMORY_ROOT=str(layout.memory), JAZN_MEMORY_MODE="off",
+                   JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated",
                   JAZN_NETWORK_TIME_FIRST="0", JAZN_NETWORK_TIME_IN_TURN="0",
                   PYTHONUTF8="1", PYTHONIOENCODING="utf-8", PYTHONDONTWRITEBYTECODE="1",
                   PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", QT_QPA_PLATFORM="offscreen")
