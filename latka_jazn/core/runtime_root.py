@@ -73,11 +73,10 @@ def find_runtime_root(start: Path | None = None) -> Path:
 
 
 def default_runtime_workspace_path(root: Path) -> Path:
-    """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
+    """Choose ROOT/workspace_runtime for a prepared SYSTEM, without any migration.
 
-    The named editable jazn_latka_master checkout uses ROOT/workspace_runtime.
-    Git linked worktrees use their own ROOT/workspace_runtime without migration.\n    Other roots retain the shared host-level default for compatibility.
-    Host-managed runtime layouts reuse their existing parent workspace.
+    Historical bare/host-managed roots keep their old layout for compatibility.
+    A prepared modern ROOT is identified by its local_resources directory.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -122,10 +121,10 @@ def workspace_runtime_path(
 ) -> Path:
     """Resolve the mutable workspace relative to the verified SYSTEM ROOT.
 
-    ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override. Absolute
-    overrides are used directly; relative overrides remain relative to ``active_root``
-    for compatibility. Without an override the workspace is host-level, outside the
-    active runtime root. Never relocate existing state implicitly when defaults change.
+    ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override, but
+    prepared modern installations refuse paths outside their SYSTEM ROOT.
+    Historical bare installations retain old override semantics. Never
+    migrate existing state as a side effect of path discovery.
     """
 
     runtime_root = Path(root).expanduser().resolve()
