@@ -257,6 +257,36 @@ def _subject(normalized: str) -> str:
     return "experience"
 
 
+def is_session_dialogue_reference(text: str) -> bool:
+    """Concrete recent-session reference, not an autobiographical memory request.
+
+    This is a routing hint only. The confirmed session history remains the
+    exclusive source for claims about earlier accepted turns.
+    """
+    normalized = _norm(text)
+    if not normalized:
+        return False
+    if re.search(
+        r"\b(?:19|20)\d{2}\b|\b(?:wczoraj\w*|przedwczoraj\w*|"
+        r"sprzed|tydzien\w*|miesiac\w*|dziecinstw\w*|"
+        r"inna sesja|innej sesji|innym czacie|poprzednim czacie)\b",
+        normalized,
+    ):
+        return False
+    session_anchor = bool(re.search(
+        r"(?:poprzedni\w*|ostatni\w*) wiadomosc\w*|"
+        r"(?:tej|naszej) rozmow\w*|(?:tym|tego) watk\w*|"
+        r"po ponownym polaczeniu",
+        normalized,
+    ))
+    concrete_object = bool(re.search(
+        r"\b(?:liczb\w*|numer\w*|hasl\w*|kod\w*|slow\w*|"
+        r"wiadomosc\w*|tekst\w*|zdani\w*|cytat\w*|pytani\w*|nazw\w*)\b",
+        normalized,
+    ))
+    return session_anchor and concrete_object
+
+
 def analyze_memory_intent(
     text: str,
     *,
@@ -312,6 +342,13 @@ def analyze_memory_intent(
         return MemoryIntentSemantics(
             "memory_intent/v1", "none", False, False, False, True,
             referential, correction, _subject(normalized), temporal, 0.93, tuple(evidence),
+        )
+
+    if temporal is None and is_session_dialogue_reference(raw):
+        evidence.append("session_dialogue_reference_not_autobiographical_recall")
+        return MemoryIntentSemantics(
+            "memory_intent/v1", "none", False, False, False, False,
+            referential, correction, "session_dialogue", None, 0.93, tuple(evidence),
         )
 
     imperative_recall = bool(
@@ -408,6 +445,6 @@ def strip_temporal_language(text: str, scope: TemporalScope | None) -> str:
 
 __all__ = [
     "MEMORY_CONTENT_INTENTS", "MEMORY_EXPERIENCE_INTENTS", "MEMORY_RETRIEVAL_INTENTS", "MemoryIntentSemantics",
-    "TemporalScope", "analyze_memory_intent", "has_explicit_memory_recall",
+    "TemporalScope", "analyze_memory_intent", "has_explicit_memory_recall", "is_session_dialogue_reference",
     "intent_requires_memory_content", "parse_temporal_scope", "strip_temporal_language",
 ]
