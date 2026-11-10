@@ -145,6 +145,7 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
         checked = validate_operator_path(
             child, system_root, directory=True,
             allow_acceptance_operator=acceptance_mode,
+            acceptance_operator_root=acceptance_root,
         )
         if not _within(checked, resolved):
             raise OperatorPathError(f"Podkatalog stanu wyprowadza poza katalog aplikacji: {child}")
