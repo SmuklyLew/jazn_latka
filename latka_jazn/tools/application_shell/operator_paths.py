@@ -61,6 +61,12 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
             proposed = Path(acceptance_operator_root).expanduser()
             if not proposed.is_absolute() or not proposed.absolute().is_relative_to(layout.acceptance):
                 raise OperatorPathError("Nieautoryzowany katalog operatora odbioru")
+            relative = proposed.absolute().relative_to(layout.acceptance)
+            if not (relative.parts == ("operator",)
+                    or (len(relative.parts) == 2
+                        and relative.parts[1] == "operator"
+                        and re.fullmatch(r"jazn[-_][a-zA-Z0-9_-]+", relative.parts[0]))):
+                raise OperatorPathError("Nieprawidłowa struktura operatora odbioru")
             try:
                 authorized_acceptance = verify_local_descendant(proposed, layout)
             except ValueError as exc:
@@ -112,9 +118,15 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
     acceptance_mode = (
         os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
     )
+    acceptance_root = (Path(raw).absolute()
+                       if acceptance_mode and raw
+                       and Path(raw).absolute().is_relative_to(
+                           Path(system_root).resolve() / ".settings_local" / "acceptance")
+                       else None)
     base = validate_operator_path(
         raw or default, system_root, directory=True,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     target = base / app_id
     if per_system:
@@ -123,6 +135,7 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
     resolved = validate_operator_path(
         target, system_root, directory=True,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(resolved, base):
         raise OperatorPathError(f"Symlink lub junction wyprowadza stan poza katalog operatora: {target}")
@@ -138,6 +151,7 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
     log = validate_operator_path(
         resolved / "runtime" / f"{app_id}.jsonl", system_root,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(log, resolved):
         raise OperatorPathError(f"Log wyprowadza poza katalog aplikacji: {log}")
@@ -152,9 +166,15 @@ def operator_file(app_id: str, system_root: Path, filename: str, *, per_system: 
     acceptance_mode = (
         os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
     )
+    raw_operator = os.environ.get("JAZN_OPERATOR_STATE_ROOT", "").strip()
+    acceptance_root = (Path(raw_operator).absolute() if acceptance_mode and raw_operator
+                       and Path(raw_operator).absolute().is_relative_to(
+                           Path(system_root).resolve() / ".settings_local" / "acceptance")
+                       else None)
     target = validate_operator_path(
         base / filename, system_root,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(target, base):
         raise OperatorPathError(f"Plik stanu wyprowadza poza katalog operatora: {target}")
