@@ -10,7 +10,7 @@ by the TUI. No alternate database or restore engine is introduced.
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from queue import Empty, Queue
-from threading import Event, Thread, current_thread, main_thread
+from threading import Event, Lock, Thread, current_thread, main_thread
 from typing import Any
 import json
 import os
@@ -125,9 +125,19 @@ class TkStudioDialogs:
     def __init__(self, root: tk.Tk):
         self.root = root
         self._requests: Queue[tuple[Callable[[], Any], Event, dict[str, Any]]] = Queue()
-        self.root.after(60, self._drain)
+        self._request_lock = Lock()
+        self._closed = False
+        self._drain_after_id: str | None = None
+        self._schedule_drain()
+
+    def _schedule_drain(self) -> None:
+        if not self._closed and self.root.winfo_exists():
+            self._drain_after_id = self.root.after(60, self._drain)
 
     def _drain(self) -> None:
+        self._drain_after_id = None
+        if self._closed:
+            return
         try:
             for _ in range(15):
                 fn, event, result = self._requests.get_nowait()
@@ -139,14 +149,40 @@ class TkStudioDialogs:
                     event.set()
         except Empty:
             pass
-        if self.root.winfo_exists():
-            self.root.after(60, self._drain)
+        self._schedule_drain()
+
+    def close(self) -> None:
+        """Stop the Tk poll and wake callers waiting for a destroyed dialog."""
+        with self._request_lock:
+            if self._closed:
+                return
+            self._closed = True
+            callback = self._drain_after_id
+            self._drain_after_id = None
+            while True:
+                try:
+                    _fn, done, output = self._requests.get_nowait()
+                except Empty:
+                    break
+                output["exception"] = RuntimeError("Studio Pamięci: okno zostało zamknięte")
+                done.set()
+        if callback is not None:
+            try:
+                self.root.after_cancel(callback)
+            except tk.TclError:
+                # The root may already be in its native Destroy callback.
+                pass
 
     def _on_ui(self, fn: Callable[[], Any]) -> Any:
         if current_thread() is main_thread():
+            if self._closed:
+                raise RuntimeError("Studio Pamięci: okno zostało zamknięte")
             return fn()
         done, output = Event(), {}
-        self._requests.put((fn, done, output))
+        with self._request_lock:
+            if self._closed:
+                raise RuntimeError("Studio Pamięci: okno zostało zamknięte")
+            self._requests.put((fn, done, output))
         done.wait()
         if "exception" in output:
             raise output["exception"]
@@ -317,6 +353,8 @@ class DesktopWorkspace:
         self.tool_root = tool_root.resolve()
         self.diagnostics = diagnostics
         self._busy = False
+        self._closed = False
+        self._updates_after_id: str | None = None
         self._updates: Queue[tuple[bool, Any, str]] = Queue()
         self._page = "home"
         self._fields: dict[str, tk.StringVar] = {}
@@ -339,8 +377,46 @@ class DesktopWorkspace:
         self.root.configure(bg=BG)
         self._layout()
         self.root.protocol("WM_DELETE_WINDOW", self._request_close)
+        self.root.bind("<Destroy>", self._on_root_destroy, add="+")
         self.open_page("home")
-        self.root.after(80, self._check_updates)
+        self._schedule_updates()
+
+    def _schedule_updates(self) -> None:
+        if not self._closed and self.root.winfo_exists():
+            self._updates_after_id = self.root.after(80, self._poll_updates)
+
+    def _poll_updates(self) -> None:
+        self._updates_after_id = None
+        if not self._closed:
+            self._check_updates()
+
+    def _shutdown(self) -> None:
+        """Idempotent cleanup even when callers destroy Tk without WM_DELETE_WINDOW."""
+        if self._closed:
+            return
+        self._closed = True
+        callback = self._updates_after_id
+        self._updates_after_id = None
+        if callback is not None:
+            try:
+                self.root.after_cancel(callback)
+            except tk.TclError:
+                # The native Tk widget may already be being destroyed.
+                pass
+        self.dialogs.close()
+
+    def _on_root_destroy(self, event: Any) -> None:
+        if event.widget is self.root:
+            self._shutdown()
+
+    def close(self) -> None:
+        """Close only an idle workspace; never interrupt a running memory write."""
+        if self._busy:
+            self._request_close()
+            return
+        self._shutdown()
+        if self.root.winfo_exists():
+            self.root.destroy()
 
     def _request_close(self) -> None:
         if self._busy:
@@ -350,7 +426,7 @@ class DesktopWorkspace:
                 "aby nie przerwać zapisu ani publikacji w nieznanym stanie.",
             )
             return
-        self.root.destroy()
+        self.close()
 
     def _configure_theme(self) -> None:
         style = ttk.Style(self.root)
@@ -467,6 +543,8 @@ class DesktopWorkspace:
             self._check_updates(schedule=False)
 
     def _check_updates(self, *, schedule: bool = True) -> None:
+        if self._closed:
+            return
         try:
             while True:
                 ok, result, title = self._updates.get_nowait()
@@ -483,8 +561,8 @@ class DesktopWorkspace:
                 self.open_page(self._page)
         except Empty:
             pass
-        if schedule and self.root.winfo_exists():
-            self.root.after(80, self._check_updates)
+        if schedule:
+            self._schedule_updates()
 
     def _project(self) -> Any | None:
         if not self.state.project:
