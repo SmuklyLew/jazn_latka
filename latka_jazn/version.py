@@ -1,3 +1,4 @@
+# V127.2: preserve safe Windows launcher and real Tk GUI gates; extract bounded recovery helper.
 # v116.0.34.94.6.127.1: Ground Polish short-session recall coverage in accepted conversation state; retain fail-closed guards.
 # v116.0.34.94.6.126: Cancel owned Tk polling callbacks and release waiting dialogs on Memory Studio teardown.
 # v116.0.34.94.6.125: Report truthful chat transport close and protocol failure states without inventing pending turns.
@@ -235,7 +236,7 @@ from typing import Any
 # No private MEMORY contents or active daemon data are included.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.1"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.2"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
