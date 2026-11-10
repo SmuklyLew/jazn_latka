@@ -14,7 +14,7 @@ def test_windows_launcher_prefers_private_venv_before_host_python() -> None:
     source = (ROOT / "JAZN.cmd").read_text(encoding="utf-8")
     assert source.index("JAZN_PYTHON_RUNTIME_SET.json") < source.index('if exist "%JAZN_ROOT%.venv"')
     assert source.index('if exist "%JAZN_ROOT%.venv"') < source.index("where py.exe")
-    assert r"Niekompletne ROOT\\.venv" in source
+    assert r"Niekompletne ROOT\.venv" in source
     assert 'exit /b 78' in source
 
 
