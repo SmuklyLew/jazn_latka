@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.125",
-  "active_definition_count": 3302,
+  "system_version": "16.3.25.5.116.0.34.94.6.126",
+  "active_definition_count": 3307,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -38658,6 +38658,107 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 21
+    },
+    "tests/test_memory_desktop_tk_lifecycle.py::test_dialog_poll_cancel_and_waiting_worker_released": {
+      "path": "tests/test_memory_desktop_tk_lifecycle.py",
+      "name": "test_dialog_poll_cancel_and_waiting_worker_released",
+      "purpose": "Dialog poll cancel and waiting worker released",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "RuntimeError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_memory_desktop_tk_lifecycle.py::test_dialog_poll_reschedules_only_before_shutdown": {
+      "path": "tests/test_memory_desktop_tk_lifecycle.py",
+      "name": "test_dialog_poll_reschedules_only_before_shutdown",
+      "purpose": "Dialog poll reschedules only before shutdown",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_memory_desktop_tk_lifecycle.py::test_workspace_root_destroy_cancels_owned_timer_exactly_once": {
+      "path": "tests/test_memory_desktop_tk_lifecycle.py",
+      "name": "test_workspace_root_destroy_cancels_owned_timer_exactly_once",
+      "purpose": "Workspace root destroy cancels owned timer exactly once",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_memory_desktop_tk_lifecycle.py::test_workspace_busy_close_does_not_interrupt_memory_operation": {
+      "path": "tests/test_memory_desktop_tk_lifecycle.py",
+      "name": "test_workspace_busy_close_does_not_interrupt_memory_operation",
+      "purpose": "Workspace busy close does not interrupt memory operation",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_memory_desktop_tk_lifecycle_windows.py::test_two_windows_release_owned_callbacks_without_gc": {
+      "path": "tests/test_memory_desktop_tk_lifecycle_windows.py",
+      "name": "test_two_windows_release_owned_callbacks_without_gc",
+      "purpose": "Two windows release owned callbacks without gc",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "memory",
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell",
+        "latka_jazn.tools.memory_rebuild_app.ui_desktop"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
     },
     "tests/test_memory_desktop_workspace.py::test_window_routes_to_native_canonical_workspace": {
       "path": "tests/test_memory_desktop_workspace.py",
