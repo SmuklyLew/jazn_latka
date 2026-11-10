@@ -12,6 +12,7 @@ from latka_jazn.core.acceptance_layout import acceptance_temp_parent, resolve_ac
 from latka_jazn.core.runtime_root import (
     active_runtime_marker_path, default_runtime_workspace_path, workspace_runtime_path,
 )
+from latka_jazn.tools.application_shell.operator_paths import operator_file, operator_state_dir
 
 
 def prepared(tmp_path: Path, name: str = "jazn_latka_v127_4") -> Path:
@@ -125,6 +126,36 @@ def test_nested_tpa_acceptance_base_is_owned_and_external_base_denied(tmp_path, 
     assert layout.operator == nested / "operator"
     with pytest.raises(ValueError, match="acceptance_runtime_outside_root"):
         resolve_acceptance_layout(root, base=tmp_path / "outside")
+
+
+def test_nested_acceptance_operator_can_write_only_under_its_owned_root(tmp_path, monkeypatch):
+    root = prepared(tmp_path)
+    (root / ".settings").mkdir()
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    parent = acceptance_temp_parent(root)
+    assert parent is not None
+    nested = parent / "jazn_tpa_fixture"
+    nested.mkdir()
+    layout = resolve_acceptance_layout(root, base=nested)
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(layout.runtime))
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(layout.memory))
+    monkeypatch.setenv("JAZN_OPERATOR_STATE_ROOT", str(layout.operator))
+    monkeypatch.setenv("JAZN_STUDIO_ACCEPTANCE_PROFILE", "isolated")
+    assert operator_state_dir("tpa-review", root) == layout.operator / "tpa-review"
+    assert operator_file("tpa-review", root, "run.json") == layout.operator / "tpa-review" / "run.json"
+    assert not (layout.operator / "tpa-review").exists()
+
+
+def test_nested_acceptance_operator_cannot_redirect_to_arbitrary_tree(tmp_path, monkeypatch):
+    root = prepared(tmp_path)
+    (root / ".settings").mkdir()
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.setenv("JAZN_STUDIO_ACCEPTANCE_PROFILE", "isolated")
+    impostor = root / ".settings_local" / "acceptance" / "unreviewed" / "operator"
+    monkeypatch.setenv("JAZN_OPERATOR_STATE_ROOT", str(impostor))
+    from latka_jazn.tools.application_shell.operator_paths import OperatorPathError
+    with pytest.raises(OperatorPathError, match="Nieprawidłowa struktura"):
+        operator_state_dir("tpa-review", root)
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="Requires native Windows PowerShell")
