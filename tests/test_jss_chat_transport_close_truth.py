@@ -7,10 +7,12 @@ from __future__ import annotations
 
 from threading import RLock
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
 from tools.jazn_run_studio.chat import ChatClient
+from tools.jazn_run_studio.core import Controller
 
 
 def _client(pending: str | None = None, *, awaiting_ack: str | None = None):
@@ -19,7 +21,8 @@ def _client(pending: str | None = None, *, awaiting_ack: str | None = None):
         emit=lambda key, kind, value: events.append((key, kind, value)),
     )
     client = ChatClient.__new__(ChatClient)
-    client.core = core
+    # The typed stub implements only emit(), which is all these notices use.
+    client.core = cast(Controller, core)
     client.lock = RLock()
     client.pending = pending
     client._awaiting_gui_ack = awaiting_ack
