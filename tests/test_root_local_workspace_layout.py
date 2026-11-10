@@ -166,8 +166,8 @@ def test_root_token_memory_settings_uses_isolated_workspace_and_no_extra_write_a
     (root / ".settings").mkdir()
     package = root / "latka_jazn"
     package.mkdir()
-    (package / "version.py").write_text("PACKAGE_VERSION = 'v1'\\n", encoding="utf-8")
-    (root / "run.py").write_text("# fake test entrypoint\\n", encoding="utf-8")
+    (package / "version.py").write_text("PACKAGE_VERSION = 'v1'\n", encoding="utf-8")
+    (root / "run.py").write_text("# fake test entrypoint\n", encoding="utf-8")
     monkeypatch.setenv(
         "JAZN_RUNTIME_WORKSPACE_DIR",
         "$ROOT/.settings_local/acceptance/pytest_runtime_case",
