@@ -159,6 +159,43 @@ def test_nested_acceptance_operator_cannot_redirect_to_arbitrary_tree(tmp_path, 
         operator_state_dir("tpa-review", root)
 
 
+def test_root_token_memory_settings_uses_isolated_workspace_and_no_extra_write_authority(
+    tmp_path, monkeypatch,
+):
+    root = prepared(tmp_path)
+    (root / ".settings").mkdir()
+    package = root / "latka_jazn"
+    package.mkdir()
+    (package / "version.py").write_text("PACKAGE_VERSION = 'v1'\\n", encoding="utf-8")
+    (root / "run.py").write_text("# fake test entrypoint\\n", encoding="utf-8")
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/pytest_runtime_case",
+    )
+    from latka_jazn.tools.memory_rebuild_app.settings import (
+        MemoryRebuildToolSettings,
+        resolve_settings_path,
+        save_tool_settings,
+    )
+    from latka_jazn.tools.application_shell.operator_paths import (
+        OperatorPathError,
+        validate_operator_path,
+    )
+
+    workspace = root / ".settings_local" / "acceptance" / "pytest_runtime_case"
+    settings_path = workspace / "memory_rebuild_settings.json"
+    assert resolve_settings_path(tool_root=root) == settings_path
+    saved = save_tool_settings(MemoryRebuildToolSettings(), tool_root=root)
+    assert saved == settings_path
+    assert saved.is_file()
+    with pytest.raises(OperatorPathError):
+        validate_operator_path(workspace / "unrelated.txt", root)
+    with pytest.raises(OperatorPathError):
+        validate_operator_path(
+            workspace / "unrelated.txt", root, allow_memory_settings=True,
+        )
+
+
 @pytest.mark.skipif(sys.platform != "win32", reason="Requires native Windows PowerShell")
 def test_windows_launcher_matches_python_for_modern_root(tmp_path, monkeypatch):
     shell = shutil.which("powershell.exe") or shutil.which("pwsh")
