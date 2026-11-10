@@ -37,8 +37,18 @@ def main() -> int:
     for name in list(os.environ):
         if name.upper().startswith("JAZN_"):
             os.environ.pop(name)
-    os.environ.update(JAZN_OPERATOR_STATE_ROOT=str(output / "operator"), JAZN_RUNTIME_WORKSPACE_DIR=str(output / "runtime"),
-                      JAZN_MEMORY_ROOT=str(output / "memory"), JAZN_MEMORY_MODE="off")
+    if (root / "local_resources").is_dir():
+        from uuid import uuid4
+        from latka_jazn.core.acceptance_layout import acceptance_temp_parent, resolve_acceptance_layout
+        parent = acceptance_temp_parent(root)
+        assert parent is not None
+        layout = resolve_acceptance_layout(root, base=parent / ("jazn-smoke-" + uuid4().hex))
+        runtime_root, operator_root, memory_root = layout.runtime, layout.operator, layout.memory
+    else:
+        runtime_root, operator_root, memory_root = output / "runtime", output / "operator", output / "memory"
+    os.environ.update(JAZN_OPERATOR_STATE_ROOT=str(operator_root),
+                      JAZN_RUNTIME_WORKSPACE_DIR=str(runtime_root),
+                      JAZN_MEMORY_ROOT=str(memory_root), JAZN_MEMORY_MODE="off")
     from PySide6.QtCore import Qt
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QScrollArea
