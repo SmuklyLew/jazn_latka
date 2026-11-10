@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.123",
-  "active_definition_count": 3291,
+  "active_definition_count": 3294,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33285,6 +33285,21 @@
       "description_source": "source_identity",
       "line": 138
     },
+    "tests/test_jss_service_monitor_evidence.py::test_dialog_immediately_discards_old_model_proof": {
+      "path": "tests/test_jss_service_monitor_evidence.py",
+      "name": "test_dialog_immediately_discards_old_model_proof",
+      "purpose": "Dialog immediately discards old model proof",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 155
+    },
     "tests/test_jss_service_status_dialog.py::test_status_requires_live_identity_and_conversation_capability": {
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_status_requires_live_identity_and_conversation_capability",
@@ -33490,6 +33505,36 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 41
+    },
+    "tests/test_jss_supervisor_inactive_status_read.py::test_inactive_optional_supervisor_read_is_not_a_failed_operation": {
+      "path": "tests/test_jss_supervisor_inactive_status_read.py",
+      "name": "test_inactive_optional_supervisor_read_is_not_a_failed_operation",
+      "purpose": "Inactive optional supervisor read is not a failed operation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_jss_supervisor_inactive_status_read.py::test_supervisor_json_and_transport_failures_stay_errors": {
+      "path": "tests/test_jss_supervisor_inactive_status_read.py",
+      "name": "test_supervisor_json_and_transport_failures_stay_errors",
+      "purpose": "Supervisor json and transport failures stay errors",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_jss_test_evidence_dependency_profile.py::test_pytest_evidence_profile_is_resolvable_without_entering_core_or_release": {
       "path": "tests/test_jss_test_evidence_dependency_profile.py",
