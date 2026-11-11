@@ -62,9 +62,12 @@ def test_historical_root_missing_manifest_keeps_sibling_workspace(
 ) -> None:
     """A bare historical ROOT must not silently migrate its SQLite workspace."""
     monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
-    cfg = JaznConfig(root=tmp_path)
+    legacy_parent = tmp_path / "isolated_historical_host"
+    root = legacy_parent / "old-version"
+    root.mkdir(parents=True)
+    cfg = JaznConfig(root=root)
     expected = (
-        tmp_path.parent
+        legacy_parent
         / "workspace_runtime"
         / "core_state"
         / "memory_runtime"
@@ -75,7 +78,8 @@ def test_historical_root_missing_manifest_keeps_sibling_workspace(
     assert cfg.memory_db_path_readonly == expected
     assert cfg.memory_availability.persistent_memory_enabled is False
     assert not cfg.memory_root.exists()
-    assert not (tmp_path / "workspace_runtime").exists()
+    assert not (root / "workspace_runtime").exists()
+    assert not (legacy_parent / "workspace_runtime").exists()
 
 
 def test_existing_invalid_json_is_not_silently_replaced(tmp_path: Path) -> None:
