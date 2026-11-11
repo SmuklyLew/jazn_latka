@@ -20,7 +20,6 @@ from .common import (
     ENVIRONMENT_SCHEMA,
     DependencyStudioError,
     canonicalize_distribution_name,
-    current_platform_alias,
     dependency_contract_fingerprint,
     environment_marker_path,
     import_name_for_distribution,
@@ -106,7 +105,13 @@ def extend_private_environment(
     if python_executable and _path_key(python_executable) != _path_key(interpreter):
         raise DependencyStudioError("extension_interpreter_must_be_root_private_venv")
     # A stale marker is a blocker, not permission to overwrite ownership.
-    if active_runtime_marker_path(project_root).is_file():
+    # Check both the selected acceptance workspace and the default ROOT
+    # workspace. An inherited override must not hide an active local daemon.
+    markers = {
+        active_runtime_marker_path(project_root),
+        project_root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json",
+    }
+    if any(marker.is_file() for marker in markers):
         raise DependencyStudioError("active_runtime_marker_present_no_venv_mutation")
     if not interpreter.is_file():
         raise DependencyStudioError("private_python_missing")
