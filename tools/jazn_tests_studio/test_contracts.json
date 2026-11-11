@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3365,
+  "active_definition_count": 3366,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21082,27 +21082,48 @@
       "markers": [],
       "assertion_count": 8,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 17
+      "line": 18
+    },
+    "tests/test_heart_system_guided_onboarding_qt.py::test_first_run_missing_private_python_is_nonblocking_and_denied": {
+      "path": "tests/test_heart_system_guided_onboarding_qt.py",
+      "name": "test_first_run_missing_private_python_is_nonblocking_and_denied",
+      "purpose": "First run missing private python is nonblocking and denied",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
     },
     "tests/test_heart_system_guided_onboarding_qt.py::test_chat_step_requires_trusted_runtime_and_explicit_generation": {
       "path": "tests/test_heart_system_guided_onboarding_qt.py",
       "name": "test_chat_step_requires_trusted_runtime_and_explicit_generation",
       "purpose": "Chat step requires trusted runtime and explicit generation",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 6,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 67
     },
     "tests/test_heart_system_guided_onboarding_qt.py::test_memory_continuity_label_does_not_unlock_chat": {
       "path": "tests/test_heart_system_guided_onboarding_qt.py",
@@ -21116,10 +21137,12 @@
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 80
+      "line": 105
     },
     "tests/test_heart_system_guided_onboarding_qt.py::test_sidebar_chat_connect_cannot_bypass_guided_readiness": {
       "path": "tests/test_heart_system_guided_onboarding_qt.py",
@@ -21133,10 +21156,12 @@
       "expected_exceptions": [
         "StudioError"
       ],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 115
     },
     "tests/test_heart_system_helper_payload.py::test_helper_rejects_invalid_payload_before_reservation": {
       "path": "tests/test_heart_system_helper_payload.py",
