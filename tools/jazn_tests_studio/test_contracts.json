@@ -28641,13 +28641,13 @@
       "path": "tests/test_jazn_run_studio_mcp_events.py",
       "name": "test_selected_port_survives_settings_round_trip",
       "purpose": "Selected port survives settings round trip",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -28671,7 +28671,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 147
     },
     "tests/test_jazn_run_studio_mcp_events.py::test_gui_drains_critical_events_even_with_full_log_queue": {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
@@ -28688,7 +28688,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 164
     },
     "tests/test_jazn_run_studio_memory_view.py::test_memory_page_fits_minimum_viewport": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
