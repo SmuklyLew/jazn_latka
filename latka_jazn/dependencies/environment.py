@@ -304,7 +304,11 @@ def install_bundle(
     _write_json(env_marker, marker)
     required = set(activation_profile_names(project_root))
     provided = set(str(item) for item in marker["resolved_profiles"])
-    activation_eligible = required.issubset(provided)
+    # Fresh prepared ROOTs activate only the canonical ROOT/.venv. Legacy
+    # unmanaged installations preserve their historical compatibility policy.
+    activation_eligible = required.issubset(provided) and (
+        root_local_venv or not root_local_resources_enabled(project_root)
+    )
     activation_marker = environment_marker_path(project_root)
     if activation_eligible:
         _write_json(activation_marker, marker)
