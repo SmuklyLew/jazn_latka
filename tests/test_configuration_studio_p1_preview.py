@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.tools.configuration_studio import (
     ConfigValidationError, preview_profile_changes, profile_file,
     profile_snapshot, save_profile,
@@ -88,9 +89,11 @@ def test_dry_run_rejects_unknown_and_unsafe_configuration(tmp_path: Path) -> Non
 
 def test_marker_cannot_be_mistaken_for_runtime_readiness(tmp_path: Path) -> None:
     root = fake_system(tmp_path)
-    workspace = tmp_path / "workspace_runtime"
-    workspace.mkdir()
-    (workspace / "JAZN_ACTIVE_RUNTIME.json").write_text('{"stale":true}', encoding="utf-8")
+    # Presence is reported for the effective workspace, never confused
+    # with proven daemon activity or an old sibling marker.
+    marker = active_runtime_marker_path(root)
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text('{"stale":true}', encoding="utf-8")
     preview = preview_profile_changes(
         root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(tmp_path / "new_workspace")},
         expected_sha256=None,
