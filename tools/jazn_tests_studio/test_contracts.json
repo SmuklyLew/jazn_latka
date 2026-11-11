@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3354,
+  "active_definition_count": 3357,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16653,7 +16653,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 101
     },
     "tests/test_dependency_private_extension.py::test_extension_refuses_active_runtime_even_if_marker_stale": {
       "path": "tests/test_dependency_private_extension.py",
@@ -16676,7 +16676,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 119
     },
     "tests/test_dependency_private_extension.py::test_extension_rejects_foreign_python": {
       "path": "tests/test_dependency_private_extension.py",
@@ -16697,7 +16697,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 131
     },
     "tests/test_dependency_private_extension.py::test_extension_dry_run_never_writes_marker_or_installs": {
       "path": "tests/test_dependency_private_extension.py",
@@ -16716,7 +16716,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 138
     },
     "tests/test_dependency_private_extension.py::test_extension_failure_does_not_publish_activation": {
       "path": "tests/test_dependency_private_extension.py",
@@ -16737,7 +16737,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 146
+      "line": 147
     },
     "tests/test_dependency_private_extension.py::test_extend_cli_requires_explicit_offline_and_uses_single_venv": {
       "path": "tests/test_dependency_private_extension.py",
@@ -16758,7 +16758,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 160
     },
     "tests/test_dependency_run_studio_glibc_policy.py::test_core_target_preserves_release_floor": {
       "path": "tests/test_dependency_run_studio_glibc_policy.py",
@@ -29445,7 +29445,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 32
     },
     "tests/test_jazn_setup_installer.py::test_unknown_profile_fails_closed": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29464,7 +29464,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 42
+      "line": 43
     },
     "tests/test_jazn_setup_installer.py::test_no_implicit_network_or_install": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29484,7 +29484,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 50
     },
     "tests/test_jazn_setup_installer.py::test_incomplete_venv_is_not_destroyed": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29503,7 +29503,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 59
     },
     "tests/test_jazn_setup_installer.py::test_offline_install_uses_canonical_dependency_studio": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29520,7 +29520,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 70
     },
     "tests/test_jazn_setup_installer.py::test_reuse_managed_environment_without_install": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29537,7 +29537,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 110
+      "line": 111
     },
     "tests/test_jazn_setup_installer.py::test_optional_profiles_must_not_reuse_core_only": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29556,7 +29556,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 128
+      "line": 129
     },
     "tests/test_jazn_setup_installer.py::test_doctor_invalid_python_status_is_not_fabricated": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29573,7 +29573,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 141
     },
     "tests/test_jazn_setup_installer.py::test_cli_returns_nonzero_for_unsupported_install": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29590,7 +29590,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 150
     },
     "tests/test_jazn_setup_installer.py::test_powershell_and_sh_preserve_installation_root": {
       "path": "tests/test_jazn_setup_installer.py",
@@ -29607,7 +29607,60 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 159
+    },
+    "tests/test_jazn_setup_installer.py::test_extend_uses_only_existing_root_venv_and_verified_wheelhouse": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_extend_uses_only_existing_root_venv_and_verified_wheelhouse",
+      "purpose": "Regression: a mismatched previous activation marker cannot redirect setup.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 170
+    },
+    "tests/test_jazn_setup_installer.py::test_extend_refuses_missing_or_unverified_root_venv": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_extend_refuses_missing_or_unverified_root_venv",
+      "purpose": "Extend refuses missing or unverified root venv",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 221
+    },
+    "tests/test_jazn_setup_installer.py::test_first_run_jss_profiles_include_pytest_by_default": {
+      "path": "tests/test_jazn_setup_installer.py",
+      "name": "test_first_run_jss_profiles_include_pytest_by_default",
+      "purpose": "First-run choice 3 produces Core + JSS + MCP + pytest in one venv.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 231
     },
     "tests/test_jazn_start_studio_mcp_2026.py::test_mcp_2026_request_metadata": {
       "path": "tests/test_jazn_start_studio_mcp_2026.py",
