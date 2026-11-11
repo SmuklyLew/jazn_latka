@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3358,
+  "active_definition_count": 3365,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -31642,6 +31642,38 @@
       "description_source": "source_identity",
       "line": 8
     },
+    "tests/test_jss_closable_section_tabs_qt.py::test_workspace_tabs_close_and_reopen_same_section": {
+      "path": "tests/test_jss_closable_section_tabs_qt.py",
+      "name": "test_workspace_tabs_close_and_reopen_same_section",
+      "purpose": "Workspace tabs close and reopen same section",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_jss_closable_section_tabs_qt.py::test_closing_last_tab_preserves_view_and_does_not_start_runtime": {
+      "path": "tests/test_jss_closable_section_tabs_qt.py",
+      "name": "test_closing_last_tab_preserves_view_and_does_not_start_runtime",
+      "purpose": "Closing last tab preserves view and does not start runtime",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
     "tests/test_jss_conversation_bubbles_sidebar_qt.py::test_warsaw_header_converts_utc_without_renaming_history": {
       "path": "tests/test_jss_conversation_bubbles_sidebar_qt.py",
       "name": "test_warsaw_header_converts_utc_without_renaming_history",
@@ -32788,6 +32820,21 @@
       "description_source": "native_docstring",
       "line": 95
     },
+    "tests/test_jss_grouped_settings_qt.py::test_settings_groups_and_category_filter_preserve_unsaved_fields": {
+      "path": "tests/test_jss_grouped_settings_qt.py",
+      "name": "test_settings_groups_and_category_filter_preserve_unsaved_fields",
+      "purpose": "Settings groups and category filter preserve unsaved fields",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",
       "name": "test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision",
@@ -32853,6 +32900,36 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 134
+    },
+    "tests/test_jss_operator_center_shortcuts_qt.py::test_dashboard_omits_redundant_setup_and_chat_shortcuts": {
+      "path": "tests/test_jss_operator_center_shortcuts_qt.py",
+      "name": "test_dashboard_omits_redundant_setup_and_chat_shortcuts",
+      "purpose": "Dashboard omits redundant setup and chat shortcuts",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_jss_operator_center_shortcuts_qt.py::test_operator_tools_status_action_toggles_existing_dock": {
+      "path": "tests/test_jss_operator_center_shortcuts_qt.py",
+      "name": "test_operator_tools_status_action_toggles_existing_dock",
+      "purpose": "Operator tools status action toggles existing dock",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
     },
     "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
       "path": "tests/test_jss_pytest_evidence_plugin.py",
@@ -32950,15 +33027,15 @@
       "description_source": "source_identity",
       "line": 62
     },
-    "tests/test_jss_readonly_service_monitor_ui.py::test_service_observer_buttons_are_only_refresh_and_close": {
+    "tests/test_jss_readonly_service_monitor_ui.py::test_service_observer_has_interval_selector_and_close_only": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
-      "name": "test_service_observer_buttons_are_only_refresh_and_close",
-      "purpose": "Service observer buttons are only refresh and close",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_service_observer_has_interval_selector_and_close_only",
+      "purpose": "Service observer has interval selector and close only",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -32978,7 +33055,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 46
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_dashboard_has_no_mutating_start_shortcuts": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -32993,7 +33070,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 53
+      "line": 59
     },
     "tests/test_jss_readonly_service_monitor_ui.py::test_absent_optional_mcp_is_observed_without_gui_error_or_replay": {
       "path": "tests/test_jss_readonly_service_monitor_ui.py",
@@ -33010,7 +33087,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 70
     },
     "tests/test_jss_root_local_dependencies.py::test_fresh_root_local_resources_selects_root_venv": {
       "path": "tests/test_jss_root_local_dependencies.py",
@@ -34369,6 +34446,40 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 44
+    },
+    "tests/test_jss_tpa_regression_process_isolation_qt.py::test_actual_tpa_queue_isolates_all_four_regression_scenarios": {
+      "path": "tests/test_jss_tpa_regression_process_isolation_qt.py",
+      "name": "test_actual_tpa_queue_isolates_all_four_regression_scenarios",
+      "purpose": "Actual tpa queue isolates all four regression scenarios",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_jss_tpa_regression_process_isolation_qt.py::test_regression_environment_rejects_enabled_memory_or_missing_isolation": {
+      "path": "tests/test_jss_tpa_regression_process_isolation_qt.py",
+      "name": "test_regression_environment_rejects_enabled_memory_or_missing_isolation",
+      "purpose": "Regression environment rejects enabled memory or missing isolation",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
     },
     "tests/test_jss_uiux_profiles.py::test_default_and_migration_do_not_require_a_running_daemon": {
       "path": "tests/test_jss_uiux_profiles.py",
