@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3367,
+  "active_definition_count": 3368,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14424,13 +14424,13 @@
       "path": "tests/test_configuration_studio.py",
       "name": "test_snapshot_is_read_only_and_reports_host_separation",
       "purpose": "Snapshot is read only and reports host separation",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.configuration_studio"
@@ -14438,6 +14438,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_configuration_studio.py::test_snapshot_prepared_system_preserves_acceptance_isolation": {
+      "path": "tests/test_configuration_studio.py",
+      "name": "test_snapshot_prepared_system_preserves_acceptance_isolation",
+      "purpose": "Snapshot prepared system preserves acceptance isolation",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 41
     },
     "tests/test_configuration_studio.py::test_validated_profile_roundtrip_and_rollback_backup": {
       "path": "tests/test_configuration_studio.py",
@@ -14454,7 +14471,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 33
+      "line": 61
     },
     "tests/test_configuration_studio.py::test_compare_and_swap_rejects_stale_ui": {
       "path": "tests/test_configuration_studio.py",
@@ -14473,7 +14490,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 79
     },
     "tests/test_configuration_studio.py::test_invalid_values_fail_closed": {
       "path": "tests/test_configuration_studio.py",
@@ -14494,7 +14511,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 96
     },
     "tests/test_configuration_studio.py::test_canonical_memory_root_is_allowed_but_other_system_children_are_not": {
       "path": "tests/test_configuration_studio.py",
@@ -14513,7 +14530,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 74
+      "line": 102
     },
     "tests/test_configuration_studio.py::test_no_path_inside_system_or_legacy_workspace": {
       "path": "tests/test_configuration_studio.py",
@@ -14532,7 +14549,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 80
+      "line": 108
     },
     "tests/test_configuration_studio.py::test_profile_rejects_corruption_and_symlink": {
       "path": "tests/test_configuration_studio.py",
@@ -14551,7 +14568,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 116
     },
     "tests/test_configuration_studio.py::test_memory_and_workspace_cannot_overlap": {
       "path": "tests/test_configuration_studio.py",
@@ -14572,7 +14589,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 137
     },
     "tests/test_configuration_studio.py::test_profile_inspection_does_not_apply_running_config": {
       "path": "tests/test_configuration_studio.py",
@@ -14589,7 +14606,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 120
+      "line": 148
     },
     "tests/test_configuration_studio.py::test_symlink_parent_directory_is_rejected": {
       "path": "tests/test_configuration_studio.py",
@@ -14608,7 +14625,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 128
+      "line": 156
     },
     "tests/test_configuration_studio.py::test_root_scoped_default_profile_and_explicit_root_token": {
       "path": "tests/test_configuration_studio.py",
@@ -14627,7 +14644,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 169
     },
     "tests/test_configuration_studio.py::test_workspace_override_outside_root_remains_available": {
       "path": "tests/test_configuration_studio.py",
@@ -14644,7 +14661,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 186
     },
     "tests/test_configuration_studio_gui_windows.py::test_real_gui_navigation_and_profile_fields": {
       "path": "tests/test_configuration_studio_gui_windows.py",
