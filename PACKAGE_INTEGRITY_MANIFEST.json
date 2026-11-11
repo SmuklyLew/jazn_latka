@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-10T23:29:49+00:00",
-  "updated_at_utc": "2026-11-10T23:29:49+00:00",
+  "generated_at_utc": "2026-11-11T01:03:46+00:00",
+  "updated_at_utc": "2026-11-11T01:03:46+00:00",
   "start_file": "run.py",
-  "file_count": 3746,
-  "static_file_count": 3746,
+  "file_count": 3748,
+  "static_file_count": 3748,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "b5634921f20d9a17789ad2485e25bcad40ba97b7fb4b29524929e9f8defe1393",
+      "sha256": "7f05a823c131ac169073d6966d4f288402de4e1798546b9c77d18b272f2a02cb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19461,6 +19461,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_tk_gui/PROVENANCE.md",
+      "size_bytes": 627,
+      "sha256": "b4399ee7191bb653c86fdd67f1d1bb1fe9f396b7fb6d97cce808d071816126b7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_tk_gui/test_configuration_studio_gui_windows.py",
+      "size_bytes": 3733,
+      "sha256": "c4cd36dfb3ed6c8a0cde12cb68343842e49c22f6482446ab834fbc88c0269b14",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.4-package-distribution-preconvergence/README.md",
       "size_bytes": 338,
       "sha256": "bbe3cf3f560f2389e55270c7dcbb3b583b99bc14b129aaf3da9412b59a420cf1",
@@ -27292,8 +27310,8 @@
     },
     {
       "path": "tests/test_configuration_studio_gui_windows.py",
-      "size_bytes": 3733,
-      "sha256": "c4cd36dfb3ed6c8a0cde12cb68343842e49c22f6482446ab834fbc88c0269b14",
+      "size_bytes": 5380,
+      "sha256": "091fb6833c061a46dd75bfc001963fadc3c57597b27f6beb0e14e536024d8d8c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33511,8 +33529,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2944455,
-      "sha256": "3b1d4f773a6e26edc830c63d69cfde3ddbc23029c29e9ef1adcf66a6632489da",
+      "size_bytes": 2945340,
+      "sha256": "9f9d66d67e70185ed8d747b996c8b2d9ae77810231f36e8e59b81e98186dc84b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
