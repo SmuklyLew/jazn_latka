@@ -119,7 +119,7 @@ def test_cli_inspect_returns_json(root: Path, monkeypatch: pytest.MonkeyPatch, c
 def test_offline_install_delegates_to_canonical_dependency_studio(
     root: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from latka_jazn.dependencies import environment
+    from latka_jazn.dependencies import private_extension
 
     directory = root / "local_resources" / "wheelhouse" / "fixture"
     directory.mkdir(parents=True)
@@ -139,7 +139,7 @@ def test_offline_install_delegates_to_canonical_dependency_studio(
             "activation_marker_path": str(root / "local_resources" / "python" / "JAZN_DEPENDENCY_ENVIRONMENT.json"),
         }
 
-    monkeypatch.setattr(environment, "install_bundle", fake_install)
+    monkeypatch.setattr(private_extension, "extend_private_environment", fake_install)
     result = setup.install_offline(root, bundle=directory, approved=True)
     assert result["state"] == "installed_verified_and_marked"
     assert len(calls) == 1
@@ -151,7 +151,7 @@ def test_offline_install_delegates_to_canonical_dependency_studio(
 def test_offline_install_refuses_unconfirmed_activation(
     root: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from latka_jazn.dependencies import environment
+    from latka_jazn.dependencies import private_extension
 
     directory = root / "local_resources" / "wheelhouse" / "fixture"
     directory.mkdir(parents=True)
@@ -161,7 +161,7 @@ def test_offline_install_refuses_unconfirmed_activation(
     monkeypatch.setattr(setup, "python_314", lambda _: True)
     monkeypatch.setattr(setup, "_verify_bundle", lambda *_args: (directory, directory / "lock"))
     monkeypatch.setattr(
-        environment, "install_bundle",
+        private_extension, "extend_private_environment",
         lambda *_args, **_kwargs: {"ok": True, "activation_marker_updated": False},
     )
     with pytest.raises(setup.ProvisioningError, match="activation_not_confirmed"):
