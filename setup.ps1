@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("doctor", "wizard", "install", "repair", "verify", "venv", "preflight", "online")]
+    [ValidateSet("doctor", "wizard", "install", "extend", "repair", "verify", "venv", "preflight", "online")]
     [string]$Mode = "doctor",
     [string[]]$Profile = @(),
     [string]$Bundle = "",
