@@ -89,6 +89,13 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--offline", action="store_true")
     child.add_argument("--dry-run", action="store_true")
 
+    child = sub.add_parser("extend", allow_abbrev=False)
+    child.add_argument("--bundle", type=Path)
+    child.add_argument("--profile", action="append")
+    child.add_argument("--python-executable")
+    child.add_argument("--offline", action="store_true")
+    child.add_argument("--dry-run", action="store_true")
+
     sub.add_parser("benchmark", allow_abbrev=False)
 
     child = sub.add_parser("gc", allow_abbrev=False)
@@ -157,6 +164,20 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         )
         payload["command"] = "install"
         return (0 if payload.get("ok") else 6), payload
+    if ns.command == "extend":
+        from latka_jazn.dependencies.private_extension import extend_private_environment
+        if not ns.offline:
+            raise DependencyStudioError("Private .venv extension requires --offline")
+        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(
+            root, profiles=profiles, wheelhouse_root=wheelhouse,
+        )
+        payload = extend_private_environment(
+            root, bundle, python_executable=ns.python_executable,
+            offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run),
+        )
+        payload["command"] = "extend"
+        return (0 if payload.get("ok") else 6), payload
     if ns.command == "benchmark":
         payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload
     if ns.command == "gc":
@@ -178,6 +199,7 @@ def _human(payload: dict[str, Any]) -> str:
         lines.append(f"Bundles: {payload.get('bundle_count', 1)}")
         if payload.get("errors"): lines.append(f"Errors: {len(payload.get('errors') or [])}")
     elif command == "install": lines += [f"Environment: {payload.get('environment_root')}", f"Python: {payload.get('python_executable')}", "Mode: offline / --no-index / verified wheelhouse"]
+    elif command == "extend": lines += [f"ROOT/.venv: {payload.get('environment_root')}", f"Missing wheels installed: {payload.get('missing_count')}", "Mode: additive-only, offline, verified"]
     elif command == "benchmark": lines += [f"Dependency probe: {payload.get('activation_probe_seconds')} s", f"Wheelhouse verify: {payload.get('wheelhouse_verify_seconds')} s", f"Verified bundles: {payload.get('verified_bundle_count')}"]
     elif command == "gc": lines += [f"Mode: {'dry-run' if payload.get('dry_run') else 'apply'}", f"Candidates: {len(payload.get('gc_candidates') or [])}", f"Removed: {len(payload.get('removed') or [])}"]
     return "\n".join(lines)
@@ -194,6 +216,7 @@ def _studio_spec(root: Path) -> CommandStudioSpec:
             CommandItem("download", "Pobierz bundle", "Utwórz zweryfikowany wheelhouse dla wybranych profili.", "--profile core --dry-run"),
             CommandItem("update", "Aktualizuj bundle", "Sprawdź i utwórz nowy bundle zależności, jeśli jest potrzebny.", "--profile core --dry-run"),
             CommandItem("install", "Instalacja offline", "Zainstaluj wyłącznie ze zweryfikowanego lokalnego wheelhouse.", "--profile core --offline --dry-run"),
+            CommandItem("extend", "Rozszerz ROOT/.venv", "Dodaj tylko brakujące, hash-locked biblioteki bez zmiany Pythona.", "--profile core,run-studio,test-evidence --offline --dry-run"),
             CommandItem("benchmark", "Benchmark", "Zmierz koszt probe zależności i weryfikacji wheelhouse."),
             CommandItem("gc", "Porządkowanie środowisk", "Pokaż lub usuń bezpieczne kandydaty do GC.", "--dry-run"),
         ),
@@ -217,7 +240,8 @@ def _machine_summary(payload: dict[str, Any]) -> dict[str, Any]:
     selected = (
         "ok", "command", "state", "bundle_dir", "python_executable",
         "environment_root", "environment_marker_path",
-        "activation_marker_updated", "profiles", "error_type", "error",
+        "activation_marker_updated", "profiles", "missing_count",
+        "already_satisfied_count", "error_type", "error",
     )
     result = {key: payload[key] for key in selected if key in payload}
     if "error" in result:
