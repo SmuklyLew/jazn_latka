@@ -19,15 +19,43 @@ def fake_system(tmp_path: Path) -> Path:
     return system
 
 
-def test_snapshot_is_read_only_and_reports_host_separation(tmp_path: Path) -> None:
+def test_snapshot_is_read_only_and_reports_host_separation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A bare historical SYSTEM owns the sibling workspace. The autouse
+    # fixture sets a ROOT-contained acceptance override for modern SYSTEMs;
+    # remove it only in this synthetic legacy-layout test.
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
     root = fake_system(tmp_path)
     data = {row["name"]: row for row in inspect_system(root)}
     assert data["SYSTEM"]["path"] == str(root.resolve())
     assert data["WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
     assert data["PREVIOUS_HOST_WORKSPACE"]["path"] == str((tmp_path / "workspace_runtime").resolve())
+    assert not Path(data["STUDIO_SETTINGS"]["path"]).is_relative_to(root)
     assert data["MARKER"]["exists"] == "false"
     assert data["PROFILES"]["exists"] == "false"
     assert not (tmp_path / "workspace_runtime").exists()
+
+
+def test_snapshot_prepared_system_preserves_acceptance_isolation(
+    tmp_path: Path,
+) -> None:
+    # The modern prepared SYSTEM uses the per-test ROOT-relative workspace
+    # supplied by conftest; discovering settings must not create any files.
+    root = fake_system(tmp_path)
+    (root / ".settings").mkdir()
+    (root / "local_resources").mkdir()
+    expected = (
+        root / ".settings_local" / "acceptance" /
+        ("pytest_runtime_" + tmp_path.name)
+    ).resolve()
+
+    data = {row["name"]: row for row in inspect_system(root)}
+    assert data["WORKSPACE"]["path"] == str(expected)
+    assert data["STUDIO_SETTINGS"]["path"] == str(expected / "memory_rebuild_settings.json")
+    assert data["STUDIO_SETTINGS"]["exists"] == "false"
+    assert not expected.exists()
 
 
 def test_validated_profile_roundtrip_and_rollback_backup(tmp_path: Path) -> None:
