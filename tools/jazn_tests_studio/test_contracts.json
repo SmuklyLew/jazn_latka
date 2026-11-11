@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3372,
+  "active_definition_count": 3373,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28702,10 +28702,12 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 32
     },
     "tests/test_jazn_run_studio_memory_view.py::test_selecting_another_project_discards_delayed_result": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28719,10 +28721,12 @@
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 40
+      "line": 42
     },
     "tests/test_jazn_run_studio_memory_view.py::test_older_observation_cannot_replace_newer_request": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28736,10 +28740,12 @@
       "markers": [],
       "assertion_count": 1,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 48
+      "line": 50
     },
     "tests/test_jazn_run_studio_memory_view.py::test_failed_job_cannot_leave_memory_observation_running": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28753,10 +28759,12 @@
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 57
     },
     "tests/test_jazn_run_studio_memory_view.py::test_verified_runtime_and_claims_do_not_promote_recall_or_activation": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28771,10 +28779,12 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 66
     },
     "tests/test_jazn_run_studio_memory_view.py::test_equal_records_do_not_certify_claimed_lineage": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28788,10 +28798,12 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 77
     },
     "tests/test_jazn_run_studio_memory_view.py::test_controller_routes_memory_through_public_launcher": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28805,10 +28817,12 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 87
     },
     "tests/test_jazn_run_studio_memory_view.py::test_completed_report_displays_codes_in_its_own_tab": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
@@ -28822,27 +28836,52 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 95
+      "line": 97
     },
     "tests/test_jazn_run_studio_memory_view.py::test_real_qt_readiness_roundtrip_and_redacted_export": {
       "path": "tests/test_jazn_run_studio_memory_view.py",
       "name": "test_real_qt_readiness_roundtrip_and_redacted_export",
       "purpose": "Real qt readiness roundtrip and redacted export",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 6,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 107
+    },
+    "tests/test_jazn_run_studio_memory_view.py::test_prepared_system_memory_studio_rejects_foreign_workspace_without_writes": {
+      "path": "tests/test_jazn_run_studio_memory_view.py",
+      "name": "test_prepared_system_memory_studio_rejects_foreign_workspace_without_writes",
+      "purpose": "Prepared system memory studio rejects foreign workspace without writes",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
     },
     "tests/test_jazn_run_studio_native_test_catalog_qt.py::test_native_catalog_is_read_only_and_loads_on_request": {
       "path": "tests/test_jazn_run_studio_native_test_catalog_qt.py",
