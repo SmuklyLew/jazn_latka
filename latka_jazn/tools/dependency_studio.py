@@ -128,7 +128,10 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         payload["ok"] = bool(payload.get("ok") and not unresolved); payload["command"] = "audit"
         return (0 if payload["ok"] else 3), payload
     if ns.command in {"download", "update"}:
-        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
         payload = download_bundle(root, profile_names=profiles, python_version=ns.python_version, platform_alias=ns.platform, python_executable=ns.python_executable, wheelhouse_root=wheelhouse, lock_file=ns.lock_file, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run))
         if isinstance(payload.get("command"), list): payload["pip_command"] = payload.pop("command")
         payload["command"] = ns.command
@@ -145,7 +148,10 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         return (0 if ok else 5), {"command":"verify","ok":ok,"wheelhouse_root":str(wheelhouse or default_wheelhouse_root(root)),"bundle_count":len(bundles),"bundles":bundles}
     if ns.command == "install":
         if not ns.offline: raise DependencyStudioError("Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse.")
-        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
         bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(root, profiles=profiles, wheelhouse_root=wheelhouse)
         environment_root = ns.environment_root
         if ns.layout == "project":
@@ -168,7 +174,10 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         from latka_jazn.dependencies.private_extension import extend_private_environment
         if not ns.offline:
             raise DependencyStudioError("Private .venv extension requires --offline")
-        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
         bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(
             root, profiles=profiles, wheelhouse_root=wheelhouse,
         )
