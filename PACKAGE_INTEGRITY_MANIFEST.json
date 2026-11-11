@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-11T17:42:24+00:00",
-  "updated_at_utc": "2026-11-11T17:42:24+00:00",
+  "generated_at_utc": "2026-11-11T18:46:12+00:00",
+  "updated_at_utc": "2026-11-11T18:46:12+00:00",
   "start_file": "run.py",
-  "file_count": 3775,
-  "static_file_count": 3775,
+  "file_count": 3777,
+  "static_file_count": 3777,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "5232c007d83c8c86cdc7240859e0ec139e08ced3d57f0782d1bc4fd23872be53",
+      "sha256": "0b6bfeb92854606a98f07476590a85e0a493d2d2883013a02d554f2b011cd960",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19524,6 +19524,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_memory_large_validation_canonical_root/PROVENANCE.md",
+      "size_bytes": 654,
+      "sha256": "afb1f6463f4024224db5ecb8e767876f43649b08833e324c23421740035e1f1a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_memory_large_validation_canonical_root/test_memory_large_validation.py",
+      "size_bytes": 9736,
+      "sha256": "b8cd6d103d0a40507887c1ecf4c47aff66832959aef9202b2a23653ec70c9310",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127_4_20261111_memory_view_qt_workspace/PROVENANCE.md",
       "size_bytes": 757,
       "sha256": "9a636217bcb734512155b5cc2e9105b66a04b664937ae9b738a4dd0bfcf86d00",
@@ -30190,8 +30208,8 @@
     },
     {
       "path": "tests/test_memory_large_validation.py",
-      "size_bytes": 9736,
-      "sha256": "b8cd6d103d0a40507887c1ecf4c47aff66832959aef9202b2a23653ec70c9310",
+      "size_bytes": 10715,
+      "sha256": "0fa7d9a9139bb4b4f8e1f3a1574672503ba1eee4fefb14a25a1ccaf37c52aa07",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33772,8 +33790,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2968836,
-      "sha256": "919ea2f7c752458b16478e65e9015d5068f7454a83ea5441cf8846632b715e3b",
+      "size_bytes": 2969828,
+      "sha256": "f2cc837ff1983385cb544ea139b4a6e343117cbc0df44e7938c2744082bd3066",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
