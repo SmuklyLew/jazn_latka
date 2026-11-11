@@ -64,16 +64,18 @@ def _gui_refuses_to_discard_unsaved_edits(tmp_path: Path, monkeypatch: pytest.Mo
 def _isolated_tk_env(tmp_path: Path) -> dict[str, str]:
     """Do not inherit another pytest case's ROOT, daemon, MEMORY or TPA paths.
 
-    These GUI scenarios create a historical synthetic ROOT at tmp_path/root;
-    its workspace is the sibling tmp_path/workspace_runtime. Preserve Windows
-    process environment (PATH/SystemRoot/Tcl/Tk) while scoping Jaźń settings.
+    These GUI scenarios create a historical synthetic ROOT at tmp_path/root.
+    Do not force its sibling workspace as a global override: Memory Rebuild
+    validates destinations against BOTH that synthetic ROOT and the prepared
+    checkout providing this code, which refuses outside-root overrides.
+    The bare ROOT resolves its sibling workspace by default. Keep an isolated
+    operator state directory and Windows PATH/SystemRoot/Tcl/Tk environment.
     """
     child_env = {
         key: value
         for key, value in os.environ.items()
         if not key.upper().startswith("JAZN_")
     }
-    child_env["JAZN_RUNTIME_WORKSPACE_DIR"] = str(tmp_path / "workspace_runtime")
     child_env["JAZN_OPERATOR_STATE_ROOT"] = str(tmp_path / "operator_state")
     return child_env
 
@@ -116,8 +118,39 @@ def test_fresh_tk_child_environment_is_scoped_to_synthetic_root(
     monkeypatch.setenv("JAZN_STUDIO_ACCEPTANCE_PROFILE", "isolated")
     monkeypatch.setenv("JAZN_MEMORY_REBUILD_SETTINGS", str(tmp_path / "inherited.json"))
     child = _isolated_tk_env(tmp_path)
-    assert child["JAZN_RUNTIME_WORKSPACE_DIR"] == str(tmp_path / "workspace_runtime")
+    assert "JAZN_RUNTIME_WORKSPACE_DIR" not in child
     assert child["JAZN_OPERATOR_STATE_ROOT"] == str(tmp_path / "operator_state")
     assert set(key for key in child if key.upper().startswith("JAZN_")) == {
-        "JAZN_RUNTIME_WORKSPACE_DIR", "JAZN_OPERATOR_STATE_ROOT",
+        "JAZN_OPERATOR_STATE_ROOT",
     }
+
+
+
+def test_fresh_tk_child_settings_path_is_valid_across_both_system_roots(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The subprocess must resolve Memory Rebuild settings without a foreign ROOT override."""
+    system = tmp_path / "root"
+    (system / "latka_jazn").mkdir(parents=True)
+    (system / "latka_jazn" / "version.py").write_text("", encoding="utf-8")
+    (system / "main.py").write_text("", encoding="utf-8")
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", "$ROOT/.settings_local/acceptance/parent")
+    monkeypatch.setenv("JAZN_MEMORY_REBUILD_SETTINGS", str(tmp_path / "foreign_settings.json"))
+    program = (
+        "import sys\n"
+        "from pathlib import Path\n"
+        "from latka_jazn.tools.memory_rebuild_app.settings import resolve_settings_path\n"
+        "print(resolve_settings_path(tool_root=Path(sys.argv[1])))\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-X", "utf8", "-c", program, str(system)],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True, text=True, encoding="utf-8",
+        timeout=30, check=False, env=_isolated_tk_env(tmp_path),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    expected = tmp_path / "operator_state" / "memory_rebuild" / "memory_rebuild_settings.json"
+    assert result.stdout.strip() == str(expected.resolve())
+    # Discovery and validation must remain read-only, including in the child.
+    assert not expected.exists()
+    assert not (tmp_path / "workspace_runtime").exists()
