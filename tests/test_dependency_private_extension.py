@@ -74,6 +74,7 @@ def prepared(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     })
     monkeypatch.setattr(ext, "sha256_file", lambda _path: "c" * 64)
     monkeypatch.setattr(ext, "dependency_contract_fingerprint", lambda *_a: fingerprint)
+    monkeypatch.setattr(ext, "import_name_for_distribution", lambda _root, name: name)
     monkeypatch.setattr(ext, "active_runtime_marker_path",
                         lambda _root: root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json")
 
