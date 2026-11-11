@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3347,
+  "active_definition_count": 3354,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16615,6 +16615,151 @@
       "description_source": "source_identity",
       "line": 6
     },
+    "tests/test_dependency_private_extension.py::test_additive_inventory_never_replaces_installed_versions": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_additive_inventory_never_replaces_installed_versions",
+      "purpose": "Additive inventory never replaces installed versions",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_dependency_private_extension.py::test_extension_adds_only_absent_wheels_to_root_venv": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extension_adds_only_absent_wheels_to_root_venv",
+      "purpose": "Extension adds only absent wheels to root venv",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_dependency_private_extension.py::test_extension_refuses_active_runtime_even_if_marker_stale": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extension_refuses_active_runtime_even_if_marker_stale",
+      "purpose": "Extension refuses active runtime even if marker stale",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
+    },
+    "tests/test_dependency_private_extension.py::test_extension_rejects_foreign_python": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extension_rejects_foreign_python",
+      "purpose": "Extension rejects foreign python",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 130
+    },
+    "tests/test_dependency_private_extension.py::test_extension_dry_run_never_writes_marker_or_installs": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extension_dry_run_never_writes_marker_or_installs",
+      "purpose": "Extension dry run never writes marker or installs",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 137
+    },
+    "tests/test_dependency_private_extension.py::test_extension_failure_does_not_publish_activation": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extension_failure_does_not_publish_activation",
+      "purpose": "Extension failure does not publish activation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 146
+    },
+    "tests/test_dependency_private_extension.py::test_extend_cli_requires_explicit_offline_and_uses_single_venv": {
+      "path": "tests/test_dependency_private_extension.py",
+      "name": "test_extend_cli_requires_explicit_offline_and_uses_single_venv",
+      "purpose": "Extend cli requires explicit offline and uses single venv",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 159
+    },
     "tests/test_dependency_run_studio_glibc_policy.py::test_core_target_preserves_release_floor": {
       "path": "tests/test_dependency_run_studio_glibc_policy.py",
       "name": "test_core_target_preserves_release_floor",
@@ -31572,18 +31717,18 @@
       "description_source": "native_docstring",
       "line": 53
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_profile_does_not_require_global_activation": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_extension_preserves_canonical_root_venv": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_optional_mcp_profile_does_not_require_global_activation",
-      "purpose": "A marked isolated MCP environment may be selected even without global activation.",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_optional_mcp_extension_preserves_canonical_root_venv",
+      "purpose": "MCP and runtime must use the same ROOT/.venv, not a managed copy.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "mcp",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools"
@@ -31595,7 +31740,7 @@
     "tests/test_jss_dependency_row_diagnostics.py::test_optional_profile_rejects_foreign_marker": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
       "name": "test_optional_profile_rejects_foreign_marker",
-      "purpose": "A marker outside the managed dependency folder cannot authorize interpreter change.",
+      "purpose": "A foreign marker must not authorize a change even for the correct venv.",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -31609,7 +31754,7 @@
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 99
+      "line": 100
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
@@ -32513,7 +32658,9 @@
       "markers": [],
       "assertion_count": 8,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "native_docstring",
       "line": 34
@@ -32528,42 +32675,46 @@
       "markers": [],
       "assertion_count": 4,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "native_docstring",
       "line": 55
     },
-    "tests/test_jss_first_run_row_install.py::test_missing_mcp_interpreter_is_refused_before_confirmation": {
+    "tests/test_jss_first_run_row_install.py::test_missing_private_venv_is_refused_before_confirmation": {
       "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_missing_mcp_interpreter_is_refused_before_confirmation",
-      "purpose": "No selected executable means no downloader or confirmation dialog.",
+      "name": "test_missing_private_venv_is_refused_before_confirmation",
+      "purpose": "A missing ROOT/.venv must not download or create another interpreter.",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "mcp"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "native_docstring",
-      "line": 80
-    },
-    "tests/test_jss_first_run_row_install.py::test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected": {
-      "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected",
-      "purpose": "Only activated environments inside the isolated managed root may be selected.",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 2,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 93
+      "line": 83
+    },
+    "tests/test_jss_first_run_row_install.py::test_extension_uses_only_root_venv_and_rejects_foreign_interpreter": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_extension_uses_only_root_venv_and_rejects_foreign_interpreter",
+      "purpose": "Only a verified canonical private Python may replace proposed JSS fields.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 95
     },
     "tests/test_jss_manual_evidence_commit.py::test_failed_manual_write_keeps_caller_and_disk_at_last_valid_revision": {
       "path": "tests/test_jss_manual_evidence_commit.py",
