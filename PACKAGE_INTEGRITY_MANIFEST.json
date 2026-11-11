@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-11T17:16:45+00:00",
-  "updated_at_utc": "2026-11-11T17:16:45+00:00",
+  "generated_at_utc": "2026-11-11T17:34:02+00:00",
+  "updated_at_utc": "2026-11-11T17:34:02+00:00",
   "start_file": "run.py",
-  "file_count": 3771,
-  "static_file_count": 3771,
+  "file_count": 3773,
+  "static_file_count": 3773,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "9e67221243e31695833f7537db51808f9fe29d5e342807879b85da92b74f3df1",
+      "sha256": "b4475c17a9c71555ce32d3993c23a4e1eeb50a283143dee84c416090c20cf58d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19506,6 +19506,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_mcp_port_workspace_roundtrip/PROVENANCE.md",
+      "size_bytes": 739,
+      "sha256": "a7498a84afc9a203521ee40373461639cf9e68429b7adc6675ccc7e587a6bcb3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_mcp_port_workspace_roundtrip/test_jazn_run_studio_mcp_events.py",
+      "size_bytes": 6784,
+      "sha256": "aad4ace7136de88d7b03c0193021f8a7ba9186ba2c52cb9a9b1f546b57be98e7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127_4_20261111_runtime_marker_workspace/PROVENANCE.md",
       "size_bytes": 862,
       "sha256": "b9ce9159ac8e105e62d8c98618b9c7873e1d44de20d27fda29f0ae67eefff20d",
@@ -28741,8 +28759,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_mcp_events.py",
-      "size_bytes": 6784,
-      "sha256": "aad4ace7136de88d7b03c0193021f8a7ba9186ba2c52cb9a9b1f546b57be98e7",
+      "size_bytes": 7437,
+      "sha256": "3efe8a0b7e2910f393d128f67019496ced3a0d9016bd9613816a3822f81067dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33736,8 +33754,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2967573,
-      "sha256": "b445bb88c26b32cfba54a5b6316106092b45fcbfba985c3a829ecfaa29600371",
+      "size_bytes": 2967575,
+      "sha256": "2521c25fd372d50030b3f30b6c4b02d4b501768a9f93f8014fe3989a8d240808",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
