@@ -36,7 +36,12 @@ def _operational_manifest_path(cfg: JaznConfig) -> Path:
     return cfg.runtime_memory_storage_root / relative
 
 
-def test_missing_manifest_keeps_single_database_compatibility(tmp_path: Path) -> None:
+def test_missing_manifest_keeps_single_database_compatibility(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Modern prepared ROOT keeps its single SQLite database inside its ROOT."""
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    (tmp_path / "local_resources").mkdir()
     cfg = JaznConfig(root=tmp_path)
     expected = (
         tmp_path
@@ -50,6 +55,27 @@ def test_missing_manifest_keeps_single_database_compatibility(tmp_path: Path) ->
     assert cfg.memory_db_path_readonly == expected
     assert cfg.memory_availability.persistent_memory_enabled is False
     assert not cfg.memory_root.exists()
+
+
+def test_historical_root_missing_manifest_keeps_sibling_workspace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A bare historical ROOT must not silently migrate its SQLite workspace."""
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    cfg = JaznConfig(root=tmp_path)
+    expected = (
+        tmp_path.parent
+        / "workspace_runtime"
+        / "core_state"
+        / "memory_runtime"
+        / "sqlite"
+        / "runtime_write_v1"
+        / "runtime_memory.sqlite3"
+    ).resolve()
+    assert cfg.memory_db_path_readonly == expected
+    assert cfg.memory_availability.persistent_memory_enabled is False
+    assert not cfg.memory_root.exists()
+    assert not (tmp_path / "workspace_runtime").exists()
 
 
 def test_existing_invalid_json_is_not_silently_replaced(tmp_path: Path) -> None:
