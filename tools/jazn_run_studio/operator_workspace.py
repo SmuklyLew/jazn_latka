@@ -544,4 +544,7 @@ class OperatorWorkspace:
         for console in self.consoles:
             console.refresh()
         active = sum(j["state"] in {"starting", "running", "stopping"} for j in jobs)
-        self.host.operator_status.setText(f"Problemy: {len(self.failures) + len(self.warnings)}  •  Zadania: {active}")
+        self.host.operator_status.setText("Narzędzia Operatora")
+        self.host.operator_status.setToolTip(
+            f"Problemy: {len(self.failures) + len(self.warnings)} • Zadania: {active}"
+        )
