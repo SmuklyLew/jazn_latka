@@ -187,13 +187,20 @@ def _managed_status(root: Path) -> dict[str, Any]:
         return {"ready": False, "status": "invalid_managed_probe"}
 
 
-def _managed_matches(status: dict[str, Any], profiles: Sequence[str]) -> bool:
+def _managed_matches(
+    status: dict[str, Any], profiles: Sequence[str], *, root: Path | None = None,
+) -> bool:
     if status.get("ready") is not True:
         return False
     configured = set(status.get("resolved_profiles") or status.get("profiles") or [])
     python = status.get("python_executable")
-    return (set(profiles).issubset(configured)
-            and isinstance(python, str) and Path(python).is_file())
+    ready = (set(profiles).issubset(configured)
+             and isinstance(python, str) and Path(python).is_file())
+    if ready and root is not None and (root / "local_resources").is_dir():
+        # A previously verified managed venv is not the active ROOT/.venv.
+        ready = (Path(str(status.get("environment_root") or "")).resolve()
+                 == (root / ".venv").resolve())
+    return ready
 
 
 def _create_venv(root: Path) -> dict[str, Any]:
@@ -270,8 +277,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             "ok": True, "mode": "doctor", "root": str(root), "target": target,
             "local_venv": _probe_venv(root), "core_declarations": _read_declarations(root),
             "managed_environment": (managed := _managed_status(root)),
-            "environment_ready": bool(managed.get("ready")),
-            "status": "ready" if managed.get("ready") else "requires_setup",
+            "environment_ready": bool(_managed_matches(managed, ["core"], root=root)),
+            "status": "ready" if _managed_matches(managed, ["core"], root=root) else "requires_setup",
             "note": "Inspection succeeded; environment_ready is independent of daemon/Ollama/MCP.",
         }
     if args.mode == "venv":
@@ -279,7 +286,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         return {"ok": True, "mode": "venv", **_create_venv(root)}
     if args.mode == "verify":
         status = _managed_status(root)
-        ready = _managed_matches(status, profiles)
+        ready = _managed_matches(status, profiles, root=root)
         return {
             "ok": ready, "mode": "verify", "profiles": profiles,
             "managed_environment": status, "local_venv": _probe_venv(root),
@@ -294,11 +301,10 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     if args.mode == "extend":
         if args.layout != "project" or venv_state["ready"] is not True:
             raise SetupError("Extend requires a verified ROOT/.venv and project layout")
-        if (_managed_matches(managed, profiles)
-                and Path(str(managed.get("environment_root") or "")).resolve() == _venv_path(root).resolve()):
+        if _managed_matches(managed, profiles, root=root):
             return {"ok": True, "mode": "extend", "state": "already_ready",
                     "python_executable": str(_venv_python(root)), "profiles": profiles}
-    elif args.mode != "repair" and _managed_matches(managed, profiles):
+    elif args.mode != "repair" and _managed_matches(managed, profiles, root=root):
         return {"ok": True, "mode": "install", "state": "already_ready",
                 "python_executable": managed["python_executable"], "profiles": profiles}
     if args.mode != "extend" and args.layout == "project" and (
