@@ -129,8 +129,18 @@ def test_selected_port_survives_settings_round_trip(root: Path) -> None:
     restored, digest = load_settings(root)
     assert digest == saved
     assert restored == settings
-    stored = (root / "workspace_runtime" / "jazn_run_studio")
-    assert stored.is_dir()
+    # Conftest pins each synthetic ROOT to a unique ROOT-relative acceptance
+    # workspace. The historical hard-coded workspace_runtime directory is
+    # not the destination selected by the settings resolver.
+    target = studio_core.settings_path(root)
+    assert target.parent == studio_core.workspace_runtime_path(root) / "jazn_run_studio"
+    assert target.is_relative_to(root / ".settings_local" / "acceptance")
+    assert target.parent.is_dir()
+    assert target.is_file()
+    persisted = json.loads(target.read_text(encoding="utf-8"))
+    assert persisted["mcp_port"] == "18086"
+    assert persisted["daemon_url"] == "http://127.0.0.1:8787"
+    assert not (root / "workspace_runtime" / "jazn_run_studio" / "settings.json").exists()
     assert "18086" in json.dumps(studio_core.asdict(restored))
 
 
