@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from latka_jazn.core.runtime_root import active_runtime_marker_path
 from latka_jazn.tools.configuration_studio import (
     ConfigValidationError, profile_digest, profile_file, profile_snapshot,
     read_profile, restore_previous_profile, save_profile,
@@ -83,7 +84,10 @@ def test_duplicate_keys_are_rejected(root: Path, tmp_path: Path) -> None:
 def test_launch_rejects_marker_when_changing_critical_paths(root: Path, tmp_path: Path) -> None:
     save_profile(root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(tmp_path / "new_state")})
     assert validated_launch_values(root)["JAZN_RUNTIME_WORKSPACE_DIR"] == str(tmp_path / "new_state")
-    marker = tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    # The global pytest fixture selects a per-test ROOT-relative workspace.
+    # A marker in the obsolete sibling location is not the active marker.
+    marker = active_runtime_marker_path(root)
+    assert marker.is_relative_to(root)
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text("{}", encoding="utf-8")
     with pytest.raises(ConfigValidationError, match="znacznik runtime"):
