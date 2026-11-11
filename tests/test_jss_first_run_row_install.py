@@ -56,10 +56,13 @@ def test_operator_denial_never_starts_install_and_valid_approval_selects_profile
     wizard, monkeypatch, tmp_path,
 ):
     """Cancel must be side-effect free; approval selects only the known profile."""
-    python = tmp_path / "python.exe"
+    python = tmp_path / ".venv" / "Scripts" / "python.exe"
+    python.parent.mkdir(parents=True)
     python.touch()
+    from latka_jazn.dependencies import private_python as private_module
+    monkeypatch.setattr(private_module, "private_python_status", lambda _root: {"ready": True})
+    monkeypatch.setattr(private_module, "private_python_path", lambda _root: python)
     wizard.report = {"rows": [{"name": "Testy: pytest", "state": "OPTIONAL_MISSING"}]}
-    monkeypatch.setattr(wizard, "_setup_python", lambda: str(python))
     calls = []
     monkeypatch.setattr(wizard, "_start_row_step", lambda *args: calls.append(args))
     monkeypatch.setattr(
@@ -73,14 +76,13 @@ def test_operator_denial_never_starts_install_and_valid_approval_selects_profile
     )
     wizard.install_missing("Testy: pytest")
     assert calls == [("download",)]
-    assert wizard._row_profiles == "core,run-studio,test-evidence"
+    assert wizard._row_profiles == "core,run-studio,mcp-http,test-evidence"
     assert wizard._row_python == str(python)
 
 
-def test_missing_mcp_interpreter_is_refused_before_confirmation(wizard, monkeypatch):
-    """No selected executable means no downloader or confirmation dialog."""
+def test_missing_private_venv_is_refused_before_confirmation(wizard, monkeypatch):
+    """A missing ROOT/.venv must not download or create another interpreter."""
     wizard.report = {"rows": [{"name": "MCP: mcp", "state": "OPTIONAL_MISSING"}]}
-    wizard.setting_fields["mcp_python"].setText("/nonexistent/mcp/python")
     monkeypatch.setattr(
         QMessageBox, "question",
         lambda *_a, **_k: pytest.fail("invalid interpreter must not request approval"),
@@ -90,32 +92,43 @@ def test_missing_mcp_interpreter_is_refused_before_confirmation(wizard, monkeypa
     assert wizard._row_stage == ""
 
 
-def test_verified_managed_interpreter_is_provisional_and_foreign_path_rejected(
+def test_extension_uses_only_root_venv_and_rejects_foreign_interpreter(
     wizard, monkeypatch, tmp_path,
 ):
-    """Only activated environments inside the isolated managed root may be selected."""
-    managed = tmp_path / ".settings_local" / "acceptance" / "dependency_environments"
-    interpreter = managed / "isolated" / "Scripts" / "python.exe"
+    """Only a verified canonical private Python may replace proposed JSS fields."""
+    root_venv = tmp_path / ".venv"
+    interpreter = root_venv / "Scripts" / "python.exe"
+    marker = root_venv / "JAZN_DEPENDENCY_ENVIRONMENT.json"
     interpreter.parent.mkdir(parents=True)
     interpreter.touch()
+    marker.write_text("{}", encoding="utf-8")
     foreign = tmp_path / "foreign-python.exe"
     foreign.touch()
     wizard._row_setting = "python"
     wizard._row_name = "Testy: pytest"
+    wizard._row_profiles = "core,run-studio,mcp-http,test-evidence"
     monkeypatch.setattr(wizard, "retry", lambda: None)
     wizard._row_stage = "install"
     wizard._row_output = json.dumps({
-        "ok": True, "activation_marker_updated": True,
+        "ok": True, "state": "private_environment_extended",
+        "activation_marker_updated": True,
+        "profiles": wizard._row_profiles.split(","),
         "python_executable": str(foreign),
+        "environment_marker_path": str(marker),
     })
     wizard._row_finished(0, None)
     assert wizard.core.settings.python != str(foreign)
     wizard._row_stage = "install"
     wizard._row_output = json.dumps({
-        "ok": True, "activation_marker_updated": True,
+        "ok": True, "state": "private_environment_extended",
+        "activation_marker_updated": True,
+        "profiles": wizard._row_profiles.split(","),
         "python_executable": str(interpreter),
+        "environment_marker_path": str(marker),
     })
     wizard._row_finished(0, None)
     assert wizard.core.settings.python == str(interpreter.resolve())
+    assert wizard.core.settings.mcp_python == str(interpreter.resolve())
     assert wizard.setting_fields["python"].text() == str(interpreter.resolve())
+    assert wizard.setting_fields["mcp_python"].text() == str(interpreter.resolve())
     assert wizard._provisional_python_setting == str(interpreter.resolve())
