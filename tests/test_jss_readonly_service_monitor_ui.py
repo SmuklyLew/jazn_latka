@@ -19,14 +19,20 @@ from tools.jazn_run_studio.service_status_dialog import ServiceStatusDialog
 from tests.test_jazn_run_studio_layout import window  # noqa: F401
 
 
-def test_service_observer_buttons_are_only_refresh_and_close() -> None:
+def test_service_observer_has_interval_selector_and_close_only() -> None:
     app = QApplication.instance() or QApplication([])
     assert app is not None
     host = QWidget()
     seen = []
     panel = ServiceStatusDialog(host, lambda: seen.append("read-only-poll"))
     labels = {button.text() for button in panel.findChildren(QPushButton)}
-    assert labels == {"Odśwież stany", "Zamknij"}
+    assert labels == {"Zamknij"}
+    assert panel.refresh_interval.currentData() == 30_000
+    assert panel.monitor_timer.interval() == 30_000
+    for index, expected in enumerate((1000, 10_000, 30_000, 60_000)):
+        panel.refresh_interval.setCurrentIndex(index)
+        assert panel.monitor_timer.interval() == expected
+    assert seen == []  # Changing cadence never triggers a lifecycle or probe.
     assert set(panel.indicators) == {
         "server", "runtime", "ollama_process", "ollama",
         "mcp", "mcp_https", "supervisor", "memory",

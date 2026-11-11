@@ -10,7 +10,7 @@ from typing import Any, Callable
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
+    QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
 )
 
 # A visible caption always accompanies each colored circle.
@@ -29,9 +29,9 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
         # latter enters the failures set; optionality cannot hide a real fault.
         return "bad", "Ostatnia kontrola zakończyła się niepowodzeniem"
     if evidence is None:
-        return "warn", "Nie sprawdzono — użyj Odśwież"
+        return "warn", "Nie sprawdzono — oczekiwanie na automatyczny odczyt"
     if age_seconds > MAX_OBSERVATION_AGE_SECONDS:
-        return "warn", "Wynik nieaktualny — ponów kontrolę"
+        return "warn", "Wynik nieaktualny — oczekiwanie na kolejną kontrolę"
 
     if key in {"server", "runtime"}:
         state = evidence.get("active_state")
@@ -139,7 +139,7 @@ class ServiceStatusDialog(QDialog):
         self.indicators: dict[str, tuple[QLabel, QLabel]] = {}
 
         layout = QVBoxLayout(self)
-        subtitle = QLabel("Monitor tylko do odczytu: co 30 s odświeża status dostępnych usług. Nie uruchamia, nie zatrzymuje ani nie konfiguruje procesów. Nie potwierdza odpowiedzi ChatGPT.")
+        subtitle = QLabel("Monitor tylko do odczytu: status dostępnych usług odświeża się automatycznie w wybranym odstępie. Nie uruchamia, nie zatrzymuje ani nie konfiguruje procesów. Nie potwierdza odpowiedzi ChatGPT.")
         subtitle.setWordWrap(True)
         layout.addWidget(subtitle)
         for key, title in self.SERVICES:
@@ -162,12 +162,17 @@ class ServiceStatusDialog(QDialog):
         note.setWordWrap(True)
         layout.addWidget(note)
         buttons = QHBoxLayout()
-        refresh = QPushButton("Odśwież stany")
-        refresh.setAccessibleName("Odczytaj status usług bez ich uruchamiania")
-        refresh.clicked.connect(self.request_refresh)
+        interval_label = QLabel("Odczyt co:")
+        self.refresh_interval = QComboBox(self)
+        self.refresh_interval.setAccessibleName("Częstotliwość automatycznego odczytu stanów usług")
+        for seconds in (1, 10, 30, 60):
+            self.refresh_interval.addItem(f"{seconds} s", seconds * 1000)
+        self.refresh_interval.setCurrentIndex(2)
+        interval_label.setBuddy(self.refresh_interval)
         close = QPushButton("Zamknij")
         close.clicked.connect(self.close)
-        buttons.addWidget(refresh)
+        buttons.addWidget(interval_label)
+        buttons.addWidget(self.refresh_interval)
         buttons.addStretch(1)
         buttons.addWidget(close)
         layout.addLayout(buttons)
@@ -181,7 +186,16 @@ class ServiceStatusDialog(QDialog):
         self.monitor_timer = QTimer(self)
         self.monitor_timer.setInterval(30_000)
         self.monitor_timer.timeout.connect(self._monitor_once)
+        self.refresh_interval.currentIndexChanged.connect(self._change_monitor_interval)
         self.render_statuses()
+
+    def _change_monitor_interval(self, _index: int) -> None:
+        interval_ms = self.refresh_interval.currentData()
+        if interval_ms not in {1000, 10000, 30000, 60000}:
+            raise ValueError("Nieobsługiwany odstęp monitorowania")
+        self.monitor_timer.setInterval(int(interval_ms))
+        if self.isVisible():
+            self.monitor_timer.start()
 
     def _monitor_once(self) -> None:
         if self.isVisible():

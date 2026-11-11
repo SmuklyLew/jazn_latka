@@ -18,13 +18,13 @@ from .core import Controller, Settings, StudioError
 
 # Only declared, maintained profiles are installable from the wizard.
 _ROW_PROFILES = {
-    "Testy: pytest": ("core,run-studio,test-evidence", "python"),
+    "Testy: pytest": ("core,run-studio,mcp-http,test-evidence", "python"),
     **{
-        name: ("core,run-studio", "python")
+        name: ("core,run-studio,mcp-http,test-evidence", "python")
         for name in ("tzdata", "packaging", "PySide6-Essentials")
     },
     **{
-        "MCP: " + module: ("core,mcp-http", "mcp_python")
+        "MCP: " + module: ("core,run-studio,mcp-http,test-evidence", "mcp_python")
         for module in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
     },
 }
@@ -298,13 +298,13 @@ class SetupWizard(QWizard):
             return
         profiles, setting = spec
         try:
-            python = (
-                (self.setting_fields["mcp_python"].text().strip()
-                 or self.core.settings.mcp_python or self._setup_python())
-                if setting == "mcp_python" else self._setup_python()
+            from latka_jazn.dependencies.private_python import (
+                private_python_path, private_python_status,
             )
-            if not Path(python).is_absolute() or not Path(python).is_file():
-                raise StudioError("Wybrany interpreter nie istnieje.")
+            private = private_python_status(self.core.root)
+            if private.get("ready") is not True:
+                raise StudioError("ROOT/.venv nie jest gotowe; użyj setup.ps1.")
+            python = str(private_python_path(self.core.root))
         except (OSError, ValueError, RuntimeError) as exc:
             self.stage.setText(self.core.redactor.text(str(exc)))
             return
@@ -315,9 +315,10 @@ class SetupWizard(QWizard):
             f"Brak: {name}\nProfile: {profiles}\nInterpreter bazowy: {python}\n"
             f"Wheelhouse: {wheelhouse}\n\n"
             "Pobrać pakiety i zbudować zweryfikowany wheelhouse, a następnie "
-            "zainstalować offline do NOWEGO, izolowanego środowiska? "
-            "Może korzystać z internetu. Nie zmienia aktywnego .venv, MEMORY "
-            "ani daemona. Nowy interpreter będzie wymagał zatwierdzenia w kroku C.",
+            "doinstalować offline WYŁĄCZNIE brakujące pakiety do ROOT/.venv? "
+            "Nie aktualizuje już zainstalowanych bibliotek ani nie tworzy drugiego "
+            "Pythona. Odmówi, gdy działa runtime lub wersje pakietów są niezgodne. "
+            "Nie zmienia MEMORY ani nie uruchamia daemona.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -347,11 +348,9 @@ class SetupWizard(QWizard):
                 self.stage.setText("Odmowa: nieprawidłowy katalog wheelhouse.")
                 return
             arguments += [
-                "install", "--bundle", str(candidate),
+                "extend", "--bundle", str(candidate),
                 "--profile", self._row_profiles,
                 "--python-executable", self._row_python,
-                "--environment-root",
-                str(root / ".settings_local" / "acceptance" / "dependency_environments"),
                 "--offline",
             ]
         else:
@@ -457,53 +456,48 @@ class SetupWizard(QWizard):
             self._row_stage = ""
             self._row_failure(stage, "unexpected_installer_stage", exit_code, "")
             return
-        managed = (self.core.root.resolve() / ".settings_local" / "acceptance"
-                   / "dependency_environments").resolve()
+        from latka_jazn.dependencies.private_python import private_python_path
+        from latka_jazn.dependencies.common import ENVIRONMENT_MARKER_NAME
+        root_venv = (self.core.root.resolve() / ".venv").resolve()
+        expected_python = private_python_path(self.core.root)
         interpreter = Path(str(payload.get("python_executable") or ""))
         marker = Path(str(payload.get("environment_marker_path") or ""))
         provided = set(payload.get("profiles") or [])
         expected = set(self._row_profiles.split(","))
-        # Full release activation is sufficient for the legacy managed install
-        # contract. Optional MCP environments instead have their own verified
-        # marker and need not activate the complete runtime dependency profile.
-        verified = (
-            payload.get("activation_marker_updated") is True
-            or (
-                payload.get("state") in {"environment_ready", "optional_environment_ready"}
-                and expected.issubset(provided)
-                and marker.is_absolute() and marker.is_file()
-                and marker.resolve().is_relative_to(managed)
-            )
-        )
         ready = (
-            verified and interpreter.is_absolute() and interpreter.is_file()
-            and interpreter.resolve().is_relative_to(managed)
+            payload.get("state") == "private_environment_extended"
+            and payload.get("activation_marker_updated") is True
+            and expected.issubset(provided)
+            and interpreter.is_file()
+            and interpreter.resolve() == expected_python.resolve()
+            and marker.is_file()
+            and marker.resolve() == (root_venv / ENVIRONMENT_MARKER_NAME).resolve()
         )
         self._row_stage = ""
         if not ready:
             self._row_failure(stage, "managed_environment_not_verified", exit_code, "")
             return
         resolved = str(interpreter.resolve())
-        self.setting_fields[self._row_setting].setText(resolved)
-        self.core.settings = replace(self.core.settings, **{self._row_setting: resolved})
-        if self._row_setting == "python":
-            self._provisional_python_setting = resolved
-            self.retry()
-        else:
-            self._provisional_mcp_python_setting = resolved
-            self.retry()  # Verify the selected provisional interpreter, before saving.
+        # Both runtime and MCP use one canonical interpreter. No hidden switch.
+        self.setting_fields["python"].setText(resolved)
+        self.setting_fields["mcp_python"].setText(resolved)
+        self.core.settings = replace(
+            self.core.settings, python=resolved, mcp_python=resolved,
+        )
+        self._provisional_python_setting = resolved
+        self._provisional_mcp_python_setting = resolved
+        self.retry()  # Fresh evidence for exactly the interpreter being saved.
         self.core.emit(
             "setup:dependency-row", "state",
             {"state": "succeeded", "error": None, "returncode": 0},
         )
         self.core.emit(
             "setup:dependency-row", "log",
-            "Weryfikacja nowego środowiska zakończona: " + self._row_name,
+            "Zweryfikowano uzupełnienie ROOT/.venv: " + self._row_name,
         )
         self.stage.setText(
-            "Zainstalowano: " + self._row_name
-            + ". Zatwierdź interpreter w kroku C. "
-            "Dla MCP ponów kontrolę po zapisaniu konfiguracji."
+            "Zainstalowano do ROOT/.venv: " + self._row_name
+            + ". Interpreter Jaźni i MCP pozostaje ten sam."
         )
 
     def provision(self, command: str) -> None:
@@ -658,11 +652,15 @@ class SetupWizard(QWizard):
             if ok and self.provision_command == "install-offline":
                 candidate = self.core.root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
                 if candidate.is_file():
+                    # In-memory only until the user approves the final step.
+                    # Do not retain an MCP interpreter from a legacy managed env.
                     self.setting_fields["python"].setText(str(candidate))
-                    # In-memory only; the user still explicitly approves
-                    # persistence in the wizard's final configuration step.
-                    self.core.settings = replace(self.core.settings, python=str(candidate))
+                    self.setting_fields["mcp_python"].setText(str(candidate))
+                    self.core.settings = replace(
+                        self.core.settings, python=str(candidate), mcp_python=str(candidate),
+                    )
                     self._provisional_python_setting = str(candidate)
+                    self._provisional_mcp_python_setting = str(candidate)
             if ok and self.provision_command in {"prepare-venv", "install-offline", "download-deps"}:
                 self.retry()
             if ok and self.provision_command in {"pull-model", "start-ollama", "install-ollama"}:
@@ -691,6 +689,16 @@ class SetupWizard(QWizard):
         if self.finished_setup:
             return
         try:
+            # Form edits are provisional until explicitly saved, but the audit
+            # must test the interpreter currently shown to the operator.
+            proposed_python = self.setting_fields["python"].text().strip()
+            proposed_mcp = self.setting_fields["mcp_python"].text().strip()
+            if proposed_python:
+                selected = replace(
+                    self.core.settings, python=proposed_python,
+                    mcp_python=proposed_mcp or proposed_python,
+                )
+                self.core.settings = Settings.validate(asdict(selected))
             self.job = self.core.check_setup()
         except (OSError, ValueError, RuntimeError) as exc:
             self.stage.setText("Nie rozpoczęto kontroli: " + type(exc).__name__)
@@ -752,17 +760,33 @@ class SetupWizard(QWizard):
             return
         try:
             from .requirements_worker import setup_scope
-            from .core import python_executable
-            if self.report.get("scope") != setup_scope(self.core.root, python_executable(self.core.settings)):
-                raise StudioError("Interpreter lub wymagania zmieniły się; ponów kontrolę.")
+            from latka_jazn.dependencies.private_python import (
+                private_python_path, private_python_status,
+            )
+            if private_python_status(self.core.root).get("ready") is not True:
+                raise StudioError("ROOT/.venv nie jest gotowe.")
+            canonical = private_python_path(self.core.root).resolve()
             data = asdict(self.core.settings)
             data.update({key: field.text().strip() for key, field in self.setting_fields.items()})
+            selected_python = Path(str(data.get("python") or "")).resolve()
+            selected_mcp = Path(str(data.get("mcp_python") or data.get("python") or "")).resolve()
+            if selected_python != canonical or selected_mcp != canonical:
+                raise StudioError("Jaźń i MCP muszą używać jednego ROOT/.venv.")
+            if self.report.get("scope") != setup_scope(self.core.root, str(canonical)):
+                raise StudioError("Interpreter zmieniono od ostatniej kontroli; ponów kontrolę.")
+            report_mcp = str((self.report.get("mcp") or {}).get("interpreter") or "")
+            if report_mcp and Path(report_mcp).resolve() != canonical:
+                raise StudioError("Interpreter MCP zmieniono; ponów kontrolę.")
+            data["python"], data["mcp_python"] = str(canonical), str(canonical)
             data["theme"] = str(self.theme_choice.currentData())
             data["runtime_profile"] = str(self.runtime_profile_choice.currentData())
             self.save(Settings.validate(data))
             self.completed(str(self.report["scope"]))
         except (OSError, ValueError, RuntimeError) as exc:
-            QMessageBox.warning(self, "Nie zapisano konfiguracji", self.core.redactor.text(str(exc)))
+            # Validation failures are ordinary form errors. A modal warning
+            # starts a nested Qt event loop and can freeze headless tests.
+            # Keep the refusal but report it within the wizard instead.
+            self.notice.setText("Nie zapisano konfiguracji: " + self.core.redactor.text(str(exc)))
             return
         self.finished_setup = True
         self.timer.stop()

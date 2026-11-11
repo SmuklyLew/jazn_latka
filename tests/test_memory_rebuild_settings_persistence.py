@@ -27,6 +27,17 @@ def _text(fragments) -> str:
     return "".join(str(text) for _style, text in fragments)
 
 
+def _prepared_tool_root(tmp_path: Path) -> Path:
+    """Create a recognizable modern SYSTEM without using the live checkout."""
+    root = tmp_path / "tool"
+    (root / "latka_jazn").mkdir(parents=True)
+    (root / "latka_jazn" / "version.py").write_text("# synthetic\n", encoding="utf-8")
+    (root / "main.py").write_text("# synthetic\n", encoding="utf-8")
+    (root / "local_resources").mkdir()
+    (root / ".settings").mkdir()
+    return root
+
+
 def test_default_tool_settings_are_created_as_full_structured_json(tmp_path: Path) -> None:
     path = tmp_path / DEFAULT_SETTINGS_FILENAME
     settings = load_tool_settings(path, tool_root=tmp_path, create=True)
@@ -86,29 +97,56 @@ def test_legacy_flat_runtime_settings_are_accepted_and_upgraded(tmp_path: Path) 
     assert payload["studio"]["theme_name"]
 
 
-def test_default_path_prefers_host_workspace_and_explicit_path_wins(
+def test_default_path_prefers_root_scoped_workspace_and_explicit_path_wins(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    workspace = tmp_path / "workspace_runtime"
-    tool_root = tmp_path / "tool"
+    # The old fixture pointed an unrecognized 'tool' directory at the actual
+    # prepared checkout. A real prepared SYSTEM owns a ROOT-contained workspace.
+    tool_root = _prepared_tool_root(tmp_path)
     explicit = tmp_path / "custom.json"
     monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(workspace))
-
-    assert resolve_settings_path(tool_root=tool_root) == (
-        workspace / DEFAULT_SETTINGS_FILENAME
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/pytest_memory_rebuild_" + tmp_path.name,
+    )
+    expected = (
+        tool_root / ".settings_local" / "acceptance" /
+        ("pytest_memory_rebuild_" + tmp_path.name) / DEFAULT_SETTINGS_FILENAME
     ).resolve()
+
+    assert resolve_settings_path(tool_root=tool_root) == expected
     assert resolve_settings_path(explicit, tool_root=tool_root) == explicit.resolve()
+    assert not expected.exists()
+    assert not explicit.exists()
 
 
 def test_environment_settings_path_beats_workspace(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    tool_root = _prepared_tool_root(tmp_path)
     env_path = tmp_path / "env-settings.json"
     monkeypatch.setenv("JAZN_MEMORY_REBUILD_SETTINGS", str(env_path))
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace"))
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/pytest_memory_rebuild_" + tmp_path.name,
+    )
 
-    assert resolve_settings_path(tool_root=tmp_path / "tool") == env_path.resolve()
+    assert resolve_settings_path(tool_root=tool_root) == env_path.resolve()
+    assert not env_path.exists()
+
+
+def test_prepared_root_rejects_external_workspace_in_settings_resolution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tool_root = _prepared_tool_root(tmp_path)
+    foreign_workspace = tmp_path / "foreign-workspace"
+    monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(foreign_workspace))
+
+    with pytest.raises(ValueError, match="workspace_escapes_root"):
+        resolve_settings_path(tool_root=tool_root)
+    assert not foreign_workspace.exists()
+    assert not (tool_root / ".settings_local").exists()
 
 
 @pytest.mark.parametrize(

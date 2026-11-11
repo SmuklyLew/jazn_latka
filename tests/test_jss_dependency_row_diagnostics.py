@@ -66,27 +66,28 @@ def test_dependency_process_failure_is_visible_in_operator_logs(wizard):
     )
 
 
-def test_optional_mcp_profile_does_not_require_global_activation(wizard, tmp_path):
-    """A marked isolated MCP environment may be selected even without global activation."""
-    managed = tmp_path / ".settings_local" / "acceptance" / "dependency_environments"
-    env = managed / "mcp-only"
+def test_optional_mcp_extension_preserves_canonical_root_venv(wizard, tmp_path, monkeypatch):
+    """MCP and runtime must use the same ROOT/.venv, not a managed copy."""
+    env = tmp_path / ".venv"
     python = env / "Scripts" / "python.exe"
-    marker = env / "dependency_environment.json"
+    marker = env / "JAZN_DEPENDENCY_ENVIRONMENT.json"
     python.parent.mkdir(parents=True)
     python.touch()
     marker.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(wizard, "retry", lambda: None)
     wizard._row_name = "MCP: mcp"
     wizard._row_setting = "mcp_python"
-    wizard._row_profiles = "core,mcp-http"
+    wizard._row_profiles = "core,run-studio,mcp-http,test-evidence"
     wizard._row_stage = "install"
     wizard._row_output = json.dumps({
-        "ok": True, "state": "optional_environment_ready",
-        "profiles": ["core", "mcp-http"],
+        "ok": True, "state": "private_environment_extended",
+        "profiles": wizard._row_profiles.split(","),
         "python_executable": str(python),
         "environment_marker_path": str(marker),
-        "activation_marker_updated": False,
+        "activation_marker_updated": True,
     })
     wizard._row_finished(0, None)
+    assert wizard.core.settings.python == str(python.resolve())
     assert wizard.core.settings.mcp_python == str(python.resolve())
     assert wizard.setting_fields["mcp_python"].text() == str(python.resolve())
     assert any(
@@ -97,9 +98,9 @@ def test_optional_mcp_profile_does_not_require_global_activation(wizard, tmp_pat
 
 
 def test_optional_profile_rejects_foreign_marker(wizard, tmp_path):
-    """A marker outside the managed dependency folder cannot authorize interpreter change."""
-    managed = tmp_path / ".settings_local" / "acceptance" / "dependency_environments"
-    python = managed / "mcp-only" / "Scripts" / "python.exe"
+    """A foreign marker must not authorize a change even for the correct venv."""
+    env = tmp_path / ".venv"
+    python = env / "Scripts" / "python.exe"
     python.parent.mkdir(parents=True)
     python.touch()
     foreign = tmp_path / "foreign.json"
@@ -107,13 +108,13 @@ def test_optional_profile_rejects_foreign_marker(wizard, tmp_path):
     wizard._row_stage = "install"
     wizard._row_name = "MCP: mcp"
     wizard._row_setting = "mcp_python"
-    wizard._row_profiles = "core,mcp-http"
+    wizard._row_profiles = "core,run-studio,mcp-http,test-evidence"
     wizard._row_output = json.dumps({
-        "ok": True, "state": "optional_environment_ready",
-        "profiles": ["core", "mcp-http"],
+        "ok": True, "state": "private_environment_extended",
+        "profiles": wizard._row_profiles.split(","),
         "python_executable": str(python),
         "environment_marker_path": str(foreign),
-        "activation_marker_updated": False,
+        "activation_marker_updated": True,
     })
     original = wizard.core.settings.mcp_python
     wizard._row_finished(0, None)

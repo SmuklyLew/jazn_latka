@@ -218,13 +218,13 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self._models()
         self._connections()
         self._developer()
-        self.operator_status = QPushButton("Problemy: nie sprawdzono")
+        self.operator_status = QPushButton("Narzędzia Operatora")
         self.operator_status.setFlat(True)
         self.statusBar().addPermanentWidget(self.operator_status, 1)
         from .operator_workspace import OperatorWorkspace
         self.workspace = OperatorWorkspace(self)
         self.service_status_dialog: ServiceStatusDialog | None = None
-        self.operator_status.clicked.connect(lambda: self.workspace.show(0))
+        self.operator_status.clicked.connect(lambda: self.workspace.dock.hide() if self.workspace.dock.isVisible() else self.workspace.show(0))
         self._workspace_menu()
         self.refresh_local_conversations()
         self.settings_baseline = self.settings_draft()
@@ -233,7 +233,8 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.log_toggle = QPushButton("Pokaż logi")
         self.log_toggle.setAccessibleName("Pokaż lub ukryj dolny panel logów")
         self.log_toggle.clicked.connect(self.toggle_logs)
-        self.statusBar().addPermanentWidget(self.log_toggle)
+        if not self.unified_operator_mode:
+            self.statusBar().addPermanentWidget(self.log_toggle)
         self.restore_layout()
         self.navigate(self.layout_state.get("active_section", "Pulpit"))
         self.statusBar().showMessage(str(core.root))

@@ -48,10 +48,16 @@ def _source(path: Path, rows: int = 2000) -> None:
 
 def _prepared_root(tmp_path: Path) -> Path:
     root = tmp_path / "runtime"
-    memory_root = root.parent / "workspace_runtime" / "memory"
+    # The global pytest fixture assigns a unique ROOT-relative acceptance
+    # workspace. A legacy sibling workspace is not the selected MEMORY root
+    # of that synthetic SYSTEM. Create an explicit canonical MEMORY candidate
+    # so source, normalization and validation use the same private test root.
+    memory_root = root / "memory"
     memory_root.mkdir(parents=True, exist_ok=True)
     (memory_root / "MEMORY_PACKAGE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
     cfg = JaznConfig(root=root)
+    assert cfg.memory_root == memory_root.resolve()
+    assert cfg.memory_availability.persistent_memory_enabled is True
     _source(cfg.memory_db_path_readonly)
     sidecar = MemoryNormalizationSidecar(
         root,
@@ -81,6 +87,17 @@ def test_quick_and_full_validation_pass_for_prepared_memory(tmp_path: Path) -> N
     assert full["ok"] is True, full
     assert full["sqlite_pragma"] == "integrity_check"
     assert all(item["integrity_result"] == ["ok"] for item in full["databases"] if item["exists"])
+
+
+def test_prepared_memory_uses_only_its_own_canonical_root(tmp_path: Path) -> None:
+    # The synthetic test package must not implicitly adopt another checkout's
+    # legacy sibling MEMORY when a ROOT-relative acceptance workspace is set.
+    root = _prepared_root(tmp_path)
+    config = JaznConfig(root=root)
+    assert config.memory_root == (root / "memory").resolve()
+    assert config.runtime_memory_storage_root == config.memory_root
+    assert config.memory_availability.persistent_memory_enabled is True
+    assert not (tmp_path / "workspace_runtime" / "memory").exists()
 
 
 def test_validation_detects_foreign_key_corruption(tmp_path: Path) -> None:

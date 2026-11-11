@@ -148,6 +148,9 @@ class WorkbenchShell(QObject):
         self.section_tabs.setAccessibleName("Otwarte sekcje Studio")
         self.section_tabs.setExpanding(False)
         self.section_tabs.setUsesScrollButtons(True)
+        self.section_tabs.setMovable(True)
+        self.section_tabs.setTabsClosable(True)
+        self.section_tabs.tabCloseRequested.connect(self.close_section_tab)
         canvas = host.topbar.parentWidget()
         layout = canvas.layout() if canvas is not None else None
         if isinstance(layout, QBoxLayout):
@@ -257,6 +260,20 @@ class WorkbenchShell(QObject):
     def select_tab(self, index: int) -> None:
         if index >= 0:
             self.host.navigate(self.section_tabs.tabText(index))
+
+    def close_section_tab(self, index: int) -> None:
+        """Close a navigation tab, never its runtime-owned view or active job."""
+        if not 0 <= index < self.section_tabs.count():
+            return
+        closing_current = index == self.section_tabs.currentIndex()
+        self.section_tabs.removeTab(index)
+        # A closed tab is reopened by the normal navigation handler. Preserve
+        # the central widget and all of its jobs, including when it was last.
+        if closing_current and self.section_tabs.count() == 0:
+            self.host.statusBar().showMessage(
+                "Zakładka zamknięta. Wybierz sekcję w nawigacji, aby ją przywrócić.",
+                5000,
+            )
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self.host and event.type() == QEvent.Type.Resize:

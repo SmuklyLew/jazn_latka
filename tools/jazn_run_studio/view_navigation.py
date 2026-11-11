@@ -123,6 +123,11 @@ class NavigationViewMixin:
                 if hasattr(self, "workbench"):
                     self.workbench.active_group = self.workbench.group_for_section(title)
                     self.workbench.apply_activity_filter()
+                    if self.nav.currentRow() == row:
+                        # A previously closed tab must reopen even if the
+                        # selected navigation row has not changed.
+                        self.workbench.sync_section(row)
+                        return
                 self.nav.setCurrentRow(row)
                 return
 
