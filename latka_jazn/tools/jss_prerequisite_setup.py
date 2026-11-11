@@ -195,10 +195,12 @@ def install_offline(root: str | Path, *, bundle: str | Path, approved: bool) -> 
     if not python_314(python):
         raise ProvisioningError("root_venv_python_314_missing")
     from latka_jazn.dependencies.common import DependencyStudioError
-    from latka_jazn.dependencies.environment import install_bundle
+    from latka_jazn.dependencies.private_extension import extend_private_environment
 
     try:
-        result = install_bundle(root, directory, python_executable=str(python), offline=True)
+        result = extend_private_environment(
+            root, directory, python_executable=str(python), offline=True,
+        )
     except DependencyStudioError as exc:
         raise ProvisioningError("canonical_offline_dependency_install_failed") from exc
     if result.get("ok") is not True or result.get("activation_marker_updated") is not True:
@@ -222,7 +224,7 @@ def download_dependencies(root: str | Path, *, base_python: str, approved: bool)
     command = [
         str(base_python), "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
         "--root", str(paths["root"]), "--wheelhouse-root", str(paths["wheelhouse"]),
-        "--json", "download", "--profile", "core,run-studio",
+        "--json", "download", "--profile", "core,run-studio,mcp-http,test-evidence",
         "--python-version", "3.14", "--platform", "current",
         "--python-executable", str(base_python),
     ]
