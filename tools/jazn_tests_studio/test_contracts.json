@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3345,
+  "active_definition_count": 3346,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14646,7 +14646,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 102
     },
     "tests/test_configuration_studio_gui_windows.py::test_gui_refuses_to_discard_unsaved_edits": {
       "path": "tests/test_configuration_studio_gui_windows.py",
@@ -14669,7 +14669,28 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 107
+    },
+    "tests/test_configuration_studio_gui_windows.py::test_fresh_tk_child_environment_is_scoped_to_synthetic_root": {
+      "path": "tests/test_configuration_studio_gui_windows.py",
+      "name": "test_fresh_tk_child_environment_is_scoped_to_synthetic_root",
+      "purpose": "The autouse checkout override must never leak into a synthetic Tk ROOT.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.configuration_studio",
+        "latka_jazn.tools.configuration_studio_ui"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 110
     },
     "tests/test_configuration_studio_hardening.py::test_reject_memory_sqlite_cache_collision": {
       "path": "tests/test_configuration_studio_hardening.py",
