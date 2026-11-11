@@ -783,7 +783,10 @@ class SetupWizard(QWizard):
             self.save(Settings.validate(data))
             self.completed(str(self.report["scope"]))
         except (OSError, ValueError, RuntimeError) as exc:
-            QMessageBox.warning(self, "Nie zapisano konfiguracji", self.core.redactor.text(str(exc)))
+            # Validation failures are ordinary form errors. A modal warning
+            # starts a nested Qt event loop and can freeze headless tests.
+            # Keep the refusal but report it within the wizard instead.
+            self.notice.setText("Nie zapisano konfiguracji: " + self.core.redactor.text(str(exc)))
             return
         self.finished_setup = True
         self.timer.stop()
