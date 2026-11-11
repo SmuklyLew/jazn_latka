@@ -1968,7 +1968,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 54
     },
     "tests/test_archived_test_policy.py::test_default_collection_skips_archive_but_explicit_run_is_isolated": {
       "path": "tests/test_archived_test_policy.py",
@@ -1990,7 +1990,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 59
     },
     "tests/test_archived_test_policy.py::test_active_line_and_evidence_audits_ignore_archived_tests": {
       "path": "tests/test_archived_test_policy.py",
@@ -2012,7 +2012,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 67
+      "line": 72
     },
     "tests/test_attachment_materialization.py::test_probe_reports_ready_only_after_size_and_sha_match": {
       "path": "tests/test_attachment_materialization.py",
