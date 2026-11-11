@@ -168,6 +168,11 @@ def test_extend_cli_requires_explicit_offline_and_uses_single_venv(
             "python_executable": "private-venv-only", "activation_marker_updated": True,
         },
     )
+    # Explicit --profile must never load ROOT's default profile registry.
+    monkeypatch.setattr(
+        dependency_studio, "activation_profile_names",
+        lambda *_args: (_ for _ in ()).throw(AssertionError("unexpected_default_profile_lookup")),
+    )
     ns = dependency_studio.build_parser().parse_args([
         "--root", str(tmp_path), "extend", "--bundle", str(bundle),
         "--profile", "core,run-studio,test-evidence",
@@ -179,3 +184,33 @@ def test_extend_cli_requires_explicit_offline_and_uses_single_venv(
     assert code == 0
     assert result["command"] == "extend"
     assert result["python_executable"] == "private-venv-only"
+
+
+
+def test_extend_cli_without_profiles_reads_root_activation_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default activation profiles are resolved only when --profile is absent."""
+    bundle = tmp_path / "wheelhouse"
+    bundle.mkdir()
+    seen = {"defaults": 0}
+
+    def default_profiles(_root):
+        seen["defaults"] += 1
+        return ["core"]
+
+    monkeypatch.setattr(dependency_studio, "activation_profile_names", default_profiles)
+    monkeypatch.setattr(
+        ext, "extend_private_environment",
+        lambda root, bundle, **kw: {
+            "ok": True, "state": "private_environment_extended",
+            "python_executable": "private-venv-only", "activation_marker_updated": True,
+        },
+    )
+    ns = dependency_studio.build_parser().parse_args([
+        "--root", str(tmp_path), "extend", "--bundle", str(bundle), "--offline",
+    ])
+    code, payload = dependency_studio.execute(ns)
+    assert code == 0
+    assert payload["command"] == "extend"
+    assert seen["defaults"] == 1
