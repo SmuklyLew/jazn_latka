@@ -74,6 +74,35 @@ def isolated_environment(folder: Path, root: Path) -> QProcessEnvironment:
     return env
 
 
+# TPA source verification and live acceptance require an operator-scoped
+# environment. Synthetic pytest regressions do not: sharing that operator
+# profile makes unrelated synthetic SYSTEM roots read the same checkpoints
+# and rejects their temporary Memory Rebuild settings.
+REGRESSION_SCOPED_KEYS = frozenset({
+    "JAZN_STUDIO_ACCEPTANCE_PROFILE",
+    "JAZN_OPERATOR_STATE_ROOT",
+    "JAZN_MEMORY_REBUILD_SETTINGS",
+    "JAZN_MEMORY_REBUILD_PROJECTS",
+})
+
+
+def regression_environment(operator: QProcessEnvironment) -> QProcessEnvironment:
+    """Copy a bounded test environment without inheriting TPA operator state.
+
+    Keep MEMORY disabled and retain the disposable runtime and MEMORY roots.
+    This is not a network sandbox; only reviewed synthetic test files execute.
+    """
+    result = QProcessEnvironment()
+    for key in operator.keys():
+        if key not in REGRESSION_SCOPED_KEYS:
+            result.insert(key, operator.value(key))
+    if result.value("JAZN_MEMORY_MODE") != "off":
+        raise ValueError("Regresja TPA wymaga wyłączonej MEMORY")
+    if not result.value("JAZN_RUNTIME_WORKSPACE_DIR") or not result.value("JAZN_MEMORY_ROOT"):
+        raise ValueError("Brak izolowanego workspace lub katalogu MEMORY dla regresji")
+    return result
+
+
 def checked_files(root: Path, case_id: str) -> tuple[str, ...]:
     names = tuple(scenario(case_id)["files"])
     for name in names:
@@ -455,6 +484,9 @@ class TPARunner(QObject):
         self.junit = Path(self.temp.name) / (str(self.index) + ".xml")
         self.log_name = row["case_id"] + ".log"
         files = checked_files(self.execution_root, row["case_id"])
+        # Source staging used the operator profile; pytest must not inherit
+        # its settings/checkpoints. This switch occurs only for regressions.
+        self.process.setProcessEnvironment(regression_environment(self.process.processEnvironment()))
         args = ["-X", "utf8", "-m", "pytest", "-q", "-rA", "-p", "no:cacheprovider", "--tb=short",
                 "--junitxml", str(self.junit), "--basetemp", str(Path(self.temp.name) / ("pytest-" + str(self.index))), *files]
         row.update(status="RUNNING", reason="Testy pracują; wynik nie jest jeszcze znany.", started_utc=utc(), command=[self.python, *args])
