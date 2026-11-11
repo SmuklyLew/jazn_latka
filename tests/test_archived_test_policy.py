@@ -39,8 +39,13 @@ def _make_policy_project(tmp_path: Path) -> Path:
         "from pathlib import Path\n"
         "import os\n\n"
         "def test_retired_keeps_runtime_isolated(tmp_path):\n"
-        "    configured = Path(os.environ['JAZN_RUNTIME_WORKSPACE_DIR'])\n"
-        "    assert configured == tmp_path / 'workspace_runtime'\n",
+        "    configured = os.environ['JAZN_RUNTIME_WORKSPACE_DIR']\n"
+        "    expected = '$ROOT/.settings_local/acceptance/pytest_runtime_' + tmp_path.name\n"
+        "    assert configured == expected\n"
+        "    root = Path(__file__).resolve().parents[2]\n"
+        "    candidate = (root / configured.removeprefix('$ROOT/')).resolve()\n"
+        "    assert candidate.parent == (root / '.settings_local' / 'acceptance').resolve()\n"
+        "    assert candidate.name == 'pytest_runtime_' + tmp_path.name\n",
         encoding="utf-8",
     )
     return project
