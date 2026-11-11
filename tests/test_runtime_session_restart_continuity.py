@@ -27,7 +27,10 @@ def test_restart_without_explicit_session_id_resumes_latest_verified_checkpoint(
     assert saved["session_state_saved"] is True
     assert saved["latest_session_pointer_saved"] is True
     assert Path(saved["session_state_path"]).is_file()
-    assert (tmp_path / "workspace_runtime/runtime_session_state.json").is_file()
+    assert Path(saved["latest_session_pointer_path"]) == first.latest_path
+    assert first.latest_path.is_relative_to(tmp_path)
+    assert first.latest_path.is_file()
+    assert not (tmp_path / "workspace_runtime/runtime_session_state.json").exists()
 
     second = RuntimeSessionStateStore(tmp_path)
     restored = second.load_or_create(source_client="pytest")
@@ -48,7 +51,7 @@ def test_tampered_latest_checkpoint_is_rejected_fail_closed(tmp_path: Path) -> N
     state.update(user_text="oryginał", intent="test", route="test")
     store.save(state, continuity_context=_wake(), turn_count=1)
 
-    latest = tmp_path / "workspace_runtime/runtime_session_state.json"
+    latest = store.latest_path
     payload = json.loads(latest.read_text(encoding="utf-8"))
     payload["last_user_text"] = "podmienione bez aktualizacji hash"
     latest.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
@@ -106,7 +109,7 @@ def test_no_carryover_session_does_not_replace_latest_pointer(tmp_path: Path) ->
     first.update(user_text="trwały", intent="keep", route="keep")
     durable.save(first, continuity_context=_wake(), turn_count=1)
 
-    latest = tmp_path / "workspace_runtime/runtime_session_state.json"
+    latest = durable.latest_path
     original = latest.read_bytes()
 
     isolated = RuntimeSessionStateStore(tmp_path)
@@ -128,9 +131,9 @@ def test_checkpoint_replacement_leaves_no_temporary_files(tmp_path: Path) -> Non
         status = store.save(state, continuity_context=_wake(), turn_count=turn)
         assert status["session_state_saved"] is True
 
-    temporary = list((tmp_path / "workspace_runtime").rglob("*.tmp"))
+    temporary = list(store.workspace_root.rglob("*.tmp"))
     assert temporary == []
-    payload = json.loads((tmp_path / "workspace_runtime/runtime_session_state.json").read_text(encoding="utf-8"))
+    payload = json.loads(store.latest_path.read_text(encoding="utf-8"))
     assert payload["_continuity"]["generation"] == 3
     assert payload["_continuity"]["turn_count"] == 3
 
@@ -169,7 +172,7 @@ def test_older_session_cannot_replace_newer_latest_pointer(tmp_path: Path) -> No
     newer = newer_store.load_or_create(session_id="newer", source_client="pytest")
     newer.last_turn_at = "2026-07-27T12:00:00+00:00"
     assert newer_store.save(newer, continuity_context=_wake(), turn_count=2)["latest_session_pointer_saved"] is True
-    original = (tmp_path / "workspace_runtime/runtime_session_state.json").read_bytes()
+    original = newer_store.latest_path.read_bytes()
 
     older_store = RuntimeSessionStateStore(tmp_path)
     older = older_store.load_or_create(session_id="older", source_client="pytest")
@@ -179,8 +182,32 @@ def test_older_session_cannot_replace_newer_latest_pointer(tmp_path: Path) -> No
     assert status["session_state_saved"] is True
     assert status["latest_session_pointer_saved"] is False
     assert status["latest_session_pointer_reason"] == "existing_latest_pointer_is_newer"
-    assert (tmp_path / "workspace_runtime/runtime_session_state.json").read_bytes() == original
+    assert older_store.latest_path.read_bytes() == original
     assert older_store._path_for_session("older").is_file()
+
+
+def test_verified_latest_checkpoint_stays_scoped_to_its_runtime_root(tmp_path: Path) -> None:
+    # Synthetic SYSTEM roots must never adopt each other's checkpoints.
+    first_root = tmp_path / "root-a"
+    other_root = tmp_path / "root-b"
+    first = RuntimeSessionStateStore(first_root)
+    other = RuntimeSessionStateStore(other_root)
+    assert first.latest_path != other.latest_path
+    assert first.latest_path.is_relative_to(first_root)
+    assert other.latest_path.is_relative_to(other_root)
+
+    state = first.load_or_create(source_client="pytest")
+    state.update(user_text="tylko root-a", intent="continuity", route="memory")
+    assert first.save(state, continuity_context=_wake(), turn_count=1)["latest_session_pointer_saved"]
+    assert first.latest_path.is_file()
+    assert not other.latest_path.exists()
+
+    isolated = RuntimeSessionStateStore(other_root)
+    fresh = isolated.load_or_create(source_client="pytest")
+    assert fresh.session_id != state.session_id
+    assert fresh.last_user_text is None
+    assert isolated.last_load_metadata["session_loaded_from"] == "new"
+    assert not other.latest_path.exists()
 
 
 def test_checkpoint_with_non_string_session_field_is_rejected(tmp_path: Path) -> None:
