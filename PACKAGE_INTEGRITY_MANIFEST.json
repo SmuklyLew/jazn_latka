@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-11T17:34:02+00:00",
-  "updated_at_utc": "2026-11-11T17:34:02+00:00",
+  "generated_at_utc": "2026-11-11T17:42:24+00:00",
+  "updated_at_utc": "2026-11-11T17:42:24+00:00",
   "start_file": "run.py",
-  "file_count": 3773,
-  "static_file_count": 3773,
+  "file_count": 3775,
+  "static_file_count": 3775,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "b4475c17a9c71555ce32d3993c23a4e1eeb50a283143dee84c416090c20cf58d",
+      "sha256": "5232c007d83c8c86cdc7240859e0ec139e08ced3d57f0782d1bc4fd23872be53",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19524,6 +19524,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_memory_view_qt_workspace/PROVENANCE.md",
+      "size_bytes": 757,
+      "sha256": "9a636217bcb734512155b5cc2e9105b66a04b664937ae9b738a4dd0bfcf86d00",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_memory_view_qt_workspace/test_jazn_run_studio_memory_view.py",
+      "size_bytes": 5797,
+      "sha256": "694d3c3d37e9c38a5df9de0f7201e93ad74443ffc7648030f0bb3203d498fc94",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127_4_20261111_runtime_marker_workspace/PROVENANCE.md",
       "size_bytes": 862,
       "sha256": "b9ce9159ac8e105e62d8c98618b9c7873e1d44de20d27fda29f0ae67eefff20d",
@@ -28768,8 +28786,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_memory_view.py",
-      "size_bytes": 5797,
-      "sha256": "694d3c3d37e9c38a5df9de0f7201e93ad74443ffc7648030f0bb3203d498fc94",
+      "size_bytes": 7283,
+      "sha256": "6faa64e0d2212db0aa111b252a08423e5b18e2efd01f9aa02be8e969f02318fd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33754,8 +33772,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2967575,
-      "sha256": "2521c25fd372d50030b3f30b6c4b02d4b501768a9f93f8014fe3989a8d240808",
+      "size_bytes": 2968836,
+      "sha256": "919ea2f7c752458b16478e65e9015d5068f7454a83ea5441cf8846632b715e3b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,

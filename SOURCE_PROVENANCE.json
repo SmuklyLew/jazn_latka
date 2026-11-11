@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "7347fae3913f820651a854ac4292021cc42d831c",
+  "base_merge_commit": "bf04208bf9b386309cc3570cdc80447a446e8c3f",
   "base_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "commit_date": "2026-11-11T17:34:02Z",
+  "commit_date": "2026-11-11T17:42:24Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-11T17:34:02+00:00",
+  "generated_at_utc": "2026-11-11T17:42:24+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "8b57c8f7aa5627a9804261d28d29a367e51e9a42",
+  "git_tree_sha": "94d2218b0cd46ed59f4d86ea34f3fd776955219f",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "7347fae3913f820651a854ac4292021cc42d831c",
+    "source_commit": "bf04208bf9b386309cc3570cdc80447a446e8c3f",
     "source_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "7347fae3913f820651a854ac4292021cc42d831c",
+  "source_commit": "bf04208bf9b386309cc3570cdc80447a446e8c3f",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "tag": null,
