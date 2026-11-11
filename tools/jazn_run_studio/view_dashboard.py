@@ -40,7 +40,6 @@ INSTALL_LINKS = {
 class DashboardViewMixin:
     def _dashboard(self: Any) -> None:
         layout = self.page("Pulpit", "Stan systemu i bezpieczne przejście do rozmowy. Uruchamianie oraz zatrzymywanie procesów znajdziesz wyłącznie w Usługi i procesy.")
-        self.button("Kreator konfiguracji…", self.open_setup, layout)
         self.dashboard_summary: dict[str, QLabel] = {}
         self.quick_runtime_ready = False
         self.quick_generation_ready = False
@@ -60,10 +59,6 @@ class DashboardViewMixin:
         self.button("Sprawdź gotowość lokalną (bez uruchamiania usług)",
                     self.check_local_readiness, layout)
         chat_steps = QHBoxLayout()
-        self.quick_chat_button = self.button(
-            "3. Przejdź do rozmowy", lambda: self.navigate("Czat lokalny"), chat_steps
-        )
-        self.quick_chat_button.setEnabled(False)
         self.button("Status pamięci i ciągłości", lambda: self.navigate("Dowody MEMORY"), chat_steps)
         layout.addLayout(chat_steps)
         self.quick_memory_status = QLabel(
@@ -130,7 +125,6 @@ class DashboardViewMixin:
         """Only actual runtime identity and explicit Ollama generation unlock chat."""
         ready = (self.quick_runtime_ready and self.quick_generation_ready
                  and bool(self.core.settings.model))
-        self.quick_chat_button.setEnabled(ready)
         self.quick_start_status.setText(
             "1. Runtime: " + ("potwierdzony" if self.quick_runtime_ready else "niezweryfikowany") +
             "  •  2. Model: " + ("generacja potwierdzona" if self.quick_generation_ready
