@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3346,
+  "active_definition_count": 3347,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -63693,7 +63693,7 @@
     "tests/test_shard_manifest_fail_closed.py::test_missing_manifest_keeps_single_database_compatibility": {
       "path": "tests/test_shard_manifest_fail_closed.py",
       "name": "test_missing_manifest_keeps_single_database_compatibility",
-      "purpose": "Missing manifest keeps single database compatibility",
+      "purpose": "Modern prepared ROOT keeps its single SQLite database inside its ROOT.",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [],
@@ -63705,8 +63705,26 @@
         "latka_jazn.db.shard_manifest"
       ],
       "status": "current",
-      "description_source": "source_identity",
+      "description_source": "native_docstring",
       "line": 39
+    },
+    "tests/test_shard_manifest_fail_closed.py::test_historical_root_missing_manifest_keeps_sibling_workspace": {
+      "path": "tests/test_shard_manifest_fail_closed.py",
+      "name": "test_historical_root_missing_manifest_keeps_sibling_workspace",
+      "purpose": "A bare historical ROOT must not silently migrate its SQLite workspace.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.db.shard_manifest"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 60
     },
     "tests/test_shard_manifest_fail_closed.py::test_existing_invalid_json_is_not_silently_replaced": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -63726,7 +63744,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 85
     },
     "tests/test_shard_manifest_fail_closed.py::test_path_escape_is_rejected_for_read_and_write": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -63746,7 +63764,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 65
+      "line": 95
     },
     "tests/test_shard_manifest_fail_closed.py::test_missing_active_shard_and_duplicate_ids_are_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -63766,7 +63784,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 106
     },
     "tests/test_shard_manifest_fail_closed.py::test_role_mismatch_is_rejected": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -63786,7 +63804,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 91
+      "line": 121
     },
     "tests/test_shard_manifest_fail_closed.py::test_manager_creates_valid_manifest_only_when_missing": {
       "path": "tests/test_shard_manifest_fail_closed.py",
@@ -63804,7 +63822,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 132
     },
     "tests/test_sidecar_migration_contract.py::test_legacy_mixed_audit_sidecar_is_copied_without_mutating_source": {
       "path": "tests/test_sidecar_migration_contract.py",
