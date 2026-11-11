@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-11T18:46:12+00:00",
-  "updated_at_utc": "2026-11-11T18:46:12+00:00",
+  "generated_at_utc": "2026-11-11T18:57:50+00:00",
+  "updated_at_utc": "2026-11-11T18:57:50+00:00",
   "start_file": "run.py",
-  "file_count": 3777,
-  "static_file_count": 3777,
+  "file_count": 3779,
+  "static_file_count": 3779,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "0b6bfeb92854606a98f07476590a85e0a493d2d2883013a02d554f2b011cd960",
+      "sha256": "667244c3e0c547cc5238c53b5518b2f03f7c0ce7c546454841d5ce2368710d57",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19542,6 +19542,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_memory_rebuild_settings_root_scoping/PROVENANCE.md",
+      "size_bytes": 765,
+      "sha256": "79aa47ea76f8a5e3ec681532bfaa93c870b1a0ac7083800b501d710545294253",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_memory_rebuild_settings_root_scoping/test_memory_rebuild_settings_persistence.py",
+      "size_bytes": 6532,
+      "sha256": "663c84007f54d7b8cbd2c39d477cf60773ca2ef960fc073f8980c4578588b588",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127_4_20261111_memory_view_qt_workspace/PROVENANCE.md",
       "size_bytes": 757,
       "sha256": "9a636217bcb734512155b5cc2e9105b66a04b664937ae9b738a4dd0bfcf86d00",
@@ -30433,8 +30451,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_settings_persistence.py",
-      "size_bytes": 6532,
-      "sha256": "663c84007f54d7b8cbd2c39d477cf60773ca2ef960fc073f8980c4578588b588",
+      "size_bytes": 8116,
+      "sha256": "097c54141b86e5209a1a2921146b5f2fe3ee51f3f59cf533ec94f49d108a4424",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33790,8 +33808,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2969828,
-      "sha256": "f2cc837ff1983385cb544ea139b4a6e343117cbc0df44e7938c2744082bd3066",
+      "size_bytes": 2970746,
+      "sha256": "d88ece077a87e3eeeb6403bc536fce069e00687310558d95cd3cffefdaf83a24",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
