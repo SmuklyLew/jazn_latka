@@ -235,13 +235,13 @@ def _wizard(args: argparse.Namespace) -> dict[str, Any]:
         raise SetupError("Wizard requires a terminal; use install --yes with explicit options in CI")
     print("Jaźń guided setup — no daemon, MEMORY or tunnel changes")
     print("  1. Jaźń Core")
-    print("  2. Core + JSS (Run Studio)")
-    print("  3. Core + JSS + local MCP libraries (configure auth in JSS)")
-    print("  4. Core + JSS + Polish NLP (large download)")
+    print("  2. Core + JSS + TPA (Run Studio, pytest)")
+    print("  3. Core + JSS + TPA + local MCP (configure auth in JSS)")
+    print("  4. Core + JSS + TPA + Polish NLP (large download)")
     choices = {
-        "1": ["core"], "2": ["core", "run-studio"],
-        "3": ["core", "run-studio", "mcp-http"],
-        "4": ["core", "run-studio", "polish-nlp"],
+        "1": ["core"], "2": ["core", "run-studio", "test-evidence"],
+        "3": ["core", "run-studio", "mcp-http", "test-evidence"],
+        "4": ["core", "run-studio", "polish-nlp", "test-evidence"],
     }
     selection = input("Choose profile [1-4]: ").strip()
     if selection not in choices:
@@ -249,7 +249,8 @@ def _wizard(args: argparse.Namespace) -> dict[str, Any]:
     print("Exact verified offline bundle directory, or blank for approved network download:")
     choice = input("Bundle path [blank = online]: ").strip()
     delegated = argparse.Namespace(**vars(args))
-    delegated.mode = "install"
+    # Existing ROOT/.venv is extended additively, never replaced or redirected.
+    delegated.mode = "extend" if _probe_venv(ROOT)["ready"] else "install"
     delegated.profile = choices[selection]
     delegated.bundle = choice
     delegated.online = not bool(choice)
@@ -284,18 +285,27 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             "managed_environment": status, "local_venv": _probe_venv(root),
             "note": "Managed dependency readiness only; daemon and MCP are separate.",
         }
-    if args.mode not in {"install", "repair", "online"}:
+    if args.mode not in {"install", "repair", "online", "extend"}:
         raise SetupError("Unsupported setup mode")
     if not target["release_wheelhouse_target_supported"]:
         raise SetupError("Unsupported release wheelhouse target; use supported Windows/Linux x64 and Python 3.12–3.14")
     managed = _managed_status(root)
-    if args.mode != "repair" and _managed_matches(managed, profiles):
+    venv_state = _probe_venv(root)
+    if args.mode == "extend":
+        if args.layout != "project" or venv_state["ready"] is not True:
+            raise SetupError("Extend requires a verified ROOT/.venv and project layout")
+        if (_managed_matches(managed, profiles)
+                and Path(str(managed.get("environment_root") or "")).resolve() == _venv_path(root).resolve()):
+            return {"ok": True, "mode": "extend", "state": "already_ready",
+                    "python_executable": str(_venv_python(root)), "profiles": profiles}
+    elif args.mode != "repair" and _managed_matches(managed, profiles):
         return {"ok": True, "mode": "install", "state": "already_ready",
                 "python_executable": managed["python_executable"], "profiles": profiles}
-    if args.layout == "project" and (_venv_path(root).exists() or _venv_path(root).is_symlink()):
+    if args.mode != "extend" and args.layout == "project" and (
+            _venv_path(root).exists() or _venv_path(root).is_symlink()):
         raise SetupError(
-            "Existing .venv cannot be overwritten. Use --layout managed "
-            "for a verified side-by-side recovery instead."
+            "Existing .venv cannot be overwritten. Use -Mode extend for additive "
+            "installations; reviewed upgrades require a separate maintenance procedure."
         )
     online = args.online or args.mode == "online"
     if online and args.bundle:
@@ -330,10 +340,15 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     if not bundle.is_absolute() or not bundle.is_dir():
         raise SetupError("No wheelhouse bundle available after the download step")
     verification = _dependency_studio(root, "verify", "--bundle", str(bundle))
+    operation = "extend" if args.mode == "extend" else "install"
+    extension_options = (
+        ["--python-executable", str(_venv_python(root))]
+        if operation == "extend" else
+        ["--python-executable", str(_base_python()), "--layout", args.layout]
+    )
     installation = _dependency_studio(
-        root, "install", "--bundle", str(bundle), "--profile", ",".join(profiles),
-        "--python-executable", str(_base_python()),
-        "--layout", args.layout, "--offline", timeout=3600,
+        root, operation, "--bundle", str(bundle), "--profile", ",".join(profiles),
+        *extension_options, "--offline", timeout=3600,
     )
     python_path = str(installation.get("python_executable") or "")
     if not python_path or not Path(python_path).is_file():
@@ -341,13 +356,15 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     status = _managed_status(root)
     if set(profiles).issubset(set(status.get("resolved_profiles") or [])):
         ready = bool(status.get("ready"))
+        if operation == "extend":
+            ready = ready and Path(str(status.get("environment_root") or "")).resolve() == _venv_path(root).resolve()
     else:
         # An optional-only environment cannot replace an active core environment.
         ready = bool(installation.get("ok")) and bool(python_path)
     if not ready:
         raise SetupError("Post-install managed environment verification failed")
     return {
-        "ok": True, "mode": "install", "state": str(installation.get("state")),
+        "ok": True, "mode": operation, "state": str(installation.get("state")),
         "profiles": profiles, "python_executable": python_path,
         "bundle": str(bundle), "bundle_verified": verification.get("ok") is True,
         "activation_marker_updated": installation.get("activation_marker_updated") is True,
@@ -363,7 +380,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Jaźń operator setup (no daemon lifecycle)")
     parser.add_argument("mode", nargs="?", default="doctor",
-                        choices=("doctor", "wizard", "install", "repair", "verify", "venv",
+                        choices=("doctor", "wizard", "install", "extend", "repair", "verify", "venv",
                                  "preflight", "online"))
     parser.add_argument("--profile", action="append", default=[],
                         help="One or more canonical Dependency Studio profiles, comma-separated")
