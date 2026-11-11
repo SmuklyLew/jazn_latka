@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3370,
+  "active_definition_count": 3372,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -14767,11 +14767,12 @@
       ],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 27
+      "line": 28
     },
     "tests/test_configuration_studio_hardening.py::test_reject_current_memory_root_even_if_changing_memory": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14789,11 +14790,12 @@
       ],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_configuration_studio_hardening.py::test_profile_single_snapshot_and_rollback": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14807,11 +14809,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 47
     },
     "tests/test_configuration_studio_hardening.py::test_concurrent_compare_and_swap_allows_only_one_writer": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14825,11 +14828,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 58
     },
     "tests/test_configuration_studio_hardening.py::test_duplicate_keys_are_rejected": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14845,11 +14849,12 @@
       ],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 76
     },
     "tests/test_configuration_studio_hardening.py::test_launch_rejects_marker_when_changing_critical_paths": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14865,29 +14870,52 @@
       ],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 85
     },
     "tests/test_configuration_studio_hardening.py::test_inspection_honors_effective_paths": {
       "path": "tests/test_configuration_studio_hardening.py",
       "name": "test_inspection_honors_effective_paths",
       "purpose": "Inspection honors effective paths",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 98
+    },
+    "tests/test_configuration_studio_hardening.py::test_unprepared_system_rejects_acceptance_workspace_for_operator_settings": {
+      "path": "tests/test_configuration_studio_hardening.py",
+      "name": "test_unprepared_system_rejects_acceptance_workspace_for_operator_settings",
+      "purpose": "Unprepared system rejects acceptance workspace for operator settings",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "OperatorPathError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
+        "latka_jazn.tools.configuration_studio"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 118
     },
     "tests/test_configuration_studio_hardening.py::test_validated_launch_is_exact_normalized_snapshot": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14901,11 +14929,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 134
     },
     "tests/test_configuration_studio_hardening.py::test_inherited_legacy_memory_does_not_block_unrelated_profile_setting": {
       "path": "tests/test_configuration_studio_hardening.py",
@@ -14921,11 +14950,12 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_root",
+        "latka_jazn.tools.application_shell.operator_paths",
         "latka_jazn.tools.configuration_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 113
+      "line": 140
     },
     "tests/test_configuration_studio_p1_preview.py::test_dry_run_does_not_create_profile_or_apply_daemon": {
       "path": "tests/test_configuration_studio_p1_preview.py",
@@ -21462,7 +21492,9 @@
       "markers": [],
       "assertion_count": 6,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 17
@@ -21477,7 +21509,9 @@
       "markers": [],
       "assertion_count": 7,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 34
@@ -21496,7 +21530,9 @@
       "expected_exceptions": [
         "ValueError"
       ],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 57
@@ -21511,7 +21547,9 @@
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 62
@@ -21526,7 +21564,9 @@
       "markers": [],
       "assertion_count": 5,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 70
@@ -21541,7 +21581,9 @@
       "markers": [],
       "assertion_count": 5,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
       "line": 84
@@ -21550,16 +21592,35 @@
       "path": "tests/test_heart_system_workspace_qt.py",
       "name": "test_wizard_success_requires_explicit_save_consent",
       "purpose": "Wizard success requires explicit save consent",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 103
+    },
+    "tests/test_heart_system_workspace_qt.py::test_wizard_cannot_save_without_verified_private_python_even_with_consent": {
+      "path": "tests/test_heart_system_workspace_qt.py",
+      "name": "test_wizard_cannot_save_without_verified_private_python_even_with_consent",
+      "purpose": "Wizard cannot save without verified private python even with consent",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
       "assertion_count": 3,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 137
     },
     "tests/test_heart_system_workspace_qt.py::test_outputs_redacted_before_operator_view": {
       "path": "tests/test_heart_system_workspace_qt.py",
@@ -21571,10 +21632,12 @@
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
-      "targets": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 152
     },
     "tests/test_heart_system_xampp_console.py::test_supervisor_uses_only_the_canonical_readonly_command": {
       "path": "tests/test_heart_system_xampp_console.py",
