@@ -652,11 +652,15 @@ class SetupWizard(QWizard):
             if ok and self.provision_command == "install-offline":
                 candidate = self.core.root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
                 if candidate.is_file():
+                    # In-memory only until the user approves the final step.
+                    # Do not retain an MCP interpreter from a legacy managed env.
                     self.setting_fields["python"].setText(str(candidate))
-                    # In-memory only; the user still explicitly approves
-                    # persistence in the wizard's final configuration step.
-                    self.core.settings = replace(self.core.settings, python=str(candidate))
+                    self.setting_fields["mcp_python"].setText(str(candidate))
+                    self.core.settings = replace(
+                        self.core.settings, python=str(candidate), mcp_python=str(candidate),
+                    )
                     self._provisional_python_setting = str(candidate)
+                    self._provisional_mcp_python_setting = str(candidate)
             if ok and self.provision_command in {"prepare-venv", "install-offline", "download-deps"}:
                 self.retry()
             if ok and self.provision_command in {"pull-model", "start-ollama", "install-ollama"}:
