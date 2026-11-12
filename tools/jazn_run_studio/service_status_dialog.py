@@ -126,8 +126,12 @@ class ServiceStatusDialog(QDialog):
         ("memory", "MEMORY / ciągłość"),
     )
 
-    def __init__(self, host: QWidget, request_refresh: Callable[[], None]):
+    def __init__(self, host: QWidget, request_refresh: Callable[[], None], *,
+                 interval_seconds: int = 10, save_interval: Callable[[int], None] | None = None):
         super().__init__(host)
+        if interval_seconds not in {1, 10, 30, 60}:
+            raise ValueError("Nieobsługiwany odstęp monitorowania")
+        self._save_interval = save_interval
         self._request_refresh = request_refresh
         self.setObjectName("jssServiceStatusDialog")
         self.setWindowTitle("Jaźń — Stany usług")
@@ -167,7 +171,7 @@ class ServiceStatusDialog(QDialog):
         self.refresh_interval.setAccessibleName("Częstotliwość automatycznego odczytu stanów usług")
         for seconds in (1, 10, 30, 60):
             self.refresh_interval.addItem(f"{seconds} s", seconds * 1000)
-        self.refresh_interval.setCurrentIndex(2)
+        self.refresh_interval.setCurrentIndex(self.refresh_interval.findData(interval_seconds * 1000))
         interval_label.setBuddy(self.refresh_interval)
         close = QPushButton("Zamknij")
         close.clicked.connect(self.close)
@@ -176,15 +180,18 @@ class ServiceStatusDialog(QDialog):
         buttons.addStretch(1)
         buttons.addWidget(close)
         layout.addLayout(buttons)
+        self.persistence_status = QLabel()
+        self.persistence_status.setWordWrap(True)
+        layout.addWidget(self.persistence_status)
 
         self.timer = QTimer(self)
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.render_statuses)
-        self.timer.start()
+
         # Separate polling from rendering. Only the visible monitor requests
         # existing asynchronous, read-only Controller probes; no lifecycle.
         self.monitor_timer = QTimer(self)
-        self.monitor_timer.setInterval(30_000)
+        self.monitor_timer.setInterval(interval_seconds * 1000)
         self.monitor_timer.timeout.connect(self._monitor_once)
         self.refresh_interval.currentIndexChanged.connect(self._change_monitor_interval)
         self.render_statuses()
@@ -193,6 +200,17 @@ class ServiceStatusDialog(QDialog):
         interval_ms = self.refresh_interval.currentData()
         if interval_ms not in {1000, 10000, 30000, 60000}:
             raise ValueError("Nieobsługiwany odstęp monitorowania")
+        previous = self.monitor_timer.interval()
+        try:
+            if self._save_interval is not None:
+                self._save_interval(int(interval_ms) // 1000)
+        except (OSError, ValueError, RuntimeError):
+            self.refresh_interval.blockSignals(True)
+            self.refresh_interval.setCurrentIndex(self.refresh_interval.findData(previous))
+            self.refresh_interval.blockSignals(False)
+            self.persistence_status.setText("Nie zapisano interwału. Sprawdź dostęp do ustawień lub wczytaj je ponownie.")
+            return
+        self.persistence_status.clear()
         self.monitor_timer.setInterval(int(interval_ms))
         if self.isVisible():
             self.monitor_timer.start()
@@ -205,10 +223,13 @@ class ServiceStatusDialog(QDialog):
 
     def showEvent(self, event: Any) -> None:
         super().showEvent(event)
+        self.timer.start()
         self.monitor_timer.start()
+        self._monitor_once()
 
     def hideEvent(self, event: Any) -> None:
         self.monitor_timer.stop()
+        self.timer.stop()
         super().hideEvent(event)
 
     def request_refresh(self) -> None:

@@ -27,8 +27,8 @@ def test_service_observer_has_interval_selector_and_close_only() -> None:
     panel = ServiceStatusDialog(host, lambda: seen.append("read-only-poll"))
     labels = {button.text() for button in panel.findChildren(QPushButton)}
     assert labels == {"Zamknij"}
-    assert panel.refresh_interval.currentData() == 30_000
-    assert panel.monitor_timer.interval() == 30_000
+    assert panel.refresh_interval.currentData() == 10_000
+    assert panel.monitor_timer.interval() == 10_000
     for index, expected in enumerate((1000, 10_000, 30_000, 60_000)):
         panel.refresh_interval.setCurrentIndex(index)
         assert panel.monitor_timer.interval() == expected

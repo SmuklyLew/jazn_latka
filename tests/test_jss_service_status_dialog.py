@@ -133,12 +133,13 @@ def test_nonmodal_dialog_does_not_spawn_automatically() -> None:
     panel.show()
     app.processEvents()
     assert panel.monitor_timer.isActive()
+    assert host.refresh_count == 2  # Opening performs one immediate read.
     panel._monitor_once()
-    assert host.refresh_count == 2
+    assert host.refresh_count == 3
     panel.hide()
     app.processEvents()
     assert not panel.monitor_timer.isActive()
     panel._monitor_once()
-    assert host.refresh_count == 2
+    assert host.refresh_count == 3
     panel.close()
     host.close()

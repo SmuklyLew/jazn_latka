@@ -156,6 +156,7 @@ class Settings:
     daemon_url: str = "http://127.0.0.1:8787"
     secrets_file: str = ""
     runtime_profile: str = "off"
+    service_refresh_seconds: str = "10"
 
     @classmethod
     def validate(cls, data: dict[str, Any]) -> Settings:
@@ -164,6 +165,8 @@ class Settings:
         if any(not isinstance(v, str) or len(v) > 2048 or any(c in v for c in "\0\r\n") for v in data.values()):
             raise StudioError("Ustawienia muszą być krótkimi tekstami bez znaków sterujących")
         obj = cls(**data)
+        if obj.service_refresh_seconds not in {"1", "10", "30", "60"}:
+            raise StudioError("Odstęp monitorowania: 1, 10, 30 albo 60 sekund")
         from .workbench_theme import THEME_CHOICES
         if obj.theme not in {key for _, key in THEME_CHOICES}:
             raise StudioError("Nieznany motyw")

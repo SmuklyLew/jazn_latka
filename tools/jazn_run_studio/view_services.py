@@ -88,7 +88,6 @@ class ServiceViewMixin:
         self.services_table.itemSelectionChanged.connect(self.refresh_service_controls)
         self.services_table.selectRow(0)
         self.refresh_service_controls()
-        self.button("Odśwież stan wszystkich modułów", self.refresh_services, layout)
         self.button("Sprawdź usługę Windows cloudflared", lambda: self.core.probe("tunnel_service"), layout)
         remote_note = QLabel("Cloudflare, supervisor i MEMORY: odczyt bez przejmowania procesów lub prywatnych danych. Lokalny MCP nie jest publikowany publicznie. Nie ma automatycznego Start All/Stop All; zamknięcie Studio nie zatrzymuje daemona.")
         remote_note.setWordWrap(True)
@@ -250,26 +249,19 @@ class ServiceViewMixin:
     def open_service_status(self: Any) -> None:
         """Display the read-only, non-modal service indicators."""
         if self.service_status_dialog is None:
-            def quiet_readonly_refresh() -> None:
-                try:
-                    # Only read-only status and lightweight passive HTTP
-                    # observations. Never start Ollama, MCP or the daemon,
-                    # and never generate a model answer in the monitor.
-                    self.core.start_action("status")
-                    if self.supervisor_observation.get("active") is not False:
-                        self.core.start_action("supervisor")
-                    self.core.probe("ollama_process", observe_only=True)
-                    self.core.probe("ollama", observe_only=True)
-                    self.core.probe("gateway", observe_only=True)
-                    if self.core.settings.cloudflare_url:
-                        self.core.probe("cloudflare", observe_only=True)
-                except (OSError, ValueError, RuntimeError):
-                    # Timer-driven observation cannot produce recurring
-                    # modal dialogs or trigger a lifecycle fallback.
-                    self.core.emit("service-monitor", "log",
-                                   "Monitor: niepełny odczyt usług; sprawdź ponownie.")
-            self.service_status_dialog = ServiceStatusDialog(self, quiet_readonly_refresh)
+            from .service_monitor import ServiceMonitor
+            monitor = ServiceMonitor(self.core)
+
+            def persist_interval(seconds: int) -> None:
+                settings = replace(self.core.settings, service_refresh_seconds=str(seconds))
+                self.digest = save_settings(self.core.root, settings, self.digest)
+                self.core.settings = settings
+
+            self.service_status_dialog = ServiceStatusDialog(
+                self, monitor.poll,
+                interval_seconds=int(self.core.settings.service_refresh_seconds),
+                save_interval=persist_interval,
+            )
         self.service_status_dialog.show()
         self.service_status_dialog.raise_()
         self.service_status_dialog.activateWindow()
-        self.service_status_dialog.request_refresh()

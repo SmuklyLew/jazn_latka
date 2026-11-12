@@ -244,6 +244,7 @@ class SettingsViewMixin:
 
     def save(self: Any) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
+        data["service_refresh_seconds"] = self.core.settings.service_refresh_seconds
         data["theme"] = str(self.theme.currentData())
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
