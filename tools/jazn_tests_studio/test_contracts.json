@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3375,
+  "active_definition_count": 3376,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -59813,13 +59813,13 @@
       "path": "tests/test_runtime_session_restart_continuity.py",
       "name": "test_restart_without_explicit_session_id_resumes_latest_verified_checkpoint",
       "purpose": "Restart without explicit session id resumes latest verified checkpoint",
-      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 11,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.runtime_session_state"
@@ -59845,7 +59845,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 48
     },
     "tests/test_runtime_session_restart_continuity.py::test_wake_state_mismatch_clears_conversation_carryover": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59864,7 +59864,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 69
     },
     "tests/test_runtime_session_restart_continuity.py::test_expired_checkpoint_is_not_resurrected": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59883,7 +59883,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 88
     },
     "tests/test_runtime_session_restart_continuity.py::test_no_carryover_session_does_not_replace_latest_pointer": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59902,7 +59902,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 106
     },
     "tests/test_runtime_session_restart_continuity.py::test_checkpoint_replacement_leaves_no_temporary_files": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59921,7 +59921,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 126
     },
     "tests/test_runtime_session_restart_continuity.py::test_legacy_checkpoint_is_loaded_only_for_migration_without_carryover": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59940,7 +59940,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 141
     },
     "tests/test_runtime_session_restart_continuity.py::test_session_file_names_do_not_collide_after_sanitization": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59959,7 +59959,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 161
     },
     "tests/test_runtime_session_restart_continuity.py::test_older_session_cannot_replace_newer_latest_pointer": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59978,7 +59978,26 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 167
+      "line": 170
+    },
+    "tests/test_runtime_session_restart_continuity.py::test_verified_latest_checkpoint_stays_scoped_to_its_runtime_root": {
+      "path": "tests/test_runtime_session_restart_continuity.py",
+      "name": "test_verified_latest_checkpoint_stays_scoped_to_its_runtime_root",
+      "purpose": "Verified latest checkpoint stays scoped to its runtime root",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_session_state"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 189
     },
     "tests/test_runtime_session_restart_continuity.py::test_checkpoint_with_non_string_session_field_is_rejected": {
       "path": "tests/test_runtime_session_restart_continuity.py",
@@ -59997,7 +60016,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 186
+      "line": 213
     },
     "tests/test_runtime_sqlite_existing_wal_gate.py::test_existing_wal_refused_before_sqlite_open_and_bytes_preserved": {
       "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
