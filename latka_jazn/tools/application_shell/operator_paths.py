@@ -24,7 +24,9 @@ def _within(path: Path, parent: Path) -> bool:
 def validate_operator_path(path: str | Path, system_root: Path, *, directory: bool = False,
                            allow_memory_settings: bool = False,
                            allow_acceptance_operator: bool = False,
-                           acceptance_operator_root: Path | None = None) -> Path:
+                           acceptance_operator_root: Path | None = None,
+                           workspace_configured: str | Path | None = None,
+                           memory_configured: str | None = None) -> Path:
     """Validate an explicit path after resolving symlinks and Windows junctions."""
     raw = Path(path).expanduser()
     if not raw.is_absolute() or ".." in raw.parts:
@@ -35,7 +37,7 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
     # into ROOT/workspace_runtime, even before an operator-led migration.
     workspaces = tuple(dict.fromkeys((
         default_runtime_workspace_path(system).resolve(),
-        workspace_runtime_path(system).resolve(),
+        workspace_runtime_path(system, configured=workspace_configured).resolve(),
         (system.parent / "workspace_runtime").resolve(),
     )))
     protected = [system, system.parent / "memory", *(workspace / "memory" for workspace in workspaces)]
@@ -43,10 +45,12 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
         allowed = {workspace / "memory_rebuild_settings.json", workspace / "memory_rebuild_settings.json.tmp"}
         if not (allow_memory_settings and not directory and raw.absolute() in allowed and target == raw.absolute()):
             protected.append(workspace)
-    memory = os.environ.get("JAZN_MEMORY_ROOT", "").strip()
+    memory = (os.environ.get("JAZN_MEMORY_ROOT", "") if memory_configured is None
+              else memory_configured).strip()
     if memory:
         candidate = Path(memory).expanduser()
-        protected.append(candidate if candidate.is_absolute() else workspace_runtime_path(system) / candidate)
+        protected.append(candidate if candidate.is_absolute() else
+                         workspace_runtime_path(system, configured=workspace_configured) / candidate)
     from latka_jazn.core.local_settings_layout import (
         local_settings_enabled, resolve_local_settings_layout,
         verify_local_descendant,
