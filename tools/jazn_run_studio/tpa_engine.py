@@ -460,7 +460,8 @@ class TPARunner(QObject):
         if self.execution in {"live", "sandbox"}:
             self.phase, self.live_result = "live", {}
             try:
-                self.live_folder, token = issue_staging(self.execution_root, self.store.folder(self.report["run_id"]), row["case_id"])
+                self.live_folder, token = issue_staging(self.root, self.store.folder(self.report["run_id"]), row["case_id"],
+                                                        execution_root=self.execution_root)
             except (OSError, ValueError) as exc:
                 row.update(status="BLOCKED", reason="Odmowa przygotowania katalogu TPA: " + self.redactor.text(str(exc)))
                 self.changed.emit()
@@ -470,7 +471,7 @@ class TPARunner(QObject):
             child_env.insert(TOKEN_ENV, token)
             self.process.setProcessEnvironment(child_env)
             self.log_name = row["case_id"] + ".log"
-            args = ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root),
+            args = ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root), "--authority-root", str(self.root),
                     "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
                     "--case", row["case_id"], "--model", self.model]
             if self.execution == "sandbox":
@@ -585,7 +586,7 @@ class TPARunner(QObject):
             self.progress.emit("Weryfikuję sprzątnięcie wyłącznie własnego daemona testowego…")
             self.timer.start(int(PHASE_TIMEOUTS["cleanup"] or 90) * 1000)
             self.process.setWorkingDirectory(str(Path(__file__).resolve().parents[2]))
-            self.process.start(self.python, ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root),
+            self.process.start(self.python, ["-X", "utf8", "-m", "tools.jazn_run_studio.tpa_live", "--root", str(self.execution_root), "--authority-root", str(self.root),
                                              "--folder", str(self.live_folder), "--run-id", self.report["run_id"],
                                              "--case", self.report["results"][self.index]["case_id"], "--cleanup"])
             return
