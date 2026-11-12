@@ -143,10 +143,18 @@ def generation_failure(source: str, kind: str, value: object) -> str | None:
         reasons = (
             ("Potwierdzona nieudana tura:", "daemon_turn_failed"),
             ("Transport zamknięty z błędem", "chat_transport_closed"),
-            ("Runtime zgłosił błąd:", "runtime_reported_error"),
-            ("Brak zaakceptowanej wypowiedzi.", "unaccepted_validator_result"),
         )
         return next((code for prefix, code in reasons if value.startswith(prefix)), None)
+    return None
+
+
+def generation_warning(source: str, kind: str, value: object) -> str | None:
+    """Nonterminal chat diagnostics are observations, not permission to fail/replay."""
+    if source == "chat" and kind == "chat_state" and isinstance(value, str):
+        if value.startswith("Runtime zgłosił błąd:"):
+            return "runtime_error_unconfirmed"
+        if value.startswith("Brak zaakceptowanej wypowiedzi."):
+            return "unaccepted_candidate"
     return None
 
 
@@ -252,7 +260,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
         evidence.setdefault("phases", []).append({"phase": name, "monotonic": observed_at})
         try:
             append_phase_event(folder, name, observed_at)
-        except OSError as exc:
+        except (OSError, ValueError) as exc:
             # Never skip the owned-daemon cleanup because an evidence disk failed.
             evidence["phase_journal_error"] = type(exc).__name__
         frame({"event": "phase", "phase": name})
@@ -318,6 +326,9 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
                     evidence["generation_failure"] = failure
                     raise ValueError("Nie uzyskano zaakceptowanej tury: " + failure
                                      + ". Zachowano request_id; bez ponowienia wiadomości.")
+                warning = generation_warning(source, kind, value)
+                if warning:
+                    evidence["generation_warning"] = warning
             time.sleep(0.1)
 
     try:
