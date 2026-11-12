@@ -1,3 +1,4 @@
+# V127.6: preserve live TPA phase evidence and distinguish terminal chat failures from unconfirmed states.
 # V127.2: preserve safe Windows launcher and real Tk GUI gates; extract bounded recovery helper.
 # v116.0.34.94.6.127.1: Ground Polish short-session recall coverage in accepted conversation state; retain fail-closed guards.
 # v116.0.34.94.6.126: Cancel owned Tk polling callbacks and release waiting dialogs on Memory Studio teardown.
@@ -237,7 +238,7 @@ from typing import Any
 # v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.5"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.6"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
