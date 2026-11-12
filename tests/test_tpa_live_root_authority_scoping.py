@@ -17,6 +17,8 @@ from tools.jazn_run_studio.tpa_paths import TOKEN_ENV, issue_staging, validate_s
 def prepared_tpa(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     authority = tmp_path / "prepared-SYSTEM"
     (authority / "local_resources").mkdir(parents=True)
+    # This marker enables the modern ROOT-local acceptance/operator layout.
+    (authority / ".settings").mkdir()
     run_id = "run-" + "a" * 32
     run_folder = authority / ".settings_local" / "acceptance" / "operator" / "jazn_studio_tpa" / run_id
     run_folder.mkdir(parents=True)
