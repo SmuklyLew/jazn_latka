@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("PySide6")
-from tools.jazn_run_studio.tpa_live import append_phase_event, generation_failure
+from tools.jazn_run_studio.tpa_live import append_phase_event, generation_failure, generation_warning
 
 
 @pytest.mark.parametrize(
@@ -19,8 +19,8 @@ from tools.jazn_run_studio.tpa_live import append_phase_event, generation_failur
         ("chat", "state", {"state": "failed", "error": "private-error"}, "chat_transport_failed"),
         ("chat", "chat_state", "Potwierdzona nieudana tura: private-error", "daemon_turn_failed"),
         ("chat", "chat_state", "Transport zamknięty z błędem", "chat_transport_closed"),
-        ("chat", "chat_state", "Runtime zgłosił błąd: private-error", "runtime_reported_error"),
-        ("chat", "chat_state", "Brak zaakceptowanej wypowiedzi. Zachowano request_id", "unaccepted_validator_result"),
+        ("chat", "chat_state", "Runtime zgłosił błąd: private-error", None),
+        ("chat", "chat_state", "Brak zaakceptowanej wypowiedzi. Zachowano request_id", None),
         ("chat", "state", {"state": "running"}, None),
         ("chat", "chat_state", "Oczekiwanie na odpowiedź", None),
         ("chat:resume", "state", {"state": "failed"}, None),
@@ -55,3 +55,15 @@ def test_unknown_phase_is_refused_before_any_write(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Nieznana faza"):
         append_phase_event(tmp_path, "private-token", 10.0)
     assert not (tmp_path / "phase-events.jsonl").exists()
+
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        ("Runtime zgłosił błąd: private-error", "runtime_error_unconfirmed"),
+        ("Brak zaakceptowanej wypowiedzi. Zachowano request_id", "unaccepted_candidate"),
+    ],
+)
+def test_unconfirmed_chat_diagnostics_remain_nonterminal(message: str, expected: str) -> None:
+    assert generation_failure("chat", "chat_state", message) is None
+    assert generation_warning("chat", "chat_state", message) == expected
+    assert "private-error" not in expected
