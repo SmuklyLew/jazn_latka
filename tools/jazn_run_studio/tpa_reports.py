@@ -13,6 +13,7 @@ import uuid
 import xml.etree.ElementTree as ET
 import zipfile
 
+from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.tools.application_shell.operator_paths import operator_state_dir, validate_operator_path
 from .core import Redactor
 from .local_acceptance import scope_version
@@ -168,10 +169,18 @@ def readable_report(report: dict) -> str:
 class RunStore:
     def __init__(self, root: Path, *, evidence_base: Path | None = None):
         self.root = root.resolve()
+        # Freeze the security context at recorder creation, not at each pytest
+        # hook. A test may mutate process-wide JAZN_* temporarily. The original
+        # operator authority cannot follow such fixture changes.
+        self._workspace = workspace_runtime_path(self.root)
+        self._memory_root = os.environ.get("JAZN_MEMORY_ROOT", "")
+        self._acceptance = os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
         self.base = (operator_state_dir("jazn_studio_tpa", root, per_system=True)
                      if evidence_base is None else validate_operator_path(
                          evidence_base, root, directory=True,
-                         allow_acceptance_operator=os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"))
+                         allow_acceptance_operator=self._acceptance,
+                         workspace_configured=self._workspace,
+                         memory_configured=self._memory_root))
         self.redactor = Redactor()
         self.history_errors: list[str] = []
 
@@ -180,7 +189,9 @@ class RunStore:
             raise ValueError("Nieprawidłowy identyfikator przebiegu")
         target = safe_child(self.base, run_id)
         validate_operator_path(target, self.root, directory=True,
-                               allow_acceptance_operator=os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated")
+                               allow_acceptance_operator=self._acceptance,
+                               workspace_configured=self._workspace,
+                               memory_configured=self._memory_root)
         return target
 
     def create(self, case_ids: tuple[str, ...], python: str, environment: dict, *,
