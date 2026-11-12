@@ -68263,7 +68263,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 33
     },
     "tests/test_tpa_live_root_authority_scoping.py::test_staging_refuses_foreign_source_and_mismatched_lineage": {
       "path": "tests/test_tpa_live_root_authority_scoping.py",
@@ -68282,7 +68282,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 45
     },
     "tests/test_tpa_live_root_authority_scoping.py::test_live_entrypoint_separates_evidence_authority_from_execution_root": {
       "path": "tests/test_tpa_live_root_authority_scoping.py",
@@ -68299,7 +68299,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 63
     },
     "tests/test_tpa_live_root_authority_scoping.py::test_test_daemon_workspace_is_inside_staged_system": {
       "path": "tests/test_tpa_live_root_authority_scoping.py",
@@ -68318,7 +68318,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 90
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_selected_test_endpoint_is_probed_without_default_port_fallback": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
