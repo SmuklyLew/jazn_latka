@@ -32,6 +32,23 @@ def frame(value: dict) -> None:
     print(json.dumps(value, ensure_ascii=False), flush=True)
 
 
+def _set_staged_environment(folder: Path) -> None:
+    """Keep mutable daemon state inside the verified staged SYSTEM ROOT.
+
+    The TPA evidence/claim directory belongs to the original operator ROOT,
+    whereas the daemon workspace is owned exclusively by folder/SYSTEM.
+    MEMORY stays disabled; nothing here attaches production memory.
+    """
+    stage = safe_child(folder, "SYSTEM")
+    os.environ.update(
+        JAZN_RUNTIME_WORKSPACE_DIR=str(safe_child(stage, "workspace_runtime")),
+        JAZN_MEMORY_ROOT=str(safe_child(folder, "memory")),
+        JAZN_OPERATOR_STATE_ROOT=str(safe_child(folder, "operator")),
+        JAZN_MEMORY_MODE="off",
+        JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated",
+    )
+
+
 def cleanup(folder: Path, python: str) -> dict:
     """Read-only identity observation before stopping only a run-owned staging."""
     owner = safe_child(folder, "owner.json")
@@ -45,9 +62,7 @@ def cleanup(folder: Path, python: str) -> dict:
     stage = folder / "SYSTEM"
     if not isinstance(saved, dict) or saved.get("root") != str(stage.resolve()) or not stage.is_dir():
         raise ValueError("Niezgodny katalog właściciela daemona")
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"),
-                      JAZN_MEMORY_ROOT=str(folder / "memory"), JAZN_MEMORY_MODE="off",
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated")
+    _set_staged_environment(folder)
     core = Controller(stage, Settings(python=python, daemon_url=saved["url"]))
     try:
         job = core.start_action("status")
@@ -177,9 +192,8 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
     with socket.socket() as port_probe:
         port_probe.bind(("127.0.0.1", 0))
         port = port_probe.getsockname()[1]
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"), JAZN_MEMORY_ROOT=str(folder / "memory"),
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_MEMORY_MODE="off",
-                      JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated", JAZN_MODEL_ADAPTER="ollama" if model else "null",
+    _set_staged_environment(folder)
+    os.environ.update(JAZN_MODEL_ADAPTER="ollama" if model else "null",
                       JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL=base)
     core = Controller(stage, Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}"))
     phase_clock = PhaseDeadline()
@@ -337,6 +351,7 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--authority-root", type=Path, default=None)
     parser.add_argument("--folder", required=True, type=Path)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--case", required=True)
@@ -346,8 +361,10 @@ def main() -> int:
     parser.add_argument("--sandbox", action="store_true")
     args = parser.parse_args()
     try:
-        folder = validate_staging(args.root, args.folder, args.run_id, args.case,
-                                  os.environ.get(TOKEN_ENV, ""), cleaning=args.cleanup)
+        authority = args.authority_root if args.authority_root is not None else args.root
+        folder = validate_staging(authority, args.folder, args.run_id, args.case,
+                                  os.environ.get(TOKEN_ENV, ""), cleaning=args.cleanup,
+                                  execution_root=args.root)
     except (OSError, ValueError) as exc:
         frame({"event": "result", "status": "BLOCKED", "reason": "Odmowa walidacji katalogu odbioru: " + str(exc),
                "pre_start_rejected": not args.cleanup,
@@ -390,8 +407,7 @@ def sandbox(root: Path, folder: Path, case_id: str, python: str, model: str) -> 
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"), JAZN_MEMORY_ROOT=str(folder / "memory"),
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_MEMORY_MODE="off", JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated")
+    _set_staged_environment(folder)
     settings = Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}")
     save_settings(stage, settings, None)
     (folder / "owner.json").write_text(json.dumps({"root": str(stage.resolve()), "url": settings.daemon_url, "instance_id": None}), encoding="utf-8")
