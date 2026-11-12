@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3376,
+  "active_definition_count": 3380,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -68247,6 +68247,78 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_tpa_live_root_authority_scoping.py::test_live_staging_authorized_by_original_root_and_bound_to_copy": {
+      "path": "tests/test_tpa_live_root_authority_scoping.py",
+      "name": "test_live_staging_authorized_by_original_root_and_bound_to_copy",
+      "purpose": "Live staging authorized by original root and bound to copy",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_tpa_live_root_authority_scoping.py::test_staging_refuses_foreign_source_and_mismatched_lineage": {
+      "path": "tests/test_tpa_live_root_authority_scoping.py",
+      "name": "test_staging_refuses_foreign_source_and_mismatched_lineage",
+      "purpose": "Staging refuses foreign source and mismatched lineage",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_tpa_live_root_authority_scoping.py::test_live_entrypoint_separates_evidence_authority_from_execution_root": {
+      "path": "tests/test_tpa_live_root_authority_scoping.py",
+      "name": "test_live_entrypoint_separates_evidence_authority_from_execution_root",
+      "purpose": "Live entrypoint separates evidence authority from execution root",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_tpa_live_root_authority_scoping.py::test_test_daemon_workspace_is_inside_staged_system": {
+      "path": "tests/test_tpa_live_root_authority_scoping.py",
+      "name": "test_test_daemon_workspace_is_inside_staged_system",
+      "purpose": "Test daemon workspace is inside staged system",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_selected_test_endpoint_is_probed_without_default_port_fallback": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
