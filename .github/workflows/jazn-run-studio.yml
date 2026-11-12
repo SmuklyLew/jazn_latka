@@ -126,6 +126,7 @@ jobs:
           tests/test_jss_evidence_history_pagination_qt.py
           tests/test_jss_evidence_initial_index.py
           tests/test_jss_evidence_receipt_recovery.py
+          tests/test_tpa_evidence_immutable_authority.py
           tests/test_jss_pytest_evidence_plugin.py
           tests/test_jss_test_evidence_dependency_profile.py
           tests/test_jss_tpa_compact_filters_qt.py
