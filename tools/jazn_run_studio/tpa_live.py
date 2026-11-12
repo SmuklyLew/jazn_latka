@@ -129,6 +129,43 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     return next((v for _, kind, v in seen if kind == "evidence"), {})
 
 
+def generation_failure(source: str, kind: str, value: object) -> str | None:
+    """Classify terminal chat failures without exposing text, tokens or request IDs.
+
+    Only an accepted chat_final can complete a live turn. A rejected final or
+    failed transport must never be turned into a generic 120-second timeout.
+    """
+    if source != "chat":
+        return None
+    if kind == "state" and isinstance(value, dict) and value.get("state") == "failed":
+        return "chat_transport_failed"
+    if kind == "chat_state" and isinstance(value, str):
+        reasons = (
+            ("Potwierdzona nieudana tura:", "daemon_turn_failed"),
+            ("Transport zamknięty z błędem", "chat_transport_closed"),
+            ("Runtime zgłosił błąd:", "runtime_reported_error"),
+            ("Brak zaakceptowanej wypowiedzi.", "unaccepted_validator_result"),
+        )
+        return next((code for prefix, code in reasons if value.startswith(prefix)), None)
+    return None
+
+
+def append_phase_event(folder: Path, phase_name: str, observed_at: float) -> None:
+    """Fsync a bounded, secret-free live phase before publishing it to the GUI.
+
+    This deliberately leaves evidence inside the TPA-owned isolated staging
+    when the host crashes before the final RunStore snapshot is written.
+    """
+    if phase_name not in PHASE_TIMEOUTS:
+        raise ValueError("Nieznana faza TPA")
+    path = safe_child(folder, "phase-events.jsonl")
+    record = json.dumps({"event": "phase", "phase": phase_name, "monotonic": observed_at}, sort_keys=True)
+    with path.open("a", encoding="utf-8", newline="\n") as stream:
+        stream.write(record + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
 class ReceiptCore(Protocol):
     @property
     def root(self) -> Path: ...
@@ -210,8 +247,14 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
 
     def phase(name: str) -> None:
         phase_clock.enter(name)
+        observed_at = time.monotonic()
         evidence["phase"] = name
-        evidence.setdefault("phases", []).append({"phase": name, "monotonic": time.monotonic()})
+        evidence.setdefault("phases", []).append({"phase": name, "monotonic": observed_at})
+        try:
+            append_phase_event(folder, name, observed_at)
+        except OSError as exc:
+            # Never skip the owned-daemon cleanup because an evidence disk failed.
+            evidence["phase_journal_error"] = type(exc).__name__
         frame({"event": "phase", "phase": name})
 
     def action(key: str) -> dict:
@@ -246,12 +289,11 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
                 if pending_poll is None or pending_poll.done.is_set():
                     client.resume()  # Same durable request, never resend text.
                     last_poll = time.monotonic()
-            for source, kind, value in drain(core):
-                if resume and source == "chat:resume" and kind == "state" and isinstance(value, dict):
-                    if value.get("state") == "failed":
-                        raise ValueError("Wznowienie request_id zakończyło się błędem: "
-                                         + str(value.get("error") or "resume_failed"))
-                if kind == "chat_final":
+            events = drain(core)
+            # Accepted finals have priority when final and transport-close arrive
+            # in one event batch. Never discard a valid accepted final.
+            for source, kind, value in events:
+                if source == "chat" and kind == "chat_final":
                     phase("finalization")
                     frame({"event": "accepted_final", **value})
                     acknowledgements: queue.Queue[str] = queue.Queue(maxsize=1)
@@ -267,6 +309,15 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
                     core.confirm_visible_turn(value)
                     evidence.setdefault("displayed_request_ids", []).append(value["request_id"])
                     return value
+            for source, kind, value in events:
+                if resume and source == "chat:resume" and kind == "state" and isinstance(value, dict):
+                    if value.get("state") == "failed":
+                        raise ValueError("Wznowienie tego samego request_id zakończyło się błędem.")
+                failure = generation_failure(source, kind, value)
+                if failure:
+                    evidence["generation_failure"] = failure
+                    raise ValueError("Nie uzyskano zaakceptowanej tury: " + failure
+                                     + ". Zachowano request_id; bez ponowienia wiadomości.")
             time.sleep(0.1)
 
     try:
@@ -345,6 +396,9 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *,
         if not clean["ok"]:
             status = "BLOCKED"
             reason += " Nie potwierdzono sprzątnięcia własnego daemona: " + clean["reason"]
+        if evidence.get("phase_journal_error"):
+            status = "BLOCKED"
+            reason += " Nie zapisano trwałego dziennika faz TPA."
     return {"status": status, "reason": reason, "evidence": evidence}
 
 
