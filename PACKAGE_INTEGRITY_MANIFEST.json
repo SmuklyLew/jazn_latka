@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-12T18:29:04+00:00",
-  "updated_at_utc": "2026-11-12T18:29:04+00:00",
+  "generated_at_utc": "2026-11-12T18:36:43+00:00",
+  "updated_at_utc": "2026-11-12T18:36:43+00:00",
   "start_file": "run.py",
-  "file_count": 3782,
-  "static_file_count": 3782,
+  "file_count": 3784,
+  "static_file_count": 3784,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "2ba61c78f118979f5547cd29d121cff9720effed344b0227b8f0bd37770ce952",
+      "sha256": "4ea18823c9e15624c53fd14e17382dd20206d9c5a4d034c7eeb73cc8a525c4a8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19695,6 +19695,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261112_tpa_live_root_authority_fixture_baseline/PROVENANCE.md",
+      "size_bytes": 443,
+      "sha256": "0d5f3fc953fa6b79691a0c591f363ffc8c5ca0a3236cc81fadd2d8b4db655492",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261112_tpa_live_root_authority_fixture_baseline/test_tpa_live_root_authority_scoping.py",
+      "size_bytes": 5177,
+      "sha256": "468bb3b4bbb94d8c543dba8da37b58b0e8010f1d1c40dd1addd9c0fbe08f57ff",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v16.3.25.4-package-distribution-preconvergence/README.md",
       "size_bytes": 338,
       "sha256": "bbe3cf3f560f2389e55270c7dcbb3b583b99bc14b129aaf3da9412b59a420cf1",
@@ -32305,8 +32323,8 @@
     },
     {
       "path": "tests/test_tpa_live_root_authority_scoping.py",
-      "size_bytes": 5177,
-      "sha256": "468bb3b4bbb94d8c543dba8da37b58b0e8010f1d1c40dd1addd9c0fbe08f57ff",
+      "size_bytes": 5291,
+      "sha256": "2ce62877a74b274d58299ddbaed70142f860296786f209f1993734761b048a5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33836,7 +33854,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 2974656,
-      "sha256": "049314861d3b81c284e1e3167c1a7ab139da81c1700fed10bd2ce4975218e34d",
+      "sha256": "2afc2525c471fd293d7a973e056ca74b66a03281ca2a391f66a4cd8c35585ab0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
