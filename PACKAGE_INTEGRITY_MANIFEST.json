@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.4-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-11T18:57:50+00:00",
-  "updated_at_utc": "2026-11-11T18:57:50+00:00",
+  "generated_at_utc": "2026-11-12T18:22:39+00:00",
+  "updated_at_utc": "2026-11-12T18:22:39+00:00",
   "start_file": "run.py",
-  "file_count": 3779,
-  "static_file_count": 3779,
+  "file_count": 3781,
+  "static_file_count": 3781,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -473,7 +473,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "667244c3e0c547cc5238c53b5518b2f03f7c0ce7c546454841d5ce2368710d57",
+      "sha256": "29b659fcd5972aa002bcd49fd5ddc5119d1f2cf27c38ef8e72a5e51fafa15c44",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19614,6 +19614,24 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127_4_20261111_runtime_session_restart_workspace/PROVENANCE.md",
+      "size_bytes": 737,
+      "sha256": "92a2824c43671ddc69f57ce4b1861d62a3b1e756e725bbb6f49c7d6924f9c9b2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127_4_20261111_runtime_session_restart_workspace/test_runtime_session_restart_continuity.py",
+      "size_bytes": 8998,
+      "sha256": "95b224ab8445c162c6cc1d621c2f02f107138f44f468ebb0df43b17823e52afc",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127_4_20261111_shard_manifest/PROVENANCE.md",
       "size_bytes": 543,
       "sha256": "9dbc2578e9d972466652db78dc5857559d8d6402b53e2816e8ba7bdcea13103d",
@@ -31729,8 +31747,8 @@
     },
     {
       "path": "tests/test_runtime_session_restart_continuity.py",
-      "size_bytes": 8998,
-      "sha256": "95b224ab8445c162c6cc1d621c2f02f107138f44f468ebb0df43b17823e52afc",
+      "size_bytes": 10103,
+      "sha256": "02eb8b8ce1867985f5b31a9f3e5aa2c602a432cb5aa38d4ae3ef1dc877a3aa79",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33808,8 +33826,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2970746,
-      "sha256": "d88ece077a87e3eeeb6403bc536fce069e00687310558d95cd3cffefdaf83a24",
+      "size_bytes": 2971565,
+      "sha256": "f240a763c91a53bd3b1b9f8828fed61900ea724892f0e31c3b8b714210661f9a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
