@@ -1029,28 +1029,55 @@ class Controller:
             assert proc.stdout is not None
             reader = threading.Thread(target=self._read, args=(job, proc.stdout), daemon=True)
             reader.start()
+            # Start the deadline before any input can block. Buffered stdin
+            # write/close may wait forever if the child never reads its pipe.
+            # A dedicated writer and the existing process watchdog make the
+            # entire input + execution phase bounded without blocking Qt.
+            deadline = time.monotonic() + timeout if timeout is not None else None
+            input_done = threading.Event()
+            input_errors: list[str] = []
+            writer: threading.Thread | None = None
             if job.input_data is not None:
                 assert proc.stdin is not None
-                proc.stdin.write(job.input_data)
-                proc.stdin.close()
+                owned_stdin = proc.stdin
+                payload = job.input_data
                 job.input_data = None
-            deadline = time.monotonic() + timeout if timeout else None
-            while proc.poll() is None:
+
+                def write_input() -> None:
+                    try:
+                        owned_stdin.write(payload)
+                        owned_stdin.close()
+                    except (OSError, ValueError) as exc:
+                        input_errors.append(type(exc).__name__)
+                        job.cancel.set()
+                    finally:
+                        input_done.set()
+
+                writer = threading.Thread(target=write_input, name="studio-stdin-" + job.key, daemon=True)
+                writer.start()
+            else:
+                input_done.set()
+            while proc.poll() is None or not input_done.is_set():
                 if job.cancel.wait(0.05) or (deadline is not None and time.monotonic() >= deadline):
                     job.state = "stopping"
                     self.emit(job.key, "state", job.snapshot())
                     if not job.cancel.is_set():
                         job.error = "timeout"
-                    proc.terminate()
-                    try:
-                        proc.wait(timeout=3)
-                    except subprocess.TimeoutExpired:
-                        proc.kill()
-                        proc.wait(timeout=3)
+                    if proc.poll() is None:
+                        proc.terminate()
+                        try:
+                            proc.wait(timeout=3)
+                        except subprocess.TimeoutExpired:
+                            proc.kill()
+                            proc.wait(timeout=3)
                     break
+            if writer is not None and not input_done.wait(0.5) and job.error is None:
+                job.error = "stdin_write_unresolved"
+            if input_errors and job.error is None:
+                job.error = "stdin_write_failed"
             reader.join(timeout=3)
             job.returncode = proc.returncode
-            if reader.is_alive():
+            if reader.is_alive() and job.error is None:
                 job.error = "output_pipe_not_closed"
             if proc.returncode not in (None, 0) and not job.cancel.is_set() and job.error is None:
                 job.error = "process_exit:" + str(proc.returncode)
