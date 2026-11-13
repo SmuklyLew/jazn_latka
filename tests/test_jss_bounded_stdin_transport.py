@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 import sys
 import threading
 import time
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -45,7 +47,8 @@ def _client(root: Path) -> tuple[ChatClient, Job, BlockedStdin]:
     client = ChatClient(core)
     pipe = BlockedStdin()
     job = Job("chat")
-    job.proc = SimpleNamespace(stdin=pipe, poll=lambda: None)
+    # Test-only synthetic Popen contract; no child process or runtime is launched.
+    job.proc = cast(subprocess.Popen[bytes], SimpleNamespace(stdin=pipe, poll=lambda: None))
     client.job = job
     return client, job, pipe
 
@@ -80,8 +83,8 @@ def test_chat_stalled_stdin_does_not_block_qt_event_loop(synthetic_root: Path) -
         loop.exec()
         assert "request" in observed
         assert "heartbeat" in observed
-        assert float(observed["send_returned"]) - started < 0.7
-        assert float(observed["heartbeat"]) - started < 0.7
+        assert cast(float, observed["send_returned"]) - started < 0.7
+        assert cast(float, observed["heartbeat"]) - started < 0.7
         assert pipe.entered.wait(1.0)
         assert client.pending == observed["request"]
         assert json.loads(client.checkpoint.read_text(encoding="utf-8"))["request_id"] == client.pending
