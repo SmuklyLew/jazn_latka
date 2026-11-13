@@ -56,7 +56,8 @@ def test_operator_denial_never_starts_install_and_valid_approval_selects_profile
     wizard, monkeypatch, tmp_path,
 ):
     """Cancel must be side-effect free; approval selects only the known profile."""
-    python = tmp_path / ".venv" / "Scripts" / "python.exe"
+    from latka_jazn.dependencies.private_python import private_python_path
+    python = private_python_path(tmp_path)
     python.parent.mkdir(parents=True)
     python.touch()
     from latka_jazn.dependencies import private_python as private_module
@@ -97,7 +98,8 @@ def test_extension_uses_only_root_venv_and_rejects_foreign_interpreter(
 ):
     """Only a verified canonical private Python may replace proposed JSS fields."""
     root_venv = tmp_path / ".venv"
-    interpreter = root_venv / "Scripts" / "python.exe"
+    from latka_jazn.dependencies.private_python import private_python_path
+    interpreter = private_python_path(tmp_path)
     marker = root_venv / "JAZN_DEPENDENCY_ENVIRONMENT.json"
     interpreter.parent.mkdir(parents=True)
     interpreter.touch()
