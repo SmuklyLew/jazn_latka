@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -107,6 +108,11 @@ def test_chat_checkpoints_identity_before_sending_and_blocks_replay(core: Contro
     monkeypatch.setattr(client, "job", SimpleNamespace(proc=proc))
     request = client.send("Dokładny tekst")
     persisted = json.loads(client.checkpoint.read_bytes())
+    # Dispatch is intentionally asynchronous so the Qt event loop cannot
+    # block on a stalled child pipe. The checkpoint precedes any write.
+    deadline = time.monotonic() + 3.0
+    while not pipe.getvalue() and time.monotonic() < deadline:
+        time.sleep(0.01)
     frame = json.loads(pipe.getvalue())
     assert persisted["request_id"] == frame["request_id"] == request
     assert frame["session_id"] == client.session_id
