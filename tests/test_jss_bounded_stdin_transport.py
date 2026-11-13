@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 import sys
 import threading
@@ -12,7 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from tools.jazn_run_studio.chat import ChatClient
-from tools.jazn_run_studio.core import Controller, Job, Settings
+from tools.jazn_run_studio.core import Controller, Job, Settings, StudioError
 
 
 @pytest.fixture
@@ -105,7 +104,7 @@ def test_chat_stdin_write_watchdog_preserves_identity_without_replay(
         assert job.cancel.wait(2.0)  # Own transport cancellation only.
         assert client.pending == request
         assert json.loads(client.checkpoint.read_text(encoding="utf-8"))["request_id"] == request
-        with pytest.raises(Exception, match="Najpierw odbierz"):
+        with pytest.raises(StudioError, match="Najpierw odbierz"):
             client.send("Nie wolno ponowić")
     finally:
         pipe.release.set()
