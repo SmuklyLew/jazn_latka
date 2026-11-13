@@ -90,6 +90,16 @@ jobs:
           -q -ra --tb=short
           tests/test_memory_desktop_actions_windows.py
 
+      # Native source-picker coverage remains mandatory on Windows. A fresh
+      # interpreter avoids inherited Tcl state from the migration/model suite.
+      # Failure is a real CI failure, never a fabricated local-PC PASS.
+      - name: Run native Windows source picker in its own Tcl interpreter
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          tests/test_memory_desktop_source_picker_windows.py
+
       - name: Run Memory Rebuild v2.4 tests
         shell: pwsh
         run: >-
@@ -103,8 +113,6 @@ jobs:
           tests/test_memory_desktop_workspace.py
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_actions.py
-          tests/test_memory_desktop_actions_windows.py
-          tests/test_memory_desktop_source_picker_windows.py
           tests/test_memory_desktop_source_paths.py
 
       - name: Clean checkout guard
