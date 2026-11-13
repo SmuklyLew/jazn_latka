@@ -131,7 +131,8 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     for _ in range(64):
         count = collect()
         tick()
-        if count < 2 * TPA_EVENTS_PER_CHANNEL:
+        # Either queue may remain backlogged after a full 64-event share.
+        if count < TPA_EVENTS_PER_CHANNEL:
             break
     raw = "\n".join(str(v) for source, kind, v in seen if source == job.key and kind == "log")
     try:
