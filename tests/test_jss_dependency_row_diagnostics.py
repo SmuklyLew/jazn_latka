@@ -69,7 +69,8 @@ def test_dependency_process_failure_is_visible_in_operator_logs(wizard):
 def test_optional_mcp_extension_preserves_canonical_root_venv(wizard, tmp_path, monkeypatch):
     """MCP and runtime must use the same ROOT/.venv, not a managed copy."""
     env = tmp_path / ".venv"
-    python = env / "Scripts" / "python.exe"
+    from latka_jazn.dependencies.private_python import private_python_path
+    python = private_python_path(tmp_path)
     marker = env / "JAZN_DEPENDENCY_ENVIRONMENT.json"
     python.parent.mkdir(parents=True)
     python.touch()
@@ -100,7 +101,8 @@ def test_optional_mcp_extension_preserves_canonical_root_venv(wizard, tmp_path, 
 def test_optional_profile_rejects_foreign_marker(wizard, tmp_path):
     """A foreign marker must not authorize a change even for the correct venv."""
     env = tmp_path / ".venv"
-    python = env / "Scripts" / "python.exe"
+    from latka_jazn.dependencies.private_python import private_python_path
+    python = private_python_path(tmp_path)
     python.parent.mkdir(parents=True)
     python.touch()
     foreign = tmp_path / "foreign.json"
