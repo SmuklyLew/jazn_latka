@@ -85,10 +85,17 @@ def cleanup(folder: Path, python: str) -> dict:
         core.close()
 
 
-def drain(core: Controller) -> list[tuple]:
+# Per-channel fairness: a busy producer cannot hold a single consumer pass
+# indefinitely, and critical events cannot starve ordinary diagnostic events.
+TPA_EVENTS_PER_CHANNEL = 64
+
+
+def drain(core: Controller, *, per_channel: int = TPA_EVENTS_PER_CHANNEL) -> list[tuple]:
+    if per_channel < 1 or per_channel > 1024:
+        raise ValueError("Nieprawidłowy limit partii zdarzeń TPA")
     events = []
     for channel in (core.critical_events, core.events):
-        while True:
+        for _ in range(per_channel):
             try:
                 events.append(channel.get_nowait())
             except queue.Empty:
@@ -105,18 +112,27 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     job = core.start_action(key)
     seen: list[tuple] = []
 
-    def collect() -> None:
-        for event in drain(core):
+    def collect() -> int:
+        events = drain(core)
+        for event in events:
             seen.append(event)
             source, kind, value = event
             if source == job.key and kind == "log":
                 frame({"event": "progress", "text": core.redactor.text(str(value))})
+        return len(events)
 
     while not job.done.wait(0.1):
         collect()
         tick()
     time.sleep(0.03)
-    collect()
+    # Completion may race a burst of diagnostics. Drain in bounded batches,
+    # rechecking deadline/cancellation rather than looping until an endlessly
+    # producing queue becomes empty.
+    for _ in range(64):
+        count = collect()
+        tick()
+        if count < 2 * TPA_EVENTS_PER_CHANNEL:
+            break
     raw = "\n".join(str(v) for source, kind, v in seen if source == job.key and kind == "log")
     try:
         diagnostic = redact(json.loads(raw), core.redactor)
