@@ -103,3 +103,45 @@ def test_live_action_checks_generation_deadline_despite_event_flood() -> None:
     assert counts >= 1
     assert core.critical_events.position < 20_000
     assert core.events.position < 20_000
+
+
+def test_real_concurrent_producer_cannot_delay_tpa_deadline() -> None:
+    """A producer adds events while consumer batches and clock keep advancing."""
+    critical: queue.SimpleQueue = queue.SimpleQueue()
+    ordinary: queue.Queue = queue.Queue()
+    core = SimpleNamespace(critical_events=critical, events=ordinary)
+    stop = threading.Event()
+    ready = threading.Event()
+
+    def produce() -> None:
+        sequence = 0
+        while not stop.is_set() and sequence < 10_000:
+            critical.put(("critical", "state", {"number": sequence}))
+            ordinary.put(("ordinary", "state", {"number": sequence}))
+            sequence += 1
+            ready.set()
+            # Yield long enough to ensure production overlaps consumption.
+            if sequence % 10 == 0:
+                time.sleep(0.001)
+
+    producer = threading.Thread(target=produce, daemon=True)
+    producer.start()
+    try:
+        assert ready.wait(2)
+        deadline = PhaseDeadline({"generation": 0.055})
+        deadline.enter("generation")
+        seen: dict[str, list[int]] = {"critical": [], "ordinary": []}
+        with pytest.raises(TimeoutError, match="generation"):
+            while True:
+                batch = drain(core)
+                assert len(batch) <= 2 * TPA_EVENTS_PER_CHANNEL
+                for source, _kind, value in batch:
+                    seen[source].append(value["number"])
+                deadline.check()
+                time.sleep(0.004)
+        assert all(items == sorted(items) for items in seen.values())
+        assert producer.is_alive()  # The deadline fired before production completed.
+    finally:
+        stop.set()
+        producer.join(timeout=2.0)
+    assert not producer.is_alive()
