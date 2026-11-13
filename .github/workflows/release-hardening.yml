@@ -450,16 +450,24 @@ jobs:
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_tk_lifecycle.py
 
-      # Native Tk has process-global Tcl interpreter state. Preserve the exact
-      # Windows lifecycle test in a fresh process, not in the mixed suite that
-      # already exercised unrelated GUI and monkeypatched Tk runtime state.
-      - name: Real desktop lifecycle in isolated Tk interpreter
+      # Separate Tcl interpreters and event queues by *process*, not only by
+      # pytest module. Both original test orders still run with unchanged
+      # assertions and each opens/closes two complete native windows.
+      - name: Real desktop lifecycle pages then actions (isolated Tk process)
         shell: pwsh
         run: >-
           python -X utf8 -m pytest
           -q -ra --tb=short
-          --junitxml="${{ runner.temp }}/pytest-windows-tk-lifecycle.xml"
-          tests/test_memory_desktop_tk_lifecycle_windows.py
+          --junitxml="${{ runner.temp }}/pytest-windows-tk-lifecycle-pages.xml"
+          "tests/test_memory_desktop_tk_lifecycle_windows.py::test_two_windows_release_owned_callbacks_without_gc[pages-then-actions]"
+
+      - name: Real desktop lifecycle actions then pages (isolated Tk process)
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          --junitxml="${{ runner.temp }}/pytest-windows-tk-lifecycle-actions.xml"
+          "tests/test_memory_desktop_tk_lifecycle_windows.py::test_two_windows_release_owned_callbacks_without_gc[actions-then-pages]"
 
       - name: Real desktop quick actions in isolated Tk interpreter
         shell: pwsh
@@ -477,7 +485,8 @@ jobs:
           path: |
             ${{ runner.temp }}/pytest-windows.xml
             ${{ runner.temp }}/pytest-windows-tk-actions.xml
-            ${{ runner.temp }}/pytest-windows-tk-lifecycle.xml
+            ${{ runner.temp }}/pytest-windows-tk-lifecycle-pages.xml
+            ${{ runner.temp }}/pytest-windows-tk-lifecycle-actions.xml
           if-no-files-found: ignore
           retention-days: 3
 
