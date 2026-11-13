@@ -192,6 +192,7 @@ class SetupWizard(QWizard):
             ("Bezpieczeństwo i wygląd", (
                 ("secrets_file", "Ścieżka do prywatnego pliku sekretów"),
                 ("accent", "Akcent (#RRGGBB)"),
+                ("service_refresh_seconds", "Odstęp monitorowania usług (1/10/30/60 s)"),
             )),
         )
         scroll = QScrollArea()
