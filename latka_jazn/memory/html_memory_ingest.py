@@ -12,6 +12,7 @@ import sqlite3
 import uuid
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly, connect_runtime_writable
 from latka_jazn.memory.chat_html_importer import (
     extract_text_and_parts,
     iter_chatgpt_export_conversations,
@@ -191,7 +192,7 @@ def _validate_sqlite(path: Path, *, full: bool = True) -> dict[str, Any]:
 def _checkpoint_database(path: Path) -> None:
     if not path.is_file():
         return
-    con = sqlite3.connect(path, timeout=30.0)
+    con = connect_runtime_writable(path)
     try:
         con.execute("PRAGMA busy_timeout=30000")
         con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
@@ -203,7 +204,7 @@ def _settle_database(path: Path) -> None:
     """Checkpoint a closed database and leave no stale WAL/SHM pair."""
     if not path.is_file():
         return
-    con = sqlite3.connect(path, timeout=30.0)
+    con = connect_runtime_writable(path)
     try:
         con.execute("PRAGMA busy_timeout=30000")
         con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
@@ -219,7 +220,7 @@ def _sqlite_backup(source: Path, destination: Path) -> dict[str, Any]:
     temporary = destination.with_name(destination.name + f".tmp-{uuid.uuid4().hex}")
     if temporary.exists():
         temporary.unlink()
-    source_con = sqlite3.connect(source, timeout=30.0)
+    source_con = connect_runtime_readonly(source, timeout_ms=30_000)
     destination_con = sqlite3.connect(temporary)
     try:
         source_con.execute("PRAGMA busy_timeout=30000")
@@ -378,14 +379,13 @@ class HtmlMemoryIngestor:
                 _sqlite_backup(target, backup_path)
                 shutil.copy2(backup_path, working)
             else:
-                sqlite3.connect(working).close()
+                connect_runtime_writable(working).close()
 
-            con = sqlite3.connect(working, timeout=30.0)
+            con = connect_runtime_writable(working)
             con.row_factory = sqlite3.Row
             try:
                 con.execute("PRAGMA busy_timeout=30000")
                 con.execute("PRAGMA foreign_keys=ON")
-                con.execute("PRAGMA journal_mode=WAL")
                 con.executescript(RECOVERY_SCHEMA)
                 con.executescript(HTML_IMPORT_SCHEMA)
                 con.execute(

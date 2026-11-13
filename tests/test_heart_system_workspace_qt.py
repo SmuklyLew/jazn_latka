@@ -101,21 +101,52 @@ def test_wizard_is_nonblocking_and_does_not_complete_failed_requirements(window,
 
 
 def test_wizard_success_requires_explicit_save_consent(window, monkeypatch):
+    # The synthetic Controller fixture has no ROOT/.venv. Stub only its
+    # canonical private-interpreter evidence in this positive consent test;
+    # real filesystem identity and missing-venv refusal have separate tests.
+    import sys
+    from latka_jazn.dependencies import private_python
+    from tools.jazn_run_studio.requirements_worker import setup_scope
+
+    canonical = Path(sys.executable).resolve()
+    monkeypatch.setattr(private_python, "private_python_status", lambda _root: {"ready": True})
+    monkeypatch.setattr(private_python, "private_python_path", lambda _root: canonical)
     job = Job("setup:requirements")
     monkeypatch.setattr(window.core, "check_setup", lambda: job)
     writes, receipts = [], []
     wizard = SetupWizard(window.core, writes.append, receipts.append, window)
-    from tools.jazn_run_studio.requirements_worker import setup_scope
-    from tools.jazn_run_studio.core import python_executable
-    scope = setup_scope(window.core.root, python_executable(window.core.settings))
+    wizard.timer.stop()
+    wizard.setting_fields["python"].setText(str(canonical))
+    wizard.setting_fields["mcp_python"].setText(str(canonical))
+    scope = setup_scope(window.core.root, str(canonical))
     wizard.report = {"required_ok": True, "scope": scope}
+
+    # An otherwise validated setup MUST NOT save until consent is explicit.
     wizard.accept()
     assert not writes and not receipts
+    assert not wizard.finished_setup
     wizard.consent.setChecked(True)
     wizard.model.setText("gemma3:latest")
     wizard.accept()
+    assert len(writes) == 1, wizard.notice.text()
     assert writes[0].model == "gemma3:latest"
     assert receipts == [scope]
+    assert wizard.finished_setup
+
+
+def test_wizard_cannot_save_without_verified_private_python_even_with_consent(window):
+    # The test fixture intentionally has no .venv; do not substitute the host
+    # interpreter or allow a forged 'required_ok' to bypass that hard gate.
+    writes, receipts = [], []
+    wizard = SetupWizard(window.core, writes.append, receipts.append, window)
+    wizard.timer.stop()
+    wizard.report = {"required_ok": True, "scope": "untrusted"}
+    wizard.consent.setChecked(True)
+    wizard.model.setText("gemma3:latest")
+    wizard.accept()
+    assert not writes and not receipts
+    assert not wizard.finished_setup
+    assert "ROOT/.venv" in wizard.notice.text()
 
 
 def test_outputs_redacted_before_operator_view(window):

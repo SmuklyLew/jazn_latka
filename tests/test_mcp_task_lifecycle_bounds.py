@@ -104,7 +104,12 @@ def test_unexpected_poll_failure_does_not_expose_exception_text(
 
 def test_same_daemon_request_is_idempotent_across_independent_stores(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # The SQLite test store and every worker thread use one explicitly owned,
+    # ROOT-local workspace. Never reuse a daemon or the checkout's test state.
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace_runtime"))
+
     def create() -> str:
         return McpTaskStore(tmp_path).create_or_get(
             daemon_request_id="req-cross-process-idempotent"

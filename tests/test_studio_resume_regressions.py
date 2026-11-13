@@ -40,8 +40,12 @@ def test_memory_settings_workspace_roundtrip_and_system_rejection(tmp_path: Path
     (system / "latka_jazn").mkdir(parents=True)
     (system / "latka_jazn" / "version.py").write_text("", encoding="utf-8")
     (system / "main.py").write_text("", encoding="utf-8")
-    workspace = tmp_path / "workspace_runtime"
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(workspace))
+    (system / "local_resources").mkdir()
+    (system / ".settings").mkdir()
+    # Memory Rebuild settings are a narrow sidecar exception inside a verified
+    # ROOT-local acceptance workspace; other SYSTEM writes remain forbidden.
+    workspace = system / ".settings_local" / "acceptance" / "pytest_memory"
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", "$ROOT/.settings_local/acceptance/pytest_memory")
     monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
     expected = workspace / "memory_rebuild_settings.json"
     assert resolve_settings_path(tool_root=system) == expected

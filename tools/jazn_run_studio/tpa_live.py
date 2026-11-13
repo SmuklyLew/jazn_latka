@@ -20,7 +20,7 @@ from uuid import uuid4
 from .chat import ChatClient
 from .core import Controller, Settings
 from .external import run as run_external
-from .probes import ollama
+from .probes import ollama, ollama_api_base
 from .tpa_catalog import LIVE_CASES, TARGETS, scenario
 from .tpa_reports import redact
 from .tpa_reports import safe_child
@@ -30,6 +30,23 @@ from .tpa_execution_plan import PhaseDeadline, PHASE_TIMEOUTS
 
 def frame(value: dict) -> None:
     print(json.dumps(value, ensure_ascii=False), flush=True)
+
+
+def _set_staged_environment(folder: Path) -> None:
+    """Keep mutable daemon state inside the verified staged SYSTEM ROOT.
+
+    The TPA evidence/claim directory belongs to the original operator ROOT,
+    whereas the daemon workspace is owned exclusively by folder/SYSTEM.
+    MEMORY stays disabled; nothing here attaches production memory.
+    """
+    stage = safe_child(folder, "SYSTEM")
+    os.environ.update(
+        JAZN_RUNTIME_WORKSPACE_DIR=str(safe_child(stage, "workspace_runtime")),
+        JAZN_MEMORY_ROOT=str(safe_child(folder, "memory")),
+        JAZN_OPERATOR_STATE_ROOT=str(safe_child(folder, "operator")),
+        JAZN_MEMORY_MODE="off",
+        JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated",
+    )
 
 
 def cleanup(folder: Path, python: str) -> dict:
@@ -45,9 +62,7 @@ def cleanup(folder: Path, python: str) -> dict:
     stage = folder / "SYSTEM"
     if not isinstance(saved, dict) or saved.get("root") != str(stage.resolve()) or not stage.is_dir():
         raise ValueError("Niezgodny katalog właściciela daemona")
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"),
-                      JAZN_MEMORY_ROOT=str(folder / "memory"), JAZN_MEMORY_MODE="off",
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated")
+    _set_staged_environment(folder)
     core = Controller(stage, Settings(python=python, daemon_url=saved["url"]))
     try:
         job = core.start_action("status")
@@ -70,10 +85,17 @@ def cleanup(folder: Path, python: str) -> dict:
         core.close()
 
 
-def drain(core: Controller) -> list[tuple]:
+# Per-channel fairness: a busy producer cannot hold a single consumer pass
+# indefinitely, and critical events cannot starve ordinary diagnostic events.
+TPA_EVENTS_PER_CHANNEL = 64
+
+
+def drain(core: Controller, *, per_channel: int = TPA_EVENTS_PER_CHANNEL) -> list[tuple]:
+    if per_channel < 1 or per_channel > 1024:
+        raise ValueError("Nieprawidłowy limit partii zdarzeń TPA")
     events = []
     for channel in (core.critical_events, core.events):
-        while True:
+        for _ in range(per_channel):
             try:
                 events.append(channel.get_nowait())
             except queue.Empty:
@@ -90,18 +112,28 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
     job = core.start_action(key)
     seen: list[tuple] = []
 
-    def collect() -> None:
-        for event in drain(core):
+    def collect() -> int:
+        events = drain(core)
+        for event in events:
             seen.append(event)
             source, kind, value = event
             if source == job.key and kind == "log":
                 frame({"event": "progress", "text": core.redactor.text(str(value))})
+        return len(events)
 
     while not job.done.wait(0.1):
         collect()
         tick()
     time.sleep(0.03)
-    collect()
+    # Completion may race a burst of diagnostics. Drain in bounded batches,
+    # rechecking deadline/cancellation rather than looping until an endlessly
+    # producing queue becomes empty.
+    for _ in range(64):
+        count = collect()
+        tick()
+        # Either queue may remain backlogged after a full 64-event share.
+        if count < TPA_EVENTS_PER_CHANNEL:
+            break
     raw = "\n".join(str(v) for source, kind, v in seen if source == job.key and kind == "log")
     try:
         diagnostic = redact(json.loads(raw), core.redactor)
@@ -112,6 +144,51 @@ def capture_action(core: Controller, key: str, tick, records: list[dict]) -> dic
         raise ValueError("Kanoniczna operacja " + key + ": " + str(job.error)
                          + "; " + (core.redactor.text(raw[-1200:]) or "nie ustalono szczegółów; sprawdź log własnego daemona"))
     return next((v for _, kind, v in seen if kind == "evidence"), {})
+
+
+def generation_failure(source: str, kind: str, value: object) -> str | None:
+    """Classify terminal chat failures without exposing text, tokens or request IDs.
+
+    Only an accepted chat_final can complete a live turn. A rejected final or
+    failed transport must never be turned into a generic 120-second timeout.
+    """
+    if source != "chat":
+        return None
+    if kind == "state" and isinstance(value, dict) and value.get("state") == "failed":
+        return "chat_transport_failed"
+    if kind == "chat_state" and isinstance(value, str):
+        reasons = (
+            ("Potwierdzona nieudana tura:", "daemon_turn_failed"),
+            ("Transport zamknięty z błędem", "chat_transport_closed"),
+        )
+        return next((code for prefix, code in reasons if value.startswith(prefix)), None)
+    return None
+
+
+def generation_warning(source: str, kind: str, value: object) -> str | None:
+    """Nonterminal chat diagnostics are observations, not permission to fail/replay."""
+    if source == "chat" and kind == "chat_state" and isinstance(value, str):
+        if value.startswith("Runtime zgłosił błąd:"):
+            return "runtime_error_unconfirmed"
+        if value.startswith("Brak zaakceptowanej wypowiedzi."):
+            return "unaccepted_candidate"
+    return None
+
+
+def append_phase_event(folder: Path, phase_name: str, observed_at: float) -> None:
+    """Fsync a bounded, secret-free live phase before publishing it to the GUI.
+
+    This deliberately leaves evidence inside the TPA-owned isolated staging
+    when the host crashes before the final RunStore snapshot is written.
+    """
+    if phase_name not in PHASE_TIMEOUTS:
+        raise ValueError("Nieznana faza TPA")
+    path = safe_child(folder, "phase-events.jsonl")
+    record = json.dumps({"event": "phase", "phase": phase_name, "monotonic": observed_at}, sort_keys=True)
+    with path.open("a", encoding="utf-8", newline="\n") as stream:
+        stream.write(record + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 class ReceiptCore(Protocol):
@@ -155,12 +232,13 @@ def await_daemon_receipt(core: ReceiptCore, client: ReceiptClient, request_id: s
     raise TimeoutError("Daemon nie potwierdził przyjęcia oryginalnego request_id")
 
 
-def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) -> dict:
+def exercise(root: Path, folder: Path, case_id: str, python: str, model: str, *, api_base: str | None = None) -> dict:
     if case_id not in LIVE_CASES or folder.is_symlink() or any(folder.iterdir()):
         raise ValueError("Odbiór wymaga nowego własnego katalogu i znanego scenariusza")
+    base = ollama_api_base(api_base if api_base is not None else "http://127.0.0.1:11434")
     if model:
         try:
-            present = ollama(model).get("selected_model_present") is True
+            present = (ollama(model) if api_base is None else ollama(model, api_base=base)).get("selected_model_present") is True
         except OSError:
             return {"status": "BLOCKED", "reason": "Lokalna Ollama nie odpowiada. Uruchom usługę właściwym workflow Studio, sprawdź model i ponów odbiór; nie uruchomiono daemona testowego.",
                     "evidence": {"service_reachable": False, "cleanup": {"ok": True}, "turns": []}}
@@ -176,14 +254,14 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
     with socket.socket() as port_probe:
         port_probe.bind(("127.0.0.1", 0))
         port = port_probe.getsockname()[1]
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"), JAZN_MEMORY_ROOT=str(folder / "memory"),
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_MEMORY_MODE="off",
-                      JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated", JAZN_MODEL_ADAPTER="ollama" if model else "null",
-                      JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL="http://127.0.0.1:11434")
+    _set_staged_environment(folder)
+    os.environ.update(JAZN_MODEL_ADAPTER="ollama" if model else "null",
+                      JAZN_OLLAMA_MODEL=model, JAZN_OLLAMA_BASE_URL=base)
     core = Controller(stage, Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}"))
     phase_clock = PhaseDeadline()
     evidence: dict = {"case_id": case_id, "root": str(stage), "url": core.settings.daemon_url,
-                      "turns": [], "memory_mode": "off", "canonical_transport": "Controller/ChatClient"}
+                      "turns": [], "memory_mode": "off", "ollama_api_base": base,
+                      "canonical_transport": "Controller/ChatClient"}
     status = "BLOCKED"
     reason = "Nie zakończono odbioru."
 
@@ -194,8 +272,14 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
 
     def phase(name: str) -> None:
         phase_clock.enter(name)
+        observed_at = time.monotonic()
         evidence["phase"] = name
-        evidence.setdefault("phases", []).append({"phase": name, "monotonic": time.monotonic()})
+        evidence.setdefault("phases", []).append({"phase": name, "monotonic": observed_at})
+        try:
+            append_phase_event(folder, name, observed_at)
+        except (OSError, ValueError) as exc:
+            # Never skip the owned-daemon cleanup because an evidence disk failed.
+            evidence["phase_journal_error"] = type(exc).__name__
         frame({"event": "phase", "phase": name})
 
     def action(key: str) -> dict:
@@ -230,12 +314,11 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                 if pending_poll is None or pending_poll.done.is_set():
                     client.resume()  # Same durable request, never resend text.
                     last_poll = time.monotonic()
-            for source, kind, value in drain(core):
-                if resume and source == "chat:resume" and kind == "state" and isinstance(value, dict):
-                    if value.get("state") == "failed":
-                        raise ValueError("Wznowienie request_id zakończyło się błędem: "
-                                         + str(value.get("error") or "resume_failed"))
-                if kind == "chat_final":
+            events = drain(core)
+            # Accepted finals have priority when final and transport-close arrive
+            # in one event batch. Never discard a valid accepted final.
+            for source, kind, value in events:
+                if source == "chat" and kind == "chat_final":
                     phase("finalization")
                     frame({"event": "accepted_final", **value})
                     acknowledgements: queue.Queue[str] = queue.Queue(maxsize=1)
@@ -251,6 +334,18 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
                     core.confirm_visible_turn(value)
                     evidence.setdefault("displayed_request_ids", []).append(value["request_id"])
                     return value
+            for source, kind, value in events:
+                if resume and source == "chat:resume" and kind == "state" and isinstance(value, dict):
+                    if value.get("state") == "failed":
+                        raise ValueError("Wznowienie tego samego request_id zakończyło się błędem.")
+                failure = generation_failure(source, kind, value)
+                if failure:
+                    evidence["generation_failure"] = failure
+                    raise ValueError("Nie uzyskano zaakceptowanej tury: " + failure
+                                     + ". Zachowano request_id; bez ponowienia wiadomości.")
+                warning = generation_warning(source, kind, value)
+                if warning:
+                    evidence["generation_warning"] = warning
             time.sleep(0.1)
 
     try:
@@ -329,22 +424,29 @@ def exercise(root: Path, folder: Path, case_id: str, python: str, model: str) ->
         if not clean["ok"]:
             status = "BLOCKED"
             reason += " Nie potwierdzono sprzątnięcia własnego daemona: " + clean["reason"]
+        if evidence.get("phase_journal_error"):
+            status = "BLOCKED"
+            reason += " Nie zapisano trwałego dziennika faz TPA."
     return {"status": status, "reason": reason, "evidence": evidence}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--authority-root", type=Path, default=None)
     parser.add_argument("--folder", required=True, type=Path)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--case", required=True)
     parser.add_argument("--model", default="")
+    parser.add_argument("--ollama-api-base", default=os.environ.get("JAZN_OLLAMA_BASE_URL"))
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--sandbox", action="store_true")
     args = parser.parse_args()
     try:
-        folder = validate_staging(args.root, args.folder, args.run_id, args.case,
-                                  os.environ.get(TOKEN_ENV, ""), cleaning=args.cleanup)
+        authority = args.authority_root if args.authority_root is not None else args.root
+        folder = validate_staging(authority, args.folder, args.run_id, args.case,
+                                  os.environ.get(TOKEN_ENV, ""), cleaning=args.cleanup,
+                                  execution_root=args.root)
     except (OSError, ValueError) as exc:
         frame({"event": "result", "status": "BLOCKED", "reason": "Odmowa walidacji katalogu odbioru: " + str(exc),
                "pre_start_rejected": not args.cleanup,
@@ -354,8 +456,10 @@ def main() -> int:
         result = cleanup(folder, sys.executable)
     elif args.sandbox:
         result = sandbox(args.root, folder, args.case, sys.executable, args.model)
-    else:
+    elif args.ollama_api_base is None:
         result = exercise(args.root, folder, args.case, sys.executable, args.model)
+    else:
+        result = exercise(args.root, folder, args.case, sys.executable, args.model, api_base=args.ollama_api_base)
     frame({"event": "result", **result})
     # The cleanup contract reports {"ok": bool}, not {"status": "PASS"}.
     # Keep process exit codes aligned with their respective result schemas.
@@ -385,8 +489,7 @@ def sandbox(root: Path, folder: Path, case_id: str, python: str, model: str) -> 
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
-    os.environ.update(JAZN_RUNTIME_WORKSPACE_DIR=str(folder / "runtime"), JAZN_MEMORY_ROOT=str(folder / "memory"),
-                      JAZN_OPERATOR_STATE_ROOT=str(folder / "operator"), JAZN_MEMORY_MODE="off", JAZN_STUDIO_ACCEPTANCE_PROFILE="isolated")
+    _set_staged_environment(folder)
     settings = Settings(python=python, model=model, daemon_url=f"http://127.0.0.1:{port}")
     save_settings(stage, settings, None)
     (folder / "owner.json").write_text(json.dumps({"root": str(stage.resolve()), "url": settings.daemon_url, "instance_id": None}), encoding="utf-8")

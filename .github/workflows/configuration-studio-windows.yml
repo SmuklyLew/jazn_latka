@@ -145,13 +145,23 @@ jobs:
         run: |
           python -X utf8 -c "from pathlib import Path; from latka_jazn.tools.configuration_studio import save_profile; save_profile(Path.cwd(), {'JAZN_MEMORY_MODE':'off'})"
           if ($LASTEXITCODE -ne 0) { throw "Cannot create isolated profile." }
-          $profile = (Resolve-Path "../workspace_runtime/configuration_studio/profiles/operator.json").Path
+          # Resolve through the same canonical ROOT workspace policy used by
+          # save_profile(). Do not assume the pre-V127 sibling workspace.
+          $profile = python -X utf8 -c "from pathlib import Path; from latka_jazn.tools.configuration_studio import profile_file; print(profile_file(Path.cwd()))"
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $profile -PathType Leaf)) {
+            throw "Profile was not created in the canonical ROOT workspace."
+          }
           ./tools/windows/Start-JaznWithConfig.ps1 -Profile $profile -DryRun
 
       - name: Launch real run.py version fast path with checked profile
         shell: pwsh
         run: |
-          $profile = (Resolve-Path "../workspace_runtime/configuration_studio/profiles/operator.json").Path
+          # Resolve through the same canonical ROOT workspace policy used by
+          # save_profile(). Do not assume the pre-V127 sibling workspace.
+          $profile = python -X utf8 -c "from pathlib import Path; from latka_jazn.tools.configuration_studio import profile_file; print(profile_file(Path.cwd()))"
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $profile -PathType Leaf)) {
+            throw "Profile was not created in the canonical ROOT workspace."
+          }
           ./tools/windows/Start-JaznWithConfig.ps1 -Profile $profile -JaznArguments "--version"
 
 

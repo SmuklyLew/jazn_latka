@@ -28,6 +28,9 @@ def test_release_identity_and_release_metadata_accept_unprefixed_version() -> No
 
 
 def test_bootstrap_marker_adapter_migrates_legacy_workspace_before_publish(tmp_path: Path, monkeypatch) -> None:
+    # Migration of historical bare roots must not inherit the per-test ROOT
+    # override, which was introduced for current prepared SYSTEM roots.
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
     runtime = tmp_path / "jazn_latka_v15.4.3.1"
     legacy = runtime / "workspace_runtime"
     legacy.mkdir(parents=True)

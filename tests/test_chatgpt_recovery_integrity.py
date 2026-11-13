@@ -183,3 +183,33 @@ def test_activation_cascade_rejects_stale_marker_manifest_hash(tmp_path: Path) -
     assert status.marker["trusted"] is False
     assert status.marker["package_integrity_manifest_sha256_matches"] is False
     assert "marker_not_trusted" in status.errors
+
+def test_runtime_preflight_ignores_managed_python_install_state_but_not_unknown_code(
+    tmp_path: Path,
+) -> None:
+    root = _verified_runtime(tmp_path / "runtime")
+    (root / ".venv" / "Lib" / "site-packages").mkdir(parents=True)
+    (root / ".venv" / "Lib" / "site-packages" / "installed.py").write_text(
+        "value = 1\n", encoding="utf-8",
+    )
+    (root / "local_resources" / "python").mkdir(parents=True)
+    (root / "local_resources" / "python" / "JAZN_DEPENDENCY_ENVIRONMENT.json").write_text(
+        "{}\n", encoding="utf-8",
+    )
+    (root / "local_resources" / "wheelhouse" / "synthetic").mkdir(parents=True)
+    (root / "local_resources" / "wheelhouse" / "synthetic" / "wheel.whl").write_bytes(b"synthetic")
+
+    # Installer-managed artifacts may coexist with the immutable SYSTEM.
+    checked = runtime_preflight(root)
+    assert checked.manifest_ok is True, checked.manifest_verification
+
+    # Only the explicitly managed subtrees are exempt from static inventory.
+    (root / "local_resources" / "rogue.py").write_text(
+        "raise RuntimeError('unverified')\n", encoding="utf-8",
+    )
+    blocked = runtime_preflight(root)
+    assert blocked.manifest_ok is False
+    assert blocked.manifest_verification is not None
+    assert {"unexpected_static_file"} <= {
+        item["code"] for item in blocked.manifest_verification["errors"]
+    }

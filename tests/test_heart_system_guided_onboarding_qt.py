@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from dataclasses import asdict, replace
+from pathlib import Path
+import sys
 
 import pytest
 
@@ -11,10 +13,16 @@ from tests.test_jazn_run_studio_layout import window  # noqa: F401
 from tools.jazn_run_studio.core import Settings, StudioError
 from tools.jazn_run_studio.first_run import SetupWizard
 from tools.jazn_run_studio.requirements_worker import setup_scope
-from tools.jazn_run_studio.core import python_executable
 
 
-def test_first_run_has_all_studio_settings_and_saves_validated_draft(window) -> None:
+def test_first_run_has_all_studio_settings_and_saves_validated_draft(window, monkeypatch) -> None:
+    # Synthetic fixture roots do not carry a .venv. Mock only the verified
+    # interpreter for this positive form-save case; private_python_status
+    # ownership checks have independent real-filesystem regression coverage.
+    from latka_jazn.dependencies import private_python
+    expected_python = Path(sys.executable).resolve()
+    monkeypatch.setattr(private_python, "private_python_status", lambda _root: {"ready": True})
+    monkeypatch.setattr(private_python, "private_python_path", lambda _root: expected_python)
     saved: list[Settings] = []
     finished: list[str] = []
     wizard = SetupWizard(window.core, saved.append, finished.append, window)
@@ -23,8 +31,10 @@ def test_first_run_has_all_studio_settings_and_saves_validated_draft(window) -> 
     assert wizard.model is wizard.setting_fields["model"]
     wizard.report = {
         "required_ok": True,
-        "scope": setup_scope(window.core.root, python_executable(window.core.settings)),
+        "scope": setup_scope(window.core.root, str(expected_python)),
     }
+    wizard.setting_fields["python"].setText(str(expected_python))
+    wizard.setting_fields["mcp_python"].setText(str(expected_python))
     wizard.setting_fields["model"].setText("gemma3:latest")
     wizard.setting_fields["daemon_url"].setText("http://127.0.0.1:8787")
     wizard.setting_fields["mcp_port"].setText("18086")
@@ -40,9 +50,23 @@ def test_first_run_has_all_studio_settings_and_saves_validated_draft(window) -> 
     assert len(finished) == 1
 
 
+def test_first_run_missing_private_python_is_nonblocking_and_denied(window) -> None:
+    saved: list[Settings] = []
+    finished: list[str] = []
+    wizard = SetupWizard(window.core, saved.append, finished.append, window)
+    wizard.timer.stop()
+    wizard.report = {"required_ok": True, "scope": "synthetic"}
+    wizard.consent.setChecked(True)
+    wizard.accept()
+    assert not saved
+    assert not finished
+    assert not wizard.finished_setup
+    assert "ROOT/.venv" in wizard.notice.text()
+
+
 def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> None:
     window.core.settings = replace(window.core.settings, model="gemma3:latest")
-    assert window.quick_chat_button.isEnabled() is False
+    assert not (window.quick_runtime_ready and window.quick_generation_ready)
     window.core.emit("status", "evidence", {
         "endpoint_reachable": True,
         "process_identity_confirmed": True,
@@ -53,7 +77,7 @@ def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> N
         "root_matches": True, "version_matches": True,
     })
     window.poll()
-    assert window.quick_chat_button.isEnabled() is False
+    assert not (window.quick_runtime_ready and window.quick_generation_ready)
     window.core.emit("status", "evidence", {
         "endpoint_reachable": True,
         "process_identity_confirmed": True,
@@ -64,17 +88,18 @@ def test_chat_step_requires_trusted_runtime_and_explicit_generation(window) -> N
         "root_matches": True, "version_matches": True,
     })
     window.poll()
-    assert window.quick_chat_button.isEnabled() is False
+    assert not (window.quick_runtime_ready and window.quick_generation_ready)
     window.core.emit("probe:ollama_generate", "probe", {
         "service": "ollama", "endpoint_reachable": True, "models": ["gemma3:latest"],
         "selected_model_present": True, "generation_verified": True,
         "accepted_visible_turn": False,
     })
     window.poll()
-    assert window.quick_chat_button.isEnabled() is True
+    assert window.quick_runtime_ready and window.quick_generation_ready
+    assert "możesz połączyć" in window.quick_start_status.text()
     window.core.emit("status", "evidence", {})
     window.poll()
-    assert window.quick_chat_button.isEnabled() is False
+    assert not (window.quick_runtime_ready and window.quick_generation_ready)
 
 
 def test_memory_continuity_label_does_not_unlock_chat(window) -> None:
@@ -84,7 +109,7 @@ def test_memory_continuity_label_does_not_unlock_chat(window) -> None:
     })
     window.poll()
     assert "normalization_stale" in window.quick_memory_status.text()
-    assert window.quick_chat_button.isEnabled() is False
+    assert not (window.quick_runtime_ready and window.quick_generation_ready)
 
 
 def test_sidebar_chat_connect_cannot_bypass_guided_readiness(window, monkeypatch) -> None:

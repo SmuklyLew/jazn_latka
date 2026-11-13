@@ -11,7 +11,7 @@ class TimeAwarenessHandler:
 
     name = "TimeAwarenessHandler"
     route = "time_awareness"
-    handled_intents = ("time_awareness_question",)
+    handled_intents = ("time_awareness_question", "current_time_question")
 
     @staticmethod
     def _time_text(ctx: dict[str, Any]) -> tuple[str, bool]:

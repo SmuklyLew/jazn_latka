@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from latka_jazn.core.runtime_root import active_runtime_marker_path
+from latka_jazn.tools.application_shell.operator_paths import OperatorPathError
 from latka_jazn.tools.configuration_studio import (
     ConfigValidationError, profile_digest, profile_file, profile_snapshot,
     read_profile, restore_previous_profile, save_profile,
@@ -83,7 +85,10 @@ def test_duplicate_keys_are_rejected(root: Path, tmp_path: Path) -> None:
 def test_launch_rejects_marker_when_changing_critical_paths(root: Path, tmp_path: Path) -> None:
     save_profile(root, {"JAZN_RUNTIME_WORKSPACE_DIR": str(tmp_path / "new_state")})
     assert validated_launch_values(root)["JAZN_RUNTIME_WORKSPACE_DIR"] == str(tmp_path / "new_state")
-    marker = tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    # The global pytest fixture selects a per-test ROOT-relative workspace.
+    # A marker in the obsolete sibling location is not the active marker.
+    marker = active_runtime_marker_path(root)
+    assert marker.is_relative_to(root)
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text("{}", encoding="utf-8")
     with pytest.raises(ConfigValidationError, match="znacznik runtime"):
@@ -91,6 +96,13 @@ def test_launch_rejects_marker_when_changing_critical_paths(root: Path, tmp_path
 
 
 def test_inspection_honors_effective_paths(root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A bare historical SYSTEM must not inherit the ROOT-contained acceptance
+    # workspace used for prepared installations by tests/conftest.py. Keep
+    # operator settings in this test's own temporary directory, not in HOME.
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
+    operator_dir = tmp_path / "operator_state"
+    monkeypatch.setenv("JAZN_OPERATOR_STATE_ROOT", str(operator_dir))
     project_dir = tmp_path / "separate_projects"
     nlp_dir = tmp_path / "separate_nlp"
     monkeypatch.setenv("JAZN_MEMORY_REBUILD_PROJECTS", str(project_dir))
@@ -98,6 +110,25 @@ def test_inspection_honors_effective_paths(root: Path, tmp_path: Path, monkeypat
     paths = {item["name"]: item["path"] for item in inspect_system(root)}
     assert paths["STUDIO_MEMORY"] == str(project_dir)
     assert paths["NLP_MODELS"] == str(nlp_dir)
+    expected_settings = operator_dir / "memory_rebuild" / "memory_rebuild_settings.json"
+    assert paths["STUDIO_SETTINGS"] == str(expected_settings.resolve())
+    assert not operator_dir.exists()
+
+
+def test_unprepared_system_rejects_acceptance_workspace_for_operator_settings(
+    root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Keep the fail-closed contract: a synthetic unprepared ROOT must not
+    # gain operator-write access to an arbitrary SYSTEM/.settings_local path.
+    monkeypatch.delenv("JAZN_MEMORY_REBUILD_SETTINGS", raising=False)
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/unsafe_test_workspace",
+    )
+    denied = root / ".settings_local" / "acceptance" / "unsafe_test_workspace"
+    with pytest.raises(OperatorPathError, match="Stan operatora"):
+        inspect_system(root)
+    assert not denied.exists()
 
 
 def test_validated_launch_is_exact_normalized_snapshot(root: Path) -> None:

@@ -31,6 +31,11 @@ def _root(args: list[str]) -> Path:
             return Path(args[i + 1]).expanduser().resolve()
         if value.startswith("--root="):
             return Path(value.split("=", 1)[1]).expanduser().resolve()
+    # The GUI parser and dependency preflight must choose exactly the same
+    # root. Source checkouts always default to their own SYSTEM; frozen builds
+    # retain their configurable ENV/CWD behavior.
+    if getattr(sys, "frozen", False):
+        return Path(os.environ.get("JAZN_ROOT") or Path.cwd()).expanduser().resolve()
     return ROOT
 
 

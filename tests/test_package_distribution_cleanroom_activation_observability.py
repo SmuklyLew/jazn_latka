@@ -28,11 +28,24 @@ def test_cleanroom_prints_each_activation_payload_before_asserting() -> None:
         assert f'{variable}=$?' in text
 
 
-def test_missing_sidecar_case_resets_canonical_host_dependency_state() -> None:
+def test_missing_sidecar_case_refuses_fresh_unprovisioned_system() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert "from latka_jazn.core.runtime_root import workspace_runtime_path" in text
-    assert 'workspace_runtime_path(Path.cwd()) / "local_resources" / "python"' in text
-    assert 'rm -rf "$dependency_state"' in text
+    negative = text.split(
+        "- name: Reject fresh unprovisioned package when dependency sidecar is absent", 1
+    )[1].split("- name: Dependency-empty run.py performs verified offline handoff", 1)[0]
+    # Test absence of dependency evidence before installation, without erasing
+    # a valid managed environment or mutating the immutable SYSTEM package.
+    assert 'test ! -e ".venv"' in negative
+    assert 'mv "$sidecar" "$sidecar.hidden"' in negative
+    assert '''trap 'mv "$sidecar.hidden" "$sidecar"' EXIT''' in negative
+    assert negative.index('mv "$sidecar" "$sidecar.hidden"') < negative.index(
+        '"$BARE_PYTHON" run.py start --json'
+    )
+    assert 'rc=$?' in negative
+    assert 'test "$rc" -ne 0' in negative
+    assert 'no_compatible_verified_dependency_bundle' in negative
+    assert 'dependencies_missing_no_verified_wheelhouse' in negative
+    assert 'rm -rf "$dependency_state"' not in negative
     assert 'rm -rf "${{ steps.extract.outputs.runtime_dir }}/latka_jazn/local_resources/python"' not in text
 
 

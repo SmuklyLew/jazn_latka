@@ -65,8 +65,15 @@ def test_absolute_runtime_workspace_override_routes_startup_state_outside_code_r
     polimorf_path.write_text("kot\tkot\tsubst\n", encoding="utf-8")
     assert PolimorfDictionaryAdapter(cfg.root).path == polimorf_path
     assert LexicalResourceRegistry(cfg.root)._polimorf_path(None) == polimorf_path
-    bridge_args = build_codex_bridge_parser().parse_args(["status"])
-    assert Path(bridge_args.root) == state_root.resolve() / "codex_session_bridge"
+    # The bridge parser belongs to the *installed* SYSTEM checkout, not this
+    # synthetic bare root. It must not inherit a foreign writable workspace.
+    with pytest.raises(ValueError, match="workspace_escapes_root"):
+        build_codex_bridge_parser()
+    with monkeypatch.context() as scoped:
+        scoped.setenv("JAZN_RUNTIME_WORKSPACE_DIR", "$ROOT/workspace_runtime")
+        bridge_args = build_codex_bridge_parser().parse_args(["status"])
+    assert Path(bridge_args.root).name == "codex_session_bridge"
+    assert Path(bridge_args.root).parent.name == "workspace_runtime"
 
     with pytest.raises(ValueError, match="escapes its configured root"):
         runtime_state_path(cfg.root, "workspace_runtime/../../outside.json")

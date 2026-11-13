@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import platform as platform_module
 import shutil
 import subprocess
 import sys
@@ -22,11 +23,14 @@ from .common import (
     current_implementation_tag,
     current_libc_family,
     current_platform_alias,
+    glibc_version_at_least,
     default_environments_root,
     default_wheelhouse_root,
     dependency_contract_fingerprint,
     distribution_name_from_requirement,
     environment_marker_path,
+    existing_environment_marker_path,
+    root_local_resources_enabled,
     import_name_for_distribution,
     inspect_current_requirements,
     resolve_profile_requirements,
@@ -76,7 +80,8 @@ def _probe_python(executable: str) -> dict[str, str]:
         "impl=('cp' if sys.implementation.name=='cpython' else 'pp' if sys.implementation.name=='pypy' else sys.implementation.name[:2]);"
         "abi=(f'cp{sys.version_info.major}{sys.version_info.minor}{getattr(sys,\"abiflags\",\"\")}' if impl=='cp' else '');"
         "print(json.dumps({'python_version':f'{sys.version_info.major}.{sys.version_info.minor}',"
-        "'platform':t.get((s,m),f'{s}-{m}'),'libc_family':lf,'implementation':impl,'abi':abi,'executable':sys.executable}))"
+        "'platform':t.get((s,m),f'{s}-{m}'),'libc_family':lf,'libc_version':platform.libc_ver()[1],"
+        "'implementation':impl,'abi':abi,'executable':sys.executable}))"
     )
     completed = _run([executable, "-X", "utf8", "-c", code], cwd=Path.cwd(), timeout=30)
     payload = json.loads(completed.stdout)
@@ -144,8 +149,15 @@ def install_bundle(
         raise DependencyStudioError("Wheelhouse Python implementation does not match selected interpreter")
     if str(target.get("abi") or "") != str(probe.get("abi") or ""):
         raise DependencyStudioError("Wheelhouse Python ABI does not match selected interpreter")
-    if probe["platform"].startswith("linux-") and str(target.get("libc_family") or "") != probe["libc_family"]:
-        raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
+    if probe["platform"].startswith("linux-"):
+        if str(target.get("libc_family") or "") != probe["libc_family"]:
+            raise DependencyStudioError("Wheelhouse libc family does not match selected interpreter")
+        minimum = str(target.get("minimum_libc_version") or "")
+        if not glibc_version_at_least(probe.get("libc_version", ""), minimum):
+            raise DependencyStudioError(
+                "no_compatible_dependency_bundle: selected interpreter requires "
+                f"glibc >= {minimum or 'declared release minimum'}"
+            )
 
     requirements = [str(item) for item in manifest.get("requirements") or []]
     import_names = [
@@ -159,13 +171,20 @@ def install_bundle(
     if not contract_fingerprint:
         raise DependencyStudioError("Wheelhouse manifest is missing dependency_contract_fingerprint")
     envs_root = Path(environments_root).resolve() if environments_root else default_environments_root(project_root)
+    root_local_venv = (
+        environments_root is None
+        and not os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS")
+        and root_local_resources_enabled(project_root)
+    )
     alias = probe["platform"]
     pyver = probe["python_version"]
     environment_identity = (
         f"{alias}__py{pyver.replace('.', '')}__{contract_fingerprint[:12]}__"
         f"{manifest_sha[:12]}__{uuid.uuid4().hex[:12]}"
     )
-    env_root = envs_root / environment_identity
+    env_root = envs_root if root_local_venv else envs_root / environment_identity
+    managed_root = envs_root.parent if root_local_venv else envs_root
+    prepared_root_venv = bool(root_local_venv and env_root.is_dir())
     env_python = _env_python(env_root)
     create = [base_python, "-m", "venv", str(env_root)]
     install = [
@@ -175,14 +194,14 @@ def install_bundle(
     ]
     plan: dict[str, Any] = {
         "environment_root": str(env_root),
-        "managed_environments_root": str(envs_root),
+        "managed_environments_root": str(managed_root),
         "python_executable": str(env_python),
         "bundle_dir": str(bundle),
         "manifest_sha256": manifest_sha,
         "hash_lock_sha256": lock_sha,
         "dependency_contract_fingerprint": contract_fingerprint,
         "environment_identity": environment_identity,
-        "fresh_environment": True,
+        "fresh_environment": not prepared_root_venv,
         "requirements": requirements,
         "profiles": list(manifest.get("profiles") or []),
         "resolved_profiles": list(manifest.get("resolved_profiles") or manifest.get("profiles") or []),
@@ -197,11 +216,30 @@ def install_bundle(
     if dry_run:
         return {"ok": True, "dry_run": True, **plan}
 
-    envs_root.mkdir(parents=True, exist_ok=True)
-    if env_root.exists():
+    if root_local_venv and (env_root.is_symlink() or
+                            (hasattr(env_root, "is_junction") and env_root.is_junction())):
+        raise DependencyStudioError("unsafe_root_venv_link")
+    if root_local_venv:
+        from latka_jazn.core.runtime_root import active_runtime_marker_path
+        if active_runtime_marker_path(project_root).is_file():
+            raise DependencyStudioError("active_runtime_marker_present_no_venv_mutation")
+        if environment_marker_path(project_root).is_file() or existing_environment_marker_path(project_root).is_file():
+            raise DependencyStudioError("existing_activation_marker_requires_staged_upgrade")
+    if env_root.exists() and not prepared_root_venv:
         raise DependencyStudioError(f"Fresh managed environment path already exists: {env_root}")
+    if prepared_root_venv:
+        if not (env_root / "pyvenv.cfg").is_file() or not env_python.is_file():
+            raise DependencyStudioError("root_venv_incomplete_manual_recovery_required")
+        if (env_root / ENVIRONMENT_MARKER_NAME).exists():
+            raise DependencyStudioError("root_venv_already_marked_requires_staged_upgrade")
+        prepared_probe = _probe_python(str(env_python))
+        if any(prepared_probe.get(key) != probe.get(key) for key in
+               ("platform", "python_version", "implementation", "abi", "libc_family")):
+            raise DependencyStudioError("root_venv_interpreter_target_mismatch")
+    managed_root.mkdir(parents=True, exist_ok=True)
     try:
-        _run(create, cwd=project_root, timeout=timeout_seconds)
+        if not prepared_root_venv:
+            _run(create, cwd=project_root, timeout=timeout_seconds)
         _run(install, cwd=project_root, timeout=timeout_seconds)
         pip_check = _run([str(env_python), "-m", "pip", "check"], cwd=project_root, timeout=timeout_seconds)
         smoke_code = (
@@ -224,7 +262,11 @@ def install_bundle(
         if missing:
             raise DependencyStudioError(f"pip inspect inventory does not match wheelhouse manifest: {missing}")
     except Exception:
-        shutil.rmtree(env_root, ignore_errors=True)
+        # A uniquely named old-style managed venv is disposable. ROOT/.venv
+        # is path-stable operator state; preserve a partial installation for
+        # explicit recovery instead of deleting it after a failed check.
+        if not root_local_venv:
+            shutil.rmtree(env_root, ignore_errors=True)
         raise
 
     marker: dict[str, Any] = {
@@ -235,13 +277,14 @@ def install_bundle(
         "project_root": str(project_root),
         "environment_root": str(env_root),
         "environment_identity": environment_identity,
-        "managed_environments_root": str(envs_root),
+        "managed_environments_root": str(managed_root),
         "python_executable": str(env_python),
         "python_version": pyver,
         "platform": alias,
         "implementation": probe.get("implementation"),
         "abi": probe.get("abi"),
         "libc_family": probe.get("libc_family"),
+        "minimum_libc_version": target.get("minimum_libc_version"),
         "profiles": plan["profiles"],
         "resolved_profiles": plan["resolved_profiles"],
         "requirements": requirements,
@@ -261,7 +304,11 @@ def install_bundle(
     _write_json(env_marker, marker)
     required = set(activation_profile_names(project_root))
     provided = set(str(item) for item in marker["resolved_profiles"])
-    activation_eligible = required.issubset(provided)
+    # Fresh prepared ROOTs activate only the canonical ROOT/.venv. Legacy
+    # unmanaged installations preserve their historical compatibility policy.
+    activation_eligible = required.issubset(provided) and (
+        root_local_venv or not root_local_resources_enabled(project_root)
+    )
     activation_marker = environment_marker_path(project_root)
     if activation_eligible:
         _write_json(activation_marker, marker)
@@ -280,7 +327,7 @@ def install_bundle(
 
 def managed_environment_status(root: Path | str) -> dict[str, Any]:
     project_root = Path(root).resolve()
-    marker_path = environment_marker_path(project_root)
+    marker_path = existing_environment_marker_path(project_root)
     marker = read_manifest(marker_path)
     if marker is None:
         return {"ready": False, "status": "marker_missing", "marker_path": str(marker_path)}
@@ -325,8 +372,13 @@ def managed_environment_status(root: Path | str) -> dict[str, Any]:
         errors.append("environment_implementation_changed_reinstall_required")
     if str(marker.get("abi") or "") != str(current_abi_tag() or ""):
         errors.append("environment_abi_changed_reinstall_required")
-    if current_platform_alias().startswith("linux-") and str(marker.get("libc_family") or "") != current_libc_family():
-        errors.append("environment_libc_changed_reinstall_required")
+    if current_platform_alias().startswith("linux-"):
+        if str(marker.get("libc_family") or "") != current_libc_family():
+            errors.append("environment_libc_changed_reinstall_required")
+        minimum = marker.get("minimum_libc_version")
+        if minimum is not None and not glibc_version_at_least(
+                platform_module.libc_ver()[1], str(minimum)):
+            errors.append("environment_libc_version_below_bundle_minimum")
 
     profiles = list(marker.get("resolved_profiles") or marker.get("profiles") or [])
     try:
@@ -372,7 +424,7 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
     managed = managed_environment_status(project_root)
     managed_profiles = set(str(item) for item in managed.get("resolved_profiles") or [])
     managed_covers = set(profiles).issubset(managed_profiles)
-    marker = read_manifest(environment_marker_path(project_root)) or {}
+    marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     try:
         managed_py_ok = tuple(int(part) for part in str(marker.get("python_version") or "").split(".")[:2]) >= (3, 12)
     except (TypeError, ValueError):
@@ -399,6 +451,40 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
 
 def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    # Prefer a verified ROOT/.venv even if the host Python already has the core
+    # packages. The private venv is never created or modified implicitly.
+    from .private_python import private_python_status
+    private = private_python_status(project_root)
+    if private["present"]:
+        if not private["ready"]:
+            return {
+                "ok": False, "state": "private_python_invalid",
+                "reexec_python": None, "private_python": private,
+            }
+        if not private["current"]:
+            # Windows venv redirectors must never cause repeated handoff.
+            if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
+                return {
+                    "ok": False, "state": "private_python_handoff_not_established",
+                    "reexec_python": None, "private_python": private,
+                }
+            return {
+                "ok": True, "state": "private_python_handoff",
+                "reexec_python": private["python_executable"],
+                "private_python": private,
+            }
+        # Re-check requirements after handoff, including on Windows where the
+        # existing process handoff sets JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE.
+        status = dependency_activation_status(project_root)
+        if status["current_interpreter_ready"] is True:
+            return {
+                "ok": True, "state": "private_python_active",
+                "reexec_python": None, "private_python": private, "status": status,
+            }
+        return {
+            "ok": False, "state": "private_python_dependencies_missing",
+            "reexec_python": None, "private_python": private, "status": status,
+        }
     if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
         return {"ok": True, "state": "reexec_guard_active", "reexec_python": None}
     status = dependency_activation_status(project_root)
@@ -463,8 +549,16 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
 def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
     envs_root = default_environments_root(project_root)
-    marker = read_manifest(environment_marker_path(project_root)) or {}
+    marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     active = str(marker.get("environment_root") or "")
+    if root_local_resources_enabled(project_root) and envs_root == project_root / ".venv":
+        return {
+            "ok": True, "dry_run": dry_run,
+            "managed_environments_root": str(envs_root),
+            "active_environment": active or None,
+            "gc_candidates": [], "removed": [],
+            "policy": "root_venv_is_not_a_collection; manual verified replacement only",
+        }
     active_path = Path(active).resolve() if active else None
     candidates: list[str] = []
     removed: list[str] = []

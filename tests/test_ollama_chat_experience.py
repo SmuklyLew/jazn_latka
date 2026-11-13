@@ -56,7 +56,22 @@ def test_runtime_shell_uses_user_prompt_generated_session_and_live_pair() -> Non
 
         def process_user_text(self, text: str, **kwargs):
             calls.append({"text": text, **kwargs})
-            return {"final_visible_text": f"odpowiedź-{len(calls)}"}
+            from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
+            visible = f"odpowiedź-{len(calls)}"
+            return {
+                "ok": True,
+                "answer_ok": True,
+                "execution_state": "final_visible_answer",
+                "host_finalization_pending": False,
+                "final_visible_text": visible,
+                "final_visible_integrity": {
+                    "valid": True,
+                    "consensus": True,
+                    "text_sha256": sha256_host_visible_text(visible),
+                },
+                "runtime_truth_gate": {"ok": True, "normal_response_allowed": True},
+                "final_response_contract": {"author_source": "jazn_runtime"},
+            }
 
     shell = LatkaRuntimeShell(Runtime(), stdin=io.StringIO(), stdout=io.StringIO(), no_carryover=True)
     assert shell.prompt == "Ty> "
@@ -67,6 +82,26 @@ def test_runtime_shell_uses_user_prompt_generated_session_and_live_pair() -> Non
     assert shell.onecmd("Co z poprzednią turą?") is False
     assert calls[1]["previous_user_text"] == "Pierwsza wiadomość"
     assert calls[1]["previous_visible_text"] == "odpowiedź-1"
+
+
+def test_runtime_shell_does_not_carry_rejected_candidate_between_turns() -> None:
+    """Unaccepted model text cannot appear in visible history or next-turn context."""
+    calls: list[dict] = []
+
+    class Runtime:
+        runtime_turn_timeout_managed = True
+        state = SimpleNamespace(session_id="generated-session-123")
+        engine = SimpleNamespace()
+
+        def process_user_text(self, text: str, **kwargs):
+            calls.append({"text": text, **kwargs})
+            return {"final_visible_text": "niezweryfikowana odpowiedź"}
+
+    shell = LatkaRuntimeShell(Runtime(), stdin=io.StringIO(), stdout=io.StringIO(), no_carryover=True)
+    assert shell.onecmd("Pierwsza wiadomość") is False
+    assert shell.onecmd("Co z poprzednią turą?") is False
+    assert calls[1]["previous_user_text"] is None
+    assert calls[1]["previous_visible_text"] is None
 
 
 def test_runtime_session_state_keeps_last_visible_reply() -> None:

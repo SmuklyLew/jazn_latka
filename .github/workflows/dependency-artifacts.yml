@@ -128,6 +128,32 @@ jobs:
             --root . --json install --bundle "${{ steps.wheelhouse.outputs.bundle_dir }}" \
             --environment-root "$RUNNER_TEMP/jazn-environments" --offline
 
+      - name: Build, verify and test offline JSS wheelhouse
+        id: jss_wheelhouse
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheelhouse_root="$RUNNER_TEMP/jazn-jss-wheelhouse"
+          result="$RUNNER_TEMP/jss-dependency-download.json"
+          if python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --wheelhouse-root "$wheelhouse_root" --json \
+            download --profile core --profile run-studio \
+            --python-version "${{ inputs.python-version }}" --platform current > "$result"; then
+            :
+          else
+            download_status=$?
+            echo "Native core+run-studio download failed (exit=$download_status)." >&2
+            cat "$result" >&2
+            exit "$download_status"
+          fi
+          bundle_dir="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["bundle_dir"])' "$result")"
+          echo "bundle_dir=$bundle_dir" >> "$GITHUB_OUTPUT"
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --json verify --bundle "$bundle_dir"
+          python -X utf8 -m latka_jazn.tools.dependency_studio \
+            --root . --json install --bundle "$bundle_dir" \
+            --environment-root "$RUNNER_TEMP/jss-verified-environments" --offline
+
       - name: Audit resolved dependency lock
         shell: bash
         run: |
@@ -202,6 +228,10 @@ jobs:
             --root . --output-dir "$dist" --mode system-portable \
             --dependency-bundle "${{ steps.wheelhouse.outputs.bundle_dir }}" \
             --target "${{ inputs.target }}" --python-version "${{ inputs.python-version }}" --json
+          # Distribute the verified, native core+run-studio wheelhouse as an
+          # offline installation sidecar, without shipping a nonportable .venv.
+          mkdir -p "$dist/local_resources/wheelhouse"
+          cp -R "${{ steps.jss_wheelhouse.outputs.bundle_dir }}" "$dist/local_resources/wheelhouse/"
           echo "dist=$dist" >> "$GITHUB_OUTPUT"
           python - "$dist" <<'PY'
           import hashlib, json, pathlib, sys

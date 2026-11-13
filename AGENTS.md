@@ -4,6 +4,8 @@ Ten plik jest krótkim routerem dla hostów i agentów.
 Obowiązuje w repozytorium i zweryfikowanym SYSTEM.
 Instrukcje głębszych AGENTS.md stosuj w ich zakresie.
 
+Ten router i runbooki są instrukcjami **dla hosta/operatora/agenta programującego**, nie silnikiem Jaźni ani promptem jej tożsamości. Funkcje Jaźni muszą wynikać z wykonywalnego kodu, trwałego stanu i sprawdzonych kontraktów; opis, plan, manifest, UI lub deklaracja modelu nie stanowią dowodu działania. Manifest i provenance są danymi do **programowej kontroli integralności wydania**, nie implementacją zachowania. Nie wstrzykuj runbooków programistycznych do dialogowego kontekstu runtime jako zastępczej logiki.
+
 ## 1. Pierwszeństwo i bezpieczeństwo
 
 - Przestrzegaj instrukcji platformy, użytkownika i lokalnych AGENTS.md.
@@ -75,7 +77,7 @@ Nie rekonstruuj ani nie imituj niedostępnej wypowiedzi runtime.
 
 ## 6. Aktualizacje repozytorium
 
-- Każdy patch SYSTEM wymaga zgodnego podniesienia wersji.
+- Każdy patch SYSTEM wymaga zgodnego podniesienia wersji; sama redakcja instrukcji nie wdraża nowej funkcji ani nie jest dowodem patcha runtime.
 - Metadane release synchronizuj wyłącznie kanonicznym mechanizmem.
 - Nie edytuj ręcznie manifestu ani provenance.
 - Nie osłabiaj testów dla uzyskania zielonego CI.

@@ -128,7 +128,17 @@ if [ -f "$SET" ] && [ -f "$INDEX" ]; then
     exec "$PYTHON" -I -X utf8 "$ROOT/jazn_runtime_bootstrap.py" --app-root "$ROOT" --runtime-root "$RUNTIME_ROOT" --packages-relative-path "$PACKAGES_REL" -- "$@"
 fi
 
-# Thin/developer fallback only when no private runtime-set contract is present.
+# Checkout-owned venv precedes global Python discovery. Portable verified
+# runtime-set remains the first priority when it is explicitly provisioned.
+if [ -e "$ROOT/.venv" ] || [ -L "$ROOT/.venv" ]; then
+    if [ -L "$ROOT/.venv" ] || [ ! -f "$ROOT/.venv/pyvenv.cfg" ] || [ ! -x "$ROOT/.venv/bin/python" ]; then
+        echo "[JAZN] ROOT/.venv jest niekompletne lub niebezpieczne; bez globalnego fallbacku." >&2
+        exit 78
+    fi
+    exec "$ROOT/.venv/bin/python" -X utf8 "$ROOT/run.py" "$@"
+fi
+
+# Thin/developer fallback only when neither runtime-set nor .venv exists.
 for PYTHON in python3 python; do
     if command -v "$PYTHON" >/dev/null 2>&1 && "$PYTHON" -X utf8 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3,12) else 3)' >/dev/null 2>&1; then
         exec "$PYTHON" -X utf8 "$ROOT/run.py" "$@"

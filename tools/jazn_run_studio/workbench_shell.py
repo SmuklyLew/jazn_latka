@@ -68,13 +68,13 @@ class CommandPalette(QDialog):
 # Dedicated view containers; the existing QListWidget/QStackedWidget indices remain stable.
 ACTIVITY_GROUPS = {
     "Pulpit": ("Pulpit",),
-    "Czat": ("Czat lokalny", "Modele AI", "Połączenie z ChatGPT"),
-    "Usługi": ("Usługi i procesy", "Diagnostyka"),
+    "Czat": ("Czat lokalny",),
+    "Usługi": ("Usługi i procesy", "Diagnostyka", "Połączenie z ChatGPT"),
     "MEMORY": ("Dowody MEMORY",),
     "Testy i TPA": ("Katalog testów", "TPA"),
     "Studia": ("Studia Jaźni", "Konfiguracja Qt", "Wersje Qt"),
     "Developer": ("Developer",),
-    "Ustawienia": ("Ustawienia", "O programie"),
+    "Ustawienia": ("Ustawienia", "Modele AI", "O programie"),
 }
 ACTIVITY_ICONS = dict(zip(ACTIVITY_GROUPS, (
     "dashboard", "chat", "services", "memory", "tests", "studios", "developer", "settings"
@@ -148,6 +148,9 @@ class WorkbenchShell(QObject):
         self.section_tabs.setAccessibleName("Otwarte sekcje Studio")
         self.section_tabs.setExpanding(False)
         self.section_tabs.setUsesScrollButtons(True)
+        self.section_tabs.setMovable(True)
+        self.section_tabs.setTabsClosable(True)
+        self.section_tabs.tabCloseRequested.connect(self.close_section_tab)
         canvas = host.topbar.parentWidget()
         layout = canvas.layout() if canvas is not None else None
         if isinstance(layout, QBoxLayout):
@@ -215,7 +218,13 @@ class WorkbenchShell(QObject):
         for row in range(self.host.nav.count()):
             item = self.host.nav.item(row)
             item.setHidden(text not in item.text().casefold() if text else item.text() not in visible)
-        self.host.sidebar_heading.setText(self.active_group.upper())
+        is_chat = self.active_group == "Czat"
+        self.host.nav.setVisible(not is_chat)
+        self.host.chat_sidebar.setVisible(is_chat)
+        self.host.sidebar_heading.setText("ROZMOWY" if is_chat else self.active_group.upper())
+        for index in range(self.host.chat_session_list.count()):
+            item = self.host.chat_session_list.item(index)
+            item.setHidden(bool(text and text not in item.text().casefold()))
         for group, action in self.activity_actions.items():
             action.setChecked(group == self.active_group)
 
@@ -251,6 +260,20 @@ class WorkbenchShell(QObject):
     def select_tab(self, index: int) -> None:
         if index >= 0:
             self.host.navigate(self.section_tabs.tabText(index))
+
+    def close_section_tab(self, index: int) -> None:
+        """Close a navigation tab, never its runtime-owned view or active job."""
+        if not 0 <= index < self.section_tabs.count():
+            return
+        closing_current = index == self.section_tabs.currentIndex()
+        self.section_tabs.removeTab(index)
+        # A closed tab is reopened by the normal navigation handler. Preserve
+        # the central widget and all of its jobs, including when it was last.
+        if closing_current and self.section_tabs.count() == 0:
+            self.host.statusBar().showMessage(
+                "Zakładka zamknięta. Wybierz sekcję w nawigacji, aby ją przywrócić.",
+                5000,
+            )
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self.host and event.type() == QEvent.Type.Resize:

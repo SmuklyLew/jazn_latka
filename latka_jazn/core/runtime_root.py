@@ -73,14 +73,25 @@ def find_runtime_root(start: Path | None = None) -> Path:
 
 
 def default_runtime_workspace_path(root: Path) -> Path:
-    """Return the workspace scoped to ROOT, except for host-managed runtime layouts.
+    """Choose ROOT/workspace_runtime for a prepared SYSTEM, without any migration.
 
-    The named editable jazn_latka_master checkout uses ROOT/workspace_runtime.
-    Git linked worktrees use their own ROOT/workspace_runtime without migration.\n    Other roots retain the shared host-level default for compatibility.
-    Host-managed runtime layouts reuse their existing parent workspace.
+    Historical bare/host-managed roots keep their old layout for compatibility.
+    A prepared modern ROOT is identified by its local_resources directory.
     """
 
     runtime_root = Path(root).expanduser().resolve()
+    # A prepared modern SYSTEM owns its workspace within its own ROOT.  Do not
+    # silently adopt the sibling workspace of another checkout/daemon.
+    resources = runtime_root / "local_resources"
+    if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
+        raise ValueError("unsafe_root_local_resources_link")
+    if resources.is_dir():
+        candidate = (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
+        if candidate == runtime_root or not candidate.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+        return candidate
+    # Bare historical roots retain their legacy resolution until an explicit,
+    # identity-verified operator migration; never move their state implicitly.
     parent = runtime_root.parent
     if parent.name.casefold() == WORKSPACE_RUNTIME_DIR_NAME.casefold():
         return parent.resolve()
@@ -110,10 +121,10 @@ def workspace_runtime_path(
 ) -> Path:
     """Resolve the mutable workspace relative to the verified SYSTEM ROOT.
 
-    ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override. Absolute
-    overrides are used directly; relative overrides remain relative to ``active_root``
-    for compatibility. Without an override the workspace is host-level, outside the
-    active runtime root. Never relocate existing state implicitly when defaults change.
+    ``JAZN_RUNTIME_WORKSPACE_DIR`` remains the explicit operator override, but
+    prepared modern installations refuse paths outside their SYSTEM ROOT.
+    Historical bare installations retain old override semantics. Never
+    migrate existing state as a side effect of path discovery.
     """
 
     runtime_root = Path(root).expanduser().resolve()
@@ -138,7 +149,17 @@ def workspace_runtime_path(
             raise ValueError("workspace_escapes_root")
         return candidate
     candidate = Path(raw_text).expanduser()
-    return candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
+    resolved = candidate.resolve() if candidate.is_absolute() else (runtime_root / candidate).resolve()
+    # New/prepared installs are ROOT-contained even with an explicit override.
+    # Old bare roots remain readable as before; refusing an external override
+    # here never removes or migrates any old workspace, marker, or MEMORY.
+    resources = runtime_root / "local_resources"
+    if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
+        raise ValueError("unsafe_root_local_resources_link")
+    if resources.is_dir():
+        if resolved == runtime_root or not resolved.is_relative_to(runtime_root):
+            raise ValueError("workspace_escapes_root")
+    return resolved
 
 
 def runtime_state_path(root: Path, configured: str | Path) -> Path:

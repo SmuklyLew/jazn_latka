@@ -19,6 +19,7 @@ from latka_jazn.tools.chat_archive_policy import (
 from latka_jazn.tools.chat_export_dedupe import ActiveConversationState, stable_node_hash
 from latka_jazn.tools.chat_export_models import ConversationGraph, ConversationPlan, ExportSourceInfo
 from latka_jazn.version import schema_version
+from latka_jazn.db.runtime_sqlite import connect_runtime_writable
 
 SCHEMA_VERSION = schema_version("chat_export_archive_store")
 PAYLOAD_CODEC = "zlib-json-v1"
@@ -205,14 +206,11 @@ class ChatExportArchiveStore:
     def __init__(self, path: str | Path, *, busy_timeout_ms: int = 30_000) -> None:
         self.path = Path(path).expanduser().resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.con = sqlite3.connect(self.path, timeout=max(1.0, busy_timeout_ms / 1000), isolation_level=None)
-        self.con.row_factory = sqlite3.Row
-        self.con.execute("PRAGMA foreign_keys=ON")
-        self.con.execute(f"PRAGMA busy_timeout={max(1000, int(busy_timeout_ms))}")
-        self.con.execute("PRAGMA journal_mode=WAL")
-        self.con.execute("PRAGMA synchronous=NORMAL")
-        self.con.execute("PRAGMA temp_store=MEMORY")
-        self.con.execute("PRAGMA cache_size=-65536")
+        self.con = connect_runtime_writable(
+            self.path, isolation_level=None,
+            timeout_ms=max(1000, int(busy_timeout_ms)), synchronous="NORMAL",
+            temp_store="MEMORY", cache_size=-65536,
+        )
         self.con.executescript(SCHEMA_SQL)
         ensure_archive_schema(self.con)
         self.con.execute(

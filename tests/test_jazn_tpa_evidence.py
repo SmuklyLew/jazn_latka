@@ -5,7 +5,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 import pytest
 from tools.jazn_run_studio.core import Redactor
-from tools.jazn_run_studio.tpa_catalog import execution_map
+from tools.jazn_run_studio.tpa_catalog import execution_map, scenario
 from tools.jazn_run_studio.tpa_reports import RunStore, junit_result, safe_child
 from tools.jazn_run_studio.tpa_guidance import record_observation
 from tools.jazn_run_studio.tpa_reports import redact
@@ -108,7 +108,7 @@ def test_subcheck_does_not_authorize_real_turn_or_12_studio_acceptance(store):
     report["artifacts"].append(proof)
     for key, message in (("ollama-two-turns", "rzeczywistych"), ("studios-parity", "12 odrębnych")):
         with pytest.raises(ValueError, match=message):
-            record_observation(store, report, key, [0, 1, 2, 3], "All steps observed", [proof], "PASS")
+            record_observation(store, report, key, list(range(len(scenario(key)["guide"]))), "All steps observed", [proof], "PASS")
 
 
 def test_human_observation_keeps_regression_result_and_append_only_evidence(store):
@@ -122,7 +122,7 @@ def test_human_observation_keeps_regression_result_and_append_only_evidence(stor
     proof = "example.txt"
     safe_child(store.folder(report["run_id"]), proof).write_text("Observed save/reopen and CAS refusal", encoding="utf-8")
     report["artifacts"].append(proof)
-    record_observation(store, report, "config-persistence", [0, 1, 2, 3], "Saved and reopened synthetic config", [proof], "PASS")
+    record_observation(store, report, "config-persistence", list(range(len(scenario("config-persistence")["guide"]))), "Saved and reopened synthetic config", [proof], "PASS")
     record_observation(store, report, "config-persistence", [0], "Need another manual comparison", [proof], "BLOCKED")
     assert len(report["observations"]) == 2
     assert row["status"] == "PASS" and row["full_gate"] == "BLOCKED"

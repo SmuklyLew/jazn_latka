@@ -10,24 +10,28 @@ from typing import Any, Callable
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
+    QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget,
 )
 
 # A visible caption always accompanies each colored circle.
 STATUS_COLORS = {"good": "#32C77A", "warn": "#E8A13B", "bad": "#E2525D"}
 STATUS_LABELS = {"good": "Działa", "warn": "Niezweryfikowany / ograniczony", "bad": "Błąd"}
 MAX_OBSERVATION_AGE_SECONDS = 45.0
+from .core import OLLAMA_GENERATION_PROOF_SECONDS
 
 
 def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = False,
                    age_seconds: float = 0.0) -> tuple[str, str]:
     """Classify explicit evidence only. No PID-only or model-name-only green."""
     if failed:
+        # The observer distinguishes a normal "not ready" response from an
+        # unexpected probe failure before calling assess_service(). Only the
+        # latter enters the failures set; optionality cannot hide a real fault.
         return "bad", "Ostatnia kontrola zakończyła się niepowodzeniem"
     if evidence is None:
-        return "warn", "Nie sprawdzono — użyj Odśwież"
+        return "warn", "Nie sprawdzono — oczekiwanie na automatyczny odczyt"
     if age_seconds > MAX_OBSERVATION_AGE_SECONDS:
-        return "warn", "Wynik nieaktualny — ponów kontrolę"
+        return "warn", "Wynik nieaktualny — oczekiwanie na kolejną kontrolę"
 
     if key in {"server", "runtime"}:
         state = evidence.get("active_state")
@@ -53,7 +57,49 @@ def assess_service(key: str, evidence: dict[str, Any] | None, *, failed: bool = 
             return "warn", "Endpoint odpowiada, lecz brama nie potwierdza gotowości"
         return "warn", "Gotowość lokalnej bramy niepotwierdzona"
 
+    if key == "mcp_https":
+        if (evidence.get("ready") is True
+                and evidence.get("authenticated_mcp_ready") is True
+                and evidence.get("runtime_ready") is True):
+            return "good", "Zweryfikowana brama HTTPS, OAuth i runtime"
+        if evidence.get("endpoint_reachable") is True:
+            return "warn", "HTTPS dostępny; OAuth i runtime wymagają osobnego dowodu"
+        return "warn", "MCP HTTPS niepotwierdzone lub nieskonfigurowane"
+
+    if key == "supervisor":
+        if (evidence.get("ready") is True
+                and evidence.get("identity_confirmed") is True
+                and evidence.get("heartbeat_fresh") is True):
+            return "good", "Supervisor: tożsamość i heartbeat potwierdzone"
+        if evidence.get("active") is False:
+            return "warn", "Supervisor nieaktywny — nie uruchamiano go"
+        return "warn", "Supervisor bez pełnego dowodu tożsamości"
+
+    if key == "memory":
+        if evidence.get("mode") == "off":
+            return "warn", "MEMORY wyłączona konfiguracją (off)"
+        if (evidence.get("full_autobiographical_recall_ready") is True
+                and evidence.get("continuity_ready") is True):
+            return "good", "Autobiograficzny recall i ciągłość potwierdzone"
+        if evidence.get("memory_search_ready") is True:
+            return "warn", "Wyszukiwanie dostępne, ciągłość niepotwierdzona"
+        return "warn", "Brak dowodu recall i ciągłości MEMORY"
+
+    if key == "ollama_process":
+        if evidence.get("process_observed") is not True:
+            return "warn", "Nie potwierdzono odczytu procesu"
+        if evidence.get("process_running") is True:
+            return "good", "Proces Ollama włączony (API sprawdzane osobno)"
+        if evidence.get("process_running") is False:
+            return "warn", "Proces Ollama wyłączony"
+        return "warn", "Nieznany stan procesu"
+
     if key == "ollama":
+        proof_age = evidence.get("generation_evidence_age_seconds")
+        if (proof_age is not None and (
+                not isinstance(proof_age, (int, float))
+                or proof_age + age_seconds > OLLAMA_GENERATION_PROOF_SECONDS)):
+            return "warn", "API odpowiada; ostatni dowód generowania wygasł — ponów test"
         if evidence.get("endpoint_reachable") is not True:
             return "warn", "Brak dowodu dostępności API"
         if evidence.get("selected_model_present") is False:
@@ -72,24 +118,32 @@ class ServiceStatusDialog(QDialog):
     SERVICES = (
         ("server", "Serwer Jaźni / daemon"),
         ("runtime", "Runtime rozmów"),
-        ("mcp", "Brama MCP"),
-        ("ollama", "Ollama i wybrany model"),
+        ("ollama_process", "Ollama — proces systemowy"),
+        ("ollama", "Ollama — API i wybrany model"),
+        ("mcp", "MCP lokalne"),
+        ("mcp_https", "MCP HTTPS / OAuth"),
+        ("supervisor", "Supervisor"),
+        ("memory", "MEMORY / ciągłość"),
     )
 
-    def __init__(self, host: QWidget, request_refresh: Callable[[], None]):
+    def __init__(self, host: QWidget, request_refresh: Callable[[], None], *,
+                 interval_seconds: int = 10, save_interval: Callable[[int], None] | None = None):
         super().__init__(host)
+        if interval_seconds not in {1, 10, 30, 60}:
+            raise ValueError("Nieobsługiwany odstęp monitorowania")
+        self._save_interval = save_interval
         self._request_refresh = request_refresh
         self.setObjectName("jssServiceStatusDialog")
         self.setWindowTitle("Jaźń — Stany usług")
         self.setModal(False)
         self.setMinimumWidth(430)
-        self.resize(520, 330)
+        self.resize(700, 460)
         self.samples: dict[str, tuple[float, dict[str, Any]]] = {}
         self.failures: set[str] = set()
         self.indicators: dict[str, tuple[QLabel, QLabel]] = {}
 
         layout = QVBoxLayout(self)
-        subtitle = QLabel("Odczyt z lokalnych testów. Żaden wskaźnik nie uruchamia usługi ani nie potwierdza odpowiedzi ChatGPT.")
+        subtitle = QLabel("Monitor tylko do odczytu: status dostępnych usług odświeża się automatycznie w wybranym odstępie. Nie uruchamia, nie zatrzymuje ani nie konfiguruje procesów. Nie potwierdza odpowiedzi ChatGPT.")
         subtitle.setWordWrap(True)
         layout.addWidget(subtitle)
         for key, title in self.SERVICES:
@@ -112,45 +166,123 @@ class ServiceStatusDialog(QDialog):
         note.setWordWrap(True)
         layout.addWidget(note)
         buttons = QHBoxLayout()
-        refresh = QPushButton("Odśwież stany")
-        refresh.setAccessibleName("Sprawdź lokalnie Runtime, MCP i Ollamę")
-        refresh.clicked.connect(self.request_refresh)
+        interval_label = QLabel("Odczyt co:")
+        self.refresh_interval = QComboBox(self)
+        self.refresh_interval.setAccessibleName("Częstotliwość automatycznego odczytu stanów usług")
+        for seconds in (1, 10, 30, 60):
+            self.refresh_interval.addItem(f"{seconds} s", seconds * 1000)
+        self.refresh_interval.setCurrentIndex(self.refresh_interval.findData(interval_seconds * 1000))
+        interval_label.setBuddy(self.refresh_interval)
         close = QPushButton("Zamknij")
         close.clicked.connect(self.close)
-        buttons.addWidget(refresh)
+        buttons.addWidget(interval_label)
+        buttons.addWidget(self.refresh_interval)
         buttons.addStretch(1)
         buttons.addWidget(close)
         layout.addLayout(buttons)
+        self.persistence_status = QLabel()
+        self.persistence_status.setWordWrap(True)
+        layout.addWidget(self.persistence_status)
 
         self.timer = QTimer(self)
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.render_statuses)
-        self.timer.start()
+
+        # Separate polling from rendering. Only the visible monitor requests
+        # existing asynchronous, read-only Controller probes; no lifecycle.
+        self.monitor_timer = QTimer(self)
+        self.monitor_timer.setInterval(interval_seconds * 1000)
+        self.monitor_timer.timeout.connect(self._monitor_once)
+        self.refresh_interval.currentIndexChanged.connect(self._change_monitor_interval)
         self.render_statuses()
+
+    def _change_monitor_interval(self, _index: int) -> None:
+        interval_ms = self.refresh_interval.currentData()
+        if interval_ms not in {1000, 10000, 30000, 60000}:
+            raise ValueError("Nieobsługiwany odstęp monitorowania")
+        previous = self.monitor_timer.interval()
+        try:
+            if self._save_interval is not None:
+                self._save_interval(int(interval_ms) // 1000)
+        except (OSError, ValueError, RuntimeError):
+            self.refresh_interval.blockSignals(True)
+            self.refresh_interval.setCurrentIndex(self.refresh_interval.findData(previous))
+            self.refresh_interval.blockSignals(False)
+            self.persistence_status.setText("Nie zapisano interwału. Sprawdź dostęp do ustawień lub wczytaj je ponownie.")
+            return
+        self.persistence_status.clear()
+        self.monitor_timer.setInterval(int(interval_ms))
+        if self.isVisible():
+            self.monitor_timer.start()
+
+    def _monitor_once(self) -> None:
+        if self.isVisible():
+            # Controller deduplicates in-flight read probes; no model generation
+            # or mutation is performed by this observer.
+            self._request_refresh()
+
+    def showEvent(self, event: Any) -> None:
+        super().showEvent(event)
+        self.timer.start()
+        self.monitor_timer.start()
+        self._monitor_once()
+
+    def hideEvent(self, event: Any) -> None:
+        self.monitor_timer.stop()
+        self.timer.stop()
+        super().hideEvent(event)
 
     def request_refresh(self) -> None:
-        # A click is an explicit request for the existing nonblocking Controller
-        # jobs; never call HTTP or lifecycle directly in this widget.
-        self.samples.clear()
-        self.failures.clear()
-        self.render_statuses()
+        # Keep the previous sample visible (and aging) until an actual result
+        # arrives. Clearing first would temporarily misrepresent a live daemon.
         self._request_refresh()
 
+    def invalidate_ollama_model(self) -> None:
+        """Drop old model evidence immediately when operator changes selection."""
+        self.samples.pop("ollama", None)
+        self.failures.discard("ollama")
+        self.render_statuses()
+
     def observe(self, key: str, kind: str, value: object) -> None:
-        if kind == "evidence" and isinstance(value, dict):
+        if kind == "evidence" and isinstance(value, dict) and key == "status":
             for service in ("server", "runtime"):
                 self.samples[service] = (time.monotonic(), dict(value))
                 self.failures.discard(service)
+        elif kind == "supervisor_evidence" and isinstance(value, dict):
+            self.samples["supervisor"] = (time.monotonic(), dict(value))
+            self.failures.discard("supervisor")
+        elif kind == "status_summary" and isinstance(value, dict):
+            description = str(value.get("memory") or "")
+            previous = self.samples.get("memory")
+            payload = dict(previous[1]) if previous else {}
+            payload["mode"] = "off" if ("(off)" in description or "wyłączona przez konfigurację" in description) else "unknown"
+            self.samples["memory"] = (time.monotonic(), payload)
+        elif kind == "memory_evidence" and isinstance(value, dict):
+            previous = self.samples.get("memory")
+            payload = dict(value)
+            if previous and previous[1].get("mode") == "off":
+                payload["mode"] = "off"
+            self.samples["memory"] = (time.monotonic(), payload)
+            self.failures.discard("memory")
         elif kind == "probe" and isinstance(value, dict):
-            service = {"gateway": "mcp", "ollama": "ollama"}.get(str(value.get("service", "")))
+            service = {
+                "gateway": "mcp", "ollama": "ollama",
+                "ollama_process": "ollama_process",
+                "cloudflare": "mcp_https",
+            }.get(str(value.get("service", "")))
             if service:
                 self.samples[service] = (time.monotonic(), dict(value))
                 self.failures.discard(service)
         elif kind == "state" and isinstance(value, dict) and value.get("state") == "failed":
-            failed_service = {"status": ("server", "runtime"),
-                              "probe:gateway": ("mcp",),
-                              "probe:ollama": ("ollama",),
-                              "probe:ollama_generate": ("ollama",)}.get(key, ())
+            failed_service = {
+                "status": ("server", "runtime"),
+                "supervisor": ("supervisor",),
+                "probe:gateway": ("mcp",),
+                "probe:cloudflare": ("mcp_https",),
+                "probe:ollama": ("ollama",),
+                "probe:ollama_process": ("ollama_process",),
+                "probe:ollama_generate": ("ollama",),
+            }.get(key, ())
             # A completed optional probe can truthfully report "not ready"
             # without establishing a service fault. Keep its negative sample
             # visible as a warning; transport exceptions remain real failures.

@@ -43,40 +43,68 @@ class SettingsViewMixin:
         layout.addWidget(self.settings_hint)
         form = QFormLayout()
         self.settings_form = form
-        labels = {"python": "Interpreter Python", "mcp_python": "Python MCP (opcjonalny, z mcp/uvicorn)", "ollama": "Plik Ollama", "cloudflared": "Plik cloudflared",
-                  "tunnel_config": "Konfiguracja tunelu (plik)", "tunnel_id": "Nazwa / UUID tunelu",
-                  "model": "Model Ollama", "accent": "Kolor własny (#RRGGBB)"}
-        labels["cloudflare_url"] = "Adres HTTPS Workera Cloudflare"
-        labels["mcp_port"] = "Port lokalnej bramy MCP (127.0.0.1)"
-        labels["daemon_url"] = "URL lokalnego daemona (127.0.0.1)"
-        labels["secrets_file"] = "Plik sekretów JSON (ignorowany przez Git)"
-        for key, label in labels.items():
-            field = QLineEdit(str(getattr(self.core.settings, key)))
-            if key == "model":
-                field.setReadOnly(True)
-                field.setToolTip("Nazwa tylko z listy wykrytych lokalnie modeli Ollama; nie wpisuj jej ręcznie.")
-            field.setAccessibleName(label)
-            self.fields[key] = field
-            form.addRow(label, field)
-        self.settings_model_selector = QComboBox()
-        self.settings_model_selector.setEditable(False)
-        self.settings_model_selector.addItem("Wykryj zainstalowane modele…", "")
-        self.settings_model_selector.setAccessibleName("Wybierz zainstalowany model Ollama")
-        self.settings_model_selector.currentIndexChanged.connect(self.settings_model_selected)
-        form.addRow("Wybierz model z Ollamy", self.settings_model_selector)
-        model_refresh = QPushButton("Wykryj modele Ollama")
-        model_refresh.clicked.connect(lambda _checked=False: self.core.probe("ollama"))
-        form.addRow("Odśwież modele", model_refresh)
-        self.theme = QComboBox()
-        for label, key in THEME_CHOICES:
-            self.theme.addItem(label, key)
-        self.theme.setCurrentIndex(self.theme.findData(self.core.settings.theme))
-        form.addRow("Motyw", self.theme)
-        self.profile_mode = QComboBox()
-        self.profile_mode.addItem("Bez dodatkowego profilu", "off")
-        self.profile_mode.addItem("Walidowany profil operator", "operator")
-        self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
-        form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
+        self.settings_group_headers: dict[str, QLabel] = {}
+        labels = {
+            "python": "Interpreter Python",
+            "mcp_python": "Python MCP (opcjonalny, z mcp/uvicorn)",
+            "ollama": "Plik Ollama",
+            "cloudflared": "Plik cloudflared",
+            "tunnel_config": "Konfiguracja tunelu (plik)",
+            "tunnel_id": "Nazwa / UUID tunelu",
+            "model": "Model Ollama",
+            "accent": "Kolor własny (#RRGGBB)",
+            "cloudflare_url": "Adres HTTPS Workera Cloudflare",
+            "mcp_port": "Port lokalnej bramy MCP (127.0.0.1)",
+            "daemon_url": "URL lokalnego daemona (127.0.0.1)",
+            "secrets_file": "Plik sekretów JSON (ignorowany przez Git)",
+        }
+        sections = (
+            ("Środowisko", "ŚRODOWISKO I PYTHON", ("python", "mcp_python")),
+            ("Runtime", "RUNTIME I URUCHOMIENIE", ("daemon_url",)),
+            ("Modele", "MODEL I OLLAMA", ("model", "ollama")),
+            ("MCP", "LOKALNA BRAMA MCP", ("mcp_port",)),
+            ("Cloudflare", "CLOUDFLARE / HTTPS", ("cloudflared", "tunnel_config", "tunnel_id", "cloudflare_url")),
+            ("Bezpieczeństwo", "BEZPIECZEŃSTWO", ("secrets_file",)),
+            ("Wygląd", "WYGLĄD I MOTYW", ("accent",)),
+        )
+        for category, title, keys in sections:
+            header = QLabel(title)
+            header.setObjectName("jssSettingsSectionHeader")
+            font = header.font()
+            font.setBold(True)
+            header.setFont(font)
+            self.settings_group_headers[category] = header
+            form.addRow(header)
+            for key in keys:
+                field = QLineEdit(str(getattr(self.core.settings, key)))
+                if key == "model":
+                    field.setReadOnly(True)
+                    field.setToolTip("Nazwa tylko z listy wykrytych lokalnie modeli Ollama; nie wpisuj jej ręcznie.")
+                field.setAccessibleName(labels[key])
+                self.fields[key] = field
+                form.addRow(labels[key], field)
+                if key == "daemon_url":
+                    self.profile_mode = QComboBox()
+                    self.profile_mode.addItem("Bez dodatkowego profilu", "off")
+                    self.profile_mode.addItem("Walidowany profil operator", "operator")
+                    self.profile_mode.setCurrentIndex(1 if self.core.settings.runtime_profile == "operator" else 0)
+                    form.addRow("Przyszłe uruchomienia runtime", self.profile_mode)
+                if key == "model":
+                    self.settings_model_selector = QComboBox()
+                    self.settings_model_selector.setEditable(False)
+                    self.settings_model_selector.addItem("Wykryj zainstalowane modele…", "")
+                    self.settings_model_selector.setAccessibleName("Wybierz zainstalowany model Ollama")
+                    self.settings_model_selector.currentIndexChanged.connect(self.settings_model_selected)
+                    form.addRow("Wybierz model z Ollamy", self.settings_model_selector)
+                    self.settings_model_refresh = QPushButton("Wykryj modele Ollama")
+                    self.settings_model_refresh.clicked.connect(lambda _checked=False: self.core.probe("ollama"))
+                    form.addRow("Wykryj modele", self.settings_model_refresh)
+                if key == "accent":
+                    self.theme = QComboBox()
+                    for theme_label, theme_key in THEME_CHOICES:
+                        self.theme.addItem(theme_label, theme_key)
+                    self.theme.setCurrentIndex(self.theme.findData(self.core.settings.theme))
+                    form.addRow("Motyw", self.theme)
         layout.addLayout(form)
         self.button("Wybierz kolor z palety…", self.choose_custom_color, layout)
         self.button("Uzupełnij bezpieczne wartości domyślne (bez zapisu)", self.fill_discovered_defaults, layout)
@@ -88,6 +116,7 @@ class SettingsViewMixin:
             field.textChanged.connect(self.settings_changed)
         self.theme.currentTextChanged.connect(self.settings_changed)
         self.profile_mode.currentIndexChanged.connect(self.settings_changed)
+        layout.addWidget(QLabel("ZALEŻNOŚCI I DIAGNOSTYKA"))
         self.dependency_audit_status = QLabel("Sprawdzanie środowisk Python i profili zależności…")
         self.dependency_audit_status.setWordWrap(True)
         self.dependency_audit_status.setAccessibleName("Stan bibliotek GUI i lokalnej bramy MCP")
@@ -103,6 +132,7 @@ class SettingsViewMixin:
         if not self.smoke:
             QTimer.singleShot(0, self.audit_dependencies)
 
+        layout.addWidget(QLabel("PROFILE PRZYSZŁYCH URUCHOMIEŃ"))
         layout.addWidget(QLabel("Profile środowiska runtime są obsługiwane przez kanoniczne Studio Konfiguracji."))
         self.button("Klasyczne Studio Konfiguracji (do przeglądu)", lambda: self.core.start_studio("configuration"), layout)
         self.button("Wczytaj profil środowiska runtime", lambda: self.core.studio_helper("profile-read"), layout)
@@ -214,6 +244,7 @@ class SettingsViewMixin:
 
     def save(self: Any) -> None:
         data = {k: field.text().strip() for k, field in self.fields.items()}
+        data["service_refresh_seconds"] = self.core.settings.service_refresh_seconds
         data["theme"] = str(self.theme.currentData())
         data["runtime_profile"] = str(self.profile_mode.currentData())
         settings = Settings.validate(data)
@@ -221,8 +252,16 @@ class SettingsViewMixin:
 
 
     def apply_settings(self: Any, settings: Settings, *, appearance_only: bool = False) -> None:
+        previous_model = self.core.settings.model
         self.digest = save_settings(self.core.root, settings, self.digest)
         self.core.settings = settings
+        if previous_model != settings.model:
+            # A success for a different Ollama model cannot certify this one.
+            with self.core.lock:
+                self.core.ollama_generation_proof = None
+            self.workspace.observations.pop("ollama", None)
+            if self.service_status_dialog is not None:
+                self.service_status_dialog.invalidate_ollama_model()
         if not appearance_only:
             self.quick_runtime_ready = False
             self.quick_generation_ready = False
@@ -302,12 +341,17 @@ class SettingsViewMixin:
                       "cloudflare_url": "Cloudflare", "secrets_file": "Bezpieczeństwo", "accent": "Wygląd"}
         query = self.settings_search.text().casefold().strip()
         category = self.settings_category.currentText()
-        widgets = {**self.fields, "model_selector": self.settings_model_selector, "theme": self.theme, "runtime_profile": self.profile_mode}
-        categories.update({"theme": "Wygląd", "runtime_profile": "Runtime"})
+        widgets = {**self.fields, "model_selector": self.settings_model_selector, "model_refresh": self.settings_model_refresh, "theme": self.theme, "runtime_profile": self.profile_mode}
+        categories.update({"theme": "Wygląd", "runtime_profile": "Runtime", "model_refresh": "Modele"})
+        visible_sections: set[str] = set()
         for key, widget in widgets.items():
             label = self.settings_form.labelForField(widget)
             title = label.text() if isinstance(label, QLabel) else key
             visible = (category == "Wszystkie" or categories.get(key) == category) and query in (key + " " + title).casefold()
             widget.setVisible(visible)
+            if visible:
+                visible_sections.add(categories.get(key, ""))
             if label is not None:
                 label.setVisible(visible)
+        for category, heading in self.settings_group_headers.items():
+            heading.setVisible(category in visible_sections)

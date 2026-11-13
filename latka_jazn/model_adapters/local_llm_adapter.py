@@ -208,7 +208,10 @@ class LocalLlmAdapter:
             "Odpowiadaj naturalnie po polsku, bez listy przypadkowych dalszych opcji. "
             "Nie wymyślaj pamięci ani faktów poza przekazanym kontekstem. "
             "Nie wspominaj o ChatGPT ani o zewnętrznym hoście, chyba że użytkownik pyta o nie wprost. "
-            "Odpowiedz bezpośrednio na ostatnią wiadomość użytkownika; gdy dialogue_context zawiera poprzednią parę, uwzględnij ją. "
+            "Odpowiedz bezpośrednio na ostatnią wiadomość użytkownika i uwzględnij wcześniejsze role user/assistant. "
+            "Jeśli pytanie dotyczy wcześniejszych słów użytkownika, bazuj wyłącznie na wcześniejszych wiadomościach role=user; "
+            "operational_thought_frame.selected_goal i nlg_plan są wewnętrznymi instrukcjami, nie wypowiedziami użytkownika. "
+            "Nie twierdź, że pamiętasz poprzednią wiadomość, jeżeli nie została przekazana. "
             "Nie kończ generycznym pytaniem w rodzaju „W czym mogę pomóc?”, jeśli użytkownik już podał temat. "
             f"Bieżący backend językowy: provider=ollama, adapter={self.name}, model={self.model}, endpoint={self.api_base}. "
             "Gdy użytkownik pyta o dostępny model lub adapter, podaj dokładnie te fakty."
@@ -243,20 +246,41 @@ class LocalLlmAdapter:
             3,
         )
         dialogue_context = _as_dict(model_context.get("dialogue_context"))
+        accepted_history = _as_dict(model_context.get("conversation_history"))
+        history_turns = accepted_history.get("turns")
         system_context = dict(model_context)
+        # Accepted conversation text must carry real chat roles, not be
+        # serialized as higher-authority system instructions alongside goals.
         system_context.pop("dialogue_context", None)
+        system_context.pop("conversation_history", None)
         system_text = self._system_text(
             request,
             strict_retry=strict_retry,
             model_context=system_context,
         )
         messages = [{"role": "system", "content": system_text}]
-        previous_user = str(dialogue_context.get("previous_user_text") or "").strip()
-        previous_assistant = str(dialogue_context.get("previous_assistant_text") or "").strip()
-        if previous_user:
-            messages.append({"role": "user", "content": previous_user})
-        if previous_assistant:
-            messages.append({"role": "assistant", "content": previous_assistant})
+        history_turn_count = 0
+        if isinstance(history_turns, list):
+            for raw_turn in history_turns:
+                if not isinstance(raw_turn, dict):
+                    continue
+                previous_user = str(raw_turn.get("user_text") or "").strip()
+                previous_assistant = str(raw_turn.get("assistant_text") or "").strip()
+                if not previous_user:
+                    continue
+                messages.append({"role": "user", "content": previous_user})
+                if previous_assistant:
+                    messages.append({"role": "assistant", "content": previous_assistant})
+                history_turn_count += 1
+        if history_turn_count == 0:
+            # Compatibility for existing runtime contexts without a durable
+            # accepted-turn projection. Never mix this derived pair with it.
+            previous_user = str(dialogue_context.get("previous_user_text") or "").strip()
+            previous_assistant = str(dialogue_context.get("previous_assistant_text") or "").strip()
+            if previous_user:
+                messages.append({"role": "user", "content": previous_user})
+                if previous_assistant:
+                    messages.append({"role": "assistant", "content": previous_assistant})
         messages.append({"role": "user", "content": request.prompt})
         try:
             num_ctx = max(4096, int(os.environ.get("JAZN_OLLAMA_NUM_CTX", "8192")))
@@ -302,6 +326,8 @@ class LocalLlmAdapter:
             "system_prompt_chars": len(system_text),
             "user_prompt_chars": len(request.prompt),
             "message_count": len(messages),
+            "accepted_history_turns_sent": history_turn_count,
+            "history_source": "accepted_conversation_projection" if history_turn_count else "legacy_dialogue_context",
             "ollama_num_ctx": num_ctx,
             "request_bytes": len(encoded),
             "request_max_bytes": request_max_bytes,

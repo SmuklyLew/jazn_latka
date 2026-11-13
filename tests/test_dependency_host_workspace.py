@@ -13,7 +13,13 @@ from latka_jazn.dependencies.common import (
 )
 
 
-def test_default_dependency_state_lives_in_host_workspace_not_active_root(tmp_path: Path) -> None:
+def test_default_dependency_state_lives_in_host_workspace_not_active_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # This is an unprepared legacy root: test its historical fallback, not
+    # the ROOT-relative acceptance override installed by tests/conftest.py.
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.delenv("JAZN_DEPENDENCY_ENVIRONMENTS", raising=False)
     runtime_root = tmp_path / "runtime_roots" / "jazn-v16.3.25.5.5"
     runtime_root.mkdir(parents=True)
 
@@ -25,6 +31,7 @@ def test_default_dependency_state_lives_in_host_workspace_not_active_root(tmp_pa
     assert default_wheelhouse_root(runtime_root) == expected / "wheelhouse"
     assert default_environments_root(runtime_root) == expected / "environments"
     assert environment_marker_path(runtime_root) == expected / "JAZN_DEPENDENCY_ENVIRONMENT.json"
+    assert workspace == (tmp_path / "workspace_runtime").resolve()
     assert workspace != runtime_root / "workspace_runtime"
     with pytest.raises(ValueError):
         local_python.relative_to(runtime_root)
@@ -41,3 +48,22 @@ def test_dependency_environment_override_remains_explicit_operator_boundary(
 
     assert default_environments_root(runtime_root) == explicit.resolve()
     assert default_wheelhouse_root(runtime_root).parent == workspace_runtime_path(runtime_root) / "local_resources" / "python"
+
+
+
+def test_prepared_root_keeps_dependencies_and_single_environment_local(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A prepared v127.4 installation has a single canonical ROOT/.venv.
+    # Neither historical host environments nor the acceptance workspace
+    # may silently become the interpreter used for that SYSTEM.
+    monkeypatch.delenv("JAZN_RUNTIME_WORKSPACE_DIR", raising=False)
+    monkeypatch.delenv("JAZN_DEPENDENCY_ENVIRONMENTS", raising=False)
+    root = tmp_path / "prepared_system"
+    (root / "local_resources").mkdir(parents=True)
+    assert workspace_runtime_path(root) == (root / "workspace_runtime").resolve()
+    assert default_local_python_root(root) == root / "local_resources" / "python"
+    assert default_wheelhouse_root(root) == root / "local_resources" / "wheelhouse"
+    assert default_environments_root(root) == root / ".venv"
+    assert environment_marker_path(root) == root / "local_resources" / "python" / "JAZN_DEPENDENCY_ENVIRONMENT.json"
+    assert not (tmp_path / "workspace_runtime").exists()

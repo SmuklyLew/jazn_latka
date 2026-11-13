@@ -17,9 +17,15 @@ MAX_START_AGE = 900
 MAX_CLEANUP_AGE = 86400
 
 
-def issue_staging(root: Path, run_folder: Path, case_id: str) -> tuple[Path, str]:
+def issue_staging(root: Path, run_folder: Path, case_id: str, *, execution_root: Path | None = None) -> tuple[Path, str]:
     """Create a fresh destination and exclusive claim; never reuse a staging."""
     scenario(case_id)
+    authority = root.resolve()
+    selected = (execution_root or root).resolve()
+    if selected != authority:
+        source_copy = safe_child(run_folder, "source-code")
+        if selected != source_copy or not selected.is_dir():
+            raise ValueError("Niezgodny ROOT zweryfikowanej kopii TPA")
     if not re.fullmatch(r"run-[0-9a-f]{32}", run_folder.name):
         raise ValueError("Nieprawidłowy przebieg TPA")
     folder = safe_child(run_folder, "live-" + case_id)
@@ -29,13 +35,15 @@ def issue_staging(root: Path, run_folder: Path, case_id: str) -> tuple[Path, str
     claim = safe_child(run_folder, folder.name + ".claim.json")
     with claim.open("x", encoding="utf-8") as stream:
         json.dump({"schema": "tpa_staging/v1", "root": str(root.resolve()),
+                   "execution_root": str(selected),
                    "folder": str(folder.resolve()), "run_id": run_folder.name,
                    "case_id": case_id, "created": time.time(), "token": token}, stream)
     return folder, token
 
 
 def validate_staging(root: Path, raw: Path, run_id: str, case_id: str,
-                     token: str, *, cleaning: bool = False) -> Path:
+                     token: str, *, cleaning: bool = False,
+                     execution_root: Path | None = None) -> Path:
     """Reject aliases before resolving, then require the exact run capability."""
     scenario(case_id)
     if (not raw.is_absolute() or ".." in raw.parts
@@ -43,6 +51,11 @@ def validate_staging(root: Path, raw: Path, run_id: str, case_id: str,
             or raw.parent.name != run_id or raw.name != "live-" + case_id):
         raise ValueError("Katalog nie należy do bieżącego scenariusza i przebiegu TPA")
     folder = safe_child(raw.parent, raw.name)
+    selected = (execution_root or root).resolve()
+    if selected != root.resolve():
+        source_copy = safe_child(folder.parent, "source-code")
+        if selected != source_copy or not selected.is_dir():
+            raise ValueError("Niezgodny ROOT kopii źródła TPA")
     validate_operator_path(folder, root, directory=True, allow_acceptance_operator=True)
     if not folder.is_dir():
         raise ValueError("Brak katalogu odbioru TPA")
@@ -52,6 +65,7 @@ def validate_staging(root: Path, raw: Path, run_id: str, case_id: str,
     saved = json.loads(claim.read_text(encoding="utf-8"))
     if (not isinstance(saved, dict) or saved.get("schema") != "tpa_staging/v1"
             or saved.get("root") != str(root.resolve())
+            or saved.get("execution_root", saved.get("root")) != str(selected)
             or saved.get("folder") != str(folder.resolve())
             or saved.get("run_id") != run_id or saved.get("case_id") != case_id
             or not isinstance(saved.get("token"), str) or not token

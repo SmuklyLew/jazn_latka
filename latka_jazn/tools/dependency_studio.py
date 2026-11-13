@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any, Sequence
@@ -11,6 +12,7 @@ from latka_jazn.tools.application_shell import (
     run_guarded, run_text_studio, run_tui_studio, run_window_studio,
 )
 from latka_jazn.version import PACKAGE_VERSION
+from latka_jazn.dependencies.common import default_local_python_root, root_local_resources_enabled
 
 from latka_jazn.dependencies.runtime import (
     DependencyStudioError,
@@ -54,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Jaźń repository/runtime root.",
     )
     parser.add_argument("--json", action="store_true", dest="as_json")
+    parser.add_argument("--json-summary", action="store_true", help="Bounded machine-readable result for JSS.")
     parser.add_argument("--wheelhouse-root", type=Path)
     parser.add_argument("--timeout-seconds", type=int, default=1800)
     parser.add_argument("--ui", choices=("text", "tui", "window", "studio"), help="Interaktywny interfejs operatorski.")
@@ -82,6 +85,14 @@ def build_parser() -> argparse.ArgumentParser:
     child.add_argument("--profile", action="append")
     child.add_argument("--python-executable")
     child.add_argument("--environment-root", type=Path)
+    child.add_argument("--layout", choices=("project", "managed"), default=None)
+    child.add_argument("--offline", action="store_true")
+    child.add_argument("--dry-run", action="store_true")
+
+    child = sub.add_parser("extend", allow_abbrev=False)
+    child.add_argument("--bundle", type=Path)
+    child.add_argument("--profile", action="append")
+    child.add_argument("--python-executable")
     child.add_argument("--offline", action="store_true")
     child.add_argument("--dry-run", action="store_true")
 
@@ -117,7 +128,10 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         payload["ok"] = bool(payload.get("ok") and not unresolved); payload["command"] = "audit"
         return (0 if payload["ok"] else 3), payload
     if ns.command in {"download", "update"}:
-        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
         payload = download_bundle(root, profile_names=profiles, python_version=ns.python_version, platform_alias=ns.platform, python_executable=ns.python_executable, wheelhouse_root=wheelhouse, lock_file=ns.lock_file, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run))
         if isinstance(payload.get("command"), list): payload["pip_command"] = payload.pop("command")
         payload["command"] = ns.command
@@ -134,9 +148,44 @@ def execute(ns: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         return (0 if ok else 5), {"command":"verify","ok":ok,"wheelhouse_root":str(wheelhouse or default_wheelhouse_root(root)),"bundle_count":len(bundles),"bundles":bundles}
     if ns.command == "install":
         if not ns.offline: raise DependencyStudioError("Install is intentionally fail-closed. Pass --offline to install only from a verified local wheelhouse.")
-        profiles = _profile_list(ns.profile, default=activation_profile_names(root))
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
         bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(root, profiles=profiles, wheelhouse_root=wheelhouse)
-        payload = install_bundle(root, bundle, python_executable=ns.python_executable, environments_root=ns.environment_root, offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run)); payload["command"] = "install"
+        environment_root = ns.environment_root
+        if ns.layout == "project":
+            # Never redirect an explicitly requested ROOT/.venv to another path.
+            if environment_root is not None or os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS"):
+                raise DependencyStudioError("project_layout_conflicts_with_environment_override")
+            if not root_local_resources_enabled(root):
+                raise DependencyStudioError("project_layout_requires_root_local_resources")
+        elif ns.layout == "managed" and environment_root is None:
+            if not os.environ.get("JAZN_DEPENDENCY_ENVIRONMENTS") and root_local_resources_enabled(root):
+                environment_root = default_local_python_root(root) / "environments"
+        payload = install_bundle(
+            root, bundle, python_executable=ns.python_executable,
+            environments_root=environment_root, offline=True,
+            timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run),
+        )
+        payload["command"] = "install"
+        return (0 if payload.get("ok") else 6), payload
+    if ns.command == "extend":
+        from latka_jazn.dependencies.private_extension import extend_private_environment
+        if not ns.offline:
+            raise DependencyStudioError("Private .venv extension requires --offline")
+        profiles = _profile_list(
+            ns.profile,
+            default=activation_profile_names(root) if not ns.profile else [],
+        )
+        bundle = Path(ns.bundle).resolve() if ns.bundle else _latest_verified_bundle(
+            root, profiles=profiles, wheelhouse_root=wheelhouse,
+        )
+        payload = extend_private_environment(
+            root, bundle, python_executable=ns.python_executable,
+            offline=True, timeout_seconds=ns.timeout_seconds, dry_run=bool(ns.dry_run),
+        )
+        payload["command"] = "extend"
         return (0 if payload.get("ok") else 6), payload
     if ns.command == "benchmark":
         payload = benchmark_dependency_layer(root, wheelhouse_root=wheelhouse); payload["command"] = "benchmark"; return (0 if payload.get("ok") else 7), payload
@@ -159,6 +208,7 @@ def _human(payload: dict[str, Any]) -> str:
         lines.append(f"Bundles: {payload.get('bundle_count', 1)}")
         if payload.get("errors"): lines.append(f"Errors: {len(payload.get('errors') or [])}")
     elif command == "install": lines += [f"Environment: {payload.get('environment_root')}", f"Python: {payload.get('python_executable')}", "Mode: offline / --no-index / verified wheelhouse"]
+    elif command == "extend": lines += [f"ROOT/.venv: {payload.get('environment_root')}", f"Missing wheels installed: {payload.get('missing_count')}", "Mode: additive-only, offline, verified"]
     elif command == "benchmark": lines += [f"Dependency probe: {payload.get('activation_probe_seconds')} s", f"Wheelhouse verify: {payload.get('wheelhouse_verify_seconds')} s", f"Verified bundles: {payload.get('verified_bundle_count')}"]
     elif command == "gc": lines += [f"Mode: {'dry-run' if payload.get('dry_run') else 'apply'}", f"Candidates: {len(payload.get('gc_candidates') or [])}", f"Removed: {len(payload.get('removed') or [])}"]
     return "\n".join(lines)
@@ -175,6 +225,7 @@ def _studio_spec(root: Path) -> CommandStudioSpec:
             CommandItem("download", "Pobierz bundle", "Utwórz zweryfikowany wheelhouse dla wybranych profili.", "--profile core --dry-run"),
             CommandItem("update", "Aktualizuj bundle", "Sprawdź i utwórz nowy bundle zależności, jeśli jest potrzebny.", "--profile core --dry-run"),
             CommandItem("install", "Instalacja offline", "Zainstaluj wyłącznie ze zweryfikowanego lokalnego wheelhouse.", "--profile core --offline --dry-run"),
+            CommandItem("extend", "Rozszerz ROOT/.venv", "Dodaj tylko brakujące, hash-locked biblioteki bez zmiany Pythona.", "--profile core,run-studio,test-evidence --offline --dry-run"),
             CommandItem("benchmark", "Benchmark", "Zmierz koszt probe zależności i weryfikacji wheelhouse."),
             CommandItem("gc", "Porządkowanie środowisk", "Pokaż lub usuń bezpieczne kandydaty do GC.", "--dry-run"),
         ),
@@ -193,13 +244,36 @@ def _run_studio(root: Path, requested_ui: str | None, *, no_splash: bool) -> int
     return run_guarded(action, diagnostics, app_name=spec.app_name)
 
 
+def _machine_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    """Bound the JSON subprocess contract; never ship nested pip-inspect metadata."""
+    selected = (
+        "ok", "command", "state", "bundle_dir", "python_executable",
+        "environment_root", "environment_marker_path",
+        "activation_marker_updated", "profiles", "missing_count",
+        "already_satisfied_count", "error_type", "error",
+    )
+    result = {key: payload[key] for key in selected if key in payload}
+    if "error" in result:
+        result["error"] = str(result["error"])[:480]
+    if "profiles" in result:
+        values = result["profiles"]
+        result["profiles"] = (
+            [str(value)[:64] for value in values[:16]]
+            if isinstance(values, list) else []
+        )
+    return result
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser(); ns = parser.parse_args(list(argv) if argv is not None else None)
     if ns.ui or ns.command is None: return _run_studio(Path(ns.root).resolve(), ns.ui, no_splash=bool(ns.no_splash))
     try: exit_code, payload = execute(ns)
     except KeyboardInterrupt: payload = {"ok": False, "command": ns.command, "status": "cancelled"}; exit_code = 130
     except DependencyStudioError as exc: payload = {"ok": False, "command": ns.command, "error_type": type(exc).__name__, "error": str(exc)}; exit_code = 2
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str) if ns.as_json else _human(payload))
+    if ns.json_summary:
+        print(json.dumps(_machine_summary(payload), ensure_ascii=False, sort_keys=True, default=str))
+    else:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str) if ns.as_json else _human(payload))
     return exit_code
 
 

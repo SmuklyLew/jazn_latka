@@ -1,0 +1,13 @@
+{
+  "schema": "jazn_test_branch_snapshot/v1",
+  "base_version": "16.3.25.5.116.0.34.94.6.127",
+  "base_commit": "253c644587a438066ff84f3627970943d5f6b90d",
+  "reason": "V127 Windows launcher assertion literal correction",
+  "files": [
+    {
+      "path": "test_private_python_launchers.py",
+      "git_blob_sha": "d5ae69a7b3daac7e0e6acc7e1916d6e29acea810"
+    }
+  ],
+  "truth_boundary": "Raw source bytes preserved; no runtime tests executed by this commit tool"
+}

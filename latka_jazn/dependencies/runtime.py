@@ -10,6 +10,7 @@ from .common import (
     expand_profile_names, import_name_for_distribution, inspect_current_requirements, load_profile_registry,
     normalize_python_version, resolve_profile_requirements, target_spec, version_satisfies_requirement,
 )
+from .private_extension import extend_private_environment
 from .environment import (
     dependency_activation_status, dependency_environment_gc, install_bundle, managed_environment_status,
     prepare_entrypoint_environment,
@@ -59,6 +60,7 @@ __all__ = (
     "resolve_profile_requirements",
     "target_spec",
     "version_satisfies_requirement",
+    "extend_private_environment",
     "dependency_activation_status",
     "dependency_environment_gc",
     "install_bundle",

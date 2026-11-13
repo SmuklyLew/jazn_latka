@@ -293,6 +293,7 @@ def _output_instructions(plan: dict[str, Any], policy: dict[str, Any]) -> list[s
         "Nie dodawaj timestampu; timestamp jest odpowiedzialnością runtime.",
         "Nie opisuj procesu tworzenia odpowiedzi ani prywatnego toku myślenia.",
         "Traktuj conversation_history wyłącznie jako zaakceptowany kontekst bieżącej sesji; nie zamieniaj go automatycznie w pamięć długoterminową.",
+        "Jeżeli użytkownik pyta o wcześniejszą wiadomość bieżącej sesji, a conversation_history nie zawiera jej zatwierdzonego zapisu, przyznaj brak źródła zamiast zgadywać.",
         "Używaj wyłącznie pamięci z allowed_memory_items, jeśli lista nie jest pusta.",
         "Nie twierdź, że model jest Jaźnią, pamięcią albo źródłem prawdy.",
         "Zachowaj ton i ograniczenia z nlg_plan, o ile nie kolidują z pełnym kanonem.",

@@ -11,7 +11,9 @@ from PySide6.QtWidgets import QApplication, QScrollArea
 
 from tools.jazn_run_studio.core import Controller, Settings
 from tools.jazn_run_studio.memory_view import evidence_rows
+from tools.jazn_run_studio.tpa_reports import RunStore
 from tools.jazn_run_studio.window import Window
+from latka_jazn.core.runtime_root import workspace_runtime_path
 
 
 @pytest.fixture
@@ -103,10 +105,21 @@ def test_completed_report_displays_codes_in_its_own_tab(window: Window) -> None:
 
 
 def test_real_qt_readiness_roundtrip_and_redacted_export(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # This test uses the actual prepared checkout, unlike synthetic-root GUI
+    # fixtures. Its workspace must remain ROOT-contained and unique to the test.
+    project_root = Path(__file__).resolve().parents[1]
+    monkeypatch.delenv("JAZN_STUDIO_ACCEPTANCE_PROFILE", raising=False)
     monkeypatch.setenv("JAZN_MEMORY_ROOT", str(tmp_path / "synthetic-memory"))
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "synthetic-workspace"))
+    monkeypatch.setenv(
+        "JAZN_RUNTIME_WORKSPACE_DIR",
+        "$ROOT/.settings_local/acceptance/pytest_memory_view_" + tmp_path.name,
+    )
+    monkeypatch.setenv("JAZN_OPERATOR_STATE_ROOT", str(tmp_path / "operator-state"))
+    assert workspace_runtime_path(project_root).is_relative_to(
+        project_root / ".settings_local" / "acceptance"
+    )
     app = QApplication.instance() or QApplication([])
-    core = Controller(Path(__file__).resolve().parents[1], Settings(python=sys.executable))
+    core = Controller(project_root, Settings(python=sys.executable))
     window = Window(core, smoke=True)
     try:
         window.memory_panel.start("readiness")
@@ -127,3 +140,21 @@ def test_real_qt_readiness_roundtrip_and_redacted_export(tmp_path: Path, monkeyp
     finally:
         window.close()
         app.processEvents()
+
+
+def test_prepared_system_memory_studio_rejects_foreign_workspace_without_writes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Preserve the fail-closed guard that originally caught an invalid
+    # external workspace override. It must not be loosened to fix the GUI test.
+    root = tmp_path / "prepared-system"
+    (root / "local_resources").mkdir(parents=True)
+    foreign = tmp_path / "foreign-workspace"
+    operator = tmp_path / "operator-state"
+    monkeypatch.delenv("JAZN_STUDIO_ACCEPTANCE_PROFILE", raising=False)
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(foreign))
+    monkeypatch.setenv("JAZN_OPERATOR_STATE_ROOT", str(operator))
+    with pytest.raises(ValueError, match="workspace_escapes_root"):
+        RunStore(root)
+    assert not foreign.exists()
+    assert not operator.exists()

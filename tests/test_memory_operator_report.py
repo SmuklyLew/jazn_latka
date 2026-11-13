@@ -82,7 +82,10 @@ def test_readiness_reports_safe_reason_codes_and_discards_private_diagnostics(
 
 def test_public_launcher_reaches_read_only_report(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("JAZN_MEMORY_ROOT", str(tmp_path / "memory"))
-    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", str(tmp_path / "workspace"))
+    # The public launcher starts in the real prepared checkout, so an absolute
+    # sibling tmp_path is not its authorized runtime workspace. Exercise the
+    # supported ROOT-relative override instead of weakening the production guard.
+    monkeypatch.setenv("JAZN_RUNTIME_WORKSPACE_DIR", "$ROOT/workspace_runtime")
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run([sys.executable, "-X", "utf8", str(root / "run.py"),
         "memory-inspection", "--root", str(tmp_path), "--operation", "readiness", "--json"],

@@ -23,7 +23,10 @@ def _within(path: Path, parent: Path) -> bool:
 
 def validate_operator_path(path: str | Path, system_root: Path, *, directory: bool = False,
                            allow_memory_settings: bool = False,
-                           allow_acceptance_operator: bool = False) -> Path:
+                           allow_acceptance_operator: bool = False,
+                           acceptance_operator_root: Path | None = None,
+                           workspace_configured: str | Path | None = None,
+                           memory_configured: str | None = None) -> Path:
     """Validate an explicit path after resolving symlinks and Windows junctions."""
     raw = Path(path).expanduser()
     if not raw.is_absolute() or ".." in raw.parts:
@@ -34,7 +37,7 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
     # into ROOT/workspace_runtime, even before an operator-led migration.
     workspaces = tuple(dict.fromkeys((
         default_runtime_workspace_path(system).resolve(),
-        workspace_runtime_path(system).resolve(),
+        workspace_runtime_path(system, configured=workspace_configured).resolve(),
         (system.parent / "workspace_runtime").resolve(),
     )))
     protected = [system, system.parent / "memory", *(workspace / "memory" for workspace in workspaces)]
@@ -42,10 +45,12 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
         allowed = {workspace / "memory_rebuild_settings.json", workspace / "memory_rebuild_settings.json.tmp"}
         if not (allow_memory_settings and not directory and raw.absolute() in allowed and target == raw.absolute()):
             protected.append(workspace)
-    memory = os.environ.get("JAZN_MEMORY_ROOT", "").strip()
+    memory = (os.environ.get("JAZN_MEMORY_ROOT", "") if memory_configured is None
+              else memory_configured).strip()
     if memory:
         candidate = Path(memory).expanduser()
-        protected.append(candidate if candidate.is_absolute() else workspace_runtime_path(system) / candidate)
+        protected.append(candidate if candidate.is_absolute() else
+                         workspace_runtime_path(system, configured=workspace_configured) / candidate)
     from latka_jazn.core.local_settings_layout import (
         local_settings_enabled, resolve_local_settings_layout,
         verify_local_descendant,
@@ -55,11 +60,40 @@ def validate_operator_path(path: str | Path, system_root: Path, *, directory: bo
     if local_settings_enabled(system) and local_raw.is_relative_to(system / ".settings_local"):
         layout = resolve_local_settings_layout(system)
         ordinary = local_raw.is_relative_to(layout.operator)
+        authorized_acceptance = layout.acceptance / "operator"
+        if acceptance_operator_root is not None:
+            proposed = Path(acceptance_operator_root).expanduser()
+            if not proposed.is_absolute() or not proposed.absolute().is_relative_to(layout.acceptance):
+                raise OperatorPathError("Nieautoryzowany katalog operatora odbioru")
+            relative = proposed.absolute().relative_to(layout.acceptance)
+            if not (relative.parts == ("operator",)
+                    or (len(relative.parts) == 2
+                        and relative.parts[1] == "operator"
+                        and re.fullmatch(r"jazn[-_][a-zA-Z0-9_-]+", relative.parts[0]))):
+                raise OperatorPathError("Nieprawidłowa struktura operatora odbioru")
+            try:
+                authorized_acceptance = verify_local_descendant(proposed, layout)
+            except ValueError as exc:
+                raise OperatorPathError("Niebezpieczny katalog operatora odbioru") from exc
         acceptance = (
             allow_acceptance_operator
-            and local_raw.is_relative_to(layout.acceptance / "operator")
+            and local_raw.is_relative_to(authorized_acceptance)
         )
-        if not (ordinary or acceptance):
+        # An explicitly selected ROOT-local runtime workspace may itself
+        # live inside .settings_local/acceptance during an isolated test.
+        # Only these two exact Memory Rebuild sidecars are exceptions; the
+        # parent directory is never granted general operator-write access.
+        memory_settings = (
+            allow_memory_settings and not directory and target == local_raw
+            and any(
+                local_raw in {
+                    workspace / "memory_rebuild_settings.json",
+                    workspace / "memory_rebuild_settings.json.tmp",
+                }
+                for workspace in workspaces
+            )
+        )
+        if not (ordinary or acceptance or memory_settings):
             raise OperatorPathError(
                 "Zapis operatora poza autoryzowanym poddrzewem"
             )
@@ -102,9 +136,15 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
     acceptance_mode = (
         os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
     )
+    acceptance_root = (Path(raw).absolute()
+                       if acceptance_mode and raw
+                       and Path(raw).absolute().is_relative_to(
+                           Path(system_root).resolve() / ".settings_local" / "acceptance")
+                       else None)
     base = validate_operator_path(
         raw or default, system_root, directory=True,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     target = base / app_id
     if per_system:
@@ -113,6 +153,7 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
     resolved = validate_operator_path(
         target, system_root, directory=True,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(resolved, base):
         raise OperatorPathError(f"Symlink lub junction wyprowadza stan poza katalog operatora: {target}")
@@ -122,12 +163,14 @@ def operator_state_dir(app_id: str, system_root: Path, *, per_system: bool = Fal
         checked = validate_operator_path(
             child, system_root, directory=True,
             allow_acceptance_operator=acceptance_mode,
+            acceptance_operator_root=acceptance_root,
         )
         if not _within(checked, resolved):
             raise OperatorPathError(f"Podkatalog stanu wyprowadza poza katalog aplikacji: {child}")
     log = validate_operator_path(
         resolved / "runtime" / f"{app_id}.jsonl", system_root,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(log, resolved):
         raise OperatorPathError(f"Log wyprowadza poza katalog aplikacji: {log}")
@@ -142,9 +185,15 @@ def operator_file(app_id: str, system_root: Path, filename: str, *, per_system: 
     acceptance_mode = (
         os.environ.get("JAZN_STUDIO_ACCEPTANCE_PROFILE") == "isolated"
     )
+    raw_operator = os.environ.get("JAZN_OPERATOR_STATE_ROOT", "").strip()
+    acceptance_root = (Path(raw_operator).absolute() if acceptance_mode and raw_operator
+                       and Path(raw_operator).absolute().is_relative_to(
+                           Path(system_root).resolve() / ".settings_local" / "acceptance")
+                       else None)
     target = validate_operator_path(
         base / filename, system_root,
         allow_acceptance_operator=acceptance_mode,
+        acceptance_operator_root=acceptance_root,
     )
     if not _within(target, base):
         raise OperatorPathError(f"Plik stanu wyprowadza poza katalog operatora: {target}")
@@ -153,6 +202,7 @@ def operator_file(app_id: str, system_root: Path, filename: str, *, per_system: 
         checked = validate_operator_path(
             temporary, system_root,
             allow_acceptance_operator=acceptance_mode,
+            acceptance_operator_root=acceptance_root,
         )
         if not _within(checked, base):
             raise OperatorPathError(f"Plik tymczasowy wyprowadza poza katalog aplikacji: {temporary}")
