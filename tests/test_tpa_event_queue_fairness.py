@@ -8,11 +8,13 @@ import queue
 import threading
 import time
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
 pytest.importorskip("PySide6")
 
+from tools.jazn_run_studio.core import Controller
 from tools.jazn_run_studio.tpa_live import (
     TPA_EVENTS_PER_CHANNEL, capture_action, drain,
 )
@@ -44,7 +46,7 @@ def _core() -> SimpleNamespace:
 def test_continuous_producers_do_not_starve_each_other_or_consumer() -> None:
     core = _core()
     start = time.monotonic()
-    batch = drain(core)
+    batch = drain(cast(Controller, core))
     elapsed = time.monotonic() - start
     assert len(batch) == 2 * TPA_EVENTS_PER_CHANNEL
     assert elapsed < 0.75
@@ -77,7 +79,7 @@ def test_live_action_checks_cancel_between_bounded_event_batches() -> None:
 
     started = time.monotonic()
     with pytest.raises(InterruptedError, match="operator_cancelled"):
-        capture_action(core, "status", cancel, [])
+        capture_action(cast(Controller, core), "status", cancel, [])
     assert time.monotonic() - started < 1.0
     assert ticks == 3
     assert core.critical_events.position <= 3 * TPA_EVENTS_PER_CHANNEL
@@ -99,7 +101,7 @@ def test_live_action_checks_generation_deadline_despite_event_flood() -> None:
         deadline.check()
 
     with pytest.raises(TimeoutError, match="generation"):
-        capture_action(core, "status", check, [])
+        capture_action(cast(Controller, core), "status", check, [])
     assert counts >= 1
     assert core.critical_events.position < 20_000
     assert core.events.position < 20_000
@@ -133,7 +135,7 @@ def test_real_concurrent_producer_cannot_delay_tpa_deadline() -> None:
         seen: dict[str, list[int]] = {"critical": [], "ordinary": []}
         with pytest.raises(TimeoutError, match="generation"):
             while True:
-                batch = drain(core)
+                batch = drain(cast(Controller, core))
                 assert len(batch) <= 2 * TPA_EVENTS_PER_CHANNEL
                 for source, _kind, value in batch:
                     seen[source].append(value["number"])
