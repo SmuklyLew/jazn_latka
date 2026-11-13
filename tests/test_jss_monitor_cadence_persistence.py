@@ -1,10 +1,10 @@
 """Isolated service-monitor scheduling, persistence and Qt lifecycle contracts."""
 from dataclasses import replace
-from types import SimpleNamespace
+from pathlib import Path
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
-from tools.jazn_run_studio.core import Settings, StudioError, load_settings, save_settings
+from tools.jazn_run_studio.core import Controller, Settings, StudioError, load_settings, save_settings
 from tools.jazn_run_studio.service_monitor import ServiceMonitor
 
 @pytest.mark.parametrize("seconds", ["1", "10", "30", "60"])
@@ -20,16 +20,22 @@ def test_invalid_cadence_rejected(value):
     with pytest.raises(StudioError):
         Settings.validate({"service_refresh_seconds": value})
 
-def test_poll_isolates_errors_and_throttles_system_checks():
+def test_poll_isolates_errors_and_throttles_system_checks(tmp_path: Path, monkeypatch):
+    # Use an actual Controller contract; mock only asynchronous actions so the
+    # scheduling test never starts a daemon, probe or external process.
+    (tmp_path / "latka_jazn").mkdir()
+    for marker in ("main.py", "run.py", "latka_jazn/version.py"):
+        (tmp_path / marker).touch()
     calls = []
     now = [0.0]
     def action(key):
         calls.append(key)
         if key == "status":
             raise StudioError("busy")
-    core = SimpleNamespace(closed=False, settings=Settings(service_refresh_seconds="1"),
-        start_action=action, probe=lambda key, **kw: calls.append((key, kw)),
-        emit=lambda *args: None)
+    core = Controller(tmp_path, Settings(service_refresh_seconds="1"))
+    monkeypatch.setattr(core, "start_action", action)
+    monkeypatch.setattr(core, "probe", lambda key, **kw: calls.append((key, kw)))
+    monkeypatch.setattr(core, "emit", lambda *args: None)
     monitor = ServiceMonitor(core, lambda: now[0])
     for second in range(11):
         now[0] = float(second)
