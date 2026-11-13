@@ -19,6 +19,10 @@ from .chat_protocol import frames
 if TYPE_CHECKING:
     from .core import Controller, Job
 
+# Local stdin delivery is not proof of daemon admission. An unresponsive child
+# must not block the Qt thread or release the durable request_id for replay.
+CHAT_STDIN_WRITE_TIMEOUT_SECONDS = 10.0
+
 
 class ChatClient:
     def __init__(self, core: Controller):
@@ -212,13 +216,37 @@ class ChatClient:
             self._confirmed_failed = None
             self._save()  # Durable identity before any bytes can reach runtime.
             payload = {"message": message, "session_id": self.session_id, "request_id": self.pending}
-            try:
-                job.proc.stdin.write((json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8"))
-                job.proc.stdin.flush()
-            except OSError:
-                raise StudioError("Niepewny transport. Zachowano request_id; użyj Wznów wynik, bez ponownego wysyłania") from None
+            data = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+            # The checkpoint above is durable before dispatch. Pipe write/flush
+            # may block indefinitely if the child is alive but never reads stdin.
+            # Keep that I/O completely off the Qt thread; a separate watchdog
+            # cancels only this owned transport after the bounded write budget.
+            write_done = threading.Event()
+            owned_job = job
+            stdin = job.proc.stdin
+            request_id = self.pending
+
+            def write_once() -> None:
+                try:
+                    stdin.write(data)
+                    stdin.flush()
+                except (OSError, ValueError):
+                    self.core.emit("chat", "chat_state",
+                        "Niepewny transport. Zachowano request_id; wznów ten sam wynik bez ponowienia wiadomości.")
+                    owned_job.cancel.set()
+                finally:
+                    write_done.set()
+
+            def watch_write() -> None:
+                if not write_done.wait(CHAT_STDIN_WRITE_TIMEOUT_SECONDS):
+                    self.core.emit("chat", "chat_state",
+                        "Nie zakończono zapisu do transportu; zachowano request_id: " + str(request_id))
+                    owned_job.cancel.set()
+
             self.started_at = time.monotonic()
-            return self.pending
+            threading.Thread(target=write_once, name="jss-chat-stdin-write", daemon=True).start()
+            threading.Thread(target=watch_write, name="jss-chat-stdin-watchdog", daemon=True).start()
+            return request_id
 
     def receive(self, payload: dict[str, Any]) -> None:
         with self.lock:
