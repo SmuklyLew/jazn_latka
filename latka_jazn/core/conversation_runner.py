@@ -311,13 +311,22 @@ class ConversationRunner(RunnerOperations):
             if turn_scoped_no_carryover
             else self.conversation_state_store.load_context_projection(self.state.session_id)
         )
-        conversation_history = _with_targeted_session_recall(
-            self.conversation_state_store,
-            self.state.session_id,
-            user_text,
-            conversation_history,
-            allow_history=not self.no_carryover,
-        )
+        # A no-carryover turn has no authorized session store to read.
+        # Synthetic integrity fixtures may intentionally omit that store.
+        if turn_scoped_no_carryover:
+            if parse_session_turn_reference(user_text) is not None:
+                conversation_history["targeted_recall"] = {
+                    "ok": False,
+                    "status": "history_disabled",
+                }
+        else:
+            conversation_history = _with_targeted_session_recall(
+                self.conversation_state_store,
+                self.state.session_id,
+                user_text,
+                conversation_history,
+                allow_history=not self.no_carryover,
+            )
         ctx = {
             "client": client,
             "lifecycle": lifecycle,

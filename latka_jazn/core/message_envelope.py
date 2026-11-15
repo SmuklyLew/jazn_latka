@@ -12,6 +12,10 @@ SCHEMA_VERSION = schema_version("message_envelope")
 TIMESTAMP_HEADER_RE = re.compile(r"^🕒 (?P<value>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$")
 MODEL_INLINE_TIMESTAMP_RE = re.compile(r"^🕒 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?=\s|$)")
 MODEL_LEADING_AUTHOR_RE = re.compile(r"^(?:🌿|🐾|🤍|🧭)\s+Łatka(?=[ \t\n:]|$)")
+MODEL_LEADING_GREETING_RE = re.compile(
+    r"^(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry|dobry wieczór)(?=[\s!,.?]|$)",
+    re.IGNORECASE,
+)
 
 
 def normalize_newlines(value: str | None) -> str:
@@ -167,7 +171,10 @@ def clean_model_generated_body(text: str) -> str:
             break
         remainder = value[label.end():]
         repeated = MODEL_LEADING_AUTHOR_RE.match(remainder.lstrip()) is not None
-        if not (removed_author or repeated or remainder.startswith(("\n", ":"))):
+        # A single inline speaker label before a greeting is also redundant.
+        # Keep subject-like prose such as "🌿 Łatka wspomina ..." unchanged.
+        inline_greeting = MODEL_LEADING_GREETING_RE.match(remainder.lstrip()) is not None
+        if not (removed_author or repeated or remainder.startswith(("\n", ":")) or inline_greeting):
             break
         value = remainder.lstrip(" \t\n:")
         removed_author = True
