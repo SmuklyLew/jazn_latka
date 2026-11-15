@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.9",
-  "active_definition_count": 3416,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.10",
+  "active_definition_count": 3423,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51500,6 +51500,161 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 230
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_greeting_and_source_are_both_answered_without_model_provenance_claim": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_greeting_and_source_are_both_answered_without_model_provenance_claim",
+      "purpose": "Greeting and source are both answered without model provenance claim",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_source_only_question_does_not_add_an_unrequested_greeting": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_source_only_question_does_not_add_an_unrequested_greeting",
+      "purpose": "Source only question does not add an unrequested greeting",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_explicit_external_research_is_not_reclassified_as_local_source_explanation": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_explicit_external_research_is_not_reclassified_as_local_source_explanation",
+      "purpose": "Explicit external research is not reclassified as local source explanation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_exact_runtime_quote_path_remains_separate_and_does_not_invent_checkpoint": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_exact_runtime_quote_path_remains_separate_and_does_not_invent_checkpoint",
+      "purpose": "Exact runtime quote path remains separate and does not invent checkpoint",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_only_recognized_model_generated_speaker_labels_are_removed": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_only_recognized_model_generated_speaker_labels_are_removed",
+      "purpose": "Only recognized model generated speaker labels are removed",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_runtime_owns_exactly_one_visible_header_after_model_body_cleaning": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_runtime_owns_exactly_one_visible_header_after_model_body_cleaning",
+      "purpose": "Runtime owns exactly one visible header after model body cleaning",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py::test_no_carryover_history_request_does_not_read_or_invent_a_previous_turn": {
+      "path": "tests/test_p02_nlp_nlg_source_greeting_and_finalization.py",
+      "name": "test_no_carryover_history_request_does_not_read_or_invent_a_previous_turn",
+      "purpose": "No carryover history request does not read or invent a previous turn",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.handlers.runtime_source_handler",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 98
     },
     "tests/test_pack_generator_archive_io.py::test_parser_exposes_only_zip_and_split_transport_scope": {
       "path": "tests/test_pack_generator_archive_io.py",
