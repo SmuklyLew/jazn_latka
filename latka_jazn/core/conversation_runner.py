@@ -36,7 +36,7 @@ SCHEMA_VERSION = schema_version("runtime_session")
 
 
 def _with_targeted_session_recall(
-    store: ConversationStateStore,
+    store: ConversationStateStore | None,
     session_id: str,
     user_text: str,
     conversation_history: dict[str, Any],
@@ -47,11 +47,13 @@ def _with_targeted_session_recall(
     reference = parse_session_turn_reference(user_text)
     if reference is None:
         return conversation_history
-    lookup = (
-        store.lookup_accepted_turn(session_id, **reference)
-        if allow_history
-        else {"ok": False, "status": "history_disabled"}
-    )
+    if not allow_history:
+        lookup = {"ok": False, "status": "history_disabled"}
+    elif store is None:
+        # Missing store cannot supply accepted provenance; never guess a turn.
+        lookup = {"ok": False, "status": "history_unavailable"}
+    else:
+        lookup = store.lookup_accepted_turn(session_id, **reference)
     return {**conversation_history, "targeted_recall": lookup}
 
 

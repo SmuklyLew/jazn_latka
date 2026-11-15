@@ -249,7 +249,7 @@ def _sanitize_targeted_turn_recall(raw: Any, *, session_id: str) -> dict[str, An
     if status != "found":
         allowed = {
             "not_found", "integrity_error", "record_too_large", "record_limit_exceeded",
-            "history_disabled", "invalid_selector", "invalid_ordinal", "invalid_turn_id",
+            "history_disabled", "history_unavailable", "invalid_selector", "invalid_ordinal", "invalid_turn_id",
             "invalid_limit",
         }
         return {"status": status if status in allowed else "unavailable"}
