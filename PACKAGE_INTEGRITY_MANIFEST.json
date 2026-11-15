@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.127.8-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.8-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.8-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-15T13:50:55+00:00",
-  "updated_at_utc": "2026-11-15T13:50:55+00:00",
+  "generated_at_utc": "2026-11-15T13:57:44+00:00",
+  "updated_at_utc": "2026-11-15T13:57:44+00:00",
   "start_file": "run.py",
   "file_count": 3806,
   "static_file_count": 3806,
@@ -482,7 +482,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2966,
-      "sha256": "d5ed436ef223b01fce17173da8bcdc4d35542dfd8f7edfa8a728fb6e37af03ea",
+      "sha256": "6ce1b712284b120a8d5087e80035f9388c2974e94aab2b181d95eec86ef6f68e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -518,7 +518,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1947,
-      "sha256": "b4ea1cd7192d0ca00921ad889b2d303b022803168c36e508922a2abf76c0941a",
+      "sha256": "428241363908ccc72d5a79afe6e7d4a2ad2fe72cb5ccf9c1d335c7c3dc2568ac",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3091,8 +3091,8 @@
     },
     {
       "path": "docs/reports/JAZN_V1278_CONVERSATION_MEMORY_ROUTING_HARDENING.md",
-      "size_bytes": 3084,
-      "sha256": "4322dc5938ed56b48e134a2b9af87bc79357c03e97ab01fc2e9b4774c999a224",
+      "size_bytes": 3596,
+      "sha256": "f19d04826d865927a1cc3a694f081245d02f9f0fcfd6a115b6fc0d9b07242c9a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -27750,6 +27750,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "size_bytes": 5286,
+      "sha256": "e23d621ad07c7261cb7f1e5ea832fcf10d8cacf125cce0c1e87703a43d84aa69",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_conversation_model_context_continuity.py",
       "size_bytes": 3011,
       "sha256": "91ae11dc056c9b02a50bbf97e2614f7291d6c1581a48e212fc3b5bad6641ff27",
@@ -32646,15 +32655,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "size_bytes": 5286,
-      "sha256": "e23d621ad07c7261cb7f1e5ea832fcf10d8cacf125cce0c1e87703a43d84aa69",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -34051,8 +34051,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 2997550,
-      "sha256": "2bf5073bb1c74134146f080bec5791d2b4e77b179c32cc94317b5f2dcd30d5a8",
+      "size_bytes": 2997466,
+      "sha256": "92d42b21c99f5f861675399b1fe4029cf8a292151e2f967de1fdbaa04f0df744",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
