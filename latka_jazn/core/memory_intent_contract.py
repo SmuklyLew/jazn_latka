@@ -275,7 +275,7 @@ def is_session_dialogue_reference(text: str) -> bool:
         return False
     session_anchor = bool(re.search(
         r"(?:poprzedni\w*|ostatni\w*) wiadomosc\w*|"
-        r"(?:tej|naszej) rozmow\w*|(?:tym|tego) watk\w*|"
+        r"(?:tej|naszej) rozmow\w*|(?:tej|naszej|biezacej) sesj\w*|(?:tym|tego) watk\w*|"
         r"po ponownym polaczeniu",
         normalized,
     ))
