@@ -51775,14 +51775,14 @@
       "path": "tests/test_package_distribution.py",
       "name": "test_wheelhouse_v2_fails_closed_on_record_tamper",
       "purpose": "Wheelhouse v2 fails closed on record tamper",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "package",
         "repository"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.archive.resource_policy",
@@ -51821,7 +51821,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 125
     },
     "tests/test_package_distribution.py::test_package_set_v3_has_explicit_dependency_role": {
       "path": "tests/test_package_distribution.py",
@@ -51847,7 +51847,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 135
+      "line": 137
     },
     "tests/test_package_distribution.py::test_pack_generator_clean_source_layout_is_valid": {
       "path": "tests/test_package_distribution.py",
@@ -51873,7 +51873,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 148
+      "line": 150
     },
     "tests/test_package_distribution.py::test_distribution_modes_require_target_only_when_dependencies_present": {
       "path": "tests/test_package_distribution.py",
@@ -51901,7 +51901,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 160
     },
     "tests/test_package_distribution.py::test_archive_common_policy_rejects_unsafe_names": {
       "path": "tests/test_package_distribution.py",
@@ -51932,7 +51932,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 167
+      "line": 169
     },
     "tests/test_package_distribution.py::test_archive_common_policy_rejects_casefold_collision_and_zip_bomb_ratio": {
       "path": "tests/test_package_distribution.py",
@@ -51961,7 +51961,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 174
     },
     "tests/test_package_distribution.py::test_archive_common_policy_rejects_symlink": {
       "path": "tests/test_package_distribution.py",
@@ -51990,7 +51990,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 186
+      "line": 188
     },
     "tests/test_package_distribution.py::test_current_target_exposes_runtime_implementation_abi_and_tags": {
       "path": "tests/test_package_distribution.py",
@@ -52017,7 +52017,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 194
+      "line": 196
     },
     "tests/test_package_distribution.py::test_locked_download_plan_uses_require_hashes": {
       "path": "tests/test_package_distribution.py",
@@ -52043,7 +52043,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 202
+      "line": 204
     },
     "tests/test_package_distribution.py::test_dependency_sidecar_rejects_abi_mismatch": {
       "path": "tests/test_package_distribution.py",
@@ -52069,7 +52069,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 215
+      "line": 217
     },
     "tests/test_package_distribution.py::test_package_set_v3_self_hash_and_dependency_projection_are_verified": {
       "path": "tests/test_package_distribution.py",
@@ -52095,7 +52095,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 224
+      "line": 226
     },
     "tests/test_package_distribution.py::test_runtime_sidecar_discovery_requires_verified_package_set_v3": {
       "path": "tests/test_package_distribution.py",
@@ -52122,7 +52122,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 264
+      "line": 266
     },
     "tests/test_package_distribution.py::test_runtime_sidecar_discovery_fails_closed_without_package_set_v3": {
       "path": "tests/test_package_distribution.py",
@@ -52149,7 +52149,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 306
+      "line": 308
     },
     "tests/test_package_distribution_cleanroom_activation_observability.py::test_cleanroom_prints_each_activation_payload_before_asserting": {
       "path": "tests/test_package_distribution_cleanroom_activation_observability.py",
