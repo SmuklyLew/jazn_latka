@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.4",
-  "active_definition_count": 3380,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.7",
+  "active_definition_count": 3400,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -28039,7 +28039,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 30
     },
     "tests/test_jazn_run_studio_integrations.py::test_external_program_uses_actual_exit_and_output": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28059,7 +28059,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 44
     },
     "tests/test_jazn_run_studio_integrations.py::test_frozen_discovery_allows_setting_interpreter_later": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28079,7 +28079,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 50
     },
     "tests/test_jazn_run_studio_integrations.py::test_probes_reject_unapproved_destinations": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28103,7 +28103,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 56
+      "line": 57
     },
     "tests/test_jazn_run_studio_integrations.py::test_ollama_models_are_not_a_generation_claim": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28125,7 +28125,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 62
     },
     "tests/test_jazn_run_studio_integrations.py::test_probe_failure_is_not_reported_as_service_ready": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28145,7 +28145,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 73
     },
     "tests/test_jazn_run_studio_integrations.py::test_schema_preserves_canonical_required_and_repeated_arguments": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28167,7 +28167,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 82
     },
     "tests/test_jazn_run_studio_integrations.py::test_studio_schemas_come_from_original_parsers": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28187,7 +28187,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 95
+      "line": 96
     },
     "tests/test_jazn_run_studio_integrations.py::test_chat_checkpoints_identity_before_sending_and_blocks_replay": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28209,7 +28209,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 104
     },
     "tests/test_jazn_run_studio_integrations.py::test_poll_never_resubmits_user_text": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28229,7 +28229,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 127
     },
     "tests/test_jazn_run_studio_integrations.py::test_local_final_validator_checks_integrity_binding_and_lineage": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28249,7 +28249,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 144
     },
     "tests/test_jazn_run_studio_integrations.py::test_public_jsonl_bridge_preserves_preallocated_request_id": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28269,7 +28269,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 152
+      "line": 158
     },
     "tests/test_jazn_run_studio_integrations.py::test_integrated_python_studio_executes_original_detect_host_command": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -28290,7 +28290,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 175
+      "line": 181
     },
     "tests/test_jazn_run_studio_job_error_contract.py::test_job_report_encodes_absent_error_as_json_null": {
       "path": "tests/test_jazn_run_studio_job_error_contract.py",
@@ -31695,6 +31695,59 @@
       "description_source": "source_identity",
       "line": 110
     },
+    "tests/test_jss_bounded_stdin_transport.py::test_chat_stalled_stdin_does_not_block_qt_event_loop": {
+      "path": "tests/test_jss_bounded_stdin_transport.py",
+      "name": "test_chat_stalled_stdin_does_not_block_qt_event_loop",
+      "purpose": "Timer must fire while the child pipe is still refusing to read stdin.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 56
+    },
+    "tests/test_jss_bounded_stdin_transport.py::test_chat_stdin_write_watchdog_preserves_identity_without_replay": {
+      "path": "tests/test_jss_bounded_stdin_transport.py",
+      "name": "test_chat_stdin_write_watchdog_preserves_identity_without_replay",
+      "purpose": "Chat stdin write watchdog preserves identity without replay",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_jss_bounded_stdin_transport.py::test_helper_stalled_stdin_is_bounded_by_single_execution_deadline": {
+      "path": "tests/test_jss_bounded_stdin_transport.py",
+      "name": "test_helper_stalled_stdin_is_bounded_by_single_execution_deadline",
+      "purpose": "Real synthetic child deliberately never reads from its input pipe.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 116
+    },
     "tests/test_jss_chat_activity_history_qt.py::test_transport_identifiers_live_only_in_closed_history": {
       "path": "tests/test_jss_chat_activity_history_qt.py",
       "name": "test_transport_identifiers_live_only_in_closed_history",
@@ -32016,6 +32069,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.dependencies.private_python",
         "latka_jazn.tools"
       ],
       "status": "current",
@@ -32035,6 +32089,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.dependencies.private_python",
         "latka_jazn.tools"
       ],
       "status": "current",
@@ -32055,6 +32110,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.dependencies.private_python",
         "latka_jazn.tools"
       ],
       "status": "current",
@@ -32074,11 +32130,12 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.dependencies.private_python",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 100
+      "line": 101
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
@@ -32983,7 +33040,8 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies"
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.private_python"
       ],
       "status": "current",
       "description_source": "native_docstring",
@@ -33000,7 +33058,8 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies"
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.private_python"
       ],
       "status": "current",
       "description_source": "native_docstring",
@@ -33017,11 +33076,12 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies"
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.private_python"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 83
+      "line": 84
     },
     "tests/test_jss_first_run_row_install.py::test_extension_uses_only_root_venv_and_rejects_foreign_interpreter": {
       "path": "tests/test_jss_first_run_row_install.py",
@@ -33034,11 +33094,12 @@
       "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies"
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.private_python"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 95
+      "line": 96
     },
     "tests/test_jss_grouped_settings_qt.py::test_settings_groups_and_category_filter_preserve_unsaved_fields": {
       "path": "tests/test_jss_grouped_settings_qt.py",
@@ -33120,6 +33181,72 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 134
+    },
+    "tests/test_jss_monitor_cadence_persistence.py::test_interval_roundtrip": {
+      "path": "tests/test_jss_monitor_cadence_persistence.py",
+      "name": "test_interval_roundtrip",
+      "purpose": "Interval roundtrip",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_jss_monitor_cadence_persistence.py::test_invalid_cadence_rejected": {
+      "path": "tests/test_jss_monitor_cadence_persistence.py",
+      "name": "test_invalid_cadence_rejected",
+      "purpose": "Invalid cadence rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_jss_monitor_cadence_persistence.py::test_poll_isolates_errors_and_throttles_system_checks": {
+      "path": "tests/test_jss_monitor_cadence_persistence.py",
+      "name": "test_poll_isolates_errors_and_throttles_system_checks",
+      "purpose": "Poll isolates errors and throttles system checks",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jss_monitor_cadence_persistence.py::test_dialog_open_close_and_failed_save": {
+      "path": "tests/test_jss_monitor_cadence_persistence.py",
+      "name": "test_dialog_open_close_and_failed_save",
+      "purpose": "Dialog open close and failed save",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
     },
     "tests/test_jss_operator_center_shortcuts_qt.py::test_dashboard_omits_redundant_setup_and_chat_shortcuts": {
       "path": "tests/test_jss_operator_center_shortcuts_qt.py",
@@ -33984,11 +34111,11 @@
       "path": "tests/test_jss_service_status_dialog.py",
       "name": "test_nonmodal_dialog_does_not_spawn_automatically",
       "purpose": "Nonmodal dialog does not spawn automatically",
-      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 19,
+      "assertion_count": 20,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -50151,6 +50278,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.host_visible_finalization",
         "latka_jazn.core.runtime_chat",
         "latka_jazn.core.runtime_session_state",
         "latka_jazn.model_adapters.base",
@@ -50173,6 +50301,7 @@
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.host_visible_finalization",
         "latka_jazn.core.runtime_chat",
         "latka_jazn.core.runtime_session_state",
         "latka_jazn.model_adapters.base",
@@ -50181,6 +50310,29 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_ollama_chat_experience.py::test_runtime_shell_does_not_carry_rejected_candidate_between_turns": {
+      "path": "tests/test_ollama_chat_experience.py",
+      "name": "test_runtime_shell_does_not_carry_rejected_candidate_between_turns",
+      "purpose": "Unaccepted model text cannot appear in visible history or next-turn context.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization",
+        "latka_jazn.core.runtime_chat",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 87
     },
     "tests/test_ollama_chat_experience.py::test_runtime_session_state_keeps_last_visible_reply": {
       "path": "tests/test_ollama_chat_experience.py",
@@ -50195,6 +50347,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.host_visible_finalization",
         "latka_jazn.core.runtime_chat",
         "latka_jazn.core.runtime_session_state",
         "latka_jazn.model_adapters.base",
@@ -50202,7 +50355,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 107
     },
     "tests/test_ollama_chat_experience.py::test_local_ollama_payload_is_compact_and_contains_chat_history": {
       "path": "tests/test_ollama_chat_experience.py",
@@ -50215,6 +50368,7 @@
       "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.host_visible_finalization",
         "latka_jazn.core.runtime_chat",
         "latka_jazn.core.runtime_session_state",
         "latka_jazn.model_adapters.base",
@@ -50222,7 +50376,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 120
     },
     "tests/test_ollama_endpoint_evidence.py::test_malformed_chat_json_preserves_responding_http_endpoint": {
       "path": "tests/test_ollama_endpoint_evidence.py",
@@ -63167,13 +63321,13 @@
       "path": "tests/test_runtime_workspace_override.py",
       "name": "test_absolute_runtime_workspace_override_routes_startup_state_outside_code_root",
       "purpose": "Absolute runtime workspace override routes startup state outside code root",
-      "expected": "Pytest completes this contract cleanly and all 19 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 19,
+      "assertion_count": 20,
       "expected_exceptions": [
         "ValueError"
       ],
@@ -63231,7 +63385,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 82
     },
     "tests/test_runtime_workspace_override.py::test_default_runtime_workspace_is_single_sibling_for_versioned_roots": {
       "path": "tests/test_runtime_workspace_override.py",
@@ -63265,7 +63419,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 112
     },
     "tests/test_runtime_workspace_override.py::test_runtime_root_materialized_inside_workspace_uses_parent_as_single_workspace": {
       "path": "tests/test_runtime_workspace_override.py",
@@ -63299,7 +63453,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 124
+      "line": 131
     },
     "tests/test_runtime_workspace_override.py::test_legacy_per_version_workspace_is_migrated_without_overwriting_canonical_state": {
       "path": "tests/test_runtime_workspace_override.py",
@@ -63333,7 +63487,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 144
     },
     "tests/test_runtime_workspace_override.py::test_root_token_is_consistent_for_runtime_configuration": {
       "path": "tests/test_runtime_workspace_override.py",
@@ -63369,7 +63523,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 162
+      "line": 169
     },
     "tests/test_runtime_workspace_override.py::test_versioned_runtime_keeps_shared_host_workspace": {
       "path": "tests/test_runtime_workspace_override.py",
@@ -63404,7 +63558,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 177
+      "line": 184
     },
     "tests/test_safe_path_reparse_observation.py::test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection": {
       "path": "tests/test_safe_path_reparse_observation.py",
@@ -64690,7 +64844,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 49
+      "line": 52
     },
     "tests/test_single_canonical_workspace_contract.py::test_runtime_roots_container_resolves_workspace_at_host_level": {
       "path": "tests/test_single_canonical_workspace_contract.py",
@@ -64718,7 +64872,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 64
     },
     "tests/test_single_canonical_workspace_contract.py::test_restart_continuity_reads_runtime_state_from_host_workspace": {
       "path": "tests/test_single_canonical_workspace_contract.py",
@@ -64746,7 +64900,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 68
+      "line": 71
     },
     "tests/test_single_canonical_workspace_contract.py::test_living_memory_registry_uses_host_workspace": {
       "path": "tests/test_single_canonical_workspace_contract.py",
@@ -64774,7 +64928,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 87
     },
     "tests/test_single_canonical_workspace_contract.py::test_test04_private_workspace_is_host_level": {
       "path": "tests/test_single_canonical_workspace_contract.py",
@@ -64801,7 +64955,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 108
     },
     "tests/test_single_canonical_workspace_contract.py::test_memory_package_never_contains_runtime_workspace": {
       "path": "tests/test_single_canonical_workspace_contract.py",
@@ -64830,7 +64984,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 122
     },
     "tests/test_single_source_version_manifest_contract.py::test_01_version_py_is_the_only_declared_source": {
       "path": "tests/test_single_source_version_manifest_contract.py",
@@ -68247,6 +68401,212 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 33
+    },
+    "tests/test_tpa_event_queue_fairness.py::test_continuous_producers_do_not_starve_each_other_or_consumer": {
+      "path": "tests/test_tpa_event_queue_fairness.py",
+      "name": "test_continuous_producers_do_not_starve_each_other_or_consumer",
+      "purpose": "Continuous producers do not starve each other or consumer",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_tpa_event_queue_fairness.py::test_live_action_checks_cancel_between_bounded_event_batches": {
+      "path": "tests/test_tpa_event_queue_fairness.py",
+      "name": "test_live_action_checks_cancel_between_bounded_event_batches",
+      "purpose": "Live action checks cancel between bounded event batches",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "InterruptedError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_tpa_event_queue_fairness.py::test_live_action_checks_generation_deadline_despite_event_flood": {
+      "path": "tests/test_tpa_event_queue_fairness.py",
+      "name": "test_live_action_checks_generation_deadline_despite_event_flood",
+      "purpose": "Live action checks generation deadline despite event flood",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_tpa_event_queue_fairness.py::test_real_concurrent_producer_cannot_delay_tpa_deadline": {
+      "path": "tests/test_tpa_event_queue_fairness.py",
+      "name": "test_real_concurrent_producer_cannot_delay_tpa_deadline",
+      "purpose": "A producer adds events while consumer batches and clock keep advancing.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "TimeoutError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 110
+    },
+    "tests/test_tpa_evidence_immutable_authority.py::test_evidence_path_authority_survives_foreign_workspace_override": {
+      "path": "tests/test_tpa_evidence_immutable_authority.py",
+      "name": "test_evidence_path_authority_survives_foreign_workspace_override",
+      "purpose": "Evidence path authority survives foreign workspace override",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_tpa_evidence_immutable_authority.py::test_unsafe_initial_evidence_context_is_rejected": {
+      "path": "tests/test_tpa_evidence_immutable_authority.py",
+      "name": "test_unsafe_initial_evidence_context_is_rejected",
+      "purpose": "Unsafe initial evidence context is rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_tpa_evidence_immutable_authority.py::test_evidence_path_cannot_escape_after_init": {
+      "path": "tests/test_tpa_evidence_immutable_authority.py",
+      "name": "test_evidence_path_cannot_escape_after_init",
+      "purpose": "Evidence path cannot escape after init",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_tpa_evidence_immutable_authority.py::test_explicit_workspace_context_does_not_weaken_path_guard": {
+      "path": "tests/test_tpa_evidence_immutable_authority.py",
+      "name": "test_explicit_workspace_context_does_not_weaken_path_guard",
+      "purpose": "Explicit workspace context does not weaken path guard",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.application_shell.operator_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_tpa_live_phase_and_transport.py::test_terminal_generation_classification_exposes_only_public_reason": {
+      "path": "tests/test_tpa_live_phase_and_transport.py",
+      "name": "test_terminal_generation_classification_exposes_only_public_reason",
+      "purpose": "Terminal generation classification exposes only public reason",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_tpa_live_phase_and_transport.py::test_fsynced_phase_journal_survives_without_a_final_report": {
+      "path": "tests/test_tpa_live_phase_and_transport.py",
+      "name": "test_fsynced_phase_journal_survives_without_a_final_report",
+      "purpose": "An interrupted host may never call finish_live; phases stay on disk.",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 39
+    },
+    "tests/test_tpa_live_phase_and_transport.py::test_unknown_phase_is_refused_before_any_write": {
+      "path": "tests/test_tpa_live_phase_and_transport.py",
+      "name": "test_unknown_phase_is_refused_before_any_write",
+      "purpose": "Unknown phase is refused before any write",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_tpa_live_phase_and_transport.py::test_unconfirmed_chat_diagnostics_remain_nonterminal": {
+      "path": "tests/test_tpa_live_phase_and_transport.py",
+      "name": "test_unconfirmed_chat_diagnostics_remain_nonterminal",
+      "purpose": "Unconfirmed chat diagnostics remain nonterminal",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_tpa_live_root_authority_scoping.py::test_live_staging_authorized_by_original_root_and_bound_to_copy": {
       "path": "tests/test_tpa_live_root_authority_scoping.py",
