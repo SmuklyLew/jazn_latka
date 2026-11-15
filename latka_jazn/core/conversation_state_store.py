@@ -372,3 +372,84 @@ class ConversationStateStore:
         }
         projection["projection_sha256"] = _sha256(projection)
         return projection
+
+    def lookup_accepted_turn(
+        self,
+        session_id: str,
+        *,
+        selector: str = "first",
+        ordinal: int | None = None,
+        turn_id: str | None = None,
+        max_chars: int = 4096,
+    ) -> dict[str, Any]:
+        """Read one *accepted* turn by source position or stable turn ID.
+
+        Unlike load_context_projection, this scans the canonical session records.
+        Nothing is written, compacted, reclassified as autobiography or replayed.
+        On any corrupt candidate record it fails closed rather than shifting the
+        apparent first/last position to a different conversation turn.
+        """
+        session_dir = self._session_dir(session_id)
+        choice = str(selector or "")
+        if choice not in {"first", "last", "ordinal", "turn_id"}:
+            return {"ok": False, "status": "invalid_selector"}
+        if choice == "ordinal" and (
+            isinstance(ordinal, bool) or not isinstance(ordinal, int) or not 1 <= ordinal <= 10000
+        ):
+            return {"ok": False, "status": "invalid_ordinal"}
+        if choice == "turn_id" and not str(turn_id or "").strip():
+            return {"ok": False, "status": "invalid_turn_id"}
+        try:
+            limit = int(max_chars)
+        except (TypeError, ValueError, OverflowError):
+            return {"ok": False, "status": "invalid_limit"}
+        if not 1 <= limit <= 4096:
+            return {"ok": False, "status": "invalid_limit"}
+
+        records: list[dict[str, Any]] = []
+        if session_dir.is_symlink():
+            return {"ok": False, "status": "integrity_error"}
+        if session_dir.is_dir():
+            for index, path in enumerate(sorted(session_dir.glob("*.json"))):
+                if index >= 10000:
+                    return {"ok": False, "status": "record_limit_exceeded"}
+                try:
+                    if path.is_symlink() or not path.is_file() or path.stat().st_size > 131072:
+                        return {"ok": False, "status": "integrity_error"}
+                    raw = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, UnicodeError, json.JSONDecodeError):
+                    return {"ok": False, "status": "integrity_error"}
+                record, error = self._validate_payload(raw)
+                if error or record is None or record.get("session_id") != session_id:
+                    return {"ok": False, "status": "integrity_error"}
+                records.append(record)
+
+        records.sort(key=lambda item: (
+            str(item.get("accepted_at_utc") or ""), str(item.get("turn_id") or "")
+        ))
+        selected: dict[str, Any] | None = None
+        if choice == "first" and records:
+            selected = records[0]
+        elif choice == "last" and records:
+            selected = records[-1]
+        elif choice == "ordinal" and ordinal is not None and ordinal <= len(records):
+            selected = records[ordinal - 1]
+        elif choice == "turn_id":
+            matches = [item for item in records if item.get("turn_id") == turn_id]
+            if len(matches) > 1:
+                return {"ok": False, "status": "integrity_error"}
+            if matches:
+                selected = matches[0]
+        if selected is None:
+            return {"ok": False, "status": "not_found", "total_turn_count": len(records)}
+        if len(str(selected["user_text"])) + len(str(selected["assistant_text"])) > limit:
+            return {"ok": False, "status": "record_too_large", "total_turn_count": len(records)}
+        return {
+            "ok": True,
+            "status": "found",
+            "source": "accepted_session_turn_record",
+            "session_id": session_id,
+            "selector": choice,
+            "total_turn_count": len(records),
+            "record": dict(selected),
+        }

@@ -7,6 +7,7 @@ from typing import Any
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.conversation_state_store import ConversationStateStore
+from latka_jazn.core.memory_intent_contract import parse_session_turn_reference
 from latka_jazn.core.conversation_channel import canonical_chat_command, normalize_model_channel_config
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
@@ -32,6 +33,26 @@ from latka_jazn.version import schema_version
 from latka_jazn.core.conversation_turn_api import RunnerOperations
 
 SCHEMA_VERSION = schema_version("runtime_session")
+
+
+def _with_targeted_session_recall(
+    store: ConversationStateStore,
+    session_id: str,
+    user_text: str,
+    conversation_history: dict[str, Any],
+    *,
+    allow_history: bool,
+) -> dict[str, Any]:
+    """Attach a verified requested turn without replay, writes or memory promotion."""
+    reference = parse_session_turn_reference(user_text)
+    if reference is None:
+        return conversation_history
+    lookup = (
+        store.lookup_accepted_turn(session_id, **reference)
+        if allow_history
+        else {"ok": False, "status": "history_disabled"}
+    )
+    return {**conversation_history, "targeted_recall": lookup}
 
 
 def _update_runtime_session_state(
@@ -289,6 +310,13 @@ class ConversationRunner(RunnerOperations):
             }
             if turn_scoped_no_carryover
             else self.conversation_state_store.load_context_projection(self.state.session_id)
+        )
+        conversation_history = _with_targeted_session_recall(
+            self.conversation_state_store,
+            self.state.session_id,
+            user_text,
+            conversation_history,
+            allow_history=not self.no_carryover,
         )
         ctx = {
             "client": client,
