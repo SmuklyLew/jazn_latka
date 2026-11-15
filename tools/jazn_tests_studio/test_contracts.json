@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.10",
-  "active_definition_count": 3423,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.11",
+  "active_definition_count": 3426,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -60502,6 +60502,66 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 213
+    },
+    "tests/test_runtime_session_store_unavailable_guard.py::test_missing_store_never_provides_unguarded_first_message": {
+      "path": "tests/test_runtime_session_store_unavailable_guard.py",
+      "name": "test_missing_store_never_provides_unguarded_first_message",
+      "purpose": "Missing store never provides unguarded first message",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 8
+    },
+    "tests/test_runtime_session_store_unavailable_guard.py::test_missing_store_does_not_perturb_an_unrelated_turn": {
+      "path": "tests/test_runtime_session_store_unavailable_guard.py",
+      "name": "test_missing_store_does_not_perturb_an_unrelated_turn",
+      "purpose": "Missing store does not perturb an unrelated turn",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_runtime_session_store_unavailable_guard.py::test_disabled_history_has_priority_over_absent_store": {
+      "path": "tests/test_runtime_session_store_unavailable_guard.py",
+      "name": "test_disabled_history_has_priority_over_absent_store",
+      "purpose": "Disabled history has priority over absent store",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
     },
     "tests/test_runtime_sqlite_existing_wal_gate.py::test_existing_wal_refused_before_sqlite_open_and_bytes_preserved": {
       "path": "tests/test_runtime_sqlite_existing_wal_gate.py",
