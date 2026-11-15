@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.8",
-  "active_definition_count": 3407,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.9",
+  "active_definition_count": 3416,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -67585,6 +67585,192 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_targeted_session_history_recall.py::test_lookup_first_message_beyond_projection_is_verified_and_non_destructive": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_lookup_first_message_beyond_projection_is_verified_and_non_destructive",
+      "purpose": "Lookup first message beyond projection is verified and non destructive",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_targeted_session_history_recall.py::test_selector_parser_requires_current_session": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_selector_parser_requires_current_session",
+      "purpose": "Selector parser requires current session",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_targeted_session_history_recall.py::test_no_cross_session_or_autobiographical_promotion": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_no_cross_session_or_autobiographical_promotion",
+      "purpose": "No cross session or autobiographical promotion",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_targeted_session_history_recall.py::test_lookup_last_ordinal_and_turn_id": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_lookup_last_ordinal_and_turn_id",
+      "purpose": "Lookup last ordinal and turn id",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_targeted_session_history_recall.py::test_cross_session_isolation_and_no_history_mode": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_cross_session_isolation_and_no_history_mode",
+      "purpose": "Cross session isolation and no history mode",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_targeted_session_history_recall.py::test_integrity_failure_never_returns_an_adjacent_turn": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_integrity_failure_never_returns_an_adjacent_turn",
+      "purpose": "Integrity failure never returns an adjacent turn",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
+    "tests/test_targeted_session_history_recall.py::test_forged_or_foreign_context_is_rejected": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_forged_or_foreign_context_is_rejected",
+      "purpose": "Forged or foreign context is rejected",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
+    },
+    "tests/test_targeted_session_history_recall.py::test_too_large_record_returns_no_partial_quote": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_too_large_record_returns_no_partial_quote",
+      "purpose": "Too large record returns no partial quote",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 163
+    },
+    "tests/test_targeted_session_history_recall.py::test_model_instructions_keep_old_user_text_as_data_not_authority": {
+      "path": "tests/test_targeted_session_history_recall.py",
+      "name": "test_model_instructions_keep_old_user_text_as_data_not_authority",
+      "purpose": "Model instructions keep old user text as data not authority",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 175
     },
     "tests/test_temporal_archive_recall.py::test_temporal_only_search_needs_no_literal_year_and_spreads_results": {
       "path": "tests/test_temporal_archive_recall.py",
