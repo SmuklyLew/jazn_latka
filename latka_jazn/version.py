@@ -1,3 +1,6 @@
+# V127.11: type-safe missing-store recall refusal without inventing accepted session history.
+# V127.10: protect no-carryover finalization and harden source-greeting NLG/speaker cleanup.
+# V127.9: bounded, SHA-verified targeted current-session history retrieval outside projection.
 # V127.7: bound Studio chat/helper stdin writes and TPA flood draining without replay.
 # V127.6: preserve live TPA phase evidence and distinguish terminal chat failures from unconfirmed states.
 # V127.2: preserve safe Windows launcher and real Tk GUI gates; extract bounded recovery helper.
@@ -239,7 +242,7 @@ from typing import Any
 # v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.7"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.11"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

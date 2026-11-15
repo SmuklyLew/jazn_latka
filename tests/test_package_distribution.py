@@ -102,8 +102,10 @@ def test_wheelhouse_v2_verifies_record_tags_and_hash_lock(tmp_path: Path) -> Non
 def test_wheelhouse_v2_fails_closed_on_record_tamper(tmp_path: Path) -> None:
     bundle = _valid_bundle(tmp_path)
     wheel = next(bundle.glob("*.whl"))
-    with zipfile.ZipFile(wheel, "a") as archive:
-        archive.writestr("demo/__init__.py", b"TAMPER=1\n")
+    with pytest.warns(UserWarning, match=r"Duplicate name: 'demo/__init__\.py'") as recorded:
+        with zipfile.ZipFile(wheel, "a") as archive:
+            archive.writestr("demo/__init__.py", b"TAMPER=1\n")
+    assert len(recorded) == 1
     # Repair outer manifest SHA/size so only inner wheel integrity remains the blocker.
     manifest_path = bundle / MANIFEST_NAME
     manifest = json.loads(manifest_path.read_text())

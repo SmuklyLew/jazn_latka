@@ -275,7 +275,7 @@ def is_session_dialogue_reference(text: str) -> bool:
         return False
     session_anchor = bool(re.search(
         r"(?:poprzedni\w*|ostatni\w*) wiadomosc\w*|"
-        r"(?:tej|naszej) rozmow\w*|(?:tym|tego) watk\w*|"
+        r"(?:tej|naszej) rozmow\w*|(?:tej|naszej|biezacej) sesj\w*|(?:tym|tego) watk\w*|"
         r"po ponownym polaczeniu",
         normalized,
     ))
@@ -286,6 +286,27 @@ def is_session_dialogue_reference(text: str) -> bool:
     ))
     return session_anchor and concrete_object
 
+
+
+def parse_session_turn_reference(text: str) -> dict[str, Any] | None:
+    """Conservative selector for accepted *current-session* user turns.
+
+    A generic use of 'pamiętasz' is not evidence of this session. Explicit
+    cross-session / historical references remain on autobiographical routing.
+    """
+    if not is_session_dialogue_reference(text):
+        return None
+    folded = _norm(text)
+    explicit_number = re.search(
+        r"\bwiadomosc\w*\s+(?:numer|nr)\s+(\d{1,4})\b", folded
+    )
+    if explicit_number:
+        return {"selector": "ordinal", "ordinal": int(explicit_number.group(1))}
+    if re.search(r"\bpierwsz\w*\s+wiadomosc\w*\b", folded):
+        return {"selector": "first"}
+    if re.search(r"\b(?:poprzedni\w*|ostatni\w*)\s+wiadomosc\w*\b", folded):
+        return {"selector": "last"}
+    return None
 
 def analyze_memory_intent(
     text: str,
@@ -445,6 +466,6 @@ def strip_temporal_language(text: str, scope: TemporalScope | None) -> str:
 
 __all__ = [
     "MEMORY_CONTENT_INTENTS", "MEMORY_EXPERIENCE_INTENTS", "MEMORY_RETRIEVAL_INTENTS", "MemoryIntentSemantics",
-    "TemporalScope", "analyze_memory_intent", "has_explicit_memory_recall", "is_session_dialogue_reference",
+    "TemporalScope", "analyze_memory_intent", "has_explicit_memory_recall", "is_session_dialogue_reference", "parse_session_turn_reference",
     "intent_requires_memory_content", "parse_temporal_scope", "strip_temporal_language",
 ]

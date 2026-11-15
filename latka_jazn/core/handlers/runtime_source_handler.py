@@ -1,6 +1,13 @@
 from __future__ import annotations
 from typing import Any
+import re
 from latka_jazn.core.route_handler_base import RouteHandlerResult
+
+GREETING_AT_START_RE = re.compile(
+    r"^\s*(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry|dobry wieczór)\b",
+    re.IGNORECASE,
+)
+
 
 class RuntimeSourceHandler:
     name = "RuntimeSourceHandler"
@@ -36,7 +43,17 @@ class RuntimeSourceHandler:
                     "source_origin_detail: turn checkpoint nie istnieje."
                 )
         else:
-            answer='Źródło tej odpowiedzi: aktywny runtime Jaźni, RouteRegistry i handler runtime_source. Jeżeli pytasz o poprzednią widoczną odpowiedź, sprawdzam ją przez turn checkpoint/source-origin ledger, a nie przez domysł. '
-            if last: answer += 'Ostatni checkpoint jest dostępny w danych handlera.'
-            elif body: answer += 'W tej turze bazowy body pochodzi z ConversationResponder, a dispatcher dopiął metadane źródła.'
+            # A mixed greeting + provenance question should answer both parts.
+            # Runtime source remains deterministic and must not impersonate an LLM.
+            greeting = "Cześć! " if GREETING_AT_START_RE.match(text) else ""
+            answer = (
+                greeting
+                + "Tę informację o pochodzeniu przygotowuje handler runtime_source Jaźni. "
+                "Nie oznacza to, że tę odpowiedź wygenerował model językowy. "
+                "Źródło wcześniejszej odpowiedzi sprawdzam w zapisanych metadanych jej tury, a nie zgaduję."
+            )
+            if last:
+                answer += " Dostępny jest checkpoint ostatniej tury."
+            elif body:
+                answer += " Bazowa treść bieżącej tury pochodzi z ConversationResponder."
         return RouteHandlerResult(self.name,self.route,answer,intent=intent,data={'source_origin_answer':source,'last_turn':last},sources=[source],required_components=ctx.get('required_components',[]),satisfied_components=['exact_runtime_text','template_origin','runtime_vs_visible_boundary','source_origin_detail','handler_name'],confidence=0.95,source_origin_detail='runtime_source_handler')
