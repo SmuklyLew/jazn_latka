@@ -21,10 +21,16 @@
 4. Leading model-generated duplicate speaker labels are removed only under structural/prefix conditions. Runtime-owned MessageEnvelope and timestamps remain authoritative.
 5. Existing fail-closed autobiographical memory grounding, daemon identity, and finalization are not bypassed.
 
+## CI investigation (2026-11-15)
+
+- The active-test governance check rejects release-coupled test filenames; the new test is therefore named by its stable purpose, not by version.
+- The MCP deployment contract is kept in lockstep with PACKAGE_VERSION_FULL; unchanged runtime v127.7 in deployment.contract.json failed the persistent-runtime E2E and docs-truth gates.
+- Ubuntu memory-cloud CI cannot provision Python 3.12.9 on Ubuntu 26.04; this failure is not part of the local NLP patch and remains separately gated.
+
 ## Acceptance gates (NOT YET EXECUTED)
 
 ```powershell
-python -X utf8 -m pytest -q tests/test_v1278_conversation_memory_routing_hardening.py tests/test_conversation_model_context_continuity.py tests/test_turn_candidate_route_regressions.py tests/test_memory_experience_recall_handler.py
+python -X utf8 -m pytest -q tests/test_conversation_memory_routing_hardening.py tests/test_conversation_model_context_continuity.py tests/test_turn_candidate_route_regressions.py tests/test_memory_experience_recall_handler.py
 python -X utf8 -m compileall -q latka_jazn tests main.py run.py
 ```
 
