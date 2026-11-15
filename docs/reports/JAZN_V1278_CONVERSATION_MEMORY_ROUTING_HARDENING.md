@@ -25,7 +25,7 @@
 
 - The active-test governance check rejects release-coupled test filenames; the new test is therefore named by its stable purpose, not by version.
 - The MCP deployment contract is kept in lockstep with PACKAGE_VERSION_FULL; unchanged runtime v127.7 in deployment.contract.json failed the persistent-runtime E2E and docs-truth gates.
-- Ubuntu memory-cloud CI cannot provision Python 3.12.9 on Ubuntu 26.04; this failure is not part of the local NLP patch and remains separately gated.
+- Ubuntu memory-cloud CI could not provision Python 3.12.9 on Ubuntu 26.04. The optional capability workflow now selects the latest supported 3.12 patch on Ubuntu while retaining Windows 3.12.9; verify the next actual CI run, not a presumed PASS.
 
 ## Acceptance gates (NOT YET EXECUTED)
 

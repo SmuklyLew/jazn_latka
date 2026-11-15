@@ -35,7 +35,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12.9"
+          # Ubuntu 26.04 no longer provides the older 3.12.9 build.
+          # Keep the Windows patch pin (historically required for native Tk tests).
+          python-version: ${{ runner.os == 'Windows' && '3.12.9' || '3.12' }}
       - name: Install optional capability
         shell: bash
         run: |
