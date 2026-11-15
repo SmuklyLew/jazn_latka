@@ -15307,6 +15307,182 @@
       "description_source": "source_identity",
       "line": 127
     },
+    "tests/test_conversation_memory_routing_hardening.py::test_response_source_not_external_research": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_response_source_not_external_research",
+      "purpose": "Response source not external research",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 33
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_session_reference_scoped_to_current_conversation": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_session_reference_scoped_to_current_conversation",
+      "purpose": "Session reference scoped to current conversation",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_first_message_route_is_not_autobiographical": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_first_message_route_is_not_autobiographical",
+      "purpose": "First message route is not autobiographical",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_historical_memory_stays_on_grounded_recall_route": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_historical_memory_stays_on_grounded_recall_route",
+      "purpose": "Historical memory stays on grounded recall route",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_durable_short_session_context_is_not_promoted_to_autobiography": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_durable_short_session_context_is_not_promoted_to_autobiography",
+      "purpose": "Durable short session context is not promoted to autobiography",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 67
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_generated_author_prefix_is_stripped_only_when_structural": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_generated_author_prefix_is_stripped_only_when_structural",
+      "purpose": "Generated author prefix is stripped only when structural",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_conversation_memory_routing_hardening.py::test_unbacked_autobiographical_memory_claim_stays_blocked": {
+      "path": "tests/test_conversation_memory_routing_hardening.py",
+      "name": "test_unbacked_autobiographical_memory_claim_stays_blocked",
+      "purpose": "Unbacked autobiographical memory claim stays blocked",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.memory_grounded_generation_bridge",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.nlp.dialogue_intent_classifier"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
     "tests/test_conversation_model_context_continuity.py::test_model_context_carries_bounded_durable_conversation_projection": {
       "path": "tests/test_conversation_model_context_continuity.py",
       "name": "test_model_context_carries_bounded_durable_conversation_projection",
@@ -70197,182 +70373,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_response_source_not_external_research": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_response_source_not_external_research",
-      "purpose": "Response source not external research",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 33
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_session_reference_scoped_to_current_conversation": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_session_reference_scoped_to_current_conversation",
-      "purpose": "Session reference scoped to current conversation",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 48
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_first_message_route_is_not_autobiographical": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_first_message_route_is_not_autobiographical",
-      "purpose": "First message route is not autobiographical",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 53
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_historical_memory_stays_on_grounded_recall_route": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_historical_memory_stays_on_grounded_recall_route",
-      "purpose": "Historical memory stays on grounded recall route",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 62
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_durable_short_session_context_is_not_promoted_to_autobiography": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_durable_short_session_context_is_not_promoted_to_autobiography",
-      "purpose": "Durable short session context is not promoted to autobiography",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 5,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 67
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_generated_author_prefix_is_stripped_only_when_structural": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_generated_author_prefix_is_stripped_only_when_structural",
-      "purpose": "Generated author prefix is stripped only when structural",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 101
-    },
-    "tests/test_v1278_conversation_memory_routing_hardening.py::test_unbacked_autobiographical_memory_claim_stays_blocked": {
-      "path": "tests/test_v1278_conversation_memory_routing_hardening.py",
-      "name": "test_unbacked_autobiographical_memory_claim_stays_blocked",
-      "purpose": "Unbacked autobiographical memory claim stays blocked",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.memory_grounded_generation_bridge",
-        "latka_jazn.core.memory_intent_contract",
-        "latka_jazn.core.message_envelope",
-        "latka_jazn.core.model_context_compiler",
-        "latka_jazn.core.response_candidate",
-        "latka_jazn.nlp.dialogue_intent_classifier"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 105
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
