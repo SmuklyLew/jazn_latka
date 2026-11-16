@@ -54,6 +54,11 @@ def test_real_capability_question_is_still_detected() -> None:
     assert "capabilities" in report.components, report.to_dict()
 
 
+def test_media_playback_ability_is_not_mistaken_for_session_recall() -> None:
+    report = analyse_utterance("Czy potrafisz odtworzyć nagranie audio?")
+    assert "capabilities" in report.components, report.to_dict()
+
+
 @pytest.mark.parametrize("question", [
     "Kim jesteś i co potrafisz?",
     "Co potrafisz? Jaka jest twoja historia?",

@@ -6,7 +6,7 @@ import unicodedata
 from typing import Any
 
 from latka_jazn.nlp.control_text import extract_intent_control_text
-from latka_jazn.core.memory_intent_contract import analyze_memory_intent
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent, is_session_dialogue_reference
 
 
 def _fold(text: str) -> str:
@@ -337,14 +337,15 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
         if name not in components and any(token in folded for token in tokens):
             components.append(name)
 
-    # A request to retrieve/quote one item is not a general capability
-    # question. Keep genuine "co potrafisz" and other ability questions.
+    # A session-grounded request to retrieve one item is not a general
+    # capability question. Other ability questions keep their coverage gate.
     if "capabilities" not in components and re.search(r"\bczy potrafisz\b", folded):
-        if not re.search(
+        session_recall = is_session_dialogue_reference(text) and bool(re.search(
             r"\bczy potrafisz\s+(?:(?:mi|nam)\s+)?"
             r"(?:odtworz\w*|przypomni\w*|przywol\w*|zacytow\w*|odnale\w*)\b",
             folded,
-        ):
+        ))
+        if not session_recall:
             components.append("capabilities")
     # "Wczesniejsza wiadomosc" is session history, not a prior SYSTEM
     # version. Retain inflected historical release references.
