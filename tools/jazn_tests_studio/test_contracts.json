@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.12",
-  "active_definition_count": 3431,
+  "active_definition_count": 3432,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -64722,6 +64722,25 @@
       "description_source": "source_identity",
       "line": 52
     },
+    "tests/test_session_recall_compound_guard.py::test_media_playback_ability_is_not_mistaken_for_session_recall": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_media_playback_ability_is_not_mistaken_for_session_recall",
+      "purpose": "Media playback ability is not mistaken for session recall",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
     "tests/test_session_recall_compound_guard.py::test_real_multi_goal_question_keeps_compound_gate": {
       "path": "tests/test_session_recall_compound_guard.py",
       "name": "test_real_multi_goal_question_keeps_compound_gate",
@@ -64741,7 +64760,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 67
     },
     "tests/test_session_recall_compound_guard.py::test_real_compound_still_rejects_missing_capability_evidence": {
       "path": "tests/test_session_recall_compound_guard.py",
@@ -64760,7 +64779,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 74
     },
     "tests/test_session_reconnect_recall_finalization.py::test_same_session_question_is_not_autobiographical_recall": {
       "path": "tests/test_session_reconnect_recall_finalization.py",
