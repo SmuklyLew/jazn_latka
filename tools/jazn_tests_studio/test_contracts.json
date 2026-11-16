@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.11",
-  "active_definition_count": 3426,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.12",
+  "active_definition_count": 3431,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -64660,6 +64660,107 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 104
+    },
+    "tests/test_session_recall_compound_guard.py::test_session_record_recall_is_not_falsely_compound": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_session_record_recall_is_not_falsely_compound",
+      "purpose": "Session record recall is not falsely compound",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_session_recall_compound_guard.py::test_rejected_windows_recall_candidate_no_longer_requires_unrelated_parts": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_rejected_windows_recall_candidate_no_longer_requires_unrelated_parts",
+      "purpose": "Rejected windows recall candidate no longer requires unrelated parts",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_session_recall_compound_guard.py::test_real_capability_question_is_still_detected": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_real_capability_question_is_still_detected",
+      "purpose": "Real capability question is still detected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_session_recall_compound_guard.py::test_real_multi_goal_question_keeps_compound_gate": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_real_multi_goal_question_keeps_compound_gate",
+      "purpose": "Real multi goal question keeps compound gate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_session_recall_compound_guard.py::test_real_compound_still_rejects_missing_capability_evidence": {
+      "path": "tests/test_session_recall_compound_guard.py",
+      "name": "test_real_compound_still_rejects_missing_capability_evidence",
+      "purpose": "Real compound still rejects missing capability evidence",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.nlp.dialogue_intent_classifier",
+        "latka_jazn.nlp.utterance_components"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
     },
     "tests/test_session_reconnect_recall_finalization.py::test_same_session_question_is_not_autobiographical_recall": {
       "path": "tests/test_session_reconnect_recall_finalization.py",
