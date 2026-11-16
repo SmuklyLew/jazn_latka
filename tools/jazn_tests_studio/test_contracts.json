@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.13",
-  "active_definition_count": 3439,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.14",
+  "active_definition_count": 3446,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -64698,6 +64698,150 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 104
+    },
+    "tests/test_session_exact_quote_regression.py::test_parse_literal_polish_session_quote": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_parse_literal_polish_session_quote",
+      "purpose": "Parse literal polish session quote",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_session_exact_quote_regression.py::test_no_cross_session_or_ambiguous_literal_selection": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_no_cross_session_or_ambiguous_literal_selection",
+      "purpose": "No cross session or ambiguous literal selection",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_session_exact_quote_regression.py::test_quote_is_deterministic_without_editing_original_record": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_quote_is_deterministic_without_editing_original_record",
+      "purpose": "Quote is deterministic without editing original record",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_session_exact_quote_regression.py::test_last_sentence_and_user_message_roles": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_last_sentence_and_user_message_roles",
+      "purpose": "Last sentence and user message roles",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_session_exact_quote_regression.py::test_unavailable_session_never_guesses": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_unavailable_session_never_guesses",
+      "purpose": "Unavailable session never guesses",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_session_exact_quote_regression.py::test_corrupt_accepted_record_is_rejected": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_corrupt_accepted_record_is_rejected",
+      "purpose": "Corrupt accepted record is rejected",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_session_exact_quote_regression.py::test_model_projection_strips_envelope_but_canonical_turn_keeps_it": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_model_projection_strips_envelope_but_canonical_turn_keeps_it",
+      "purpose": "Model projection strips envelope but canonical turn keeps it",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
     },
     "tests/test_session_recall_compound_guard.py::test_session_record_recall_is_not_falsely_compound": {
       "path": "tests/test_session_recall_compound_guard.py",
