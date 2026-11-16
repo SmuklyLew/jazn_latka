@@ -53,7 +53,12 @@ def _with_targeted_session_recall(
         # Missing store cannot supply accepted provenance; never guess a turn.
         lookup = {"ok": False, "status": "history_unavailable"}
     else:
-        lookup = store.lookup_accepted_turn(session_id, **reference)
+        # The selector is passed to the verified store; quote/role metadata is
+        # interpreted later by a deterministic runtime-only path.
+        lookup = store.lookup_accepted_turn(
+            session_id, **{key: value for key, value in reference.items()
+                           if key in {"selector", "ordinal", "turn_id"}}
+        )
     return {**conversation_history, "targeted_recall": lookup}
 
 

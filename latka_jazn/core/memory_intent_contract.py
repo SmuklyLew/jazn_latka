@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 import re
 import unicodedata
 from typing import Any, Literal
+
+from latka_jazn.core.session_exact_quote import parse_exact_session_quote_request
 from zoneinfo import ZoneInfo
 
 
@@ -266,6 +268,8 @@ def is_session_dialogue_reference(text: str) -> bool:
     normalized = _norm(text)
     if not normalized:
         return False
+    if parse_exact_session_quote_request(text) is not None:
+        return True
     if re.search(
         r"\b(?:19|20)\d{2}\b|\b(?:wczoraj\w*|przedwczoraj\w*|"
         r"sprzed|tydzien\w*|miesiac\w*|dziecinstw\w*|"
@@ -294,6 +298,9 @@ def parse_session_turn_reference(text: str) -> dict[str, Any] | None:
     A generic use of 'pamiętasz' is not evidence of this session. Explicit
     cross-session / historical references remain on autobiographical routing.
     """
+    exact = parse_exact_session_quote_request(text)
+    if exact is not None:
+        return exact
     if not is_session_dialogue_reference(text):
         return None
     folded = _norm(text)

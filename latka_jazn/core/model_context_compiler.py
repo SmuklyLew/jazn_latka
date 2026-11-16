@@ -6,6 +6,7 @@ from typing import Any
 
 from latka_jazn.core.full_canon_model_context import build_full_canon_model_context
 from latka_jazn.core.conversation_state_store import ConversationStateStore
+from latka_jazn.core.message_envelope import strip_recognized_visible_envelope
 from latka_jazn.core.memory_grounded_generation_bridge import build_grounded_memory_items, memory_allowed_for_generation
 from latka_jazn.core.nlg_plan import NlgPlan, default_truth_boundary
 from latka_jazn.core.operational_thought_frame import OperationalThoughtFrame
@@ -202,7 +203,11 @@ def _sanitize_conversation_history(raw: Any) -> dict[str, Any]:
     for item in data.get("turns") or []:
         turn = _as_dict(item)
         user_text = _clean_text(turn.get("user_text"), fallback="")[:1800]
-        assistant_text = _clean_text(turn.get("assistant_text"), fallback="")[:2400]
+        # Preserve the signed canonical record; only the model-facing projection
+        # removes presentation metadata that was authored by MessageEnvelope.
+        assistant_text = _clean_text(
+            strip_recognized_visible_envelope(str(turn.get("assistant_text") or "")), fallback=""
+        )[:2400]
         cost = len(user_text) + len(assistant_text)
         if turns and total_chars + cost > history_budget:
             break
