@@ -401,7 +401,7 @@ class RuntimeAnswerValidator:
             r"(?:zapamięt|pamięt|przeczyt|odczyt|zapis|przepis|podpis|wysł|"
             r"dost|spotk|słuch|rozmawi|myśl|pomyśl|słysz|uzn|wykon|"
             r"wiedzi|powiedzi|odpowiedzi|zrozumi|widzi|przyj|zacz|chci|mi|zn)ałem|"
-            r"byłem|mogłem|szedłem|przyszedłem|poszedłem|jadłem|myłem|czułem|powinienem)\b",
+            r"byłem|mogłem|podałem|szedłem|przyszedłem|poszedłem|jadłem|myłem|czułem|powinienem)\b",
             narration,
         ):
             return True
@@ -410,7 +410,7 @@ class RuntimeAnswerValidator:
         # 'problem' as masculine first-person verbs merely ending in 'lem'.
         if re.search(
             r"\b(?:zapamietalem|zrobilem|sprawdzilem|powiedzialem|odpowiedzialem|"
-            r"bylem|moglem|chcialem|chcialbym|moglbym|zrozumialem|przyjalem|"
+            r"bylem|moglem|podalem|chcialem|chcialbym|moglbym|zrozumialem|przyjalem|"
             r"widzialem|zapisalem|odczytalem|uruchomilem|znalazlem|pomyslalem)\b",
             folded_narration,
         ):

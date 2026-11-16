@@ -6,7 +6,7 @@ import unicodedata
 from typing import Any
 
 from latka_jazn.nlp.control_text import extract_intent_control_text
-from latka_jazn.core.memory_intent_contract import analyze_memory_intent
+from latka_jazn.core.memory_intent_contract import analyze_memory_intent, is_session_dialogue_reference
 
 
 def _fold(text: str) -> str:
@@ -55,7 +55,7 @@ class UtteranceComponentReport:
 
 _COMPONENT_PATTERNS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("identity", ("kim jestes", "kim jest łatka", "kim jest latka", "czym jestes", "to nadal ty", "z kim rozmawiam", "ta sama latka")),
-    ("capabilities", ("co potrafisz", "co umiesz", "jakie masz mozliwosci", "co mozesz", "do czego jestes zdolna", "czy potrafisz")),
+    ("capabilities", ("co potrafisz", "co umiesz", "jakie masz mozliwosci", "co mozesz", "do czego jestes zdolna")),
     ("memory", ("co pamietasz", "pamiec", "wspomnienia", "czy pamietasz", "jak dziala twoja pamiec", "przypomnij", "przywolaj")),
     ("preference", ("ulubiony", "najbardziej lubisz", "lubisz", "wolisz", "wybierasz", "co ci sie podoba", "preferenc")),
     ("origin_creator", ("kto cie stworzyl", "jak powstalas", "skad pochodzisz", "twoj tworca", "kto jest tworca", "historia powstania", "urodzilas")),
@@ -328,7 +328,7 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
     token_rules = (
         ("origin_creator", ("stworz", "powstal", "powstalas", "tworc", "urodzil")),
         ("rights_obligations", ("obowiaz", "wolno")),
-        ("history", ("histori", "wczesniejs", "rozwijal")),
+        ("history", ("histori", "rozwijal")),
         ("preference", ("ulubion", "preferenc", "wolisz")),
         ("introspection", ("refleksj", "zastanawialas", "przeszlosc")),
         ("provenance", ("zrodlo", "skad wiesz", "z kanonu", "wnioskuj")),
@@ -336,6 +336,24 @@ def analyse_utterance(text: str) -> UtteranceComponentReport:
     for name, tokens in token_rules:
         if name not in components and any(token in folded for token in tokens):
             components.append(name)
+
+    # A session-grounded request to retrieve one item is not a general
+    # capability question. Other ability questions keep their coverage gate.
+    if "capabilities" not in components and re.search(r"\bczy potrafisz\b", folded):
+        session_recall = is_session_dialogue_reference(text) and bool(re.search(
+            r"\bczy potrafisz\s+(?:(?:mi|nam)\s+)?"
+            r"(?:odtworz\w*|przypomni\w*|przywol\w*|zacytow\w*|odnale\w*)\b",
+            folded,
+        ))
+        if not session_recall:
+            components.append("capabilities")
+    # "Wczesniejsza wiadomosc" is session history, not a prior SYSTEM
+    # version. Retain inflected historical release references.
+    if "history" not in components and re.search(
+        r"\bwczesniejs\w*\s+(?:wersj\w*|wydan\w*|aktualizac\w*)\b",
+        folded,
+    ):
+        components.append("history")
     # "praw" inside "naprawić" must not imply a question about rights.
     if "rights_obligations" not in components and re.search(r"\bpraw\w*\b", folded):
         components.append("rights_obligations")
