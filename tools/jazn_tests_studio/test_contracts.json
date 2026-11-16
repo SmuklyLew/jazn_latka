@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.12",
-  "active_definition_count": 3432,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.13",
+  "active_definition_count": 3439,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -12683,6 +12683,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 310
+    },
+    "tests/test_cognitive_debugger_local_runtime.py::test_explain_turn_includes_only_redacted_local_audit_metadata": {
+      "path": "tests/test_cognitive_debugger_local_runtime.py",
+      "name": "test_explain_turn_includes_only_redacted_local_audit_metadata",
+      "purpose": "Explain turn includes only redacted local audit metadata",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_debugger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_cognitive_debugger_local_runtime.py::test_explain_turn_reports_absent_local_audit_table_without_fake_evidence": {
+      "path": "tests/test_cognitive_debugger_local_runtime.py",
+      "name": "test_explain_turn_reports_absent_local_audit_table_without_fake_evidence",
+      "purpose": "Explain turn reports absent local audit table without fake evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.cognitive_debugger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
     },
     "tests/test_cognitive_development_evaluation.py::test_p0b_route_discriminates_code_audit_from_zip_status": {
       "path": "tests/test_cognitive_development_evaluation.py",
@@ -64780,6 +64818,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 74
+    },
+    "tests/test_session_recall_voice_quality.py::test_generated_inline_author_ack_is_cleaned_before_envelope": {
+      "path": "tests/test_session_recall_voice_quality.py",
+      "name": "test_generated_inline_author_ack_is_cleaned_before_envelope",
+      "purpose": "Generated inline author ack is cleaned before envelope",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.nlg_planner",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_session_recall_voice_quality.py::test_masculine_own_voice_is_not_accepted_as_latka": {
+      "path": "tests/test_session_recall_voice_quality.py",
+      "name": "test_masculine_own_voice_is_not_accepted_as_latka",
+      "purpose": "Masculine own voice is not accepted as latka",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.nlg_planner",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_session_recall_voice_quality.py::test_session_recall_plan_respects_bare_password_instruction": {
+      "path": "tests/test_session_recall_voice_quality.py",
+      "name": "test_session_recall_plan_respects_bare_password_instruction",
+      "purpose": "Session recall plan respects bare password instruction",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.nlg_planner",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_session_recall_voice_quality.py::test_other_question_does_not_require_bare_password": {
+      "path": "tests/test_session_recall_voice_quality.py",
+      "name": "test_other_question_does_not_require_bare_password",
+      "purpose": "Other question does not require bare password",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.nlg_planner",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_session_recall_voice_quality.py::test_candidate_gate_flags_observed_extraneous_recall_answer": {
+      "path": "tests/test_session_recall_voice_quality.py",
+      "name": "test_candidate_gate_flags_observed_extraneous_recall_answer",
+      "purpose": "Candidate gate flags observed extraneous recall answer",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.message_envelope",
+        "latka_jazn.core.nlg_planner",
+        "latka_jazn.core.response_candidate",
+        "latka_jazn.core.response_candidate_evaluator",
+        "latka_jazn.core.runtime_answer_validator"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
     },
     "tests/test_session_reconnect_recall_finalization.py::test_same_session_question_is_not_autobiographical_recall": {
       "path": "tests/test_session_reconnect_recall_finalization.py",
