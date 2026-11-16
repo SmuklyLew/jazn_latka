@@ -37,7 +37,9 @@ def test_tray_minimize_restore_and_exit_are_observer_only(monkeypatch, app):
     win = window_module.MonitorWindow(None, 8787, 11434, smoke=True)
     assert win._tray_icon is not None
     assert win._tray_icon.isVisible()
-    assert [action.text() for action in win._tray_menu.actions() if not action.isSeparator()] == [
+    menu = win._tray_menu
+    assert menu is not None
+    assert [action.text() for action in menu.actions() if not action.isSeparator()] == [
         "Pokaż Jaźń Monitor", "Zakończ monitor"]
     win.show()
     app.processEvents()
@@ -51,10 +53,10 @@ def test_tray_minimize_restore_and_exit_are_observer_only(monkeypatch, app):
     assert win.isVisible() and not win.isMinimized()
     win.showMinimized()
     win._hide_minimized_window()
-    win._tray_menu.actions()[0].trigger()
+    menu.actions()[0].trigger()
     app.processEvents()
     assert win.isVisible()
-    win._tray_menu.actions()[-1].trigger()
+    menu.actions()[-1].trigger()
     app.processEvents()
     assert win._closing
     assert not win._tray_icon.isVisible()
