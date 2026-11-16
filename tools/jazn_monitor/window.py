@@ -111,9 +111,15 @@ class MonitorWindow(QMainWindow):
         raw = self.root_field.text().strip()
         self._worker = ProbeThread(Path(raw) if raw else None,
                                    self.daemon_port, self.ollama_port)
-        self._worker.observed.connect(self.apply_snapshot)
-        self._worker.finished.connect(self._worker.deleteLater)
-        self._worker.start()
+        worker = self._worker
+        worker.observed.connect(self.apply_snapshot)
+        worker.finished.connect(lambda: self._worker_finished(worker))
+        worker.start()
+
+    def _worker_finished(self, worker: ProbeThread) -> None:
+        if self._worker is worker:
+            self._worker = None
+        worker.deleteLater()
 
     def apply_snapshot(self, report: dict[str, Any]) -> None:
         services = report.get("services") or {}
