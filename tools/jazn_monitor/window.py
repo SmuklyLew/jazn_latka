@@ -4,11 +4,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QThread, QTimer, Signal
-from PySide6.QtGui import QColor
+from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QApplication, QMainWindow, QMenu, QPushButton, QSystemTrayIcon, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from .probe import SERVICES, snapshot
@@ -21,6 +22,29 @@ COLORS = {
     "ready": "#218449", "reachable": "#a57a28", "unknown": "#717a85",
     "disabled": "#717a85", "error": "#ba3b4b",
 }
+
+
+def _system_tray_available() -> bool:
+    return QSystemTrayIcon.isSystemTrayAvailable()
+
+
+def _monitor_icon() -> QIcon:
+    """Draw icon at runtime so PyInstaller needs no external graphics."""
+    image = QPixmap(64, 64)
+    image.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(image)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#235A75"))
+    painter.drawRoundedRect(3, 3, 58, 58, 15, 15)
+    painter.setPen(QColor("#FFFFFF"))
+    font = painter.font()
+    font.setPixelSize(39)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(image.rect(), Qt.AlignmentFlag.AlignCenter, "J")
+    painter.end()
+    return QIcon(image)
 
 
 class ProbeThread(QThread):
@@ -51,6 +75,8 @@ class MonitorWindow(QMainWindow):
         self.ollama_port = ollama_port
         self._worker: ProbeThread | None = None
         self._closing = False
+        self._tray_icon: QSystemTrayIcon | None = None
+        self._tray_menu: QMenu | None = None
         area = QWidget(self)
         self.setCentralWidget(area)
         layout = QVBoxLayout(area)
@@ -70,6 +96,10 @@ class MonitorWindow(QMainWindow):
         self.refresh_button = QPushButton("Odśwież")
         self.refresh_button.clicked.connect(self.refresh)
         row.addWidget(self.refresh_button)
+        self.tray_button = QPushButton("Do tray")
+        self.tray_button.setToolTip("Minimalizuj do obszaru powiadomień")
+        self.tray_button.clicked.connect(self.showMinimized)
+        row.addWidget(self.tray_button)
         layout.addLayout(row)
 
         self.table = QTableWidget(len(SERVICES), 3)
@@ -94,9 +124,59 @@ class MonitorWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.setInterval(5000)
         self.timer.timeout.connect(self.refresh)
+        self._configure_tray()
         if not smoke:
             self.timer.start()
             QTimer.singleShot(0, self.refresh)
+
+    def _configure_tray(self) -> None:
+        icon = _monitor_icon()
+        self.setWindowIcon(icon)
+        if not _system_tray_available():
+            self.tray_button.setEnabled(False)
+            self.tray_button.setToolTip("Brak systemowego obszaru powiadomień")
+            return
+        tray = QSystemTrayIcon(icon, self)
+        menu = QMenu(self)
+        menu.addAction("Pokaż Jaźń Monitor").triggered.connect(self.restore_from_tray)
+        menu.addSeparator()
+        menu.addAction("Zakończ monitor").triggered.connect(self.close)
+        tray.setContextMenu(menu)
+        tray.setToolTip("Jaźń Monitor — daemon: NIEZWERYFIKOWANY")
+        tray.activated.connect(self._on_tray_activated)
+        tray.show()
+        self._tray_menu = menu
+        self._tray_icon = tray
+        app = QApplication.instance()
+        if app is not None:
+            app.setQuitOnLastWindowClosed(False)
+
+    def _can_minimize_to_tray(self) -> bool:
+        return (self._tray_icon is not None
+                and self._tray_icon.isVisible()
+                and _system_tray_available())
+
+    def changeEvent(self, event: Any) -> None:
+        super().changeEvent(event)
+        if (event.type() == QEvent.Type.WindowStateChange
+                and self.isMinimized() and not self._closing
+                and self._can_minimize_to_tray()):
+            QTimer.singleShot(0, self._hide_minimized_window)
+
+    def _hide_minimized_window(self) -> None:
+        if self.isMinimized() and not self._closing and self._can_minimize_to_tray():
+            self.hide()
+
+    def restore_from_tray(self) -> None:
+        if not self._closing:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+
+    def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger,
+                      QSystemTrayIcon.ActivationReason.DoubleClick):
+            self.restore_from_tray()
 
     def choose_root(self) -> None:
         path = QFileDialog.getExistingDirectory(self, "Wybierz SYSTEM ROOT",
@@ -136,10 +216,20 @@ class MonitorWindow(QMainWindow):
         self.footer.setText(
             "Odczyt UTC: " + str(report.get("observed_at_utc") or "UNKNOWN") +
             " • tylko obserwacja • zamknięcie nie zatrzymuje daemona")
+        if self._tray_icon is not None:
+            daemon_state = str((services.get("Daemon Jaźni") or {}).get("state") or "unknown")
+            self._tray_icon.setToolTip(
+                "Jaźń Monitor — daemon: " + LABELS.get(daemon_state, LABELS["unknown"]))
 
     def closeEvent(self, event: Any) -> None:
         self._closing = True
         self.timer.stop()
         if self._worker is not None and self._worker.isRunning():
             self._worker.wait(6000)
+        if self._tray_icon is not None:
+            self._tray_icon.hide()
+            app = QApplication.instance()
+            if app is not None:
+                # X and "Zakończ monitor" exit only this observer process.
+                QTimer.singleShot(0, app.quit)
         event.accept()

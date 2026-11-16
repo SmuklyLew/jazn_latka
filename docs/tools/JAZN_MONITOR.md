@@ -35,3 +35,20 @@ glibc/Qt/sterowników; działanie na docelowym Ubuntu wymaga osobnego
 manualnego odbioru. Te artefakty nie są podpisanymi instalatorami.
 Przed publiczną dystrybucją zweryfikuj wymagania LGPL/GPL Qt/PySide6
 oraz zachowaj odpowiednie noty/licencje.
+
+## Ikona obszaru powiadomień (Windows / wybrane pulpity Ubuntu)
+
+Na Windows Qt `QSystemTrayIcon` wyświetla ikonę monitora w obszarze
+powiadomień. Standardowa minimalizacja lub przycisk `Do tray` ukrywają
+okno, ale **nie kończą obserwatora** i nie wpływają na Jaźń. Ikona ma menu
+`Pokaż Jaźń Monitor` oraz `Zakończ monitor`; kliknięcie/dwuklik
+przywraca okno. Przycisk X kończy **tylko** proces monitora.
+
+Na Ubuntu obsługa zależy od środowiska graficznego i dostępności
+D-Bus StatusNotifierItem/XEmbed. Jeżeli `isSystemTrayAvailable()` jest
+fałszywe, `Do tray` jest wyłączone, a minimalizacja pozostaje zwykłą
+minimalizacją systemową (okno nigdy nie jest ukrywane bez możliwości
+przywrócenia). Testy Qt mogą symulować obecność/brak tray w trybie
+offscreen; rzeczywiste zachowanie wymaga odbioru w systemowej sesji GUI.
+
+Źródło: https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QSystemTrayIcon.html

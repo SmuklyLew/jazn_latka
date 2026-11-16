@@ -1,3 +1,4 @@
+# V127.16: tray minimization and restore for standalone Jaźń Monitor.
 # V127.15: standalone read-only Jaźń Monitor for Windows/Ubuntu.
 # V127.14: exact verified current-session quotes and body-only model context projection.
 # V127.13: local Ollama voice/format guard and redacted runtime explain-turn evidence.
@@ -246,7 +247,7 @@ from typing import Any
 # v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.15"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.16"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
