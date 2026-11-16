@@ -111,3 +111,77 @@ def test_model_projection_strips_envelope_but_canonical_turn_keeps_it(tmp_path):
     assert sanitized["turns"][0]["assistant_text"].startswith("Słońce delikatnie")
     assert "🌿 Łatka" not in sanitized["turns"][0]["assistant_text"]
     assert store.load_context_projection("test-a")["turns"][0]["assistant_text"] == original
+
+
+def test_no_carryover_never_reads_existing_session(tmp_path):
+    _seed(tmp_path)
+    result = exact_quote_from_accepted_turn(
+        tmp_path, "test-a",
+        "Zacytuj pierwsze sześć słów swojej poprzedniej odpowiedzi.",
+        allow_history=False,
+    )
+    assert result is not None
+    assert result["ok"] is False
+    assert result["status"] == "history_disabled"
+    assert "text" not in result
+
+
+def test_response_pipeline_uses_verified_quote_without_calling_model(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import latka_jazn.core.response_pipeline as pipeline_module
+
+    _seed(tmp_path)
+
+    class FakeAdapter:
+        def describe(self):
+            return {"status": "configured", "provider": "ollama", "model": "gemma3:latest"}
+
+    class FakePreflight:
+        executor = "local_model"
+        retry_allowed = True
+
+        def to_dict(self):
+            return {"executor": self.executor, "retry_allowed": self.retry_allowed}
+
+    adapter = FakeAdapter()
+    monkeypatch.setattr(
+        pipeline_module, "build_speech_adapter_for_turn",
+        lambda *args, **kwargs: (adapter, SimpleNamespace(to_dict=lambda: {})),
+    )
+    monkeypatch.setattr(pipeline_module, "resolve_model_executor", lambda _: FakePreflight())
+
+    engine = SimpleNamespace(
+        config=SimpleNamespace(root=tmp_path),
+        model_adapter=adapter,
+        model_guided_response_synthesizer=SimpleNamespace(
+            synthesize=lambda **kwargs: pytest.fail("exact quote must not reach the model")
+        ),
+        _apply_model_synthesis_result=lambda **kwargs: ({}, False),
+        guard=SimpleNamespace(enforce=lambda text: text),
+    )
+    state = SimpleNamespace(
+        request=SimpleNamespace(
+            text="Zacytuj dokładnie pierwszych sześć słów swojej poprzedniej odpowiedzi.",
+            client_context={"session_id": "test-a", "no_carryover": False},
+        ),
+        frame={},
+        decision=SimpleNamespace(body="Niedokładna odpowiedź modelu."),
+        decision_dict={"route": "ordinary_dialogue"},
+        route_entry=SimpleNamespace(route="ordinary_dialogue", handler_name="DefaultHandler"),
+        turn_response_policy=SimpleNamespace(
+            required_components=[], forbidden_topics=[], exact_runtime_required=False,
+            to_dict=lambda: {},
+        ),
+        turn_context=None,
+        envelope=SimpleNamespace(attach_conversation_decision=lambda _: None),
+    )
+
+    pipeline_module.ResponsePipeline(engine).produce(state)
+    assert state.body == "Słońce delikatnie budzi las, a promienie"
+    assert state.decision_dict["model_generated"] is False
+    assert state.decision_dict["exact_session_quote"]["status"] == "found"
+
+    state.request.client_context["no_carryover"] = True
+    pipeline_module.ResponsePipeline(engine).produce(state)
+    assert state.body == "Nie mam zweryfikowanego zapisu tej wypowiedzi."
+    assert state.decision_dict["exact_session_quote"]["status"] == "history_disabled"

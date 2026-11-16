@@ -74,12 +74,14 @@ def parse_exact_session_quote_request(text: str) -> dict[str, Any] | None:
 
 
 def exact_quote_from_accepted_turn(
-    root: Path, session_id: str, text: str,
+    root: Path, session_id: str, text: str, *, allow_history: bool = True,
 ) -> dict[str, Any] | None:
     """Read and verify a canonical record anew; never trust supplied model context."""
     request = parse_exact_session_quote_request(text)
     if request is None:
         return None
+    if not allow_history:
+        return {"ok": False, "status": "history_disabled", "request": request}
     if not str(session_id or "").strip():
         return {"ok": False, "status": "session_unavailable", "request": request}
     store = ConversationStateStore(Path(root))

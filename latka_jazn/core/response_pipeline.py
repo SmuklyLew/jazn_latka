@@ -81,6 +81,7 @@ class ResponsePipeline:
         session_id = str((state.request.client_context or {}).get("session_id") or "")
         exact_quote = exact_quote_from_accepted_turn(
             engine.config.root, session_id, state.request.text,
+            allow_history=not bool((state.request.client_context or {}).get("no_carryover")),
         )
         if exact_quote is not None:
             quoted_body = (
