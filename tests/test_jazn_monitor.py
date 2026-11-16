@@ -78,7 +78,7 @@ def test_unavailable_daemon_is_not_false_ready(monkeypatch, tmp_path):
     assert probe.snapshot(root)["services"]["Daemon Jaźni"]["state"] == "unknown"
 
 
-@pytest.mark.parametrize("content", [b"{broken", b"x" * (probe.MAX_JSON + 1)])
+@pytest.mark.parametrize("content", [b"{broken", b"x" * (probe.MAX_JSON + 1)], ids=["invalid-json", "oversized-json"])
 def test_untrusted_marker_rejected(monkeypatch, tmp_path, content):
     root = root_with_marker(tmp_path)
     marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
