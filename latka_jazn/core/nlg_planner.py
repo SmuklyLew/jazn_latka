@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
-from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS
+from latka_jazn.core.memory_intent_contract import MEMORY_CONTENT_INTENTS, is_session_dialogue_reference
 from latka_jazn.core.nlg_plan import NlgPlan, SCHEMA_VERSION, default_truth_boundary
 
 ORDINARY_INTENTS = {
@@ -108,6 +108,15 @@ def _combined_policy(cognitive_frame: dict[str, Any], response_policy: dict[str,
     out = _reply_policy_from_frame(cognitive_frame)
     out.update(_as_dict(response_policy))
     return out
+
+
+def _bare_session_recall_requested(user_text: str, intent: str) -> bool:
+    if intent != "contextual_continuation_question" or not is_session_dialogue_reference(user_text):
+        return False
+    folded = (user_text or "").lower().translate(str.maketrans("ąćęłńóśźż", "acelnoszz"))
+    return any(marker in folded for marker in (
+        "podaj tylko haslo", "odpowiedz samym haslem", "podaj samo haslo",
+    ))
 
 
 def infer_answer_kind(detected_intent: str, response_policy: dict[str, Any] | None) -> str:
@@ -308,6 +317,7 @@ def build_nlg_plan(
         answer_kind = "memory_grounded_answer"
     source_policy = _infer_source_policy(answer_kind, memory_policy, intent)
     model_policy = infer_model_policy(intent, combined_policy, model_adapter_status)
+    bare_session_recall = _bare_session_recall_requested(user_text, intent)
     return NlgPlan(
         schema_version=SCHEMA_VERSION,
         user_text=user_text or "",
@@ -316,7 +326,7 @@ def build_nlg_plan(
         speech_act=speech_act,
         answer_kind=answer_kind,
         tone=infer_tone(user_text or "", frame, intent),
-        style_constraints=_style_constraints(answer_kind),
+        style_constraints=_dedupe(_style_constraints(answer_kind) + (["bare_session_recall"] if bare_session_recall else [])),
         required_components=_required_components(answer_kind, memory_policy, source_policy),
         forbidden_components=_forbidden_components(answer_kind, memory_policy),
         memory_policy=memory_policy,
@@ -324,5 +334,5 @@ def build_nlg_plan(
         model_policy=model_policy,
         truth_boundary=_truth_boundary(frame, combined_policy),
         timestamp_required=True,
-        max_length_hint=_max_length_hint(answer_kind),
+        max_length_hint="minimal" if bare_session_recall else _max_length_hint(answer_kind),
     )

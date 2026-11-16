@@ -86,6 +86,16 @@ def evaluate_response_candidate(
         reasons.append("host_external_web_evidence_accepted")
     if policy.get("exact_runtime_required") is True and candidate.source != "runtime_fallback":
         violations.append("exact_runtime_required_blocks_model_candidate")
+    if candidate.source == "model_adapter" and "bare_session_recall" in (plan.get("style_constraints") or []):
+        # Only an explicit single-secret recall request gets this constraint.
+        # Reject explanatory preambles; do not rewrite the historical secret.
+        bare_text = _fold(text.strip())
+        if re.search(
+            r"^(?:tak,\s*oczywiscie\b|haslo\s+(?:to|brzmi)\b)|"
+            r"\b(?:podałem|podalem|podalam)\s+ci\b|\bpotwierdzam\b",
+            bare_text,
+        ):
+            violations.append("bare_session_recall_extraneous_text")
 
     full_canon = _as_dict(context.get("full_canon_model_context"))
     canon_validation = validate_full_canon_model_context(full_canon)

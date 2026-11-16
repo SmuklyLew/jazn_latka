@@ -16,6 +16,10 @@ MODEL_LEADING_GREETING_RE = re.compile(
     r"^(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry|dobry wieczór)(?=[\s!,.?]|$)",
     re.IGNORECASE,
 )
+MODEL_LEADING_ACK_RE = re.compile(
+    r"^(?:tak|nie|oczywiście|oczywiscie)[,!:.](?=\s|$)",
+    re.IGNORECASE,
+)
 
 
 def normalize_newlines(value: str | None) -> str:
@@ -174,7 +178,8 @@ def clean_model_generated_body(text: str) -> str:
         # A single inline speaker label before a greeting is also redundant.
         # Keep subject-like prose such as "🌿 Łatka wspomina ..." unchanged.
         inline_greeting = MODEL_LEADING_GREETING_RE.match(remainder.lstrip()) is not None
-        if not (removed_author or repeated or remainder.startswith(("\n", ":")) or inline_greeting):
+        inline_ack = MODEL_LEADING_ACK_RE.match(remainder.lstrip()) is not None
+        if not (removed_author or repeated or remainder.startswith(("\n", ":")) or inline_greeting or inline_ack):
             break
         value = remainder.lstrip(" \t\n:")
         removed_author = True

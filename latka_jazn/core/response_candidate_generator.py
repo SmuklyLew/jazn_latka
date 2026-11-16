@@ -100,12 +100,19 @@ def generate_response_candidates(
 
 def _candidate_prompt(plan: dict[str, Any]) -> str:
     answer_kind = str(plan.get("answer_kind") or "natural_dialogue")
+    bare_recall = "bare_session_recall" in (plan.get("style_constraints") or [])
+    strict_instruction = (
+        " Jeśli użytkownik prosi o samo hasło z wcześniejszej wiadomości, "
+        "zwróć wyłącznie jego treść, bez etykiety autora, wstępu lub potwierdzenia. "
+        "Gdy brak zweryfikowanego źródła, powiedz jasno, że nie możesz go odtworzyć."
+        if bare_recall else ""
+    )
     return (
         "Utwórz jednego kandydata odpowiedzi zgodnego z NLG Plan i ModelContextPacket. "
         "Nie dodawaj timestampu; runtime zrobi to osobno. "
         "Nie opisuj procesu tworzenia odpowiedzi. "
         "Nie twierdź, że model jest Jaźnią, pamięcią ani źródłem prawdy. "
-        f"Rodzaj odpowiedzi: {answer_kind}."
+        f"Rodzaj odpowiedzi: {answer_kind}.{strict_instruction}"
     )
 
 
