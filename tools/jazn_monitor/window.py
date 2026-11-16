@@ -148,7 +148,7 @@ class MonitorWindow(QMainWindow):
         self._tray_menu = menu
         self._tray_icon = tray
         app = QApplication.instance()
-        if app is not None:
+        if isinstance(app, QApplication):
             app.setQuitOnLastWindowClosed(False)
 
     def _can_minimize_to_tray(self) -> bool:
