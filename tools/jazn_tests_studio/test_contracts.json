@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.14",
-  "active_definition_count": 3446,
+  "active_definition_count": 3448,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -64715,6 +64715,7 @@
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
@@ -64737,6 +64738,7 @@
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
@@ -64757,6 +64759,7 @@
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
@@ -64767,16 +64770,17 @@
       "path": "tests/test_session_exact_quote_regression.py",
       "name": "test_last_sentence_and_user_message_roles",
       "purpose": "Last sentence and user message roles",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
@@ -64797,31 +64801,33 @@
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 83
     },
     "tests/test_session_exact_quote_regression.py::test_corrupt_accepted_record_is_rejected": {
       "path": "tests/test_session_exact_quote_regression.py",
       "name": "test_corrupt_accepted_record_is_rejected",
       "purpose": "Corrupt accepted record is rejected",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 92
     },
     "tests/test_session_exact_quote_regression.py::test_model_projection_strips_envelope_but_canonical_turn_keeps_it": {
       "path": "tests/test_session_exact_quote_regression.py",
@@ -64837,11 +64843,54 @@
         "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.memory_intent_contract",
         "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
         "latka_jazn.core.session_exact_quote"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 102
+      "line": 105
+    },
+    "tests/test_session_exact_quote_regression.py::test_no_carryover_never_reads_existing_session": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_no_carryover_never_reads_existing_session",
+      "purpose": "No carryover never reads existing session",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
+    "tests/test_session_exact_quote_regression.py::test_response_pipeline_uses_verified_quote_without_calling_model": {
+      "path": "tests/test_session_exact_quote_regression.py",
+      "name": "test_response_pipeline_uses_verified_quote_without_calling_model",
+      "purpose": "Response pipeline uses verified quote without calling model",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.model_context_compiler",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.session_exact_quote"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 129
     },
     "tests/test_session_recall_compound_guard.py::test_session_record_recall_is_not_falsely_compound": {
       "path": "tests/test_session_recall_compound_guard.py",
