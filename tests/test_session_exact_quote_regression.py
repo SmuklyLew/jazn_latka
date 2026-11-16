@@ -71,10 +71,12 @@ def test_last_sentence_and_user_message_roles(tmp_path):
     assistant = exact_quote_from_accepted_turn(
         tmp_path, "test-a", "Przypomnij ostatnie zdanie swojej poprzedniej odpowiedzi."
     )
+    assert assistant is not None
     assert assistant["text"] == "Ptaki budzą się o świcie."
     user = exact_quote_from_accepted_turn(
         tmp_path, "test-a", "Zacytuj pierwszych trzech słów mojej poprzedniej wiadomości."
     )
+    assert user is not None
     assert user["text"] == "Hasło do testu"
 
 
@@ -94,6 +96,7 @@ def test_corrupt_accepted_record_is_rejected(tmp_path):
     result = exact_quote_from_accepted_turn(
         tmp_path, "test-a", "Zacytuj pierwsze sześć słów poprzedniej odpowiedzi."
     )
+    assert result is not None
     assert result["ok"] is False
     assert result["status"] == "integrity_error"
     assert "text" not in result
