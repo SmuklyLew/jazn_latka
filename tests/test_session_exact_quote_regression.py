@@ -128,6 +128,7 @@ def test_no_carryover_never_reads_existing_session(tmp_path):
 
 def test_response_pipeline_uses_verified_quote_without_calling_model(tmp_path, monkeypatch):
     from types import SimpleNamespace
+    from typing import Any
     import latka_jazn.core.response_pipeline as pipeline_module
 
     _seed(tmp_path)
@@ -154,7 +155,7 @@ def test_response_pipeline_uses_verified_quote_without_calling_model(tmp_path, m
         kwargs["decision_dict"]["model_generated"] = kwargs["model_synthesis"].used
         return ({}, False)
 
-    engine = SimpleNamespace(
+    engine: Any = SimpleNamespace(
         config=SimpleNamespace(root=tmp_path),
         model_adapter=adapter,
         model_guided_response_synthesizer=SimpleNamespace(
@@ -163,7 +164,7 @@ def test_response_pipeline_uses_verified_quote_without_calling_model(tmp_path, m
         _apply_model_synthesis_result=apply_synthesis,
         guard=SimpleNamespace(enforce=lambda text: text),
     )
-    state = SimpleNamespace(
+    state: Any = SimpleNamespace(
         request=SimpleNamespace(
             text="Zacytuj dokładnie pierwszych sześć słów swojej poprzedniej odpowiedzi.",
             client_context={"session_id": "test-a", "no_carryover": False},
