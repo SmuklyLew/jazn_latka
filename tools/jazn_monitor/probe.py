@@ -104,11 +104,12 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
             if trusted:
                 ready = _http_json(daemon_port, "/ready")
                 if ready is not None and ready.get("daemon_instance_id") == marker.get("daemon_instance_id"):
-                    if ready.get("runtime_core_ready") is True:
+                    if (ready.get("readiness_ok") is True
+                            and ready.get("runtime_write_ready") is True):
                         services["Runtime Core"] = Observation(
-                            "ready", "Gotowość runtime potwierdzona przez /ready; finalizacja tury osobno")
-                    elif ready.get("runtime_core_ready") is False:
-                        services["Runtime Core"] = Observation("reachable", "Daemon działa, runtime niegotowy")
+                            "ready", "Chat worker i runtime-write gotowe wg /ready; finalizacja tury osobno")
+                    elif ready.get("readiness_ok") is False:
+                        services["Runtime Core"] = Observation("reachable", "Daemon działa, /ready zgłasza brak gotowości")
                     if ready.get("authenticated_mcp_ready") is True:
                         services["MCP"] = Observation("reachable", "Uwierzytelnione MCP potwierdzone przez /ready")
                     if (ready.get("full_autobiographical_recall_ready") is True

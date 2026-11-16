@@ -14,7 +14,7 @@ Wybrany ROOT musi zawierać run.py oraz aktualny marker
 workspace_runtime/JAZN_ACTIVE_RUNTIME.json. Wydzielone klony nie są
 automatycznie traktowane jako aktywne. Monitor porównuje marker z
 GET /live na 127.0.0.1:8787 (instancja, PID, aktywny root), a osobne
-GET /ready służy tylko do potwierdzenia gotowości runtime. Monitor
+GET /ready służy do potwierdzenia readiness_ok i runtime_write_ready; zaakceptowana finalizacja jest osobną bramką. Monitor
 nie udaje, że PID, zielona kropka czy odpowiedź HTTP oznacza zaakceptowaną
 finalizację rozmowy. Wszystkie odczyty HTTP mają timeout i limit rozmiaru.
 Brak dowodu → UNKNOWN, różnica właściciela instancji → ERROR.

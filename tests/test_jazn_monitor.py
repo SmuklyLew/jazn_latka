@@ -38,8 +38,8 @@ def test_instance_readiness_and_model_reachability_are_separate(monkeypatch, tmp
     root = root_with_marker(tmp_path)
     endpoints = {
         "/live": live(root),
-        "/ready": {"daemon_instance_id": "one", "runtime_core_ready": True,
-                   "persistent_memory_enabled": False},
+        "/ready": {"daemon_instance_id": "one", "readiness_ok": True,
+                   "runtime_write_ready": True, "persistent_memory_enabled": False},
         "/api/tags": {"models": [{"name": "gemma3:latest"}]},
     }
     monkeypatch.setattr(probe, "_http_json", lambda port, endpoint, timeout=1.5: endpoints.get(endpoint))
@@ -102,3 +102,19 @@ def test_json_mode_does_not_require_gui(monkeypatch, capsys):
     data = json.loads(capsys.readouterr().out)
     assert data["schema_version"] == "jazn_monitor_snapshot/v1"
     assert data["observation_only"] is True
+
+
+def test_readiness_requires_runtime_write_and_chat_worker(monkeypatch, tmp_path):
+    root = root_with_marker(tmp_path)
+    current = {
+        "/live": live(root),
+        "/ready": {"daemon_instance_id": "one", "readiness_ok": False,
+                   "runtime_write_ready": True, "readiness_reasons": ["chat_worker_not_ready"]},
+    }
+    monkeypatch.setattr(probe, "_http_json", lambda p, e, timeout=1.5: current.get(e))
+    states = probe.snapshot(root)["services"]
+    assert states["Daemon Jaźni"]["state"] == "ready"
+    assert states["Runtime Core"]["state"] == "reachable"
+    current["/ready"]["readiness_ok"] = True
+    current["/ready"]["runtime_write_ready"] = False
+    assert probe.snapshot(root)["services"]["Runtime Core"]["state"] == "unknown"
