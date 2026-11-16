@@ -150,13 +150,17 @@ def test_response_pipeline_uses_verified_quote_without_calling_model(tmp_path, m
     )
     monkeypatch.setattr(pipeline_module, "resolve_model_executor", lambda _: FakePreflight())
 
+    def apply_synthesis(**kwargs):
+        kwargs["decision_dict"]["model_generated"] = kwargs["model_synthesis"].used
+        return ({}, False)
+
     engine = SimpleNamespace(
         config=SimpleNamespace(root=tmp_path),
         model_adapter=adapter,
         model_guided_response_synthesizer=SimpleNamespace(
             synthesize=lambda **kwargs: pytest.fail("exact quote must not reach the model")
         ),
-        _apply_model_synthesis_result=lambda **kwargs: ({}, False),
+        _apply_model_synthesis_result=apply_synthesis,
         guard=SimpleNamespace(enforce=lambda text: text),
     )
     state = SimpleNamespace(
