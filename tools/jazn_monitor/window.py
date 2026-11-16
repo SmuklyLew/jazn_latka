@@ -1,0 +1,235 @@
+"""Qt presentation, independent from Jaźń, JSS and daemon lifecycle."""
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PySide6.QtWidgets import (
+    QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QApplication, QMainWindow, QMenu, QPushButton, QSystemTrayIcon, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget,
+)
+
+from .probe import SERVICES, snapshot
+
+LABELS = {
+    "ready": "GOTOWY", "reachable": "DOSTĘPNY", "unknown": "NIEZWERYFIKOWANY",
+    "disabled": "WYŁĄCZONA", "error": "BŁĄD TOŻSAMOŚCI",
+}
+COLORS = {
+    "ready": "#218449", "reachable": "#a57a28", "unknown": "#717a85",
+    "disabled": "#717a85", "error": "#ba3b4b",
+}
+
+
+def _system_tray_available() -> bool:
+    return QSystemTrayIcon.isSystemTrayAvailable()
+
+
+def _monitor_icon() -> QIcon:
+    """Draw icon at runtime so PyInstaller needs no external graphics."""
+    image = QPixmap(64, 64)
+    image.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(image)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#235A75"))
+    painter.drawRoundedRect(3, 3, 58, 58, 15, 15)
+    painter.setPen(QColor("#FFFFFF"))
+    font = painter.font()
+    font.setPixelSize(39)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(image.rect(), Qt.AlignmentFlag.AlignCenter, "J")
+    painter.end()
+    return QIcon(image)
+
+
+class ProbeThread(QThread):
+    observed = Signal(object)
+
+    def __init__(self, root: Path | None, daemon_port: int, ollama_port: int) -> None:
+        super().__init__()
+        self.root = root
+        self.daemon_port = daemon_port
+        self.ollama_port = ollama_port
+
+    def run(self) -> None:
+        try:
+            result = snapshot(self.root, daemon_port=self.daemon_port,
+                              ollama_port=self.ollama_port)
+        except (OSError, RuntimeError, ValueError):
+            result = {"services": {}, "observed_at_utc": None}
+        self.observed.emit(result)
+
+
+class MonitorWindow(QMainWindow):
+    def __init__(self, root: Path | None, daemon_port: int,
+                 ollama_port: int, *, smoke: bool = False) -> None:
+        super().__init__()
+        self.setWindowTitle("Jaźń Monitor — tylko odczyt")
+        self.resize(870, 490)
+        self.daemon_port = daemon_port
+        self.ollama_port = ollama_port
+        self._worker: ProbeThread | None = None
+        self._closing = False
+        self._tray_icon: QSystemTrayIcon | None = None
+        self._tray_menu: QMenu | None = None
+        area = QWidget(self)
+        self.setCentralWidget(area)
+        layout = QVBoxLayout(area)
+
+        heading = QLabel("Jaźń Monitor | daemon, runtime i usługi")
+        heading.setStyleSheet("font-size: 17px; font-weight: 600")
+        layout.addWidget(heading)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("SYSTEM ROOT:"))
+        self.root_field = QLineEdit(str(root) if root else "")
+        self.root_field.setPlaceholderText("Wybierz katalog zawierający run.py")
+        self.root_field.setAccessibleName("Katalog instalacji Jaźni")
+        row.addWidget(self.root_field, 1)
+        browse = QPushButton("Wybierz…")
+        browse.clicked.connect(self.choose_root)
+        row.addWidget(browse)
+        self.refresh_button = QPushButton("Odśwież")
+        self.refresh_button.clicked.connect(self.refresh)
+        row.addWidget(self.refresh_button)
+        self.tray_button = QPushButton("Do tray")
+        self.tray_button.setToolTip("Minimalizuj do obszaru powiadomień")
+        self.tray_button.clicked.connect(self.showMinimized)
+        row.addWidget(self.tray_button)
+        layout.addLayout(row)
+
+        self.table = QTableWidget(len(SERVICES), 3)
+        self.table.setHorizontalHeaderLabels(["Usługa", "Stan", "Dowody / uwagi"])
+        self.table.verticalHeader().setVisible(False)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        for i, name in enumerate(SERVICES):
+            self.table.setItem(i, 0, QTableWidgetItem(name))
+            self.table.setItem(i, 1, QTableWidgetItem(LABELS["unknown"]))
+            self.table.setItem(i, 2, QTableWidgetItem("Oczekiwanie na odczyt"))
+        layout.addWidget(self.table)
+
+        self.footer = QLabel(
+            "Tylko obserwacja. Zamknięcie monitora nie zatrzyma daemona. "
+            "/live ≠ /ready ≠ zaakceptowana odpowiedź.")
+        self.footer.setWordWrap(True)
+        layout.addWidget(self.footer)
+        self.timer = QTimer(self)
+        self.timer.setInterval(5000)
+        self.timer.timeout.connect(self.refresh)
+        self._configure_tray()
+        if not smoke:
+            self.timer.start()
+            QTimer.singleShot(0, self.refresh)
+
+    def _configure_tray(self) -> None:
+        icon = _monitor_icon()
+        self.setWindowIcon(icon)
+        if not _system_tray_available():
+            self.tray_button.setEnabled(False)
+            self.tray_button.setToolTip("Brak systemowego obszaru powiadomień")
+            return
+        tray = QSystemTrayIcon(icon, self)
+        menu = QMenu(self)
+        menu.addAction("Pokaż Jaźń Monitor").triggered.connect(self.restore_from_tray)
+        menu.addSeparator()
+        menu.addAction("Zakończ monitor").triggered.connect(self.close)
+        tray.setContextMenu(menu)
+        tray.setToolTip("Jaźń Monitor — daemon: NIEZWERYFIKOWANY")
+        tray.activated.connect(self._on_tray_activated)
+        tray.show()
+        self._tray_menu = menu
+        self._tray_icon = tray
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            app.setQuitOnLastWindowClosed(False)
+
+    def _can_minimize_to_tray(self) -> bool:
+        return (self._tray_icon is not None
+                and self._tray_icon.isVisible()
+                and _system_tray_available())
+
+    def changeEvent(self, event: Any) -> None:
+        super().changeEvent(event)
+        if (event.type() == QEvent.Type.WindowStateChange
+                and self.isMinimized() and not self._closing
+                and self._can_minimize_to_tray()):
+            QTimer.singleShot(0, self._hide_minimized_window)
+
+    def _hide_minimized_window(self) -> None:
+        if self.isMinimized() and not self._closing and self._can_minimize_to_tray():
+            self.hide()
+
+    def restore_from_tray(self) -> None:
+        if not self._closing:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+
+    def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger,
+                      QSystemTrayIcon.ActivationReason.DoubleClick):
+            self.restore_from_tray()
+
+    def choose_root(self) -> None:
+        path = QFileDialog.getExistingDirectory(self, "Wybierz SYSTEM ROOT",
+                                                 self.root_field.text())
+        if path:
+            self.root_field.setText(path)
+            self.refresh()
+
+    def refresh(self) -> None:
+        if self._closing or (self._worker is not None and self._worker.isRunning()):
+            return
+        raw = self.root_field.text().strip()
+        self._worker = ProbeThread(Path(raw) if raw else None,
+                                   self.daemon_port, self.ollama_port)
+        worker = self._worker
+        worker.observed.connect(self.apply_snapshot)
+        worker.finished.connect(lambda: self._worker_finished(worker))
+        worker.start()
+
+    def _worker_finished(self, worker: ProbeThread) -> None:
+        if self._worker is worker:
+            self._worker = None
+        worker.deleteLater()
+
+    def apply_snapshot(self, report: dict[str, Any]) -> None:
+        services = report.get("services") or {}
+        for i, name in enumerate(SERVICES):
+            data = services.get(name) or {}
+            status = str(data.get("state") or "unknown")
+            if status not in LABELS:
+                status = "unknown"
+            state = QTableWidgetItem(LABELS[status])
+            state.setForeground(QColor(COLORS[status]))
+            self.table.setItem(i, 1, state)
+            self.table.setItem(i, 2, QTableWidgetItem(
+                str(data.get("detail") or "Brak zweryfikowanego statusu")))
+        self.footer.setText(
+            "Odczyt UTC: " + str(report.get("observed_at_utc") or "UNKNOWN") +
+            " • tylko obserwacja • zamknięcie nie zatrzymuje daemona")
+        if self._tray_icon is not None:
+            daemon_state = str((services.get("Daemon Jaźni") or {}).get("state") or "unknown")
+            self._tray_icon.setToolTip(
+                "Jaźń Monitor — daemon: " + LABELS.get(daemon_state, LABELS["unknown"]))
+
+    def closeEvent(self, event: Any) -> None:
+        self._closing = True
+        self.timer.stop()
+        if self._worker is not None and self._worker.isRunning():
+            self._worker.wait(6000)
+        if self._tray_icon is not None:
+            self._tray_icon.hide()
+            app = QApplication.instance()
+            if app is not None:
+                # X and "Zakończ monitor" exit only this observer process.
+                QTimer.singleShot(0, app.quit)
+        event.accept()
