@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.14",
-  "active_definition_count": 3448,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.15",
+  "active_definition_count": 3455,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26161,6 +26161,117 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 214
+    },
+    "tests/test_jazn_monitor.py::test_unknown_without_root_and_zero_side_effects": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_unknown_without_root_and_zero_side_effects",
+      "purpose": "Unknown without root and zero side effects",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
+    "tests/test_jazn_monitor.py::test_instance_readiness_and_model_reachability_are_separate": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_instance_readiness_and_model_reachability_are_separate",
+      "purpose": "Instance readiness and model reachability are separate",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 37
+    },
+    "tests/test_jazn_monitor.py::test_instance_mismatch_fail_closed": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_instance_mismatch_fail_closed",
+      "purpose": "Instance mismatch fail closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
+    },
+    "tests/test_jazn_monitor.py::test_unavailable_daemon_is_not_false_ready": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_unavailable_daemon_is_not_false_ready",
+      "purpose": "Unavailable daemon is not false ready",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_jazn_monitor.py::test_untrusted_marker_rejected": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_untrusted_marker_rejected",
+      "purpose": "Untrusted marker rejected",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_jazn_monitor.py::test_http_allowlist_and_port_rejection": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_http_allowlist_and_port_rejection",
+      "purpose": "Http allowlist and port rejection",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "SystemExit"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_jazn_monitor.py::test_json_mode_does_not_require_gui": {
+      "path": "tests/test_jazn_monitor.py",
+      "name": "test_json_mode_does_not_require_gui",
+      "purpose": "Json mode does not require gui",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
     },
     "tests/test_jazn_operator_profile_migration_toctou.py::test_worker_aborts_if_file_changes_after_gui_sha_validation": {
       "path": "tests/test_jazn_operator_profile_migration_toctou.py",
