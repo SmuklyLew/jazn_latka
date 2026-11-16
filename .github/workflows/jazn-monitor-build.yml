@@ -1,0 +1,64 @@
+name: Jaźń Monitor Windows and Ubuntu binary build
+
+on:
+  push:
+    branches:
+      - "fix/v12715-jazn-monitor-crossplatform-20261116"
+    paths:
+      - "tools/jazn_monitor/**"
+      - "jazn_monitor.py"
+      - "tests/test_jazn_monitor.py"
+      - ".github/workflows/jazn-monitor-build.yml"
+      - "latka_jazn/version.py"
+  pull_request:
+    paths:
+      - "tools/jazn_monitor/**"
+      - "jazn_monitor.py"
+      - "tests/test_jazn_monitor.py"
+      - ".github/workflows/jazn-monitor-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  monitor-binaries:
+    name: Build monitor on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Install optional, CI-only GUI and build wheels
+        run: python -m pip install --only-binary=:all: PySide6==6.12.0 pyinstaller==6.22.3 pytest==9.0.2
+      - name: Linux headless Qt libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0
+      - name: Syntax and read-only regression tests
+        run: |
+          python -m py_compile jazn_monitor.py tools/jazn_monitor/probe.py tools/jazn_monitor/window.py tools/jazn_monitor/verify_bundle.py tests/test_jazn_monitor.py
+          python -m pytest -q tests/test_jazn_monitor.py
+      - name: Python GUI startup without probes
+        run: python -X utf8 jazn_monitor.py --gui-smoke
+      - name: Freeze native executable
+        run: python -m PyInstaller --noconfirm --clean --onedir --windowed --name JaznMonitor --distpath dist jazn_monitor.py
+      - name: Verify actual binary and generate SHA256 inventory
+        run: python -X utf8 tools/jazn_monitor/verify_bundle.py dist/JaznMonitor
+      - name: Check Actions SHA/Node24 contract
+        run: python -X utf8 tools/github_actions_node24_audit.py
+      - name: Upload verified Windows or Ubuntu bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: JaznMonitor-${{ matrix.os }}-${{ github.sha }}
+          path: dist/JaznMonitor/
+          if-no-files-found: error
+          retention-days: 14
