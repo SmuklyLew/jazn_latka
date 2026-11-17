@@ -96,7 +96,7 @@ def load_environment_policy(root: Path | str) -> dict[str, Any] | None:
     if not isinstance(document, dict) or document.get("schema_version") != SCHEMA_VERSION:
         raise EnvironmentPolicyError("environment_policy_schema_invalid")
     mode = document.get("mode")
-    if mode not in {"external", "managed", "portable"}:
+    if not isinstance(mode, str) or mode not in {"external", "managed", "portable"}:
         raise EnvironmentPolicyError("environment_policy_mode_invalid")
     if mode != "external":
         # The explicit Managed/Portable contracts require separate migrations.
