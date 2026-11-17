@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.17",
-  "active_definition_count": 3467,
+  "active_definition_count": 3473,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19305,6 +19305,141 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 179
+    },
+    "tests/test_external_python_mutation_guards.py::test_direct_install_bundle_refuses_without_touching_wheelhouse": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_direct_install_bundle_refuses_without_touching_wheelhouse",
+      "purpose": "Direct install bundle refuses without touching wheelhouse",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_external_python_mutation_guards.py::test_gc_mutation_is_blocked_but_dry_run_remains_readonly": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_gc_mutation_is_blocked_but_dry_run_remains_readonly",
+      "purpose": "Gc mutation is blocked but dry run remains readonly",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_external_python_mutation_guards.py::test_private_extension_denied_even_with_operator_supplied_bundle": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_private_extension_denied_even_with_operator_supplied_bundle",
+      "purpose": "Private extension denied even with operator supplied bundle",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DependencyStudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_external_python_mutation_guards.py::test_setup_modes_forbid_external": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_setup_modes_forbid_external",
+      "purpose": "Setup modes forbid external",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "SetupError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_external_python_mutation_guards.py::test_jss_direct_provisioning_is_denied": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_jss_direct_provisioning_is_denied",
+      "purpose": "Jss direct provisioning is denied",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_external_python_mutation_guards.py::test_invalid_policy_cannot_enable_direct_managed_mutation": {
+      "path": "tests/test_external_python_mutation_guards.py",
+      "name": "test_invalid_policy_cannot_enable_direct_managed_mutation",
+      "purpose": "Invalid policy cannot enable direct managed mutation",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "DependencyStudioError",
+        "EnvironmentPolicyError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.dependencies.environment_manager",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 87
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_skips_zip_rehash_and_extraction": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
