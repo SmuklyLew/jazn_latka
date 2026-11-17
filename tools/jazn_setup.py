@@ -268,6 +268,14 @@ def _wizard(args: argparse.Namespace) -> dict[str, Any]:
 def execute(args: argparse.Namespace) -> dict[str, Any]:
     root = ROOT
     _root_check(root)
+    from latka_jazn.dependencies.environment_manager import (
+        EnvironmentPolicyError, require_operator_managed_environment,
+    )
+    if args.mode in {"wizard", "venv", "install", "repair", "online", "extend"}:
+        try:
+            require_operator_managed_environment(root)
+        except EnvironmentPolicyError as exc:
+            raise SetupError(str(exc)) from exc
     if args.mode == "wizard":
         return _wizard(args)
     profiles = _requested_profiles(root, args.profile)
