@@ -10,6 +10,7 @@ on:
       - "tools/jazn_run_studio/**"
       - "run_studio.py"
       - "tests/test_external_python_environment_policy.py"
+      - "tests/test_external_python_mutation_guards.py"
       - ".github/workflows/python-environment-external.yml"
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - "tools/jazn_run_studio/**"
       - "run_studio.py"
       - "tests/test_external_python_environment_policy.py"
+      - "tests/test_external_python_mutation_guards.py"
       - ".github/workflows/python-environment-external.yml"
   workflow_dispatch:
 
@@ -53,10 +55,12 @@ jobs:
           tools/jazn_run_studio/first_run.py
           run_studio.py
           tests/test_external_python_environment_policy.py
+          tests/test_external_python_mutation_guards.py
       - name: Verify External is read-only and legacy behavior survives
         run: >-
           python -X utf8 -m pytest -q -ra --tb=short
           tests/test_external_python_environment_policy.py
+          tests/test_external_python_mutation_guards.py
           tests/test_private_python_selection.py
       - name: Verify whitespace
         run: git diff --check
