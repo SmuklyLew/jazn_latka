@@ -46,6 +46,7 @@ from latka_jazn.core.visible_integrity import evaluate_origin_truth
 from latka_jazn.core.startup_contract import build_startup_status, build_startup_summary, build_truth_boundary_check
 from latka_jazn.core.continuity_badge import ContinuityBadgePolicy
 from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.autobiographical_memory_claim_guard import enforce_runtime_autobiographical_access
 from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
 from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
 from latka_jazn.core.affect_mixer import AffectMixer
@@ -1494,10 +1495,20 @@ class JaznEngine:
             memory_evidence={"memory_source_ids": memory_ids},
             external_evidence={"external_source_ids": external_ids},
         ).to_dict()
+        # Runtime-owned readiness is verified separately from model-produced prose
+        # and from transactional/write-only memory. This guard runs before the
+        # accepted final is persisted or made visible.
+        autobiographical_access = enforce_runtime_autobiographical_access(
+            final_visible_text,
+            runtime_root=self.config.root,
+            readiness=self.living_memory_gateway.readiness,
+        )
         assessments = [
             item.to_dict()
             for item in EpistemicClaimGuard().enforce(final_visible_text, evidence=evidence)
         ]
+        if autobiographical_access is not None:
+            assessments.append(autobiographical_access.to_dict())
         envelope.cognitive_frame["epistemic_evidence"] = evidence
         envelope.cognitive_frame["epistemic_claims"] = assessments
         projections = [
