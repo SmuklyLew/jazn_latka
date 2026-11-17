@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-17T21:54:14+00:00",
-  "updated_at_utc": "2026-11-17T21:54:14+00:00",
+  "generated_at_utc": "2026-11-17T22:09:40+00:00",
+  "updated_at_utc": "2026-11-17T22:09:40+00:00",
   "start_file": "run.py",
-  "file_count": 3836,
-  "static_file_count": 3836,
+  "file_count": 3837,
+  "static_file_count": 3837,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -319,8 +319,8 @@
     },
     {
       "path": ".github/workflows/python-environment-external.yml",
-      "size_bytes": 2370,
-      "sha256": "c547acbdf76e245529836f86f2235a98363324072df02107b9b501ab5220e729",
+      "size_bytes": 2868,
+      "sha256": "b70c0fda4ed2512e72f106f985e055108ff33b03011835f7700c917c434313b8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -509,7 +509,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2972,
-      "sha256": "7d44100cfb071c611d15be39b297631f348c6bb328f6a1a56a819b4c4f2bf6ce",
+      "sha256": "221caae809b695100256eebbf85104dacdde0105e520fe0ab53c3169e6368932",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11929,8 +11929,8 @@
     },
     {
       "path": "run_studio.py",
-      "size_bytes": 2509,
-      "sha256": "18c003f3c17fe41377a351c1dcc223af3bee9e3ad658a1f927c0ca6cf6bf850d",
+      "size_bytes": 2603,
+      "sha256": "97d2ec7a7ab2cf66d4010fa43764580ef2535b0becce6746dac9875d15ade12b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32466,6 +32466,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_studio_python_handoff_behavior.py",
+      "size_bytes": 4206,
+      "sha256": "1173c55a7dba3936a977671273f5974d48421890204a2a457ee1c0b3242bbd22",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_studio_resume_regressions.py",
       "size_bytes": 2844,
       "sha256": "deb6fa6811c662cda1d71ce815de4d877d88342ed0740cde541efdb51e1f28f5",
@@ -34321,8 +34330,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3067104,
-      "sha256": "6f88d266d166624669245f3db95cc0dae430a3648f65541cf05902b1f36849bd",
+      "size_bytes": 3069310,
+      "sha256": "cf96e0ac6c38fb7a2575993325f6dbeee930b3d85e1995d619eb2267f2f0d127",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
