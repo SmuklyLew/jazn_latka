@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-17T20:39:33+00:00",
-  "updated_at_utc": "2026-11-17T20:39:33+00:00",
+  "generated_at_utc": "2026-11-17T21:45:30+00:00",
+  "updated_at_utc": "2026-11-17T21:45:30+00:00",
   "start_file": "run.py",
-  "file_count": 3832,
-  "static_file_count": 3832,
+  "file_count": 3833,
+  "static_file_count": 3833,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -499,8 +499,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2972,
-      "sha256": "ac5330b4a57be925d284a3bfe817ddf5ca40e6e61870412af0678c9c2f241668",
+      "size_bytes": 2977,
+      "sha256": "07583459f6c64df98ad12ee818ce73aa4205fa043f62cdac1487521e4161d8fe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5178,6 +5178,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "latka_jazn/core/autobiographical_memory_claim_guard.py",
+      "size_bytes": 7185,
+      "sha256": "535c8f13c54ffef219f97a411e164378929622ecc90940434ad302fc64b40a5d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "latka_jazn/core/birth_manifest.py",
       "size_bytes": 13097,
       "sha256": "f28f3e52ed5eafae2b0ea65a4f4502a19598addf819889fe722cf6b7ca91565d",
@@ -5818,8 +5827,8 @@
     },
     {
       "path": "latka_jazn/core/engine.py",
-      "size_bytes": 132941,
-      "sha256": "c6eb9d4c4b918fc1b533ac21403a0e4dec91f40c96e7962b56936076e210322d",
+      "size_bytes": 133596,
+      "sha256": "098f0788ed535ab6c2f29083907d27172470c1851dcd77b09729f93afa3ed5c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
