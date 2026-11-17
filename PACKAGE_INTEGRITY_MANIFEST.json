@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-17T21:45:30+00:00",
-  "updated_at_utc": "2026-11-17T21:45:30+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-17T21:54:14+00:00",
+  "updated_at_utc": "2026-11-17T21:54:14+00:00",
   "start_file": "run.py",
-  "file_count": 3833,
-  "static_file_count": 3833,
+  "file_count": 3836,
+  "static_file_count": 3836,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -105,6 +105,15 @@
       "path": ".github/pull_request_template.md",
       "size_bytes": 2338,
       "sha256": "f2af0e58d3064627d5d76d2bff013a0046195a6fc4335356ec969702bc3c0ea3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": ".github/workflows/autobiographical-memory-truth.yml",
+      "size_bytes": 1783,
+      "sha256": "1facf2d907993940dc4702c8f657d5f0cc0cc1e1572ae735d2f268cb63b6bfbc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -499,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "07583459f6c64df98ad12ee818ce73aa4205fa043f62cdac1487521e4161d8fe",
+      "size_bytes": 2972,
+      "sha256": "7d44100cfb071c611d15be39b297631f348c6bb328f6a1a56a819b4c4f2bf6ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -536,7 +545,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "489cf1bc76f12163ec990d972f127c752b9b45441ac217390cced9245cf1a6be",
+      "sha256": "88be7e4511f4df60a8200662fe8367ee28fa3558663fb3b82d9d50e535b9d9d5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2517,6 +2526,15 @@
       "path": "docs/project/AGENTS_CODEX_OPERATIONAL_REFERENCE.md",
       "size_bytes": 13849,
       "sha256": "7cc73ebb8d0d979f82509794919330f594fa83f800708fec36f8782bc3de0a50",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/project/AUTOBIOGRAPHICAL_MEMORY_CLAIM_TRUTH_V12718.md",
+      "size_bytes": 3982,
+      "sha256": "2ccfcf92c6b11a37a6f3d86e9d0b4801ec338467285c87f9dfa4d7bf9b004aa0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5899,8 +5917,8 @@
     },
     {
       "path": "latka_jazn/core/final_visible_reply_capture.py",
-      "size_bytes": 6109,
-      "sha256": "d6460d626453c769109ad95c39817002c6d0c2495abc31678c1fb4f18fbc3019",
+      "size_bytes": 7128,
+      "sha256": "baede222d728b02480544e172a4a1e2b6a544d53fc223cb5fcf420e47d69e54e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10175,7 +10193,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7913,
-      "sha256": "cd14efeebc6f71f2231b7c36083ca20678ceab32b6d6f37543dc7733fed54f15",
+      "sha256": "5676251550eda7a3b0be65c257a0d92eb16fd0809653b24631c2c54092f8baf8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11686,8 +11704,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 28807,
-      "sha256": "edf5bd940c9059c710eeb684eae51860b419c248cc73e07347ffccb622ecc97e",
+      "size_bytes": 28890,
+      "sha256": "48fccfb85756d04ffa7efb35f11f98b04536c0a76f67ae01774cbf1e8d30c9ee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -26796,6 +26814,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "size_bytes": 11145,
+      "sha256": "9a3360afb9ffd451099ad001e1b0a8ab882714105148b1a9a196a8e676f49da4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
       "size_bytes": 9355,
       "sha256": "404b1c6cc0926760a740e02a942a3b2b00e9c1d3c920be4c9fc50aeec6626e20",
@@ -34294,8 +34321,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3054054,
-      "sha256": "4245325136af638a2366139861454e030cb85f3f78393a19fd506adae7c6ca82",
+      "size_bytes": 3067104,
+      "sha256": "6f88d266d166624669245f3db95cc0dae430a3648f65541cf05902b1f36849bd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -34952,11 +34979,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.17-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.18-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
