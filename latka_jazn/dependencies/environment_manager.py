@@ -119,13 +119,22 @@ def _requirements(root: Path, profiles: list[str]) -> list[str]:
         pyproject = tomllib.load(stream)
     project = pyproject.get("project") or {}
     optional = project.get("optional-dependencies") or {}
+    registry_path = root / "latka_jazn" / "resources" / "dependencies" / "profiles.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    available = registry.get("profiles") or {}
     requirements: list[str] = list(project.get("dependencies") or [])
     for profile in profiles:
-        if profile == "core":
-            continue
-        if profile not in optional:
+        entry = available.get(profile)
+        if not isinstance(entry, dict) or profile == "all":
             raise EnvironmentPolicyError("external_unknown_profile:" + profile)
-        requirements.extend(optional[profile])
+        if profile == "core":
+            if entry.get("source") != "project.dependencies":
+                raise EnvironmentPolicyError("external_core_profile_invalid")
+            continue
+        group = entry.get("source_optional_group")
+        if not isinstance(group, str) or group not in optional:
+            raise EnvironmentPolicyError("external_profile_mapping_invalid:" + profile)
+        requirements.extend(optional[group])
     if not all(isinstance(item, str) for item in requirements):
         raise EnvironmentPolicyError("external_requirements_invalid")
     return requirements
