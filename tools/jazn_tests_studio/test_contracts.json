@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.17",
-  "active_definition_count": 3473,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.18",
+  "active_definition_count": 3485,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -2174,6 +2174,310 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 52
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_affirmative_self_claims_detected": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_affirmative_self_claims_detected",
+      "purpose": "Affirmative self claims detected",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_negation_hypothesis_and_quotation_are_not_blocked": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_negation_hypothesis_and_quotation_are_not_blocked",
+      "purpose": "Negation hypothesis and quotation are not blocked",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 65
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_later_affirmative_clause_is_not_hidden_by_prior_denial": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_later_affirmative_clause_is_not_hidden_by_prior_denial",
+      "purpose": "Later affirmative clause is not hidden by prior denial",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_three_independent_evidence_requirements": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_three_independent_evidence_requirements",
+      "purpose": "Three independent evidence requirements",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_missing_memory_blocks_real_report_without_reading_database": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_missing_memory_blocks_real_report_without_reading_database",
+      "purpose": "Missing memory blocks real report without reading database",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "EpistemicClaimViolation"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_negative_claim_does_not_probe_or_mutate_memory": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_negative_claim_does_not_probe_or_mutate_memory",
+      "purpose": "Negative claim does not probe or mutate memory",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_transactional_only_source_never_authorizes_autobiography": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_transactional_only_source_never_authorizes_autobiography",
+      "purpose": "Transactional only source never authorizes autobiography",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "EpistemicClaimViolation"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_attached_synthetic_native_memory_allows_truthful_access_claim": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_attached_synthetic_native_memory_allows_truthful_access_claim",
+      "purpose": "Attached synthetic native memory allows truthful access claim",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 157
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_readiness_probe_failure_blocks_positive_claim": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_readiness_probe_failure_blocks_positive_claim",
+      "purpose": "Readiness probe failure blocks positive claim",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "EpistemicClaimViolation"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 181
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_final_visible_capture_rejects_unavailable_autobiographical_memory": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_final_visible_capture_rejects_unavailable_autobiographical_memory",
+      "purpose": "Final visible capture rejects unavailable autobiographical memory",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "EpistemicClaimViolation"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 220
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_final_visible_capture_accepts_truthful_denial_without_memory": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_final_visible_capture_accepts_truthful_denial_without_memory",
+      "purpose": "Final visible capture accepts truthful denial without memory",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 233
+    },
+    "tests/test_autobiographical_memory_access_claim_truth.py::test_final_visible_capture_accepts_verified_attached_native_memory": {
+      "path": "tests/test_autobiographical_memory_access_claim_truth.py",
+      "name": "test_final_visible_capture_accepts_verified_attached_native_memory",
+      "purpose": "Final visible capture accepts verified attached native memory",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.autobiographical_memory_claim_guard",
+        "latka_jazn.core.epistemic_claim_guard",
+        "latka_jazn.core.final_visible_reply_capture",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.tools.memory_rebuild_app.unified_memory"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 246
     },
     "tests/test_autobiographical_memory_readiness_convergence.py::test_empty_canonical_memory_root_does_not_shadow_populated_legacy_root": {
       "path": "tests/test_autobiographical_memory_readiness_convergence.py",
