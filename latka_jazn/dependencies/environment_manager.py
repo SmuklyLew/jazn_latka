@@ -22,14 +22,17 @@ PROBE_TIMEOUT_SECONDS = 15
 # paths and -B prevents writing bytecode into the external environment.
 _PROBE_CODE = """
 import importlib.metadata as metadata
+import importlib.util
 import json
 import platform
 import sys
 from packaging.requirements import Requirement
 
 requirements = json.loads(sys.argv[1])
+aliases = json.loads(sys.argv[2])
 missing = []
 incompatible = []
+imports_missing = []
 for spec in requirements:
     requirement = Requirement(spec)
     if requirement.marker is not None and not requirement.marker.evaluate():
@@ -41,6 +44,15 @@ for spec in requirements:
         continue
     if requirement.specifier and not requirement.specifier.contains(installed, prereleases=True):
         incompatible.append({"distribution": requirement.name, "installed": installed, "required": str(requirement.specifier)})
+        continue
+    canonical = requirement.name.lower().replace("_", "-").replace(".", "-")
+    module = aliases.get(canonical, canonical.replace("-", "_"))
+    try:
+        import_ready = importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        import_ready = False
+    if not import_ready:
+        imports_missing.append(requirement.name)
 print(json.dumps({
     "executable": sys.executable,
     "prefix": sys.prefix,
@@ -50,6 +62,7 @@ print(json.dumps({
     "architecture": platform.machine(),
     "missing": missing,
     "incompatible": incompatible,
+    "imports_missing": imports_missing,
 }, sort_keys=True))
 """
 
@@ -114,7 +127,7 @@ def load_environment_policy(root: Path | str) -> dict[str, Any] | None:
     }
 
 
-def _requirements(root: Path, profiles: list[str]) -> list[str]:
+def _requirements(root: Path, profiles: list[str]) -> tuple[list[str], dict[str, str]]:
     with (root / "pyproject.toml").open("rb") as stream:
         pyproject = tomllib.load(stream)
     project = pyproject.get("project") or {}
@@ -137,7 +150,12 @@ def _requirements(root: Path, profiles: list[str]) -> list[str]:
         requirements.extend(optional[group])
     if not all(isinstance(item, str) for item in requirements):
         raise EnvironmentPolicyError("external_requirements_invalid")
-    return requirements
+    aliases = registry.get("import_name_overrides") or {}
+    if not isinstance(aliases, dict) or any(
+            not isinstance(key, str) or not isinstance(value, str)
+            for key, value in aliases.items()):
+        raise EnvironmentPolicyError("external_import_mapping_invalid")
+    return requirements, aliases
 
 
 def inspect_external_environment(
@@ -167,7 +185,7 @@ def inspect_external_environment(
         result["errors"].append("external_python_not_a_file")
         return result
     try:
-        requirements = _requirements(directory, profiles)
+        requirements, aliases = _requirements(directory, profiles)
     except (OSError, ValueError, TypeError, tomllib.TOMLDecodeError) as exc:
         result["status"] = "INVALID"
         result["errors"].append(str(exc) if isinstance(exc, EnvironmentPolicyError)
@@ -176,7 +194,8 @@ def inspect_external_environment(
     try:
         completed = subprocess.run(
             [executable, "-I", "-B", "-X", "utf8", "-c", _PROBE_CODE,
-             json.dumps(requirements, ensure_ascii=False)],
+             json.dumps(requirements, ensure_ascii=False),
+             json.dumps(aliases, ensure_ascii=False)],
             cwd=directory, capture_output=True, text=True, encoding="utf-8",
             errors="replace", check=False, timeout=PROBE_TIMEOUT_SECONDS,
         )
@@ -205,6 +224,8 @@ def inspect_external_environment(
         result["errors"].append("external_required_distributions_missing")
     if probe.get("incompatible"):
         result["errors"].append("external_required_distributions_incompatible")
+    if probe.get("imports_missing"):
+        result["errors"].append("external_required_imports_missing")
     if not result["errors"]:
         result["status"] = "READY"
         result["ready"] = True
