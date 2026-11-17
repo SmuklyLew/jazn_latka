@@ -5,7 +5,9 @@ operator memory or production daemon is opened or modified.
 """
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -14,6 +16,8 @@ from latka_jazn.core.autobiographical_memory_claim_guard import (
     enforce_runtime_autobiographical_access,
     has_assertive_autobiographical_access_claim,
 )
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.final_visible_reply_capture import FinalVisibleReplyCapture
 from latka_jazn.core.epistemic_claim_guard import (
     EpistemicClaimStatus,
     EpistemicClaimViolation,
@@ -192,3 +196,73 @@ def test_readiness_probe_failure_blocks_positive_claim(tmp_path: Path, monkeypat
             "Mam dostęp do mojej pamięci autobiograficznej.",
             runtime_root=root, readiness=crash,
         )
+
+
+def _capture_args(root: Path) -> dict:
+    sample = datetime(2026, 11, 17, 21, 35, tzinfo=ZoneInfo("UTC"))
+    return {
+        "turn_id": "synthetic-turn-memory-v12718",
+        "trace_id": "synthetic-trace-memory-v12718",
+        "timestamp_header": f"🕒 {sample.astimezone(ZoneInfo('Europe/Warsaw')):%Y-%m-%d %H:%M:%S}",
+        "timezone": "Europe/Warsaw",
+        "timestamp_sample_iso": sample.isoformat(),
+        "timestamp_source": "test_clock",
+        "timestamp_trusted": True,
+        "author_id": "latka_runtime",
+        "author_label": "Łatka",
+        "author_source": "jazn_runtime",
+        "state_emoticon": "🌿",
+        "config": JaznConfig(root=root),
+        "persist_epistemic_ledger": False,
+    }
+
+
+def test_final_visible_capture_rejects_unavailable_autobiographical_memory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("JAZN_MEMORY_ROOT", raising=False)
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    with pytest.raises(EpistemicClaimViolation, match="without_verified_memory"):
+        FinalVisibleReplyCapture.build(
+            **_capture_args(tmp_path),
+            final_text="Cześć. Właśnie uruchamiam dostęp do mojej pamięci autobiograficznej.",
+        )
+    assert not (tmp_path / "memory").exists()
+
+
+def test_final_visible_capture_accepts_truthful_denial_without_memory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("JAZN_MEMORY_ROOT", raising=False)
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    capture = FinalVisibleReplyCapture.build(
+        **_capture_args(tmp_path),
+        final_text="Cześć. Nie mam obecnie dostępu do mojej pamięci autobiograficznej.",
+    )
+    assert "Nie mam obecnie dostępu" in capture.final_visible_text
+    assert not capture.epistemic_claims
+
+
+def test_final_visible_capture_accepts_verified_attached_native_memory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "system"
+    root.mkdir()
+    memory_root = tmp_path / "private-memory"
+    db = memory_root / "sqlite" / "memory_jazn.sqlite3"
+    db.parent.mkdir(parents=True)
+    UnifiedMemoryDatabase(db).initialize()
+    monkeypatch.setenv("JAZN_MEMORY_ROOT", str(memory_root))
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "optional")
+    monkeypatch.setenv("JAZN_MEMORY_READINESS_POLICY", "native_unified_required")
+    assert LivingMemoryGateway(root, discovery_cache_seconds=0).readiness()[
+        "full_autobiographical_recall_ready"
+    ] is True
+    capture = FinalVisibleReplyCapture.build(
+        **_capture_args(root),
+        final_text="Mam dostęp do mojej pamięci autobiograficznej.",
+    )
+    assert any(
+        x["kind"] == "memory_recall" and x["status"] == "supported"
+        for x in capture.epistemic_claims
+    )
