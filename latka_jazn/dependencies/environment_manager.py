@@ -127,6 +127,17 @@ def load_environment_policy(root: Path | str) -> dict[str, Any] | None:
     }
 
 
+def require_operator_managed_environment(root: Path | str) -> None:
+    """Guard direct installers, not just main.py and the JSS buttons.
+
+    The presence of an invalid or unsupported policy also blocks mutation.
+    Legacy operation is preserved only if there is no explicit policy file.
+    """
+    selected = load_environment_policy(root)
+    if selected is not None:
+        raise EnvironmentPolicyError("external_environment_mutation_forbidden")
+
+
 def _requirements(root: Path, profiles: list[str]) -> tuple[list[str], dict[str, str]]:
     with (root / "pyproject.toml").open("rb") as stream:
         pyproject = tomllib.load(stream)
