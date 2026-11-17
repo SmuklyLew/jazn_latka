@@ -75,8 +75,11 @@ def inspect_requirements(root: Path, *, mcp_python_override: str | None = None) 
     mcp_error = ""
     try:
         configured, _digest = load_settings(root)
-        mcp_python = python_executable(
-            Settings(python=mcp_python_override or configured.mcp_python or configured.python)
+        selected_mcp = mcp_python_override or configured.mcp_python
+        mcp_python = (
+            python_executable(Settings(python=selected_mcp), role="mcp")
+            if selected_mcp else
+            python_executable(Settings(python=configured.python), root=root)
         )
         mcp_checks = mcp_dependency_preflight(mcp_python, root)
     except (OSError, ValueError, RuntimeError) as exc:
