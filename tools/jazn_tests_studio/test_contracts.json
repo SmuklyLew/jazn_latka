@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.16",
-  "active_definition_count": 3458,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.17",
+  "active_definition_count": 3467,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -19130,6 +19130,181 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 105
+    },
+    "tests/test_external_python_environment_policy.py::test_absent_policy_preserves_legacy_without_creating_files": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_absent_policy_preserves_legacy_without_creating_files",
+      "purpose": "Absent policy preserves legacy without creating files",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_external_python_environment_policy.py::test_external_readonly_and_prefers_operator_path": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_external_readonly_and_prefers_operator_path",
+      "purpose": "External readonly and prefers operator path",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 79
+    },
+    "tests/test_external_python_environment_policy.py::test_external_missing_dependency_never_bootstraps": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_external_missing_dependency_never_bootstraps",
+      "purpose": "External missing dependency never bootstraps",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_external_python_environment_policy.py::test_invalid_external_policy_fails_closed": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_invalid_external_policy_fails_closed",
+      "purpose": "Invalid external policy fails closed",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_external_python_environment_policy.py::test_external_unsupported_profile_fails_before_launch": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_external_unsupported_profile_fails_before_launch",
+      "purpose": "External unsupported profile fails before launch",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 127
+    },
+    "tests/test_external_python_environment_policy.py::test_external_does_not_repeat_failed_handoff": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_external_does_not_repeat_failed_handoff",
+      "purpose": "External does not repeat failed handoff",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
+    "tests/test_external_python_environment_policy.py::test_external_rejects_unverified_interpreter_version": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_external_rejects_unverified_interpreter_version",
+      "purpose": "External rejects unverified interpreter version",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
+    },
+    "tests/test_external_python_environment_policy.py::test_jss_launcher_honors_external_without_venv": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_jss_launcher_honors_external_without_venv",
+      "purpose": "Jss launcher honors external without venv",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 166
+    },
+    "tests/test_external_python_environment_policy.py::test_studio_selector_obeys_explicit_external": {
+      "path": "tests/test_external_python_environment_policy.py",
+      "name": "test_studio_selector_obeys_explicit_external",
+      "purpose": "Studio selector obeys explicit external",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 179
     },
     "tests/test_fast_bootstrap_persistent_runtime.py::test_verified_materialization_reuse_skips_zip_rehash_and_extraction": {
       "path": "tests/test_fast_bootstrap_persistent_runtime.py",
