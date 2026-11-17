@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.18",
-  "active_definition_count": 3485,
+  "active_definition_count": 3488,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -68394,6 +68394,61 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 240
+    },
+    "tests/test_studio_python_handoff_behavior.py::test_studio_recursion_guard_precedes_handoff": {
+      "path": "tests/test_studio_python_handoff_behavior.py",
+      "name": "test_studio_recursion_guard_precedes_handoff",
+      "purpose": "Studio recursion guard precedes handoff",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_studio_python_handoff_behavior.py::test_verified_selection_uses_one_canonical_handoff": {
+      "path": "tests/test_studio_python_handoff_behavior.py",
+      "name": "test_verified_selection_uses_one_canonical_handoff",
+      "purpose": "Verified selection uses one canonical handoff",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_studio_python_handoff_behavior.py::test_private_broken_environment_fails_before_handoff": {
+      "path": "tests/test_studio_python_handoff_behavior.py",
+      "name": "test_private_broken_environment_fails_before_handoff",
+      "purpose": "Private broken environment fails before handoff",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
     },
     "tests/test_studio_resume_regressions.py::test_gateway_finds_real_database_when_given_memory_root": {
       "path": "tests/test_studio_resume_regressions.py",
