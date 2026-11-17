@@ -130,6 +130,13 @@ def install_bundle(
     if not offline:
         raise DependencyStudioError("Dependency Studio installs only from a verified local wheelhouse; pass --offline")
     project_root = Path(root).resolve()
+    from .environment_manager import (
+        EnvironmentPolicyError, require_operator_managed_environment,
+    )
+    try:
+        require_operator_managed_environment(project_root)
+    except EnvironmentPolicyError as exc:
+        raise DependencyStudioError(str(exc)) from exc
     bundle = Path(bundle_dir).resolve()
     verification = verify_bundle(bundle)
     if verification.get("ok") is not True:
@@ -582,6 +589,14 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
 
 def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    if not dry_run:
+        from .environment_manager import (
+            EnvironmentPolicyError, require_operator_managed_environment,
+        )
+        try:
+            require_operator_managed_environment(project_root)
+        except EnvironmentPolicyError as exc:
+            raise DependencyStudioError(str(exc)) from exc
     envs_root = default_environments_root(project_root)
     marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     active = str(marker.get("environment_root") or "")
