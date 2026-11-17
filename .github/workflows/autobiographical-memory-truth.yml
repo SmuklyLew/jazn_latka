@@ -1,0 +1,50 @@
+name: Autobiographical MEMORY claims v127.18
+
+on:
+  push:
+    branches:
+      - "fix/v12718-autobiographical-memory-claim-truth-20261117"
+  pull_request:
+    paths:
+      - "latka_jazn/core/autobiographical_memory_claim_guard.py"
+      - "latka_jazn/core/engine.py"
+      - "tests/test_autobiographical_memory_access_claim_truth.py"
+      - ".github/workflows/autobiographical-memory-truth.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  memory-claim-truth:
+    name: MEMORY truth (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.14"]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Choose Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test dependencies in CI runner only
+        run: python -m pip install -e . pytest
+      - name: Compile changed modules and tests
+        run: >-
+          python -m compileall -q
+          latka_jazn/core/autobiographical_memory_claim_guard.py
+          latka_jazn/core/engine.py
+          tests/test_autobiographical_memory_access_claim_truth.py
+      - name: Test affirmative, negation, provenance and synthetic attached MEMORY
+        run: >-
+          python -B -X utf8 -m pytest -q -ra --tb=short
+          tests/test_autobiographical_memory_access_claim_truth.py
+          tests/test_autobiographical_memory_readiness_convergence.py
+          tests/test_epistemic_claims_and_ledger.py
+      - name: Check whitespace
+        run: git diff --check
