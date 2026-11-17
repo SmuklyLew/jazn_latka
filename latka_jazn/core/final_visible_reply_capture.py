@@ -5,7 +5,12 @@ from typing import Any, Mapping
 import hashlib
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard
+from latka_jazn.core.epistemic_claim_guard import EpistemicClaimGuard, EpistemicClaimViolation
+from latka_jazn.core.autobiographical_memory_claim_guard import (
+    has_assertive_autobiographical_access_claim,
+    enforce_runtime_autobiographical_access,
+)
+from latka_jazn.memory.living_memory_gateway import LivingMemoryGateway
 from latka_jazn.core.epistemic_decision_ledger import EpistemicDecisionLedger, epistemic_ledger_path
 from latka_jazn.core.epistemic_evidence import EpistemicEvidenceCollector
 from latka_jazn.core.message_envelope import MessageEnvelope, normalize_newlines
@@ -114,7 +119,22 @@ class FinalVisibleReplyCapture:
                 external_evidence=external_evidence,
                 generated_evidence=generated_evidence,
             ).to_dict()
+        # Guard local and host-finalized replies with the same verified MEMORY
+        # boundary; an absent config must never authorize an autobiographical claim.
+        memory_claim = None
+        if has_assertive_autobiographical_access_claim(final_visible_text):
+            if config is None:
+                raise EpistemicClaimViolation(
+                    "memory_recall:autobiographical_access_requires_runtime_config"
+                )
+            memory_claim = enforce_runtime_autobiographical_access(
+                final_visible_text,
+                runtime_root=config.root,
+                readiness=LivingMemoryGateway(config.root).readiness,
+            )
         assessments = EpistemicClaimGuard().enforce(final_visible_text, evidence=evidence)
+        if memory_claim is not None:
+            assessments.append(memory_claim)
         assessment_payloads = tuple(item.to_dict() for item in assessments)
         if persist_epistemic_ledger:
             if config is None:
