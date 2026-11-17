@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import asdict, replace
 from pathlib import Path
 import json
+import os
 import shutil
 import sys
 from typing import Callable
@@ -211,6 +212,17 @@ class SetupWizard(QWizard):
                 self.setting_fields[key] = field
                 form.addRow(label, field)
             surface_layout.addWidget(box)
+        from latka_jazn.dependencies.environment_manager import load_environment_policy
+        external_policy = load_environment_policy(core.root)
+        if external_policy is not None:
+            selected = external_policy["python_executable"]
+            self.setting_fields["python"].setText(selected)
+            if not self.setting_fields["mcp_python"].text().strip():
+                self.setting_fields["mcp_python"].setText(selected)
+            note.setText(
+                note.text() + " Tryb External: Python jest wybierany przez operatora "
+                "w .settings_local/python_environment.json, bez instalacji pakietów przez Jaźń."
+            )
         appearance = QGroupBox("Profil i motyw")
         appearance_form = QFormLayout(appearance)
         appearance_form.addRow("Motyw", self.theme_choice)
@@ -266,17 +278,25 @@ class SetupWizard(QWizard):
 
     def _setup_python(self) -> str:
         from .core import python_executable
-        return python_executable(self.core.settings)
+        return python_executable(self.core.settings, root=self.core.root)
 
     def _render_setup_rows(self, rows: list[dict]) -> None:
         # Resetting the rows removes stale buttons after a successful recheck.
         self.table.setRowCount(0)
         self.table.setRowCount(len(rows))
+        from latka_jazn.dependencies.environment_manager import (
+            EnvironmentPolicyError, load_environment_policy,
+        )
+        try:
+            external_selected = load_environment_policy(self.core.root) is not None
+        except EnvironmentPolicyError:
+            external_selected = True  # Fail closed: no mutating buttons.
         for i, row in enumerate(rows):
             for j, key in enumerate(("name", "state", "detail", "remedy")):
                 self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
             name = str(row.get("name") or "")
-            if row.get("state") in {"OPTIONAL_MISSING", "FAIL"} and name in _ROW_PROFILES:
+            if (not external_selected and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
+                    and name in _ROW_PROFILES):
                 button = QPushButton("Zainstaluj…")
                 button.setAccessibleName("Zainstaluj zależność: " + name)
                 button.clicked.connect(
@@ -285,6 +305,16 @@ class SetupWizard(QWizard):
                 self.table.setCellWidget(i, 4, button)
 
     def install_missing(self, name: str) -> None:
+        from latka_jazn.dependencies.environment_manager import (
+            EnvironmentPolicyError, load_environment_policy,
+        )
+        try:
+            if load_environment_policy(self.core.root) is not None:
+                self.stage.setText("External: instalacja pakietów przez Jaźń jest zabroniona.")
+                return
+        except EnvironmentPolicyError:
+            self.stage.setText("Nieprawidłowa polityka External: instalacja zablokowana.")
+            return
         spec = _ROW_PROFILES.get(name)
         if spec is None or not any(
             row.get("name") == name and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
@@ -503,6 +533,26 @@ class SetupWizard(QWizard):
 
     def provision(self, command: str) -> None:
         from latka_jazn.tools.jss_prerequisite_setup import MODEL_NAME
+        from latka_jazn.dependencies.environment_manager import (
+            EnvironmentPolicyError, inspect_external_environment, load_environment_policy,
+        )
+        try:
+            policy = load_environment_policy(self.core.root)
+            if policy is not None and command == "inspect":
+                report = inspect_external_environment(self.core.root, policy)
+                self.provision_result.setText(
+                    "External: " + report["status"] + " / " + ", ".join(report["errors"])
+                )
+                return
+            if policy is not None and command in {
+                    "install-python", "prepare-venv", "download-deps", "install-offline"}:
+                self.provision_result.setText(
+                    "External: Jaźń nie może tworzyć ani modyfikować Pythona i pakietów."
+                )
+                return
+        except EnvironmentPolicyError as exc:
+            self.provision_result.setText("Nieprawidłowa polityka środowiska: " + str(exc))
+            return
         if self.provision_process is not None and self.provision_process.state() != QProcess.ProcessState.NotRunning:
             self.provision_result.setText("Inne przygotowanie środowiska jeszcze trwa.")
             return
@@ -761,24 +811,39 @@ class SetupWizard(QWizard):
             return
         try:
             from .requirements_worker import setup_scope
+            from latka_jazn.dependencies.environment_manager import (
+                inspect_external_environment, load_environment_policy,
+            )
             from latka_jazn.dependencies.private_python import (
                 private_python_path, private_python_status,
             )
-            if private_python_status(self.core.root).get("ready") is not True:
-                raise StudioError("ROOT/.venv nie jest gotowe.")
-            canonical = private_python_path(self.core.root).resolve()
             data = asdict(self.core.settings)
             data.update({key: field.text().strip() for key, field in self.setting_fields.items()})
-            selected_python = Path(str(data.get("python") or "")).resolve()
-            selected_mcp = Path(str(data.get("mcp_python") or data.get("python") or "")).resolve()
-            if selected_python != canonical or selected_mcp != canonical:
-                raise StudioError("Jaźń i MCP muszą używać jednego ROOT/.venv.")
+            selected_python = Path(str(data.get("python") or "")).absolute()
+            selected_mcp = Path(str(data.get("mcp_python") or data.get("python") or "")).absolute()
+            policy = load_environment_policy(self.core.root)
+            if policy is not None:
+                external = inspect_external_environment(self.core.root, policy)
+                if not external["ready"]:
+                    raise StudioError("External nie jest gotowy: " + ", ".join(external["errors"]))
+                canonical = Path(external["python_executable"]).absolute()
+                if os.path.normcase(str(selected_python)) != os.path.normcase(str(canonical)):
+                    raise StudioError("Jaźń musi używać wskazanego interpretera External.")
+                if not selected_mcp.is_file():
+                    raise StudioError("Interpreter MCP nie istnieje.")
+                data["python"], data["mcp_python"] = str(canonical), str(selected_mcp)
+            else:
+                if private_python_status(self.core.root).get("ready") is not True:
+                    raise StudioError("ROOT/.venv nie jest gotowe.")
+                canonical = private_python_path(self.core.root).resolve()
+                if selected_python.resolve() != canonical or selected_mcp.resolve() != canonical:
+                    raise StudioError("Jaźń i MCP muszą używać jednego ROOT/.venv.")
+                data["python"], data["mcp_python"] = str(canonical), str(canonical)
             if self.report.get("scope") != setup_scope(self.core.root, str(canonical)):
                 raise StudioError("Interpreter zmieniono od ostatniej kontroli; ponów kontrolę.")
             report_mcp = str((self.report.get("mcp") or {}).get("interpreter") or "")
-            if report_mcp and Path(report_mcp).resolve() != canonical:
+            if report_mcp and os.path.normcase(os.path.abspath(report_mcp)) != os.path.normcase(str(selected_mcp)):
                 raise StudioError("Interpreter MCP zmieniono; ponów kontrolę.")
-            data["python"], data["mcp_python"] = str(canonical), str(canonical)
             data["theme"] = str(self.theme_choice.currentData())
             data["runtime_profile"] = str(self.runtime_profile_choice.currentData())
             self.save(Settings.validate(data))

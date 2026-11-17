@@ -322,7 +322,31 @@ def save_settings(root: Path, settings: Settings, expected: str | None) -> str:
             Path(name).unlink(missing_ok=True)
         return sha256(data).hexdigest()
 
-def python_executable(settings: Settings) -> str:
+def python_executable(settings: Settings, *, root: Path | None = None,
+                      role: str = "core") -> str:
+    if role not in {"core", "mcp"}:
+        raise StudioError("Nieznana rola interpretera")
+    if role == "core":
+        from latka_jazn.dependencies.environment_manager import (
+            EnvironmentPolicyError, inspect_external_environment, load_environment_policy,
+        )
+        project_root = Path(root).resolve() if root else Path(__file__).resolve().parents[2]
+        try:
+            policy = load_environment_policy(project_root)
+            if policy is not None:
+                external = inspect_external_environment(project_root, policy)
+                if not external["ready"]:
+                    raise StudioError("External Python: " + ", ".join(external["errors"]))
+                selected = str(external["python_executable"])
+                if (settings.python
+                        and os.path.normcase(os.path.abspath(settings.python))
+                        != os.path.normcase(os.path.abspath(selected))):
+                    raise StudioError(
+                        "Zapisany Python JSS jest inny niż wybrany External; zaktualizuj ustawienia"
+                    )
+                return selected
+        except EnvironmentPolicyError as exc:
+            raise StudioError("Błędna polityka Pythona: " + str(exc)) from exc
     explicit = settings.python or os.environ.get("JAZN_STUDIO_PYTHON", "")
     if explicit:
         if not Path(explicit).is_absolute() or not Path(explicit).is_file():
@@ -637,7 +661,7 @@ class Controller:
                 # restart is parsed directly by main.py; its options must not
                 # be hidden behind the compatibility separator.
                 args.extend(target)
-        return [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"), *args]
+        return [python_executable(self.settings, root=self.root), "-X", "utf8", str(self.root / "run.py"), *args]
 
     def _reserve(self, key: str) -> Job:
         with self.lock:
@@ -678,7 +702,7 @@ class Controller:
                 return current
             job = self._reserve("setup:requirements")
             self.setup_observation = {}
-            argv = [python_executable(self.settings), "-X", "utf8", "-m",
+            argv = [python_executable(self.settings, root=self.root), "-X", "utf8", "-m",
                     "tools.jazn_run_studio.requirements_worker"]
             if self.settings.mcp_python:
                 argv.extend(("--mcp-python", self.settings.mcp_python))
@@ -705,7 +729,7 @@ class Controller:
                 raise StudioError("Brak pliku Studio")
             entry[0] = str(script)
         job = self._reserve("studio:" + key)
-        self._launch(job, [python_executable(self.settings), "-X", "utf8", *entry], None)
+        self._launch(job, [python_executable(self.settings, root=self.root), "-X", "utf8", *entry], None)
         return job
 
     def ensure_ollama(self) -> Job:
@@ -747,7 +771,11 @@ class Controller:
             # The canonical CLI refuses MCP without an explicit security mode.
             # Studio owns only a local developer listener; public OAuth must be
             # configured through the separately validated deployment workflow.
-            mcp_interpreter = python_executable(Settings(python=self.settings.mcp_python or self.settings.python))
+            mcp_interpreter = (
+            python_executable(Settings(python=self.settings.mcp_python), role="mcp")
+            if self.settings.mcp_python else
+            python_executable(self.settings, root=self.root)
+        )
             imports = mcp_dependency_preflight(mcp_interpreter, self.root)
             missing = [name for name, available in imports.items() if not available]
             if missing:
@@ -908,7 +936,7 @@ class Controller:
     def child_environment(self, *, profile: bool = False) -> dict[str, str]:
         env = environment()
         if profile and self.settings.runtime_profile == "operator":
-            result = run_external([python_executable(self.settings), "-X", "utf8", "-m",
+            result = run_external([python_executable(self.settings, root=self.root), "-X", "utf8", "-m",
                                   "tools.jazn_run_studio.studio_worker", "profile-env"], cwd=self.root, timeout=35)
             if result.returncode or len(result.stdout) > 32768:
                 raise StudioError("Walidacja profilu przyszłego uruchomienia nie powiodła się")
@@ -953,7 +981,7 @@ class Controller:
                 raise StudioError("Zbyt duże dane operacji")
         job = self._reserve("helper:" + mode + ":" + key)
         job.input_data = payload
-        argv = [python_executable(self.settings), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
+        argv = [python_executable(self.settings, root=self.root), "-X", "utf8", "-m", "tools.jazn_run_studio.studio_worker", mode]
         if key:
             argv.append(key)
         self._launch(job, argv, 7200 if mode == "execute" else 45)
@@ -970,7 +998,7 @@ class Controller:
             raise StudioError("Nieznana inspekcja pamięci")
         if operation != "readiness" and not project:
             raise StudioError("Wybierz plik projektu pamięci")
-        argv = [python_executable(self.settings), "-X", "utf8", str(self.root / "run.py"),
+        argv = [python_executable(self.settings, root=self.root), "-X", "utf8", str(self.root / "run.py"),
                 "memory-inspection", "--root", str(self.root), "--operation", operation, "--json"]
         for option, value in (("project", project), ("reference", reference),
                               ("reference-sha256", reference_sha256), ("parent", parent),

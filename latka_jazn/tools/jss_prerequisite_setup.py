@@ -427,6 +427,16 @@ def main(argv: list[str] | None = None) -> int:
             operation.add_argument("--launch", choices=("cli", "app"), default="cli")
     args = parser.parse_args(argv)
     try:
+        if args.command in {
+                "prepare-resources", "install-python", "prepare-venv",
+                "download-deps", "install-offline"}:
+            from latka_jazn.dependencies.environment_manager import (
+                EnvironmentPolicyError, require_operator_managed_environment,
+            )
+            try:
+                require_operator_managed_environment(args.root)
+            except EnvironmentPolicyError as exc:
+                raise ProvisioningError(str(exc)) from exc
         if args.command == "inspect":
             data = inspect(args.root)
         elif args.command == "prepare-resources":

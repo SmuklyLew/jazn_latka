@@ -96,6 +96,13 @@ def extend_private_environment(
     if not offline:
         raise DependencyStudioError("private_venv_extension_requires_offline")
     project_root = Path(root).resolve()
+    from .environment_manager import (
+        EnvironmentPolicyError, require_operator_managed_environment,
+    )
+    try:
+        require_operator_managed_environment(project_root)
+    except EnvironmentPolicyError as exc:
+        raise DependencyStudioError(str(exc)) from exc
     if not root_local_resources_enabled(project_root):
         raise DependencyStudioError("private_venv_extension_requires_prepared_root")
     private = private_python_status(project_root)

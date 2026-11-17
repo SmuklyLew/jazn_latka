@@ -130,6 +130,13 @@ def install_bundle(
     if not offline:
         raise DependencyStudioError("Dependency Studio installs only from a verified local wheelhouse; pass --offline")
     project_root = Path(root).resolve()
+    from .environment_manager import (
+        EnvironmentPolicyError, require_operator_managed_environment,
+    )
+    try:
+        require_operator_managed_environment(project_root)
+    except EnvironmentPolicyError as exc:
+        raise DependencyStudioError(str(exc)) from exc
     bundle = Path(bundle_dir).resolve()
     verification = verify_bundle(bundle)
     if verification.get("ok") is not True:
@@ -451,6 +458,40 @@ def dependency_activation_status(root: Path | str) -> dict[str, Any]:
 
 def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    # An explicitly selected External interpreter overrides ROOT/.venv, even if
+    # ROOT/.venv exists. Neither this branch nor any handoff may install into it.
+    from .environment_manager import (
+        EnvironmentPolicyError, inspect_external_environment, load_environment_policy,
+    )
+    try:
+        policy = load_environment_policy(project_root)
+        if policy is not None:
+            external = inspect_external_environment(project_root, policy)
+            if not external["ready"]:
+                return {
+                    "ok": False, "state": "external_environment_not_ready",
+                    "reexec_python": None, "external_environment": external,
+                }
+            if external["current"]:
+                return {
+                    "ok": True, "state": "external_environment_ready",
+                    "reexec_python": None, "external_environment": external,
+                }
+            if os.environ.get("JAZN_DEPENDENCY_BOOTSTRAP_ACTIVE") == "1":
+                return {
+                    "ok": False, "state": "external_environment_handoff_not_established",
+                    "reexec_python": None, "external_environment": external,
+                }
+            return {
+                "ok": True, "state": "external_environment_handoff",
+                "reexec_python": external["python_executable"],
+                "external_environment": external,
+            }
+    except EnvironmentPolicyError as exc:
+        return {
+            "ok": False, "state": "environment_policy_invalid",
+            "reexec_python": None, "error": str(exc),
+        }
     # Prefer a verified ROOT/.venv even if the host Python already has the core
     # packages. The private venv is never created or modified implicitly.
     from .private_python import private_python_status
@@ -548,6 +589,14 @@ def prepare_entrypoint_environment(root: Path | str, *, auto_install: bool = Tru
 
 def dependency_environment_gc(root: Path | str, *, dry_run: bool = True) -> dict[str, Any]:
     project_root = Path(root).resolve()
+    if not dry_run:
+        from .environment_manager import (
+            EnvironmentPolicyError, require_operator_managed_environment,
+        )
+        try:
+            require_operator_managed_environment(project_root)
+        except EnvironmentPolicyError as exc:
+            raise DependencyStudioError(str(exc)) from exc
     envs_root = default_environments_root(project_root)
     marker = read_manifest(existing_environment_marker_path(project_root)) or {}
     active = str(marker.get("environment_root") or "")
