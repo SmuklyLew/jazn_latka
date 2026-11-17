@@ -212,6 +212,17 @@ class SetupWizard(QWizard):
                 self.setting_fields[key] = field
                 form.addRow(label, field)
             surface_layout.addWidget(box)
+        from latka_jazn.dependencies.environment_manager import load_environment_policy
+        external_policy = load_environment_policy(core.root)
+        if external_policy is not None:
+            selected = external_policy["python_executable"]
+            self.setting_fields["python"].setText(selected)
+            if not self.setting_fields["mcp_python"].text().strip():
+                self.setting_fields["mcp_python"].setText(selected)
+            note.setText(
+                note.text() + " Tryb External: Python jest wybierany przez operatora "
+                "w .settings_local/python_environment.json, bez instalacji pakietów przez Jaźń."
+            )
         appearance = QGroupBox("Profil i motyw")
         appearance_form = QFormLayout(appearance)
         appearance_form.addRow("Motyw", self.theme_choice)
