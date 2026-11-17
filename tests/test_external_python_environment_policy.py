@@ -21,6 +21,14 @@ def _configure(root: Path, python: Path, **changes: object) -> Path:
         '[project.optional-dependencies]\nrun-studio = ["PySide6-Essentials>=6.12,<6.13"]\n',
         encoding="utf-8",
     )
+    registry = root / "latka_jazn" / "resources" / "dependencies"
+    registry.mkdir(parents=True)
+    (registry / "profiles.json").write_text(json.dumps({
+        "profiles": {
+            "core": {"source": "project.dependencies"},
+            "run-studio": {"source_optional_group": "run-studio"},
+        },
+    }), encoding="utf-8")
     policy = {
         "schema_version": manager.SCHEMA_VERSION,
         "mode": "external",
