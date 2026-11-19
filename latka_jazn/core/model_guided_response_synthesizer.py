@@ -267,6 +267,18 @@ class ModelGuidedResponseSynthesizer:
         # The local context compiler fits list items in order. Put truth and
         # repair requirements first so a tight budget does not drop them.
         context["output_instructions"] = list(dict.fromkeys([*instructions, *original_instructions]))
+        verified_draft = response_policy.get("verified_self_state_draft")
+        if (
+            detected_intent in {
+                "self_state_question", "reciprocal_self_state_question",
+                "affective_self_state_reality_check", "self_preference_question",
+            }
+            and isinstance(verified_draft, dict)
+            and verified_draft.get("source") == "runtime_validated_self_state_handler"
+        ):
+            # The bounded local compiler applies an independent allowlist,
+            # privacy screen and size gate before passing this to Ollama.
+            context["verified_self_state_draft"] = verified_draft
         context.update(
             {
                 "user_message": user_text,
