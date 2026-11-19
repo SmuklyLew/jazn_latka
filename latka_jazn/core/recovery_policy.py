@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 from latka_jazn.core.turn_pipeline_support import _handler_body_can_cross_chatgpt_host_bridge, _model_guided_rejection_disclosure, _speech_truth_gate_required
 
@@ -43,6 +43,54 @@ def _validate_recovery_body(state: TurnPipelineState, engine: JaznEngine):
     )
 
 
+_SELF_STATE_RETRY_INTENTS = frozenset({
+    "self_state_question",
+    "reciprocal_self_state_question",
+    "affective_self_state_reality_check",
+    "self_preference_question",
+})
+
+
+def _validated_self_state_retry(state: TurnPipelineState, engine: JaznEngine) -> tuple[str, dict[str, Any]]:
+    """Ground a bounded retry in the original handler, never an invalid model draft.
+
+    The handler supplies evidence, not an accepted model reply. Model output must
+    still pass the normal candidate validator and finalization gates.
+    """
+    policy = {**state.turn_response_policy.to_dict(), "response_plan": state.response_plan.to_dict()}
+    draft = str(state.decision.body or "")
+    if str(state.detected_dialogue_intent) not in _SELF_STATE_RETRY_INTENTS:
+        return draft, policy
+
+    required = list(state.response_plan.required_points or ())
+    feedback = list(getattr(state.first_validation, "missing_required_components", None) or ())
+    policy["retry_validation_feedback"] = {
+        "missing_required_components": [
+            component for component in feedback if component in required
+        ],
+        "repair_route": str(getattr(state.first_validation, "required_repair_route", None) or ""),
+        "source": "runtime_answer_validator",
+    }
+    handler = state.handler_result
+    handler_data = getattr(handler, "data", None)
+    if isinstance(handler_data, dict) and handler_data.get("requires_model_language_realization") is True:
+        return draft, policy
+    handler_body = str(getattr(handler, "body", "") or "").strip()
+    if not handler_body:
+        return draft, policy
+
+    grounded = engine.runtime_answer_validator.validate(
+        user_text=state.request.text,
+        body=handler_body,
+        route=str(state.route_entry.route),
+        detected_intent=str(state.detected_dialogue_intent),
+        conversation_history=state.request.client_context.get("conversation_history"),
+    )
+    if grounded.accepted:
+        draft = handler_body
+    return draft, policy
+
+
 class RecoveryPolicy:
     """Turn-local recovery policy over the existing runtime services."""
 
@@ -55,14 +103,15 @@ class RecoveryPolicy:
         if state.speech_truth_gate_required:
             state.candidate_valid = bool(state.model_synthesis.used and state.first_validation.accepted and not state.template_origin.get("template_id"))
             if not state.candidate_valid and state.model_executor.retry_allowed:
+                retry_draft, retry_policy = _validated_self_state_retry(state, engine)
                 state.retry_synthesis = engine.model_guided_response_synthesizer.synthesize(
                     adapter=state.speech_adapter or engine.model_adapter,
                     user_text=state.request.text,
-                    draft_body=state.decision.body,
+                    draft_body=retry_draft,
                     detected_intent=str(state.detected_dialogue_intent),
                     route=str(state.decision_dict.get("route") or state.route_entry.route),
                     cognitive_frame=state.frame,
-                    response_policy={**state.turn_response_policy.to_dict(), "response_plan": state.response_plan.to_dict()},
+                    response_policy=retry_policy,
                     executor_preflight=state.model_executor,
                 )
                 state.decision_dict["model_guided_retry_count"] = 1
