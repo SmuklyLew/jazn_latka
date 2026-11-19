@@ -62,7 +62,13 @@ def _validated_self_state_retry(state: TurnPipelineState, engine: JaznEngine) ->
     if str(state.detected_dialogue_intent) not in _SELF_STATE_RETRY_INTENTS:
         return draft, policy
 
-    required = list(state.response_plan.required_points or ())
+    # The generic response policy need not list self-state slots. The route
+    # handler contract is authoritative for required intent components.
+    required = list(dict.fromkeys([
+        *(state.handler_required or ()),
+        *(state.response_plan.required_points or ()),
+    ]))
+    policy["required_components"] = required
     feedback = list(getattr(state.first_validation, "missing_required_components", None) or ())
     policy["retry_validation_feedback"] = {
         "missing_required_components": [
