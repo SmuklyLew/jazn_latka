@@ -238,7 +238,8 @@ class ModelGuidedResponseSynthesizer:
         context = packet.to_dict()
         # Explicit natural-language guidance survives the bounded Ollama context
         # compiler; diagnostic tags alone do not teach the model the truth boundary.
-        instructions = list(context.get("output_instructions") or [])
+        original_instructions = list(context.get("output_instructions") or [])
+        instructions: list[str] = []
         if detected_intent in {
             "self_state_question", "reciprocal_self_state_question",
             "affective_self_state_reality_check", "self_preference_question",
@@ -263,7 +264,9 @@ class ModelGuidedResponseSynthesizer:
                     "zrealizuj brakujące wymagania: " + ", ".join(missing) +
                     ". Użyj faktów z runtime; samo powtórzenie etykiet nie wystarczy."
                 )
-        context["output_instructions"] = list(dict.fromkeys(instructions))
+        # The local context compiler fits list items in order. Put truth and
+        # repair requirements first so a tight budget does not drop them.
+        context["output_instructions"] = list(dict.fromkeys([*instructions, *original_instructions]))
         context.update(
             {
                 "user_message": user_text,
