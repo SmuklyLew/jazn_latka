@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.18",
-  "active_definition_count": 3488,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.19",
+  "active_definition_count": 3493,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51717,6 +51717,120 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_ollama_self_state_validated_retry.py::test_original_handler_is_valid_but_unverified_model_sentence_is_not": {
+      "path": "tests/test_ollama_self_state_validated_retry.py",
+      "name": "test_original_handler_is_valid_but_unverified_model_sentence_is_not",
+      "purpose": "Original handler is valid but unverified model sentence is not",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_ollama_self_state_validated_retry.py::test_retry_restores_validated_runtime_handler_and_feedback": {
+      "path": "tests/test_ollama_self_state_validated_retry.py",
+      "name": "test_retry_restores_validated_runtime_handler_and_feedback",
+      "purpose": "Retry restores validated runtime handler and feedback",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_ollama_self_state_validated_retry.py::test_retry_refuses_unvalidated_handler_draft": {
+      "path": "tests/test_ollama_self_state_validated_retry.py",
+      "name": "test_retry_refuses_unvalidated_handler_draft",
+      "purpose": "Retry refuses unvalidated handler draft",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_ollama_self_state_validated_retry.py::test_repair_instructions_are_allowlisted_not_derived_from_untrusted_text": {
+      "path": "tests/test_ollama_self_state_validated_retry.py",
+      "name": "test_repair_instructions_are_allowlisted_not_derived_from_untrusted_text",
+      "purpose": "Repair instructions are allowlisted not derived from untrusted text",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_ollama_self_state_validated_retry.py::test_bounded_retry_never_accepts_unvalidated_fallback": {
+      "path": "tests/test_ollama_self_state_validated_retry.py",
+      "name": "test_bounded_retry_never_accepts_unvalidated_fallback",
+      "purpose": "Bounded retry never accepts unvalidated fallback",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
     },
     "tests/test_ollama_turn_stability_nlp.py::test_language_guard_rejects_clear_english_and_accepts_polish": {
       "path": "tests/test_ollama_turn_stability_nlp.py",
