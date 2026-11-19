@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-19T23:03:50+00:00",
-  "updated_at_utc": "2026-11-19T23:03:50+00:00",
+  "generated_at_utc": "2026-11-19T23:14:15+00:00",
+  "updated_at_utc": "2026-11-19T23:14:15+00:00",
   "start_file": "run.py",
   "file_count": 3846,
   "static_file_count": 3846,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "557ae0cd7bfecb9508a87e2643b9d5d0ed04791eddf13892262e7211aca0c43e",
+      "size_bytes": 2972,
+      "sha256": "41f2bb4c54d0e01f326e52a7270a3941171ab9cf55acee1d93e3d7b6260f70bf",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3172,8 +3172,8 @@
     },
     {
       "path": "docs/reports/JAZN_V12720_OLLAMA_GROUNDED_DRAFT_AND_SESSION_HISTORY.md",
-      "size_bytes": 4439,
-      "sha256": "fea32123cde8d74df9c9b06bef2a7bd2e719291c579e6448ed9c740258274778",
+      "size_bytes": 5684,
+      "sha256": "bb2a6dc86f1f425b7d89e0e22123bc6e0cfe70da866241747ea6bbf33cba06a4",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6466,8 +6466,8 @@
     },
     {
       "path": "latka_jazn/core/local_model_context_compiler.py",
-      "size_bytes": 18604,
-      "sha256": "9b2a0932a9a8850ca33afd6e96ef4e7a449dd8e27bffeebc1d7745f67d7530af",
+      "size_bytes": 18945,
+      "sha256": "a2b8cc7c5a0ff7cb3fbfd4b279c2263423c3b02e8636c51b1cec215f82031c3c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31297,8 +31297,8 @@
     },
     {
       "path": "tests/test_ollama_accepted_history_roles_regression.py",
-      "size_bytes": 6996,
-      "sha256": "96729b0c22b8c371d05b64c877ea8612d51f6cee4db6f742bbefd099650a87db",
+      "size_bytes": 7933,
+      "sha256": "afcd5e0675abb1afc1e79cdcc4ec6942888060b8277d341a182f015275d1141c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31317,6 +31317,15 @@
       "path": "tests/test_ollama_endpoint_evidence.py",
       "size_bytes": 3560,
       "sha256": "64e18d46887de621e8190ef2d57ff2e8f190d144396a8f9b3b89850430abbd86",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "size_bytes": 12718,
+      "sha256": "9647a2203e5fed6690a67875fa02231d37d5074a051084c0ca10beff810e8879",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32970,15 +32979,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "size_bytes": 11635,
-      "sha256": "b12e5b87a8d8e674d66a864dc2be6dfeff9a1143c70447236466009e97a0ebf6",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -34411,8 +34411,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3087594,
-      "sha256": "c4228cb816af9ac428f3940d7e626993de043101618caec431d01490322eda80",
+      "size_bytes": 3088609,
+      "sha256": "c9110722b1f3e4957e441473b101cdae52777daa24c738967577bac9d316363c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
