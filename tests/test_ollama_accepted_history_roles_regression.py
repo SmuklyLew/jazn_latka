@@ -56,11 +56,15 @@ def test_previous_user_words_are_sent_in_user_role_not_derived_goal(monkeypatch:
                 "schema_version": "conversation_context_projection/v1",
                 "turns": [{
                     "turn_id": "turn-1",
-                    "source": "ollama_terminal_one_shot",
+                    "trace_id": "trace-1",
+                    "accepted_at_utc": "2026-11-19T21:00:00+00:00",
+                    "source": "runtime",
                     "user_text": first_user,
                     "assistant_text": first_answer,
                 }],
                 "total_turn_count": 1,
+                "session_id": "session-accepted-1",
+                "source_of_truth": "workspace_runtime/conversation_state per-turn accepted records",
             },
             "dialogue_context": {
                 "previous_user_text": derived_goal,
@@ -87,6 +91,8 @@ def test_recent_three_accepted_turns_override_older_and_derived_history(monkeypa
     captured = _fake_request_capture(monkeypatch)
     turns = [{
         "turn_id": f"turn-{i}",
+        "trace_id": f"trace-{i}",
+        "accepted_at_utc": "2026-11-19T21:00:00+00:00",
         "user_text": f"Użytkownik powiedział {i}",
         "assistant_text": f"Asystent odpowiedział {i}",
         "source": "runtime",
@@ -94,7 +100,12 @@ def test_recent_three_accepted_turns_override_older_and_derived_history(monkeypa
     response = LocalLlmAdapter(model="gemma3:latest").generate(ModelAdapterRequest(
         prompt="Co mówiłem poprzednio?",
         system_context={
-            "conversation_history": {"turns": turns, "total_turn_count": 5},
+            "conversation_history": {
+                "turns": turns,
+                "total_turn_count": 5,
+                "session_id": "session-accepted-many",
+                "source_of_truth": "workspace_runtime/conversation_state per-turn accepted records",
+            },
             "dialogue_context": {"previous_user_text": "Fałszywy kontekst pochodny"},
         },
     ))
@@ -111,7 +122,7 @@ def test_recent_three_accepted_turns_override_older_and_derived_history(monkeypa
     assert response.transport["attempts"][0]["accepted_history_turns_sent"] == 3
 
 
-def test_legacy_dialogue_pair_is_used_only_without_accepted_projection(monkeypatch: Any) -> None:
+def test_legacy_dialogue_pair_is_not_promoted_without_accepted_projection(monkeypatch: Any) -> None:
     captured = _fake_request_capture(monkeypatch)
     response = LocalLlmAdapter(model="gemma3:latest").generate(ModelAdapterRequest(
         prompt="Co powiedziałem?",
@@ -122,10 +133,12 @@ def test_legacy_dialogue_pair_is_used_only_without_accepted_projection(monkeypat
     ))
     assert response.status == "completed"
     assert [x["content"] for x in captured[0]["messages"][1:]] == [
-        "Cześć", "Witaj", "Co powiedziałem?",
+        "Co powiedziałem?",
     ]
+    assert "Cześć" not in json.dumps(captured[0]["messages"], ensure_ascii=False)
+    assert "Witaj" not in json.dumps(captured[0]["messages"], ensure_ascii=False)
     assert response.transport["attempts"][0]["accepted_history_turns_sent"] == 0
-    assert response.transport["attempts"][0]["history_source"] == "legacy_dialogue_context"
+    assert response.transport["attempts"][0]["history_source"] == "no_verified_history"
 
 
 def test_empty_history_is_not_invented_and_internal_goal_is_not_user_role(monkeypatch: Any) -> None:
@@ -144,10 +157,15 @@ def test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload(
     raw = {
         "conversation_history": {"turns": [{
             "turn_id": f"turn-{i}",
+            "trace_id": f"trace-{i}",
+            "accepted_at_utc": "2026-11-19T21:00:00+00:00",
             "user_text": f"USER-{i}-" + "a" * 3000,
             "assistant_text": f"ASSISTANT-{i}-" + "b" * 3000,
             "source": "accepted_runtime",
-        } for i in range(12)]},
+        } for i in range(12)],
+            "session_id": "session-bounded-1",
+            "source_of_truth": "workspace_runtime/conversation_state per-turn accepted records",
+        },
         "operational_thought_frame": {"selected_goal": "internal_goal"},
         "raw_payload": "PRIVATE_RECORD_SHOULD_NOT_REACH_MODEL",
     }
