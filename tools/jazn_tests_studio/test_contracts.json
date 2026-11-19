@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.20",
-  "active_definition_count": 3504,
+  "active_definition_count": 3505,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51194,17 +51194,17 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 90
     },
-    "tests/test_ollama_accepted_history_roles_regression.py::test_legacy_dialogue_pair_is_used_only_without_accepted_projection": {
+    "tests/test_ollama_accepted_history_roles_regression.py::test_legacy_dialogue_pair_is_not_promoted_without_accepted_projection": {
       "path": "tests/test_ollama_accepted_history_roles_regression.py",
-      "name": "test_legacy_dialogue_pair_is_used_only_without_accepted_projection",
-      "purpose": "Legacy dialogue pair is used only without accepted projection",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_legacy_dialogue_pair_is_not_promoted_without_accepted_projection",
+      "purpose": "Legacy dialogue pair is not promoted without accepted projection",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.local_model_context_compiler",
@@ -51213,7 +51213,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 114
+      "line": 125
     },
     "tests/test_ollama_accepted_history_roles_regression.py::test_empty_history_is_not_invented_and_internal_goal_is_not_user_role": {
       "path": "tests/test_ollama_accepted_history_roles_regression.py",
@@ -51232,7 +51232,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 144
     },
     "tests/test_ollama_accepted_history_roles_regression.py::test_history_compiler_keeps_bounded_recent_turns_and_suppresses_raw_payload": {
       "path": "tests/test_ollama_accepted_history_roles_regression.py",
@@ -51251,7 +51251,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 143
+      "line": 156
     },
     "tests/test_ollama_chat_experience.py::test_chat_ollama_numbered_model_picker_uses_selected_number": {
       "path": "tests/test_ollama_chat_experience.py",
@@ -51473,6 +51473,302 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 76
+    },
+    "tests/test_ollama_grounded_context_history.py::test_validated_draft_survives_bounded_compiler_and_excludes_private_keys": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_validated_draft_survives_bounded_compiler_and_excludes_private_keys",
+      "purpose": "Validated draft survives bounded compiler and excludes private keys",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
+    "tests/test_ollama_grounded_context_history.py::test_private_or_oversized_draft_is_not_sent": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_private_or_oversized_draft_is_not_sent",
+      "purpose": "Private or oversized draft is not sent",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 123
+    },
+    "tests/test_ollama_grounded_context_history.py::test_unverified_draft_cannot_cross_compiler": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_unverified_draft_cannot_cross_compiler",
+      "purpose": "Unverified draft cannot cross compiler",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 132
+    },
+    "tests/test_ollama_grounded_context_history.py::test_synthesizer_transports_trusted_retry_evidence_only": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_synthesizer_transports_trusted_retry_evidence_only",
+      "purpose": "Synthesizer transports trusted retry evidence only",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 139
+    },
+    "tests/test_ollama_grounded_context_history.py::test_ollama_wire_contains_verified_self_state_draft": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_ollama_wire_contains_verified_self_state_draft",
+      "purpose": "Ollama wire contains verified self state draft",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 172
+    },
+    "tests/test_ollama_grounded_context_history.py::test_empty_accepted_projection_never_replays_legacy_previous_user": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_empty_accepted_projection_never_replays_legacy_previous_user",
+      "purpose": "Empty accepted projection never replays legacy previous user",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 194
+    },
+    "tests/test_ollama_grounded_context_history.py::test_canonical_label_without_accepted_lineage_cannot_be_chat_history": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_canonical_label_without_accepted_lineage_cannot_be_chat_history",
+      "purpose": "Canonical label without accepted lineage cannot be chat history",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 216
+    },
+    "tests/test_ollama_grounded_context_history.py::test_verified_accepted_history_arrives_as_chat_roles": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_verified_accepted_history_arrives_as_chat_roles",
+      "purpose": "Verified accepted history arrives as chat roles",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 242
+    },
+    "tests/test_ollama_grounded_context_history.py::test_original_pc_multi_intent_self_state_handler_is_independently_grounded": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_original_pc_multi_intent_self_state_handler_is_independently_grounded",
+      "purpose": "Original pc multi intent self state handler is independently grounded",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 262
+    },
+    "tests/test_ollama_grounded_context_history.py::test_runtime_validator_rejects_claim_of_missing_previous_record": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_runtime_validator_rejects_claim_of_missing_previous_record",
+      "purpose": "Runtime validator rejects claim of missing previous record",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 291
+    },
+    "tests/test_ollama_grounded_context_history.py::test_runtime_validator_allows_no_record_disclosure_to_reach_other_checks": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_runtime_validator_allows_no_record_disclosure_to_reach_other_checks",
+      "purpose": "Runtime validator allows no record disclosure to reach other checks",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 307
+    },
+    "tests/test_ollama_grounded_context_history.py::test_runtime_validator_honors_runtime_accepted_record": {
+      "path": "tests/test_ollama_grounded_context_history.py",
+      "name": "test_runtime_validator_honors_runtime_accepted_record",
+      "purpose": "Runtime validator honors runtime accepted record",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.route_registry",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_history_claim_guard",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 321
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_selects_native_adapter": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -72181,278 +72477,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_validated_draft_survives_bounded_compiler_and_excludes_private_keys": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_validated_draft_survives_bounded_compiler_and_excludes_private_keys",
-      "purpose": "Validated draft survives bounded compiler and excludes private keys",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 97
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_private_or_oversized_draft_is_not_sent": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_private_or_oversized_draft_is_not_sent",
-      "purpose": "Private or oversized draft is not sent",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [
-        "parametrize"
-      ],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 123
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_unverified_draft_cannot_cross_compiler": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_unverified_draft_cannot_cross_compiler",
-      "purpose": "Unverified draft cannot cross compiler",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 132
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_synthesizer_transports_trusted_retry_evidence_only": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_synthesizer_transports_trusted_retry_evidence_only",
-      "purpose": "Synthesizer transports trusted retry evidence only",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 139
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_ollama_wire_contains_verified_self_state_draft": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_ollama_wire_contains_verified_self_state_draft",
-      "purpose": "Ollama wire contains verified self state draft",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 6,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 172
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_empty_accepted_projection_never_replays_legacy_previous_user": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_empty_accepted_projection_never_replays_legacy_previous_user",
-      "purpose": "Empty accepted projection never replays legacy previous user",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 194
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_verified_accepted_history_arrives_as_chat_roles": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_verified_accepted_history_arrives_as_chat_roles",
-      "purpose": "Verified accepted history arrives as chat roles",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 216
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_original_pc_multi_intent_self_state_handler_is_independently_grounded": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_original_pc_multi_intent_self_state_handler_is_independently_grounded",
-      "purpose": "Original pc multi intent self state handler is independently grounded",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 236
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_runtime_validator_rejects_claim_of_missing_previous_record": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_runtime_validator_rejects_claim_of_missing_previous_record",
-      "purpose": "Runtime validator rejects claim of missing previous record",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 265
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_runtime_validator_allows_no_record_disclosure_to_reach_other_checks": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_runtime_validator_allows_no_record_disclosure_to_reach_other_checks",
-      "purpose": "Runtime validator allows no record disclosure to reach other checks",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 281
-    },
-    "tests/test_v12720_ollama_grounded_context_history.py::test_runtime_validator_honors_runtime_accepted_record": {
-      "path": "tests/test_v12720_ollama_grounded_context_history.py",
-      "name": "test_runtime_validator_honors_runtime_accepted_record",
-      "purpose": "Runtime validator honors runtime accepted record",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.core.handlers.self_state_handler",
-        "latka_jazn.core.local_model_context_compiler",
-        "latka_jazn.core.model_guided_response_synthesizer",
-        "latka_jazn.core.route_registry",
-        "latka_jazn.core.runtime_answer_validator",
-        "latka_jazn.core.session_history_claim_guard",
-        "latka_jazn.model_adapters.base",
-        "latka_jazn.model_adapters.local_llm_adapter"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 295
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
