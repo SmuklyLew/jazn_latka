@@ -30,7 +30,7 @@ The Windows 11 Ollama Gemma 3 acceptance run on 2026-11-19 showed:
 
 ## Regression and release gates
 
-New test module: tests/test_v12720_ollama_grounded_context_history.py
+New test module: tests/test_ollama_grounded_context_history.py
 - bounded self-state draft remains model-visible, while private keys/paths/tokens are discarded;
 - unsupported or oversized draft is excluded;
 - adapter request contains the verified draft;
@@ -53,3 +53,13 @@ Required checks (statuses must come from actual execution, not source-file inspe
 - Ollama chat: https://docs.ollama.com/api/chat
 - GitHub Actions logs: https://docs.github.com/en/actions/how-tos/monitor-workflows/use-workflow-run-logs
 - Source of truth: latka_jazn/core/conversation_state_store.py; see the SHA validated by release CI.
+
+## GitHub Actions feedback — v127.20 (2026-11-20)
+
+Run 44631687050 (Stable test contracts): 1 governance failure; active test file contained the release number in its name. The active file is now named `tests/test_ollama_grounded_context_history.py`, with the original archived verbatim.
+
+Run 44631687048 (release-hardening): 4326 passed, 5 failed, 25 skipped. Four tests of accepted-history roles still expected legacy, unproven session context; the fifth was the naming-governance test. The original role tests are retained under `tests/archive/v12720_pre_ci_test_governance/`. Their active replacements preserve the positive accepted-history contract with source/trace/acceptance evidence, and assert that a legacy pair without accepted provenance never becomes user/assistant roles.
+
+The production bounded compiler now also rejects any alleged accepted conversation turn lacking nonempty turn_id, trace_id, accepted_at_utc, user_text or assistant_text. An additional negative test covers a forged canonical label without lineage evidence.
+
+These changes are committed. All CI and PC execution results for the *new* SHA must be checked independently; preceding failed run IDs are evidence of the pre-fix code, not proof of the patched CI state.
