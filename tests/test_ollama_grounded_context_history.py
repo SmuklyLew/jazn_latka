@@ -213,6 +213,32 @@ def test_empty_accepted_projection_never_replays_legacy_previous_user(monkeypatc
     assert "ODRZUCONA_TURA_Z_SEKRETEM" not in json.dumps(captured)
 
 
+def test_canonical_label_without_accepted_lineage_cannot_be_chat_history(monkeypatch):
+    captured = _fake_ollama_capture(monkeypatch)
+    no_evidence = {
+        "source_of_truth": SOURCE,
+        "turns": [{
+            "turn_id": "turn-unaccepted",
+            "user_text": "ODRZUCONA FRAZA KONTROLNA",
+            "assistant_text": "FAŁSZYWY FINAL",
+        }],
+    }
+    compiled = compile_local_model_context({"conversation_history": no_evidence})
+    assert compiled.context["conversation_history"]["turns"] == []
+    adapter = LocalLlmAdapter(model="gemma3:latest", timeout_seconds=5, max_output_tokens=100)
+    _, metadata, error = adapter._chat_once(
+        ModelAdapterRequest(
+            prompt="Co powiedziałem wcześniej?",
+            system_context={"conversation_history": no_evidence},
+        ),
+        strict_retry=False,
+    )
+    assert error is None
+    assert metadata["accepted_history_turns_sent"] == 0
+    assert [msg["role"] for msg in captured["messages"]] == ["system", "user"]
+    assert "ODRZUCONA FRAZA KONTROLNA" not in json.dumps(captured)
+
+
 def test_verified_accepted_history_arrives_as_chat_roles(monkeypatch):
     captured = _fake_ollama_capture(monkeypatch)
     adapter = LocalLlmAdapter(model="gemma3:latest", timeout_seconds=5, max_output_tokens=100)
