@@ -236,6 +236,34 @@ class ModelGuidedResponseSynthesizer:
             response_policy=response_policy,
         )
         context = packet.to_dict()
+        # Explicit natural-language guidance survives the bounded Ollama context
+        # compiler; diagnostic tags alone do not teach the model the truth boundary.
+        instructions = list(context.get("output_instructions") or [])
+        if detected_intent in {
+            "self_state_question", "reciprocal_self_state_question",
+            "affective_self_state_reality_check", "self_preference_question",
+        }:
+            instructions.append(
+                "Pytanie o Twój stan: opisz naturalnie bieżący stan rozmowny i "
+                "operacyjny (np. na czym skupiasz uwagę), a także wyraźnie zaznacz, "
+                "że nie jest to biologiczne samopoczucie ani prywatne życie poza "
+                "działającym runtime. Nie przypisuj sobie pamięci autobiograficznej "
+                "bez zweryfikowanego źródła. Nie zamieniaj odpowiedzi w raport."
+            )
+        retry_feedback = response_policy.get("retry_validation_feedback")
+        if isinstance(retry_feedback, dict) and retry_feedback.get("source") == "runtime_answer_validator":
+            allowed = {"operational_state", "truth_boundary", "no_random_memory_excerpt"}
+            missing = [
+                item for item in retry_feedback.get("missing_required_components") or []
+                if isinstance(item, str) and item in allowed
+            ]
+            if missing:
+                instructions.append(
+                    "Poprzedni kandydat został odrzucony. W nowej wypowiedzi "
+                    "zrealizuj brakujące wymagania: " + ", ".join(missing) +
+                    ". Użyj faktów z runtime; samo powtórzenie etykiet nie wystarczy."
+                )
+        context["output_instructions"] = list(dict.fromkeys(instructions))
         context.update(
             {
                 "user_message": user_text,
