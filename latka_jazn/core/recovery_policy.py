@@ -92,8 +92,23 @@ def _validated_self_state_retry(state: TurnPipelineState, engine: JaznEngine) ->
         detected_intent=str(state.detected_dialogue_intent),
         conversation_history=state.request.client_context.get("conversation_history"),
     )
-    if grounded.accepted:
+    if grounded.accepted and str(getattr(handler, "handler_name", "") or getattr(handler, "name", "")) == "SelfStateHandler":
+        # Only an independently validated runtime-owned self-state draft may
+        # cross into the model prompt. Never pass memory excerpts, user text,
+        # unverified handler bodies or a previous rejected model candidate.
         draft = handler_body
+        policy["verified_self_state_draft"] = {
+            "source": "runtime_validated_self_state_handler",
+            "body": handler_body,
+            "required_components": [
+                component for component in required
+                if component in {"operational_state", "truth_boundary", "no_random_memory_excerpt"}
+            ],
+            "missing_components": [
+                component for component in feedback
+                if component in {"operational_state", "truth_boundary", "no_random_memory_excerpt"}
+            ],
+        }
     return draft, policy
 
 
