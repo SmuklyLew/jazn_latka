@@ -220,12 +220,21 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
     """
     if not isinstance(value, Mapping):
         return {}
+    source = str(value.get("source_of_truth") or "")
+    if source != "workspace_runtime/conversation_state per-turn accepted records":
+        return {}
     raw_turns = value.get("turns")
     if not isinstance(raw_turns, (list, tuple)):
         return {}
     selected: list[dict[str, str]] = []
     for item in raw_turns[-3:]:
         if not isinstance(item, Mapping):
+            continue
+        # Never turn arbitrary dialogue hints into accepted-session chat roles.
+        # The session store supplies these non-empty lineage/evidence fields.
+        if not all(str(item.get(key) or "").strip() for key in (
+            "turn_id", "trace_id", "accepted_at_utc", "user_text", "assistant_text",
+        )):
             continue
         user_text = str(item.get("user_text") or "").strip()[:900]
         assistant_text = str(item.get("assistant_text") or "").strip()[:600]
@@ -239,9 +248,6 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
         })
     # Preserve an explicit empty canonical history. A rejected prior turn
     # must never be revived from unverified legacy dialogue_context metadata.
-    source = str(value.get("source_of_truth") or "")
-    if source != "workspace_runtime/conversation_state per-turn accepted records":
-        return {}
     return {"turns": selected, "source_of_truth": source}
 
 
