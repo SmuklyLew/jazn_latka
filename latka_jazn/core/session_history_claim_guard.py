@@ -12,11 +12,11 @@ from typing import Any
 
 _CANONICAL_SOURCE = "workspace_runtime/conversation_state per-turn accepted records"
 _CLAIMS = (
-    re.compile(r"\\b(?:w|we)\\s+(?:zapisanej|utrwalonej)\\s+historii\\b.{0,100}\\b(?:widze|odczyt|znajduj|mam)"),
-    re.compile(r"\\b(?:widze|odczytalam|pamietam|znalazlam)\\b.{0,85}\\b(?:poprzedni|poprzednio|wczesniej|historii|zapisie)"),
-    re.compile(r"\\b(?:poprzednio|wczesniej|ostatnio)\\s+(?:zapytales|podales|napisales|powiedziales)\\b"),
+    re.compile(r"\b(?:w|we)\s+(?:zapisanej|utrwalonej)\s+historii\b.{0,100}\b(?:widze|odczyt|znajduj|mam)"),
+    re.compile(r"\b(?:widze|odczytalam|pamietam|znalazlam)\b.{0,85}\b(?:poprzedni|poprzednio|wczesniej|historii|zapisie)"),
+    re.compile(r"\b(?:poprzednio|wczesniej|ostatnio)\s+(?:zapytales|podales|napisales|powiedziales)\b"),
 )
-_NEGATED = re.compile(r"\\b(?:nie|nigdy)\\s+$")
+_NEGATED = re.compile(r"\b(?:nie|nigdy)\s+$")
 
 
 def _fold(value: str) -> str:
@@ -25,7 +25,7 @@ def _fold(value: str) -> str:
 
 
 def claims_verified_previous_turn(body: str) -> bool:
-    """Detect positive first-person claims, not honest absence disclosures."""
+    """Detect positive claims, not honest absence disclosures."""
     text = _fold(body)
     for pattern in _CLAIMS:
         for match in pattern.finditer(text):
@@ -36,15 +36,12 @@ def claims_verified_previous_turn(body: str) -> bool:
 
 
 def has_runtime_verified_session_source(history: Any) -> bool:
-    """An accepted canonical projection or validated targeted lookup is required.
+    """Require a runtime-built accepted projection or validated targeted lookup.
 
-    The runtime session owner constructs this structure from the durable store.
-    A model's claims, legacy previous_user_text and unverified tool snippets
-    never authorize it.
+    The runtime session owner builds this evidence from durable accepted turns.
+    Legacy previous_user_text and model output never authorize history claims.
     """
-    if not isinstance(history, dict):
-        return False
-    if history.get("source_of_truth") != _CANONICAL_SOURCE:
+    if not isinstance(history, dict) or history.get("source_of_truth") != _CANONICAL_SOURCE:
         return False
     turns = history.get("turns")
     if isinstance(turns, list):
