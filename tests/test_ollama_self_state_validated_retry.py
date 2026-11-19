@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import TYPE_CHECKING, cast
 
 import pytest
 
@@ -11,6 +12,10 @@ from latka_jazn.core.recovery_policy import RecoveryPolicy, _validated_self_stat
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
 from latka_jazn.core.turn_response_policy import TurnResponsePolicy
+
+if TYPE_CHECKING:
+    from latka_jazn.core.engine import JaznEngine
+    from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 
 
 MESSAGE = "Cześć Łatko. Rozpoczynamy test rozmowy. Jak się masz?"
@@ -72,7 +77,7 @@ def test_original_handler_is_valid_but_unverified_model_sentence_is_not():
 def test_retry_restores_validated_runtime_handler_and_feedback():
     state = make_state()
     engine = SimpleNamespace(runtime_answer_validator=RuntimeAnswerValidator())
-    draft, policy = _validated_self_state_retry(state, engine)
+    draft, policy = _validated_self_state_retry(cast('TurnPipelineState', state), cast('JaznEngine', engine))
     assert draft == state.handler_result.body
     assert draft != state.decision.body
     assert policy["retry_validation_feedback"] == {
@@ -86,7 +91,7 @@ def test_retry_refuses_unvalidated_handler_draft():
     state = make_state()
     state.handler_result.body = "Świetnie, świetnie."
     engine = SimpleNamespace(runtime_answer_validator=RuntimeAnswerValidator())
-    draft, _ = _validated_self_state_retry(state, engine)
+    draft, _ = _validated_self_state_retry(cast('TurnPipelineState', state), cast('JaznEngine', engine))
     assert draft == state.decision.body
 
 
@@ -153,7 +158,7 @@ def test_bounded_retry_never_accepts_unvalidated_fallback(retry_success):
         continuity_badge_policy=SimpleNamespace(apply=lambda body, decision: (body, {})),
         _record_model_retry_diagnostic=lambda context: None,
     )
-    RecoveryPolicy(engine).resolve(state)
+    RecoveryPolicy(cast('JaznEngine', engine)).resolve(cast('TurnPipelineState', state))
     assert len(calls) == 1
     assert calls[0]["draft_body"] == state.handler_result.body
     assert state.decision_dict["model_guided_retry_count"] == 1
