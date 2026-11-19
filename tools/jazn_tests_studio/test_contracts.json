@@ -51729,16 +51729,18 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
         "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_pipeline_state",
         "latka_jazn.core.turn_response_policy"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 62
     },
     "tests/test_ollama_self_state_validated_retry.py::test_retry_restores_validated_runtime_handler_and_feedback": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -51753,16 +51755,18 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
         "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_pipeline_state",
         "latka_jazn.core.turn_response_policy"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 77
     },
     "tests/test_ollama_self_state_validated_retry.py::test_retry_refuses_unvalidated_handler_draft": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -51775,16 +51779,18 @@
       "assertion_count": 1,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
         "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_pipeline_state",
         "latka_jazn.core.turn_response_policy"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 90
     },
     "tests/test_ollama_self_state_validated_retry.py::test_repair_instructions_are_allowlisted_not_derived_from_untrusted_text": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -51797,16 +51803,18 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
         "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_pipeline_state",
         "latka_jazn.core.turn_response_policy"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 98
     },
     "tests/test_ollama_self_state_validated_retry.py::test_bounded_retry_never_accepts_unvalidated_fallback": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -51821,16 +51829,18 @@
       "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
         "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.turn_pipeline_state",
         "latka_jazn.core.turn_response_policy"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 127
     },
     "tests/test_ollama_turn_stability_nlp.py::test_language_guard_rejects_clear_english_and_accepts_polish": {
       "path": "tests/test_ollama_turn_stability_nlp.py",
