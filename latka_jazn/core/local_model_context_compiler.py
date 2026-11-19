@@ -237,7 +237,12 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
             "assistant_text": assistant_text,
             "source": str(item.get("source") or "runtime")[:64],
         })
-    return {"turns": selected} if selected else {}
+    # Preserve an explicit empty canonical history. A rejected prior turn
+    # must never be revived from unverified legacy dialogue_context metadata.
+    source = str(value.get("source_of_truth") or "")
+    if source != "workspace_runtime/conversation_state per-turn accepted records":
+        return {}
+    return {"turns": selected, "source_of_truth": source}
 
 
 _SELF_STATE_COMPONENT_ALLOWLIST = frozenset({
