@@ -138,8 +138,19 @@ def test_local_ollama_payload_is_compact_and_contains_chat_history(monkeypatch) 
         "route": "self_state",
         "operational_thought_frame": {"huge": "x" * 500_000},
         "dialogue_context": {
-            "previous_user_text": "Witaj...",
-            "previous_assistant_text": "Witaj, Krzysztofie.",
+            "previous_user_text": "Niezaakceptowana wiadomość",
+            "previous_assistant_text": "Niezaakceptowana odpowiedź",
+        },
+        "conversation_history": {
+            "source_of_truth": "workspace_runtime/conversation_state per-turn accepted records",
+            "turns": [{
+                "turn_id": "accepted-turn",
+                "trace_id": "accepted-trace",
+                "accepted_at_utc": "2026-11-19T23:45:00+00:00",
+                "user_text": "Witaj...",
+                "assistant_text": "Witaj, Krzysztofie.",
+                "source": "runtime",
+            }],
         },
         "output_instructions": ["Odpowiedz po polsku."],
     }
@@ -158,4 +169,6 @@ def test_local_ollama_payload_is_compact_and_contains_chat_history(monkeypatch) 
     assert captured["messages"][-1]["content"] == "Jak się czujesz na nowej wersji?"
     assert metadata["context_compacted"] is True
     assert metadata["message_count"] == 4
+    assert metadata["accepted_history_turns_sent"] == 1
+    assert "Niezaakceptowana wiadomość" not in json.dumps(captured)
     assert metadata["compacted_context_chars"] <= metadata["context_max_chars"]
