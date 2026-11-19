@@ -5,7 +5,6 @@ but the production compiler, adapter and runtime answer validator are exercised.
 """
 from __future__ import annotations
 
-import io
 import json
 from types import SimpleNamespace
 
@@ -232,6 +231,35 @@ def test_verified_accepted_history_arrives_as_chat_roles(monkeypatch):
     ]
     assert "szafirowa latarnia 63" in captured["messages"][1]["content"]
     assert metadata["accepted_history_turns_sent"] == 1
+
+
+def test_original_pc_multi_intent_self_state_handler_is_independently_grounded():
+    from latka_jazn.core.handlers.self_state_handler import SelfStateHandler
+    from latka_jazn.core.route_registry import RouteRegistry
+
+    message = (
+        "Cześć Łatko. Rozpoczynamy test Twojej rozmowy. "
+        "Zapamiętaj na czas tej sesji wyrażenie kontrolne: szafirowa latarnia 63. Jak się masz?"
+    )
+    required = RouteRegistry().required_components_for("self_state_question")
+    handler = SelfStateHandler().handle(
+        message,
+        {
+            "intent": "self_state_question",
+            "route_entry": {"route": "self_state"},
+            "required_components": required,
+        },
+    )
+    result = RuntimeAnswerValidator().validate(
+        user_text=message,
+        body=handler.body,
+        route="self_state",
+        detected_intent="self_state_question",
+        conversation_history=history([]),
+    )
+    # If the handler does not satisfy this, a re-validated retry must stay
+    # fail-closed instead of smuggling the handler draft into the model.
+    assert result.accepted, result.to_dict()
 
 
 def test_runtime_validator_rejects_claim_of_missing_previous_record():
