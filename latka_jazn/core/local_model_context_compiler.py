@@ -249,7 +249,7 @@ _SELF_STATE_COMPONENT_ALLOWLIST = frozenset({
     "operational_state", "truth_boundary", "no_random_memory_excerpt",
 })
 _PRIVATE_DRAFT_PATTERN = re.compile(
-    r"(?i)(?:[a-z]:[\\/]|/home/|/users/|api[_ -]?key|password|bearer\\s+|sk-[a-z0-9_-]{12,})"
+    r"(?i)(?:[a-z]:[\\/]|/home/|/users/|api[_ -]?key|password|bearer\s+|sk-[a-z0-9_-]{12,})"
 )
 
 
@@ -266,7 +266,7 @@ def _prepare_verified_self_state_draft(value: Any) -> dict[str, Any]:
     body = str(value.get("body") or "").strip()
     if not body or len(body) > 1_100 or _PRIVATE_DRAFT_PATTERN.search(body):
         return {}
-    if any(ord(char) < 32 and char not in "\\n\\t" for char in body):
+    if any(ord(char) < 32 and char not in "\n\t" for char in body):
         return {}
     def allow_components(key: str) -> list[str]:
         raw = value.get(key)
