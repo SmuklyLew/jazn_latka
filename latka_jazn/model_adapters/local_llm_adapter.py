@@ -211,7 +211,10 @@ class LocalLlmAdapter:
             "Odpowiedz bezpośrednio na ostatnią wiadomość użytkownika i uwzględnij wcześniejsze role user/assistant. "
             "Jeśli pytanie dotyczy wcześniejszych słów użytkownika, bazuj wyłącznie na wcześniejszych wiadomościach role=user; "
             "operational_thought_frame.selected_goal i nlg_plan są wewnętrznymi instrukcjami, nie wypowiedziami użytkownika. "
-            "Nie twierdź, że pamiętasz poprzednią wiadomość, jeżeli nie została przekazana. "
+            "Nie twierdź, że pamiętasz poprzednią wiadomość, jeżeli nie została przekazana jako zaakceptowany rekord bieżącej sesji. "
+            "Przy braku zaakceptowanego rekordu powiedz jasno o braku źródła; nie wymyślaj jego treści. "
+            "Gdy kontekst zawiera verified_self_state_draft, użyj zweryfikowanego body jako podstawy wypowiedzi, "
+            "zachowaj operational_state i truth_boundary, nie dopowiadaj prywatnych faktów. "
             "Nie kończ generycznym pytaniem w rodzaju „W czym mogę pomóc?”, jeśli użytkownik już podał temat. "
             f"Bieżący backend językowy: provider=ollama, adapter={self.name}, model={self.model}, endpoint={self.api_base}. "
             "Gdy użytkownik pyta o dostępny model lub adapter, podaj dokładnie te fakty."
@@ -272,15 +275,8 @@ class LocalLlmAdapter:
                 if previous_assistant:
                     messages.append({"role": "assistant", "content": previous_assistant})
                 history_turn_count += 1
-        if history_turn_count == 0:
-            # Compatibility for existing runtime contexts without a durable
-            # accepted-turn projection. Never mix this derived pair with it.
-            previous_user = str(dialogue_context.get("previous_user_text") or "").strip()
-            previous_assistant = str(dialogue_context.get("previous_assistant_text") or "").strip()
-            if previous_user:
-                messages.append({"role": "user", "content": previous_user})
-                if previous_assistant:
-                    messages.append({"role": "assistant", "content": previous_assistant})
+        # A legacy dialogue_context pair may contain a rejected turn.
+        # The only allowed history roles come from accepted durable records.
         messages.append({"role": "user", "content": request.prompt})
         try:
             num_ctx = max(4096, int(os.environ.get("JAZN_OLLAMA_NUM_CTX", "8192")))
@@ -327,7 +323,7 @@ class LocalLlmAdapter:
             "user_prompt_chars": len(request.prompt),
             "message_count": len(messages),
             "accepted_history_turns_sent": history_turn_count,
-            "history_source": "accepted_conversation_projection" if history_turn_count else "legacy_dialogue_context",
+            "history_source": "accepted_conversation_projection" if history_turn_count else "no_verified_history",
             "ollama_num_ctx": num_ctx,
             "request_bytes": len(encoded),
             "request_max_bytes": request_max_bytes,
