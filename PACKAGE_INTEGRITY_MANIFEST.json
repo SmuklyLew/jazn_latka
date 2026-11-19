@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-19T22:36:36+00:00",
-  "updated_at_utc": "2026-11-19T22:36:36+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-19T22:46:36+00:00",
+  "updated_at_utc": "2026-11-19T22:46:36+00:00",
   "start_file": "run.py",
-  "file_count": 3840,
-  "static_file_count": 3840,
+  "file_count": 3844,
+  "static_file_count": 3844,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "e0f627d36cb79d25c7b8674dc8a6de3da7ed1451c95cf651c387830242c22e59",
+      "size_bytes": 2972,
+      "sha256": "508e7d8c7d04356d7b4641a9df1008c517b81443eb9c99a466264cae9cb19c87",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -545,7 +545,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1948,
-      "sha256": "bc6db2485546f4626b6ab2822b243e0548cc644a87c64a9cc894136db9bc31fc",
+      "sha256": "f01001487da9d5e822c6c8c64f65fe9287cd4c296a71b4b5ac979c15d3e098e6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3165,6 +3165,15 @@
       "path": "docs/reports/JAZN_V12719_OLLAMA_SELF_STATE_VALIDATED_RETRY.md",
       "size_bytes": 3724,
       "sha256": "a6ed06b2b938c89d328d3f7e16276e26e287b0521802178f4cd953f76985dc3b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "docs/reports/JAZN_V12720_OLLAMA_GROUNDED_DRAFT_AND_SESSION_HISTORY.md",
+      "size_bytes": 4439,
+      "sha256": "fea32123cde8d74df9c9b06bef2a7bd2e719291c579e6448ed9c740258274778",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6457,8 +6466,8 @@
     },
     {
       "path": "latka_jazn/core/local_model_context_compiler.py",
-      "size_bytes": 18294,
-      "sha256": "bd4e0480521a2a0f0d8a8d4f675f71735a59bcddc11edd30369587e55da6180c",
+      "size_bytes": 18604,
+      "sha256": "9b2a0932a9a8850ca33afd6e96ef4e7a449dd8e27bffeebc1d7745f67d7530af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7024,8 +7033,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_answer_validator.py",
-      "size_bytes": 62631,
-      "sha256": "5df3c91a219b0903400ff6b1689eef663e4c578912a6fabb47f275bef3071603",
+      "size_bytes": 63430,
+      "sha256": "a94a2a95301d6ed66fa53456ed9d2062db6b018b6939988a5dea0f3427a5a195",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7269,6 +7278,15 @@
       "path": "latka_jazn/core/session_exact_quote.py",
       "size_bytes": 5309,
       "sha256": "843701e4193b079395dd775357cd93cdfdef1e0f5b9e1296282d822ae3ce0465",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "latka_jazn/core/session_history_claim_guard.py",
+      "size_bytes": 2839,
+      "sha256": "fc622c8fdbdadf3a8a605a230b4ed350cb1fa7e480d4c76b74f698691658a79e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8941,8 +8959,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/local_llm_adapter.py",
-      "size_bytes": 27119,
-      "sha256": "8ba0e52562ff38b1a8626eac99fdb0e2ac8fc87b55eadf88b8b166f1b47029fb",
+      "size_bytes": 27013,
+      "sha256": "2f4722608af40a80e38a85549f8cb2d6f0b874984d18c5317c90d3755dc3ae2f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10202,7 +10220,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7913,
-      "sha256": "3d5363aef0abfcf406614317590ed706d5e340ca82bec2ab73a05982e1ed1fee",
+      "sha256": "17a374b31127f09a3a77f0b7409e5d40ddd388342a3d8e7accafc8b3f1aee58f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11713,8 +11731,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 28966,
-      "sha256": "2997c0ebacc45a41ef1311f9fabc45c6c88b71a0b80ddeba3c38c50118654ea6",
+      "size_bytes": 29055,
+      "sha256": "2aac9a3b2f92eb188c7e8bb283dcaff89177ef21a55a5a49db2dd7e1b366b7bc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19716,6 +19734,15 @@
       "path": "tests/archive/v12719-pre-pyright/test_ollama_self_state_validated_retry.py",
       "size_bytes": 7292,
       "sha256": "9578e6b4276fbdd43fa6efa06050e76c8c0f55580d486072f1ccde07813a25d2",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v12719_pre_v12720/test_ollama_chat_experience.py",
+      "size_bytes": 6228,
+      "sha256": "3ebdc8a524f9ab8b5853a6b96c573d56879f173d22a6f4813ff3dfafac3ccd8b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31261,8 +31288,8 @@
     },
     {
       "path": "tests/test_ollama_chat_experience.py",
-      "size_bytes": 6228,
-      "sha256": "3ebdc8a524f9ab8b5853a6b96c573d56879f173d22a6f4813ff3dfafac3ccd8b",
+      "size_bytes": 6853,
+      "sha256": "0ea15e17ae498131334f312bba90eb7a860281efcacc3dc2db34381542f53dfa",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32925,6 +32952,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_v12720_ollama_grounded_context_history.py",
+      "size_bytes": 11635,
+      "sha256": "b12e5b87a8d8e674d66a864dc2be6dfeff9a1143c70447236466009e97a0ebf6",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -34357,8 +34393,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3074869,
-      "sha256": "a897bdc0c2046ef56401c0027dab4e4f81c304462704a939e200a130dca587e6",
+      "size_bytes": 3087594,
+      "sha256": "c4228cb816af9ac428f3940d7e626993de043101618caec431d01490322eda80",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35015,11 +35051,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.19-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.20-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
