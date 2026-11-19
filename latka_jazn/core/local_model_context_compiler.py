@@ -29,6 +29,7 @@ SECTION_BUDGETS: dict[str, int] = {
     "forbidden_claims": 1_400,
     "required_truth_boundaries": 2_200,
     "output_instructions": 2_400,
+    "verified_self_state_draft": 1_600,
     "token_budget_hint": 120,
     "dialogue_context": 2_400,
     "conversation_history": 5_200,
@@ -239,6 +240,48 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
     return {"turns": selected} if selected else {}
 
 
+_SELF_STATE_COMPONENT_ALLOWLIST = frozenset({
+    "operational_state", "truth_boundary", "no_random_memory_excerpt",
+})
+_PRIVATE_DRAFT_PATTERN = re.compile(
+    r"(?i)(?:[a-z]:[\\/]|/home/|/users/|api[_ -]?key|password|bearer\\s+|sk-[a-z0-9_-]{12,})"
+)
+
+
+def _prepare_verified_self_state_draft(value: Any) -> dict[str, Any]:
+    """Copy only bounded, non-private runtime handler evidence to the model.
+
+    The authoritative validation happens in RecoveryPolicy. This separate
+    allowlist refuses arbitrary extra keys, private paths and leaked tokens.
+    """
+    if not isinstance(value, Mapping):
+        return {}
+    if value.get("source") != "runtime_validated_self_state_handler":
+        return {}
+    body = str(value.get("body") or "").strip()
+    if not body or len(body) > 1_100 or _PRIVATE_DRAFT_PATTERN.search(body):
+        return {}
+    if any(ord(char) < 32 and char not in "\\n\\t" for char in body):
+        return {}
+    def allow_components(key: str) -> list[str]:
+        raw = value.get(key)
+        if not isinstance(raw, (tuple, list)):
+            return []
+        return list(dict.fromkeys(
+            part for part in raw
+            if isinstance(part, str) and part in _SELF_STATE_COMPONENT_ALLOWLIST
+        ))
+    required = allow_components("required_components")
+    if not {"operational_state", "truth_boundary"}.issubset(set(required)):
+        return {}
+    return {
+        "source": "runtime_validated_self_state_handler",
+        "body": body,
+        "required_components": required,
+        "missing_components": allow_components("missing_components"),
+    }
+
+
 def _safe_identifier(value: Any) -> str:
     text = str(value or "").strip()
     text = re.sub(r"[^0-9A-Za-z_.:/-]+", "_", text).strip("_")
@@ -364,6 +407,8 @@ def compile_local_model_context(
             section = _prepare_full_canon(section)
         elif key == "conversation_history":
             section = _recent_accepted_conversation(section)
+        elif key == "verified_self_state_draft":
+            section = _prepare_verified_self_state_draft(section)
         budget = SECTION_BUDGETS[key]
         fitted, truncated = _fit_value(section, budget=budget)
         if fitted not in (None, "", [], {}):
@@ -411,6 +456,7 @@ def compile_local_model_context(
                 "nlg_plan",
                 "turn_response_policy",
                 "output_instructions",
+                "verified_self_state_draft",
                 "conversation_history",
                 "required_reference_ids",
             )
