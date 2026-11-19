@@ -446,6 +446,21 @@ class RuntimeAnswerValidator:
 
     def validate(self, *, user_text: str, body: str, route: str, detected_intent: str, conversation_history: dict[str, Any] | None = None) -> RuntimeAnswerValidation:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
+        from latka_jazn.core.session_history_claim_guard import (
+            claims_verified_previous_turn,
+            has_runtime_verified_session_source,
+        )
+        if claims_verified_previous_turn(self._voice_narration(body)) and not has_runtime_verified_session_source(conversation_history):
+            checks.append("session_history_claim_without_accepted_runtime_record")
+            return self._bad(
+                "session_history_claim_without_accepted_runtime_record",
+                "verified_session_history_repair",
+                "Nie mam potwierdzonego zapisu tej wcześniejszej wiadomości w zaakceptowanej historii sesji.",
+                detected_intent,
+                route,
+                checks,
+                ["accepted_session_turn_record"],
+            )
         component_report = analyse_utterance(user_text)
         semantic_coverage_required = bool(
             component_report.compound and component_report.semantic_intents
