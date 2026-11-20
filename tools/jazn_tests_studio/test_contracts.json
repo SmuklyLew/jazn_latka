@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.22",
-  "active_definition_count": 3519,
+  "active_definition_count": 3520,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26904,20 +26904,40 @@
       "description_source": "source_identity",
       "line": 107
     },
+    "tests/test_jazn_monitor_observability.py::test_windows_process_probe_does_not_flash_powershell_console": {
+      "path": "tests/test_jazn_monitor_observability.py",
+      "name": "test_windows_process_probe_does_not_flash_powershell_console",
+      "purpose": "Windows process probe does not flash powershell console",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository",
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
     "tests/test_jazn_monitor_observability.py::test_process_owner_and_descendants_are_strictly_verified": {
       "path": "tests/test_jazn_monitor_observability.py",
       "name": "test_process_owner_and_descendants_are_strictly_verified",
       "purpose": "Process owner and descendants are strictly verified",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 59
     },
     "tests/test_jazn_monitor_observability.py::test_similarly_prefixed_root_does_not_count_as_owned_daemon": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26925,14 +26945,16 @@
       "purpose": "Similarly prefixed root does not count as owned daemon",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 85
     },
     "tests/test_jazn_monitor_observability.py::test_process_mismatch_or_unavailable_is_not_claimed_ready": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26940,14 +26962,16 @@
       "purpose": "Process mismatch or unavailable is not claimed ready",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 97
     },
     "tests/test_jazn_monitor_observability.py::test_job_diagnostics_are_codes_only_not_private_text": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26955,14 +26979,16 @@
       "purpose": "Job diagnostics are codes only not private text",
       "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 106
     },
     "tests/test_jazn_monitor_observability.py::test_jobs_fail_closed_on_invalid_json_and_no_live_root": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26970,14 +26996,16 @@
       "purpose": "Jobs fail closed on invalid json and no live root",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 131
     },
     "tests/test_jazn_monitor_observability.py::test_probe_preserves_services_and_adds_observability": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26985,14 +27013,16 @@
       "purpose": "Probe preserves services and adds observability",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 140
     },
     "tests/test_jazn_monitor_observability.py::test_no_auto_gui_for_ci_noninteractive_or_operator_off": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27000,14 +27030,16 @@
       "purpose": "No auto gui for ci noninteractive or operator off",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "repository"
+      ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 144
+      "line": 166
     },
     "tests/test_jazn_monitor_observability.py::test_interactive_auto_gui_is_not_runtime_owner": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27016,6 +27048,7 @@
       "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -27024,7 +27057,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 181
     },
     "tests/test_jazn_monitor_observability_qt.py::test_monitor_renders_process_jobs_and_finalization_independently": {
       "path": "tests/test_jazn_monitor_observability_qt.py",
