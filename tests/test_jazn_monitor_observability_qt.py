@@ -9,7 +9,7 @@ import pytest
 
 pytest.importorskip("PySide6")
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QTableWidget
 from tools.jazn_monitor.window import MonitorWindow
 
 
@@ -18,6 +18,12 @@ def app():
     existing = QApplication.instance()
     application = existing or QApplication([])
     yield application
+
+
+def cell_text(table: QTableWidget, row: int, column: int) -> str:
+    item = table.item(row, column)
+    assert item is not None
+    return item.text()
 
 
 def test_monitor_renders_process_jobs_and_finalization_independently(app):
@@ -49,14 +55,14 @@ def test_monitor_renders_process_jobs_and_finalization_independently(app):
                          "reason_code": "classified_non_dynamic_response"},
     }
     window.apply_snapshot(payload)
-    assert window.table.item(0, 1).text() == "GOTOWY"
-    assert window.table.item(2, 1).text() == "NIEDOSTĘPNY"
+    assert cell_text(window.table, 0, 1) == "GOTOWY"
+    assert cell_text(window.table, 2, 1) == "NIEDOSTĘPNY"
     assert window.tabs.count() == 4
     assert window.process_table.rowCount() == 1
-    assert window.process_table.item(0, 0).text() == "Jaźń — Daemon"
-    assert window.process_table.item(0, 3).text() == "6.25"
+    assert cell_text(window.process_table, 0, 0) == "Jaźń — Daemon"
+    assert cell_text(window.process_table, 0, 3) == "6.25"
     assert window.job_table.rowCount() == 1
-    assert window.job_table.item(0, 3).text() == "runtime_turn_not_accepted"
+    assert cell_text(window.job_table, 0, 3) == "runtime_turn_not_accepted"
     assert "classified_non_dynamic_response" in window.final_label.text()
     assert "ukończone 1" in window.job_counts.text()
     assert "PRIVATE MESSAGE" not in window.final_label.text()
