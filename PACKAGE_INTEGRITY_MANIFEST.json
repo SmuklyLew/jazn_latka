@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-20T20:37:55+00:00",
-  "updated_at_utc": "2026-11-20T20:37:55+00:00",
+  "generated_at_utc": "2026-11-20T20:51:27+00:00",
+  "updated_at_utc": "2026-11-20T20:51:27+00:00",
   "start_file": "run.py",
-  "file_count": 3856,
-  "static_file_count": 3856,
+  "file_count": 3857,
+  "static_file_count": 3857,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2972,
-      "sha256": "41c79b080a0545d2b503c17baa55d9fe797a52273bc950a3575b063874910921",
+      "size_bytes": 2977,
+      "sha256": "f38623b009aa80e03d7e66ffce608cb54cfef07c5601f27097114ba8e21fd0ae",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -1542,6 +1542,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/memory/MEMORY_REBUILD_V12723_PYTHON_DEVELOPMENT.md",
+      "size_bytes": 7721,
+      "sha256": "fb67ef87254a939bf34f7d83fccb94d8d0254dfceb7ed63f18577b3741fc97c8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/memory/MEMORY_REBUILD_V16_ARCHITECTURE.md",
       "size_bytes": 6912,
       "sha256": "188993dfa3cc799599ad781db7fc8a8a47015a5839e7ba0ee1a3ab21a28d3d90",
@@ -1588,8 +1597,8 @@
     },
     {
       "path": "docs/memory/MEMORY_STUDIO_STEPS.md",
-      "size_bytes": 6507,
-      "sha256": "ccad871da2dab935a6f429a525a2322ddb9a71a026d13e57a12af81ff9b253bd",
+      "size_bytes": 6854,
+      "sha256": "3bc88dd3ba0424e305f61edc4230a8195d49826dfa8ff03f9de680f4d3ef6796",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
