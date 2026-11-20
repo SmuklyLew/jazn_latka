@@ -76,7 +76,7 @@ def _audit_reasons(root: Path, request_ids: set[str]) -> dict[str, str]:
                 if not isinstance(item, dict):
                     continue
                 rid = item.get("request_id")
-                if rid not in request_ids or rid in found:
+                if not isinstance(rid, str) or rid not in request_ids or rid in found:
                     continue
                 diag = item.get("turn_diagnostics")
                 reason = _safe_code(diag.get("failure_reason_code")) if isinstance(diag, dict) else None
