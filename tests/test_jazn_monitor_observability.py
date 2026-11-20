@@ -60,6 +60,18 @@ def test_process_owner_and_descendants_are_strictly_verified(tmp_path, monkeypat
     assert "command_line" not in json.dumps(result)
 
 
+def test_similarly_prefixed_root_does_not_count_as_owned_daemon(tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    monkeypatch.setattr(telemetry, "_windows_process_rows", lambda: [{
+        "pid": 1357, "parent_pid": 111,
+        "command_line": f'python main.py --root "{root}_other" --daemon-run',
+        "created": "2026-11-20T14:00:00+00:00",
+    }])
+    result = telemetry.process_snapshot(root, _marker(root), _live(root))
+    assert result["state"] == "error"
+    assert result["items"] == []
+
+
 def test_process_mismatch_or_unavailable_is_not_claimed_ready(tmp_path, monkeypatch):
     root = _root(tmp_path)
     monkeypatch.setattr(telemetry, "_windows_process_rows", lambda: None)
