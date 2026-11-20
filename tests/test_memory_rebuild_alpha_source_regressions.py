@@ -145,3 +145,35 @@ def test_embedded_html_uses_streaming_path_and_preserves_entities(
     again = html_import.import_chat_html(source, database)
     assert again.mode == "identical_source_duplicate"
     assert again.conversations_seen == 75
+
+
+def test_html_assignment_marker_crosses_read_chunk_boundary(tmp_path: Path) -> None:
+    from latka_jazn.tools.memory_rebuild_app.html_import import iter_html_conversations
+
+    path = tmp_path / "chat-marker-boundary.html"
+    payload = [{
+        "id": "boundary-conversation", "title": "Chunk test",
+        "mapping": {}, "current_node": None,
+    }]
+    path.write_text(
+        " " * (64 * 1024 - 7) +
+        "<script>const jsonData = " +
+        json.dumps(payload) + ";</script>",
+        encoding="utf-8",
+    )
+    assert [item["id"] for item in iter_html_conversations(path)] == [
+        "boundary-conversation"
+    ]
+
+
+def test_truncated_embedded_json_fails_without_partial_import(tmp_path: Path) -> None:
+    import pytest
+    from latka_jazn.tools.memory_rebuild_app.html_import import import_chat_html
+
+    path = tmp_path / "chat-truncated.html"
+    path.write_text(
+        '<script>var jsonData = [{"id":"only-id","mapping":{}}, {"id":',
+        encoding="utf-8",
+    )
+    with pytest.raises((ValueError, json.JSONDecodeError)):
+        import_chat_html(path, tmp_path / "truncated.sqlite3")
