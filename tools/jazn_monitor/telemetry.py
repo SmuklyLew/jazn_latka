@@ -169,9 +169,9 @@ def _windows_process_rows() -> list[dict[str, Any]] | None:
         "\"Name='python.exe' OR Name='pythonw.exe' OR Name='Jazn-Daemon.exe'\" "
         "| ForEach-Object { $p=Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue; "
         "[pscustomobject]@{pid=$_.ProcessId;parent_pid=$_.ParentProcessId;"
-        "created=if($_.CreationDate){$_.CreationDate.ToString('o')}else{$null};"
-        "command_line=$_.CommandLine;cpu_seconds=if($p){$p.CPU}else{$null};"
-        "ram_bytes=if($p){$p.WorkingSet64}else{$null}} }); "
+        "created=$($_.CreationDate.ToString('o'));"
+        "command_line=$_.CommandLine;cpu_seconds=$($p.CPU);"
+        "ram_bytes=$($p.WorkingSet64)} }); "
         "@($r) | ConvertTo-Json -Depth 3 -Compress"
     )
     try:
