@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.22",
-  "active_definition_count": 3517,
+  "active_definition_count": 3519,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26919,6 +26919,21 @@
       "description_source": "source_identity",
       "line": 37
     },
+    "tests/test_jazn_monitor_observability.py::test_similarly_prefixed_root_does_not_count_as_owned_daemon": {
+      "path": "tests/test_jazn_monitor_observability.py",
+      "name": "test_similarly_prefixed_root_does_not_count_as_owned_daemon",
+      "purpose": "Similarly prefixed root does not count as owned daemon",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
     "tests/test_jazn_monitor_observability.py::test_process_mismatch_or_unavailable_is_not_claimed_ready": {
       "path": "tests/test_jazn_monitor_observability.py",
       "name": "test_process_mismatch_or_unavailable_is_not_claimed_ready",
@@ -26932,7 +26947,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 75
     },
     "tests/test_jazn_monitor_observability.py::test_job_diagnostics_are_codes_only_not_private_text": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26947,7 +26962,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 84
     },
     "tests/test_jazn_monitor_observability.py::test_jobs_fail_closed_on_invalid_json_and_no_live_root": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26962,7 +26977,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 109
     },
     "tests/test_jazn_monitor_observability.py::test_probe_preserves_services_and_adds_observability": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26977,7 +26992,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 118
     },
     "tests/test_jazn_monitor_observability.py::test_no_auto_gui_for_ci_noninteractive_or_operator_off": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -26992,7 +27007,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 132
+      "line": 144
     },
     "tests/test_jazn_monitor_observability.py::test_interactive_auto_gui_is_not_runtime_owner": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27009,7 +27024,22 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 147
+      "line": 159
+    },
+    "tests/test_jazn_monitor_observability_qt.py::test_monitor_renders_process_jobs_and_finalization_independently": {
+      "path": "tests/test_jazn_monitor_observability_qt.py",
+      "name": "test_monitor_renders_process_jobs_and_finalization_independently",
+      "purpose": "Monitor renders process jobs and finalization independently",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 11,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_jazn_monitor_tray.py::test_no_tray_keeps_minimized_window_recoverable": {
       "path": "tests/test_jazn_monitor_tray.py",
