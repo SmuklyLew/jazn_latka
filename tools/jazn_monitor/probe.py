@@ -124,8 +124,6 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
                             "ready", "Chat worker i runtime-write gotowe wg /ready; finalizacja tury osobno")
                     elif ready.get("readiness_ok") is False:
                         services["Runtime Core"] = Observation("reachable", "Daemon działa, /ready zgłasza brak gotowości")
-                else:
-                    services["Runtime Core"] = Observation("unavailable", "Daemon działa, brak odpowiedzi /ready")
                     if ready.get("authenticated_mcp_ready") is True:
                         services["MCP"] = Observation("reachable", "Uwierzytelnione MCP potwierdzone przez /ready")
                     if (ready.get("full_autobiographical_recall_ready") is True
@@ -133,6 +131,8 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
                         services["MEMORY"] = Observation("ready", "Recall i continuity potwierdzone")
                     elif ready.get("persistent_memory_enabled") is False:
                         services["MEMORY"] = Observation("disabled", "MEMORY nieaktywna")
+                else:
+                    services["Runtime Core"] = Observation("unavailable", "Daemon działa, brak odpowiedzi /ready")
     elif selected is not None:
         services["Daemon Jaźni"] = Observation("unknown", "Wybrany katalog nie zawiera run.py")
 
