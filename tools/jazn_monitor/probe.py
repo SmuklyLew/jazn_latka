@@ -111,10 +111,10 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
             if (identity_verified and rows is not None and type(marker_pid) is int
                     and not any(row.get("pid") == marker_pid for row in rows)):
                 services["Daemon Jaźni"] = Observation("stopped", "Brak PID w odczycie systemu Windows i brak /live")
-            elif rows is not None:
-                services["Daemon Jaźni"] = Observation("unavailable", "Brak /live; tożsamość procesu niezweryfikowana")
+            elif rows is not None and identity_verified:
+                services["Daemon Jaźni"] = Observation("unavailable", "Brak /live mimo wcześniejszej tożsamości procesu")
             else:
-                services["Daemon Jaźni"] = Observation("unknown", "Brak /live i dowodu stanu procesu")
+                services["Daemon Jaźni"] = Observation("unknown", "Brak /live i wystarczającego dowodu stanu procesu")
         elif not _matches_instance(marker, live, selected):
             services["Daemon Jaźni"] = Observation("error", "PID, identyfikator lub ROOT nie zgadzają się")
         else:
