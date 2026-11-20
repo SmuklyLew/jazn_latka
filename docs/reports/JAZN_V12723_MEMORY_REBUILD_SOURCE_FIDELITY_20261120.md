@@ -17,7 +17,8 @@ An isolated streaming-parser smoke check on a private HTML source matched the in
 
 ## Remaining acceptance gates (NOT VERIFIED)
 
-- Previous Windows/Python 3.14 CI for commit `6fbd652` exposed an existing revision-identity regression (`test_affect_projection_integrity_ignores_historical_l0_revisions`, expected=1, observed=2); the identity policy was corrected and a regression added. A **new** completed CI outcome is required before PASS.\n- Run targeted pytest including `tests/test_memory_rebuild_alpha_source_regressions.py` and existing HTML/JSON archive regressions on the actual branch SHA; compileall and Pyright.
+- Previous Windows/Python 3.14 CI for commit `6fbd652` exposed an existing revision-identity regression (`test_affect_projection_integrity_ignores_historical_l0_revisions`, expected=1, observed=2); the identity policy was corrected and a regression added. A **new** completed CI outcome is required before PASS.
+- Run targeted pytest including `tests/test_memory_rebuild_alpha_source_regressions.py` and existing HTML/JSON archive regressions on the actual branch SHA; compileall and Pyright.
 - Run independent Test00–Final, large-file peak-RAM checks, idempotent interrupted-import recovery, mixed-version export conflict resolution and source/graph counts on private **isolated** staging.
 - Resolve residual whole-file HTML parsing for ZIP and rendered fallback and validate malformed/truncated source behavior.
 - Validate atomic recovery between native archive and common L0 writes; they currently use separate connections/transactions.
