@@ -10,6 +10,7 @@ on:
       - "tests/test_jazn_monitor.py"
       - "tests/test_jazn_monitor_tray.py"
       - "tests/test_jazn_monitor_observability.py"
+      - "tests/test_jazn_monitor_observability_qt.py"
       - "main.py"
       - ".github/workflows/jazn-monitor-build.yml"
       - "latka_jazn/version.py"
@@ -20,6 +21,7 @@ on:
       - "tests/test_jazn_monitor.py"
       - "tests/test_jazn_monitor_tray.py"
       - "tests/test_jazn_monitor_observability.py"
+      - "tests/test_jazn_monitor_observability_qt.py"
       - "main.py"
       - ".github/workflows/jazn-monitor-build.yml"
   workflow_dispatch:
@@ -53,7 +55,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0
       - name: Syntax and read-only regression tests
         run: |
-          python -m py_compile jazn_monitor.py tools/jazn_monitor/probe.py tools/jazn_monitor/window.py tools/jazn_monitor/autostart.py tools/jazn_monitor/telemetry.py tools/jazn_monitor/verify_bundle.py tests/test_jazn_monitor.py tests/test_jazn_monitor_tray.py tests/test_jazn_monitor_observability.py
+          python -m py_compile jazn_monitor.py tools/jazn_monitor/probe.py tools/jazn_monitor/window.py tools/jazn_monitor/autostart.py tools/jazn_monitor/telemetry.py tools/jazn_monitor/verify_bundle.py tests/test_jazn_monitor.py tests/test_jazn_monitor_tray.py tests/test_jazn_monitor_observability.py tests/test_jazn_monitor_observability_qt.py
           python -m pytest -q tests/test_jazn_monitor.py tests/test_jazn_monitor_tray.py tests/test_jazn_monitor_observability.py
       - name: Python GUI startup without probes
         run: python -X utf8 jazn_monitor.py --gui-smoke
