@@ -100,7 +100,15 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
             # A missing HTTP response alone does NOT establish stopped state.
             rows = _windows_process_rows()
             marker_pid = marker.get("daemon_pid")
-            if (rows is not None and type(marker_pid) is int
+            fingerprint = marker.get("process_fingerprint")
+            identity_verified = (
+                isinstance(fingerprint, dict)
+                and fingerprint.get("available") is True
+                and fingerprint.get("pid") == marker_pid
+                and isinstance(fingerprint.get("identity_token"), str)
+                and bool(fingerprint["identity_token"])
+            )
+            if (identity_verified and rows is not None and type(marker_pid) is int
                     and not any(row.get("pid") == marker_pid for row in rows)):
                 services["Daemon Jaźni"] = Observation("stopped", "Brak PID w odczycie systemu Windows i brak /live")
             elif rows is not None:
