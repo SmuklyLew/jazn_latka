@@ -141,7 +141,7 @@ def _synthetic_conversation(title: str, messages: Iterable[str], *, source_key: 
     }
 
 
-_JSON_ARRAY_ASSIGNMENT_RE = re.compile(rb"(?:var|let|const)\\s+jsonData\\s*=", re.IGNORECASE)
+_JSON_ARRAY_ASSIGNMENT_RE = re.compile(rb"(?:var|let|const)\s+jsonData\s*=", re.IGNORECASE)
 
 
 def _embedded_array_offset(path: Path) -> int | None:
@@ -169,7 +169,7 @@ def _embedded_array_offset(path: Path) -> int | None:
                     ch = stream.read(1)
                     if not ch:
                         return None
-                    if ch not in b" \\t\\r\\n":
+                    if ch not in b" \t\r\n":
                         return stream.tell() - 1 if ch == b"[" else None
             consumed += len(chunk)
             carry = search[-128:]
