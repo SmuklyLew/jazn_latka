@@ -139,8 +139,10 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
                         services["MEMORY"] = Observation("ready", "Recall i continuity potwierdzone")
                     elif ready.get("persistent_memory_enabled") is False:
                         services["MEMORY"] = Observation("disabled", "MEMORY nieaktywna")
-                else:
+                elif ready is None:
                     services["Runtime Core"] = Observation("unavailable", "Daemon działa, brak odpowiedzi /ready")
+                else:
+                    services["Runtime Core"] = Observation("error", "Niezgodna tożsamość instancji w /ready")
     elif selected is not None:
         services["Daemon Jaźni"] = Observation("unknown", "Wybrany katalog nie zawiera run.py")
 
@@ -149,8 +151,10 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
         models = [m.get("name") for m in tags["models"] if isinstance(m, dict)
                   and isinstance(m.get("name"), str)]
         services["Ollama"] = Observation("reachable", f"API dostępne · modeli: {len(models)}; generacja niesprawdzona")
-    elif selected is not None:
+    elif selected is not None and tags is None:
         services["Ollama"] = Observation("unavailable", "Brak odpowiedzi /api/tags; stan procesu Ollama niepotwierdzony")
+    elif selected is not None:
+        services["Ollama"] = Observation("error", "Nieprawidłowy format /api/tags")
     if services["MCP"].state == "unknown":
         services["MCP"] = Observation("unknown", "Brak potwierdzonej trasy, autoryzacji i toolsetu")
     services["Supervisor"] = Observation("unknown", "Brak niezależnego dowodu właściciela supervisora")
