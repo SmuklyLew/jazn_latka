@@ -89,3 +89,59 @@ def test_unnumbered_music_analyses_with_same_title_preserve_distinct_text(tmp_pa
     records = list(prepared.iter_records())
     assert len(records) == 2
     assert records[0].logical_key != records[1].logical_key
+
+
+def test_embedded_html_uses_streaming_path_and_preserves_entities(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    from latka_jazn.tools.memory_rebuild_app import html_import
+
+    source = tmp_path / "chat.html"
+    conversations = []
+    for index in range(75):
+        node_id = f"n-{index}"
+        conversations.append({
+            "id": f"synthetic-{index}",
+            "title": "Rozmowa &amp; pamięć",
+            "current_node": node_id,
+            "mapping": {
+                node_id: {
+                    "id": node_id, "parent": None, "children": [],
+                    "message": {
+                        "id": f"message-{index}",
+                        "author": {"role": "user"},
+                        "content": {"content_type": "text", "parts": ["Test &amp; źródło"]},
+                        "metadata": {},
+                    },
+                },
+            },
+        })
+    source.write_text(
+        "<html><script>var jsonData = " +
+        json.dumps(conversations, ensure_ascii=False) +
+        ";</script></html>",
+        encoding="utf-8",
+    )
+
+    def forbidden_full_html_read(*_args, **_kwargs):
+        raise AssertionError("embedded chat.html must not be loaded as one string")
+
+    monkeypatch.setattr(html_import, "_read_html_source", forbidden_full_html_read)
+    member, mode, warnings = html_import.inspect_html_source(source)
+    assert member == "chat.html"
+    assert mode == "embedded_json_lossless"
+    assert not warnings
+
+    rows = html_import.iter_html_conversations(source)
+    first = next(rows)
+    assert first["title"] == "Rozmowa & pamięć"
+    assert first["mapping"]["n-0"]["message"]["content"]["parts"][0] == "Test & źródło"
+    assert 1 + sum(1 for _ in rows) == 75
+
+    database = tmp_path / "html-smoke.sqlite3"
+    native = html_import.import_chat_html(source, database)
+    assert native.conversations_seen == 75
+    assert native.mode == "embedded_json_lossless"
+    again = html_import.import_chat_html(source, database)
+    assert again.mode == "identical_source_duplicate"
+    assert again.conversations_seen == 75
