@@ -292,7 +292,7 @@ def is_session_dialogue_reference(text: str) -> bool:
         normalized,
     )) or terminal_reconnect_anchor
     concrete_object = bool(re.search(
-        r"\b(?:liczb\w*|numer\w*|hasl\w*|kod\w*|slow\w*|"
+        r"\b(?:liczb\w*|numer\w*|hasl\w*|znacznik\w*|kod\w*|slow\w*|"
         r"wiadomosc\w*|tekst\w*|zdani\w*|cytat\w*|pytani\w*|nazw\w*)\b",
         normalized,
     ))
