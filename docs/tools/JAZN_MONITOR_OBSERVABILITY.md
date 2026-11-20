@@ -28,6 +28,16 @@ $python = "D:\.AI\.venv\Scripts\python.exe"
 
 Podczas odbioru sprawdzić Windows: (1) otwarcie Monitora po interaktywnym `run.py start`, (2) czy ponowny `start` nie tworzy duplikatu, (3) odczyt danych i poprawną tożsamość instancji, (4) odrzuconą turę z kodem bez treści użytkownika, (5) zamknięcie Monitora bez wyłączenia daemona, (6) brak GUI przy `package-smoke` i CI.
 
+## Rzeczywisty odbiór Windows — 20 listopada 2026
+
+- **PASS:** uruchomienie Monitora v12722 i czterech zakładek na Windows, obserwacja instancji v12721 i v12722 na odrębnych portach.
+- **PASS:** poprawka `CREATE_NO_WINDOW` — operator potwierdził brak migających niebieskich okien PowerShell podczas odświeżania danych.
+- **PASS (visible terminal):** lokalna sesja `local-v12722-reconnect-acceptance` / `8788` poprawnie odtworzyła `MALINA-628` po `/exit` i ponownym podłączeniu klienta.
+- **PENDING:** odczyt odrębnych trzech `runtime_turn_completed` z rzeczywistej bazy audytu, potwierdzenie lineage i kanonicznej persistence; nie wykonano testu po restarcie daemona.
+- **PENDING:** natywne nazwy plików procesu w Menedżerze zadań Windows — osobny branch i Draft PR po kontroli persistence.
+
+Szczegółowe dowody, dokładny transkrypt i bezpieczna procedura audytu: [JAZN_V12722_WINDOWS_OLLAMA_RECONNECT_ACCEPTANCE_20261120.md](../reports/JAZN_V12722_WINDOWS_OLLAMA_RECONNECT_ACCEPTANCE_20261120.md).
+
 ## Ograniczenia obecnego zakresu
 
 Ten patch nie zmienia `python.exe` na natywne `Jazn-Daemon.exe` w Menedżerze zadań Windows. Natywny plik EXE wymaga osobnego pakowania i odbioru rozdzielnego od obserwowalności; etykiety w aplikacji nie zmieniają nazwy obrazu procesu w systemie operacyjnym.
