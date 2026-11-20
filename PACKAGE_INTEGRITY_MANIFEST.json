@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.127.21-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.21-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.21-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-20T00:54:38+00:00",
-  "updated_at_utc": "2026-11-20T00:54:38+00:00",
+  "generated_at_utc": "2026-11-20T01:08:16+00:00",
+  "updated_at_utc": "2026-11-20T01:08:16+00:00",
   "start_file": "run.py",
   "file_count": 3848,
   "static_file_count": 3848,
@@ -509,7 +509,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2977,
-      "sha256": "0aa4e4007ff4427df7fba3b16307748d8178c51b5b551122a067c4345956bb53",
+      "sha256": "0401c96928c47aac1256c354c9666b059a96173d1141f8d72e72309df1e0bd70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10229,7 +10229,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 7913,
-      "sha256": "17a374b31127f09a3a77f0b7409e5d40ddd388342a3d8e7accafc8b3f1aee58f",
+      "sha256": "61c099963cfc18d7cf286bf21c83881925ba9cde41b1ad3aa96ef209e4fa81be",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
