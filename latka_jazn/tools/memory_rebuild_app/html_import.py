@@ -285,6 +285,8 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
             for raw in iter_html_conversations(path):
                 build_conversation_graph(raw)
                 conversations_seen += 1
+            if not conversations_seen:
+                raise ValueError("html_contains_no_recoverable_conversations")
             return HtmlImportResult(
                 source_path=str(path), source_sha256=source_hash, source_member=member,
                 mode="identical_source_duplicate", conversations_seen=conversations_seen,
@@ -296,6 +298,8 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
                 graph = build_conversation_graph(raw)
                 plan_conversation(graph, active.get(graph.conversation_id))
                 conversations_seen += 1
+            if not conversations_seen:
+                raise ValueError("html_contains_no_recoverable_conversations")
         else:
             from latka_jazn.tools.chat_export_models import ExportSourceInfo
             info = ExportSourceInfo(
@@ -316,6 +320,8 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
                     conversations_seen += 1
                     node_count += graph.node_count
                     message_count += graph.message_count
+                if not conversations_seen:
+                    raise ValueError("html_contains_no_recoverable_conversations")
                 store.finish_import(
                     import_id, conversation_count=conversations_seen,
                     node_count=node_count, message_count=message_count,
