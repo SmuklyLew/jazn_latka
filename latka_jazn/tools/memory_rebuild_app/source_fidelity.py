@@ -29,7 +29,7 @@ from latka_jazn.tools.chat_export_reader import (
 )
 from latka_jazn.db.runtime_sqlite import connect_runtime_writable
 
-from .html_import import read_html_conversations
+from .html_import import read_html_conversations, inspect_html_source, iter_html_conversations
 from .test_spec import TestOutcome
 
 
@@ -402,11 +402,11 @@ def _parse_source(
         return parse_mode, outcome, details, warnings, errors, zip_members
 
     if suffix in {".html", ".htm"}:
-        records, member, html_mode, html_warnings = read_html_conversations(path)
+        member, html_mode, html_warnings = inspect_html_source(path)
         parse_mode = html_mode
         details["html_member"] = member
         warnings.extend(html_warnings)
-        counts, compare_errors = _iter_and_compare(records)
+        counts, compare_errors = _iter_and_compare(iter_html_conversations(path))
         errors.extend(compare_errors)
         details.update(counts)
         if html_mode in {"rendered_html_fallback", "rendered_html_lossy"}:
