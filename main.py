@@ -1569,6 +1569,21 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 port=ns.daemon_port,
             )
             payload["trusted_time_injection"] = injected
+        if payload.get("ok") is True and payload.get("trusted") is True:
+            # A desktop launcher may open a separate read-only observer.
+            # The persistent daemon never creates Qt windows or owns this GUI.
+            reported_root = str(payload.get("resolved_active_root") or "")
+            if reported_root and Path(reported_root).resolve() == Path(cfg.root).resolve():
+                from tools.jazn_monitor.autostart import may_autostart_monitor
+                payload["monitor_autostart"] = may_autostart_monitor(
+                    Path(cfg.root),
+                    daemon_host=ns.daemon_host,
+                    daemon_port=ns.daemon_port,
+                )
+            else:
+                payload["monitor_autostart"] = {
+                    "state": "skipped", "reason": "unverified_active_root",
+                }
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if payload.get("ok") is True else 1
 

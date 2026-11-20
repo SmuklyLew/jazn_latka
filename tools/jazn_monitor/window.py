@@ -8,7 +8,7 @@ from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QApplication, QMainWindow, QMenu, QPushButton, QSystemTrayIcon, QTableWidget,
+    QApplication, QMainWindow, QMenu, QPushButton, QSystemTrayIcon, QTabWidget, QTableWidget,
     QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
@@ -16,11 +16,13 @@ from .probe import SERVICES, snapshot
 
 LABELS = {
     "ready": "GOTOWY", "reachable": "DOSTĘPNY", "unknown": "NIEZWERYFIKOWANY",
-    "disabled": "WYŁĄCZONA", "error": "BŁĄD TOŻSAMOŚCI",
+    "disabled": "WYŁĄCZONA", "error": "BŁĄD", "stopped": "ZATRZYMANY",
+    "unavailable": "NIEDOSTĘPNY",
 }
 COLORS = {
     "ready": "#218449", "reachable": "#a57a28", "unknown": "#717a85",
-    "disabled": "#717a85", "error": "#ba3b4b",
+    "disabled": "#717a85", "error": "#ba3b4b", "stopped": "#717a85",
+    "unavailable": "#a57a28",
 }
 
 
@@ -114,7 +116,33 @@ class MonitorWindow(QMainWindow):
             self.table.setItem(i, 0, QTableWidgetItem(name))
             self.table.setItem(i, 1, QTableWidgetItem(LABELS["unknown"]))
             self.table.setItem(i, 2, QTableWidgetItem("Oczekiwanie na odczyt"))
-        layout.addWidget(self.table)
+        self.tabs = QTabWidget(self)
+        self.tabs.addTab(self.table, "Usługi")
+
+        self.process_table = QTableWidget(0, 7, self)
+        self.process_table.setHorizontalHeaderLabels(
+            ["Rola", "PID", "Rodzic PID", "CPU (s)", "RAM (MB)", "Czas (s)", "Dowód"])
+        self._configure_data_table(self.process_table)
+        self.tabs.addTab(self.process_table, "Procesy Jaźni")
+
+        self.job_table = QTableWidget(0, 5, self)
+        self.job_table.setHorizontalHeaderLabels(
+            ["Żądanie", "Stan", "Czas (s)", "Kod błędu", "Powód odrzucenia"])
+        self._configure_data_table(self.job_table)
+        self.tabs.addTab(self.job_table, "Zadania")
+
+        final_page = QWidget(self)
+        final_layout = QVBoxLayout(final_page)
+        self.final_label = QLabel(
+            "Finalizacja ostatniej tury: NIEZWERYFIKOWANA. Gotowość /ready jej nie potwierdza.")
+        self.final_label.setWordWrap(True)
+        final_layout.addWidget(self.final_label)
+        self.job_counts = QLabel("Statystyki: brak danych")
+        self.job_counts.setWordWrap(True)
+        final_layout.addWidget(self.job_counts)
+        final_layout.addStretch()
+        self.tabs.addTab(final_page, "Finalizacja")
+        layout.addWidget(self.tabs)
 
         self.footer = QLabel(
             "Tylko obserwacja. Zamknięcie monitora nie zatrzyma daemona. "
@@ -128,6 +156,21 @@ class MonitorWindow(QMainWindow):
         if not smoke:
             self.timer.start()
             QTimer.singleShot(0, self.refresh)
+
+    @staticmethod
+    def _configure_data_table(table: QTableWidget) -> None:
+        table.verticalHeader().setVisible(False)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setStretchLastSection(True)
+
+    @staticmethod
+    def _show_rows(table: QTableWidget, values: list[list[str]]) -> None:
+        table.setRowCount(len(values))
+        for row_index, fields in enumerate(values):
+            for column, value in enumerate(fields):
+                table.setItem(row_index, column, QTableWidgetItem(value))
 
     def _configure_tray(self) -> None:
         icon = _monitor_icon()
@@ -213,6 +256,55 @@ class MonitorWindow(QMainWindow):
             self.table.setItem(i, 1, state)
             self.table.setItem(i, 2, QTableWidgetItem(
                 str(data.get("detail") or "Brak zweryfikowanego statusu")))
+        process_data = report.get("processes") or {}
+        process_rows = []
+        for item in process_data.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            def display(value: Any) -> str:
+                return "—" if value is None else str(value)
+            process_rows.append([
+                str(item.get("name") or "?"), display(item.get("pid")),
+                display(item.get("parent_pid")), display(item.get("cpu_seconds")),
+                display(item.get("ram_mb")), display(item.get("uptime_seconds")),
+                str(item.get("evidence") or "niezweryfikowano"),
+            ])
+        self._show_rows(self.process_table, process_rows)
+        self.tabs.setTabText(
+            1, "Procesy Jaźni (" + str(len(process_rows)) + ")")
+
+        jobs = report.get("jobs") or {}
+        job_rows = []
+        for item in jobs.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            rid = str(item.get("request_id") or "")
+            job_rows.append([
+                rid[:8] + "…" if len(rid) > 8 else rid,
+                str(item.get("state") or "unknown"),
+                str(item.get("duration_seconds") if item.get("duration_seconds") is not None else "—"),
+                str(item.get("error_code") or "—"),
+                str(item.get("reason_code") or "—"),
+            ])
+        self._show_rows(self.job_table, job_rows)
+        self.tabs.setTabText(2, "Zadania (" + str(len(job_rows)) + ")")
+
+        final = report.get("finalization") or {}
+        final_state = str(final.get("state") or "unknown")
+        self.final_label.setText(
+            "OSTATNIA FINALIZACJA: " + final_state +
+            "\nŻądanie: " + str(final.get("request_id") or "niezweryfikowano") +
+            "\nKod błędu: " + str(final.get("error_code") or "—") +
+            "\nPowód: " + str(final.get("reason_code") or "—") +
+            "\nWynik zadania nie zastępuje dowodu accepted finalization.")
+        counts = jobs.get("counts") if isinstance(jobs.get("counts"), dict) else None
+        self.job_counts.setText(
+            ("Zadania: przyjęte do kolejki " + str(counts.get("submitted_total")) +
+             " | ukończone " + str(counts.get("completed_total")) +
+             " | błędy " + str(counts.get("failed_non_timeout_total")) +
+             " | timeouty " + str(counts.get("execution_timeout_total")) +
+             " | oczekujące " + str(counts.get("pending")))
+            if counts else "Statystyki: brak zweryfikowanych liczników")
         self.footer.setText(
             "Odczyt UTC: " + str(report.get("observed_at_utc") or "UNKNOWN") +
             " • tylko obserwacja • zamknięcie nie zatrzymuje daemona")
