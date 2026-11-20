@@ -187,3 +187,27 @@ def test_empty_embedded_conversations_are_rejected(tmp_path: Path) -> None:
     html.write_text("<script>var jsonData = [];</script>", encoding="utf-8")
     with pytest.raises(ValueError, match="html_contains_no_recoverable_conversations"):
         import_chat_html(html, tmp_path / "no-empty-import.sqlite3")
+
+
+def test_unnumbered_music_analysis_edit_retains_revision_identity(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "analizy_utworow.json"
+    adapter = MusicAnalysisAdapter()
+    probe = SourceProbe(str(source), "music", 1.0, ())
+    settings = MemoryRebuildSettings()
+
+    source.write_text(
+        json.dumps({"analizy": [{"tytul": "Wspólny tytuł", "emocje": "spokój"}]},
+                   ensure_ascii=False),
+        encoding="utf-8",
+    )
+    before = list(adapter.prepare(source, probe, settings).iter_records())
+    source.write_text(
+        json.dumps({"analizy": [{"tytul": "Wspólny tytuł", "emocje": "radość"}]},
+                   ensure_ascii=False),
+        encoding="utf-8",
+    )
+    after = list(adapter.prepare(source, probe, settings).iter_records())
+    assert before[0].logical_key == after[0].logical_key
+    assert before[0].content_sha256 != after[0].content_sha256
