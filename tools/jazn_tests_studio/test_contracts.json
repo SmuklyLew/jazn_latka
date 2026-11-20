@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.22",
-  "active_definition_count": 3520,
+  "active_definition_count": 3523,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43215,6 +43215,76 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 133
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_non_dialogue_content_types_preserve_archive_but_not_memory_eligibility": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_non_dialogue_content_types_preserve_archive_but_not_memory_eligibility",
+      "purpose": "Non dialogue content types preserve archive but not memory eligibility",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "archive",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_numbered_music_analyses_with_same_title_do_not_overwrite": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_numbered_music_analyses_with_same_title_do_not_overwrite",
+      "purpose": "Numbered music analyses with same title do not overwrite",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_unnumbered_music_analyses_with_same_title_preserve_distinct_text": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_unnumbered_music_analyses_with_same_title_preserve_distinct_text",
+      "purpose": "Unnumbered music analyses with same title preserve distinct text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
     },
     "tests/test_memory_rebuild_app.py::test_project_roundtrip_preserves_source_order_and_forces_promotion_off": {
       "path": "tests/test_memory_rebuild_app.py",
