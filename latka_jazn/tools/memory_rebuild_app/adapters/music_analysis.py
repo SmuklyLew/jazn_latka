@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Iterator
+import hashlib
 
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
 from ..source_detection import SourceProbe, load_json_strict
-from .common import stable_key
 
 
 def _analysis_rows(path: Path) -> Iterator[dict[str, Any]]:
@@ -64,6 +64,24 @@ def _text(raw: dict[str, Any]) -> tuple[str, str]:
     return title, "\n".join(fragments) if fragments else canonical_json(raw)
 
 
+def _analysis_logical_key(raw: dict[str, Any], title: str) -> str:
+    """Keep distinct source entries even when their music titles coincide.
+
+    Prefer a true ID, then the source's numbered position plus title. An
+    unnumbered item has no stable identity outside its content; fingerprint it
+    rather than silently merging unrelated analyses with identical titles.
+    """
+    for key in ("id", "analysis_id", "uuid", "_source_key"):
+        value = str(raw.get(key) or "").strip()
+        if value:
+            return f"music-analysis:{key}:{value.casefold()}"
+    number = raw.get("numer")
+    if number is not None and str(number).strip():
+        return f"music-analysis:number:{str(number).strip().casefold()}:{title.casefold()}"
+    digest = hashlib.sha256(canonical_json(raw).encode("utf-8")).hexdigest()
+    return f"music-analysis:sha256:{digest}"
+
+
 class MusicAnalysisAdapter:
     adapter_id = "music-analysis/v16.1"
 
@@ -78,11 +96,7 @@ class MusicAnalysisAdapter:
         def records():
             for raw in _analysis_rows(path):
                 title, content = _text(raw)
-                logical_key = stable_key(
-                    "music-analysis",
-                    raw,
-                    ("id", "analysis_id", "uuid", "_source_key", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
-                )
+                logical_key = _analysis_logical_key(raw, title)
                 source_id = str(raw.get("id") or raw.get("analysis_id") or raw.get("uuid") or logical_key)
                 event = str(raw.get("timestamp") or raw.get("data") or raw.get("date") or "").strip() or None
                 raw_record = dict(raw)
