@@ -177,3 +177,13 @@ def test_truncated_embedded_json_fails_without_partial_import(tmp_path: Path) ->
     )
     with pytest.raises((ValueError, json.JSONDecodeError)):
         import_chat_html(path, tmp_path / "truncated.sqlite3")
+
+
+def test_empty_embedded_conversations_are_rejected(tmp_path: Path) -> None:
+    import pytest
+    from latka_jazn.tools.memory_rebuild_app.html_import import import_chat_html
+
+    html = tmp_path / "empty-chat.html"
+    html.write_text("<script>var jsonData = [];</script>", encoding="utf-8")
+    with pytest.raises(ValueError, match="html_contains_no_recoverable_conversations"):
+        import_chat_html(html, tmp_path / "no-empty-import.sqlite3")
