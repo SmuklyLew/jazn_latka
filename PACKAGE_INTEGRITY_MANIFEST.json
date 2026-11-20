@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.22-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.22-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.22-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-20T16:32:06+00:00",
-  "updated_at_utc": "2026-11-20T16:32:06+00:00",
+  "generated_at_utc": "2026-11-20T16:49:57+00:00",
+  "updated_at_utc": "2026-11-20T16:49:57+00:00",
   "start_file": "run.py",
-  "file_count": 3853,
-  "static_file_count": 3853,
+  "file_count": 3854,
+  "static_file_count": 3854,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2972,
-      "sha256": "b8b054674068f87354e02ad67f69b4e599fc0e2ade0fe2019250d2e01c720db9",
+      "size_bytes": 2977,
+      "sha256": "9c003649638e9d9326c7ab7f2252f239867095969d459fc2fbb8fd4e19fd0952",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -3189,6 +3189,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "docs/reports/JAZN_V12722_WINDOWS_OLLAMA_RECONNECT_ACCEPTANCE_20261120.md",
+      "size_bytes": 8220,
+      "sha256": "fd15f7f4bf5654094704d15f1c9e2eee9dfd5a4f251b75b93c1f5818111219e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "docs/reports/JAZN_V1278_CONVERSATION_MEMORY_ROUTING_HARDENING.md",
       "size_bytes": 3692,
       "sha256": "79a71f103064b82b236705aceeab326ee66ab7000b2ff725d71a303f7bf9ac49",
@@ -4540,8 +4549,8 @@
     },
     {
       "path": "docs/tools/JAZN_MONITOR_OBSERVABILITY.md",
-      "size_bytes": 4303,
-      "sha256": "dce8550cb5daad2a443e2d6242276ea34d9e031051c0b077e15f392045c8a53d",
+      "size_bytes": 5325,
+      "sha256": "9c6cf453b127c76392b8906ee1c0899647f6a91e01d0a84a0708a885eed77b84",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
