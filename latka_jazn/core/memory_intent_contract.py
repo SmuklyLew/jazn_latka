@@ -277,14 +277,22 @@ def is_session_dialogue_reference(text: str) -> bool:
         normalized,
     ):
         return False
+    # A terminal reconnect keeps the same canonical session_id. The user's
+    # earlier accepted turns remain session history, not autobiographical MEMORY.
+    # Cross-chat and explicit historical/time references were excluded above.
+    terminal_reconnect_anchor = bool(re.search(
+        r"\b(?:przed odlaczeni\w* terminal\w*|"
+        r"po ponownym (?:podlaczeni\w*|polaczeni\w*) terminal\w*)\b",
+        normalized,
+    ))
     session_anchor = bool(re.search(
         r"(?:poprzedni\w*|ostatni\w*) wiadomosc\w*|"
         r"(?:tej|naszej) rozmow\w*|(?:tej|naszej|biezacej) sesj\w*|(?:tym|tego) watk\w*|"
         r"po ponownym polaczeniu",
         normalized,
-    ))
+    )) or terminal_reconnect_anchor
     concrete_object = bool(re.search(
-        r"\b(?:liczb\w*|numer\w*|hasl\w*|kod\w*|slow\w*|"
+        r"\b(?:liczb\w*|numer\w*|hasl\w*|znacznik\w*|kod\w*|slow\w*|"
         r"wiadomosc\w*|tekst\w*|zdani\w*|cytat\w*|pytani\w*|nazw\w*)\b",
         normalized,
     ))

@@ -1,3 +1,4 @@
+# V127.21: recognize same-session terminal reconnect recall without autobiographical MEMORY routing.
 # V127.20: deliver validated handler evidence to Ollama and gate session-history claims.
 # V127.19: preserve validated self-state draft across bounded Ollama retry.
 # V127.18: source-backed autobiographical MEMORY self-claim guard and regressions.
@@ -251,7 +252,7 @@ from typing import Any
 # v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.20"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.21"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
