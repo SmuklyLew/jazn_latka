@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.22",
-  "active_definition_count": 3523,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23",
+  "active_definition_count": 3526,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43231,8 +43231,10 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.adapters.common",
         "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
         "latka_jazn.tools.memory_rebuild_app.settings",
         "latka_jazn.tools.memory_rebuild_app.source_detection"
       ],
@@ -43254,8 +43256,10 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.adapters.common",
         "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
         "latka_jazn.tools.memory_rebuild_app.settings",
         "latka_jazn.tools.memory_rebuild_app.source_detection"
       ],
@@ -43277,14 +43281,91 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.adapters.common",
         "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
         "latka_jazn.tools.memory_rebuild_app.settings",
         "latka_jazn.tools.memory_rebuild_app.source_detection"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 80
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_embedded_html_uses_streaming_path_and_preserves_entities": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_embedded_html_uses_streaming_path_and_preserves_entities",
+      "purpose": "Embedded html uses streaming path and preserves entities",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_html_assignment_marker_crosses_read_chunk_boundary": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_html_assignment_marker_crosses_read_chunk_boundary",
+      "purpose": "Html assignment marker crosses read chunk boundary",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
+    },
+    "tests/test_memory_rebuild_alpha_source_regressions.py::test_truncated_embedded_json_fails_without_partial_import": {
+      "path": "tests/test_memory_rebuild_alpha_source_regressions.py",
+      "name": "test_truncated_embedded_json_fails_without_partial_import",
+      "purpose": "Truncated embedded json fails without partial import",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.adapters.common",
+        "latka_jazn.tools.memory_rebuild_app.adapters.music_analysis",
+        "latka_jazn.tools.memory_rebuild_app.html_import",
+        "latka_jazn.tools.memory_rebuild_app.settings",
+        "latka_jazn.tools.memory_rebuild_app.source_detection"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 169
     },
     "tests/test_memory_rebuild_app.py::test_project_roundtrip_preserves_source_order_and_forces_promotion_off": {
       "path": "tests/test_memory_rebuild_app.py",
