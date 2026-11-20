@@ -216,8 +216,12 @@ def process_snapshot(root: Path | None, marker: dict[str, Any] | None,
         return {"state": "error", "items": [], "scope": "verified_daemon_and_descendants"}
     # The daemon command must identify the requested root; PID alone can be reused.
     cmd = str(daemon.get("command_line") or "").casefold().replace("/", "\\")
-    root_text = str(root.resolve()).casefold().replace("/", "\\")
-    if root_text not in cmd:
+    root_text = str(root.resolve()).casefold().replace("/", "\\").rstrip("\\")
+    # Token boundary prevents accidental ownership of similarly prefixed roots
+    # (e.g. v12721 vs v12721_copy). No raw argv escapes this function.
+    argv_tokens = [token.strip('"').rstrip("\\")
+                   for token in re.findall(r'"[^"]+"|\\S+', cmd)]
+    if root_text not in argv_tokens:
         return {"state": "error", "items": [], "scope": "verified_daemon_and_descendants"}
     owned = {pid}
     for _ in range(4):
