@@ -178,6 +178,9 @@ def _windows_process_rows() -> list[dict[str, Any]] | None:
         p = subprocess.run(
             ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
             capture_output=True, timeout=5, check=False,
+            # Polling a GUI observer must not flash a new PowerShell console.
+            # CREATE_NO_WINDOW prevents a window, NOT OS process visibility.
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
         if p.returncode != 0 or len(p.stdout) > MAX_PROCESS_JSON:
             return None
