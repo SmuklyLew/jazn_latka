@@ -13,7 +13,7 @@ Only the existing `latka_jazn/tools/memory_rebuild_app` pipeline is changed. No 
 
 ## Private evidence boundary
 
-The user's July 2026 ChatGPT HTML sample contains 877 conversations and 93,172 graph nodes. A standalone Python streaming-parser smoke test (not the full repo integration suite) recovered exactly these counts from the unchanged 228,481,447-byte HTML. No private texts, media, user history, or credentials are committed. The complete private source collection on Windows has not yet been inventoried or imported.
+An isolated streaming-parser smoke check on a private HTML source matched the independently established conversation and graph-node counts; this is not the full repository integration suite. Private source counts, dates, paths, message content, media, user history and credentials are not included in this public report. The complete private source collection on Windows has not yet been inventoried or imported.
 
 ## Remaining acceptance gates (NOT VERIFIED)
 
