@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 from tools.jazn_monitor import autostart, probe, telemetry
 
@@ -32,6 +33,27 @@ def _live(root: Path) -> dict:
         "daemon_pid": 1357, "daemon_instance_id": "instance-fixture",
         "active_root": str(root), "heartbeat_fresh": True, "liveness_ok": True,
     }
+
+
+def test_windows_process_probe_does_not_flash_powershell_console(monkeypatch):
+    # Cross-platform, no real OS process is spawned. Windows' CREATE_NO_WINDOW
+    # must be forwarded to the short-lived, read-only WMI probe.
+    observed = []
+    monkeypatch.setattr(telemetry, "os", SimpleNamespace(name="nt"))
+    monkeypatch.setattr(telemetry.subprocess, "CREATE_NO_WINDOW", 0x08000000, raising=False)
+
+    def fake_run(args, **kwargs):
+        observed.append((args, kwargs))
+        return SimpleNamespace(returncode=0, stdout=b"[]")
+
+    monkeypatch.setattr(telemetry.subprocess, "run", fake_run)
+    assert telemetry._windows_process_rows() == []
+    assert len(observed) == 1
+    cmd, kwargs = observed[0]
+    assert cmd[0] == "powershell.exe"
+    assert kwargs["creationflags"] & 0x08000000
+    assert kwargs["capture_output"] is True
+    assert kwargs["timeout"] == 5
 
 
 def test_process_owner_and_descendants_are_strictly_verified(tmp_path, monkeypatch):
