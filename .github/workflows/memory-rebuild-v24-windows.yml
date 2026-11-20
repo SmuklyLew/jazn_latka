@@ -15,6 +15,8 @@ on:
   pull_request:
     branches:
       - master
+      # The v127.23 Memory Rebuild hardening PR continues from this release base.
+      - fix/v12722-jazn-monitor-observability-autostart-20261120
     paths:
       - "tools/memory_rebuild.py"
       - "tools/memory_rebuild_legacy_v24.py"
@@ -71,6 +73,7 @@ jobs:
           tools/memory_rebuild.py
           tools/memory_rebuild_legacy_v24.py
           tests/test_memory_rebuild_v24_unified.py
+          tests/test_memory_rebuild_alpha_source_regressions.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
@@ -106,6 +109,7 @@ jobs:
           python -X utf8 -m pytest
           -q -ra --tb=short
           tests/test_memory_rebuild_v24_unified.py
+          tests/test_memory_rebuild_alpha_source_regressions.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
