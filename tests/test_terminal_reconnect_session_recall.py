@@ -15,19 +15,24 @@ RECONNECT_QUESTION = (
     "Czy pamiętasz hasło, które podałem w naszej poprzedniej rozmowie "
     "przed odłączeniem terminala? Jeśli tak, podaj je dokładnie."
 )
+RECONNECT_MARKER_QUESTION = (
+    "Czy pamiętasz znacznik, który podałem w naszej poprzedniej rozmowie "
+    "przed odłączeniem terminala? Jeśli tak, podaj go dokładnie."
+)
 
 
-def test_terminal_disconnect_question_routes_to_same_session_history() -> None:
+@pytest.mark.parametrize("question", (RECONNECT_QUESTION, RECONNECT_MARKER_QUESTION))
+def test_terminal_disconnect_question_routes_to_same_session_history(question: str) -> None:
     # Regression: a reconnect to the *same* --session-id previously routed to
     # MemoryExperienceRecallHandler and rejected twice with
     # classified_non_dynamic_response despite three accepted local turns.
-    assert is_session_dialogue_reference(RECONNECT_QUESTION)
-    semantics = analyze_memory_intent(RECONNECT_QUESTION)
+    assert is_session_dialogue_reference(question)
+    semantics = analyze_memory_intent(question)
     assert semantics.operation == "none"
     assert semantics.content_requested is False
 
     report = DialogueIntentClassifier().classify(
-        RECONNECT_QUESTION,
+        question,
         conversation_history_available=True,
         carryover_allowed=True,
     )
@@ -40,12 +45,14 @@ def test_terminal_reconnect_does_not_invent_a_specific_turn_selector() -> None:
     # The question identifies the accepted session history, not a precise
     # ordinal or turn ID. Retrieval remains bound to signed session records.
     assert parse_session_turn_reference(RECONNECT_QUESTION) is None
+    assert parse_session_turn_reference(RECONNECT_MARKER_QUESTION) is None
 
 
 @pytest.mark.parametrize(
     "question",
     (
         "Czy pamiętasz hasło z poprzednim czacie przed odłączeniem terminala?",
+        "Czy pamiętasz znacznik z poprzednim czacie przed odłączeniem terminala?",
         "Pamiętasz hasło, które podałem wczoraj przed odłączeniem terminala?",
         "Co pamiętasz z naszej poprzedniej rozmowy w 2025 roku?",
         "Czy pamiętasz hasło z naszej poprzedniej rozmowy?",
@@ -55,10 +62,11 @@ def test_ambiguous_and_cross_session_recall_stays_outside_current_history(questi
     assert not is_session_dialogue_reference(question)
 
 
-def test_missing_accepted_history_is_not_promoted_to_autobiographical_memory() -> None:
-    assert is_session_dialogue_reference(RECONNECT_QUESTION)
+@pytest.mark.parametrize("question", (RECONNECT_QUESTION, RECONNECT_MARKER_QUESTION))
+def test_missing_accepted_history_is_not_promoted_to_autobiographical_memory(question: str) -> None:
+    assert is_session_dialogue_reference(question)
     report = DialogueIntentClassifier().classify(
-        RECONNECT_QUESTION,
+        question,
         conversation_history_available=False,
         carryover_allowed=False,
     )
