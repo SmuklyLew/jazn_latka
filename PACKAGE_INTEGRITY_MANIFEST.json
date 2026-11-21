@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-21T03:20:39+00:00",
-  "updated_at_utc": "2026-11-21T03:20:39+00:00",
+  "generated_at_utc": "2026-11-21T03:24:46+00:00",
+  "updated_at_utc": "2026-11-21T03:24:46+00:00",
   "start_file": "run.py",
   "file_count": 3859,
   "static_file_count": 3859,
@@ -265,8 +265,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 6783,
-      "sha256": "a0110ef7a5c065caa9cb1082e4442c857d91339aed7bfb4dd86faa5fbd508fcd",
+      "size_bytes": 6751,
+      "sha256": "3d817630d507eb4370d31ac081657304d720c9f7e5994d3e5c171a6a356f4911",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2977,
-      "sha256": "97022de914e8eee9e7d888f1f6bed7c3068ed264a6761eb7232fa527624191a6",
+      "size_bytes": 2972,
+      "sha256": "0db5b518e8aa98377f1a342ba6c65686df01b86f2d6c5d9bff6b0eb99117c9b1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31017,15 +31017,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "size_bytes": 5551,
-      "sha256": "4aea57bde0fc2c80842ebbb154a4921aa129bd88fc9bc571f97df61dca72b55e",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_memory_rebuild_v16.py",
       "size_bytes": 14042,
       "sha256": "46baca77f89c3321b62608493c17d5a3c770e932301eef3ad39f1a54f5ac60ab",
@@ -31200,6 +31191,15 @@
       "path": "tests/test_memory_studio_affect_turn_lineage.py",
       "size_bytes": 4945,
       "sha256": "10b18e2f064c004f030cd9b4620497a997c6a80e6eaad94afcacc35f9c07e529",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "size_bytes": 5551,
+      "sha256": "4aea57bde0fc2c80842ebbb154a4921aa129bd88fc9bc571f97df61dca72b55e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -34528,8 +34528,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3115675,
-      "sha256": "816778b41a23431525735966ff247b7a47fe25b7b071e8b7d5f86a7b91ea871f",
+      "size_bytes": 3115579,
+      "sha256": "a2b277d59c5671524c31d0d974ae3c6febeb134f0c64eb9533c99964f6aa5ade",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
