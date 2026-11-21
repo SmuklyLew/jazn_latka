@@ -59,6 +59,9 @@ class SetupWizard(QWizard):
         self.core, self.save, self.completed = core, save, completed
         self._original_python_setting = core.settings.python
         self._original_mcp_python_setting = core.settings.mcp_python
+        # Retain the rollback contract even when the wizard does not install Python.
+        self._provisional_python_setting = ""
+        self._provisional_mcp_python_setting = ""
         self.setWindowTitle("Jaźń — Serce Systemu / Pierwsze uruchomienie")
         self.resize(780, 590)
         self.setButtonText(QWizard.WizardButton.BackButton, "Wstecz")
