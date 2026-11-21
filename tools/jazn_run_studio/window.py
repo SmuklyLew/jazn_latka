@@ -59,9 +59,6 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.monitor_window: MonitorWindow | None = None
         self.monitor_report: dict | None = None
         self.monitor_observed_at: float | None = None
-        # Legacy dialog remains uninstantiated; existing direct-unit tests
-        # exercise its classifier without opening a second monitor.
-        self.service_status_dialog = None
         self.nav = QListWidget()
         self.nav.setObjectName("workbenchNavigation")
         self.nav.setAccessibleName("Nawigacja Studio")
