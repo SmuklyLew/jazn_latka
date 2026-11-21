@@ -90,8 +90,12 @@ def test_protocol_resume_and_test00_use_the_same_project_folder(
             assert kwargs["sources"] == [source.resolve()]
             return {"ok": True, "outcome": "PASSED"}
 
-    class DummyDialogs:
-        def message(self, *_args): pass
+    class DummyDialogs(studio.TextDialogs):
+        """Full DialogBackend surface with a non-interactive message sink."""
+
+        def message(self, title: str, text: str) -> None:
+            # Test00 output is not part of this artifact-path assertion.
+            pass
 
     monkeypatch.setattr(studio, "MemoryRebuildApplicationService", DummyService)
     studio._run_test(state, DummyDialogs(), "test00")
@@ -120,12 +124,23 @@ def test_source_validation_gui_targets_private_reports(
             "report_paths": {},
         }
 
-    class StubDesktop:
-        def __init__(self):
-            self.state = state
-            self.dialogs = type("Dialogs", (), {"message": lambda *_a: None})()
+    class SilentGuiDialogs(ui_desktop.TkStudioDialogs):
+        """Keep TkStudioDialogs typing without constructing a Tk window."""
 
-        def _require_project(self):
+        def __init__(self) -> None:
+            pass
+
+        def message(self, title: str, text: str) -> None:
+            pass
+
+    class StubDesktop(ui_desktop.DesktopWorkspace):
+        """Real DesktopWorkspace subtype with only the dependencies under test."""
+
+        def __init__(self) -> None:
+            self.state = state
+            self.dialogs = SilentGuiDialogs()
+
+        def _require_project(self) -> RebuildProject:
             return project
 
     monkeypatch.setattr(ui_desktop, "check_memory_source_files", fake_check)
