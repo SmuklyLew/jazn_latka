@@ -357,51 +357,17 @@ def install_python_windows(*, approved: bool) -> dict[str, Any]:
 
 
 def start_ollama(*, approved: bool, launch: str = "cli") -> dict[str, Any]:
+    """Legacy CLI is disabled: only the JSS Services controller may own CLI."""
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
-    if ollama_api("GET", "/api/tags", timeout=2).get("ok") is True:
-        return {"ok": True, "state": "already_running"}
-    executable = detect_ollama()
-    if not executable:
-        raise ProvisioningError("ollama_not_installed")
-    if launch not in {"cli", "app"}:
-        raise ProvisioningError("unsupported_ollama_launch_mode")
-    if launch == "app":
-        if os.name != "nt":
-            raise ProvisioningError("ollama_app_windows_only")
-        # Ollama's Windows GUI is independent of the CLI server process.
-        candidate = Path(executable).with_name("Ollama app.exe")
-        if not candidate.is_file():
-            raise ProvisioningError("ollama_app_executable_missing")
-        command = [str(candidate)]
-    else:
-        command = [executable, "serve"]
-    flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) if os.name == "nt" else 0
-    try:
-        process = subprocess.Popen(command, stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL, creationflags=flags)
-    except OSError as exc:
-        raise ProvisioningError("ollama_process_start_failed") from exc
-    # Starting a process is not evidence of API readiness.
-    return {"ok": True, "state": "spawned_unverified", "pid": process.pid,
-            "requires_followup_api_check": True}
+    raise ProvisioningError("ollama_lifecycle_moved_to_jss_services")
 
 
 def install_ollama_windows(*, approved: bool) -> dict[str, Any]:
+    """Never invoke WinGet from JSS. Use the official vendor installer."""
     if not approved:
         raise ProvisioningError("explicit_operator_approval_required")
-    if os.name != "nt":
-        raise ProvisioningError("windows_only")
-    winget = shutil.which("winget")
-    if not winget:
-        raise ProvisioningError("winget_missing_use_official_ollama_installer")
-    result = subprocess.run([
-        winget, "install", "--id", "Ollama.Ollama", "--exact", "--source", "winget",
-        "--accept-source-agreements", "--accept-package-agreements",
-    ], capture_output=True, timeout=1200, check=False)
-    if result.returncode:
-        raise ProvisioningError("ollama_winget_install_failed")
-    return {"ok": True, "state": "installer_completed_recheck_required"}
+    raise ProvisioningError("ollama_use_official_installer_https_ollama_com_download_windows")
 
 
 def main(argv: list[str] | None = None) -> int:
