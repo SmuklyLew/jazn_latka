@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.23.2",
-  "active_definition_count": 3547,
+  "active_definition_count": 3548,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -33215,83 +33215,101 @@
     "tests/test_jss_dependency_row_diagnostics.py::test_dependency_json_summary_bounded_and_parsable": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
       "name": "test_dependency_json_summary_bounded_and_parsable",
-      "purpose": "Large installer metadata is omitted from the first-run machine response.",
+      "purpose": "Large metadata must not leak into the operator-facing machine summary.",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 35
+      "line": 41
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_process_failure_is_visible_in_operator_logs": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_studio_error_remains_visible_without_wizard_installer": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_dependency_process_failure_is_visible_in_operator_logs",
-      "purpose": "Missing subprocess JSON must leave a bounded failure event for the operator.",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_dependency_studio_error_remains_visible_without_wizard_installer",
+      "purpose": "A real failed Dependency Studio command must retain a bounded error.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 53
+      "line": 59
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_extension_preserves_canonical_root_venv": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_dependency_diagnostic_cannot_install_inside_wizard": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_optional_mcp_extension_preserves_canonical_root_venv",
-      "purpose": "MCP and runtime must use the same ROOT/.venv, not a managed copy.",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_optional_mcp_dependency_diagnostic_cannot_install_inside_wizard",
+      "purpose": "Missing MCP is visible but never starts installer or changes Python.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "mcp",
-        "repository"
+        "mcp"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 69
+      "line": 74
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_optional_profile_rejects_foreign_marker": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_onboarding_accept_rejects_foreign_mcp_interpreter": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_optional_profile_rejects_foreign_marker",
-      "purpose": "A foreign marker must not authorize a change even for the correct venv.",
+      "name": "test_onboarding_accept_rejects_foreign_mcp_interpreter",
+      "purpose": "Foreign interpreter cannot masquerade as project-owned ROOT/.venv.",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "repository"
+        "mcp"
       ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 101
+      "line": 92
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_onboarding_accepts_only_verified_canonical_python": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_onboarding_accepts_only_verified_canonical_python",
+      "purpose": "The retained final setup gate binds both roles to the same project venv.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 113
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
@@ -71838,11 +71856,11 @@
       "path": "tests/test_tpa_local_ollama_endpoint.py",
       "name": "test_selected_test_endpoint_is_probed_without_default_port_fallback",
       "purpose": "Selected test endpoint is probed without default port fallback",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools"
@@ -71870,7 +71888,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 67
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_live_cli_passes_explicit_endpoint_to_existing_executor": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
@@ -71887,7 +71905,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 75
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_runtime_environment_preserves_preflight_endpoint": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
@@ -71908,7 +71926,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 91
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",
