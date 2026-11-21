@@ -45233,140 +45233,6 @@
       "description_source": "source_identity",
       "line": 314
     },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_project_artifact_directories_are_external_and_not_created_by_probe": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_project_artifact_directories_are_external_and_not_created_by_probe",
-      "purpose": "Project artifact directories are external and not created by probe",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 4,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 46
-    },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_resolved_artifact_path_refuses_checkout_and_private_sources": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_resolved_artifact_path_refuses_checkout_and_private_sources",
-      "purpose": "Resolved artifact path refuses checkout and private sources",
-      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 0,
-      "expected_exceptions": [
-        "ValueError"
-      ],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 55
-    },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_nonstandard_target_uses_nested_artifacts": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_nonstandard_target_uses_nested_artifacts",
-      "purpose": "Nonstandard target uses nested artifacts",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 68
-    },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_protocol_resume_and_test00_use_the_same_project_folder": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_protocol_resume_and_test00_use_the_same_project_folder",
-      "purpose": "Protocol resume and test00 use the same project folder",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 7,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 77
-    },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_source_validation_gui_targets_private_reports": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_source_validation_gui_targets_private_reports",
-      "purpose": "Source validation gui targets private reports",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 106
-    },
-    "tests/test_memory_rebuild_v12723_artifact_paths.py::test_switching_projects_does_not_reuse_previous_protocol_chain": {
-      "path": "tests/test_memory_rebuild_v12723_artifact_paths.py",
-      "name": "test_switching_projects_does_not_reuse_previous_protocol_chain",
-      "purpose": "Switching projects does not reuse previous protocol chain",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [
-        "memory"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.tools.memory_rebuild_app",
-        "latka_jazn.tools.memory_rebuild_app.models",
-        "latka_jazn.tools.memory_rebuild_app.project_store",
-        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 136
-    },
     "tests/test_memory_rebuild_v16.py::test_v16_launcher_is_thin_and_has_no_runtime_monkeypatch": {
       "path": "tests/test_memory_rebuild_v16.py",
       "name": "test_v16_launcher_is_thin_and_has_no_runtime_monkeypatch",
@@ -49575,6 +49441,140 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 78
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_project_artifact_directories_are_external_and_not_created_by_probe": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_project_artifact_directories_are_external_and_not_created_by_probe",
+      "purpose": "Project artifact directories are external and not created by probe",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 46
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_resolved_artifact_path_refuses_checkout_and_private_sources": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_resolved_artifact_path_refuses_checkout_and_private_sources",
+      "purpose": "Resolved artifact path refuses checkout and private sources",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_nonstandard_target_uses_nested_artifacts": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_nonstandard_target_uses_nested_artifacts",
+      "purpose": "Nonstandard target uses nested artifacts",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_protocol_resume_and_test00_use_the_same_project_folder": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_protocol_resume_and_test00_use_the_same_project_folder",
+      "purpose": "Protocol resume and test00 use the same project folder",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_source_validation_gui_targets_private_reports": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_source_validation_gui_targets_private_reports",
+      "purpose": "Source validation gui targets private reports",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 106
+    },
+    "tests/test_memory_studio_artifact_paths.py::test_switching_projects_does_not_reuse_previous_protocol_chain": {
+      "path": "tests/test_memory_studio_artifact_paths.py",
+      "name": "test_switching_projects_does_not_reuse_previous_protocol_chain",
+      "purpose": "Switching projects does not reuse previous protocol chain",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.memory_rebuild_app",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
+        "latka_jazn.tools.memory_rebuild_app.studio_artifact_paths"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 136
     },
     "tests/test_memory_studio_p1_inspection.py::test_missing_inspection_does_not_create_files": {
       "path": "tests/test_memory_studio_p1_inspection.py",
