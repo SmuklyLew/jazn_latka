@@ -462,6 +462,8 @@ jobs:
             --junitxml="${{ runner.temp }}/pytest-windows-jss-ollama.xml" `
             tests/test_jss_first_run_provisioning_qt.py `
             tests/test_jss_first_run_row_install.py `
+            tests/test_jss_dependency_row_diagnostics.py `
+            tests/test_tpa_local_ollama_endpoint.py `
             tests/test_jss_ollama_onboarding_monitor_regressions.py `
             tests/test_jss_readonly_service_monitor_ui.py `
             tests/test_jss_service_status_dialog.py
