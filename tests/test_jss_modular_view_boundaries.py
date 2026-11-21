@@ -23,7 +23,10 @@ OWNERS = {
         "service",
         "update_service_summary",
         "refresh_service_table",
-        "open_service_status"
+        "open_service_status",
+        "_ensure_monitor_window",
+        "accept_monitor_snapshot",
+        "render_monitor_service_table"
     ],
     "view_chat.py": [
         "_chat",

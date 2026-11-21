@@ -14,7 +14,9 @@ def test_dashboard_omits_redundant_setup_and_chat_shortcuts(window) -> None:
     texts = {button.text() for button in page.findChildren(QPushButton)}
     assert "Kreator konfiguracji…" not in texts
     assert "3. Przejdź do rozmowy" not in texts
-    assert "Stany usług — monitor" in texts
+    assert "Monitor Jaźni" in texts
+    assert "Stany usług — monitor" not in texts
+    assert "Sterowanie procesami (Start / Stop / Restart) — osobny panel" in texts
 
 
 def test_operator_tools_status_action_toggles_existing_dock(window) -> None:

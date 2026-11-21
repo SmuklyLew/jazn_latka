@@ -5,6 +5,8 @@ status presentation; operator lifecycle stays in Controller.
 """
 from __future__ import annotations
 
+from copy import deepcopy
+
 import os
 from pathlib import Path
 from types import SimpleNamespace
@@ -32,7 +34,7 @@ def report(root: Path) -> dict:
         "schema_version": "jazn_monitor_snapshot/v1",
         "observation_only": True,
         "selected_root": str(root.resolve()),
-        "services": SERVICES,
+        "services": deepcopy(SERVICES),
         "observed_at_utc": "2026-11-21T07:00:00+00:00",
         "processes": {"items": [{
             "name": "Jaźń — Daemon", "pid": 2222,
@@ -110,20 +112,30 @@ def test_jss_uses_new_monitor_window_and_one_snapshot_without_spawning(monkeypat
         payload = report(tmp_path)
         monitor.apply_snapshot(payload)
         assert window.monitor_report == payload
-        assert monitor.table.item(1, 1).text() == "DOSTĘPNY"
+        runtime_item = monitor.table.item(1, 1)
+        assert runtime_item is not None
+        assert runtime_item.text() == "DOSTĘPNY"
         service_row = window.service_rows["runtime"]
         assert "DOSTĘPNY" in window.statuses["runtime"].text()
-        assert window.services_table.item(service_row, 4).text() == "DOSTĘPNY"
-        assert window.services_table.item(service_row, 2).text() == "2222"
+        status_item = window.services_table.item(service_row, 4)
+        assert status_item is not None
+        assert status_item.text() == "DOSTĘPNY"
+        pid_item = window.services_table.item(service_row, 2)
+        assert pid_item is not None
+        assert pid_item.text() == "2222"
         assert "NIEZWERYFIKOWANY" in window.statuses["cloudflare"].text()
         assert window.models_summary.text().startswith("Ollama: DOSTĘPNY")
 
         window.accept_monitor_snapshot({**payload, "selected_root": str(tmp_path / "elsewhere")})
         assert window.monitor_report == payload
-        window.monitor_observed_at -= MAX_MONITOR_AGE_SECONDS + 2
+        observed_at = window.monitor_observed_at
+        assert observed_at is not None
+        window.monitor_observed_at = observed_at - MAX_MONITOR_AGE_SECONDS - 2
         window.refresh_service_table()
         assert "NIEZWERYFIKOWANY" in window.statuses["runtime"].text()
-        assert window.services_table.item(service_row, 2).text() == "—"
+        stale_pid_item = window.services_table.item(service_row, 2)
+        assert stale_pid_item is not None
+        assert stale_pid_item.text() == "—"
 
         monitor.close()
         assert not monitor.timer.isActive()
