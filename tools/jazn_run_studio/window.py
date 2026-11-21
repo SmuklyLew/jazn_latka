@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
-from .service_status_dialog import ServiceStatusDialog
+from tools.jazn_monitor.window import MonitorWindow
 from .studio_worker import preview_fingerprint
 from .workbench_theme import THEME_CHOICES, workbench_stylesheet
 
@@ -55,6 +55,13 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.fields: dict[str, QLineEdit] = {}
         self.statuses: dict[str, QLabel] = {}
         self.dashboard_statuses: dict[str, QLabel] = {}
+        # All JSS service status UI uses one newer Monitor Jaźni snapshot.
+        self.monitor_window: MonitorWindow | None = None
+        self.monitor_report: dict | None = None
+        self.monitor_observed_at: float | None = None
+        # Legacy dialog remains uninstantiated; existing direct-unit tests
+        # exercise its classifier without opening a second monitor.
+        self.service_status_dialog = None
         self.nav = QListWidget()
         self.nav.setObjectName("workbenchNavigation")
         self.nav.setAccessibleName("Nawigacja Studio")
@@ -153,8 +160,10 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.style_selector.currentIndexChanged.connect(self.style_selected)
         header_layout.addWidget(self.style_selector)
         header_layout.addStretch(1)
-        self.services_status_button = QPushButton("● Stany usług")
-        self.services_status_button.setAccessibleName("Otwórz stany serwera, Runtime, MCP i Ollama")
+        self.services_status_button = QPushButton("● Monitor Jaźni")
+        self.services_status_button.setAccessibleName(
+            "Otwórz jeden Monitor Jaźni: usługi, procesy, zadania i finalizacja"
+        )
         self.services_status_button.clicked.connect(self.open_service_status)
         header_layout.addWidget(self.services_status_button)
         self.workbench_status = QLabel("Lokalne Studio  •  status niezweryfikowany")
@@ -223,7 +232,6 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
         self.statusBar().addPermanentWidget(self.operator_status, 1)
         from .operator_workspace import OperatorWorkspace
         self.workspace = OperatorWorkspace(self)
-        self.service_status_dialog: ServiceStatusDialog | None = None
         self.operator_status.clicked.connect(lambda: self.workspace.dock.hide() if self.workspace.dock.isVisible() else self.workspace.show(0))
         self._workspace_menu()
         self.refresh_local_conversations()
@@ -341,6 +349,9 @@ class Window(DashboardViewMixin, ServiceViewMixin, ChatViewMixin, StudioViewMixi
             except (OSError, ValueError) as exc:
                 self.statusBar().showMessage("Nie zapisano układu: " + type(exc).__name__)
         self.timer.stop()
+        if self.monitor_window is not None:
+            self.monitor_window.shutdown()
+            self.monitor_window.close()
         if hasattr(self, "visual_system"):
             self.visual_system.shutdown()
         event.accept()
