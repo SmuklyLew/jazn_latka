@@ -29,6 +29,7 @@ from .settings import (
     resolve_settings_path,
     save_tool_settings,
 )
+from .studio_artifact_paths import project_artifact_paths
 from .studio_dialogs import DialogBackend, TextDialogs, make_dialogs
 from .studio_workflows import StudioWorkflows
 from .test_spec import TEST_PROTOCOL_ORDER, get_test_spec
@@ -251,6 +252,18 @@ class StudioState:
         except Exception as exc:
             self.project_error = f"project: {type(exc).__name__}: {exc}"
 
+    def private_artifact_paths(self) -> tuple[Path, Path]:
+        """Return project-scoped protocol/report directories without creating them."""
+        if not self.project:
+            raise ValueError("Wybierz projekt przed zapisem artefaktów Studio.")
+        project = ProjectStore(self.project_root).load(self.project)
+        return project_artifact_paths(
+            target_root=project.target_root,
+            tool_root=self.tool_root,
+            source_directory=project.source_directory,
+            source_paths=(item.path for item in project.enabled_sources()),
+        )
+
     def resume_step_run(self, run_id: str) -> None:
         """Reopen an explicitly chosen persisted step chain after a GUI restart."""
         identifier = run_id.strip()
@@ -259,7 +272,7 @@ class StudioState:
         if not self.project:
             raise ValueError("Choose a memory project before resuming steps.")
         service = MemoryRebuildApplicationService(
-            self.tool_root / "memory" / "rebuild_tests" / "protocols",
+            self.private_artifact_paths()[0],
             tool_root=self.tool_root,
             settings=self.runtime_settings,
             run_id=identifier,
@@ -273,9 +286,14 @@ class StudioState:
     def select_project(self, identifier: str | None) -> None:
         if identifier is None:
             self.project = None
+            self.protocol_service = None
+            self.test_results.clear()
             self.refresh()
             return
         loaded = ProjectStore(self.project_root).load(identifier)
+        if loaded.project_id != self.project:
+            self.protocol_service = None
+            self.test_results.clear()
         self.project = loaded.project_id
         configured = str(loaded.settings.get("unified_database_path") or "").strip()
         if configured:
@@ -759,9 +777,11 @@ def _run_test(state: StudioState, dialogs: DialogBackend, profile: str) -> None:
     settings = dict(project.settings) if project else {}
     sources = _project_sources(state) if profile in {"test00", "test01", "test03"} else []
     if profile == "test00":
+        # Resolve before discarding prior results. Unsafe paths must fail closed.
+        protocols, _reports = state.private_artifact_paths()
         state.test_results.clear()
         state.protocol_service = MemoryRebuildApplicationService(
-            state.tool_root / "memory" / "rebuild_tests" / "protocols",
+            protocols,
             tool_root=state.tool_root,
             settings=state.runtime_settings,
         )
