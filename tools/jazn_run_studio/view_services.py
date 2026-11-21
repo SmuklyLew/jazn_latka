@@ -269,11 +269,14 @@ class ServiceViewMixin:
             from tools.jazn_monitor.window import MonitorWindow
 
             port = urlsplit(self.core.settings.daemon_url).port or 8787
-            monitor = MonitorWindow(
-                self.core.root, port, 11434,
-                integrated=True, smoke=self.smoke, parent=self,
-                interval_seconds=int(self.core.settings.service_refresh_seconds),
-            )
+            try:
+                monitor = MonitorWindow(
+                    self.core.root, port, 11434,
+                    integrated=True, smoke=self.smoke, parent=self,
+                    interval_seconds=int(self.core.settings.service_refresh_seconds),
+                )
+            except (OSError, ValueError, RuntimeError) as exc:
+                raise StudioError(str(exc)) from exc
             monitor.snapshot_observed.connect(self.accept_monitor_snapshot)
             self.monitor_window = monitor
         return self.monitor_window
@@ -339,7 +342,11 @@ class ServiceViewMixin:
 
     def open_service_status(self: Any) -> None:
         """Open the newer Jaźń Monitor itself; no legacy status dialog."""
-        monitor = self._ensure_monitor_window()
+        try:
+            monitor = self._ensure_monitor_window()
+        except StudioError as exc:
+            QMessageBox.warning(self, "Monitor Jaźni", str(exc))
+            return
         monitor.showNormal()
         monitor.raise_()
         monitor.activateWindow()
