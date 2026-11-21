@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-21T03:24:46+00:00",
-  "updated_at_utc": "2026-11-21T03:24:46+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-21T05:24:35+00:00",
+  "updated_at_utc": "2026-11-21T05:24:35+00:00",
   "start_file": "run.py",
-  "file_count": 3859,
-  "static_file_count": 3859,
+  "file_count": 3862,
+  "static_file_count": 3862,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -265,8 +265,8 @@
     },
     {
       "path": ".github/workflows/memory-rebuild-v24-windows.yml",
-      "size_bytes": 6751,
-      "sha256": "3d817630d507eb4370d31ac081657304d720c9f7e5994d3e5c171a6a356f4911",
+      "size_bytes": 7334,
+      "sha256": "938d1e742b111964eaa77e58ca356e5af6ddfd0fb3edfd1894951a88d59f8eee",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2972,
-      "sha256": "0db5b518e8aa98377f1a342ba6c65686df01b86f2d6c5d9bff6b0eb99117c9b1",
+      "size_bytes": 2984,
+      "sha256": "dcae398eb8cad7f5835402add69e0a229c3820674dcc2cd8aee1b1ddc89b795f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -544,8 +544,8 @@
     },
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
-      "size_bytes": 1948,
-      "sha256": "fdff74326e8ce350b2338600561c328aa48d00611c91d5d127cd865d15147c9e",
+      "size_bytes": 1950,
+      "sha256": "9e246abff083e13758ffefd2a1f7cc02ab4380bb52713907e5fbcb0086b2b2be",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10264,8 +10264,8 @@
     },
     {
       "path": "latka_jazn/resources/startup_contract.json",
-      "size_bytes": 7913,
-      "sha256": "aeb91de8133ec5b259678b790b78ce0e47f3098d3c4dcde52eb1064519c3096a",
+      "size_bytes": 7915,
+      "sha256": "bc20846c4429734d8b139c00a071e46d0ed2dc30628ab23c6a33340ef1d3fb6a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11245,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_union.py",
-      "size_bytes": 14999,
-      "sha256": "74903b12eec3f3dbe4520e82ff66c566b05e9862b114853f900d649817273ee9",
+      "size_bytes": 19500,
+      "sha256": "a27f44e01a84489d9737d7a7ccb0c34e41d3e30b1776a90ba444c35a5798a910",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11785,8 +11785,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 29368,
-      "sha256": "f10b213a63940e1ab50cf0bb704b210d8d3df8f7075782f722136622e508c518",
+      "size_bytes": 29455,
+      "sha256": "d9c87cf582a0f63742888b35d4ab16c1d3b486a5b13f682d96afd09b5f32f746",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -16233,6 +16233,24 @@
       "path": "tests/archive/branches/16.3.25.5.116.0.34.53__20a25ca/source/test_daemon_shutdown_ack_before_teardown.py",
       "size_bytes": 6390,
       "sha256": "9cf581d60860c71ef3b7dcaf6463c697f204fbb196bccdd4b5eae6bcff46f3c7",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.94.6.127.23.1__427e4dbb/source/test_memory_rebuild_v4_protocol_engine.py",
+      "size_bytes": 26923,
+      "sha256": "60de83cebf68b5108a59e97c412f1d436f48f652be5e04f2f00d66a8b2279d2e",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/branches/16.3.25.5.116.0.34.94.6.127.23.1__d42f7ca9/source/test_memory_studio_artifact_paths.py",
+      "size_bytes": 5551,
+      "sha256": "4aea57bde0fc2c80842ebbb154a4921aa129bd88fc9bc571f97df61dca72b55e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30936,6 +30954,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "size_bytes": 6218,
+      "sha256": "c61451d2065169653aafce61124c9ffc2c447dc31e13dc3cd938d8c959da9bde",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_rebuild_modular.py",
       "size_bytes": 11142,
       "sha256": "fc72f7819812dc130755574099137ec4468e8bdc9e7da2139ff642eeeca2980c",
@@ -31072,8 +31099,8 @@
     },
     {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
-      "size_bytes": 26923,
-      "sha256": "60de83cebf68b5108a59e97c412f1d436f48f652be5e04f2f00d66a8b2279d2e",
+      "size_bytes": 27590,
+      "sha256": "674098794ce0d187677856c8e64a002d8cdaa8d3d2604b8676daf2fe0bb7d744",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31198,8 +31225,8 @@
     },
     {
       "path": "tests/test_memory_studio_artifact_paths.py",
-      "size_bytes": 5551,
-      "sha256": "4aea57bde0fc2c80842ebbb154a4921aa129bd88fc9bc571f97df61dca72b55e",
+      "size_bytes": 6126,
+      "sha256": "a3aedb62a36731a90aa801e0da6aeadff220592c687081bdd2b79c74ebb74706",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -34528,8 +34555,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3115579,
-      "sha256": "a2b277d59c5671524c31d0d974ae3c6febeb134f0c64eb9533c99964f6aa5ade",
+      "size_bytes": 3121863,
+      "sha256": "62607aba0faad06bd8b96d97169cfc0463fe1394a2767ff5ce5241b9ee783890",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35186,11 +35213,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

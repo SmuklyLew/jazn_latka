@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23",
-  "active_definition_count": 3534,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.1",
+  "active_definition_count": 3539,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43866,6 +43866,106 @@
       "description_source": "source_identity",
       "line": 108
     },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_missing_children_is_derived_not_a_message_loss": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_missing_children_is_derived_not_a_message_loss",
+      "purpose": "Missing children is derived not a message loss",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_explicit_null_and_missing_are_distinct_raw_versions": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_explicit_null_and_missing_are_distinct_raw_versions",
+      "purpose": "Explicit null and missing are distinct raw versions",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_explicit_empty_children_is_not_a_missing_key": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_explicit_empty_children_is_not_a_missing_key",
+      "purpose": "Explicit empty children is not a missing key",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_changed_parent_remains_a_real_unresolved_conflict": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_changed_parent_remains_a_real_unresolved_conflict",
+      "purpose": "Changed parent remains a real unresolved conflict",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_changed_message_content_is_not_silently_merged": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_changed_message_content_is_not_silently_merged",
+      "purpose": "Changed message content is not silently merged",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
+    },
     "tests/test_memory_rebuild_modular.py::test_structure_settings_theme_and_adapter_contracts": {
       "path": "tests/test_memory_rebuild_modular.py",
       "name": "test_structure_settings_theme_and_adapter_contracts",
@@ -47111,11 +47211,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 92
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_test01_without_test00": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47133,11 +47235,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 131
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_test02_without_test01": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47155,11 +47259,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 141
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_test03_without_test02": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47177,11 +47283,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 151
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_test04_without_test03": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47199,11 +47307,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 161
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_final_without_authentic_test04": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47221,11 +47331,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 169
+      "line": 171
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_cross_run_test00_artifact": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47243,11 +47355,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 190
+      "line": 192
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_source_changed_after_test00": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47265,11 +47379,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 206
+      "line": 208
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_dependency_graph_blocks_database_changed_after_test01": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47287,11 +47403,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 222
+      "line": 224
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_source_union_fails_closed_for_changed_same_node_payload": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47309,11 +47427,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 239
+      "line": 241
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_application_service_keeps_one_manifest_open_across_stages": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47331,11 +47451,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 250
+      "line": 252
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_application_service_resumes_interrupted_draft_after_test02": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47356,11 +47478,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 284
+      "line": 286
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_application_service_resume_rejects_invalid_draft_recovery_contract": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47381,11 +47505,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 373
+      "line": 375
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_test04_runs_recall_categories_and_final_uses_sqlite_backup_api": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47405,11 +47531,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 485
+      "line": 487
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_cli_protocol_run_and_validate_use_application_service": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47427,33 +47555,37 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 523
+      "line": 525
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_studio_runner_reuses_one_application_service_and_authentic_chain": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
       "name": "test_studio_runner_reuses_one_application_service_and_authentic_chain",
       "purpose": "Studio runner reuses one application service and authentic chain",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "memory"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 618
+      "line": 620
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_test00_accepts_classified_bundle_attachments_as_opaque_raw_evidence": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47471,11 +47603,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 668
+      "line": 685
     },
     "tests/test_memory_rebuild_v4_protocol_engine.py::test_mixed_lossless_and_rendered_html_is_lossy_but_safe_for_canonical_test01": {
       "path": "tests/test_memory_rebuild_v4_protocol_engine.py",
@@ -47493,11 +47627,13 @@
         "latka_jazn.tools.memory_rebuild_app",
         "latka_jazn.tools.memory_rebuild_app.application",
         "latka_jazn.tools.memory_rebuild_app.cli",
+        "latka_jazn.tools.memory_rebuild_app.models",
+        "latka_jazn.tools.memory_rebuild_app.project_store",
         "latka_jazn.tools.memory_rebuild_app.protocol_engine"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 691
+      "line": 708
     },
     "tests/test_memory_recall_timeout_hardening.py::test_deep_recall_gets_larger_deadline_without_slatering_ordinary_dialogue": {
       "path": "tests/test_memory_recall_timeout_hardening.py",
@@ -49552,7 +49688,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 110
     },
     "tests/test_memory_studio_artifact_paths.py::test_switching_projects_does_not_reuse_previous_protocol_chain": {
       "path": "tests/test_memory_studio_artifact_paths.py",
@@ -49574,7 +49710,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 151
     },
     "tests/test_memory_studio_p1_inspection.py::test_missing_inspection_does_not_create_files": {
       "path": "tests/test_memory_studio_p1_inspection.py",

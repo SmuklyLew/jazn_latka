@@ -173,6 +173,8 @@
 # v116.0.34.14 adds host turn coverage acceptance and backend/host readiness separation.
 from __future__ import annotations
 
+# v127.23.1: preserve raw graph relationships and audit derived parent-child links.
+
 # v116.0.34.13 separates Ollama endpoint reachability from invalid provider responses.
 # v116.0.34.12 validates completed Ollama chat responses and improves MCP auth diagnostics.
 # v116.0.34.11 seals fresh host-session checkpoints before phase-1 binding.
@@ -254,7 +256,7 @@ from typing import Any
 # v127.3 separates accepted session dialogue context from autobiographical recall and gates local finals.
 # v127 prefers an audited ROOT/.venv for Jaźń, JSS, and local MCP;
 # no automatic private environment mutation or MEMORY relocation.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.23"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.23.1"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

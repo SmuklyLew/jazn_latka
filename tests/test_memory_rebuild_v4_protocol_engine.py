@@ -10,6 +10,8 @@ from latka_jazn.tools.memory_rebuild_app import build_source_union_manifest
 from latka_jazn.tools.memory_rebuild_app import studio
 from latka_jazn.tools.memory_rebuild_app.application import MemoryRebuildApplicationService
 from latka_jazn.tools.memory_rebuild_app.cli import build_parser, main as cli_main
+from latka_jazn.tools.memory_rebuild_app.models import RebuildProject, SourceSpec
+from latka_jazn.tools.memory_rebuild_app.project_store import ProjectStore
 from latka_jazn.tools.memory_rebuild_app.protocol_engine import ProtocolEngine
 
 
@@ -636,21 +638,34 @@ def test_studio_runner_reuses_one_application_service_and_authentic_chain(
                 "downstream_ready": True,
             }
 
+    source = _write_source(tmp_path / "studio-conversations.json", "conversation-a", "Tayfa")
+    project = RebuildProject.create("Synthetic Studio chain", tmp_path / "lab" / "work")
+    project.sources = [
+        SourceSpec.create(
+            source,
+            role="chatgpt_export",
+            truth_domain="conversation_event",
+            pipeline="memory_rebuild",
+            status="ready",
+        )
+    ]
+    project_root = tmp_path / "projects"
+    ProjectStore(project_root).create(project)
     state = studio.StudioState(
         database=tmp_path / "memory_jazn.sqlite3",
-        project_root=None,
+        project_root=project_root,
         project=None,
         tool_root=Path.cwd(),
         settings_path=tmp_path / "settings.json",
     )
+    state.select_project(project.project_id)
+
     class SilentDialogs(studio.TextDialogs):
         def message(self, title: str, text: str) -> None:
             del title, text
 
     dialogs = SilentDialogs()
     monkeypatch.setattr(studio, "MemoryRebuildApplicationService", FakeService)
-    source = _write_source(tmp_path / "studio-conversations.json", "conversation-a", "Tayfa")
-    monkeypatch.setattr(studio, "_project_sources", lambda _state: [source])
 
     studio._run_test(state, dialogs, "test00")
     studio._run_test(state, dialogs, "test01")
@@ -658,6 +673,8 @@ def test_studio_runner_reuses_one_application_service_and_authentic_chain(
     studio._run_test(state, dialogs, "test03")
 
     assert len(constructors) == 1
+    assert constructors[0][1] == tmp_path / "lab" / "protocols"
+    assert calls[0][1]["sources"] == [source.resolve()]
     assert state.protocol_service is constructors[0][0]
     assert [profile for profile, _kwargs in calls] == ["test00", "test01", "test02", "test03"]
     assert calls[1][1]["test00_result"] == state.test_results["test00"]
