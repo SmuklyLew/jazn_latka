@@ -68,9 +68,18 @@ class ProbeThread(QThread):
 
 
 class MonitorWindow(QMainWindow):
+    """One read-only monitor, usable standalone or as a JSS-owned window."""
+
+    snapshot_observed = Signal(object)
+
     def __init__(self, root: Path | None, daemon_port: int,
-                 ollama_port: int, *, smoke: bool = False) -> None:
-        super().__init__()
+                 ollama_port: int, *, smoke: bool = False,
+                 integrated: bool = False, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.integrated = integrated
+        self._smoke = smoke
+        if integrated:
+            self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowTitle("Jaźń Monitor — tylko odczyt")
         self.resize(870, 490)
         self.daemon_port = daemon_port
@@ -94,6 +103,10 @@ class MonitorWindow(QMainWindow):
         row.addWidget(self.root_field, 1)
         browse = QPushButton("Wybierz…")
         browse.clicked.connect(self.choose_root)
+        if integrated:
+            # The JSS monitor is bound to its verified installation root.
+            self.root_field.setReadOnly(True)
+            browse.hide()
         row.addWidget(browse)
         self.refresh_button = QPushButton("Odśwież")
         self.refresh_button.clicked.connect(self.refresh)
@@ -101,6 +114,9 @@ class MonitorWindow(QMainWindow):
         self.tray_button = QPushButton("Do tray")
         self.tray_button.setToolTip("Minimalizuj do obszaru powiadomień")
         self.tray_button.clicked.connect(self.showMinimized)
+        if integrated:
+            # JSS owns its application lifecycle; only standalone uses tray.
+            self.tray_button.hide()
         row.addWidget(self.tray_button)
         layout.addLayout(row)
 
@@ -152,10 +168,11 @@ class MonitorWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.setInterval(5000)
         self.timer.timeout.connect(self.refresh)
-        self._configure_tray()
-        if not smoke:
-            self.timer.start()
-            QTimer.singleShot(0, self.refresh)
+        if not integrated:
+            self._configure_tray()
+            if not smoke:
+                self.timer.start()
+                QTimer.singleShot(0, self.refresh)
 
     @staticmethod
     def _configure_data_table(table: QTableWidget) -> None:
@@ -222,6 +239,8 @@ class MonitorWindow(QMainWindow):
             self.restore_from_tray()
 
     def choose_root(self) -> None:
+        if self.integrated:
+            return  # never retarget the JSS monitor to another installation
         path = QFileDialog.getExistingDirectory(self, "Wybierz SYSTEM ROOT",
                                                  self.root_field.text())
         if path:
@@ -312,12 +331,33 @@ class MonitorWindow(QMainWindow):
             daemon_state = str((services.get("Daemon Jaźni") or {}).get("state") or "unknown")
             self._tray_icon.setToolTip(
                 "Jaźń Monitor — daemon: " + LABELS.get(daemon_state, LABELS["unknown"]))
+        self.snapshot_observed.emit(report)
 
-    def closeEvent(self, event: Any) -> None:
+    def showEvent(self, event: Any) -> None:
+        super().showEvent(event)
+        if self.integrated and not self._smoke and not self._closing:
+            self.timer.start()
+            self.refresh()
+
+    def hideEvent(self, event: Any) -> None:
+        if self.integrated:
+            self.timer.stop()
+        super().hideEvent(event)
+
+    def shutdown(self) -> None:
+        """Drain observer-only workers when JSS itself is closing."""
         self._closing = True
         self.timer.stop()
         if self._worker is not None and self._worker.isRunning():
             self._worker.wait(6000)
+
+    def closeEvent(self, event: Any) -> None:
+        if self.integrated:
+            # Closing only hides this view; it must never quit its parent JSS.
+            self.timer.stop()
+            event.accept()
+            return
+        self.shutdown()
         if self._tray_icon is not None:
             self._tray_icon.hide()
             app = QApplication.instance()
