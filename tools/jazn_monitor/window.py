@@ -1,10 +1,11 @@
 """Qt presentation, independent from Jaźń, JSS and daemon lifecycle."""
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
+from PySide6.QtCore import QEvent, QLockFile, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
@@ -80,6 +81,21 @@ class MonitorWindow(QMainWindow):
         self.integrated = integrated
         self._smoke = smoke
         self._fixed_root = Path(root).expanduser().resolve() if integrated and root is not None else None
+        self._monitor_lock: QLockFile | None = None
+        if integrated and not smoke:
+            if self._fixed_root is None:
+                raise ValueError("Monitor Jaźni requires the selected JSS root")
+            # Exactly the same lock as the standalone jazn_monitor.py entrypoint.
+            key = hashlib.sha256(str(self._fixed_root).casefold().encode("utf-8")).hexdigest()[:20]
+            lock_dir = Path.home() / ".jazn_monitor"
+            lock_dir.mkdir(parents=True, exist_ok=True)
+            lock = QLockFile(str(lock_dir / (key + ".lock")))
+            if not lock.tryLock(0):
+                raise RuntimeError(
+                    "Monitor Jaźni już działa dla tej instalacji. "
+                    "Zamknij osobny Monitor Jaźni, aby używać go wewnątrz JSS."
+                )
+            self._monitor_lock = lock
         if interval_seconds is not None and interval_seconds not in {1, 10, 30, 60}:
             raise ValueError("Unsupported JSS monitor interval")
         if integrated:
@@ -350,11 +366,14 @@ class MonitorWindow(QMainWindow):
         super().hideEvent(event)
 
     def shutdown(self) -> None:
-        """Drain observer-only workers when JSS itself is closing."""
+        """Drain observer-only workers and release singleton when JSS closes."""
         self._closing = True
         self.timer.stop()
         if self._worker is not None and self._worker.isRunning():
             self._worker.wait(6000)
+        if self._monitor_lock is not None:
+            self._monitor_lock.unlock()
+            self._monitor_lock = None
 
     def closeEvent(self, event: Any) -> None:
         if self.integrated:
