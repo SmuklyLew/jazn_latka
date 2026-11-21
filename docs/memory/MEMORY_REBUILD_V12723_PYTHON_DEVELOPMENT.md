@@ -83,10 +83,10 @@ Porównanie semantyczne nie zastępuje zachowania dokładnych bajtów oryginału
 Od aktualizacji izolacji artefaktów w v127.23 GUI/TUI wyznaczają katalogi z
 wybranego projektu. Dla projektu operatora:
 
-- staging: `D:\\.AI\\memory_rebuild_v12723_lab\\work`
-- protokoły Test00–Final i resume: `D:\\.AI\\memory_rebuild_v12723_lab\\protocols`
-- raporty walidacji: `D:\\.AI\\memory_rebuild_v12723_lab\\reports\\file_checks`
-- oryginalne źródła: `D:\\.AI\\work\\memory_to_restore`
+- staging: `D:\.AI\memory_rebuild_v12723_lab\work`
+- protokoły Test00–Final i resume: `D:\.AI\memory_rebuild_v12723_lab\protocols`
+- raporty walidacji: `D:\.AI\memory_rebuild_v12723_lab\reports\file_checks`
+- oryginalne źródła: `D:\.AI\work\memory_to_restore`
 
 Jeśli nazwa katalogu staging jest inna niż `work`, narzędzie umieszcza
 artefakty w `<target>/_studio_artifacts`. W przypadku konfliktu z repozytorium,
