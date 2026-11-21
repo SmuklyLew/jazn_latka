@@ -133,6 +133,77 @@ def _read_source(path: Path) -> dict[str, Any]:
     }
 
 
+def _raw_relation_audit(graph: Any) -> dict[str, Any]:
+    """Audit source parent/children fields without modifying the source graph.
+
+    An absent key, an explicit null, and an empty list are separate states.
+    The parent-derived index is only a working projection, never source evidence.
+    """
+    payload = graph.source_payload if isinstance(graph.source_payload, dict) else {}
+    value = payload.get("mapping")
+    mapping = {str(key): node for key, node in value.items()} if isinstance(value, dict) else {}
+    indexed_children: dict[str, list[str]] = defaultdict(list)
+    dangling = 0
+    for node in graph.nodes:
+        parent = node.parent_node_id
+        if parent is None:
+            continue
+        if parent not in mapping:
+            dangling += 1
+        else:
+            indexed_children[parent].append(node.node_id)
+
+    counts = {
+        "parent_edge_count": sum(map(len, indexed_children.values())) + dangling,
+        "dangling_parent_count": dangling,
+        "reciprocal_confirmed": 0,
+        "parent_missing_children_key": 0,
+        "parent_null_children": 0,
+        "parent_empty_children": 0,
+        "parent_children_without_backref": 0,
+        "parent_invalid_children": 0,
+        "reconstructed_children_count": 0,
+    }
+    for parent, inferred_children in indexed_children.items():
+        raw = mapping[parent]
+        if not isinstance(raw, dict) or "children" not in raw:
+            counts["parent_missing_children_key"] += len(inferred_children)
+            counts["reconstructed_children_count"] += len(inferred_children)
+        elif raw["children"] is None:
+            counts["parent_null_children"] += len(inferred_children)
+        elif isinstance(raw["children"], list):
+            original = {str(child) for child in raw["children"]}
+            for child in inferred_children:
+                if child in original:
+                    counts["reciprocal_confirmed"] += 1
+                else:
+                    counts["parent_children_without_backref"] += 1
+                    if not original:
+                        counts["parent_empty_children"] += 1
+        else:
+            counts["parent_invalid_children"] += len(inferred_children)
+
+    raw_fields = []
+    for node_id, raw in sorted(mapping.items()):
+        obj = raw if isinstance(raw, dict) else {}
+        record: dict[str, Any] = {"node_id": node_id}
+        for field in ("parent", "children"):
+            # Missing properties are represented by absence, not by null.
+            record[field + "_present"] = field in obj
+            if field in obj:
+                record[field] = obj[field]
+        raw_fields.append(record)
+    return {
+        "raw_relation_sha256": _canonical_sha(raw_fields),
+        "working_parent_children_sha256": _canonical_sha({
+            parent: sorted(children) for parent, children in sorted(indexed_children.items())
+        }),
+        "reverse_link_audit": counts,
+        "working_children_origin": "derived_from_parent_not_source",
+        "source_relationships_mutated": False,
+    }
+
+
 def _variant(source: dict[str, Any], graph: Any) -> dict[str, Any]:
     return {
         "source_sha256": source["sha256"],
@@ -144,6 +215,7 @@ def _variant(source: dict[str, Any], graph: Any) -> dict[str, Any]:
         "message_hashes": {node.node_id: stable_node_hash(node) for node in graph.nodes},
         "parents": {node.node_id: node.parent_node_id for node in graph.nodes},
         "branch_points": frozenset(graph.branch_points),
+        **_raw_relation_audit(graph),
     }
 
 
@@ -238,9 +310,19 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
     union_nodes = union_messages = union_branches = variants_total = 0
     extension_count = branch_union_count = conflict_count = 0
     changed_messages_total = changed_parents_total = 0
+    raw_source_variants_total = 0
     for conversation_id in sorted(conversations):
         deduped = {item["semantic_tree_sha256"]: item for item in conversations[conversation_id]}
         variants = [deduped[key] for key in sorted(deduped)]
+        # Keep byte-distinct source versions even when their normalized semantic
+        # tree hashes match (e.g. absent children versus explicit null).
+        raw_source_variants = [
+            item for _key, item in sorted({
+                (item["source_sha256"], item["raw_tree_sha256"]): item
+                for item in conversations[conversation_id]
+            }.items())
+        ]
+        raw_source_variants_total += len(raw_source_variants)
         relation, changed_messages, changed_parents = _relation(variants)
         nodes = set().union(*(item["node_ids"] for item in variants))
         message_nodes = set().union(*(item["message_node_ids"] for item in variants))
@@ -269,6 +351,20 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
                 "union_branch_point_count": len(branches),
                 "changed_message_node_ids": changed_messages,
                 "changed_parent_node_ids": changed_parents,
+                "raw_source_variants": [
+                    {
+                        "source_sha256": item["source_sha256"],
+                        "source_mode": item["source_mode"],
+                        "raw_tree_sha256": item["raw_tree_sha256"],
+                        "semantic_tree_sha256": item["semantic_tree_sha256"],
+                        "raw_relation_sha256": item["raw_relation_sha256"],
+                        "working_parent_children_sha256": item["working_parent_children_sha256"],
+                        "reverse_link_audit": item["reverse_link_audit"],
+                        "working_children_origin": item["working_children_origin"],
+                        "source_relationships_mutated": item["source_relationships_mutated"],
+                    }
+                    for item in raw_source_variants
+                ],
             }
         )
 
@@ -313,6 +409,7 @@ def build_source_union_manifest(sources: Iterable[str | Path]) -> dict[str, Any]
         "ignored_non_chat_source_count": sum(1 for item in observations if not item["variants"]),
         "unique_conversation_count": len(rows),
         "unique_conversation_variant_count": variants_total,
+        "raw_source_variant_count": raw_source_variants_total,
         "union_node_count": union_nodes,
         "union_message_node_count": union_messages,
         "union_branch_point_count": union_branches,
