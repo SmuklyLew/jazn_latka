@@ -272,6 +272,7 @@ class ServiceViewMixin:
             monitor = MonitorWindow(
                 self.core.root, port, 11434,
                 integrated=True, smoke=self.smoke, parent=self,
+                interval_seconds=int(self.core.settings.service_refresh_seconds),
             )
             monitor.snapshot_observed.connect(self.accept_monitor_snapshot)
             self.monitor_window = monitor
