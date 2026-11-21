@@ -1,10 +1,11 @@
 """Qt presentation, independent from Jaźń, JSS and daemon lifecycle."""
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
+from PySide6.QtCore import QEvent, QLockFile, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
@@ -68,9 +69,38 @@ class ProbeThread(QThread):
 
 
 class MonitorWindow(QMainWindow):
+    """One read-only monitor, usable standalone or as a JSS-owned window."""
+
+    snapshot_observed = Signal(object)
+
     def __init__(self, root: Path | None, daemon_port: int,
-                 ollama_port: int, *, smoke: bool = False) -> None:
-        super().__init__()
+                 ollama_port: int, *, smoke: bool = False,
+                 integrated: bool = False, parent: QWidget | None = None,
+                 interval_seconds: int | None = None) -> None:
+        super().__init__(parent)
+        self.integrated = integrated
+        self._smoke = smoke
+        self._fixed_root = Path(root).expanduser().resolve() if integrated and root is not None else None
+        self._monitor_lock: QLockFile | None = None
+        if integrated and not smoke:
+            if self._fixed_root is None:
+                raise ValueError("Monitor Jaźni requires the selected JSS root")
+            # Exactly the same lock as the standalone jazn_monitor.py entrypoint.
+            key = hashlib.sha256(str(self._fixed_root).casefold().encode("utf-8")).hexdigest()[:20]
+            lock_dir = Path.home() / ".jazn_monitor"
+            lock_dir.mkdir(parents=True, exist_ok=True)
+            lock = QLockFile(str(lock_dir / (key + ".lock")))
+            lock.setStaleLockTime(0)  # long-lived singleton; never steal by age
+            if not lock.tryLock(0):
+                raise RuntimeError(
+                    "Monitor Jaźni już działa dla tej instalacji. "
+                    "Zamknij osobny Monitor Jaźni, aby używać go wewnątrz JSS."
+                )
+            self._monitor_lock = lock
+        if interval_seconds is not None and interval_seconds not in {1, 10, 30, 60}:
+            raise ValueError("Unsupported JSS monitor interval")
+        if integrated:
+            self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowTitle("Jaźń Monitor — tylko odczyt")
         self.resize(870, 490)
         self.daemon_port = daemon_port
@@ -94,6 +124,10 @@ class MonitorWindow(QMainWindow):
         row.addWidget(self.root_field, 1)
         browse = QPushButton("Wybierz…")
         browse.clicked.connect(self.choose_root)
+        if integrated:
+            # The JSS monitor is bound to its verified installation root.
+            self.root_field.setReadOnly(True)
+            browse.hide()
         row.addWidget(browse)
         self.refresh_button = QPushButton("Odśwież")
         self.refresh_button.clicked.connect(self.refresh)
@@ -101,6 +135,9 @@ class MonitorWindow(QMainWindow):
         self.tray_button = QPushButton("Do tray")
         self.tray_button.setToolTip("Minimalizuj do obszaru powiadomień")
         self.tray_button.clicked.connect(self.showMinimized)
+        if integrated:
+            # JSS owns its application lifecycle; only standalone uses tray.
+            self.tray_button.hide()
         row.addWidget(self.tray_button)
         layout.addLayout(row)
 
@@ -150,12 +187,13 @@ class MonitorWindow(QMainWindow):
         self.footer.setWordWrap(True)
         layout.addWidget(self.footer)
         self.timer = QTimer(self)
-        self.timer.setInterval(5000)
+        self.timer.setInterval((interval_seconds or 5) * 1000)
         self.timer.timeout.connect(self.refresh)
-        self._configure_tray()
-        if not smoke:
-            self.timer.start()
-            QTimer.singleShot(0, self.refresh)
+        if not integrated:
+            self._configure_tray()
+            if not smoke:
+                self.timer.start()
+                QTimer.singleShot(0, self.refresh)
 
     @staticmethod
     def _configure_data_table(table: QTableWidget) -> None:
@@ -222,6 +260,8 @@ class MonitorWindow(QMainWindow):
             self.restore_from_tray()
 
     def choose_root(self) -> None:
+        if self.integrated:
+            return  # never retarget the JSS monitor to another installation
         path = QFileDialog.getExistingDirectory(self, "Wybierz SYSTEM ROOT",
                                                  self.root_field.text())
         if path:
@@ -232,7 +272,8 @@ class MonitorWindow(QMainWindow):
         if self._closing or (self._worker is not None and self._worker.isRunning()):
             return
         raw = self.root_field.text().strip()
-        self._worker = ProbeThread(Path(raw) if raw else None,
+        selected = self._fixed_root if self.integrated else (Path(raw) if raw else None)
+        self._worker = ProbeThread(selected,
                                    self.daemon_port, self.ollama_port)
         worker = self._worker
         worker.observed.connect(self.apply_snapshot)
@@ -312,12 +353,36 @@ class MonitorWindow(QMainWindow):
             daemon_state = str((services.get("Daemon Jaźni") or {}).get("state") or "unknown")
             self._tray_icon.setToolTip(
                 "Jaźń Monitor — daemon: " + LABELS.get(daemon_state, LABELS["unknown"]))
+        self.snapshot_observed.emit(report)
 
-    def closeEvent(self, event: Any) -> None:
+    def showEvent(self, event: Any) -> None:
+        super().showEvent(event)
+        if self.integrated and not self._smoke and not self._closing:
+            self.timer.start()
+            self.refresh()
+
+    def hideEvent(self, event: Any) -> None:
+        if self.integrated:
+            self.timer.stop()
+        super().hideEvent(event)
+
+    def shutdown(self) -> None:
+        """Drain observer-only workers and release singleton when JSS closes."""
         self._closing = True
         self.timer.stop()
         if self._worker is not None and self._worker.isRunning():
             self._worker.wait(6000)
+        if self._monitor_lock is not None:
+            self._monitor_lock.unlock()
+            self._monitor_lock = None
+
+    def closeEvent(self, event: Any) -> None:
+        if self.integrated:
+            # Closing only hides this view; it must never quit its parent JSS.
+            self.timer.stop()
+            event.accept()
+            return
+        self.shutdown()
         if self._tray_icon is not None:
             self._tray_icon.hide()
             app = QApplication.instance()

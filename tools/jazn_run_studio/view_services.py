@@ -10,6 +10,7 @@ import os
 from dataclasses import asdict, replace
 from pathlib import Path
 import queue
+import time
 from typing import Callable
 
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -31,7 +32,7 @@ from typing import Any
 
 class ServiceViewMixin:
     def _services(self: Any) -> None:
-        layout = self.page("Usługi i procesy", "Panel operatorski: tutaj świadomie sterujesz procesami. Podgląd usług nie wykonuje Start/Stop/Restart; monitor działa w osobnym oknie Stany usług.")
+        layout = self.page("Usługi i procesy", "Panel operatorski: świadome Start/Stop/Restart. Statusy i dowody pochodzą z jednego Monitora Jaźni; nie działa tutaj drugi monitor.")
         self.services_table = QTableWidget(6, 6)
         self.services_table.setHorizontalHeaderLabels(["Usługa", "Status", "PID", "Port", "Readiness", "Podgląd"])
         self.services_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -108,12 +109,10 @@ class ServiceViewMixin:
 
 
     def inspect_service(self: Any, service: str) -> None:
-        if service in {"runtime", "memory"}:
-            self.core.start_action("status")
-        elif service == "supervisor":
-            self.core.start_action("supervisor")
-        else:
-            self.core.probe(service)
+        """One monitor read for every service; no parallel status-probe loop."""
+        if service not in self.service_rows:
+            raise StudioError("Nieznana usługa")
+        self._ensure_monitor_window().refresh()
 
 
     def selected_service_action(self: Any, operation: str) -> None:
@@ -137,6 +136,7 @@ class ServiceViewMixin:
         running = service == "runtime" and self.quick_runtime_ready
         managed = service in {"ollama", "gateway"}
         self.service_start_button.setEnabled((service == "runtime" and not running) or (managed and not owned))
+        self.service_start_button.setText("Połącz / Start CLI" if service == "ollama" else "Start")
         self.service_stop_button.setEnabled(running or (managed and owned))
         self.service_restart_button.setEnabled(running or (managed and owned))
         note = {
@@ -151,15 +151,8 @@ class ServiceViewMixin:
 
 
     def refresh_services(self: Any) -> None:
-        """Explicit, read-only probes; no silent auto-start or PID adoption."""
-        self.core.start_action("status")
-        self.core.start_action("supervisor")
-        self.core.probe("ollama")
-        self.core.probe("gateway")
-        if self.core.settings.cloudflare_url:
-            self.core.probe("cloudflare")
-        else:
-            self.update_service_summary("cloudflare", "Nie skonfigurowano • brak adresu HTTPS")
+        """Explicitly refresh the same canonical Monitor Jaźni snapshot."""
+        self._ensure_monitor_window().refresh()
 
 
     def service(self: Any, service: str, op: str) -> None:
@@ -173,7 +166,11 @@ class ServiceViewMixin:
                     "Wykonać " + op + " dla " + service + "?") != QMessageBox.StandardButton.Yes:
                 return
         if op == "start":
-            self.core.start_service(service)
+            job = self.core.ensure_ollama() if service == "ollama" else self.core.start_service(service)
+            if service == "ollama" and job.key == "probe:ollama":
+                # Existing app or CLI owns port 11434; observe it, do not adopt or spawn.
+                self.show_log(job.key)
+                return
         elif op == "stop":
             self.core.stop_owned("service:" + service)
         else:
@@ -182,7 +179,9 @@ class ServiceViewMixin:
 
 
     def update_service_summary(self: Any, service: str, detail: str) -> None:
-        """Mirror the same observed state; never infer readiness from a PID."""
+        """Legacy operator-job hints cannot override canonical monitor evidence."""
+        if self.monitor_report is not None:
+            return
         if service in self.statuses:
             self.statuses[service].setText(detail)
         if service in self.dashboard_statuses:
@@ -190,6 +189,9 @@ class ServiceViewMixin:
 
 
     def refresh_service_table(self: Any) -> None:
+        if self.monitor_report is not None:
+            self.render_monitor_service_table()
+            return
         from urllib.parse import urlsplit
         ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": "11434",
                  "gateway": self.core.settings.mcp_port, "cloudflare": "HTTPS", "supervisor": "—", "memory": "—"}
@@ -243,25 +245,108 @@ class ServiceViewMixin:
             self.statuses[service].setToolTip(self.statuses[service].text())
         models = self.workspace.observations.get("ollama", {})
         if models:
-            self.models_summary.setText("Modele: " + ", ".join(models.get("models", [])) + "\nGeneracja: " + ("potwierdzona" if models.get("generation_verified") else "niezweryfikowana"))
+            available = models.get("models", [])
+            loaded = models.get("loaded_models", [])
+            installed_text = ", ".join(name[:80] for name in available[:8]) if isinstance(available, list) else "niezweryfikowane"
+            if models.get("loaded_models_state") == "verified" and isinstance(loaded, list):
+                loaded_text = ", ".join(name[:80] for name in loaded[:8]) or "brak załadowanych"
+            else:
+                loaded_text = "brak potwierdzenia /api/ps"
+            ownership = ("CLI uruchomione przez JSS" if models.get("jss_owned_process") is True
+                         else "proces nieprzejęty przez JSS")
+            self.models_summary.setText(
+                "Modele zainstalowane: " + installed_text
+                + "\nModele załadowane: " + loaded_text
+                + "\nProces: " + ownership
+                + "\nGeneracja: " + ("potwierdzona" if models.get("generation_verified") else "niezweryfikowana")
+            )
 
+
+    def _ensure_monitor_window(self: Any) -> Any:
+        """One in-process MonitorWindow per JSS; no second application/process."""
+        if self.monitor_window is None:
+            from urllib.parse import urlsplit
+            from tools.jazn_monitor.window import MonitorWindow
+
+            port = urlsplit(self.core.settings.daemon_url).port or 8787
+            try:
+                monitor = MonitorWindow(
+                    self.core.root, port, 11434,
+                    integrated=True, smoke=self.smoke, parent=self,
+                    interval_seconds=int(self.core.settings.service_refresh_seconds),
+                )
+            except (OSError, ValueError, RuntimeError) as exc:
+                raise StudioError(str(exc)) from exc
+            monitor.snapshot_observed.connect(self.accept_monitor_snapshot)
+            self.monitor_window = monitor
+        return self.monitor_window
+
+    def accept_monitor_snapshot(self: Any, report: object) -> None:
+        """Accept only observations for this exact SYSTEM root."""
+        from .monitor_bridge import validated_snapshot
+
+        valid = validated_snapshot(report, self.core.root)
+        if valid is None:
+            return
+        self.monitor_report = valid
+        self.monitor_observed_at = time.monotonic()
+        self.refresh_service_table()
+
+    def render_monitor_service_table(self: Any) -> None:
+        """No second status calculation: project the canonical monitor report."""
+        from urllib.parse import urlsplit
+        from tools.jazn_monitor.window import COLORS, LABELS
+        from .monitor_bridge import monitor_service, verified_daemon_pid
+
+        report = self.monitor_report
+        age = (time.monotonic() - self.monitor_observed_at
+               if self.monitor_observed_at is not None else None)
+        ports = {
+            "runtime": str(urlsplit(self.core.settings.daemon_url).port or 8787),
+            "ollama": "11434", "gateway": self.core.settings.mcp_port,
+            "cloudflare": "HTTPS", "supervisor": "—", "memory": "—",
+        }
+        for service, row in self.service_rows.items():
+            state, detail = monitor_service(report, service, age_seconds=age)
+            label = LABELS[state] + " — " + detail
+            self.statuses[service].setText(label)
+            self.statuses[service].setToolTip(detail)
+            if service in self.dashboard_statuses:
+                self.dashboard_statuses[service].setText(service.upper() + ": " + label)
+            icon = self.services_table.item(row, 0)
+            if icon is not None:
+                pix = QPixmap(16, 16)
+                pix.fill(Qt.GlobalColor.transparent)
+                painter = QPainter(pix)
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor(COLORS[state]))
+                painter.drawEllipse(3, 3, 10, 10)
+                painter.end()
+                icon.setIcon(QIcon(pix))
+                icon.setToolTip(label)
+            pid = (verified_daemon_pid(report, age_seconds=age)
+                   if service == "runtime" else None)
+            for col, value in ((2, str(pid) if pid is not None else "—"),
+                               (3, str(ports[service])), (4, LABELS[state])):
+                item = self.services_table.item(row, col)
+                if item is not None:
+                    item.setText(value)
+                    item.setToolTip(detail)
+        state, detail = monitor_service(report, "ollama", age_seconds=age)
+        self.models_summary.setText(
+            "Ollama: " + LABELS[state] + " — " + detail
+            + "\nModele załadowane i test generacji wymagają osobnych dowodów. "
+              "Podgląd procesów, zadań i finalizacji: Monitor Jaźni."
+        )
 
     def open_service_status(self: Any) -> None:
-        """Display the read-only, non-modal service indicators."""
-        if self.service_status_dialog is None:
-            from .service_monitor import ServiceMonitor
-            monitor = ServiceMonitor(self.core)
-
-            def persist_interval(seconds: int) -> None:
-                settings = replace(self.core.settings, service_refresh_seconds=str(seconds))
-                self.digest = save_settings(self.core.root, settings, self.digest)
-                self.core.settings = settings
-
-            self.service_status_dialog = ServiceStatusDialog(
-                self, monitor.poll,
-                interval_seconds=int(self.core.settings.service_refresh_seconds),
-                save_interval=persist_interval,
-            )
-        self.service_status_dialog.show()
-        self.service_status_dialog.raise_()
-        self.service_status_dialog.activateWindow()
+        """Open the newer Jaźń Monitor itself; no legacy status dialog."""
+        try:
+            monitor = self._ensure_monitor_window()
+        except StudioError as exc:
+            QMessageBox.warning(self, "Monitor Jaźni", str(exc))
+            return
+        monitor.showNormal()
+        monitor.raise_()
+        monitor.activateWindow()

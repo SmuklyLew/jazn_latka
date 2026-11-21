@@ -12,7 +12,7 @@ from urllib import request
 from .telemetry import jobs_snapshot, process_snapshot, _windows_process_rows
 
 MAX_JSON = 128 * 1024
-SERVICES = ("Daemon Jaźni", "Runtime Core", "Ollama", "MCP", "Supervisor", "JSS", "MEMORY")
+SERVICES = ("Daemon Jaźni", "Runtime Core", "Ollama", "MCP", "Supervisor", "JSS", "MEMORY", "MCP HTTPS")
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,7 @@ def _http_json(port: int, endpoint: str, timeout: float = 1.5) -> dict[str, Any]
     """Fixed 127.0.0.1, explicit endpoint whitelist, no ambient proxy."""
     if type(port) is not int or not 1 <= port <= 65535:
         return None
-    if endpoint not in {"/live", "/ready", "/api/tags"}:
+    if endpoint not in {"/live", "/ready", "/api/tags", "/api/ps"}:
         return None
     url = f"http://127.0.0.1:{port}{endpoint}"
     opener = request.build_opener(request.ProxyHandler({}))
@@ -150,13 +150,27 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
     if isinstance(tags, dict) and isinstance(tags.get("models"), list):
         models = [m.get("name") for m in tags["models"] if isinstance(m, dict)
                   and isinstance(m.get("name"), str)]
-        services["Ollama"] = Observation("reachable", f"API dostępne · modeli: {len(models)}; generacja niesprawdzona")
+        loaded = _http_json(ollama_port, "/api/ps")
+        if (isinstance(loaded, dict) and isinstance(loaded.get("models"), list)
+                and all(isinstance(item, dict)
+                        and isinstance(item.get("name"), str)
+                        for item in loaded["models"])):
+            loaded_detail = f"załadowanych: {len(loaded['models'])}"
+        else:
+            loaded_detail = "modele załadowane: brak zweryfikowanego odczytu /api/ps"
+        services["Ollama"] = Observation(
+            "reachable", f"API dostępne · modeli: {len(models)} · {loaded_detail}; "
+                         "generacja niesprawdzona"
+        )
     elif selected is not None and tags is None:
         services["Ollama"] = Observation("unavailable", "Brak odpowiedzi /api/tags; stan procesu Ollama niepotwierdzony")
     elif selected is not None:
         services["Ollama"] = Observation("error", "Nieprawidłowy format /api/tags")
     if services["MCP"].state == "unknown":
         services["MCP"] = Observation("unknown", "Brak potwierdzonej trasy, autoryzacji i toolsetu")
+    services["MCP HTTPS"] = Observation(
+        "unknown", "Brak niezależnej weryfikacji HTTPS, OAuth i trasy hosta"
+    )
     services["Supervisor"] = Observation("unknown", "Brak niezależnego dowodu właściciela supervisora")
     services["JSS"] = Observation("unknown", "Proces JSS niezweryfikowany; monitor go nie uruchamia")
     processes = process_snapshot(selected, verified_marker, verified_live)

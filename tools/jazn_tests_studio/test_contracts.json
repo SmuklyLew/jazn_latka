@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.1",
-  "active_definition_count": 3539,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.3",
+  "active_definition_count": 3555,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -27074,6 +27074,36 @@
       "description_source": "source_identity",
       "line": 29
     },
+    "tests/test_jazn_monitor_ps_status.py::test_monitor_loaded_models_only_from_explicit_ps": {
+      "path": "tests/test_jazn_monitor_ps_status.py",
+      "name": "test_monitor_loaded_models_only_from_explicit_ps",
+      "purpose": "Monitor loaded models only from explicit ps",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
+    "tests/test_jazn_monitor_ps_status.py::test_missing_ps_does_not_claim_no_loaded_models": {
+      "path": "tests/test_jazn_monitor_ps_status.py",
+      "name": "test_missing_ps_does_not_claim_no_loaded_models",
+      "purpose": "Missing ps does not claim no loaded models",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
+    },
     "tests/test_jazn_monitor_tray.py::test_no_tray_keeps_minimized_window_recoverable": {
       "path": "tests/test_jazn_monitor_tray.py",
       "name": "test_no_tray_keeps_minimized_window_recoverable",
@@ -30370,16 +30400,16 @@
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
       "name": "test_refresh_includes_configured_cloudflare_observation",
       "purpose": "Refresh includes configured cloudflare observation",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 22
+      "line": 30
     },
     "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_propagates_failure_without_making_up_ready_state": {
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
@@ -30396,7 +30426,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 47
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
@@ -33215,83 +33245,101 @@
     "tests/test_jss_dependency_row_diagnostics.py::test_dependency_json_summary_bounded_and_parsable": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
       "name": "test_dependency_json_summary_bounded_and_parsable",
-      "purpose": "Large installer metadata is omitted from the first-run machine response.",
+      "purpose": "Large metadata must not leak into the operator-facing machine summary.",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 35
+      "line": 41
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_process_failure_is_visible_in_operator_logs": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_dependency_studio_error_remains_visible_without_wizard_installer": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_dependency_process_failure_is_visible_in_operator_logs",
-      "purpose": "Missing subprocess JSON must leave a bounded failure event for the operator.",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_dependency_studio_error_remains_visible_without_wizard_installer",
+      "purpose": "A real failed Dependency Studio command must retain a bounded error.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [
-        "repository"
-      ],
+      "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 53
+      "line": 59
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_extension_preserves_canonical_root_venv": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_optional_mcp_dependency_diagnostic_cannot_install_inside_wizard": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_optional_mcp_extension_preserves_canonical_root_venv",
-      "purpose": "MCP and runtime must use the same ROOT/.venv, not a managed copy.",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_optional_mcp_dependency_diagnostic_cannot_install_inside_wizard",
+      "purpose": "Missing MCP is visible but never starts installer or changes Python.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "mcp",
-        "repository"
+        "mcp"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 69
+      "line": 74
     },
-    "tests/test_jss_dependency_row_diagnostics.py::test_optional_profile_rejects_foreign_marker": {
+    "tests/test_jss_dependency_row_diagnostics.py::test_onboarding_accept_rejects_foreign_mcp_interpreter": {
       "path": "tests/test_jss_dependency_row_diagnostics.py",
-      "name": "test_optional_profile_rejects_foreign_marker",
-      "purpose": "A foreign marker must not authorize a change even for the correct venv.",
+      "name": "test_onboarding_accept_rejects_foreign_mcp_interpreter",
+      "purpose": "Foreign interpreter cannot masquerade as project-owned ROOT/.venv.",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
-        "repository"
+        "mcp"
       ],
       "markers": [],
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
-        "latka_jazn.dependencies.private_python",
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
         "latka_jazn.tools"
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 101
+      "line": 92
+    },
+    "tests/test_jss_dependency_row_diagnostics.py::test_onboarding_accepts_only_verified_canonical_python": {
+      "path": "tests/test_jss_dependency_row_diagnostics.py",
+      "name": "test_onboarding_accepts_only_verified_canonical_python",
+      "purpose": "The retained final setup gate binds both roles to the same project venv.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.dependencies",
+        "latka_jazn.dependencies.common",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 113
     },
     "tests/test_jss_evidence_archive.py::test_manifest_precedes_execution_and_all_22_have_txt_json": {
       "path": "tests/test_jss_evidence_archive.py",
@@ -34125,40 +34173,27 @@
       "description_source": "source_identity",
       "line": 204
     },
-    "tests/test_jss_first_run_provisioning_qt.py::test_wizard_offers_root_local_setup_and_gemma3_default": {
+    "tests/test_jss_first_run_provisioning_qt.py::test_wizard_has_no_python_package_or_duplicate_ollama_server_installers": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
-      "name": "test_wizard_offers_root_local_setup_and_gemma3_default",
-      "purpose": "Wizard offers root local setup and gemma3 default",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_wizard_has_no_python_package_or_duplicate_ollama_server_installers",
+      "purpose": "Wizard has no python package or duplicate ollama server installers",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
-      "tags": [],
+      "tags": [
+        "package"
+      ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 41
     },
-    "tests/test_jss_first_run_provisioning_qt.py::test_inspect_does_not_request_mutation_approval": {
+    "tests/test_jss_first_run_provisioning_qt.py::test_official_vendor_link_never_executes_installer": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
-      "name": "test_inspect_does_not_request_mutation_approval",
-      "purpose": "Inspect does not request mutation approval",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 8,
-      "expected_exceptions": [],
-      "targets": [],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 39
-    },
-    "tests/test_jss_first_run_provisioning_qt.py::test_venv_provision_requires_explicit_confirmation": {
-      "path": "tests/test_jss_first_run_provisioning_qt.py",
-      "name": "test_venv_provision_requires_explicit_confirmation",
-      "purpose": "Venv provision requires explicit confirmation",
+      "name": "test_official_vendor_link_never_executes_installer",
+      "purpose": "Official vendor link never executes installer",
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
@@ -34168,94 +34203,84 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 79
+      "line": 63
     },
-    "tests/test_jss_first_run_provisioning_qt.py::test_multi_model_queue_is_validated_before_any_download": {
+    "tests/test_jss_first_run_provisioning_qt.py::test_legacy_provisioning_paths_refuse_before_consent_or_process": {
       "path": "tests/test_jss_first_run_provisioning_qt.py",
-      "name": "test_multi_model_queue_is_validated_before_any_download",
-      "purpose": "Multi model queue is validated before any download",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_legacy_provisioning_paths_refuse_before_consent_or_process",
+      "purpose": "Legacy provisioning paths refuse before consent or process",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 96
+      "line": 77
     },
-    "tests/test_jss_first_run_row_install.py::test_install_button_is_only_shown_for_known_missing_capabilities": {
-      "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_install_button_is_only_shown_for_known_missing_capabilities",
-      "purpose": "Only allowlisted missing rows have an installation action.",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "unit",
-      "tags": [],
-      "markers": [],
-      "assertion_count": 8,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.dependencies",
-        "latka_jazn.dependencies.private_python"
-      ],
-      "status": "current",
-      "description_source": "native_docstring",
-      "line": 34
-    },
-    "tests/test_jss_first_run_row_install.py::test_operator_denial_never_starts_install_and_valid_approval_selects_profile": {
-      "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_operator_denial_never_starts_install_and_valid_approval_selects_profile",
-      "purpose": "Cancel must be side-effect free; approval selects only the known profile.",
+    "tests/test_jss_first_run_provisioning_qt.py::test_model_pull_queue_validated_and_requires_explicit_approval": {
+      "path": "tests/test_jss_first_run_provisioning_qt.py",
+      "name": "test_model_pull_queue_validated_and_requires_explicit_approval",
+      "purpose": "Model pull queue validated and requires explicit approval",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
       "assertion_count": 4,
       "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.dependencies",
-        "latka_jazn.dependencies.private_python"
-      ],
+      "targets": [],
       "status": "current",
-      "description_source": "native_docstring",
-      "line": 55
+      "description_source": "source_identity",
+      "line": 100
     },
-    "tests/test_jss_first_run_row_install.py::test_missing_private_venv_is_refused_before_confirmation": {
+    "tests/test_jss_first_run_row_install.py::test_missing_dependency_rows_are_read_only_and_still_visible": {
       "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_missing_private_venv_is_refused_before_confirmation",
-      "purpose": "A missing ROOT/.venv must not download or create another interpreter.",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_missing_dependency_rows_are_read_only_and_still_visible",
+      "purpose": "Missing dependency rows are read only and still visible",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 7,
       "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.dependencies",
-        "latka_jazn.dependencies.private_python"
-      ],
+      "targets": [],
       "status": "current",
-      "description_source": "native_docstring",
-      "line": 84
+      "description_source": "source_identity",
+      "line": 36
     },
-    "tests/test_jss_first_run_row_install.py::test_extension_uses_only_root_venv_and_rejects_foreign_interpreter": {
+    "tests/test_jss_first_run_row_install.py::test_refresh_clears_old_rows_without_creating_installer_buttons": {
       "path": "tests/test_jss_first_run_row_install.py",
-      "name": "test_extension_uses_only_root_venv_and_rejects_foreign_interpreter",
-      "purpose": "Only a verified canonical private Python may replace proposed JSS fields.",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_refresh_clears_old_rows_without_creating_installer_buttons",
+      "purpose": "Refresh clears old rows without creating installer buttons",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 4,
       "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.dependencies",
-        "latka_jazn.dependencies.private_python"
-      ],
+      "targets": [],
       "status": "current",
-      "description_source": "native_docstring",
-      "line": 96
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_jss_first_run_row_install.py::test_wizard_has_no_dependency_install_or_private_wheelhouse_methods": {
+      "path": "tests/test_jss_first_run_row_install.py",
+      "name": "test_wizard_has_no_dependency_install_or_private_wheelhouse_methods",
+      "purpose": "Wizard has no dependency install or private wheelhouse methods",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_jss_grouped_settings_qt.py::test_settings_groups_and_category_filter_preserve_unsaved_fields": {
       "path": "tests/test_jss_grouped_settings_qt.py",
@@ -34321,7 +34346,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 121
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -34336,7 +34361,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 134
+      "line": 137
     },
     "tests/test_jss_monitor_cadence_persistence.py::test_interval_roundtrip": {
       "path": "tests/test_jss_monitor_cadence_persistence.py",
@@ -34404,15 +34429,166 @@
       "description_source": "source_identity",
       "line": 50
     },
-    "tests/test_jss_operator_center_shortcuts_qt.py::test_dashboard_omits_redundant_setup_and_chat_shortcuts": {
-      "path": "tests/test_jss_operator_center_shortcuts_qt.py",
-      "name": "test_dashboard_omits_redundant_setup_and_chat_shortcuts",
-      "purpose": "Dashboard omits redundant setup and chat shortcuts",
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_tags_and_loaded_models_are_separate_api_observations": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_tags_and_loaded_models_are_separate_api_observations",
+      "purpose": "Tags and loaded models are separate api observations",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_loaded_models_fail_closed_without_erasing_valid_inventory": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_loaded_models_fail_closed_without_erasing_valid_inventory",
+      "purpose": "Loaded models fail closed without erasing valid inventory",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_api_ps_is_permitted_only_on_local_loopback": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_api_ps_is_permitted_only_on_local_loopback",
+      "purpose": "Api ps is permitted only on local loopback",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
       "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_occupied_ollama_port_connects_without_spawning_second_server": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_occupied_ollama_port_connects_without_spawning_second_server",
+      "purpose": "Occupied ollama port connects without spawning second server",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_passive_observation_never_invents_jss_process_ownership": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_passive_observation_never_invents_jss_process_ownership",
+      "purpose": "Passive observation never invents jss process ownership",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 127
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_services_page_start_delegates_to_unique_ollama_controller": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_services_page_start_delegates_to_unique_ollama_controller",
+      "purpose": "Services page start delegates to unique ollama controller",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 145
+    },
+    "tests/test_jss_ollama_onboarding_monitor_regressions.py::test_readonly_monitor_displays_loaded_models_without_claiming_generation": {
+      "path": "tests/test_jss_ollama_onboarding_monitor_regressions.py",
+      "name": "test_readonly_monitor_displays_loaded_models_without_claiming_generation",
+      "purpose": "Readonly monitor displays loaded models without claiming generation",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 165
+    },
+    "tests/test_jss_ollama_prerequisite_retirement.py::test_legacy_cli_ollama_install_never_invokes_winget_or_other_installer": {
+      "path": "tests/test_jss_ollama_prerequisite_retirement.py",
+      "name": "test_legacy_cli_ollama_install_never_invokes_winget_or_other_installer",
+      "purpose": "Legacy cli ollama install never invokes winget or other installer",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ProvisioningError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_jss_ollama_prerequisite_retirement.py::test_legacy_cli_start_never_spawns_an_unowned_ollama_process": {
+      "path": "tests/test_jss_ollama_prerequisite_retirement.py",
+      "name": "test_legacy_cli_start_never_spawns_an_unowned_ollama_process",
+      "purpose": "Legacy cli start never spawns an unowned ollama process",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ProvisioningError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_jss_operator_center_shortcuts_qt.py::test_dashboard_omits_redundant_setup_and_chat_shortcuts": {
+      "path": "tests/test_jss_operator_center_shortcuts_qt.py",
+      "name": "test_dashboard_omits_redundant_setup_and_chat_shortcuts",
+      "purpose": "Dashboard omits redundant setup and chat shortcuts",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -34432,7 +34608,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 20
+      "line": 22
     },
     "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
       "path": "tests/test_jss_pytest_evidence_plugin.py",
@@ -36096,6 +36272,81 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_jss_unified_monitor_bridge.py::test_bridge_requires_current_root_and_read_only_schema": {
+      "path": "tests/test_jss_unified_monitor_bridge.py",
+      "name": "test_bridge_requires_current_root_and_read_only_schema",
+      "purpose": "Bridge requires current root and read only schema",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_jss_unified_monitor_bridge.py::test_readiness_never_exceeds_monitor_evidence": {
+      "path": "tests/test_jss_unified_monitor_bridge.py",
+      "name": "test_readiness_never_exceeds_monitor_evidence",
+      "purpose": "Readiness never exceeds monitor evidence",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_jss_unified_monitor_bridge.py::test_bridge_rejects_unrecognized_status_instead_of_ready": {
+      "path": "tests/test_jss_unified_monitor_bridge.py",
+      "name": "test_bridge_rejects_unrecognized_status_instead_of_ready",
+      "purpose": "Bridge rejects unrecognized status instead of ready",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_jss_unified_monitor_bridge.py::test_jss_uses_new_monitor_window_and_one_snapshot_without_spawning": {
+      "path": "tests/test_jss_unified_monitor_bridge.py",
+      "name": "test_jss_uses_new_monitor_window_and_one_snapshot_without_spawning",
+      "purpose": "Jss uses new monitor window and one snapshot without spawning",
+      "expected": "Pytest completes this contract cleanly and all 26 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 26,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_jss_unified_monitor_bridge.py::test_monitor_integrated_ignores_root_retargeting": {
+      "path": "tests/test_jss_unified_monitor_bridge.py",
+      "name": "test_monitor_integrated_ignores_root_retargeting",
+      "purpose": "Monitor integrated ignores root retargeting",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
     },
     "tests/test_jss_visual_ci_contract.py::test_profile_matrix_covers_all_three_visual_systems_and_core_pages": {
       "path": "tests/test_jss_visual_ci_contract.py",
@@ -71710,11 +71961,11 @@
       "path": "tests/test_tpa_local_ollama_endpoint.py",
       "name": "test_selected_test_endpoint_is_probed_without_default_port_fallback",
       "purpose": "Selected test endpoint is probed without default port fallback",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.tools"
@@ -71742,7 +71993,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 67
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_live_cli_passes_explicit_endpoint_to_existing_executor": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
@@ -71759,7 +72010,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 75
     },
     "tests/test_tpa_local_ollama_endpoint.py::test_runtime_environment_preserves_preflight_endpoint": {
       "path": "tests/test_tpa_local_ollama_endpoint.py",
@@ -71780,7 +72031,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 91
     },
     "tests/test_transport_resilience_fault_injection.py::test_retry_budget_is_aggregate_and_recovers_after_window": {
       "path": "tests/test_transport_resilience_fault_injection.py",

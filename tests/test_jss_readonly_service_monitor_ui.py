@@ -64,7 +64,7 @@ def test_dashboard_has_no_mutating_start_shortcuts(window) -> None:
     assert 'self.action("start")' not in source
     assert "self.core.ensure_ollama" not in source
     assert "Sterowanie procesami" in source
-    assert "Stany usług — monitor" in source
+    assert "Monitor Jaźni" in source
 
 
 def test_absent_optional_mcp_is_observed_without_gui_error_or_replay(window, monkeypatch) -> None:

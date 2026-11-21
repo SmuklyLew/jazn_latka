@@ -52,7 +52,7 @@ class DashboardViewMixin:
         steps = QHBoxLayout()
         self.button("1. Sprawdź runtime (odczyt)", lambda: self.action("status"), steps)
         self.button("2. Sprawdź generację Ollama", lambda: self.core.probe("ollama_generate"), steps)
-        self.button("Stany usług — monitor", self.open_service_status, steps)
+        self.button("Monitor Jaźni", self.open_service_status, steps)
         layout.addLayout(steps)
         self.button("Sterowanie procesami (Start / Stop / Restart) — osobny panel",
                     lambda: self.navigate("Usługi i procesy"), layout)
@@ -95,7 +95,7 @@ class DashboardViewMixin:
             layout.addWidget(label)
         row = QHBoxLayout()
         self.button("Sprawdź status runtime", lambda: self.action("status"), row)
-        self.button("Stany usług — monitor", self.open_service_status, row)
+        self.button("Monitor Jaźni", self.open_service_status, row)
         self.button("Uruchom diagnostykę krok po kroku", self.core.run_batch, row)
         layout.addLayout(row)
         layout.addWidget(QLabel("Wykryte programy i zależności"))

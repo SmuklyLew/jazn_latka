@@ -43,11 +43,9 @@ class EventViewMixin:
                 except queue.Empty:
                     break
             self.workspace.observe(key, kind, value)
-            if self.service_status_dialog is not None and kind in {
-                "evidence", "probe", "state", "supervisor_evidence",
-                "memory_evidence", "status_summary",
-            }:
-                self.service_status_dialog.observe(key, kind, value)
+            # The canonical MonitorWindow owns the one read-only snapshot.
+            # Controller events remain technical diagnostics, never a second
+            # JSS monitor feed or another source of readiness.
             if kind == "log":
                 self.log_view(key).appendPlainText(str(value))
             elif kind == "memory_report":

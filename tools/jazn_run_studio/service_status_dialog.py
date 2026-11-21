@@ -306,6 +306,17 @@ class ServiceStatusDialog(QDialog):
                 failed=key in self.failures,
                 age_seconds=now - observed[0] if observed else 0.0,
             )
+            if key == "ollama" and observed is not None and now - observed[0] <= MAX_OBSERVATION_AGE_SECONDS:
+                sample = observed[1]
+                if sample.get("endpoint_reachable") is True:
+                    loaded = sample.get("loaded_models")
+                    if sample.get("loaded_models_state") == "verified" and isinstance(loaded, list):
+                        names = ", ".join(name[:60] for name in loaded[:4] if isinstance(name, str))
+                        detail += "; w pamięci: " + (names or "brak załadowanych")
+                    else:
+                        detail += "; załadowane modele: brak dowodu /api/ps"
+                    detail += ("; CLI JSS" if sample.get("jss_owned_process") is True
+                               else "; proces nieprzejęty przez JSS")
             circle, caption = self.indicators[key]
             circle.setStyleSheet("color: " + STATUS_COLORS[state] + "; font-size: 19px;")
             circle.setAccessibleName(STATUS_LABELS[state])

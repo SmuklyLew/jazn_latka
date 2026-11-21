@@ -450,6 +450,29 @@ jobs:
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_tk_lifecycle.py
 
+      - name: Install JSS Qt profile for Windows GUI regressions
+        shell: pwsh
+        run: python -m pip install -e ".[run-studio]"
+
+      - name: JSS Ollama onboarding and passive monitor regressions (Windows)
+        shell: pwsh
+        run: |
+          $env:QT_QPA_PLATFORM = "offscreen"
+          python -X utf8 -m pytest -q -ra --tb=short `
+            --junitxml="${{ runner.temp }}/pytest-windows-jss-ollama.xml" `
+            tests/test_jss_first_run_provisioning_qt.py `
+            tests/test_jss_first_run_row_install.py `
+            tests/test_jss_dependency_row_diagnostics.py `
+            tests/test_tpa_local_ollama_endpoint.py `
+            tests/test_jss_ollama_onboarding_monitor_regressions.py `
+            tests/test_jss_readonly_service_monitor_ui.py `
+            tests/test_jss_service_status_dialog.py `
+            tests/test_jss_unified_monitor_bridge.py `
+            tests/test_jazn_monitor_ps_status.py `
+            tests/test_jazn_monitor_observability_qt.py `
+            tests/test_jazn_monitor_tray.py
+          if ($LASTEXITCODE -ne 0) { throw "Windows JSS Ollama regressions failed" }
+
       # Separate Tcl interpreters and event queues by *process*, not only by
       # pytest module. Both original test orders still run with unchanged
       # assertions and each opens/closes two complete native windows.
@@ -484,6 +507,7 @@ jobs:
           name: pytest-windows-failure
           path: |
             ${{ runner.temp }}/pytest-windows.xml
+            ${{ runner.temp }}/pytest-windows-jss-ollama.xml
             ${{ runner.temp }}/pytest-windows-tk-actions.xml
             ${{ runner.temp }}/pytest-windows-tk-lifecycle-pages.xml
             ${{ runner.temp }}/pytest-windows-tk-lifecycle-actions.xml
