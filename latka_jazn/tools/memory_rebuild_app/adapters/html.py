@@ -4,7 +4,7 @@ from pathlib import Path
 
 from latka_jazn.tools.chat_export_reader import build_conversation_graph
 
-from ..html_import import read_html_conversations
+from ..html_import import inspect_html_source, iter_html_conversations
 from ..intermediate import PreparedSource, sha256_file
 from ..settings import MemoryRebuildSettings
 from ..source_detection import SourceProbe
@@ -25,11 +25,10 @@ class ChatHtmlAdapter:
         self, path: Path, probe: SourceProbe, settings: MemoryRebuildSettings,
     ) -> PreparedSource:
         del probe, settings
-        _, member, mode, warnings = read_html_conversations(path)
+        member, mode, warnings = inspect_html_source(path)
 
         def records():
-            raw, _, _, _ = read_html_conversations(path)
-            yield from conversation_records(build_conversation_graph(item) for item in raw)
+            yield from conversation_records(build_conversation_graph(item) for item in iter_html_conversations(path))
 
         return PreparedSource(
             adapter_id=self.adapter_id,

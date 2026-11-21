@@ -4,6 +4,9 @@ Stan implementacji: v16.3.25.5.116.0.34.30 (branch upgrade/memory-studio-steps).
 Dane prywatne pozostają **poza repozytorium**. Ten dokument jest instrukcją operatora,
 a nie dowodem przejścia pełnej prywatnej odbudowy.
 
+Dalszy rozwój bez EXE, izolowany checkout Windows, testy .py i odbiór pełnych
+źródeł: [Memory Rebuild v127.23 — Python-first](MEMORY_REBUILD_V12723_PYTHON_DEVELOPMENT.md).
+
 ## Rozdzielenie odpowiedzialności
 
 **Krok** wykonuje pracę na kopii danych i zapisuje artefakty oraz manifesty.
@@ -89,8 +92,10 @@ Checkpoint wewnątrz pliku pozostaje osobnym zadaniem.
 
 - Analiza source union odczytuje grafy JSON/ZIP kolejno i przechowuje
   kompaktowe fingerprinty węzłów, a nie pełne tuple grafów. Przy skrajnych
-  archiwach te fingerprinty nadal mogą być duże; HTML jest obecnie
-  materializowany w całości i wymaga osobnej optymalizacji.
+  archiwach te fingerprinty nadal mogą być duże. Od v127.23 standalone HTML
+  z tablicą `jsonData` może być odczytywany strumieniowo przez kanoniczny
+  adapter, ale rendered HTML i ścieżki fallback/ZIP nie są jeszcze objęte
+  tym samym ograniczeniem RAM; wymagają oddzielnej akceptacji.
 - Historyczny silnik kroku 00 nadal tworzy pełne `source_mirror.sqlite3`;
   dla dużych zestawów wymaga to odpowiedniego wolnego dysku. Nowy ekran
   **Testy plików** nie tworzy lustrzanej kopii. Nie uruchamiaj pełnego kroku 00

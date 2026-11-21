@@ -36,6 +36,12 @@ def _visibility(node_role: str | None, message: Mapping[str, Any]) -> tuple[str,
         return "non_dialogue", False
     if message.get("recipient") not in (None, "", "all"):
         return "non_dialogue", False
+    # Preserve technical nodes in the native archive, but never label their
+    # text as user-visible dialogue eligible for autobiographical candidates.
+    content = message.get("content")
+    content_type = content.get("content_type") if isinstance(content, dict) else None
+    if content_type not in (None, "", "text", "multimodal_text"):
+        return "non_dialogue", False
     return "visible", True
 
 

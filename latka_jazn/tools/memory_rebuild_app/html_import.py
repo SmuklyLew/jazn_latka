@@ -3,18 +3,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 import hashlib
+import io
 import json
 import re
 import uuid
 import zipfile
 
 from latka_jazn.tools.chat_export_dedupe import plan_conversation
-from latka_jazn.tools.chat_export_reader import build_conversation_graph, sha256_file
+from latka_jazn.tools.chat_export_reader import build_conversation_graph, iter_json_array_objects, sha256_file
 from latka_jazn.tools.chat_export_store import ChatExportArchiveStore
 
-from .html_semantics import HtmlEmbeddedJsonParser, HtmlParseMode
+from .html_semantics import HtmlEmbeddedJsonParser, HtmlParseMode, HtmlSemanticNormalizer
 
 _JSON_ASSIGNMENT_RE = re.compile(r"(?:var|let|const)\s+jsonData\s*=", re.IGNORECASE)
 
@@ -140,6 +141,70 @@ def _synthetic_conversation(title: str, messages: Iterable[str], *, source_key: 
     }
 
 
+_JSON_ARRAY_ASSIGNMENT_RE = re.compile(rb"(?:var|let|const)\s+jsonData\s*=", re.IGNORECASE)
+
+
+def _embedded_array_offset(path: Path) -> int | None:
+    """Locate a top-level JSON array in an HTML source without reading all HTML.
+
+    This intentionally handles ordinary .html/.htm sources. ZIP and rendered
+    fallback use the existing verified HTML parser until they have a bounded
+    streaming equivalent.
+    """
+    if path.suffix.casefold() not in {".html", ".htm"}:
+        return None
+    with path.open("rb") as stream:
+        consumed = 0
+        carry = b""
+        while True:
+            chunk = stream.read(64 * 1024)
+            if not chunk:
+                return None
+            search = carry + chunk
+            match = _JSON_ARRAY_ASSIGNMENT_RE.search(search)
+            if match is not None:
+                offset = consumed - len(carry) + match.end()
+                stream.seek(offset)
+                while True:
+                    ch = stream.read(1)
+                    if not ch:
+                        return None
+                    if ch not in b" \t\r\n":
+                        return stream.tell() - 1 if ch == b"[" else None
+            consumed += len(chunk)
+            carry = search[-128:]
+
+
+def inspect_html_source(source: str | Path) -> tuple[str, str, tuple[str, ...]]:
+    """Lightweight mode probe for embedded arrays, standard fallback otherwise."""
+    path = Path(source).expanduser().resolve()
+    if _embedded_array_offset(path) is not None:
+        return path.name, HtmlParseMode.EMBEDDED_JSON_LOSSLESS.value, ()
+    _, member, mode, warnings = read_html_conversations(path)
+    return member, mode, warnings
+
+
+def iter_html_conversations(source: str | Path) -> Iterator[dict[str, Any]]:
+    """Yield one conversation at a time for an embedded chat.html JSON array.
+
+    The JSON decoder is strict UTF-8. Semantic HTML entity normalization
+    mirrors HtmlEmbeddedJsonParser; the original source remains unchanged.
+    """
+    path = Path(source).expanduser().resolve()
+    offset = _embedded_array_offset(path)
+    if offset is None:
+        records, _, _, _ = read_html_conversations(path)
+        yield from records
+        return
+    normalizer = HtmlSemanticNormalizer()
+    with path.open("rb") as binary:
+        binary.seek(offset)
+        with io.TextIOWrapper(binary, encoding="utf-8", errors="strict", newline="") as stream:
+            for raw in iter_json_array_objects(stream, chunk_size=256 * 1024):
+                if isinstance(raw.get("mapping"), dict):
+                    yield normalizer.normalize(raw)
+
+
 def _read_html_source(path: Path) -> tuple[str, str]:
     if path.suffix.lower() == ".zip":
         with zipfile.ZipFile(path, "r") as archive:
@@ -204,59 +269,77 @@ def import_chat_html(source: str | Path, database: str | Path, *, dry_run: bool 
     if not path.is_file():
         raise FileNotFoundError(path)
     source_hash = sha256_file(path)
-    records, member, mode, warnings_tuple = read_html_conversations(path)
+    member, mode, warnings_tuple = inspect_html_source(path)
     warnings = list(warnings_tuple)
-
     counters = {"conversations_inserted": 0, "conversations_updated": 0, "nodes_inserted": 0, "conflicts": 0}
+    conversations_seen = 0
+    node_count = 0
+    message_count = 0
+
     with ChatExportArchiveStore(database) as store:
         active = store.load_active_states()
-        plans = []
-        graphs = []
-        for raw in records:
-            graph = build_conversation_graph(raw)
-            graphs.append(graph)
-            plans.append(plan_conversation(graph, active.get(graph.conversation_id)))
-        if not dry_run:
-            existing = store.find_import_by_sha(source_hash)
-            if existing:
-                return HtmlImportResult(
-                    source_path=str(path), source_sha256=source_hash, source_member=member,
-                    mode="identical_source_duplicate", conversations_seen=len(graphs),
-                    conversations_inserted=0, conversations_updated=0, nodes_inserted=0,
-                    conflicts=0, warnings=tuple(warnings),
-                )
+        duplicate = bool(store.find_import_by_sha(source_hash)) if not dry_run else False
+        if duplicate:
+            # A repeat import remains read-only, but we still report an exact
+            # conversation count without collecting graphs in a giant list.
+            for raw in iter_html_conversations(path):
+                build_conversation_graph(raw)
+                conversations_seen += 1
+            if not conversations_seen:
+                raise ValueError("html_contains_no_recoverable_conversations")
+            return HtmlImportResult(
+                source_path=str(path), source_sha256=source_hash, source_member=member,
+                mode="identical_source_duplicate", conversations_seen=conversations_seen,
+                conversations_inserted=0, conversations_updated=0, nodes_inserted=0,
+                conflicts=0, warnings=tuple(warnings),
+            )
+        if dry_run:
+            for raw in iter_html_conversations(path):
+                graph = build_conversation_graph(raw)
+                plan_conversation(graph, active.get(graph.conversation_id))
+                conversations_seen += 1
+            if not conversations_seen:
+                raise ValueError("html_contains_no_recoverable_conversations")
+        else:
             from latka_jazn.tools.chat_export_models import ExportSourceInfo
             info = ExportSourceInfo(
                 path=str(path), source_name=path.name, source_kind="html", sha256=source_hash,
                 size_bytes=path.stat().st_size, conversations_member=None, html_member=member,
                 crc_checked=False, crc_ok=True,
             )
+            # Keep native graph import atomic while bounding the Python heap to
+            # a single decoded conversation (rather than every graph at once).
             with store.transaction():
                 import_id = store.begin_import(info)
-                for graph, plan in zip(graphs, plans):
+                for raw in iter_html_conversations(path):
+                    graph = build_conversation_graph(raw)
+                    plan = plan_conversation(graph, active.get(graph.conversation_id))
                     delta = store.store_graph(import_id, graph, plan)
                     for key in counters:
                         counters[key] += int(delta.get(key, 0))
+                    conversations_seen += 1
+                    node_count += graph.node_count
+                    message_count += graph.message_count
+                if not conversations_seen:
+                    raise ValueError("html_contains_no_recoverable_conversations")
                 store.finish_import(
-                    import_id,
-                    conversation_count=len(graphs),
-                    node_count=sum(item.node_count for item in graphs),
-                    message_count=sum(item.message_count for item in graphs),
+                    import_id, conversation_count=conversations_seen,
+                    node_count=node_count, message_count=message_count,
                     report={
-                        "source": "html_import",
-                        "mode": mode,
-                        "source_member": member,
-                        "warnings": warnings,
-                        "truth_boundary": "HTML jest źródłem rozmów; nie promuje treści do L2/L3.",
+                        "source": "html_import", "mode": mode,
+                        "source_member": member, "warnings": warnings,
+                        "truth_boundary": "HTML is conversation evidence, not L2/L3 memory approval.",
                         "imported_at_utc": _utc_now(),
                     },
                 )
+
     return HtmlImportResult(
-        source_path=str(path), source_sha256=source_hash, source_member=member, mode=mode,
-        conversations_seen=len(records), conversations_inserted=counters["conversations_inserted"],
-        conversations_updated=counters["conversations_updated"], nodes_inserted=counters["nodes_inserted"],
+        source_path=str(path), source_sha256=source_hash, source_member=member,
+        mode=mode, conversations_seen=conversations_seen,
+        conversations_inserted=counters["conversations_inserted"],
+        conversations_updated=counters["conversations_updated"],
+        nodes_inserted=counters["nodes_inserted"],
         conflicts=counters["conflicts"], warnings=tuple(warnings),
     )
 
-
-__all__ = ["HtmlImportResult", "import_chat_html", "read_html_conversations"]
+__all__ = ["HtmlImportResult", "import_chat_html", "read_html_conversations", "inspect_html_source", "iter_html_conversations"]

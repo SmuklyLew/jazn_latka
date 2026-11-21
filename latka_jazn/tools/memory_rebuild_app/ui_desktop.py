@@ -637,11 +637,16 @@ class DesktopWorkspace:
 
     def _page_paths(self) -> None:
         project = self._project()
+        if project:
+            protocols, reports = self.state.private_artifact_paths()
+            artifact_summary = f"Artefakty protokołów: {protocols}\nRaporty walidacji: {reports}"
+        else:
+            artifact_summary = "Artefakty: wybierz projekt, aby ustalić izolowane ścieżki."
         self._label(self.content, "Mapa ścieżek — co jest czytane, a co jest zapisywane")
         self._card("Pliki operatora (bez zapisu do pamięci)",
                    f"Projekty: {self.state.project_root or default_project_root()}\n"
                    f"Ustawienia: {self.state.settings_file}\n"
-                   f"Artefakty protokołów: {self.tool_root / 'memory' / 'rebuild_tests' / 'protocols'}")
+                   f"{artifact_summary}")
         if not project:
             self._label(self.content, "Utwórz lub wybierz projekt, aby konfigurować ścieżki.", note=True)
             return
@@ -826,9 +831,10 @@ class DesktopWorkspace:
     def _verify_source_files(self) -> None:
         project = self._require_project()
         sources = [Path(item.path) for item in project.enabled_sources()]
+        _protocols, reports = self.state.private_artifact_paths()
         report = check_memory_source_files(
             sources,
-            report_dir=self.tool_root / "memory" / "rebuild_tests" / "file_checks",
+            report_dir=reports / "file_checks",
         )
         summary = {
             "status": report["status"],

@@ -6,7 +6,6 @@ from typing import Any, Iterator
 from ..intermediate import IntermediateRecord, PreparedSource, canonical_json, sha256_file
 from ..settings import MemoryRebuildSettings
 from ..source_detection import SourceProbe, load_json_strict
-from .common import stable_key
 
 
 def _analysis_rows(path: Path) -> Iterator[dict[str, Any]]:
@@ -64,6 +63,24 @@ def _text(raw: dict[str, Any]) -> tuple[str, str]:
     return title, "\n".join(fragments) if fragments else canonical_json(raw)
 
 
+def _analysis_logical_key(raw: dict[str, Any], title: str, *, ordinal: int, source_name: str) -> str:
+    """Keep distinct source entries even when their music titles coincide.
+
+    Prefer a true ID, then the source's numbered position plus title. An
+    unnumbered item is identified by title, source and its position. This
+    preserves revisions when its text changes, yet separates duplicate titles
+    within one source file. Reordering unnumbered rows requires operator review.
+    """
+    for key in ("id", "analysis_id", "uuid", "_source_key"):
+        value = str(raw.get(key) or "").strip()
+        if value:
+            return f"music-analysis:{key}:{value.casefold()}"
+    number = raw.get("numer")
+    if number is not None and str(number).strip():
+        return f"music-analysis:number:{str(number).strip().casefold()}:{title.casefold()}"
+    return f"music-analysis:unnumbered:{source_name.casefold()}:{title.casefold()}:{ordinal}"
+
+
 class MusicAnalysisAdapter:
     adapter_id = "music-analysis/v16.1"
 
@@ -76,13 +93,9 @@ class MusicAnalysisAdapter:
         del probe, settings
 
         def records():
-            for raw in _analysis_rows(path):
+            for ordinal, raw in enumerate(_analysis_rows(path)):
                 title, content = _text(raw)
-                logical_key = stable_key(
-                    "music-analysis",
-                    raw,
-                    ("id", "analysis_id", "uuid", "_source_key", "tytuł", "tytul", "title", "utwór", "utwor", "song"),
-                )
+                logical_key = _analysis_logical_key(raw, title, ordinal=ordinal, source_name=path.name)
                 source_id = str(raw.get("id") or raw.get("analysis_id") or raw.get("uuid") or logical_key)
                 event = str(raw.get("timestamp") or raw.get("data") or raw.get("date") or "").strip() or None
                 raw_record = dict(raw)
@@ -104,6 +117,7 @@ class MusicAnalysisAdapter:
                     raw=raw_record,
                     provenance={
                         "analysis_title": title,
+                        "source_ordinal": ordinal,
                         "claim_boundary": "assistant_claim",
                         "affect_boundary": "source_claimed_affect_not_biological_state",
                         "affect_claim_fields": sorted({
