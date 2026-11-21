@@ -16,7 +16,7 @@ SERVICE_NAMES: dict[str, str | None] = {
     "runtime": "Runtime Core",
     "ollama": "Ollama",
     "gateway": "MCP",
-    "cloudflare": None,  # independent public OAuth evidence is unavailable here
+    "cloudflare": "MCP HTTPS",  # no green without separate public auth proof
     "supervisor": "Supervisor",
     "memory": "MEMORY",
 }
@@ -63,7 +63,7 @@ def monitor_service(report: dict[str, Any] | None, service: str, *,
     """
     name = SERVICE_NAMES.get(service)
     if name is None:
-        return "unknown", "Brak odrębnego dowodu publicznego HTTPS/OAuth"
+        return "unknown", "Nieznana usługa"
     if report is None:
         return "unknown", "Oczekiwanie na odczyt Monitora Jaźni"
     if age_seconds is None or not 0 <= age_seconds <= MAX_MONITOR_AGE_SECONDS:
