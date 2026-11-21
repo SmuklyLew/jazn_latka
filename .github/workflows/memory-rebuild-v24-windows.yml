@@ -9,7 +9,7 @@ on:
       - "tools/memory_rebuild_legacy_v24.py"
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
-      - "tests/test_memory_rebuild_v12723_artifact_paths.py"
+      - "tests/test_memory_studio_artifact_paths.py"
       - "tests/test_memory_desktop_*.py"
       - "tests/test_memory_studio_step_workflows.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
@@ -23,7 +23,7 @@ on:
       - "tools/memory_rebuild_legacy_v24.py"
       - "latka_jazn/tools/memory_rebuild_app/**"
       - "tests/test_memory_rebuild_v24_*.py"
-      - "tests/test_memory_rebuild_v12723_artifact_paths.py"
+      - "tests/test_memory_studio_artifact_paths.py"
       - "tests/test_memory_desktop_*.py"
       - "tests/test_memory_studio_step_workflows.py"
       - ".github/workflows/memory-rebuild-v24-windows.yml"
@@ -76,7 +76,7 @@ jobs:
           tools/memory_rebuild_legacy_v24.py
           tests/test_memory_rebuild_v24_unified.py
           tests/test_memory_rebuild_alpha_source_regressions.py
-          tests/test_memory_rebuild_v12723_artifact_paths.py
+          tests/test_memory_studio_artifact_paths.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
@@ -113,7 +113,7 @@ jobs:
           -q -ra --tb=short
           tests/test_memory_rebuild_v24_unified.py
           tests/test_memory_rebuild_alpha_source_regressions.py
-          tests/test_memory_rebuild_v12723_artifact_paths.py
+          tests/test_memory_studio_artifact_paths.py
           tests/test_memory_rebuild_v24_cli.py
           tests/test_memory_rebuild_v24_windows_handles.py
           tests/test_memory_rebuild_v24_studio_reconstruction.py
