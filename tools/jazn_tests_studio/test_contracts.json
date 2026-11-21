@@ -30400,16 +30400,16 @@
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
       "name": "test_refresh_includes_configured_cloudflare_observation",
       "purpose": "Refresh includes configured cloudflare observation",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 1,
+      "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 22
+      "line": 30
     },
     "tests/test_jazn_run_studio_part2_refresh_qt.py::test_refresh_propagates_failure_without_making_up_ready_state": {
       "path": "tests/test_jazn_run_studio_part2_refresh_qt.py",
@@ -30426,7 +30426,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 32
+      "line": 47
     },
     "tests/test_jazn_run_studio_probe_readiness.py::test_gateway_http_reachability_is_not_readiness": {
       "path": "tests/test_jazn_run_studio_probe_readiness.py",
@@ -34346,7 +34346,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 121
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -34361,7 +34361,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 134
+      "line": 137
     },
     "tests/test_jss_monitor_cadence_persistence.py::test_interval_roundtrip": {
       "path": "tests/test_jss_monitor_cadence_persistence.py",
@@ -34584,11 +34584,11 @@
       "path": "tests/test_jss_operator_center_shortcuts_qt.py",
       "name": "test_dashboard_omits_redundant_setup_and_chat_shortcuts",
       "purpose": "Dashboard omits redundant setup and chat shortcuts",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -34608,7 +34608,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 20
+      "line": 22
     },
     "tests/test_jss_pytest_evidence_plugin.py::test_real_pytest_fail_skip_and_teardown_error_are_not_promoted": {
       "path": "tests/test_jss_pytest_evidence_plugin.py",
@@ -36286,7 +36286,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_jss_unified_monitor_bridge.py::test_readiness_never_exceeds_monitor_evidence": {
       "path": "tests/test_jss_unified_monitor_bridge.py",
@@ -36301,7 +36301,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 58
+      "line": 60
     },
     "tests/test_jss_unified_monitor_bridge.py::test_bridge_rejects_unrecognized_status_instead_of_ready": {
       "path": "tests/test_jss_unified_monitor_bridge.py",
@@ -36316,22 +36316,22 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 74
     },
     "tests/test_jss_unified_monitor_bridge.py::test_jss_uses_new_monitor_window_and_one_snapshot_without_spawning": {
       "path": "tests/test_jss_unified_monitor_bridge.py",
       "name": "test_jss_uses_new_monitor_window_and_one_snapshot_without_spawning",
       "purpose": "Jss uses new monitor window and one snapshot without spawning",
-      "expected": "Pytest completes this contract cleanly and all 21 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 26 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 21,
+      "assertion_count": 26,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 83
     },
     "tests/test_jss_unified_monitor_bridge.py::test_monitor_integrated_ignores_root_retargeting": {
       "path": "tests/test_jss_unified_monitor_bridge.py",
@@ -36346,7 +36346,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 150
     },
     "tests/test_jss_visual_ci_contract.py::test_profile_matrix_covers_all_three_visual_systems_and_core_pages": {
       "path": "tests/test_jss_visual_ci_contract.py",
