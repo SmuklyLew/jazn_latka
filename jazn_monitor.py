@@ -43,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
             print("Nie można utworzyć blokady Monitora: " + type(exc).__name__, file=sys.stderr)
             return 2
         lock = QLockFile(str(lock_dir / (digest + ".lock")))
+        lock.setStaleLockTime(0)  # long-lived singleton; never steal by age
         if not lock.tryLock(0):
             if lock.error() == QLockFile.LockError.LockFailedError:
                 print("Jaźń Monitor jest już uruchomiony dla wybranego ROOT.")
