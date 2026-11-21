@@ -98,7 +98,7 @@ class SetupWizard(QWizard):
             "Ollama na Windows zwykle działa już w tle po instalacji. "
             "Oficjalny instalator otwiera się w przeglądarce. "
             "Start / Stop / Restart CLI: „Usługi i procesy”. "
-            "„Stany usług — monitor” obserwuje bez przejmowania obcych procesów."
+            "„Monitor Jaźni” obserwuje cały system bez przejmowania procesów."
         )
         note_ollama.setWordWrap(True)
         optional.addWidget(note_ollama)
