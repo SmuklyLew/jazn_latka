@@ -137,6 +137,7 @@ class ServiceViewMixin:
         running = service == "runtime" and self.quick_runtime_ready
         managed = service in {"ollama", "gateway"}
         self.service_start_button.setEnabled((service == "runtime" and not running) or (managed and not owned))
+        self.service_start_button.setText("Połącz / Start CLI" if service == "ollama" else "Start")
         self.service_stop_button.setEnabled(running or (managed and owned))
         self.service_restart_button.setEnabled(running or (managed and owned))
         note = {
@@ -173,7 +174,11 @@ class ServiceViewMixin:
                     "Wykonać " + op + " dla " + service + "?") != QMessageBox.StandardButton.Yes:
                 return
         if op == "start":
-            self.core.start_service(service)
+            job = self.core.ensure_ollama() if service == "ollama" else self.core.start_service(service)
+            if service == "ollama" and job.key == "probe:ollama":
+                # Existing app or CLI owns port 11434; observe it, do not adopt or spawn.
+                self.show_log(job.key)
+                return
         elif op == "stop":
             self.core.stop_owned("service:" + service)
         else:
@@ -243,7 +248,21 @@ class ServiceViewMixin:
             self.statuses[service].setToolTip(self.statuses[service].text())
         models = self.workspace.observations.get("ollama", {})
         if models:
-            self.models_summary.setText("Modele: " + ", ".join(models.get("models", [])) + "\nGeneracja: " + ("potwierdzona" if models.get("generation_verified") else "niezweryfikowana"))
+            available = models.get("models", [])
+            loaded = models.get("loaded_models", [])
+            installed_text = ", ".join(name[:80] for name in available[:8]) if isinstance(available, list) else "niezweryfikowane"
+            if models.get("loaded_models_state") == "verified" and isinstance(loaded, list):
+                loaded_text = ", ".join(name[:80] for name in loaded[:8]) or "brak załadowanych"
+            else:
+                loaded_text = "brak potwierdzenia /api/ps"
+            ownership = ("CLI uruchomione przez JSS" if models.get("jss_owned_process") is True
+                         else "proces nieprzejęty przez JSS")
+            self.models_summary.setText(
+                "Modele zainstalowane: " + installed_text
+                + "\nModele załadowane: " + loaded_text
+                + "\nProces: " + ownership
+                + "\nGeneracja: " + ("potwierdzona" if models.get("generation_verified") else "niezweryfikowana")
+            )
 
 
     def open_service_status(self: Any) -> None:
