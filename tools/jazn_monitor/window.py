@@ -90,6 +90,7 @@ class MonitorWindow(QMainWindow):
             lock_dir = Path.home() / ".jazn_monitor"
             lock_dir.mkdir(parents=True, exist_ok=True)
             lock = QLockFile(str(lock_dir / (key + ".lock")))
+            lock.setStaleLockTime(0)  # long-lived singleton; never steal by age
             if not lock.tryLock(0):
                 raise RuntimeError(
                     "Monitor Jaźni już działa dla tej instalacji. "
