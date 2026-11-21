@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23",
-  "active_definition_count": 3534,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.1",
+  "active_definition_count": 3539,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -43865,6 +43865,106 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 108
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_missing_children_is_derived_not_a_message_loss": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_missing_children_is_derived_not_a_message_loss",
+      "purpose": "Missing children is derived not a message loss",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_explicit_null_and_missing_are_distinct_raw_versions": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_explicit_null_and_missing_are_distinct_raw_versions",
+      "purpose": "Explicit null and missing are distinct raw versions",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 99
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_explicit_empty_children_is_not_a_missing_key": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_explicit_empty_children_is_not_a_missing_key",
+      "purpose": "Explicit empty children is not a missing key",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_changed_parent_remains_a_real_unresolved_conflict": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_changed_parent_remains_a_real_unresolved_conflict",
+      "purpose": "Changed parent remains a real unresolved conflict",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_memory_rebuild_graph_relation_asymmetry.py::test_changed_message_content_is_not_silently_merged": {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "name": "test_changed_message_content_is_not_silently_merged",
+      "purpose": "Changed message content is not silently merged",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.chat_export_reader",
+        "latka_jazn.tools.memory_rebuild_app.source_union"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
     },
     "tests/test_memory_rebuild_modular.py::test_structure_settings_theme_and_adapter_contracts": {
       "path": "tests/test_memory_rebuild_modular.py",
