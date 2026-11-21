@@ -5,30 +5,19 @@ from dataclasses import asdict, replace
 from pathlib import Path
 import json
 import os
-import shutil
 import sys
 from typing import Callable
 
-from PySide6.QtCore import QProcess, QTimer
+from PySide6.QtCore import QProcess, QTimer, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
-    QCheckBox, QComboBox, QFileDialog, QFormLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QProgressBar,
+    QCheckBox, QComboBox, QFormLayout, QGroupBox, QLabel, QLineEdit, QMessageBox, QProgressBar,
     QPushButton, QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWizard, QWizardPage, QWidget,
 )
 
 from .core import Controller, Settings, StudioError
 
-# Only declared, maintained profiles are installable from the wizard.
-_ROW_PROFILES = {
-    "Testy: pytest": ("core,run-studio,mcp-http,test-evidence", "python"),
-    **{
-        name: ("core,run-studio,mcp-http,test-evidence", "python")
-        for name in ("tzdata", "packaging", "PySide6-Essentials")
-    },
-    **{
-        "MCP: " + module: ("core,run-studio,mcp-http,test-evidence", "mcp_python")
-        for module in ("mcp", "uvicorn", "starlette", "pydantic", "packaging", "tzdata")
-    },
-}
+# Installation and dependency management belong to Dependency Studio, not onboarding.
 
 
 class CheckPage(QWizardPage):
@@ -70,8 +59,6 @@ class SetupWizard(QWizard):
         self.core, self.save, self.completed = core, save, completed
         self._original_python_setting = core.settings.python
         self._original_mcp_python_setting = core.settings.mcp_python
-        self._provisional_python_setting = ""
-        self._provisional_mcp_python_setting = ""
         self.setWindowTitle("Jaźń — Serce Systemu / Pierwsze uruchomienie")
         self.resize(780, 590)
         self.setButtonText(QWizard.WizardButton.BackButton, "Wstecz")
@@ -87,9 +74,8 @@ class SetupWizard(QWizard):
         self.progress.setRange(0, 0)
         self.progress.hide()
         layout.addWidget(self.progress)
-        self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa", "Instalacja"])
-        self.table.setColumnWidth(4, 125)
+        self.table = QTableWidget(0, 4)
+        self.table.setHorizontalHeaderLabels(["Wymaganie", "Stan", "Wynik", "Naprawa"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.table)
@@ -105,41 +91,31 @@ class SetupWizard(QWizard):
         self.integration_summary.setWordWrap(True)
         optional.addWidget(self.integration_summary)
         optional.addWidget(QLabel("Brak opcjonalnej usługi nie blokuje Studio. Test endpointu nie potwierdza generacji ani tury ChatGPT."))
-        provisioning = QGroupBox("Przygotowanie środowiska Jaźni — wymagane zgody")
-        provision_layout = QVBoxLayout(provisioning)
-        self.provision_result = QLabel(
-            "Środowisko ROOT/.venv, zasoby i programy są obsługiwane osobno. "
-            "Instalacja nie zmienia działającego daemona ani MEMORY."
+        note_ollama = QLabel(
+            "Ollama na Windows zwykle działa już w tle po instalacji. "
+            "Oficjalny instalator otwiera się w przeglądarce. "
+            "Start / Stop / Restart CLI: „Usługi i procesy”. "
+            "„Stany usług — monitor” obserwuje bez przejmowania obcych procesów."
         )
-        self.provision_result.setWordWrap(True)
-        provision_layout.addWidget(self.provision_result)
-        for title, command in (
-            ("Sprawdź ROOT/.venv i Ollamę (bez zmian)", "inspect"),
-            ("Przygotuj ROOT/local_resources", "prepare-resources"),
-            ("Zainstaluj Python 3.14 (WinGet)", "install-python"),
-            ("Utwórz lub sprawdź ROOT/.venv", "prepare-venv"),
-            ("Pobierz biblioteki terminala + JSS (online)", "download-deps"),
-            ("Zainstaluj zweryfikowane biblioteki (offline)", "install-offline"),
-            ("Zainstaluj Ollamę (WinGet)", "install-ollama"),
-            ("Uruchom Ollamę jako usługę CLI", "start-ollama"),
-            ("Uruchom aplikację Ollama", "start-ollama-app"),
-        ):
-            button = QPushButton(title)
-            button.clicked.connect(lambda _checked=False, name=command: self.provision(name))
-            provision_layout.addWidget(button)
+        note_ollama.setWordWrap(True)
+        optional.addWidget(note_ollama)
+        self.ollama_official = QPushButton("Pobierz Ollamę — oficjalna strona")
+        self.ollama_official.clicked.connect(self.open_official_ollama_download)
+        optional.addWidget(self.ollama_official)
+        model_box = QGroupBox("Modele Ollama")
+        model_layout = QVBoxLayout(model_box)
         self.models_to_download = QLineEdit("gemma3:latest")
         self.models_to_download.setAccessibleName("Modele Ollama do pobrania, rozdzielone przecinkami")
         self.models_to_download.setPlaceholderText("gemma3:latest, gemma3:1b")
-        provision_layout.addWidget(QLabel("Modele do pobrania (domyślnie Gemma 3 4B):"))
-        provision_layout.addWidget(self.models_to_download)
+        model_layout.addWidget(QLabel("Pobieranie tylko po jawnej zgodzie:"))
+        model_layout.addWidget(self.models_to_download)
         pull_models = QPushButton("Pobierz wybrane modele Ollama")
         pull_models.clicked.connect(lambda _checked=False: self.provision("pull-model"))
-        provision_layout.addWidget(pull_models)
-        provision_scroll = QScrollArea()
-        provision_scroll.setWidgetResizable(True)
-        provision_scroll.setMinimumHeight(180)
-        provision_scroll.setWidget(provisioning)
-        optional.addWidget(provision_scroll, 1)
+        model_layout.addWidget(pull_models)
+        self.provision_result = QLabel("Nie pobierano modeli w tej sesji.")
+        self.provision_result.setWordWrap(True)
+        model_layout.addWidget(self.provision_result)
+        optional.addWidget(model_box)
 
         for key, label in (("ollama", "Sprawdź endpoint i modele Ollama"), ("gateway", "Sprawdź lokalny MCP")):
             button = QPushButton(label)
@@ -262,15 +238,7 @@ class SetupWizard(QWizard):
         self.provision_process: QProcess | None = None
         self.provision_buffer = ""
         self.provision_command = ""
-        self.provision_native = False
         self.provision_remaining_models: list[str] = []
-        self._row_stage = ""
-        self._row_name = ""
-        self._row_profiles = ""
-        self._row_setting = ""
-        self._row_python = ""
-        self._row_output = ""
-        self._row_stderr = ""
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.poll)
         self.timer.start(100)
@@ -281,337 +249,57 @@ class SetupWizard(QWizard):
         return python_executable(self.core.settings, root=self.core.root)
 
     def _render_setup_rows(self, rows: list[dict]) -> None:
-        # Resetting the rows removes stale buttons after a successful recheck.
-        self.table.setRowCount(0)
+        """Display verified facts without first-run package-install buttons."""
         self.table.setRowCount(len(rows))
-        from latka_jazn.dependencies.environment_manager import (
-            EnvironmentPolicyError, load_environment_policy,
-        )
-        try:
-            external_selected = load_environment_policy(self.core.root) is not None
-        except EnvironmentPolicyError:
-            external_selected = True  # Fail closed: no mutating buttons.
         for i, row in enumerate(rows):
             for j, key in enumerate(("name", "state", "detail", "remedy")):
                 self.table.setItem(i, j, QTableWidgetItem(str(row.get(key, ""))))
-            name = str(row.get("name") or "")
-            if (not external_selected and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
-                    and name in _ROW_PROFILES):
-                button = QPushButton("Zainstaluj…")
-                button.setAccessibleName("Zainstaluj zależność: " + name)
-                button.clicked.connect(
-                    lambda _checked=False, selected=name: self.install_missing(selected)
-                )
-                self.table.setCellWidget(i, 4, button)
 
-    def install_missing(self, name: str) -> None:
-        from latka_jazn.dependencies.environment_manager import (
-            EnvironmentPolicyError, load_environment_policy,
-        )
-        try:
-            if load_environment_policy(self.core.root) is not None:
-                self.stage.setText("External: instalacja pakietów przez Jaźń jest zabroniona.")
-                return
-        except EnvironmentPolicyError:
-            self.stage.setText("Nieprawidłowa polityka External: instalacja zablokowana.")
-            return
-        spec = _ROW_PROFILES.get(name)
-        if spec is None or not any(
-            row.get("name") == name and row.get("state") in {"OPTIONAL_MISSING", "FAIL"}
-            for row in self.report.get("rows", [])
-        ):
-            return
-        if self._row_stage or (
-            self.provision_process is not None
-            and self.provision_process.state() != QProcess.ProcessState.NotRunning
-        ):
-            self.stage.setText("Inna operacja instalacji jeszcze trwa.")
-            return
-        profiles, setting = spec
-        try:
-            from latka_jazn.dependencies.private_python import (
-                private_python_path, private_python_status,
+    def open_official_ollama_download(self) -> None:
+        """Vendor URL only. JSS never downloads or executes Ollama installers."""
+        url = "https://ollama.com/download/windows" if sys.platform == "win32" else "https://ollama.com/download"
+        if not QDesktopServices.openUrl(QUrl(url)):
+            self.provision_result.setText("Nie udało się otworzyć oficjalnej strony Ollama.")
+
+    def provision(self, command: str) -> None:
+        """Only model pull remains in onboarding; process control lives in Services."""
+        if command != "pull-model":
+            self.provision_result.setText(
+                "Python i biblioteki: Studio Zależności. Serwer Ollama: Usługi i procesy."
             )
-            private = private_python_status(self.core.root)
-            if private.get("ready") is not True:
-                raise StudioError("ROOT/.venv nie jest gotowe; użyj setup.ps1.")
-            python = str(private_python_path(self.core.root))
-        except (OSError, ValueError, RuntimeError) as exc:
-            self.stage.setText(self.core.redactor.text(str(exc)))
             return
-        from latka_jazn.dependencies.common import default_wheelhouse_root
-        wheelhouse = default_wheelhouse_root(self.core.root)
-        approved = QMessageBox.question(
-            self, "Zgoda na instalację zależności",
-            f"Brak: {name}\nProfile: {profiles}\nInterpreter bazowy: {python}\n"
-            f"Wheelhouse: {wheelhouse}\n\n"
-            "Pobrać pakiety i zbudować zweryfikowany wheelhouse, a następnie "
-            "doinstalować offline WYŁĄCZNIE brakujące pakiety do ROOT/.venv? "
-            "Nie aktualizuje już zainstalowanych bibliotek ani nie tworzy drugiego "
-            "Pythona. Odmówi, gdy działa runtime lub wersje pakietów są niezgodne. "
-            "Nie zmienia MEMORY ani nie uruchamia daemona.",
+        if self.provision_process is not None and self.provision_process.state() != QProcess.ProcessState.NotRunning:
+            self.provision_result.setText("Pobieranie modelu jeszcze trwa.")
+            return
+        from latka_jazn.tools.jss_prerequisite_setup import MODEL_NAME
+        names = [name.strip() for name in self.models_to_download.text().split(",")]
+        if not names or len(names) > 8 or any(not MODEL_NAME.fullmatch(name) for name in names):
+            self.provision_result.setText("Podaj od jednego do ośmiu poprawnych identyfikatorów modeli.")
+            return
+        answer = QMessageBox.question(
+            self, "Pobieranie modeli Ollama",
+            "Pobrać wybrane modele przez oficjalne lokalne API Ollama? "
+            "Operacja wymaga transferu i miejsca na dysku. "
+            "Nie uruchamia ani nie zatrzymuje usług Jaźni.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
-        if approved != QMessageBox.StandardButton.Yes:
+        if answer != QMessageBox.StandardButton.Yes:
             return
-        self._row_name, self._row_profiles = name, profiles
-        self._row_setting, self._row_python = setting, python
-        self._start_row_step("download")
-
-    def _start_row_step(self, stage: str, bundle: Path | None = None) -> None:
-        from latka_jazn.dependencies.common import default_wheelhouse_root
-        root = self.core.root.resolve()
-        wheelhouse = default_wheelhouse_root(root).resolve()
-        arguments = [
-            "-X", "utf8", "-m", "latka_jazn.tools.dependency_studio",
-            "--root", str(root), "--wheelhouse-root", str(wheelhouse), "--json-summary",
-        ]
-        if stage == "download":
-            arguments += [
-                "download", "--profile", self._row_profiles,
-                "--platform", "current", "--python-executable", self._row_python,
-            ]
-        elif stage == "install" and bundle is not None:
-            candidate = bundle.resolve()
-            if not candidate.is_dir() or not candidate.is_relative_to(wheelhouse):
-                self._row_stage = ""
-                self.stage.setText("Odmowa: nieprawidłowy katalog wheelhouse.")
-                return
-            arguments += [
-                "extend", "--bundle", str(candidate),
-                "--profile", self._row_profiles,
-                "--python-executable", self._row_python,
-                "--offline",
-            ]
-        else:
-            self._row_stage = ""
-            self.stage.setText("Odmowa: nieprawidłowa operacja.")
-            return
-        self._row_stage, self._row_output, self._row_stderr = stage, "", ""
-        process = QProcess(self)
-        process.setWorkingDirectory(str(root))
-        process.readyReadStandardOutput.connect(self._row_read)
-        process.readyReadStandardError.connect(self._row_read_stderr)
-        process.finished.connect(self._row_finished)
-        process.errorOccurred.connect(self._row_error)
-        self.provision_process = process
-        self.stage.setText(
-            ("Pobieranie i weryfikowanie: " if stage == "download" else "Instalacja offline: ")
-            + self._row_name
-        )
-        self.core.emit("setup:dependency-row", "log", f"{stage}: {self._row_name} — rozpoczęto")
-        # QProcess receives explicit argv; no shell or arbitrary package names.
-        process.start(self._row_python, arguments)
-
-    def _row_read_stderr(self) -> None:
-        if self.provision_process is not None:
-            chunk = bytes(self.provision_process.readAllStandardError().data()).decode(
-                "utf-8", "replace"
-            )
-            # Kept only in memory. Raw installer output is never written to operator logs.
-            self._row_stderr = (self._row_stderr + chunk)[-8192:]
-
-    def _row_error(self, _error: object) -> None:
-        process = self.provision_process
-        if process is not None and process.state() == QProcess.ProcessState.NotRunning:
-            stage = self._row_stage
-            self.provision_process = None
-            self._row_stage = ""
-            process.deleteLater()
-            if stage:
-                self._row_failure(stage, "process_start_failed", -1, "")
-
-    def _row_read(self) -> None:
-        if self.provision_process is not None:
-            chunk = bytes(self.provision_process.readAllStandardOutput().data()).decode(
-                "utf-8", "replace"
-            )
-            self._row_output = (self._row_output + chunk)[-65536:]
-
-    def _row_failure(self, stage: str, code: str, exit_code: int, detail: str) -> None:
-        # Persist bounded, redacted metadata through the canonical operator channel.
-        detail = self.core.redactor.text(detail.strip().splitlines()[-1] if detail.strip() else "")[:160]
-        reason = f"{stage}/{code}, exit={exit_code}"
-        if detail:
-            reason += ": " + detail
-        reason = self.core.redactor.text(reason)[:245]
-        self.core.emit(
-            "setup:dependency-row", "state",
-            {"state": "failed", "error": reason, "returncode": int(exit_code)},
-        )
-        self.core.emit("setup:dependency-row", "log", reason)
-        self.stage.setText("Instalacja nieudana: " + reason)
-
-    def _row_finished(self, exit_code: int, _status: object) -> None:
-        stage = self._row_stage
-        if not stage:
-            return  # A process_start_failed event already owns the failure.
-        self._row_read()
-        self._row_read_stderr()
-        # An installer may emit progress before its final machine summary.
-        # Never infer success from an exit code or an arbitrary log line.
-        payload: dict = {}
-        for line in reversed(self._row_output.splitlines()):
-            line = line.strip()
-            if not (line.startswith("{") and line.endswith("}")):
-                continue
-            try:
-                candidate = json.loads(line)
-            except (TypeError, ValueError):
-                continue
-            if isinstance(candidate, dict) and type(candidate.get("ok")) is bool:
-                payload = candidate
-                break
-        process, self.provision_process = self.provision_process, None
-        if process is not None:
-            process.deleteLater()
-        if not isinstance(payload, dict):
-            payload = {}
-        if exit_code != 0 or payload.get("ok") is not True:
-            self._row_stage = ""
-            error_type = str(payload.get("error_type") or "invalid_dependency_result")[:80]
-            detail = str(payload.get("error") or self._row_stderr or "")
-            self._row_failure(stage, error_type, exit_code, detail)
-            return
-        if stage == "download":
-            bundle = payload.get("bundle_dir")
-            if not isinstance(bundle, str) or not bundle.strip():
-                self._row_stage = ""
-                self._row_failure(stage, "bundle_path_missing", exit_code, "")
-                return
-            self.core.emit("setup:dependency-row", "log", "Zweryfikowano bundle: " + self._row_name)
-            self._start_row_step("install", Path(bundle))
-            return
-        if stage != "install":
-            self._row_stage = ""
-            self._row_failure(stage, "unexpected_installer_stage", exit_code, "")
-            return
-        from latka_jazn.dependencies.private_python import private_python_path
-        from latka_jazn.dependencies.common import ENVIRONMENT_MARKER_NAME
-        root_venv = (self.core.root.resolve() / ".venv").resolve()
-        expected_python = private_python_path(self.core.root)
-        interpreter = Path(str(payload.get("python_executable") or ""))
-        marker = Path(str(payload.get("environment_marker_path") or ""))
-        provided = set(payload.get("profiles") or [])
-        expected = set(self._row_profiles.split(","))
-        ready = (
-            payload.get("state") == "private_environment_extended"
-            and payload.get("activation_marker_updated") is True
-            and expected.issubset(provided)
-            and interpreter.is_file()
-            and interpreter.resolve() == expected_python.resolve()
-            and marker.is_file()
-            and marker.resolve() == (root_venv / ENVIRONMENT_MARKER_NAME).resolve()
-        )
-        self._row_stage = ""
-        if not ready:
-            self._row_failure(stage, "managed_environment_not_verified", exit_code, "")
-            return
-        resolved = str(interpreter.resolve())
-        # Both runtime and MCP use one canonical interpreter. No hidden switch.
-        self.setting_fields["python"].setText(resolved)
-        self.setting_fields["mcp_python"].setText(resolved)
-        self.core.settings = replace(
-            self.core.settings, python=resolved, mcp_python=resolved,
-        )
-        self._provisional_python_setting = resolved
-        self._provisional_mcp_python_setting = resolved
-        self.retry()  # Fresh evidence for exactly the interpreter being saved.
-        self.core.emit(
-            "setup:dependency-row", "state",
-            {"state": "succeeded", "error": None, "returncode": 0},
-        )
-        self.core.emit(
-            "setup:dependency-row", "log",
-            "Zweryfikowano uzupełnienie ROOT/.venv: " + self._row_name,
-        )
-        self.stage.setText(
-            "Zainstalowano do ROOT/.venv: " + self._row_name
-            + ". Interpreter Jaźni i MCP pozostaje ten sam."
-        )
-
-    def provision(self, command: str) -> None:
-        from latka_jazn.tools.jss_prerequisite_setup import MODEL_NAME
-        from latka_jazn.dependencies.environment_manager import (
-            EnvironmentPolicyError, inspect_external_environment, load_environment_policy,
-        )
-        try:
-            policy = load_environment_policy(self.core.root)
-            if policy is not None and command == "inspect":
-                report = inspect_external_environment(self.core.root, policy)
-                self.provision_result.setText(
-                    "External: " + report["status"] + " / " + ", ".join(report["errors"])
-                )
-                return
-            if policy is not None and command in {
-                    "install-python", "prepare-venv", "download-deps", "install-offline"}:
-                self.provision_result.setText(
-                    "External: Jaźń nie może tworzyć ani modyfikować Pythona i pakietów."
-                )
-                return
-        except EnvironmentPolicyError as exc:
-            self.provision_result.setText("Nieprawidłowa polityka środowiska: " + str(exc))
-            return
-        if self.provision_process is not None and self.provision_process.state() != QProcess.ProcessState.NotRunning:
-            self.provision_result.setText("Inne przygotowanie środowiska jeszcze trwa.")
-            return
-        if command == "pull-model":
-            names = [part.strip() for part in self.models_to_download.text().split(",")]
-            if not names or len(names) > 8 or any(not MODEL_NAME.fullmatch(name) for name in names):
-                self.provision_result.setText("Podaj od jednego do ośmiu poprawnych identyfikatorów modeli.")
-                return
-            self.provision_remaining_models = list(dict.fromkeys(names))
-        else:
-            self.provision_remaining_models.clear()
-        if command == "install-offline":
-            start = str(self.core.root / "local_resources" / "wheelhouse")
-            chosen = QFileDialog.getExistingDirectory(self, "Wybierz zweryfikowany wheelhouse", start)
-            if not chosen:
-                return
-            extra = ["--bundle", chosen]
-        elif command in {"prepare-venv", "download-deps"}:
-            # Resolve Python 3.14 inside the setup helper. JSS itself may still
-            # be running with the older interpreter used to display this UI.
-            extra = []
-        elif command == "start-ollama-app":
-            extra = ["--launch", "app"]
-            command = "start-ollama"
-        else:
-            extra = []
-        if command != "inspect":
-            answer = QMessageBox.question(
-                self, "Zgoda na operację JSS",
-                "Wykonać operację: " + command + "? Może instalować programy, "
-                "modyfikować ROOT/.venv lub pobierać pliki z sieci. "
-                "MEMORY i aktywny daemon Jaźni pozostają nienaruszone.",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No,
-            )
-            if answer != QMessageBox.StandardButton.Yes:
-                self.provision_remaining_models.clear()
-                return
-        if command == "pull-model":
-            model = self.provision_remaining_models.pop(0)
-            extra = ["--model", model]
-        self._start_provision_process(command, extra)
+        self.provision_remaining_models = list(dict.fromkeys(names))
+        model = self.provision_remaining_models.pop(0)
+        self._start_provision_process("pull-model", ["--model", model])
 
     def _start_provision_process(self, command: str, extra: list[str]) -> None:
-        native_winget = False
+        if command != "pull-model":
+            raise ValueError("Instalatory i lifecycle Ollama nie należą do kreatora.")
         try:
             python = self._setup_python()
         except StudioError as exc:
-            if command in {"install-python", "install-ollama"} and sys.platform == "win32":
-                python = shutil.which("winget") or ""
-                native_winget = bool(python)
-            else:
-                self.provision_result.setText(self.core.redactor.text(str(exc)))
-                return
-            if not native_winget:
-                self.provision_result.setText("Brak Pythona i WinGet. Potrzebny oficjalny bootstrap SYSTEM.")
-                return
+            self.provision_remaining_models.clear()
+            self.provision_result.setText(self.core.redactor.text(str(exc)))
+            return
         self.provision_command = command
-        self.provision_native = native_winget
         self.provision_buffer = ""
         process = QProcess(self)
         process.setWorkingDirectory(str(self.core.root))
@@ -619,44 +307,37 @@ class SetupWizard(QWizard):
         process.readyReadStandardError.connect(lambda: process.readAllStandardError())
         process.finished.connect(self._provision_finished)
         process.errorOccurred.connect(
-            lambda _error: self.provision_result.setText("Nie udało się uruchomić instalatora JSS.")
+            lambda _error: self.provision_result.setText("Nie udało się uruchomić pobierania modelu.")
         )
         self.provision_process = process
-        if native_winget:
-            package = "Python.Python.3.14" if command == "install-python" else "Ollama.Ollama"
-            arguments = ["install", "--id", package, "--exact",
-                         "--accept-source-agreements", "--accept-package-agreements"]
-        else:
-            arguments = [
-                "-X", "utf8", "-m", "latka_jazn.tools.jss_prerequisite_setup",
-                "--root", str(self.core.root), command, *extra,
-            ]
-            if command != "inspect":
-                arguments.append("--yes")
-        self.provision_result.setText("Trwa operacja: " + command + " (nie zmienia daemona).")
+        arguments = [
+            "-X", "utf8", "-m", "latka_jazn.tools.jss_prerequisite_setup",
+            "--root", str(self.core.root), "pull-model", *extra, "--yes",
+        ]
+        self.provision_result.setText("Trwa pobieranie modelu Ollama.")
         process.start(python, arguments)
 
     def _provision_output(self) -> None:
         process = self.provision_process
-        if process is not None:
-            chunk = bytes(process.readAllStandardOutput().data()).decode("utf-8", "replace")
-            # Operator only sees bounded, sanitized status rather than raw pip/installer output.
-            self.provision_buffer = (self.provision_buffer + chunk)[-32768:]
-            for line in chunk.splitlines():
-                try:
-                    event = json.loads(line)
-                except (ValueError, TypeError):
-                    continue
-                if isinstance(event, dict) and isinstance(event.get("progress"), dict):
-                    progress = event["progress"]
-                    status = str(progress.get("status") or "")[:100]
-                    completed, total = progress.get("completed"), progress.get("total")
-                    percent = (
-                        f" — {completed * 100 // total}%"
-                        if isinstance(completed, int) and isinstance(total, int) and total > 0
-                        else ""
-                    )
-                    self.provision_result.setText("Model Ollama: " + status + percent)
+        if process is None:
+            return
+        chunk = bytes(process.readAllStandardOutput().data()).decode("utf-8", "replace")
+        self.provision_buffer = (self.provision_buffer + chunk)[-32768:]
+        for line in chunk.splitlines():
+            try:
+                event = json.loads(line)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(event, dict) and isinstance(event.get("progress"), dict):
+                progress = event["progress"]
+                status = str(progress.get("status") or "")[:100]
+                completed, total = progress.get("completed"), progress.get("total")
+                percent = (
+                    f" — {completed * 100 // total}%"
+                    if isinstance(completed, int) and isinstance(total, int) and total > 0
+                    else ""
+                )
+                self.provision_result.setText("Model Ollama: " + status + percent)
 
     def _provision_finished(self, exit_code: int, _status: object) -> None:
         self._provision_output()
@@ -664,59 +345,29 @@ class SetupWizard(QWizard):
             result = json.loads(self.provision_buffer.strip().splitlines()[-1])
         except (ValueError, TypeError, IndexError):
             result = {}
-        ok = _provision_result_ok(
-            self.provision_command, result, exit_code=exit_code,
-            native_winget=self.provision_native,
+        ok = (exit_code == 0 and isinstance(result, dict)
+              and result.get("ok") is True)
+        reason = str(result.get("error_code") or result.get("state") or "invalid_model_pull_result")
+        self.core.emit(
+            "setup:provision", "state",
+            {"state": "succeeded" if ok else "failed",
+             "error": None if ok else self.core.redactor.text(reason)[:120],
+             "returncode": exit_code},
         )
-        if not ok:
-            reason = self.core.redactor.text(
-                str(result.get("error_code") or result.get("state") or "invalid_provision_result")
-            )[:120]
-            self.core.emit("setup:provision", "state",
-                           {"state": "failed", "error": reason, "returncode": exit_code})
-        if self.provision_native and ok:
-            result = {"state": "winget_completed_recheck_required"}
-        if ok:
-            self.core.emit("setup:provision", "state",
-                           {"state": "succeeded", "error": None, "returncode": 0})
-        if ok and self.provision_command == "inspect":
-            self.provision_result.setText(
-                "Sprawdzono ROOT/.venv/Ollama (tylko odczyt) — "
-                + ("Python 3.14: gotowy" if result["python_314_ready"]
-                   else "Python 3.14: wymaga przygotowania")
-                + "; " + ("Ollama API: dostępne" if result["ollama_api_ready"]
-                          else "Ollama API: niedostępne")
-            )
-        else:
-            self.provision_result.setText(
-                ("Zakończono: " if ok else "Niepowodzenie: ") + self.provision_command
-                + " / " + str(result.get("state") or result.get("error_code") or "brak wiarygodnego JSON")
-            )
+        self.provision_result.setText(
+            ("Zakończono: " if ok else "Niepowodzenie: ")
+            + "pull-model / " + self.core.redactor.text(reason)[:120]
+        )
         process, self.provision_process = self.provision_process, None
         if process is not None:
             process.deleteLater()
-        if ok and self.provision_command == "pull-model" and self.provision_remaining_models:
+        if ok and self.provision_remaining_models:
             model = self.provision_remaining_models.pop(0)
             self._start_provision_process("pull-model", ["--model", model])
         else:
             self.provision_remaining_models.clear()
-            if ok and self.provision_command == "install-offline":
-                candidate = self.core.root / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
-                if candidate.is_file():
-                    # In-memory only until the user approves the final step.
-                    # Do not retain an MCP interpreter from a legacy managed env.
-                    self.setting_fields["python"].setText(str(candidate))
-                    self.setting_fields["mcp_python"].setText(str(candidate))
-                    self.core.settings = replace(
-                        self.core.settings, python=str(candidate), mcp_python=str(candidate),
-                    )
-                    self._provisional_python_setting = str(candidate)
-                    self._provisional_mcp_python_setting = str(candidate)
-            if ok and self.provision_command in {"prepare-venv", "install-offline", "download-deps"}:
-                self.retry()
-            if ok and self.provision_command in {"pull-model", "start-ollama", "install-ollama"}:
+            if ok:
                 self.probe("ollama")
-
 
     def set_installed_models(self, names: object) -> None:
         """Only offer model names returned by the live Ollama API."""
