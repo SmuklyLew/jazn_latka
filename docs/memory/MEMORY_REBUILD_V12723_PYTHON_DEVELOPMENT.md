@@ -78,6 +78,38 @@ Porównanie eksportu JSON i kontrolnego HTML (bez importu):
 
 Porównanie semantyczne nie zastępuje zachowania dokładnych bajtów oryginału, graph lineage, nazwy/wersji eksportu ani wszystkich załączników.
 
+## 3a. Ścieżki prywatnych artefaktów — projekt, nie checkout Git
+
+Od aktualizacji izolacji artefaktów w v127.23 GUI/TUI wyznaczają katalogi z
+wybranego projektu. Dla projektu operatora:
+
+- staging: `D:\\.AI\\memory_rebuild_v12723_lab\\work`
+- protokoły Test00–Final i resume: `D:\\.AI\\memory_rebuild_v12723_lab\\protocols`
+- raporty walidacji: `D:\\.AI\\memory_rebuild_v12723_lab\\reports\\file_checks`
+- oryginalne źródła: `D:\\.AI\\work\\memory_to_restore`
+
+Jeśli nazwa katalogu staging jest inna niż `work`, narzędzie umieszcza
+artefakty w `<target>/_studio_artifacts`. W przypadku konfliktu z repozytorium,
+folderem źródeł lub prywatną pamięcią operacja musi zakończyć się błędem
+**przed zapisaniem czegokolwiek**. Sama mapa ścieżek nie tworzy katalogów.
+Poprzednie prywatne artefakty z katalogu `memory/rebuild_tests` w checkoutcie
+należy zachować do osobnego audytu; aktualizacja nie usuwa ich ani nie
+przenosi automatycznie. Run ID dotyczy przebiegu danego projektu; po
+zmianie projektu bieżący chain testów musi zostać wyczyszczony.
+
+Przy źródłach z podfolderu `naprawione` obowiązują dodatkowe zasady:
+- przed podmianą zachowaj osobno surowe oryginały i ich SHA-256;
+- poprawione analizy, dziennik i extra_data są **nowymi wersjami źródeł**,
+  a nie dowodem zatwierdzenia ich treści;
+- do projektu nie kieruj jednocześnie oryginału i poprawionej kopii jako
+  aktywnych wejść `memory_rebuild` bez jawnego planu rewizji/deduplikacji;
+- pozostaw stare wpisy jako referencje historyczne, ale wyłącz je
+  z aktywnego przebiegu dopiero po sprawdzeniu trzech nowych SHA-256 i
+  ich poprawności; `data_journal.json` wymaga osobnego reconciliation
+  i nie jest równoważny `dziennik.json`;
+- katalog kontrolny `naprawione` nie powinien automatycznie nadpisywać
+  nazw źródłowych; wszystkie rekordy muszą zachować provenance.
+
 ## 4. Dopiero po kontroli: wyizolowany plan
 
 - Sprawdź wolne miejsce przed pełnym mirror Test00: historyczna ścieżka potrzebuje około 3x rozmiar źródeł + 512 MiB **dla tego etapu**, a nie jako gwarancję dla całego pipeline.
