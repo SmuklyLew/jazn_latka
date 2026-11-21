@@ -136,7 +136,9 @@ class SetupWizard(QWizard):
         note = QLabel(
             "Sprawdź ustawienia Studio i przyszłych usług. Puste pola opcjonalne są dozwolone. "
             "Pamięć kanoniczna jest przyłączana przez runtime, nie kopiowana przez kreator. "
-            "Zapis nie uruchamia usług ani nie zmienia aktywnego daemona."
+            "Zapis nie uruchamia usług ani nie zmienia aktywnego daemona. "
+            "Instalacja Pythona i bibliotek należy do Studia Zależności; "
+            "zewnętrzny interpreter wymaga jawnie zweryfikowanej polityki External."
         )
         note.setWordWrap(True)
         config.addWidget(note)
@@ -485,10 +487,16 @@ class SetupWizard(QWizard):
                 data["python"], data["mcp_python"] = str(canonical), str(selected_mcp)
             else:
                 if private_python_status(self.core.root).get("ready") is not True:
-                    raise StudioError("ROOT/.venv nie jest gotowe.")
+                    raise StudioError(
+                        "ROOT/.venv nie jest gotowe. Użyj Studia Zależności "
+                        "albo skonfiguruj i zweryfikuj tryb External."
+                    )
                 canonical = private_python_path(self.core.root).resolve()
                 if selected_python.resolve() != canonical or selected_mcp.resolve() != canonical:
-                    raise StudioError("Jaźń i MCP muszą używać jednego ROOT/.venv.")
+                    raise StudioError(
+                        "Jaźń i MCP muszą używać jednego ROOT/.venv. "
+                        "Dla zewnętrznego Pythona wybierz zweryfikowany tryb External."
+                    )
                 data["python"], data["mcp_python"] = str(canonical), str(canonical)
             if self.report.get("scope") != setup_scope(self.core.root, str(canonical)):
                 raise StudioError("Interpreter zmieniono od ostatniej kontroli; ponów kontrolę.")
