@@ -74,10 +74,14 @@ class MonitorWindow(QMainWindow):
 
     def __init__(self, root: Path | None, daemon_port: int,
                  ollama_port: int, *, smoke: bool = False,
-                 integrated: bool = False, parent: QWidget | None = None) -> None:
+                 integrated: bool = False, parent: QWidget | None = None,
+                 interval_seconds: int | None = None) -> None:
         super().__init__(parent)
         self.integrated = integrated
         self._smoke = smoke
+        self._fixed_root = Path(root).expanduser().resolve() if integrated and root is not None else None
+        if interval_seconds is not None and interval_seconds not in {1, 10, 30, 60}:
+            raise ValueError("Unsupported JSS monitor interval")
         if integrated:
             self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowTitle("Jaźń Monitor — tylko odczyt")
@@ -166,7 +170,7 @@ class MonitorWindow(QMainWindow):
         self.footer.setWordWrap(True)
         layout.addWidget(self.footer)
         self.timer = QTimer(self)
-        self.timer.setInterval(5000)
+        self.timer.setInterval((interval_seconds or 5) * 1000)
         self.timer.timeout.connect(self.refresh)
         if not integrated:
             self._configure_tray()
@@ -251,7 +255,8 @@ class MonitorWindow(QMainWindow):
         if self._closing or (self._worker is not None and self._worker.isRunning()):
             return
         raw = self.root_field.text().strip()
-        self._worker = ProbeThread(Path(raw) if raw else None,
+        selected = self._fixed_root if self.integrated else (Path(raw) if raw else None)
+        self._worker = ProbeThread(selected,
                                    self.daemon_port, self.ollama_port)
         worker = self._worker
         worker.observed.connect(self.apply_snapshot)
