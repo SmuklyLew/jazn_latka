@@ -40,7 +40,11 @@ def api():
 
 def test_selected_test_endpoint_is_probed_without_default_port_fallback(api, tmp_path):
     base, calls = api
-    assert probes.ollama("synthetic:latest", api_base=base)["selected_model_present"] is True
+    observed = probes.ollama("synthetic:latest", api_base=base)
+    assert observed["selected_model_present"] is True
+    assert observed["loaded_models"] == ["synthetic:latest"]
+    assert observed["loaded_models_state"] == "verified"
+    assert observed["generation_verified"] is False
     folder = tmp_path / "live"
     folder.mkdir()
     result = tpa_live.exercise(tmp_path / "SYSTEM", folder, "ollama-two-turns",
@@ -49,7 +53,9 @@ def test_selected_test_endpoint_is_probed_without_default_port_fallback(api, tmp
     assert result["evidence"]["selected_model_present"] is False
     assert result["evidence"]["cleanup"]["ok"] is True
     assert not any(folder.iterdir())
-    assert calls == ["/api/tags", "/api/tags"]
+    # Each isolated API probe reads installed models (/api/tags) and loaded
+    # models (/api/ps), without ever probing the machine's default Ollama port.
+    assert calls == ["/api/tags", "/api/ps", "/api/tags", "/api/ps"]
 
 
 @pytest.mark.parametrize("base", [
