@@ -49652,7 +49652,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 110
     },
     "tests/test_memory_studio_artifact_paths.py::test_switching_projects_does_not_reuse_previous_protocol_chain": {
       "path": "tests/test_memory_studio_artifact_paths.py",
@@ -49674,7 +49674,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 151
     },
     "tests/test_memory_studio_p1_inspection.py::test_missing_inspection_does_not_create_files": {
       "path": "tests/test_memory_studio_p1_inspection.py",
