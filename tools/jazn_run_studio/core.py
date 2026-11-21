@@ -862,6 +862,14 @@ class Controller:
                             self.ollama_generation_proof = None
                         proof = self.ollama_generation_proof
                     evidence = retain_ollama_generation(evidence, proof, time.monotonic())
+                if key in {"ollama", "ollama_process"}:
+                    # Ownership is proven only by our still-running Popen handle.
+                    # It is not evidence that the API endpoint belongs to this PID.
+                    with self.lock:
+                        cli = self.jobs.get("service:ollama")
+                        owned = (cli is not None and cli.proc is not None
+                                 and not cli.done.is_set() and cli.proc.poll() is None)
+                    evidence = {**evidence, "jss_owned_process": owned}
                 if key == "ollama_process":
                     self._monitor_condition(key, "process_not_running"
                                             if evidence.get("process_running") is False else None)
