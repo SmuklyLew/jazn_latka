@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-21T03:24:46+00:00",
-  "updated_at_utc": "2026-11-21T03:24:46+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-21T04:53:49+00:00",
+  "updated_at_utc": "2026-11-21T04:53:49+00:00",
   "start_file": "run.py",
-  "file_count": 3859,
-  "static_file_count": 3859,
+  "file_count": 3860,
+  "static_file_count": 3860,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -508,8 +508,8 @@
     },
     {
       "path": "SOURCE_PROVENANCE.json",
-      "size_bytes": 2972,
-      "sha256": "0db5b518e8aa98377f1a342ba6c65686df01b86f2d6c5d9bff6b0eb99117c9b1",
+      "size_bytes": 2984,
+      "sha256": "6d2a3ca377182924c17d1f0bdd7a01df92e4e469106ccb99a5cd28d20b86192c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11245,8 +11245,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_rebuild_app/source_union.py",
-      "size_bytes": 14999,
-      "sha256": "74903b12eec3f3dbe4520e82ff66c566b05e9862b114853f900d649817273ee9",
+      "size_bytes": 19500,
+      "sha256": "a27f44e01a84489d9737d7a7ccb0c34e41d3e30b1776a90ba444c35a5798a910",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11785,8 +11785,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 29368,
-      "sha256": "f10b213a63940e1ab50cf0bb704b210d8d3df8f7075782f722136622e508c518",
+      "size_bytes": 29455,
+      "sha256": "d9c87cf582a0f63742888b35d4ab16c1d3b486a5b13f682d96afd09b5f32f746",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -30936,6 +30936,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_memory_rebuild_graph_relation_asymmetry.py",
+      "size_bytes": 6218,
+      "sha256": "c61451d2065169653aafce61124c9ffc2c447dc31e13dc3cd938d8c959da9bde",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_memory_rebuild_modular.py",
       "size_bytes": 11142,
       "sha256": "fc72f7819812dc130755574099137ec4468e8bdc9e7da2139ff642eeeca2980c",
@@ -34528,8 +34537,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3115579,
-      "sha256": "a2b277d59c5671524c31d0d974ae3c6febeb134f0c64eb9533c99964f6aa5ade",
+      "size_bytes": 3119793,
+      "sha256": "84fb8de6f07b9860317d59968a6729df309ed68a379ea02b9ab27022a04d8628",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35186,11 +35195,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.23-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.23.1-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
