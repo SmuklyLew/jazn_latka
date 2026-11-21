@@ -466,7 +466,11 @@ jobs:
             tests/test_tpa_local_ollama_endpoint.py `
             tests/test_jss_ollama_onboarding_monitor_regressions.py `
             tests/test_jss_readonly_service_monitor_ui.py `
-            tests/test_jss_service_status_dialog.py
+            tests/test_jss_service_status_dialog.py `
+            tests/test_jss_unified_monitor_bridge.py `
+            tests/test_jazn_monitor_ps_status.py `
+            tests/test_jazn_monitor_observability_qt.py `
+            tests/test_jazn_monitor_tray.py
           if ($LASTEXITCODE -ne 0) { throw "Windows JSS Ollama regressions failed" }
 
       # Separate Tcl interpreters and event queues by *process*, not only by
