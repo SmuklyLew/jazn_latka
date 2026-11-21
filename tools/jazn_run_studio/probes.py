@@ -28,7 +28,7 @@ def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     parts = urlsplit(url)
     local = (parts.scheme == "http" and parts.hostname == "127.0.0.1"
              and parts.port is not None and 1024 <= parts.port <= 65535
-             and parts.path in {"/api/tags", "/readyz"})
+             and parts.path in {"/api/tags", "/api/ps", "/readyz"})
 
     remote = parts.scheme == "https" and str(parts.hostname or "").endswith(".workers.dev") and parts.port in {None, 443}
     if not (local or remote) or parts.username or parts.password or parts.query or parts.fragment:
@@ -72,7 +72,26 @@ def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict
     if code != 200 or not isinstance(entries, list) or any(not isinstance(m, dict) or not isinstance(m.get("name"), str) for m in entries):
         raise ValueError("Invalid Ollama model list")
     names = [entry["name"] for entry in entries]
+    # GET /api/ps lists models loaded in memory, not all installed models.
+    # It is optional to the /api/tags readiness contract: a transient error
+    # cannot erase valid model inventory or assert a successful generation.
+    loaded: list[str] = []
+    loaded_state = "unavailable"
+    try:
+        running_code, running = read_json(ollama_api_base(api_base) + "/api/ps")
+    except (OSError, ValueError, HTTPException):
+        pass
+    else:
+        current = running.get("models")
+        if (running_code == 200 and isinstance(current, list)
+                and all(isinstance(entry, dict)
+                        and isinstance(entry.get("name"), str) for entry in current)):
+            loaded = [entry["name"] for entry in current]
+            loaded_state = "verified"
+        else:
+            loaded_state = "invalid_response"
     return {"service": "ollama", "endpoint_reachable": True, "models": names,
+            "loaded_models": loaded, "loaded_models_state": loaded_state,
             "selected_model": model, "selected_model_present": model in names if model else None,
             "generation_verified": False, "accepted_visible_turn": False}
 
