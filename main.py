@@ -305,6 +305,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--daemon-submit", action="store_true", dest="daemon_submit", help="Dodaj turę do kolejki daemonu i natychmiast zwróć request_id bez czekania na wynik.")
     parser.add_argument("--daemon-result", default=None, metavar="REQUEST_ID", help="Pobierz stan lub gotowy wynik wcześniej zleconej tury daemonu.")
     parser.add_argument("--daemon-request-id", default=None, help="Jawny idempotentny request_id dla --daemon-send/--daemon-submit/--chat-gpt.")
+    parser.add_argument("--daemon-channel", choices=("chatgpt", "ollama"), default="chatgpt", help="Jawny kanał --daemon-send/--daemon-submit. Domyślnie most ChatGPT, nie Ollama z env.")
     parser.add_argument("--daemon-final-only", action="store_true", dest="daemon_final_only", help="Z --daemon-send wypisz tylko final_visible_text, gdy runtime zwróci finalną odpowiedź.")
     parser.add_argument("--daemon-chat-timeout", type=float, default=DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS, help="Timeout sekund dla jednej tury POST /chat przez daemon.")
     parser.add_argument("--daemon-wait-budget", type=float, default=DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, help="Maksymalny czas jednego procesu CLI na oczekiwanie na wynik asynchronicznej tury; po nim zwracany jest request_id do późniejszego odczytu.")
@@ -1189,6 +1190,77 @@ def _select_ollama_model_for_tty(
     output_stream.flush()
     return selected
 
+def _daemon_cli_channel_settings(
+    ns: argparse.Namespace, cfg: JaznConfig,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """Select one explicit turn channel before daemon submission.
+
+    Environment variables alone do not change the legacy ChatGPT default.
+    """
+    channel = str(getattr(ns, "daemon_channel", "chatgpt") or "chatgpt")
+    if channel == "chatgpt":
+        return {
+            "client": "chatgpt_daemon_bridge",
+            "command": "--chat",
+            "model_channel_config": {},
+        }, None
+    if channel != "ollama":
+        return {}, {"ok": False, "error_code": "unsupported_daemon_channel"}
+    if getattr(ns, "daemon_final_only", False):
+        return {}, {
+            "ok": False,
+            "error_code": "ollama_daemon_final_only_unsupported",
+            "suggested_command": "run.py chat-ollama --ollama-model <model> -- <wiadomość>",
+        }
+    selected_cfg, probe = resolve_ollama_cli_settings(
+        cfg,
+        model=getattr(ns, "ollama_model", None),
+        api_base=getattr(ns, "ollama_api_base", None),
+        timeout_seconds=getattr(ns, "ollama_timeout", None),
+        max_output_tokens=getattr(ns, "ollama_max_output_tokens", None),
+    )
+    if not probe.get("available"):
+        return {}, {
+            "ok": False,
+            "error_code": str(probe.get("reason") or "ollama_unavailable"),
+            "selected_channel": "ollama",
+            "suggested_command": "run.py chat-ollama --ollama-model <model>",
+        }
+    return {
+        "client": "ollama_terminal_one_shot",
+        "command": "--chat-ollama",
+        "model_channel_config": model_channel_config_from_config(selected_cfg),
+    }, None
+
+
+def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
+    """Expose job vs finalization without treating ready phase-1 as success."""
+    nested = payload.get("daemon_job")
+    job = nested if isinstance(nested, dict) else payload
+    status = str(job.get("job_status") or job.get("status") or "").strip()
+    done = job.get("done") if isinstance(job.get("done"), bool) else None
+    phase_ready = (
+        job.get("phase_result_ready")
+        if isinstance(job.get("phase_result_ready"), bool) else None
+    )
+    finalization = (
+        "accepted" if status == "completed" and done is True
+        else "expired" if status == "host_finalization_expired"
+        else "rejected" if status == "host_finalization_rejected"
+        else "awaiting_host" if status == "awaiting_host_finalization"
+        else "not_final" if done is False
+        else "unverified"
+    )
+    return {
+        "job_status": status or None,
+        "done": done,
+        "phase_result_ready": phase_ready,
+        "finalization": finalization,
+        "finalized_successfully": finalization == "accepted" and payload.get("ok") is True,
+        "truth_boundary": "Processing completion and accepted host finalization are distinct.",
+    }
+
+
 def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
     """Run Ollama in terminal-chat, one-shot, or JSONL mode.
 
@@ -1656,6 +1728,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
+        payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
         if ns.chat_gpt or ns.daemon_final_only:
             presented = _prepare_chatgpt_daemon_presentation(
                 cfg=cfg,
@@ -1679,6 +1752,10 @@ def legacy_main(argv: list[str] | None = None) -> int:
     if ns.daemon_submit:
         cfg = config or JaznConfig()
         text = _message_from_remainder(ns.message)
+        channel_options, channel_error = _daemon_cli_channel_settings(ns, cfg)
+        if channel_error is not None:
+            print(json.dumps(channel_error, ensure_ascii=False, sort_keys=True))
+            return 3
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-submit", explicit=True)
         if daemon_exit is not None:
             return daemon_exit
@@ -1689,10 +1766,13 @@ def legacy_main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
+            **channel_options,
             request_id=ns.daemon_request_id,
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
         payload.setdefault("daemon_autostart", daemon_ensure.to_dict())
+        payload.setdefault("selected_channel", getattr(ns, "daemon_channel", "chatgpt"))
+        payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
         if trusted_time_env is not None:
             payload.setdefault("trusted_time_env", trusted_time_env)
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
@@ -1701,6 +1781,10 @@ def legacy_main(argv: list[str] | None = None) -> int:
     if ns.daemon_send or ns.daemon_final_only:
         cfg = config or JaznConfig()
         text = _message_from_remainder(ns.message)
+        channel_options, channel_error = _daemon_cli_channel_settings(ns, cfg)
+        if channel_error is not None:
+            print(json.dumps(channel_error, ensure_ascii=False, sort_keys=True))
+            return 3
         daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-send", explicit=True)
         if daemon_exit is not None:
             return daemon_exit
@@ -1712,11 +1796,14 @@ def legacy_main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             session_id=ns.session_id,
             no_carryover=ns.no_carryover,
+            **channel_options,
             request_id=ns.daemon_request_id,
             timeout=wait_budget,
             poll_interval=ns.daemon_poll_interval,
         )
         payload.setdefault("daemon_autostart", daemon_ensure.to_dict())
+        payload.setdefault("selected_channel", getattr(ns, "daemon_channel", "chatgpt"))
+        payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
         if trusted_time_env is not None:
             payload.setdefault("trusted_time_env", trusted_time_env)
         if ns.daemon_final_only and isinstance(payload, dict):

@@ -13,6 +13,9 @@ from latka_jazn.version import schema_version
 SCHEMA_VERSION = schema_version("message_envelope")
 TIMESTAMP_HEADER_RE = re.compile(r"^🕒 (?P<value>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$")
 MODEL_INLINE_TIMESTAMP_RE = re.compile(r"^🕒 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?=\s|$)")
+# Only detached model-generated timestamp echoes after a completed question/exclamation.
+# Keep all quoted and narrative mentions of dates/times untouched.
+MODEL_TRAILING_TIMESTAMP_ECHO_RE = re.compile(r"(?<=[!?])[ \t\n]+🕒 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 MODEL_LEADING_AUTHOR_RE = re.compile(r"^(?:🌿|🐾|🤍|🧭)\s+Łatka(?=[ \t\n:]|$)")
 MODEL_LEADING_GREETING_RE = re.compile(
     r"^(?:cześć|czesc|hej|witaj|dzień dobry|dzien dobry|dobry wieczór)(?=[\s!,.?]|$)",
@@ -185,4 +188,4 @@ def clean_model_generated_body(text: str) -> str:
             break
         value = remainder.lstrip(" \t\n:")
         removed_author = True
-    return value
+    return MODEL_TRAILING_TIMESTAMP_ECHO_RE.sub("", value).rstrip()

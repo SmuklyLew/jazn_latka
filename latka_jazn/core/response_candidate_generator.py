@@ -109,7 +109,7 @@ def _candidate_prompt(plan: dict[str, Any]) -> str:
     )
     return (
         "Utwórz jednego kandydata odpowiedzi zgodnego z NLG Plan i ModelContextPacket. "
-        "Nie dodawaj timestampu; runtime zrobi to osobno. "
+        "Nie dodawaj znacznika 🕒 ani timestampu na początku lub końcu odpowiedzi; runtime zrobi to osobno. "
         "Nie opisuj procesu tworzenia odpowiedzi. "
         "Nie twierdź, że model jest Jaźnią, pamięcią ani źródłem prawdy. "
         f"Rodzaj odpowiedzi: {answer_kind}.{strict_instruction}"
