@@ -212,8 +212,9 @@ def _linux_process_rows() -> list[dict[str, Any]] | None:
     try:
         boot = next(int(line.split()[1]) for line in Path("/proc/stat").read_text().splitlines()
                     if line.startswith("btime "))
-        ticks = os.sysconf("SC_CLK_TCK")
-        page_size = os.sysconf("SC_PAGE_SIZE")
+        sysconf = getattr(os, "sysconf")  # POSIX-only; Windows stubs omit it.
+        ticks = sysconf("SC_CLK_TCK")
+        page_size = sysconf("SC_PAGE_SIZE")
         paths = list(Path("/proc").iterdir())
     except (OSError, ValueError, StopIteration):
         return None
