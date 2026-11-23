@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.4",
-  "active_definition_count": 3560,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.5",
+  "active_definition_count": 3564,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26903,6 +26903,76 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 107
+    },
+    "tests/test_jazn_monitor_app_identity.py::test_linux_sets_qt_identity_without_calling_windows_shell": {
+      "path": "tests/test_jazn_monitor_app_identity.py",
+      "name": "test_linux_sets_qt_identity_without_calling_windows_shell",
+      "purpose": "Linux sets qt identity without calling windows shell",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_jazn_monitor_app_identity.py::test_windows_sets_taskbar_app_id_without_changing_python_image_name": {
+      "path": "tests/test_jazn_monitor_app_identity.py",
+      "name": "test_windows_sets_taskbar_app_id_without_changing_python_image_name",
+      "purpose": "Windows sets taskbar app id without changing python image name",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_jazn_monitor_app_identity.py::test_windows_shell_rejection_remains_truthful_and_nonfatal": {
+      "path": "tests/test_jazn_monitor_app_identity.py",
+      "name": "test_windows_shell_rejection_remains_truthful_and_nonfatal",
+      "purpose": "Windows shell rejection remains truthful and nonfatal",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 52
+    },
+    "tests/test_jazn_monitor_app_identity.py::test_windows_shell_unavailable_keeps_qt_monitor": {
+      "path": "tests/test_jazn_monitor_app_identity.py",
+      "name": "test_windows_shell_unavailable_keeps_qt_monitor",
+      "purpose": "Windows shell unavailable keeps qt monitor",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
     },
     "tests/test_jazn_monitor_observability.py::test_windows_process_probe_does_not_flash_powershell_console": {
       "path": "tests/test_jazn_monitor_observability.py",
