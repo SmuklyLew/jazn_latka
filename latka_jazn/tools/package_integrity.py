@@ -103,6 +103,48 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+# Only these source types have an explicit Git checkout CRLF policy in
+# .gitattributes. The index, not a possibly edited working-tree attributes
+# file, decides whether per-file newline equivalence is permitted.
+_GIT_CRLF_SCRIPT_SUFFIXES = frozenset({".ps1", ".psm1", ".psd1", ".bat", ".cmd"})
+
+
+def _git_index_declares_crlf(root: Path, relative: str) -> bool:
+    """Permit newline conversion only for an explicit cached eol=crlf rule."""
+    probe = _run_git(root, "check-attr", "--cached", "-z", "eol", "--", relative)
+    return (
+        probe.returncode == 0
+        and probe.stdout == relative.encode("utf-8") + b"\0eol\0crlf\0"
+    )
+
+
+def _git_crlf_normalized_file_identity(path: Path) -> tuple[int, str]:
+    """Hash the precise CRLF->LF representation without loading a script in RAM.
+
+    A lone CR is preserved. A CRLF split across read boundaries is normalized
+    exactly once. The resulting SHA-256 and byte count must BOTH match the
+    canonical manifest entry; no other content change is tolerated.
+    """
+    digest = hashlib.sha256()
+    canonical_size = 0
+    pending = b""
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            raw = pending + chunk
+            if raw.endswith(b"\r"):
+                pending = b"\r"
+                raw = raw[:-1]
+            else:
+                pending = b""
+            canonical = raw.replace(b"\r\n", b"\n")
+            digest.update(canonical)
+            canonical_size += len(canonical)
+    if pending:
+        digest.update(pending)
+        canonical_size += len(pending)
+    return canonical_size, digest.hexdigest()
+
+
 def _git_checkout_head_for_verification(root: Path) -> tuple[str | None, str]:
     """Return a trusted HEAD for canonical verification or a fallback reason.
 
@@ -589,6 +631,25 @@ def verify_package_integrity_manifest(root: Path | str) -> dict[str, Any]:
         else:
             size = file_path.stat().st_size
             digest = sha256_file(file_path)
+            expected_size = int(entry.get("size_bytes", -1))
+            expected_digest = str(entry.get("sha256") or "")
+            if (
+                worktree_state == "dirty"
+                and (size != expected_size or digest != expected_digest)
+                and file_path.suffix.lower() in _GIT_CRLF_SCRIPT_SUFFIXES
+            ):
+                # A modified *unrelated* tracked file makes the checkout dirty.
+                # The remaining scripts may still be legitimate Git CRLF
+                # checkouts. Accept only a byte-for-byte canonical LF identity
+                # under the index's explicit eol=crlf attribute; never treat
+                # a changed script's contents as a clean Git blob.
+                try:
+                    if _git_index_declares_crlf(root, canonical):
+                        normalized_size, normalized_digest = _git_crlf_normalized_file_identity(file_path)
+                        if normalized_size == expected_size and normalized_digest == expected_digest:
+                            size, digest = normalized_size, normalized_digest
+                except (_GitCommandTimeout, OSError):
+                    pass  # Fail closed with the original filesystem mismatch.
         if size != int(entry.get("size_bytes", -1)):
             errors.append({"code": "size_mismatch", "path": canonical})
         if digest != str(entry.get("sha256") or ""):
