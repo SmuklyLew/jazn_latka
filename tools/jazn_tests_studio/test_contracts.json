@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.3",
-  "active_definition_count": 3555,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.4",
+  "active_definition_count": 3560,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -54812,6 +54812,111 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 188
+    },
+    "tests/test_package_integrity_dirty_crlf_git.py::test_dirty_workspace_reports_real_change_not_legitimate_crlf": {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "name": "test_dirty_workspace_reports_real_change_not_legitimate_crlf",
+      "purpose": "Dirty workspace reports real change not legitimate crlf",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
+    },
+    "tests/test_package_integrity_dirty_crlf_git.py::test_dirty_workspace_rejects_changed_crlf_script_content": {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "name": "test_dirty_workspace_rejects_changed_crlf_script_content",
+      "purpose": "Dirty workspace rejects changed crlf script content",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
+    },
+    "tests/test_package_integrity_dirty_crlf_git.py::test_dirty_workspace_rejects_crlf_when_index_requires_lf": {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "name": "test_dirty_workspace_rejects_crlf_when_index_requires_lf",
+      "purpose": "Dirty workspace rejects crlf when index requires lf",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 121
+    },
+    "tests/test_package_integrity_dirty_crlf_git.py::test_unpacked_package_remains_strict_on_raw_bytes": {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "name": "test_unpacked_package_remains_strict_on_raw_bytes",
+      "purpose": "Unpacked package remains strict on raw bytes",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 136
+    },
+    "tests/test_package_integrity_dirty_crlf_git.py::test_crlf_at_streaming_chunk_boundary_is_normalized_once": {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "name": "test_crlf_at_streaming_chunk_boundary_is_normalized_once",
+      "purpose": "Crlf at streaming chunk boundary is normalized once",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "package",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools.package_integrity",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 152
     },
     "tests/test_package_integrity_zip_verification.py::test_plan_scoped_manifest_uses_current_version_and_excludes_generator_state": {
       "path": "tests/test_package_integrity_zip_verification.py",
