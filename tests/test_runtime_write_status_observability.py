@@ -3,6 +3,9 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
+
+from latka_jazn.config import JaznConfig
 
 from latka_jazn.memory.runtime_write_access_contract import (
     _sqlite_status,
@@ -53,11 +56,11 @@ def test_runtime_status_does_not_claim_unmeasured_writes(tmp_path: Path) -> None
     audit_db = tmp_path / "runtime_audit.sqlite3"
     _make_database(memory_db, rows=0)
     _make_database(audit_db, rows=4)
-    config = SimpleNamespace(
+    config = cast(JaznConfig, SimpleNamespace(
         runtime_memory_storage_root=tmp_path,
         memory_db_path_readonly=memory_db,
         audit_db_path_readonly=audit_db,
-    )
+    ))
 
     metadata = build_runtime_write_access_status(
         config, writes_enabled=False, deep_verify=False
@@ -83,11 +86,11 @@ def test_runtime_status_does_not_claim_unmeasured_writes(tmp_path: Path) -> None
 
 
 def test_missing_databases_are_not_mistaken_for_empty_ones(tmp_path: Path) -> None:
-    config = SimpleNamespace(
+    config = cast(JaznConfig, SimpleNamespace(
         runtime_memory_storage_root=tmp_path,
         memory_db_path_readonly=tmp_path / "missing_memory.sqlite3",
         audit_db_path_readonly=tmp_path / "missing_audit.sqlite3",
-    )
+    ))
 
     status = build_runtime_write_access_status(
         config, deep_verify=False
