@@ -1243,8 +1243,21 @@ def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
         job.get("phase_result_ready")
         if isinstance(job.get("phase_result_ready"), bool) else None
     )
+    integrity = payload.get("final_visible_integrity")
+    final = payload.get("host_visible_finalization")
+    accepted_finalization = (
+        status == "completed" and done is True
+        and payload.get("ok") is True
+        and payload.get("execution_state") == "final_visible_answer"
+        and payload.get("host_finalization_pending") is False
+        and isinstance(integrity, dict)
+        and integrity.get("valid") is True
+        and integrity.get("consensus") is True
+        and isinstance(final, dict) and final.get("status") == "completed"
+    )
     finalization = (
-        "accepted" if status == "completed" and done is True
+        "accepted" if accepted_finalization
+        else "completed_job_unverified" if status == "completed"
         else "expired" if status == "host_finalization_expired"
         else "rejected" if status == "host_finalization_rejected"
         else "awaiting_host" if status == "awaiting_host_finalization"
@@ -1256,7 +1269,7 @@ def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
         "done": done,
         "phase_result_ready": phase_ready,
         "finalization": finalization,
-        "finalized_successfully": finalization == "accepted" and payload.get("ok") is True,
+        "finalized_successfully": accepted_finalization,
         "truth_boundary": "Processing completion and accepted host finalization are distinct.",
     }
 

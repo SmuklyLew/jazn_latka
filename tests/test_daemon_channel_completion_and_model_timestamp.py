@@ -87,7 +87,7 @@ def test_expired_rejected_and_completed_are_distinct() -> None:
     for status, expected in (
         ("host_finalization_expired", "expired"),
         ("host_finalization_rejected", "rejected"),
-        ("completed", "accepted"),
+        ("completed", "completed_job_unverified"),
     ):
         observed = main_module._daemon_cli_completion({
             "ok": status == "completed",
@@ -95,7 +95,23 @@ def test_expired_rejected_and_completed_are_distinct() -> None:
             "job_status": status,
         })
         assert observed["finalization"] == expected
-        assert observed["finalized_successfully"] is (status == "completed")
+        assert observed["finalized_successfully"] is False
+
+
+def test_completed_job_needs_accepted_finalization_evidence() -> None:
+    payload = {
+        "ok": True,
+        "execution_state": "final_visible_answer",
+        "host_finalization_pending": False,
+        "final_visible_integrity": {"valid": True, "consensus": True},
+        "host_visible_finalization": {"status": "completed"},
+        "daemon_job": {"job_status": "completed", "done": True},
+    }
+    accepted = main_module._daemon_cli_completion(payload)
+    assert accepted["finalization"] == "accepted"
+    assert accepted["finalized_successfully"] is True
+    payload["final_visible_integrity"] = {"valid": True, "consensus": False}
+    assert main_module._daemon_cli_completion(payload)["finalization"] == "completed_job_unverified"
 
 
 def test_model_trailing_detached_timestamp_echo_is_removed_before_envelope() -> None:
