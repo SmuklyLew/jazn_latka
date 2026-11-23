@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.23.7",
-  "active_definition_count": 3588,
+  "active_definition_count": 3589,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16588,6 +16588,170 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 69
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_daemon_cli_channel_defaults_to_chatgpt_not_environment": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_daemon_cli_channel_defaults_to_chatgpt_not_environment",
+      "purpose": "Daemon cli channel defaults to chatgpt not environment",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_explicit_ollama_channel_uses_turn_scoped_config": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_explicit_ollama_channel_uses_turn_scoped_config",
+      "purpose": "Explicit ollama channel uses turn scoped config",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_unavailable_ollama_fails_before_submission": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_unavailable_ollama_fails_before_submission",
+      "purpose": "Unavailable ollama fails before submission",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_ollama_rejects_chatgpt_only_final_flag_without_probe": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_ollama_rejects_chatgpt_only_final_flag_without_probe",
+      "purpose": "Ollama rejects chatgpt only final flag without probe",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 64
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_host_phase_one_is_not_a_completed_visible_turn": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_host_phase_one_is_not_a_completed_visible_turn",
+      "purpose": "Host phase one is not a completed visible turn",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_expired_rejected_and_completed_are_distinct": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_expired_rejected_and_completed_are_distinct",
+      "purpose": "Expired rejected and completed are distinct",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_completed_job_needs_accepted_finalization_evidence": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_completed_job_needs_accepted_finalization_evidence",
+      "purpose": "Completed job needs accepted finalization evidence",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_model_trailing_detached_timestamp_echo_is_removed_before_envelope": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_model_trailing_detached_timestamp_echo_is_removed_before_envelope",
+      "purpose": "Model trailing detached timestamp echo is removed before envelope",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
+    "tests/test_daemon_channel_completion_and_model_timestamp.py::test_model_timestamps_inside_meaningful_prose_are_preserved": {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "name": "test_model_timestamps_inside_meaningful_prose_are_preserved",
+      "purpose": "Model timestamps inside meaningful prose are preserved",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.message_envelope"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 122
     },
     "tests/test_daemon_instance_identity.py::test_instance_identity_allows_windows_redirector_pid_difference": {
       "path": "tests/test_daemon_instance_identity.py",
@@ -73980,167 +74144,6 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 305
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_daemon_cli_channel_defaults_to_chatgpt_not_environment": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_daemon_cli_channel_defaults_to_chatgpt_not_environment",
-      "purpose": "Daemon cli channel defaults to chatgpt not environment",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 11
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_explicit_ollama_channel_uses_turn_scoped_config": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_explicit_ollama_channel_uses_turn_scoped_config",
-      "purpose": "Explicit ollama channel uses turn scoped config",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 25
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_unavailable_ollama_fails_before_submission": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_unavailable_ollama_fails_before_submission",
-      "purpose": "Unavailable ollama fails before submission",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 51
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_ollama_rejects_chatgpt_only_final_flag_without_probe": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_ollama_rejects_chatgpt_only_final_flag_without_probe",
-      "purpose": "Ollama rejects chatgpt only final flag without probe",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 64
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_host_phase_one_is_not_a_completed_visible_turn": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_host_phase_one_is_not_a_completed_visible_turn",
-      "purpose": "Host phase one is not a completed visible turn",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "host",
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 3,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 72
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_expired_rejected_and_completed_are_distinct": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_expired_rejected_and_completed_are_distinct",
-      "purpose": "Expired rejected and completed are distinct",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 2,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 86
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_model_trailing_detached_timestamp_echo_is_removed_before_envelope": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_model_trailing_detached_timestamp_echo_is_removed_before_envelope",
-      "purpose": "Model trailing detached timestamp echo is removed before envelope",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 101
-    },
-    "tests/test_v12723_7_runtime_observability.py::test_model_timestamps_inside_meaningful_prose_are_preserved": {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "name": "test_model_timestamps_inside_meaningful_prose_are_preserved",
-      "purpose": "Model timestamps inside meaningful prose are preserved",
-      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
-      "category": "integration",
-      "tags": [
-        "runtime"
-      ],
-      "markers": [],
-      "assertion_count": 1,
-      "expected_exceptions": [],
-      "targets": [
-        "latka_jazn.config",
-        "latka_jazn.core.message_envelope"
-      ],
-      "status": "current",
-      "description_source": "source_identity",
-      "line": 106
     },
     "tests/test_verified_memory_restore.py::test_converter_builds_searchable_current_archive": {
       "path": "tests/test_verified_memory_restore.py",
