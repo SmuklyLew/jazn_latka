@@ -7,7 +7,7 @@ import unicodedata
 from typing import Any, Literal
 
 from latka_jazn.core.session_exact_quote import parse_exact_session_quote_request
-from zoneinfo import ZoneInfo
+from latka_jazn.core.clock import resolve_timezone
 
 
 MemoryOperation = Literal[
@@ -18,7 +18,6 @@ MemoryOperation = Literal[
     "forget_directive",
 ]
 TemporalPrecision = Literal["year", "month", "month_range"]
-WARSAW = ZoneInfo("Europe/Warsaw")
 
 
 @dataclass(frozen=True, slots=True)
@@ -159,7 +158,7 @@ def _month_number(token: str) -> int | None:
 
 
 def _month_start(year: int, month: int) -> datetime:
-    return datetime(year, month, 1, tzinfo=WARSAW)
+    return datetime(year, month, 1, tzinfo=resolve_timezone())
 
 
 def _next_month(year: int, month: int) -> datetime:
@@ -176,9 +175,6 @@ def parse_temporal_scope(
 
     raw = str(text or "")
     normalized = _norm(raw)
-    current = now or datetime.now(WARSAW)
-    current = current.replace(tzinfo=WARSAW) if current.tzinfo is None else current.astimezone(WARSAW)
-
     explicit_years = [int(value) for value in re.findall(r"\b(?:19|20)\d{2}\b", normalized)]
     explicit_year = explicit_years[-1] if explicit_years else None
     relative_last_year = bool(
@@ -187,15 +183,6 @@ def parse_temporal_scope(
             normalized,
         )
     )
-    if relative_last_year:
-        year = current.year - 1
-        return _scope(
-            start_local=_month_start(year, 1),
-            end_local=_month_start(year + 1, 1),
-            precision="year",
-            expression=raw,
-        )
-
     # Calendar nouns are parsed from NFC text that preserves Polish diacritics.
     # Prefix matching on the ASCII-folded text made unrelated words such as
     # "czerwony", "marzenia" and "mają" look like June, March and May.
@@ -206,6 +193,23 @@ def parse_temporal_scope(
         if word in _MONTH_FORMS
     ]
     months = [month for word in month_words if (month := _month_number(word)) is not None]
+    if not (months or relative_last_year or explicit_year is not None):
+        if previous_scope is not None and any(re.search(pattern, normalized) for pattern in _REFERENTIAL_PATTERNS):
+            return previous_scope
+        return None
+
+    warsaw = resolve_timezone()
+    current = now or datetime.now(warsaw)
+    current = current.replace(tzinfo=warsaw) if current.tzinfo is None else current.astimezone(warsaw)
+    if relative_last_year:
+        year = current.year - 1
+        return _scope(
+            start_local=_month_start(year, 1),
+            end_local=_month_start(year + 1, 1),
+            precision="year",
+            expression=raw,
+        )
+
     if len(months) >= 2 and re.search(r"\b(?:od|miedzy)\b", normalized):
         start_month, end_month = months[0], months[1]
         if explicit_year is not None:
@@ -228,7 +232,7 @@ def parse_temporal_scope(
             year = datetime.fromtimestamp(
                 previous_scope.start_epoch,
                 tz=timezone.utc,
-            ).astimezone(WARSAW).year
+            ).astimezone(warsaw).year
         else:
             year = current.year if month <= current.month else current.year - 1
         return _scope(
@@ -237,16 +241,13 @@ def parse_temporal_scope(
             precision="month",
             expression=raw,
         )
-    if explicit_year is not None:
-        return _scope(
-            start_local=_month_start(explicit_year, 1),
-            end_local=_month_start(explicit_year + 1, 1),
-            precision="year",
-            expression=raw,
-        )
-    if previous_scope is not None and any(re.search(pattern, normalized) for pattern in _REFERENTIAL_PATTERNS):
-        return previous_scope
-    return None
+    assert explicit_year is not None
+    return _scope(
+        start_local=_month_start(explicit_year, 1),
+        end_local=_month_start(explicit_year + 1, 1),
+        precision="year",
+        expression=raw,
+    )
 
 
 def _subject(normalized: str) -> str:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone, timedelta
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfo
 from time import monotonic_ns, perf_counter
 from typing import Any, Mapping
 import email.utils
@@ -88,46 +88,9 @@ class NetworkTimeCheckResult:
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
-def _last_sunday_utc(year: int, month: int) -> datetime:
-    """Return the last Sunday of a month at 01:00 UTC.
-
-    This is used only for the emergency Europe/Warsaw fallback when the
-    platform has no IANA timezone database and the optional tzdata package is
-    not installed. It is not a replacement for ZoneInfo/tzdata.
-    """
-    candidate = datetime(year, month, 31, 1, 0, 0, tzinfo=timezone.utc)
-    while candidate.weekday() != 6:  # Sunday
-        candidate -= timedelta(days=1)
-    return candidate
-
-
-def _fallback_warsaw_timezone(now_utc: datetime | None = None) -> timezone:
-    """Best-effort fixed-offset fallback for current Europe/Warsaw time.
-
-    The correct path is ZoneInfo("Europe/Warsaw") backed by system tzdata or
-    the Python tzdata package. On Windows this data may be missing. In that
-    case we prefer a clearly degraded fixed-offset fallback over crashing at
-    startup. The fallback uses the modern EU DST boundaries for the current
-    date, but it does not provide full historical/future IANA rules.
-    """
-    now_utc = now_utc or datetime.now(timezone.utc)
-    start_dst = _last_sunday_utc(now_utc.year, 3)
-    end_dst = _last_sunday_utc(now_utc.year, 10)
-    offset_hours = 2 if start_dst <= now_utc < end_dst else 1
-    return timezone(
-        timedelta(hours=offset_hours),
-        name=f"Europe/Warsaw-fallback-fixed-UTC+{offset_hours:02d}",
-    )
-
-
-def resolve_timezone(timezone_name: str = "Europe/Warsaw"):
-    """Return an IANA timezone or a controlled fallback instead of crashing startup."""
-    try:
-        return ZoneInfo(timezone_name)
-    except ZoneInfoNotFoundError:
-        if timezone_name == "Europe/Warsaw":
-            return _fallback_warsaw_timezone()
-        return timezone.utc
+def resolve_timezone(timezone_name: str = "Europe/Warsaw") -> timezone | ZoneInfo:
+    """Explicit UTC requires no database. Civil zones require the named IANA rules."""
+    return timezone.utc if timezone_name == "UTC" else ZoneInfo(timezone_name)
 
 
 @dataclass(slots=True)
@@ -158,7 +121,7 @@ class TimeSourceResolver:
 
     Python's aware UTC clock is the local baseline. Network and injected time
     may raise trust, but the resolver never labels system time as network time.
-    Missing IANA data degrades the Warsaw conversion without crashing runtime.
+    Named civil-time operations require a working IANA database.
     """
 
     def __init__(
@@ -171,17 +134,8 @@ class TimeSourceResolver:
         self.env = env if env is not None else os.environ
         self.timezone_degraded = False
         self.timezone_degradation_reason: str | None = None
-        try:
-            self.tz = ZoneInfo(timezone_name)
-            self.timezone_status = "iana_zoneinfo"
-        except ZoneInfoNotFoundError:
-            self.tz = resolve_timezone(timezone_name)
-            self.timezone_degraded = True
-            self.timezone_status = "degraded_fixed_offset" if timezone_name == "Europe/Warsaw" else "degraded_utc"
-            self.timezone_degradation_reason = (
-                f"ZoneInfo timezone '{timezone_name}' is unavailable; install the tzdata package on Windows or provide an IANA tzdb. "
-                "Runtime uses a controlled fallback and does not claim full timezone accuracy."
-            )
+        self.tz = resolve_timezone(timezone_name)
+        self.timezone_status = "utc" if self.tz is timezone.utc else "iana_zoneinfo"
 
     def environment(self) -> dict[str, str]:
         return {
@@ -381,7 +335,7 @@ class WarsawClock:
                 urls_tried=urls_tried,
                 attempts=attempts,
                 does_not_block_startup=True,
-                time_trust_state="trusted_time",
+                time_trust_state="trusted_time" if sample.trusted else "network_observed",
             ).to_dict()
         except Exception as exc:
             elapsed_ms = int((perf_counter() - started) * 1000)
@@ -453,8 +407,15 @@ class WarsawClock:
                     normalized = str(raw).replace("Z", "+00:00")
                     dt = datetime.fromisoformat(normalized)
                     if dt.tzinfo is None:
-                        dt = dt.replace(tzinfo=self.tz)
-                    candidates.append(TimeSample(dt.astimezone(self.tz), url, True))
+                        # This provider returns Warsaw civil time, independent of the output zone.
+                        zone = resolve_timezone("Europe/Warsaw")
+                        first = dt.replace(tzinfo=zone, fold=0)
+                        second = dt.replace(tzinfo=zone, fold=1)
+                        # Neither a gap nor a fold identifies one unique instant.
+                        if first.utcoffset() == second.utcoffset():
+                            candidates.append(TimeSample(first.astimezone(self.tz), url, True))
+                    else:
+                        candidates.append(TimeSample(dt.astimezone(self.tz), url, True))
                 if date_header:
                     parsed = email.utils.parsedate_to_datetime(date_header)
                     candidates.append(TimeSample(parsed.astimezone(self.tz), url + "#http-date", False))

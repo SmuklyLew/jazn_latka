@@ -5,6 +5,7 @@ import math
 import os
 from time import perf_counter
 from typing import Any
+from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -71,8 +72,7 @@ class LocalLlmAdapter:
     ) -> None:
         self.model = str(model or "").strip()
         self.api_base = str(api_base or "http://127.0.0.1:11434").rstrip("/")
-        if self.api_base.endswith("/api"):
-            self.api_base = self.api_base[:-4]
+        self.api_base = self.api_base.removesuffix("/api/chat").removesuffix("/api")
         if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
             raise ValueError("ollama_timeout_must_be_positive_finite")
         self.timeout_seconds = timeout_seconds
@@ -188,8 +188,8 @@ class LocalLlmAdapter:
             self._endpoint_reachable = True
             self._probe_state = "probed_fail"
             self._last_probe_error = f"http_error_{exc.code}"
-        except (URLError, TimeoutError, OSError, ValueError) as exc:
-            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError))
+        except (URLError, TimeoutError, OSError, IncompleteRead, ValueError) as exc:
+            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError, IncompleteRead))
             self._endpoint_reachable = True if invalid_response else False
             self._probe_state = "probed_fail"
             self._last_probe_error = (
@@ -390,14 +390,16 @@ class LocalLlmAdapter:
             if not isinstance(content, str):
                 raise OllamaResponseContractError("ollama_chat_content_invalid")
             text = content.strip()
+            model_name = data.get("model")
+            observed_model = model_name.strip() if isinstance(model_name, str) else ""
             metadata.update(
                 {
                     "status": "completed",
-                    "actual_model": str(data.get("model") or self.model),
+                    "actual_model": observed_model or self.model,
                     # Do not claim a configured fallback was observed in /api/chat.
                     "actual_model_source": (
                         "provider_response"
-                        if isinstance(data.get("model"), str) and bool(data["model"].strip())
+                        if observed_model
                         else "configured_fallback"
                     ),
                     "done": data.get("done"),
@@ -423,11 +425,12 @@ class LocalLlmAdapter:
                 }
             )
             return "", metadata, exc
-        except (URLError, TimeoutError, OSError, ValueError) as exc:
+        except (URLError, TimeoutError, OSError, IncompleteRead, ValueError) as exc:
             timed_out = self._timed_out(exc)
-            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError))
+            invalid_response = isinstance(exc, (OllamaResponseContractError, json.JSONDecodeError, UnicodeError, IncompleteRead))
             error_code = (
                 str(exc) if isinstance(exc, OllamaResponseContractError) else
+                "ollama_chat_response_truncated" if isinstance(exc, IncompleteRead) else
                 "ollama_chat_json_invalid" if invalid_response else
                 "model_request_timeout" if timed_out else
                 "local_provider_unavailable"

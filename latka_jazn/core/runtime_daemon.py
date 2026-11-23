@@ -11,7 +11,6 @@ from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from zoneinfo import ZoneInfo
 from typing import Any, Callable
 import hashlib
 import json
@@ -42,6 +41,7 @@ from latka_jazn.core.runtime_root import (
 from latka_jazn.core.rest_cycle_controller import RestCycleController
 from latka_jazn.memory.memory_sync_controller import MemorySyncController
 from latka_jazn.core.clock import (
+    resolve_timezone,
     TRUSTED_HOST_TIME_ISO_ENV_NAMES,
     TRUSTED_HOST_TIME_MAX_AGE_ENV_NAMES,
     TRUSTED_HOST_TIME_MONOTONIC_ANCHOR_ENV_NAMES,
@@ -562,7 +562,7 @@ def _project_retained_trusted_time(
         if base.tzinfo is None:
             return None
         timezone_key = str(previous.get("timezone") or previous.get("timezone_key") or "Europe/Warsaw")
-        local = (base + timedelta(seconds=elapsed_seconds)).astimezone(ZoneInfo(timezone_key))
+        local = (base + timedelta(seconds=elapsed_seconds)).astimezone(resolve_timezone(timezone_key))
     except Exception:
         return None
     header = f"🕒 {local:%Y-%m-%d %H:%M:%S}"

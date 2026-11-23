@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any, Mapping
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfoNotFoundError
+
+from latka_jazn.core.clock import resolve_timezone
 import re
 
 from latka_jazn.version import schema_version
@@ -127,7 +129,7 @@ class MessageEnvelope:
             sample = datetime.fromisoformat(self.timestamp_sample_iso.replace("Z", "+00:00"))
             if sample.tzinfo is None:
                 return False
-            zone = ZoneInfo(self.timezone)
+            zone = resolve_timezone(self.timezone)
         except (ValueError, ZoneInfoNotFoundError):
             return False
         expected = sample.astimezone(zone).replace(tzinfo=None, microsecond=0)

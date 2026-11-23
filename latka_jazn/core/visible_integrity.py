@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any, Mapping
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfoNotFoundError
+
+from latka_jazn.core.clock import resolve_timezone
 import hashlib
 
 from latka_jazn.core.json_types import (
@@ -162,11 +164,11 @@ def validate_visible_text(
         freshness_ok = freshness_seconds <= max_age_seconds
         if header_dt is not None and timezone_key:
             try:
-                zone = ZoneInfo(timezone_key)
+                zone = resolve_timezone(timezone_key)
                 expected_local = sample.astimezone(zone).replace(tzinfo=None, microsecond=0)
                 timestamp_matches_sample = header_dt == expected_local
                 timezone_valid = True
-            except ZoneInfoNotFoundError:
+            except (ValueError, ZoneInfoNotFoundError):
                 timezone_valid = False
     trust_required = bool(contract.get("require_trusted_in_final_visible", TIMESTAMP_REQUIRE_TRUSTED_IN_FINAL_VISIBLE))
     degraded_allowed = bool(contract.get("allow_degraded_local_visible", TIMESTAMP_ALLOW_DEGRADED_LOCAL_VISIBLE))

@@ -51,7 +51,7 @@ jobs:
       - name: Install isolated CI-only GUI test dependencies
         run: >-
           python -m pip install --only-binary=:all:
-          PySide6==6.12.0 pytest==9.0.2
+          PySide6==6.12.0 pytest==9.0.2 "tzdata>=2024.1"
       - name: Ubuntu headless Qt requirements
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0
@@ -67,6 +67,8 @@ jobs:
           tests/test_jazn_monitor_observability_qt.py
           tests/test_stabilization_operator_contracts.py
           tests/test_ollama_endpoint_evidence.py
+          tests/test_ollama_transport_disconnect.py
+          tests/test_civil_time_resolution.py
       - name: Standalone GUI smoke (observer only)
         run: python -X utf8 jazn_monitor.py --gui-smoke
       - name: Audit pinned Actions/Node24 contracts

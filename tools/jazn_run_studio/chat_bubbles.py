@@ -6,14 +6,14 @@ Actual replies can be inserted only by the host's accepted chat_final handler.
 from __future__ import annotations
 
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfoNotFoundError
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget,
 )
 
-WARSAW = ZoneInfo("Europe/Warsaw")
+from latka_jazn.core.clock import resolve_timezone
 
 
 def visible_time(value: datetime | str | None) -> str:
@@ -25,7 +25,10 @@ def visible_time(value: datetime | str | None) -> str:
             return "czas nieznany"
     if not isinstance(value, datetime) or value.tzinfo is None:
         return "czas nieznany"
-    return value.astimezone(WARSAW).strftime("%d.%m.%Y, %H:%M")
+    try:
+        return value.astimezone(resolve_timezone()).strftime("%d.%m.%Y, %H:%M")
+    except ZoneInfoNotFoundError:
+        return "brak strefy Europe/Warsaw"
 
 
 class HistoryDelivery(QObject):
