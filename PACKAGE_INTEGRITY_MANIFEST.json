@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-21T07:22:52+00:00",
-  "updated_at_utc": "2026-11-21T07:22:52+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-23T07:14:13+00:00",
+  "updated_at_utc": "2026-11-23T07:14:13+00:00",
   "start_file": "run.py",
-  "file_count": 3878,
-  "static_file_count": 3878,
+  "file_count": 3879,
+  "static_file_count": 3879,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -509,7 +509,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2984,
-      "sha256": "03430979aee8a51a550aa4f166281a6fade97b8d3929045ac9aedaf6d9316327",
+      "sha256": "e36c84f5e73c51bffcd10acb1e27c01974538df414907a7c517ca4655fda01dc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11650,8 +11650,8 @@
     },
     {
       "path": "latka_jazn/tools/package_integrity.py",
-      "size_bytes": 39355,
-      "sha256": "6427f188ca66e11f11402a0565b2d9ce696f498337a2c1d2e9d56a37c390dee1",
+      "size_bytes": 42231,
+      "sha256": "69d8653c80911144ad0e4dcf84f22e92c3d700ab2061a3c364b4ba8746e6a958",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11803,8 +11803,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 29455,
-      "sha256": "e300e1273f5f03cd7821b9834b8702b1dc58086b945fe575e2bc1360bbaa2a2c",
+      "size_bytes": 29551,
+      "sha256": "fdc7321209e6202cee2b1400f60825f2cd7a89047b938535f69683e2fd8130e5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -31782,6 +31782,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_package_integrity_dirty_crlf_git.py",
+      "size_bytes": 5182,
+      "sha256": "052734edb6e6cb0bc0582ea6bf7269827a27e4bc47060feae9130156e4de0c6a",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_package_integrity_zip_verification.py",
       "size_bytes": 5945,
       "sha256": "a00a32353a65c9b826b1506f9b170218358d2fc4465c9db0a653e42234661da8",
@@ -34699,8 +34708,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3133413,
-      "sha256": "385757afb56e27dcdc289da6c38985a6fc7750de11ad241100cd1a81b0944499",
+      "size_bytes": 3137558,
+      "sha256": "892da60a6b5ffc326d93b16d32faf4f6b3f6ef8053b44f722bc2950bf1b2cf70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35357,11 +35366,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.23.3-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.23.4-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
