@@ -73,3 +73,17 @@ def test_windows_shell_unavailable_keeps_qt_monitor(error: Exception) -> None:
     assert result["windows_app_id_status"] == type(error).__name__
     assert result["windows_app_id"] is None
     assert app.display_name == "Jaźń Monitor"
+
+
+def test_real_qt_gui_receives_dev_monitor_display_name(monkeypatch) -> None:
+    """Qt integration smoke; no GUI is shown and no daemon is contacted."""
+    import os
+
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qtwidgets = pytest.importorskip("PySide6.QtWidgets")
+    app = qtwidgets.QApplication.instance() or qtwidgets.QApplication([])
+    result = app_identity.configure_monitor_app_identity(app, platform="posix")
+
+    assert app.applicationName() == "JaznMonitor"
+    assert app.applicationDisplayName() == "Jaźń Monitor"
+    assert result["windows_app_id_status"] == "not_applicable"
