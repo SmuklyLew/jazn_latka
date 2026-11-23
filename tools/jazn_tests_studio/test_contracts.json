@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.23.6",
-  "active_definition_count": 3575,
+  "active_definition_count": 3576,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -53116,6 +53116,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 127
+    },
+    "tests/test_ollama_transport_disconnect.py::test_interrupted_chat_issues_one_post_and_preserves_failure": {
+      "path": "tests/test_ollama_transport_disconnect.py",
+      "name": "test_interrupted_chat_issues_one_post_and_preserves_failure",
+      "purpose": "Interrupted chat issues one post and preserves failure",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
     },
     "tests/test_ollama_turn_stability_nlp.py::test_language_guard_rejects_clear_english_and_accepts_polish": {
       "path": "tests/test_ollama_turn_stability_nlp.py",
