@@ -27,10 +27,12 @@ def main(argv: list[str] | None = None) -> int:
         from PySide6.QtCore import QLockFile, QTimer
         from PySide6.QtWidgets import QApplication
         from tools.jazn_monitor.window import MonitorWindow
+        from tools.jazn_monitor.app_identity import configure_monitor_app_identity
     except ImportError:
         print("PySide6 is an optional GUI dependency; nothing was installed.", file=sys.stderr)
         return 2
     app = QApplication(sys.argv[:1])
+    configure_monitor_app_identity(app)
     # One observer per selected root, without daemon ownership or PID killing.
     lock = None
     if not opts.gui_smoke:
