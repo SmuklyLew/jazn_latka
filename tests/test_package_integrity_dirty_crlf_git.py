@@ -79,7 +79,7 @@ def _repo(tmp_path: Path) -> Path:
     _git(root, "add", "PACKAGE_INTEGRITY_MANIFEST.json")
     _git(root, "commit", "-qm", "manifest")
 
-    for name in ("JAZN.cmd", "setup.ps1", "tools/StrictLF.ps1"):
+    for name in ("JAZN.cmd", "setup.ps1"):
         path = root / name
         path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
     return root
@@ -121,6 +121,8 @@ def test_dirty_workspace_rejects_changed_crlf_script_content(tmp_path: Path) -> 
 def test_dirty_workspace_rejects_crlf_when_index_requires_lf(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     _dirty_workspace(root)
+    strict_lf = root / "tools" / "StrictLF.ps1"
+    strict_lf.write_bytes(strict_lf.read_bytes().replace(b"\n", b"\r\n"))
 
     report = verify_package_integrity_manifest(root)
 
