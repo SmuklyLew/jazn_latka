@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.6",
-  "active_definition_count": 3576,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.7",
+  "active_definition_count": 3580,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -66284,6 +66284,82 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 184
+    },
+    "tests/test_runtime_write_status_observability.py::test_metadata_only_reports_unmeasured_counts_as_unknown": {
+      "path": "tests/test_runtime_write_status_observability.py",
+      "name": "test_metadata_only_reports_unmeasured_counts_as_unknown",
+      "purpose": "Metadata only reports unmeasured counts as unknown",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.runtime_write_access_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_runtime_write_status_observability.py::test_deep_verification_distinguishes_zero_from_nonzero": {
+      "path": "tests/test_runtime_write_status_observability.py",
+      "name": "test_deep_verification_distinguishes_zero_from_nonzero",
+      "purpose": "Deep verification distinguishes zero from nonzero",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.runtime_write_access_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_runtime_write_status_observability.py::test_runtime_status_does_not_claim_unmeasured_writes": {
+      "path": "tests/test_runtime_write_status_observability.py",
+      "name": "test_runtime_status_does_not_claim_unmeasured_writes",
+      "purpose": "Runtime status does not claim unmeasured writes",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.runtime_write_access_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 51
+    },
+    "tests/test_runtime_write_status_observability.py::test_missing_databases_are_not_mistaken_for_empty_ones": {
+      "path": "tests/test_runtime_write_status_observability.py",
+      "name": "test_missing_databases_are_not_mistaken_for_empty_ones",
+      "purpose": "Missing databases are not mistaken for empty ones",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.memory.runtime_write_access_contract"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
     },
     "tests/test_safe_path_reparse_observation.py::test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection": {
       "path": "tests/test_safe_path_reparse_observation.py",
