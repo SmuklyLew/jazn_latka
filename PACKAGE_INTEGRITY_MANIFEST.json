@@ -3,8 +3,8 @@
   "version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-23T21:59:31+00:00",
-  "updated_at_utc": "2026-11-23T21:59:31+00:00",
+  "generated_at_utc": "2026-11-23T22:07:21+00:00",
+  "updated_at_utc": "2026-11-23T22:07:21+00:00",
   "start_file": "run.py",
   "file_count": 3893,
   "static_file_count": 3893,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2984,
-      "sha256": "faefab34de81d19d4d801db712a2c970928da8f07fbf0175fb2bac1e7716c9a7",
+      "sha256": "8bb7b0d23255c40d35cbb8306b462cc5f3c0c30d5cef04d8128be83e2c1604eb",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11938,8 +11938,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 146187,
-      "sha256": "7550ebd57f8d8e788c021b69e3c85d72a85125545cac8f3c437b185fda8acd77",
+      "size_bytes": 146765,
+      "sha256": "ad4e525871a68ac72de2c0ebd7cd8ed5da3509f9d1e15b33314d2edc0b32ae58",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28263,6 +28263,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_daemon_channel_completion_and_model_timestamp.py",
+      "size_bytes": 5182,
+      "sha256": "ae06aff3c9eac04c53d322107245f9ed0130f777b555b40b720d5a433909f0bb",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_daemon_instance_identity.py",
       "size_bytes": 3710,
       "sha256": "5f439e4c96c02db5736784171621d9794e017948d76018f3db9ab47c684e0449",
@@ -33339,15 +33348,6 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
-      "path": "tests/test_v12723_7_runtime_observability.py",
-      "size_bytes": 4435,
-      "sha256": "5790d9f1467083e43d170820ef0850d0831a5e85fbc1c4124b82395ef6a193a7",
-      "mutable_runtime": false,
-      "classification": "static_project_file",
-      "archive": false,
-      "hash_policy": "sha256_file_bytes"
-    },
-    {
       "path": "tests/test_verified_memory_restore.py",
       "size_bytes": 11642,
       "sha256": "f0a742134c1f69294a78fb6f81fcadb70f96044ecc998bc0b02aced34e783071",
@@ -34834,8 +34834,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3160596,
-      "sha256": "0f010eb365d1c18dbed5696da245fb6f1a81276ba09dd17e5ecb0edb7655ce31",
+      "size_bytes": 3161453,
+      "sha256": "aef037a57a8991a51c3f2af4d5f79c34532bf01d8bbb60e0a5250ec10485848d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
