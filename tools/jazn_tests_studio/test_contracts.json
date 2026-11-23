@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.23.5",
-  "active_definition_count": 3564,
+  "active_definition_count": 3565,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26973,6 +26973,21 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 64
+    },
+    "tests/test_jazn_monitor_app_identity.py::test_real_qt_gui_receives_dev_monitor_display_name": {
+      "path": "tests/test_jazn_monitor_app_identity.py",
+      "name": "test_real_qt_gui_receives_dev_monitor_display_name",
+      "purpose": "Qt integration smoke; no GUI is shown and no daemon is contacted.",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 78
     },
     "tests/test_jazn_monitor_observability.py::test_windows_process_probe_does_not_flash_powershell_console": {
       "path": "tests/test_jazn_monitor_observability.py",
