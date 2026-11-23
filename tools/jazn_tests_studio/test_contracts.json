@@ -66298,11 +66298,12 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.memory.runtime_write_access_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 22
+      "line": 25
     },
     "tests/test_runtime_write_status_observability.py::test_deep_verification_distinguishes_zero_from_nonzero": {
       "path": "tests/test_runtime_write_status_observability.py",
@@ -66317,11 +66318,12 @@
       "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.memory.runtime_write_access_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 34
+      "line": 37
     },
     "tests/test_runtime_write_status_observability.py::test_runtime_status_does_not_claim_unmeasured_writes": {
       "path": "tests/test_runtime_write_status_observability.py",
@@ -66336,11 +66338,12 @@
       "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.memory.runtime_write_access_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 51
+      "line": 54
     },
     "tests/test_runtime_write_status_observability.py::test_missing_databases_are_not_mistaken_for_empty_ones": {
       "path": "tests/test_runtime_write_status_observability.py",
@@ -66355,11 +66358,12 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.config",
         "latka_jazn.memory.runtime_write_access_contract"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 88
     },
     "tests/test_safe_path_reparse_observation.py::test_nonfollowing_metadata_preserves_posix_and_windows_reparse_detection": {
       "path": "tests/test_safe_path_reparse_observation.py",
