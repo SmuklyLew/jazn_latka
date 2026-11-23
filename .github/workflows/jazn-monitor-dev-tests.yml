@@ -8,6 +8,10 @@ on:
       - "tools/jazn_monitor/**"
       - "tests/test_jazn_monitor*.py"
       - "latka_jazn/version.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/model_adapters/local_llm_adapter.py"
+      - "tests/test_stabilization_operator_contracts.py"
       - ".github/workflows/jazn-monitor-dev-tests.yml"
   pull_request:
     paths:
@@ -15,6 +19,10 @@ on:
       - "tools/jazn_monitor/**"
       - "tests/test_jazn_monitor*.py"
       - "latka_jazn/version.py"
+      - "latka_jazn/cli.py"
+      - "latka_jazn/cli_commands/lifecycle.py"
+      - "latka_jazn/model_adapters/local_llm_adapter.py"
+      - "tests/test_stabilization_operator_contracts.py"
       - ".github/workflows/jazn-monitor-dev-tests.yml"
   workflow_dispatch:
 
@@ -34,6 +42,7 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
       QT_QPA_PLATFORM: offscreen
+      JAZN_MEMORY_MODE: "off"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5, Node24
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6, Node24
@@ -56,6 +65,8 @@ jobs:
           tests/test_jazn_monitor_tray.py
           tests/test_jazn_monitor_observability.py
           tests/test_jazn_monitor_observability_qt.py
+          tests/test_stabilization_operator_contracts.py
+          tests/test_ollama_endpoint_evidence.py
       - name: Standalone GUI smoke (observer only)
         run: python -X utf8 jazn_monitor.py --gui-smoke
       - name: Audit pinned Actions/Node24 contracts

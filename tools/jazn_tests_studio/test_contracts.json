@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.5",
-  "active_definition_count": 3565,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.6",
+  "active_definition_count": 3575,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -26789,7 +26789,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 31
     },
     "tests/test_jazn_monitor.py::test_instance_readiness_and_model_reachability_are_separate": {
       "path": "tests/test_jazn_monitor.py",
@@ -26804,7 +26804,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 37
+      "line": 38
     },
     "tests/test_jazn_monitor.py::test_instance_mismatch_fail_closed": {
       "path": "tests/test_jazn_monitor.py",
@@ -26821,7 +26821,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 60
     },
     "tests/test_jazn_monitor.py::test_unavailable_daemon_is_not_false_ready": {
       "path": "tests/test_jazn_monitor.py",
@@ -26836,7 +26836,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 75
+      "line": 76
     },
     "tests/test_jazn_monitor.py::test_untrusted_marker_rejected": {
       "path": "tests/test_jazn_monitor.py",
@@ -26853,7 +26853,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 83
     },
     "tests/test_jazn_monitor.py::test_http_allowlist_and_port_rejection": {
       "path": "tests/test_jazn_monitor.py",
@@ -26870,7 +26870,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 91
     },
     "tests/test_jazn_monitor.py::test_json_mode_does_not_require_gui": {
       "path": "tests/test_jazn_monitor.py",
@@ -26885,7 +26885,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 99
+      "line": 100
     },
     "tests/test_jazn_monitor.py::test_readiness_requires_runtime_write_and_chat_worker": {
       "path": "tests/test_jazn_monitor.py",
@@ -26902,7 +26902,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_jazn_monitor_app_identity.py::test_linux_sets_qt_identity_without_calling_windows_shell": {
       "path": "tests/test_jazn_monitor_app_identity.py",
@@ -27005,7 +27005,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_jazn_monitor_observability.py::test_process_owner_and_descendants_are_strictly_verified": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27022,7 +27022,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 59
+      "line": 60
     },
     "tests/test_jazn_monitor_observability.py::test_similarly_prefixed_root_does_not_count_as_owned_daemon": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27039,7 +27039,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 86
     },
     "tests/test_jazn_monitor_observability.py::test_process_mismatch_or_unavailable_is_not_claimed_ready": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27056,7 +27056,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 98
     },
     "tests/test_jazn_monitor_observability.py::test_job_diagnostics_are_codes_only_not_private_text": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27073,7 +27073,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 106
+      "line": 108
     },
     "tests/test_jazn_monitor_observability.py::test_jobs_fail_closed_on_invalid_json_and_no_live_root": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27090,7 +27090,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 131
+      "line": 133
     },
     "tests/test_jazn_monitor_observability.py::test_probe_preserves_services_and_adds_observability": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27107,7 +27107,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 140
+      "line": 142
     },
     "tests/test_jazn_monitor_observability.py::test_no_auto_gui_for_ci_noninteractive_or_operator_off": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27124,7 +27124,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 166
+      "line": 168
     },
     "tests/test_jazn_monitor_observability.py::test_interactive_auto_gui_is_not_runtime_owner": {
       "path": "tests/test_jazn_monitor_observability.py",
@@ -27142,7 +27142,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 181
+      "line": 183
     },
     "tests/test_jazn_monitor_observability_qt.py::test_monitor_renders_process_jobs_and_finalization_independently": {
       "path": "tests/test_jazn_monitor_observability_qt.py",
@@ -69176,6 +69176,222 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 43
+    },
+    "tests/test_stabilization_operator_contracts.py::test_lifecycle_port_is_preserved_without_starting_process": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_lifecycle_port_is_preserved_without_starting_process",
+      "purpose": "Lifecycle port is preserved without starting process",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_stabilization_operator_contracts.py::test_ollama_native_api_base_normalization": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_ollama_native_api_base_normalization",
+      "purpose": "Ollama native api base normalization",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
+    "tests/test_stabilization_operator_contracts.py::test_invalid_timeout_rejected": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_invalid_timeout_rejected",
+      "purpose": "Invalid timeout rejected",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_stabilization_operator_contracts.py::test_ollama_error_and_wrong_role_never_generate": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_ollama_error_and_wrong_role_never_generate",
+      "purpose": "Ollama error and wrong role never generate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
+    },
+    "tests/test_stabilization_operator_contracts.py::test_two_roots_jobs_and_ledger_are_isolated_and_readonly": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_two_roots_jobs_and_ledger_are_isolated_and_readonly",
+      "purpose": "Two roots jobs and ledger are isolated and readonly",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
+    },
+    "tests/test_stabilization_operator_contracts.py::test_selected_ports_do_not_accept_other_instance": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_selected_ports_do_not_accept_other_instance",
+      "purpose": "Selected ports do not accept other instance",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_stabilization_operator_contracts.py::test_native_linux_process_read_has_current_python": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_native_linux_process_read_has_current_python",
+      "purpose": "Native linux process read has current python",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "skipif"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_stabilization_operator_contracts.py::test_bad_workspace_stops_observation_without_network": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_bad_workspace_stops_observation_without_network",
+      "purpose": "Bad workspace stops observation without network",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "network"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
+    },
+    "tests/test_stabilization_operator_contracts.py::test_source_ledger_keeps_actual_model_and_observer_does_not_read_private_memory": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_source_ledger_keeps_actual_model_and_observer_does_not_read_private_memory",
+      "purpose": "Source ledger keeps actual model and observer does not read private memory",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_stabilization_operator_contracts.py::test_qt_standalone_title_does_not_repeat_display_name": {
+      "path": "tests/test_stabilization_operator_contracts.py",
+      "name": "test_qt_standalone_title_does_not_repeat_display_name",
+      "purpose": "Qt standalone title does not repeat display name",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.core.source_origin_ledger",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",

@@ -9,6 +9,10 @@ import sys
 
 
 def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Jaźń Monitor (Windows/Ubuntu, read-only)")
     parser.add_argument("--root", type=Path, help="Selected Jaźń SYSTEM directory")
     parser.add_argument("--daemon-port", type=int, default=8787)

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 
 def legacy_args(command: str, remainder: list[str]) -> list[str]:
-    if command in {"start", "stop"} and remainder[:1] == ["--"]:
-        # argparse.REMAINDER needs a separator to accept lifecycle options.
-        # Remove it before legacy parsing; preserve chat's message separator.
-        remainder = remainder[1:]
+    if command in {"start", "stop"} and "--" in remainder:
+        # Historical lifecycle separator may follow --root and other options.
+        # Chat's message separator remains untouched.
+        index = remainder.index("--")
+        remainder = remainder[:index] + remainder[index + 1:]
     mapping = {
         "start": ["--daemon-start"],
         "stop": ["--daemon-stop"],

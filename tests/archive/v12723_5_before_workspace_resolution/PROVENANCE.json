@@ -1,0 +1,14 @@
+{
+  "source_commit": "71969f743e382cc714f9620e5057063aa8745f61",
+  "version": "127.23.5",
+  "files": [
+    {
+      "path": "tests/test_jazn_monitor.py",
+      "sha256": "c51d791df62a78e7e766cc3728602a5cc803911aad4163cdc752d4150439bd6b"
+    },
+    {
+      "path": "tests/test_jazn_monitor_observability.py",
+      "sha256": "3914b586300379671513351df49f85abc091e7f61e710015f98936a05b9e0e99"
+    }
+  ]
+}

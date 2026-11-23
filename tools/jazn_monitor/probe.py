@@ -10,6 +10,8 @@ from typing import Any
 from urllib import request
 
 from .telemetry import jobs_snapshot, process_snapshot, _windows_process_rows
+from .paths import monitor_workspace
+from .generation import last_ollama_generation
 
 MAX_JSON = 128 * 1024
 SERVICES = ("Daemon Jaźni", "Runtime Core", "Ollama", "MCP", "Supervisor", "JSS", "MEMORY", "MCP HTTPS")
@@ -89,10 +91,22 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
     """Read-only observation. UNKNOWN is not STOPPED and /live is not /ready."""
     services = {name: Observation("unknown", "Brak zweryfikowanych danych") for name in SERVICES}
     selected = Path(root).expanduser().resolve() if root is not None else None
+    try:
+        workspace = monitor_workspace(selected) if selected is not None else None
+    except (OSError, ValueError):
+        services["Daemon Jaźni"] = Observation("error", "Nieprawidłowa konfiguracja workspace; odczyt wstrzymany")
+        return {"schema_version": "jazn_monitor_snapshot/v1", "observation_only": True,
+                "selected_root": str(selected), "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+                "services": {name: item.as_dict() for name, item in services.items()},
+                "processes": {"state": "unknown", "items": []},
+                "jobs": {"state": "unknown", "items": []},
+                "finalization": {"state": "unknown", "accepted_finalization": None},
+                "ollama_generation": {"state": "unknown"}}
     verified_marker: dict[str, Any] | None = None
     verified_live: dict[str, Any] | None = None
     if selected is not None and (selected / "run.py").is_file():
-        marker = _marker(selected / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json")
+        assert workspace is not None
+        marker = _marker(workspace / "JAZN_ACTIVE_RUNTIME.json")
         live = _http_json(daemon_port, "/live")
         if marker is None:
             services["Daemon Jaźni"] = Observation("unknown", "Brak poprawnego markera instancji")
@@ -175,6 +189,7 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
     services["JSS"] = Observation("unknown", "Proces JSS niezweryfikowany; monitor go nie uruchamia")
     processes = process_snapshot(selected, verified_marker, verified_live)
     jobs = jobs_snapshot(selected, verified_marker)
+    generation = last_ollama_generation(selected) if verified_marker is not None else {"state": "unknown"}
     return {
         "schema_version": "jazn_monitor_snapshot/v1",
         "observed_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -184,4 +199,5 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
         "processes": processes,
         "jobs": jobs,
         "finalization": jobs["finalization"],
+        "ollama_generation": generation,
     }

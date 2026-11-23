@@ -457,7 +457,9 @@ def main(
             return _legacy_main(legacy_args)
         return _legacy_main(legacy_args, handler=legacy_handler)
 
-    if args and args[0] in {"chat", "chat-gpt"}:
+    if args and args[0] in {"chat", "chat-gpt", "start", "stop"} and not any(
+        item in {"--help", "-h"} for item in args[1:]
+    ):
         return dispatch_legacy(
             _legacy_args_with_canonical_root(
                 lifecycle.legacy_args(args[0], args[1:])

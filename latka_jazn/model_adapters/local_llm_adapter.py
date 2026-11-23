@@ -71,6 +71,10 @@ class LocalLlmAdapter:
     ) -> None:
         self.model = str(model or "").strip()
         self.api_base = str(api_base or "http://127.0.0.1:11434").rstrip("/")
+        if self.api_base.endswith("/api"):
+            self.api_base = self.api_base[:-4]
+        if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+            raise ValueError("ollama_timeout_must_be_positive_finite")
         self.timeout_seconds = timeout_seconds
         self.max_output_tokens = max_output_tokens
         self._endpoint_reachable: bool | None = None
@@ -373,11 +377,15 @@ class LocalLlmAdapter:
                 data = json.loads(response.read().decode("utf-8"))
             if not isinstance(data, dict):
                 raise OllamaResponseContractError("ollama_chat_response_not_object")
+            if "error" in data:
+                raise OllamaResponseContractError("ollama_chat_provider_error")
             if data.get("done") is not True:
                 raise OllamaResponseContractError("ollama_chat_response_not_complete")
             message = data.get("message")
             if not isinstance(message, dict):
                 raise OllamaResponseContractError("ollama_chat_message_invalid")
+            if message.get("role", "assistant") != "assistant":
+                raise OllamaResponseContractError("ollama_chat_role_invalid")
             content = message.get("content")
             if not isinstance(content, str):
                 raise OllamaResponseContractError("ollama_chat_content_invalid")

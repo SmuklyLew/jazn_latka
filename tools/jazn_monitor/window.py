@@ -101,7 +101,7 @@ class MonitorWindow(QMainWindow):
             raise ValueError("Unsupported JSS monitor interval")
         if integrated:
             self.setWindowFlag(Qt.WindowType.Window, True)
-        self.setWindowTitle("Jaźń Monitor — tylko odczyt")
+        self.setWindowTitle("Tylko odczyt" if not integrated else "Jaźń Monitor — tylko odczyt")
         self.resize(870, 490)
         self.daemon_port = daemon_port
         self.ollama_port = ollama_port
@@ -174,6 +174,9 @@ class MonitorWindow(QMainWindow):
             "Finalizacja ostatniej tury: NIEZWERYFIKOWANA. Gotowość /ready jej nie potwierdza.")
         self.final_label.setWordWrap(True)
         final_layout.addWidget(self.final_label)
+        self.generation_label = QLabel("Ostatnia generacja Ollama: NIEZWERYFIKOWANA")
+        self.generation_label.setWordWrap(True)
+        final_layout.addWidget(self.generation_label)
         self.job_counts = QLabel("Statystyki: brak danych")
         self.job_counts.setWordWrap(True)
         final_layout.addWidget(self.job_counts)
@@ -333,11 +336,17 @@ class MonitorWindow(QMainWindow):
         final = report.get("finalization") or {}
         final_state = str(final.get("state") or "unknown")
         self.final_label.setText(
-            "OSTATNIA FINALIZACJA: " + final_state +
+            "OSTATNI WYNIK ZADANIA: " + final_state +
             "\nŻądanie: " + str(final.get("request_id") or "niezweryfikowano") +
             "\nKod błędu: " + str(final.get("error_code") or "—") +
             "\nPowód: " + str(final.get("reason_code") or "—") +
             "\nWynik zadania nie zastępuje dowodu accepted finalization.")
+        generation = report.get("ollama_generation") or {}
+        self.generation_label.setText(
+            "Ostatnia generacja Ollama (SourceOriginLedger): " + str(generation.get("state") or "unknown") +
+            "\nModel: " + str(generation.get("model") or "niezapisany") +
+            "\nUTC: " + str(generation.get("created_at_utc") or "niezweryfikowano") +
+            "\nHistoryczny kandydat nie potwierdza bieżącej gotowości ani finalizacji.")
         counts = jobs.get("counts") if isinstance(jobs.get("counts"), dict) else None
         self.job_counts.setText(
             ("Zadania: przyjęte do kolejki " + str(counts.get("submitted_total")) +

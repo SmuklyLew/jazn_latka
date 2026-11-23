@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+from tools.jazn_monitor.paths import monitor_workspace
 from types import SimpleNamespace
 
 from tools.jazn_monitor import autostart, probe, telemetry
@@ -97,6 +98,7 @@ def test_similarly_prefixed_root_does_not_count_as_owned_daemon(tmp_path, monkey
 def test_process_mismatch_or_unavailable_is_not_claimed_ready(tmp_path, monkeypatch):
     root = _root(tmp_path)
     monkeypatch.setattr(telemetry, "_windows_process_rows", lambda: None)
+    monkeypatch.setattr(telemetry, "_linux_process_rows", lambda: None)
     assert telemetry.process_snapshot(root, _marker(root), _live(root))["state"] == "unavailable"
     wrong = _live(root)
     wrong["daemon_instance_id"] = "another"
@@ -105,7 +107,7 @@ def test_process_mismatch_or_unavailable_is_not_claimed_ready(tmp_path, monkeypa
 
 def test_job_diagnostics_are_codes_only_not_private_text(tmp_path, monkeypatch):
     root = _root(tmp_path)
-    store = root / "workspace_runtime" / "daemon_chat_jobs.json"
+    store = monitor_workspace(root) / "daemon_chat_jobs.json"
     store.parent.mkdir(parents=True)
     store.write_text(json.dumps({
         "jobs": [{"request_id": "failed-req", "status": "failed",
@@ -130,7 +132,7 @@ def test_job_diagnostics_are_codes_only_not_private_text(tmp_path, monkeypatch):
 
 def test_jobs_fail_closed_on_invalid_json_and_no_live_root(tmp_path):
     root = _root(tmp_path)
-    path = root / "workspace_runtime" / "daemon_chat_jobs.json"
+    path = monitor_workspace(root) / "daemon_chat_jobs.json"
     path.parent.mkdir(parents=True)
     path.write_text("{bad-json", encoding="utf-8")
     assert telemetry.jobs_snapshot(root, _marker(root))["state"] == "unavailable"
@@ -139,7 +141,7 @@ def test_jobs_fail_closed_on_invalid_json_and_no_live_root(tmp_path):
 
 def test_probe_preserves_services_and_adds_observability(tmp_path, monkeypatch):
     root = _root(tmp_path)
-    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    marker = monitor_workspace(root) / "JAZN_ACTIVE_RUNTIME.json"
     marker.parent.mkdir(parents=True)
     marker.write_text(json.dumps(_marker(root)), encoding="utf-8")
     endpoints = {

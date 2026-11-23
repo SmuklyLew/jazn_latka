@@ -15,6 +15,8 @@ import subprocess
 import sys
 from typing import Any
 
+from .paths import monitor_workspace
+
 MAX_JOB_JSON = 2 * 1024 * 1024
 MAX_PROCESS_JSON = 512 * 1024
 MAX_VISIBLE_JOBS = 20
@@ -56,7 +58,7 @@ def _audit_reasons(root: Path, request_ids: set[str]) -> dict[str, str]:
     """Optional read-only lookup of rejection *codes*, never response contents."""
     if not request_ids:
         return {}
-    db = root / "workspace_runtime" / "core_state" / "memory_runtime" / "sqlite" / "runtime_write_v1" / "runtime_audit.sqlite3"
+    db = monitor_workspace(root) / "core_state" / "memory_runtime" / "sqlite" / "runtime_write_v1" / "runtime_audit.sqlite3"
     if db.is_symlink() or not db.is_file():
         return {}
     found: dict[str, str] = {}
@@ -105,7 +107,7 @@ def jobs_snapshot(root: Path | None, marker: dict[str, Any] | None) -> dict[str,
                 "execution_timeout_total", "pending")
         counts = {key: summary.get(key) if type(summary.get(key)) is int
                   and summary[key] >= 0 else None for key in keys}
-    data = _read_json(root / "workspace_runtime" / "daemon_chat_jobs.json", MAX_JOB_JSON)
+    data = _read_json(monitor_workspace(root) / "daemon_chat_jobs.json", MAX_JOB_JSON)
     if not isinstance(data, dict) or not isinstance(data.get("jobs"), list):
         out = dict(unavailable)
         out["counts"] = counts
@@ -155,6 +157,8 @@ def jobs_snapshot(root: Path | None, marker: dict[str, Any] | None) -> dict[str,
             finalization["state"] = "completed_job"
         elif status in ("pending", "running"):
             finalization["state"] = "pending"
+    finalization["accepted_finalization"] = None
+    finalization["evidence"] = "job_status_only"
     return {"state": "available", "counts": counts, "items": items, "finalization": finalization,
             "scope": "daemon_recovery_metadata_only"}
 
@@ -165,6 +169,7 @@ def _windows_process_rows() -> list[dict[str, Any]] | None:
         return None
     script = (
         "$ErrorActionPreference='Stop'; "
+        "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); "
         "$r=@(Get-CimInstance Win32_Process -Filter "
         "\"Name='python.exe' OR Name='pythonw.exe' OR Name='Jazn-Daemon.exe'\" "
         "| ForEach-Object { $p=Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue; "
@@ -200,6 +205,37 @@ def _date_epoch(value: Any) -> float | None:
         return None
 
 
+def _linux_process_rows() -> list[dict[str, Any]] | None:
+    """Read /proc identity/metrics without ps, subprocesses or executable renames."""
+    if not sys.platform.startswith("linux"):
+        return None
+    try:
+        boot = next(int(line.split()[1]) for line in Path("/proc/stat").read_text().splitlines()
+                    if line.startswith("btime "))
+        ticks = os.sysconf("SC_CLK_TCK")
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        paths = list(Path("/proc").iterdir())
+    except (OSError, ValueError, StopIteration):
+        return None
+    result = []
+    for path in paths:
+        if not path.name.isdigit():
+            continue
+        try:
+            fields = (path / "stat").read_text().rsplit(")", 1)[1].split()
+            argv = (path / "cmdline").read_bytes()[:32768].decode("utf-8", errors="replace").split("\0")
+            if not argv or "python" not in Path(argv[0]).name.lower():
+                continue
+            result.append({"pid": int(path.name), "parent_pid": int(fields[1]),
+                "created": datetime.fromtimestamp(boot + int(fields[19]) / ticks, timezone.utc).isoformat(),
+                "command_line": " ".join('"' + arg + '"' for arg in argv if arg),
+                "cpu_seconds": (int(fields[11]) + int(fields[12])) / ticks,
+                "ram_bytes": int(fields[21]) * page_size})
+        except (OSError, ValueError, IndexError, OverflowError):
+            continue  # process may exit during the observation
+    return result
+
+
 def process_snapshot(root: Path | None, marker: dict[str, Any] | None,
                      live: dict[str, Any] | None) -> dict[str, Any]:
     """Only verified daemon PID and birth-time-safe descendants are labelled owned."""
@@ -211,6 +247,8 @@ def process_snapshot(root: Path | None, marker: dict[str, Any] | None,
             or live.get("liveness_ok") is not True or live.get("heartbeat_fresh") is not True):
         return {"state": "unknown", "items": [], "scope": "verified_daemon_and_descendants"}
     rows = _windows_process_rows()
+    if rows is None and sys.platform.startswith("linux"):
+        rows = _linux_process_rows()
     if rows is None:
         return {"state": "unavailable", "items": [], "scope": "verified_daemon_and_descendants"}
     indexed = {x["pid"]: x for x in rows if type(x.get("pid")) is int}
@@ -218,8 +256,12 @@ def process_snapshot(root: Path | None, marker: dict[str, Any] | None,
     if daemon is None:
         return {"state": "error", "items": [], "scope": "verified_daemon_and_descendants"}
     # The daemon command must identify the requested root; PID alone can be reused.
-    cmd = str(daemon.get("command_line") or "").casefold().replace("/", "\\")
-    root_text = str(root.resolve()).casefold().replace("/", "\\").rstrip("\\")
+    cmd = str(daemon.get("command_line") or "")
+    root_text = str(root.resolve())
+    if os.name == "nt":
+        cmd = cmd.casefold().replace("/", "\\")
+        root_text = root_text.casefold().replace("/", "\\")
+    root_text = root_text.rstrip("/\\")
     # Token boundary prevents accidental ownership of similarly prefixed roots
     # (e.g. v12721 vs v12721_copy). No raw argv escapes this function.
     argv_tokens = [token.strip('"').rstrip("\\")

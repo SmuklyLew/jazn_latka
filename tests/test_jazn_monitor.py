@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from tools.jazn_monitor.paths import monitor_workspace
 
 import pytest
 
@@ -12,8 +13,8 @@ from jazn_monitor import main
 
 def root_with_marker(tmp_path: Path) -> Path:
     (tmp_path / "run.py").write_text("# test only\n", encoding="utf-8")
-    path = tmp_path / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
-    path.parent.mkdir()
+    path = monitor_workspace(tmp_path) / "JAZN_ACTIVE_RUNTIME.json"
+    path.parent.mkdir(parents=True)
     path.write_text(json.dumps({
         "daemon_instance_id": "one", "daemon_pid": 2220,
     }), encoding="utf-8")
@@ -81,7 +82,7 @@ def test_unavailable_daemon_is_not_false_ready(monkeypatch, tmp_path):
 @pytest.mark.parametrize("content", [b"{broken", b"x" * (probe.MAX_JSON + 1)], ids=["invalid-json", "oversized-json"])
 def test_untrusted_marker_rejected(monkeypatch, tmp_path, content):
     root = root_with_marker(tmp_path)
-    marker = root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json"
+    marker = monitor_workspace(root) / "JAZN_ACTIVE_RUNTIME.json"
     marker.write_bytes(content)
     monkeypatch.setattr(probe, "_http_json", lambda port, endpoint, timeout=1.5: live(root))
     assert probe.snapshot(root)["services"]["Daemon Jaźni"]["state"] == "unknown"
