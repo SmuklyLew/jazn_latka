@@ -18,7 +18,8 @@ def _set_windows_app_user_model_id(app_id: str) -> int:
     """Call the documented process-scoped Windows shell API."""
     import ctypes
 
-    method = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID
+    # windll is Windows-only; dynamic access keeps Linux type checking valid.
+    method = getattr(ctypes, "windll").shell32.SetCurrentProcessExplicitAppUserModelID
     method.argtypes = [ctypes.c_wchar_p]
     method.restype = ctypes.c_long  # HRESULT (32-bit LONG on Windows)
     return int(method(app_id))
