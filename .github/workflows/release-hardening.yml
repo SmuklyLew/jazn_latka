@@ -24,6 +24,14 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  acceptance_monitor:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/jazn-monitor-dev-tests.yml
+
+  acceptance_persistent_runtime:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/persistent-runtime-e2e.yml
+
   manifest_sync:
     concurrency:
       group: jazn-branch-mutator-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
