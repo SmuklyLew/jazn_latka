@@ -33,13 +33,14 @@ class RuntimeWriteAccessStatus:
     audit_error: str | None = None
     access_mode: str = "disabled_missing"
     write_capable: bool = False
-    writes_observed: bool = False
+    writes_observed: bool | None = None
     memory_foreign_key_violations: int = 0
     audit_foreign_key_violations: int = 0
     memory_table_count: int = 0
     audit_table_count: int = 0
-    memory_record_count: int = 0
-    audit_record_count: int = 0
+    memory_record_count: int | None = None
+    audit_record_count: int | None = None
+    record_counts_measured: bool = False
     verification_mode: str = "deep"
     sqlite_version: str | None = None
     sqlite_threadsafety: int | None = None
@@ -59,7 +60,8 @@ class RuntimeWriteAccessStatus:
         "workspace_runtime/core_state i nie jest autobiograficzną MEMORY ani źródłem recall. Po dołączeniu persistent "
         "MEMORY ten sam kontrakt może pisać do jej kanonicznego runtime-write store. Pole writes_enabled opisuje bieżące "
         "zezwolenie tej operacji/procesu, write_capable opisuje sprawność techniczną baz, a writes_observed potwierdza "
-        "historyczne rekordy."
+        "historyczne rekordy tylko wtedy, gdy record_counts_measured=true. W trybie metadata_only "
+        "liczniki i writes_observed są null (niezmierzone), a nie zerowe."
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -89,7 +91,8 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
         "error": None,
         "foreign_key_violations": 0,
         "table_count": 0,
-        "record_count": 0,
+        "record_count": None,
+        "record_count_measured": False,
         "verification_mode": "deep" if deep_verify else "metadata_only",
     }
     if not path.exists():
@@ -115,13 +118,15 @@ def _sqlite_status(path: Path, *, deep_verify: bool) -> dict[str, Any]:
             result["integrity"] = str(row[0]) if row else None
             result["foreign_key_violations"] = len(list(con.execute("PRAGMA foreign_key_check")))
             total = 0
+            complete = True
             for table in tables:
                 quoted = '"' + table.replace('"', '""') + '"'
                 try:
                     total += int(con.execute(f"SELECT COUNT(*) FROM {quoted}").fetchone()[0])
                 except sqlite3.DatabaseError:
-                    continue
-            result["record_count"] = total
+                    complete = False
+            result["record_count"] = total if complete else None
+            result["record_count_measured"] = complete
         finally:
             con.close()
     except (sqlite3.DatabaseError, OSError) as exc:
@@ -220,7 +225,11 @@ def build_runtime_write_access_status(
     )
     initialized = bool(memory["table_count"] and audit["table_count"])
     write_capable = bool(ok and initialized)
-    writes_observed = bool(memory["record_count"] or audit["record_count"])
+    record_counts_measured = bool(memory["record_count_measured"] and audit["record_count_measured"])
+    writes_observed = (
+        bool(memory["record_count"] or audit["record_count"])
+        if record_counts_measured else None
+    )
     current_write_enabled = bool(writes_enabled) and write_capable
     if ok:
         status = "ready" if deep_verify else "ready_metadata_only"
@@ -262,8 +271,9 @@ def build_runtime_write_access_status(
         audit_foreign_key_violations=int(audit["foreign_key_violations"]),
         memory_table_count=int(memory["table_count"]),
         audit_table_count=int(audit["table_count"]),
-        memory_record_count=int(memory["record_count"]),
-        audit_record_count=int(audit["record_count"]),
+        memory_record_count=memory["record_count"],
+        audit_record_count=audit["record_count"],
+        record_counts_measured=record_counts_measured,
         verification_mode="deep" if deep_verify else "metadata_only",
         sqlite_version=str(sqlite_caps.get("sqlite_version") or "") or None,
         sqlite_threadsafety=int(sqlite_caps.get("sqlite_threadsafety") or 0),
