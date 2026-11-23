@@ -1,0 +1,60 @@
+name: Jaźń Monitor Python dev-mode Windows and Ubuntu tests
+
+on:
+  push:
+    branches: ["fix/**", "hotfix/**", "update/**", "upgrade/**"]
+    paths:
+      - "jazn_monitor.py"
+      - "tools/jazn_monitor/**"
+      - "tests/test_jazn_monitor*.py"
+      - "latka_jazn/version.py"
+      - ".github/workflows/jazn-monitor-dev-tests.yml"
+  pull_request:
+    paths:
+      - "jazn_monitor.py"
+      - "tools/jazn_monitor/**"
+      - "tests/test_jazn_monitor*.py"
+      - "latka_jazn/version.py"
+      - ".github/workflows/jazn-monitor-dev-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-dev-monitor:
+    name: Python source monitor / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5, Node24
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6, Node24
+        with:
+          python-version: "3.12"
+      - name: Install isolated CI-only GUI test dependencies
+        run: python -m pip install --only-binary=:all: PySide6==6.12.0 pytest==9.0.2
+      - name: Ubuntu headless Qt requirements
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0
+      - name: Compile Python sources without changing the runtime
+        run: python -X utf8 -c "import ast, pathlib; paths = [pathlib.Path('jazn_monitor.py'), pathlib.Path('tools/jazn_monitor/app_identity.py')]; [ast.parse(path.read_text(encoding='utf-8'), filename=str(path)) for path in paths]; print('Python AST PASS')"
+      - name: Test monitor identity, observer, tray and provenance
+        run: >-
+          python -X utf8 -m pytest -q
+          tests/test_jazn_monitor_app_identity.py
+          tests/test_jazn_monitor.py
+          tests/test_jazn_monitor_tray.py
+          tests/test_jazn_monitor_observability.py
+          tests/test_jazn_monitor_observability_qt.py
+      - name: Standalone GUI smoke (observer only)
+        run: python -X utf8 jazn_monitor.py --gui-smoke
+      - name: Audit pinned Actions/Node24 contracts
+        run: python -X utf8 tools/github_actions_node24_audit.py --root . --json
