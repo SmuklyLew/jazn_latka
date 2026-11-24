@@ -389,7 +389,6 @@ class ConversationStateStore:
         On any corrupt candidate record it fails closed rather than shifting the
         apparent first/last position to a different conversation turn.
         """
-        session_dir = self._session_dir(session_id)
         choice = str(selector or "")
         if choice not in {"first", "last", "ordinal", "turn_id"}:
             return {"ok": False, "status": "invalid_selector"}
@@ -406,27 +405,9 @@ class ConversationStateStore:
         if not 1 <= limit <= 4096:
             return {"ok": False, "status": "invalid_limit"}
 
-        records: list[dict[str, Any]] = []
-        if session_dir.is_symlink():
-            return {"ok": False, "status": "integrity_error"}
-        if session_dir.is_dir():
-            for index, path in enumerate(sorted(session_dir.glob("*.json"))):
-                if index >= 10000:
-                    return {"ok": False, "status": "record_limit_exceeded"}
-                try:
-                    if path.is_symlink() or not path.is_file() or path.stat().st_size > 131072:
-                        return {"ok": False, "status": "integrity_error"}
-                    raw = json.loads(path.read_text(encoding="utf-8"))
-                except (OSError, UnicodeError, json.JSONDecodeError):
-                    return {"ok": False, "status": "integrity_error"}
-                record, error = self._validate_payload(raw)
-                if error or record is None or record.get("session_id") != session_id:
-                    return {"ok": False, "status": "integrity_error"}
-                records.append(record)
-
-        records.sort(key=lambda item: (
-            str(item.get("accepted_at_utc") or ""), str(item.get("turn_id") or "")
-        ))
+        records, error = self._verified_records(session_id)
+        if error:
+            return {"ok": False, "status": error}
         selected: dict[str, Any] | None = None
         if choice == "first" and records:
             selected = records[0]
@@ -453,3 +434,36 @@ class ConversationStateStore:
             "total_turn_count": len(records),
             "record": dict(selected),
         }
+
+    def _verified_records(self, session_id: str) -> tuple[list[dict[str, Any]], str | None]:
+        session_dir = self._session_dir(session_id)
+        records: list[dict[str, Any]] = []
+        if session_dir.is_symlink():
+            return [], "integrity_error"
+        if session_dir.is_dir():
+            for index, path in enumerate(sorted(session_dir.glob("*.json"))):
+                if index >= 10000:
+                    return [], "record_limit_exceeded"
+                try:
+                    if path.is_symlink() or not path.is_file() or path.stat().st_size > 131072:
+                        return [], "integrity_error"
+                    raw = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, UnicodeError, json.JSONDecodeError):
+                    return [], "integrity_error"
+                record, error = self._validate_payload(raw)
+                if error or record is None or record.get("session_id") != session_id:
+                    return [], "integrity_error"
+                records.append(record)
+
+        records.sort(key=lambda item: (
+            str(item.get("accepted_at_utc") or ""), str(item.get("turn_id") or "")
+        ))
+        return records, None
+
+    def lookup_session_fact(self, session_id: str, request: tuple[str, str]) -> dict[str, Any]:
+        from latka_jazn.core.session_fact import resolve_fact
+
+        records, error = self._verified_records(session_id)
+        if error:
+            return {"ok": False, "status": error}
+        return resolve_fact(request, records)

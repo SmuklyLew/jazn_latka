@@ -35,6 +35,8 @@ class TurnResponsePolicy:
     schema_version: str = SCHEMA_VERSION
     truth_boundary: str = "Polityka odpowiedzi jest kontraktem przed syntezą: ogranicza pamięć, technikalia, carryover i wymagane komponenty odpowiedzi."
 
+    allow_verified_session_history: bool = False
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -73,6 +75,10 @@ class TurnResponsePolicy:
     def build(cls, *, intent: str, route: str, context: dict[str, Any] | None = None) -> "TurnResponsePolicy":
         intent = intent or "ordinary_conversation"
         route = route or "ordinary_dialogue"
+        if intent == "contextual_continuation_question":
+            return cls(intent=intent, route=route, answer_kind="natural_dialogue",
+                       source_boundary_required=True, allow_verified_session_history=True,
+                       forbidden_topics=["unverified_history", "historical_task_replay"])
         if intent == "compound_dialogue_question":
             ctx = dict(context or {})
             report_value = ctx.get("dialogue_intent_report")

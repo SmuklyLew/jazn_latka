@@ -7,6 +7,7 @@ import unicodedata
 from typing import Any, Literal
 
 from latka_jazn.core.session_exact_quote import parse_exact_session_quote_request
+from latka_jazn.core.session_fact import fact_request, without_conditional_absence
 from latka_jazn.core.clock import resolve_timezone
 
 
@@ -269,7 +270,7 @@ def is_session_dialogue_reference(text: str) -> bool:
     normalized = _norm(text)
     if not normalized:
         return False
-    if parse_exact_session_quote_request(text) is not None:
+    if fact_request(text) is not None or parse_exact_session_quote_request(text) is not None:
         return True
     if re.search(
         r"\b(?:19|20)\d{2}\b|\b(?:wczoraj\w*|przedwczoraj\w*|"
@@ -365,7 +366,7 @@ def analyze_memory_intent(
         re.search(
             r"\bnie(?: chce| chcial\w*| prosze)? "
             r"(?:wspomin\w*|przypomin\w*|wrac\w*|pamiet\w*|szuk\w*|poszuk\w*|odnajd\w*|znajd\w*)",
-            normalized,
+            _norm(without_conditional_absence(raw)),
         )
     )
     positive_after_negation = bool(

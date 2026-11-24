@@ -12,6 +12,8 @@ from latka_jazn.core.turn_pipeline_support import _sync_conversation_decision_bo
 from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
 from latka_jazn.core.model_executor_preflight import resolve_model_executor
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedSynthesis
+from latka_jazn.core.conversation_state_store import ConversationStateStore
+from latka_jazn.core.session_fact import fact_answer, fact_request
 from latka_jazn.core.session_exact_quote import exact_quote_from_accepted_turn
 
 if TYPE_CHECKING:
@@ -118,11 +120,19 @@ class ResponsePipeline:
             engine.config.root, session_id, state.request.text,
             allow_history=not bool((state.request.client_context or {}).get("no_carryover")),
         )
+        fact = fact_request(state.request.text)
+        if fact and state.turn_response_policy.allow_verified_session_history:
+            if session_id and not (state.request.client_context or {}).get("no_carryover"):
+                exact_quote = ConversationStateStore(engine.config.root).lookup_session_fact(session_id, fact)
+            else:
+                exact_quote = {"ok": False, "status": "history_disabled"}
         if exact_quote is not None:
             quoted_body = (
                 str(exact_quote["text"]) if exact_quote.get("ok") is True
                 else "Nie mam zweryfikowanego zapisu tej wypowiedzi."
             )
+            if fact:
+                quoted_body = fact_answer(exact_quote)
             state.decision.body = quoted_body
             state.decision_dict["handler_name"] = "VerifiedSessionQuote"
             state.decision_dict["source_origin_detail"] = (
