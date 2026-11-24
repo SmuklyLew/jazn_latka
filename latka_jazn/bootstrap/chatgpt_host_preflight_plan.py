@@ -100,14 +100,17 @@ def plan_chatgpt_adaptive_ingress_preflight(
     package_required: bool = False,
     discovery_evidence: HostDiscoveryEvidence | None = None,
 ) -> ChatGptHostPreflightDecision:
-    """Plan one ordinary ChatGPT message with remote-first bounded local fallback."""
+    """Compatibility name for ordinary ChatGPT preflight, now remote-only.
 
-    return plan_chatgpt_host_preflight(
+    Explicit legacy hybrid callers must select HYBRID_ADAPTIVE on the
+    generic planner. This wrapper cannot authorize local recovery.
+    """
+
+    return plan_chatgpt_remote_ingress_preflight(
         executor_observations,
         attachment_reports=attachment_reports,
         package_required=package_required,
         discovery_evidence=discovery_evidence,
-        ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE,
     )
 
 

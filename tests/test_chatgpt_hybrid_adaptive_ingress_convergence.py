@@ -66,7 +66,9 @@ def _handoff_available() -> HostExecutorObservation:
 
 
 def test_hybrid_adaptive_promotes_verified_local_executor_when_remote_is_absent() -> None:
-    decision = plan_chatgpt_adaptive_ingress_preflight([_local_success()])
+    decision = plan_chatgpt_host_preflight(
+        [_local_success()], ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE
+    )
 
     assert decision.ingress_mode is ChatGptIngressMode.HYBRID_ADAPTIVE
     assert decision.local_executor_fallback_allowed is True
@@ -81,7 +83,8 @@ def test_verified_remote_runtime_wins_over_available_local_executor() -> None:
         [_local_success(), _remote_success()]
     )
 
-    assert decision.ingress_mode is ChatGptIngressMode.HYBRID_ADAPTIVE
+    assert decision.ingress_mode is ChatGptIngressMode.REMOTE_ONLY
+    assert decision.local_executor_fallback_allowed is False
     assert decision.remote_runtime_available is True
     assert decision.remote_runtime_allowed is True
     assert decision.bootstrap_allowed is False
@@ -100,7 +103,9 @@ def test_strict_remote_only_mode_remains_available_and_blocks_local_executor() -
 
 
 def test_hybrid_prespawn_failure_keeps_filesystem_unknown_and_fails_closed() -> None:
-    decision = plan_chatgpt_adaptive_ingress_preflight([_prespawn_failure()])
+    decision = plan_chatgpt_host_preflight(
+        [_prespawn_failure()], ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE
+    )
 
     assert decision.executor_available is False
     assert decision.filesystem_state is HostFilesystemState.UNKNOWN
@@ -111,8 +116,9 @@ def test_hybrid_prespawn_failure_keeps_filesystem_unknown_and_fails_closed() -> 
 
 
 def test_hybrid_allows_only_the_existing_single_alternative_probe_contract() -> None:
-    decision = plan_chatgpt_adaptive_ingress_preflight(
-        [_prespawn_failure(alternative=True)]
+    decision = plan_chatgpt_host_preflight(
+        [_prespawn_failure(alternative=True)],
+        ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE,
     )
 
     assert decision.bootstrap_allowed is False
@@ -123,7 +129,9 @@ def test_hybrid_allows_only_the_existing_single_alternative_probe_contract() -> 
 
 
 def test_hybrid_ordinary_chat_never_promotes_host_handoff() -> None:
-    decision = plan_chatgpt_adaptive_ingress_preflight([_handoff_available()])
+    decision = plan_chatgpt_host_preflight(
+        [_handoff_available()], ingress_mode=ChatGptIngressMode.HYBRID_ADAPTIVE
+    )
 
     assert decision.handoff_required is False
     assert decision.bootstrap_allowed is False
@@ -131,6 +139,27 @@ def test_hybrid_ordinary_chat_never_promotes_host_handoff() -> None:
     assert decision.execution_route is HostExecutionRoute.NONE
     assert decision.next_action is HostRecoveryAction.STOP_LOCAL_BOOTSTRAP
     assert decision.reason_code == "chatgpt_hybrid_adaptive_handoff_not_allowed"
+
+
+def test_ordinary_compatibility_wrapper_never_promotes_local_or_handoff() -> None:
+    for observation in (
+        _local_success(),
+        _prespawn_failure(alternative=True),
+        _handoff_available(),
+    ):
+        decision = plan_chatgpt_adaptive_ingress_preflight(
+            [observation], package_required=True
+        )
+
+        assert decision.ingress_mode is ChatGptIngressMode.REMOTE_ONLY
+        assert decision.local_executor_fallback_allowed is False
+        assert decision.bootstrap_allowed is False
+        assert decision.handoff_required is False
+        assert decision.remote_runtime_allowed is False
+        assert decision.execution_route is HostExecutionRoute.NONE
+        assert decision.next_action is HostRecoveryAction.STOP_LOCAL_BOOTSTRAP
+        assert decision.canonical_resume_entrypoint is None
+        assert decision.reason_code == "chatgpt_remote_only_requires_verified_runtime"
 
 
 def test_operator_recovery_retains_explicit_service_handoff_and_local_route() -> None:
