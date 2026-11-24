@@ -54255,13 +54255,13 @@
       "path": "tests/test_pack_generator_host_bootstrap_contract.py",
       "name": "test_system_manifest_declares_host_bootstrap_truth_boundary",
       "purpose": "System manifest declares host bootstrap truth boundary",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 20,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -54286,7 +54286,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 72
+      "line": 84
     },
     "tests/test_pack_generator_host_bootstrap_contract.py::test_memory_package_is_data_only_and_never_execution_capability": {
       "path": "tests/test_pack_generator_host_bootstrap_contract.py",
@@ -54305,7 +54305,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 98
     },
     "tests/test_pack_generator_secure_mcp_bridge_contract.py::test_system_package_can_bundle_local_secure_mcp_target_without_claiming_remote_control_plane": {
       "path": "tests/test_pack_generator_secure_mcp_bridge_contract.py",
