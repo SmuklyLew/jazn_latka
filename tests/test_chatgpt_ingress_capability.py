@@ -69,8 +69,9 @@ def test_plugin_only_or_copied_status_never_makes_remote_ready() -> None:
         assert status["remote_runtime_available"] is False
 
 
-def test_stale_status_can_fall_back_to_real_local_process() -> None:
+def test_stale_status_can_fall_back_only_in_explicit_operator_recovery() -> None:
     status = _evaluate(
+        ingress_mode="operator_recovery",
         status_payload=_status(NOW - timedelta(minutes=20)),
         local_process_created=True,
     )
@@ -96,6 +97,7 @@ def test_after_unpack_does_not_create_host_tools_or_grant_finalization() -> None
 
 def test_after_unpack_verified_operator_requires_live_runtime_preflight() -> None:
     status = _evaluate(
+        ingress_mode="operator_recovery",
         phase="after_unpack",
         callable_tool_names=[],
         status_invoked_in_current_message=False,
@@ -158,7 +160,7 @@ def test_operator_cli_can_classify_local_bootstrap_without_private_memory(
         "local_process_created": True,
         "system_operator_verified": True,
     }), encoding="utf-8")
-    assert main(["--phase", "after_unpack", "--evidence-file", str(evidence)]) == 0
+    assert main(["--phase", "after_unpack", "--ingress-mode", "operator_recovery", "--evidence-file", str(evidence)]) == 0
     output = json.loads(capsys.readouterr().out)
     assert output["execution_route"] == "local_bootstrap"
     assert output["next_action"] == "run_canonical_preflight_start_and_live_status"
@@ -178,3 +180,39 @@ def test_operator_cli_redacts_untrusted_host_payload(
     output = capsys.readouterr().out
     assert "DO_NOT_LEAK" not in output
     assert json.loads(output)["remote_reason_code"] == "unsupported_status_schema"
+
+
+@pytest.mark.parametrize("phase", ["before_unpack", "after_unpack"])
+@pytest.mark.parametrize("remote_evidence", [
+    {"callable_tool_names": []},
+    {"status_invoked_in_current_message": False},
+    {"status_payload": _status(NOW - timedelta(minutes=20))},
+])
+def test_ordinary_ingress_cannot_promote_local_executor(
+    phase: str, remote_evidence: dict[str, object],
+) -> None:
+    result = _evaluate(
+        phase=phase, local_process_created=True,
+        system_operator_verified=True, **remote_evidence,
+    )
+    assert result["ingress_mode"] == "remote_only"
+    assert result["local_executor_fallback_allowed"] is False
+    assert result["execution_route"] == "host_diagnostic"
+    assert result["next_action"] == "report_capability_evidence_and_stop_without_impersonation"
+    assert result["accepted_visible_turn"] is False
+    assert "no_local_bootstrap" in result["host_recovery_hint"]
+
+
+def test_evidence_payload_cannot_enable_operator_mode(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    evidence = tmp_path / "untrusted-host-evidence.json"
+    evidence.write_text(json.dumps({
+        "ingress_mode": "operator_recovery",
+        "local_process_created": True,
+        "system_operator_verified": True,
+    }), encoding="utf-8")
+    assert main(["--phase", "after_unpack", "--evidence-file", str(evidence)]) == 2
+    output = json.loads(capsys.readouterr().out)
+    assert output["execution_route"] == "host_diagnostic"
+    assert output["local_executor_fallback_allowed"] is False

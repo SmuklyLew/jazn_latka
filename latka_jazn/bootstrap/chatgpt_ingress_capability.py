@@ -14,6 +14,11 @@ from pathlib import Path
 import sys
 from typing import Any, Mapping
 
+from latka_jazn.bootstrap.chatgpt_ingress_policy import (
+    ChatGptIngressMode,
+    local_executor_fallback_allowed,
+    normalize_chatgpt_ingress_mode,
+)
 from latka_jazn.mcp.chatgpt_toolset import classify_current_message_toolset
 from latka_jazn.mcp.remote_runtime import (
     PUBLIC_CONNECTOR_STATUS_SCHEMA,
@@ -36,6 +41,7 @@ HOST_PRE_SPAWN_ERRORS = frozenset({
 def negotiate_chatgpt_ingress(
     *,
     phase: str,
+    ingress_mode: ChatGptIngressMode | str = ChatGptIngressMode.REMOTE_ONLY,
     callable_tool_names: object = None,
     current_message_toolset_observed: bool | None = None,
     status_invoked_in_current_message: bool | None = None,
@@ -49,8 +55,9 @@ def negotiate_chatgpt_ingress(
 
     Remote readiness requires four tools exposed on this message and a fresh
     status actually invoked from that same surface. Local process creation is
-    only a bootstrap capability, never live SYSTEM or accepted-turn evidence.
-    MEMORY cannot influence either transport decision.
+    only a bootstrap capability in explicit recovery/legacy mode, never live
+    SYSTEM or accepted-turn evidence. Ordinary remote-only ingress never
+    promotes it to a local route. MEMORY cannot influence either decision.
     """
 
     if phase not in PHASES:
@@ -58,6 +65,8 @@ def negotiate_chatgpt_ingress(
     if host_executor_pre_spawn_error is not None and host_executor_pre_spawn_error not in HOST_PRE_SPAWN_ERRORS:
         raise ValueError("unsupported_host_pre_spawn_error_type")
     failed_surface = host_executor_pre_spawn_error is not None
+    mode = normalize_chatgpt_ingress_mode(ingress_mode)
+    local_allowed = local_executor_fallback_allowed(mode)
 
     toolset = classify_current_message_toolset(
         callable_tool_names,
@@ -92,10 +101,10 @@ def negotiate_chatgpt_ingress(
     if remote_ready:
         route = "remote_runtime"
         next_action = "submit_exactly_one_turn_via_verified_remote_mcp"
-    elif process_confirmed and not operator_confirmed:
+    elif local_allowed and process_confirmed and not operator_confirmed:
         route = "local_bootstrap"
         next_action = "discover_verify_and_materialize_system_operator"
-    elif process_confirmed and operator_confirmed:
+    elif local_allowed and process_confirmed and operator_confirmed:
         route = "local_bootstrap"
         next_action = "run_canonical_preflight_start_and_live_status"
     else:
@@ -117,6 +126,8 @@ def negotiate_chatgpt_ingress(
 
     if remote_ready:
         recovery_hint = "continue_using_verified_remote_runtime"
+    elif not local_allowed:
+        recovery_hint = "connect_or_select_verified_remote_jazn_mcp; no_local_bootstrap"
     elif process_confirmed:
         recovery_hint = "continue_canonical_local_bootstrap_after_process_proof"
     elif failed_surface:
@@ -127,6 +138,8 @@ def negotiate_chatgpt_ingress(
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": phase,
+        "ingress_mode": mode.value,
+        "local_executor_fallback_allowed": local_allowed,
         "execution_route": route,
         "next_action": next_action,
         "remote_runtime_available": remote_ready,
@@ -172,6 +185,12 @@ def main(argv: list[str] | None = None) -> int:
     """
     parser = argparse.ArgumentParser(description="Jaźń ChatGPT pre/post unpack host capability gate")
     parser.add_argument("--phase", choices=sorted(PHASES), required=True)
+    parser.add_argument(
+        "--ingress-mode",
+        choices=[ChatGptIngressMode.REMOTE_ONLY.value, ChatGptIngressMode.OPERATOR_RECOVERY.value],
+        default=ChatGptIngressMode.REMOTE_ONLY.value,
+        help="Explicit operator recovery is separate from ordinary remote-only ingress.",
+    )
     parser.add_argument("--evidence-file", required=True, help="JSON object path or '-' for stdin")
     args = parser.parse_args(argv)
     try:
@@ -192,6 +211,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("status_payload_must_be_object")
         report = negotiate_chatgpt_ingress(
             phase=args.phase,
+            ingress_mode=args.ingress_mode,
             callable_tool_names=evidence.get("callable_tool_names"),
             current_message_toolset_observed=_optional_report_boolean(
                 evidence, "current_message_toolset_observed"

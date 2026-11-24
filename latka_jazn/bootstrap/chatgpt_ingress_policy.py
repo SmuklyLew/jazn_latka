@@ -18,11 +18,10 @@ class ChatGptEntryAction(str, Enum):
 class ChatGptIngressMode(str, Enum):
     """Execution policy for ChatGPT host ingress.
 
-    HYBRID_ADAPTIVE is the normal ChatGPT conversation path. It prefers a
-    verified current-message remote Jaźń app/runtime, but permits a bounded
-    host-local executor/bootstrap fallback before the user turn is submitted.
-    REMOTE_ONLY remains an explicit strict mode with no local/process fallback.
-    OPERATOR_RECOVERY remains an explicit service mode for Codex/Work/local
+    REMOTE_ONLY is the default for ordinary ChatGPT conversation. No host
+    process/bootstrap fallback is permitted. HYBRID_ADAPTIVE is an explicit
+    legacy compatibility mode, not the ordinary conversation default.
+    OPERATOR_RECOVERY is an explicit service mode for Codex/Work/local
     operators that intentionally need local bootstrap, recovery, or handoff.
     """
 
@@ -34,7 +33,7 @@ class ChatGptIngressMode(str, Enum):
 def normalize_chatgpt_ingress_mode(value: object) -> ChatGptIngressMode:
     if isinstance(value, ChatGptIngressMode):
         return value
-    candidate = str(value or ChatGptIngressMode.HYBRID_ADAPTIVE.value).strip().lower()
+    candidate = str(value or ChatGptIngressMode.REMOTE_ONLY.value).strip().lower()
     try:
         return ChatGptIngressMode(candidate)
     except ValueError as exc:
@@ -58,14 +57,14 @@ def automatic_handoff_allowed(value: object) -> bool:
 
 def select_chatgpt_entry_action(
     *,
-    ingress_mode: ChatGptIngressMode | str = ChatGptIngressMode.HYBRID_ADAPTIVE,
+    ingress_mode: ChatGptIngressMode | str = ChatGptIngressMode.REMOTE_ONLY,
     complete_remote_toolset: bool = False,
     remote_ready: bool | None = None,
     local_process_created: bool | None = None,
     verified_system: bool = False,
     local_runtime_ready: bool = False,
 ) -> ChatGptEntryAction:
-    """Pick the next host gate; the local SYSTEM never requires MCP tools.
+    """Pick the next host gate; explicit operator recovery needs no MCP tools.
 
     This policy does not execute the gate or submit a user turn. External host
     tools, not this code, control process allocation and its wall-clock delay.

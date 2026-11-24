@@ -40,6 +40,7 @@ def test_pre_spawn_error_keeps_package_unknown(error: str) -> None:
 def test_independent_executor_can_recover_after_primary_pre_spawn_error() -> None:
     report = negotiate_chatgpt_ingress(
         phase="after_unpack",
+        ingress_mode="operator_recovery",
         callable_tool_names=[],
         current_message_toolset_observed=True,
         local_process_created=True,

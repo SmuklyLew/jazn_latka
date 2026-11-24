@@ -15,18 +15,21 @@ from latka_jazn.version import PACKAGE_VERSION
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_missing_all_four_mcp_tools_does_not_block_local_zip_probe() -> None:
-    assert select(complete_remote_toolset=False) is Action.PROBE_LOCAL_PROCESS
+def test_missing_all_four_mcp_tools_does_not_block_explicit_operator_zip_probe() -> None:
+    assert select(ingress_mode="operator_recovery", complete_remote_toolset=False) is Action.PROBE_LOCAL_PROCESS
     assert select(
+        ingress_mode="operator_recovery",
         complete_remote_toolset=False,
         local_process_created=True,
     ) is Action.VERIFY_LOCAL_SYSTEM
     assert select(
+        ingress_mode="operator_recovery",
         complete_remote_toolset=False,
         local_process_created=True,
         verified_system=True,
     ) is Action.START_OR_RESUME_LOCAL
     assert select(
+        ingress_mode="operator_recovery",
         complete_remote_toolset=False,
         verified_system=True,
         local_runtime_ready=True,
@@ -38,6 +41,9 @@ def test_live_remote_wins_but_full_toolset_alone_is_not_readiness() -> None:
     assert select(
         complete_remote_toolset=True,
         remote_ready=False,
+    ) is Action.HOST_DIAGNOSTIC
+    assert select(
+        ingress_mode="operator_recovery", complete_remote_toolset=True, remote_ready=False,
     ) is Action.PROBE_LOCAL_PROCESS
     assert select(
         complete_remote_toolset=True,
@@ -61,7 +67,7 @@ def test_failed_host_spawn_is_not_python_failure_or_fake_runtime() -> None:
         ingress_mode="remote_only", complete_remote_toolset=False
     ) is Action.HOST_DIAGNOSTIC
     with pytest.raises(ValueError, match="local_ready_requires"):
-        select(local_runtime_ready=True, verified_system=False)
+        select(ingress_mode="operator_recovery", local_runtime_ready=True, verified_system=False)
 
 
 def test_cold_start_contract_preserves_tool_visibility_and_no_host_timeout_claim() -> None:
@@ -89,3 +95,13 @@ def test_short_loader_is_consistent_with_cold_path() -> None:
     assert "Brak `jazn_*` NIE blokuje lokalnego SYSTEM ZIP" in loader
     assert "czas oczekiwania" in loader.lower()
     assert "action=display_exact" in loader
+
+
+@pytest.mark.parametrize("evidence", [
+    {},
+    {"local_process_created": True},
+    {"local_process_created": True, "verified_system": True},
+    {"verified_system": True, "local_runtime_ready": True},
+])
+def test_default_remote_only_never_promotes_local_execution(evidence: dict[str, bool]) -> None:
+    assert select(complete_remote_toolset=False, **evidence) is Action.HOST_DIAGNOSTIC
