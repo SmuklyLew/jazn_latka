@@ -654,9 +654,13 @@ class ConversationRunner(RunnerOperations):
                         "persistence_degraded": False,
                         "intermediate_state": host_pending,
                     }
+            # RuntimeSessionStateStore.save returns session_state_saved, while
+            # exception paths and host pre-turn checkpoints expose saved.
+            # Preserve any explicit failure; never turn an absent flag into PASS.
+            save_status.setdefault("saved", save_status.get("session_state_saved") is True)
             result["conversation_state_persistence"] = dict(conversation_state_status)
             result["session_persistence"] = dict(save_status)
-            result["session_persistence_ok"] = bool(save_status.get("saved"))
+            result["session_persistence_ok"] = save_status["saved"] is True
             result["session"] = self.state.to_dict()
             with turn_context.stage("provenance"):
                 session_provenance = build_session_provenance(

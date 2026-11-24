@@ -40,6 +40,41 @@ class ResponsePipeline:
     def __init__(self, engine: JaznEngine) -> None:
         self.engine = engine
 
+
+    @staticmethod
+    def selected_model_response(state: TurnPipelineState) -> dict[str, Any] | None:
+        """Return only the model response that survived final answer selection.
+
+        A failed first candidate can produce a successful retry. Its metadata
+        must never be attributed to the accepted retry, or to a fallback/repair.
+        """
+        if (
+            state.answer_validation is None
+            or not state.answer_validation.accepted
+            or state.repair_used
+            or state.decision_dict.get("model_generated") is not True
+            or state.decision_dict.get("fallback_classification") != "not_fallback"
+        ):
+            return None
+        if state.decision_dict.get("source_origin_detail") == "runtime_model_guided_synthesis_retry":
+            selected = state.retry_synthesis
+            if (
+                selected is None
+                or state.retry_validation is None
+                or not state.retry_validation.accepted
+            ):
+                return None
+        else:
+            selected = state.model_synthesis
+        if selected is None or not selected.used:
+            return None
+        response = selected.adapter_response
+        return (
+            response
+            if isinstance(response, dict) and response.get("generated") is True
+            else None
+        )
+
     def build_plan(self, state: TurnPipelineState) -> ResponsePlan:
         policy = state.turn_response_policy
         recall = state.frame.get("memory_recall_contract") or {}
@@ -191,7 +226,7 @@ class ResponsePipeline:
                 can_generate_model_guided_speech=state.can_generate_model_guided_speech,
                 requires_host_model=bool(state.decision_dict.get("requires_host_model")),
                 final_visible_integrity_valid=bool(state.decision_dict.get("origin_truth_valid") and state.answer_validation.accepted),
-                model_response=state.model_synthesis.adapter_response,
+                model_response=self.selected_model_response(state),
             )
             engine._stage_turn_write(
                 state.turn_context,

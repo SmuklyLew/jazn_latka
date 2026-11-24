@@ -70,7 +70,13 @@ class SourceOriginLedger:
         notes: list[str] = []
         prov = provenance or {}
         tmpl = template_origin or {}
-        model = model_response or {}
+        model = (
+            model_response
+            if isinstance(model_response, dict)
+            and model_response.get("generated") is True
+            and (validator_result or {}).get("accepted") is True
+            else {}
+        )
         source_origin = "runtime_direct"
         if detected_intent in {"runtime_source_question", "runtime_exact_quote_request", "identity_boundary_question"}:
             source_origin = "runtime_direct_with_chatgpt_boundary_required"
@@ -86,7 +92,7 @@ class SourceOriginLedger:
             notes.append("tekst pochodzi z jawnie oznaczonego handlera regułowego")
         elif fallback_classification in {"repair_fallback", "template_fallback"}:
             source_origin = "runtime_template_or_repair"
-        if model and bool((validator_result or {}).get("accepted")):
+        if model:
             source_origin = str(model.get("source_origin") or "model_adapter")
             notes.append("model adapter supplied a candidate accepted by RuntimeAnswerValidator")
         preserved = None; modified = None
@@ -98,7 +104,7 @@ class SourceOriginLedger:
         return SourceOriginEntry(
             schema_version=SCHEMA_VERSION, turn_id=turn_id, trace_id=trace_id or turn_id, thread_id="local-one-shot", route=route, handler_name=handler_name or prov.get('handler_name') or 'unknown',
             source_origin=source_origin, user_text_sha256=self._sha(user_text), response_sha256=self._sha(response_text), runtime_text_sha256=self._sha(rt), visible_answer_sha256=self._sha(vt),
-            detected_intent=detected_intent, intent_confidence=intent_confidence, response_generation_mode=prov.get('response_generation_mode','unknown'), template_id=tmpl.get('template_id') or prov.get('template_id'), template_file=tmpl.get('template_file') or prov.get('template_file'), template_line=tmpl.get('template_line') or prov.get('template_line'), source_origin_detail=prov.get('source_origin_detail','runtime_process_turn'), fallback_classification=fallback_classification, can_generate_model_guided_speech=can_generate_model_guided_speech, requires_host_model=requires_host_model, final_visible_integrity_valid=final_visible_integrity_valid, exact_runtime_text_present=bool(rt), visible_answer_text_present=bool(vt), chatgpt_interpretation_allowed=bool(prov.get('chatgpt_expansion_allowed', True)), chatgpt_interpretation_distance=prov.get('interpretation_distance','unknown'), preserved_source_text=preserved, modified_source_text=modified, memory_sources_used=prov.get('memory_sources_used') or [], file_sources_used=prov.get('file_sources_used') or [], dictionary_sources_used=prov.get('dictionary_sources_used') or [], external_web_sources_used=prov.get('external_web_sources_used') or [], model_adapter_id=model.get('adapter_id'), model_provider=model.get('provider'), model=model.get('model'), model_endpoint_used=model.get('endpoint_used'), model_candidate_kind=model.get('candidate_kind'), model_candidate_generated=bool(model.get('generated')), model_candidate_validated=bool((validator_result or {}).get('accepted')), validator_result=validator_result or {}, notes=notes)
+            detected_intent=detected_intent, intent_confidence=intent_confidence, response_generation_mode=prov.get('response_generation_mode','unknown'), template_id=tmpl.get('template_id') or prov.get('template_id'), template_file=tmpl.get('template_file') or prov.get('template_file'), template_line=tmpl.get('template_line') or prov.get('template_line'), source_origin_detail=prov.get('source_origin_detail','runtime_process_turn'), fallback_classification=fallback_classification, can_generate_model_guided_speech=can_generate_model_guided_speech, requires_host_model=requires_host_model, final_visible_integrity_valid=final_visible_integrity_valid, exact_runtime_text_present=bool(rt), visible_answer_text_present=bool(vt), chatgpt_interpretation_allowed=bool(prov.get('chatgpt_expansion_allowed', True)), chatgpt_interpretation_distance=prov.get('interpretation_distance','unknown'), preserved_source_text=preserved, modified_source_text=modified, memory_sources_used=prov.get('memory_sources_used') or [], file_sources_used=prov.get('file_sources_used') or [], dictionary_sources_used=prov.get('dictionary_sources_used') or [], external_web_sources_used=prov.get('external_web_sources_used') or [], model_adapter_id=model.get('adapter_id'), model_provider=model.get('provider'), model=model.get('model'), model_endpoint_used=model.get('endpoint_used'), model_candidate_kind=model.get('candidate_kind'), model_candidate_generated=bool(model.get('generated')), model_candidate_validated=bool(model), validator_result=validator_result or {}, notes=notes)
     def append(self, entry: SourceOriginEntry) -> Path:
         with self.path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry.to_dict(), ensure_ascii=False, sort_keys=True) + "\n")
