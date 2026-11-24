@@ -67,6 +67,28 @@ def test_host_contract_uses_distinct_capability_gates() -> None:
         (ROOT / "latka_jazn/resources/chatgpt_startup_evidence_contract.json").read_text(encoding="utf-8")
     )
     assert len(data["required_current_message_tools"]) == 4
+    assert data["default_ingress_mode"] == "remote_only"
+    assert data["readiness_sequence"] == [
+        "current_message_remote_gate",
+        "fresh_verified_jazn_status",
+        "one_bound_runtime_turn",
+        "accepted_display_exact_finalization",
+    ]
+    ordinary = data["ordinary_chat"]
+    assert ordinary["no_ready_route_action"] == "host_diagnostic"
+    for key in (
+        "local_executor_probe_allowed", "system_discovery_allowed",
+        "memory_discovery_allowed", "materialization_allowed",
+        "local_bootstrap_allowed", "daemon_start_allowed", "handoff_allowed",
+        "route_switch_after_turn_submit_allowed", "replay_allowed",
+    ):
+        assert ordinary[key] is False
+    recovery = data["operator_recovery"]
+    assert recovery["explicit_opt_in_required"] is True
+    assert "bounded_executor_probe_for_explicit_operator_recovery" in recovery["readiness_sequence"]
+    assert "zip_catalog_crc_and_safe_bootstrap" in recovery["readiness_sequence"]
+    for section in ("file_discovery", "materialization", "local_bootstrap", "pre_post_materialization_capabilities"):
+        assert data[section]["scope"] == "explicit_operator_recovery"
     assert "bounded_single_independent_executor_alternative" in data["pre_post_materialization_capabilities"]["before_unpack"]
     assert "run_canonical_preflight_start_live_status" in data["pre_post_materialization_capabilities"]["after_unpack"]
     assert "materialized_python_grants_mcp_tools" in data["pre_post_materialization_capabilities"]["prohibited_inferences"]

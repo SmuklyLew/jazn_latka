@@ -178,21 +178,21 @@ def test_operator_recovery_retains_explicit_service_handoff_and_local_route() ->
     assert handoff.handoff_required is True
 
 
-def test_startup_contract_declares_remote_first_local_fallback_without_midturn_switch() -> None:
+def test_startup_contract_declares_remote_only_without_midturn_switch() -> None:
     contract = json.loads(
         (ROOT / "latka_jazn/resources/startup_contract.json").read_text(encoding="utf-8")
     )
 
     assert contract["version"] == PACKAGE_VERSION
-    assert contract["chatgpt_ingress_mode"] == "hybrid_adaptive"
+    assert contract["chatgpt_ingress_mode"] == "remote_only"
     assert contract["chatgpt_remote_first"] is True
-    assert contract["chatgpt_local_executor_fallback_allowed"] is True
-    assert contract["chatgpt_local_executor_probe_budget"] == 1
-    assert contract["chatgpt_local_executor_independent_alternative_probe_budget"] == 1
+    assert contract["chatgpt_local_executor_fallback_allowed"] is False
+    assert contract["chatgpt_local_executor_probe_budget"] == 0
+    assert contract["chatgpt_local_executor_independent_alternative_probe_budget"] == 0
     assert contract["chatgpt_local_fallback_before_turn_submit_only"] is True
     assert contract["chatgpt_route_switch_after_turn_submit_allowed"] is False
     assert contract["chatgpt_ordinary_ingress_handoff_allowed"] is False
-    assert contract["chatgpt_ordinary_ingress_fallback_transport"] == "verified_local_host_bootstrap"
+    assert contract["chatgpt_ordinary_ingress_fallback_transport"] == "none"
     assert contract["chatgpt_registered_app_binding_supported"] is True
     assert contract["chatgpt_registered_app_manifest"] == ".app.json"
     assert contract["chatgpt_registered_app_binding_requires_remote_endpoint"] is False
@@ -209,7 +209,7 @@ def test_startup_contract_declares_remote_first_local_fallback_without_midturn_s
     assert contract["chatgpt_registered_app_status_requires_complete_current_message_toolset"] is True
     assert contract["chatgpt_required_turn_tools_revision"] == CHATGPT_TOOLSET_REVISION
     assert contract["chatgpt_required_turn_tools"] == list(REQUIRED_CHATGPT_TURN_TOOLS)
-    assert contract["chatgpt_loader_authority_model"] == "least_privilege_route_bootstrap_only"
+    assert contract["chatgpt_loader_authority_model"] == "least_privilege_verified_remote_turn_only"
     assert contract["chatgpt_loader_may_self_escalate"] is False
     assert contract["chatgpt_loader_tool_availability_is_write_consent"] is False
     assert contract["chatgpt_loader_external_side_effects_require_explicit_user_instruction"] is True
@@ -217,6 +217,28 @@ def test_startup_contract_declares_remote_first_local_fallback_without_midturn_s
     assert contract["chatgpt_loader_paid_api_allowed"] is False
     assert contract["chatgpt_operator_recovery_expands_permissions"] is False
     assert contract["chatgpt_runtime_contract_can_replace_required_user_consent"] is False
+    assert contract["chatgpt_no_route_requires_actual_local_probe"] is False
+    assert contract["chatgpt_ordinary_ingress_no_route_action"] == "host_diagnostic"
+    assert contract["chatgpt_loader_autonomous_write_scope"] == []
+    for key in (
+        "chatgpt_ordinary_ingress_system_discovery_allowed",
+        "chatgpt_ordinary_ingress_memory_discovery_allowed",
+        "chatgpt_ordinary_ingress_materialization_allowed",
+        "chatgpt_ordinary_ingress_daemon_start_allowed",
+    ):
+        assert contract[key] is False
+    recovery = contract["chatgpt_operator_recovery_contract"]
+    assert recovery["explicit_opt_in_required"] is True
+    assert recovery["local_executor_probe_budget"] == 1
+    assert recovery["independent_alternative_probe_budget"] == 1
+    assert recovery["local_process_creation_requires_system_discovery"] is True
+    assert recovery["local_bootstrap_requires_mcp_toolset"] is False
+    assert recovery["handoff_requires_user_consent"] is True
+    assert recovery["route_switch_after_turn_submit_allowed"] is False
+    assert recovery["autonomous_write_scope"] == [
+        "temporary_bootstrap_staging",
+        "canonical_runtime_workspace_required_by_verified_bootstrap",
+    ]
 
 
 def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_gate() -> None:

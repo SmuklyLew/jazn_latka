@@ -58,7 +58,7 @@ def test_startup_contract_separates_registered_app_binding_from_capability_evide
     )
 
     assert contract["version"] == PACKAGE_VERSION
-    assert contract["chatgpt_ingress_mode"] == "hybrid_adaptive"
+    assert contract["chatgpt_ingress_mode"] == "remote_only"
     assert contract["chatgpt_registered_app_binding_supported"] is True
     assert contract["chatgpt_registered_app_manifest"] == ".app.json"
     assert contract["chatgpt_registered_app_binding_requires_remote_endpoint"] is False
