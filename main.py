@@ -178,6 +178,8 @@ from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_chat import run_persistent_chat
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.conversation_channel import (
+    CANONICAL_OLLAMA_COMMAND,
+    CANONICAL_OPENAI_COMMAND,
     model_channel_config_from_config,
     resolve_canonical_chat_session_id,
 )
@@ -216,7 +218,7 @@ from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
 from latka_jazn.core.chat_command_contract import BridgeOutputMode
 from latka_jazn.core.conversation_entrypoint_contract import auto_route_priority_text
-from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload, write_local_ollama_visible_reply
+from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload, write_local_ollama_visible_reply, runtime_owned_visible_reply_verified
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
 from latka_jazn.core.bridge_discovery import discover_runtime_bridges
 from latka_jazn.core.llm_route_resolver import ROUTE_CHATGPT_BRIDGE, apply_llm_route_to_config, build_llm_route_status
@@ -1233,6 +1235,66 @@ def _daemon_cli_channel_settings(
     }, None
 
 
+def _runtime_owned_daemon_completion(
+    payload: dict[str, Any], job: dict[str, Any]
+) -> bool:
+    """Verify completion evidence for an explicit runtime-owned model channel.
+
+    The predecessor's host gate is not proof of this turn's finalization.
+    This is a read-only CLI projection, not another finalization authority.
+    Ollama and direct provider API execution have the same evidence contract;
+    neither implies a particular physical location of model inference.
+    """
+    if (
+        job.get("command") not in (CANONICAL_OLLAMA_COMMAND, CANONICAL_OPENAI_COMMAND)
+        or job.get("client") in ("chatgpt_daemon_bridge", "secure_mcp_gateway")
+        or job.get("awaiting_host_finalization") is not False
+        or job.get("phase_result_ready") is not False
+        or type(job.get("host_finalization_attempt_count")) is not int
+        or job.get("host_finalization_attempt_count") != 0
+        or job.get("host_finalization_gate_state") not in (
+            "not_required", "released", "released_after_predecessor_abandoned"
+        )
+        or any(job.get(key) is not None for key in (
+            "host_request_contract_hash", "host_turn_id", "host_trace_id",
+            "host_finalization_error_code",
+        ))
+        or payload.get("host_visible_finalization") is not None
+        or payload.get("chatgpt_host_bridge") is not None
+        or payload.get("canonical_persistence_ok") is not True
+        or not runtime_owned_visible_reply_verified(payload)
+    ):
+        return False
+
+    contract = payload.get("final_response_contract")
+    integrity = payload.get("final_visible_integrity")
+    persistence = payload.get("conversation_state_persistence")
+    trace = payload.get("trace")
+    daemon = payload.get("daemon")
+    if not (
+        isinstance(contract, dict) and contract.get("requires_host_model") is False
+        and isinstance(integrity, dict) and integrity.get("message_envelope_valid") is True
+        and isinstance(persistence, dict) and persistence.get("ok") is True
+        and isinstance(trace, dict) and isinstance(daemon, dict)
+    ):
+        return False
+
+    record_hash = persistence.get("record_sha256")
+    return bool(
+        isinstance(record_hash, str) and len(record_hash) == 64
+        and all(ch in "0123456789abcdef" for ch in record_hash)
+        and isinstance(job.get("request_id"), str) and job["request_id"]
+        and daemon.get("request_id") == job["request_id"]
+        and isinstance(job.get("session_id"), str) and job["session_id"]
+        and persistence.get("session_id") == job["session_id"]
+        and all(
+            isinstance(trace.get(key), str) and trace[key]
+            and persistence.get(key) == trace[key]
+            for key in ("turn_id", "trace_id")
+        )
+    )
+
+
 def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
     """Expose job vs finalization without treating ready phase-1 as success."""
     nested = payload.get("daemon_job")
@@ -1253,7 +1315,10 @@ def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
         and isinstance(integrity, dict)
         and integrity.get("valid") is True
         and integrity.get("consensus") is True
-        and isinstance(final, dict) and final.get("status") == "completed"
+        and (
+            (isinstance(final, dict) and final.get("status") == "completed")
+            or _runtime_owned_daemon_completion(payload, job)
+        )
     )
     finalization = (
         "accepted" if accepted_finalization

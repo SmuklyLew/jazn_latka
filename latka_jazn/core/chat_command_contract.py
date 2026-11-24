@@ -1270,19 +1270,14 @@ def extract_final_visible_text_from_result(payload: dict[str, Any]) -> str:
 
 
 
-def write_local_ollama_visible_reply(stdout: TextIO, payload: dict[str, Any]) -> bool:
-    """Render a validated local daemon final without assuming ChatGPT ingress.
-
-    This is deliberately separate from write_chat_bridge_payload(): a
-    --chat-gpt reply still requires the remote host's turn/trace binding,
-    presentation action and phase-2 finalization when applicable.
-    """
+def runtime_owned_visible_reply_verified(payload: dict[str, Any]) -> bool:
+    """Read existing runtime final evidence without rendering or finalizing."""
     text = str(payload.get("final_visible_text") or "")
     integrity = json_object(payload.get("final_visible_integrity"))
     truth_gate = json_object(payload.get("runtime_truth_gate"))
     contract = json_object(payload.get("final_response_contract"))
     expected_sha256 = str(integrity.get("text_sha256") or "").strip()
-    verified = bool(
+    return bool(
         payload.get("ok") is True
         and payload.get("answer_ok") is True
         and payload.get("execution_state") == "final_visible_answer"
@@ -1296,10 +1291,18 @@ def write_local_ollama_visible_reply(stdout: TextIO, payload: dict[str, Any]) ->
         and expected_sha256
         and expected_sha256 == sha256_host_visible_text(text)
     )
-    if verified:
-        write_complete_stdout(stdout, text)
-        return True
 
+
+def write_local_ollama_visible_reply(stdout: TextIO, payload: dict[str, Any]) -> bool:
+    """Render a validated local daemon final without assuming ChatGPT ingress.
+
+    This is deliberately separate from write_chat_bridge_payload(): a
+    --chat-gpt reply still requires the remote host's turn/trace binding,
+    presentation action and phase-2 finalization when applicable.
+    """
+    if runtime_owned_visible_reply_verified(payload):
+        write_complete_stdout(stdout, str(payload.get("final_visible_text") or ""))
+        return True
     # Never expose an unaccepted candidate (or its user content) as Łatka.
     diagnostic = {
         "ok": False,

@@ -21,3 +21,12 @@
 - Nie uruchamiano lokalnego Pythona: executor ClientError. Nie deklarować PASS.
 - Nie dołączono danych MEMORY ani logów prywatnych. Nie zmieniano master ani historii.
 - Następny krok: odczytać faktyczny zdalny HEAD (również po auto-commitach CI), Actions i wynik testu hotspotu; kontynuować J-002 po audycie kontraktów. Weryfikacja aktualnego SHA obowiązkowa.
+
+## Checkpoint J-002 — implementacja niezweryfikowana
+
+- Zidentyfikowano, że host_finalization_gate_state opisuje również poprzednią turę; samo not_required nie dowodzi finalizacji.
+- Wydzielono istniejący warunek renderowania do wspólnego predykatu odczytowego, bez zmiany bramki wyświetlania lokalnego.
+- CLI completion dla jawnych kanałów runtime-owned sprawdza istniejące dowody: brak bieżącego host phase-2, gate, truth/author/hash, MessageEnvelope, canonical persistence, powiązanie request/session/turn/trace oraz format SHA rekordu. Dotychczasowy warunek host-visible completion pozostaje niezmieniony. Nie dodano finalizatora ani nowych wywołań modelu.
+- Dodano syntetyczne testy pozytywne i negatywne w tests/test_daemon_runtime_owned_completion.py. Nie wykonują płatnych API. Testy NOT_RUN lokalnie; oczekują CI. Odbiór rzeczywisty NOT_RUN.
+- Stan poprzedniego commita 5631d0c2: 5 workflow success, pozostałe w toku lub pending w momencie odczytu (nie stan nowego SHA). Release-hardening może przesunąć ref poprzez generator metadanych; weryfikować końcowy HEAD.
+- Następny krok: odczyt wyników nowego commita, testy completion i hotspot, audyt continuity J-003/J-004; nie deklarować pełnego release.
