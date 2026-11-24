@@ -43,6 +43,10 @@ def test_startup_instructions_and_manifests_have_one_exact_file_identity_policy(
     from latka_jazn.mcp.chatgpt_plugin import build_portable_plugin_documents
     prompt = " ".join(build_portable_plugin_documents("https://jazn.example.test/mcp")["plugin.json"]["extensions"]["com.openai"]["interface"]["defaultPrompt"])
     assert "file_id/version_id" in prompt and "artifacts[]" in prompt
+    assert "For authorized Files/Library bootstrap" in prompt
+    assert "Only in that operation" in prompt
+    assert "separate explicitly authorized operator_recovery" in prompt
+    assert "never an automatic continuation of ordinary chat" in prompt
     # Standalone stdlib-only bootstrap also advertises the policy to the host.
     import runpy
     bootstrap = runpy.run_path(str(ROOT / "CHATGPT_BOOTSTRAP.py"))

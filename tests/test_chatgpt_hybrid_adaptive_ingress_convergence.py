@@ -259,17 +259,26 @@ def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_
     assert "obowiązkowo przejdź do SYSTEM discovery/bootstrapu" in loader
 
 
-def test_portable_plugin_prefers_remote_but_allows_bounded_verified_local_bootstrap() -> None:
+def test_portable_plugin_requires_remote_only_and_fails_closed() -> None:
     plugin = build_portable_plugin_documents("https://jazn.example.test/mcp")["plugin.json"]
     prompts = plugin["extensions"]["com.openai"]["interface"]["defaultPrompt"]
     joined = " ".join(prompts).lower()
 
     assert "complete current-message jaźń mcp/app toolset" in joined
     assert "call jazn_status as the read-only readiness probe" in joined
-    assert "bounded verified host-local bootstrap fallback" in joined
+    assert "bounded verified host-local bootstrap fallback" not in joined
+    assert "ordinary chatgpt is remote-only" in joined
+    assert "host_diagnostic without impersonating jaźń" in joined
+    assert "discover or materialize system/memory" in joined
+    assert "start a daemon or request handoff during ordinary chat" in joined
+    assert "separate explicitly authorized operator_recovery" in joined
+    assert "never an automatic continuation of ordinary chat" in joined
+    assert "fresh heartbeat" in joined
+    assert "jazn_resume_visible_reply and jazn_finalize_reply" in joined
+    assert "messageenvelope and persistence" in joined
     assert "never replay the user message" in joined
     assert "action=display_exact" in joined
-    assert "never fall back to a local chatgpt executor" not in joined
+    assert "never fall back to a local chatgpt executor" in joined
 
 
 def test_release_identity_tracks_hybrid_adaptive_ingress_contract() -> None:

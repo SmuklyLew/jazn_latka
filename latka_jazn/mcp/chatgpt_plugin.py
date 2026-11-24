@@ -97,10 +97,10 @@ def _openai_extension(*, registered_app_id: str | None) -> dict[str, Any]:
             "websiteURL": REPOSITORY_URL,
             "defaultPrompt": [
                 "Verify Jaźń runtime readiness and required turn tools for this message; require the complete current-message Jaźń MCP/app toolset before submitting the user turn.",
-                "Call jazn_status as the read-only readiness probe; if the current MCP/app route is conversation-ready, use jazn_generate_visible_reply and preserve its request_id through resume/finalization.",
-                "If the current MCP/app route is unavailable or stale before turn submission, use at most the bounded verified host-local bootstrap fallback when the host actually exposes process execution.",
-                "Once a Jaźń request has been submitted on either route, keep the same route and request_id, never replay the user message or switch routes mid-turn, and display Jaźń text only after accepted action=display_exact.",
-                "For a local Files/Library bootstrap, use exact current files.search/files.list file_id/version_id, reject empty artifacts[], and never cite unobserved tool results.",
+                "Call jazn_status as the read-only readiness probe; verify authorization, runtime instance, version, contract, readiness and fresh heartbeat before using jazn_generate_visible_reply. Preserve request_id through jazn_resume_visible_reply and jazn_finalize_reply.",
+                "Ordinary ChatGPT is remote-only. If tools are absent or the status is unavailable, stale or unverified, return host_diagnostic without impersonating Jaźń. Never fall back to a local ChatGPT executor, discover or materialize SYSTEM/MEMORY, bootstrap, start a daemon or request handoff during ordinary chat.",
+                "Once a Jaźń request has been submitted, keep the same route and request_id, never replay the user message or switch routes mid-turn, and display Jaźń text only after accepted action=display_exact with verified lineage, MessageEnvelope and persistence.",
+                "Local recovery is a separate explicitly authorized operator_recovery operation, never an automatic continuation of ordinary chat. Only in that operation may the operator use the canonical recovery runbook and verified local capabilities. For authorized Files/Library bootstrap, use exact current files.search/files.list file_id/version_id, reject empty artifacts[], and never cite unobserved tool results.",
             ],
             "brandColor": "#5B4B8A",
         }

@@ -30,7 +30,7 @@ def test_registered_app_id_accepts_supported_chatgpt_binding_prefixes(
     assert validate_registered_app_id(app_id) == app_id
 
 
-def test_registered_app_only_package_preserves_hybrid_turn_policy() -> None:
+def test_registered_app_only_package_requires_remote_only_turn_policy() -> None:
     documents = build_portable_plugin_documents(
         registered_app_id="plugin_asdk_app_abc123",
     )
@@ -44,10 +44,19 @@ def test_registered_app_only_package_preserves_hybrid_turn_policy() -> None:
 
     assert "complete current-message jaźń mcp/app toolset" in joined
     assert "call jazn_status as the read-only readiness probe" in joined
-    assert "bounded verified host-local bootstrap fallback" in joined
+    assert "bounded verified host-local bootstrap fallback" not in joined
+    assert "ordinary chatgpt is remote-only" in joined
+    assert "host_diagnostic without impersonating jaźń" in joined
+    assert "discover or materialize system/memory" in joined
+    assert "start a daemon or request handoff during ordinary chat" in joined
+    assert "separate explicitly authorized operator_recovery" in joined
+    assert "never an automatic continuation of ordinary chat" in joined
+    assert "fresh heartbeat" in joined
+    assert "jazn_resume_visible_reply and jazn_finalize_reply" in joined
+    assert "messageenvelope and persistence" in joined
     assert "same route and request_id" in joined
     assert "action=display_exact" in joined
-    assert "never fall back to a local chatgpt executor" not in joined
+    assert "never fall back to a local chatgpt executor" in joined
 
 
 def test_startup_contract_separates_registered_app_binding_from_capability_evidence() -> None:
