@@ -63,3 +63,29 @@ def has_runtime_verified_session_source(history: Any) -> bool:
             checked, error = ConversationStateStore._validate_payload(record)
             return checked is not None and error is None
     return False
+
+
+def projected_fact_answer(user_text: str, history: Any) -> str | None:
+    """Check the unabridged owner-built projection, including honest absence."""
+    from latka_jazn.core.conversation_state_store import _sha256
+    from latka_jazn.core.session_fact import UNKNOWN, fact_answer, fact_request, resolve_fact
+
+    request = fact_request(user_text)
+    if request is None:
+        return None
+    if not isinstance(history, dict) or history.get("source_of_truth") != _CANONICAL_SOURCE:
+        return UNKNOWN
+    signed = {k: v for k, v in history.items() if k not in {"projection_sha256", "targeted_recall"}}
+    if not history.get("session_id") or history.get("projection_sha256") != _sha256(signed):
+        return UNKNOWN
+    if history.get("invalid_record_count"):
+        return UNKNOWN
+    # For an incomplete projection only the store's full lookup can establish
+    # the result. The generation pipeline reads that record set independently.
+    if (history.get("omitted_turn_count") != 0 or not isinstance(history.get("selected_chars"), int)
+            or not isinstance(history.get("max_chars"), int) or history["selected_chars"] >= history["max_chars"]):
+        return None
+    turns = history.get("turns")
+    if not isinstance(turns, list) or not all(isinstance(turn, dict) for turn in turns):
+        return UNKNOWN
+    return fact_answer(resolve_fact(request, turns))

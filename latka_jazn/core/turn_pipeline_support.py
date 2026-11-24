@@ -221,4 +221,4 @@ def _model_guided_rejection_disclosure(
         False,
     )
 
-DEDICATED_PRESERVE_HANDLERS = frozenset({'CapabilityStatusHandler', 'SelfMemoryRecallHandler', 'MemoryExperienceRecallHandler', 'DirectLatkaVoiceHandler', 'IdentityMemoryExistenceHandler', 'CanonSourceHandler', 'SelfArchitectureAuditHandler'})
+DEDICATED_PRESERVE_HANDLERS = frozenset({'VerifiedSessionQuote', 'CapabilityStatusHandler', 'SelfMemoryRecallHandler', 'MemoryExperienceRecallHandler', 'DirectLatkaVoiceHandler', 'IdentityMemoryExistenceHandler', 'CanonSourceHandler', 'SelfArchitectureAuditHandler'})

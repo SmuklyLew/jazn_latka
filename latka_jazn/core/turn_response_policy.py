@@ -77,7 +77,7 @@ class TurnResponsePolicy:
         route = route or "ordinary_dialogue"
         if intent == "contextual_continuation_question":
             return cls(intent=intent, route=route, answer_kind="natural_dialogue",
-                       source_boundary_required=True, allow_verified_session_history=True,
+                       allow_verified_session_history=True,
                        forbidden_topics=["unverified_history", "historical_task_replay"])
         if intent == "compound_dialogue_question":
             ctx = dict(context or {})

@@ -448,25 +448,14 @@ class RuntimeAnswerValidator:
         low_body=(body or '').lower(); route_low=(route or '').lower(); checks=[]
         from latka_jazn.core.session_history_claim_guard import (
             claims_verified_previous_turn,
+            projected_fact_answer,
             has_runtime_verified_session_source,
         )
-        from latka_jazn.core.session_fact import fact_answer, fact_request, resolve_fact
-        from latka_jazn.core.conversation_state_store import _sha256
-
-        fact = fact_request(user_text) if detected_intent == "contextual_continuation_question" else None
-        if fact and isinstance(conversation_history, dict):
-            history = conversation_history
-            # A bounded projection can constrain a literal value only when every
-            # source turn fit. Exclude request-local additions from its digest.
-            signed = {k: v for k, v in history.items() if k not in {"projection_sha256", "targeted_recall"}}
-            if (history.get("source_of_truth") == "workspace_runtime/conversation_state per-turn accepted records"
-                    and history.get("projection_sha256") == _sha256(signed)
-                    and history.get("invalid_record_count") == 0 and history.get("omitted_turn_count") == 0
-                    and history["selected_chars"] < history["max_chars"]):
-                expected = fact_answer(resolve_fact(fact, history["turns"]))
-                if body.strip() != expected:
-                    return self._bad("session_fact_source_mismatch", "verified_session_history_repair",
-                                     expected, detected_intent, route, ["session_fact_source_mismatch"])
+        if detected_intent == "contextual_continuation_question":
+            expected = projected_fact_answer(user_text, conversation_history)
+            if expected is not None and body.strip() != expected:
+                return self._bad("session_fact_source_mismatch", "verified_session_history_repair",
+                                 expected, detected_intent, route, ["session_fact_source_mismatch"])
         if claims_verified_previous_turn(self._voice_narration(body)) and not has_runtime_verified_session_source(conversation_history):
             checks.append("session_history_claim_without_accepted_runtime_record")
             return self._bad(

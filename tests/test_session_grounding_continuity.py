@@ -63,3 +63,38 @@ def test_integrity_role_conflicts_correction_and_reopen(tmp_path):
     path = reopened._turn_path("a", "three")
     path.write_text(path.read_text(encoding="utf-8").replace("Sokół", "Mira"), encoding="utf-8")
     assert reopened.lookup_session_fact("a", query)["status"] == "integrity_error"
+
+
+def test_accepted_fact_uses_rule_handler_and_is_persisted(tmp_path):
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.core.conversation_runner import ConversationRunner
+
+    cfg = JaznConfig(root=tmp_path, memory_mode="off")
+    store = ConversationStateStore(tmp_path)
+    assert store.append_finalized_turn(session_id="grounded", turn_id="one", trace_id="trace",
+        user_text="Mój numer projektu to 47.", assistant_text="Dobrze.", source="test")["ok"]
+    runner = ConversationRunner(cfg, session_id="grounded")
+    try:
+        result = runner.process_user_text("Przypomnij mi numer projektu z tej rozmowy.")
+    finally:
+        runner.close()
+    assert result["runtime_truth_gate"]["ok"], result["runtime_truth_gate"]
+    decision = result["conversation_decision"]
+    assert decision["body"] == "47"
+    assert decision["fallback_classification"] == "rule_handler_response"
+    assert decision["model_generated"] is False
+    assert result["canonical_persistence_ok"]
+    assert store.load_context_projection("grounded")["total_turn_count"] == 2
+
+
+
+def test_contextual_compilation_preserves_older_relevant_turn():
+    from latka_jazn.core.local_model_context_compiler import compile_local_model_context
+
+    turns = [{"turn_id": str(i), "trace_id": str(i), "accepted_at_utc": "2026-11-24",
+              "user_text": text, "assistant_text": "Rozumiem."}
+             for i, text in enumerate(["Projekt Orion", "Spacer", "Pogoda", "Powrót"])]
+    history = {"turns": turns, "source_of_truth": "workspace_runtime/conversation_state per-turn accepted records"}
+    compiled = compile_local_model_context({"conversation_history": history,
+        "detected_intent": "contextual_continuation_question"}, user_text="Co ustaliliśmy dla projektu Orion?")
+    assert [turn["turn_id"] for turn in compiled.context["conversation_history"]["turns"]] == ["0", "2", "3"]

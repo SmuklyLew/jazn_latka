@@ -261,6 +261,13 @@ def _subject(normalized: str) -> str:
     return "experience"
 
 
+def session_history_forbidden(text: str) -> bool:
+    return bool(re.search(
+        r"\b(?:nie (?:korzystaj|uzywaj|odwoluj sie|siegaj)(?: do| z)?|bez korzystania z) "
+        r"(?:historii|poprzedni\w* wiadomosc\w*|wczesniejsz\w* wypowiedz\w*)\b", _norm(text),
+    ))
+
+
 def is_session_dialogue_reference(text: str) -> bool:
     """Concrete recent-session reference, not an autobiographical memory request.
 
@@ -268,7 +275,7 @@ def is_session_dialogue_reference(text: str) -> bool:
     exclusive source for claims about earlier accepted turns.
     """
     normalized = _norm(text)
-    if not normalized:
+    if not normalized or session_history_forbidden(text):
         return False
     if fact_request(text) is not None or parse_exact_session_quote_request(text) is not None:
         return True
@@ -362,7 +369,7 @@ def analyze_memory_intent(
             referential, correction, _subject(normalized), temporal, 0.96, tuple(evidence),
         )
 
-    negated = bool(
+    negated = session_history_forbidden(raw) or bool(
         re.search(
             r"\bnie(?: chce| chcial\w*| prosze)? "
             r"(?:wspomin\w*|przypomin\w*|wrac\w*|pamiet\w*|szuk\w*|poszuk\w*|odnajd\w*|znajd\w*)",

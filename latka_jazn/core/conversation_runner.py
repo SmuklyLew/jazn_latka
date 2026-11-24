@@ -7,7 +7,7 @@ from typing import Any
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.conversation_state_store import ConversationStateStore
-from latka_jazn.core.memory_intent_contract import parse_session_turn_reference
+from latka_jazn.core.memory_intent_contract import is_session_dialogue_reference, parse_session_turn_reference, session_history_forbidden
 from latka_jazn.core.conversation_channel import canonical_chat_command, normalize_model_channel_config
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
@@ -305,6 +305,9 @@ class ConversationRunner(RunnerOperations):
             previous_visible_text or getattr(self.state, "last_visible_text", None) or ""
         ).strip() or None
         turn_scoped_no_carryover = bool(self.no_carryover and not current_previous_user)
+        turn_scoped_no_carryover = turn_scoped_no_carryover or session_history_forbidden(user_text)
+        if turn_scoped_no_carryover or is_session_dialogue_reference(user_text):
+            current_previous_user = current_previous_visible = None
         conversation_history = (
             {
                 "schema_version": "conversation_context_projection/v1",

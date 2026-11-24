@@ -2,6 +2,7 @@ from __future__ import annotations
 
 
 from typing import TYPE_CHECKING, Any
+from latka_jazn.core.route_handler_base import RouteHandlerResult
 from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 from latka_jazn.core.turn_pipeline_support import _handler_body_can_cross_chatgpt_host_bridge, _model_guided_rejection_disclosure, _speech_truth_gate_required
 
@@ -120,6 +121,23 @@ class RecoveryPolicy:
 
     def resolve(self, state: TurnPipelineState) -> None:
         engine = self.engine
+        # The ordinary handler requested language realization before retrieval.
+        # Project the actual source-backed handler only after candidate validation.
+        if (state.detected_dialogue_intent == "contextual_continuation_question"
+                and state.model_synthesis.status == "exact_session_quote"
+                and state.first_validation.accepted and state.body == state.model_synthesis.body):
+            state.decision_dict["requires_host_model"] = False
+            evidence = state.decision_dict["exact_session_quote"]
+            state.handler_result = RouteHandlerResult(
+                handler_name="VerifiedSessionQuote", route=state.route_entry.route,
+                intent=state.detected_dialogue_intent, body=state.body,
+                data={"session_lookup": evidence}, source_origin_detail=state.decision_dict["source_origin_detail"],
+            )
+            (state.handler_required, state.handler_satisfied, state.handler_missing,
+             state.preserve_handler_body) = engine._project_handler_result(
+                decision=state.decision, decision_dict=state.decision_dict,
+                handler_result=state.handler_result, route_entry=state.route_entry,
+            )
         state.speech_truth_gate_required = _speech_truth_gate_required(state.detected_dialogue_intent, state.handler_result)
         if state.speech_truth_gate_required:
             state.candidate_valid = bool(state.model_synthesis.used and state.first_validation.accepted and not state.template_origin.get("template_id"))

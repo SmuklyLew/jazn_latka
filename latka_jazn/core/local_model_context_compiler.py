@@ -212,7 +212,7 @@ def _prepare_memory_items(value: Any, *, user_text: str) -> list[Any]:
     return deduped[:12]
 
 
-def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
+def _recent_accepted_conversation(value: Any, *, query: str = "") -> dict[str, Any]:
     """Keep the most recent accepted turns, separately from internal goals.
 
     The full verified records remain in ConversationStateStore. This bounded
@@ -227,7 +227,7 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
     if not isinstance(raw_turns, (list, tuple)):
         return {}
     selected: list[dict[str, str]] = []
-    for item in raw_turns[-3:]:
+    for item in (raw_turns if query else raw_turns[-3:]):
         if not isinstance(item, Mapping):
             continue
         # Never turn arbitrary dialogue hints into accepted-session chat roles.
@@ -248,7 +248,16 @@ def _recent_accepted_conversation(value: Any) -> dict[str, Any]:
         })
     # Preserve an explicit empty canonical history. A rejected prior turn
     # must never be revived from unverified legacy dialogue_context metadata.
-    return {"turns": selected, "source_of_truth": source}
+    if query and len(selected) > 3:
+        # Keep recent conversational order, reserving a slot for an older
+        # accepted turn that contains the object named in the question.
+        terms = _query_terms(query)
+        scored = [(len(terms & _query_terms(turn["user_text"] + " " + turn["assistant_text"])), i)
+                  for i, turn in enumerate(selected[:-2])]
+        score, index = max(scored)
+        if score:
+            selected = [selected[index], *selected[-2:]]
+    return {"turns": selected[-3:], "source_of_truth": source}
 
 
 _SELF_STATE_COMPONENT_ALLOWLIST = frozenset({
@@ -417,7 +426,8 @@ def compile_local_model_context(
         elif key == "full_canon_model_context":
             section = _prepare_full_canon(section)
         elif key == "conversation_history":
-            section = _recent_accepted_conversation(section)
+            query = user_text if raw.get("detected_intent") == "contextual_continuation_question" else ""
+            section = _recent_accepted_conversation(section, query=query)
         elif key == "verified_self_state_draft":
             section = _prepare_verified_self_state_draft(section)
         budget = SECTION_BUDGETS[key]
