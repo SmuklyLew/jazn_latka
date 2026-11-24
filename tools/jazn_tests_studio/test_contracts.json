@@ -4056,15 +4056,15 @@
       "description_source": "source_identity",
       "line": 17
     },
-    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_declares_bounded_local_fallback_without_automatic_handoff": {
+    "tests/test_chatgpt_capability_loader_convergence.py::test_project_loader_declares_remote_only_and_separate_recovery": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
-      "name": "test_project_loader_declares_bounded_local_fallback_without_automatic_handoff",
-      "purpose": "Project loader declares bounded local fallback without automatic handoff",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_project_loader_declares_remote_only_and_separate_recovery",
+      "purpose": "Project loader declares remote only and separate recovery",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
@@ -4077,18 +4077,18 @@
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
       "name": "test_chatgpt_runbook_requires_complete_current_message_turn_toolset",
       "purpose": "Chatgpt runbook requires complete current message turn toolset",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 10,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.version"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 49
     },
     "tests/test_chatgpt_capability_loader_convergence.py::test_release_version_tracks_current_distribution_identity": {
       "path": "tests/test_chatgpt_capability_loader_convergence.py",
@@ -4105,7 +4105,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 61
+      "line": 70
     },
     "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py::test_missing_all_four_mcp_tools_does_not_block_explicit_operator_zip_probe": {
       "path": "tests/test_chatgpt_cold_bootstrap_without_remote_mcp.py",
@@ -7871,15 +7871,15 @@
       "description_source": "source_identity",
       "line": 181
     },
-    "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py::test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_gate": {
+    "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py::test_project_loader_declares_remote_only_and_preserves_finalization_gate": {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
-      "name": "test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_gate",
-      "purpose": "Project loader declares hybrid remote first and preserves finalization gate",
-      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_project_loader_declares_remote_only_and_preserves_finalization_gate",
+      "purpose": "Project loader declares remote only and preserves finalization gate",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 11,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bootstrap.chatgpt_host_preflight",
@@ -7911,7 +7911,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 262
+      "line": 264
     },
     "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py::test_release_identity_tracks_hybrid_adaptive_ingress_contract": {
       "path": "tests/test_chatgpt_hybrid_adaptive_ingress_convergence.py",
@@ -7932,7 +7932,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 284
+      "line": 286
     },
     "tests/test_chatgpt_ingress_capability.py::test_before_unpack_uses_verified_current_message_remote_runtime": {
       "path": "tests/test_chatgpt_ingress_capability.py",
