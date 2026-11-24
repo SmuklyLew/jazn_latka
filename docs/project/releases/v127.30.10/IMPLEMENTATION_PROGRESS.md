@@ -30,3 +30,9 @@
 - Dodano syntetyczne testy pozytywne i negatywne w tests/test_daemon_runtime_owned_completion.py. Nie wykonują płatnych API. Testy NOT_RUN lokalnie; oczekują CI. Odbiór rzeczywisty NOT_RUN.
 - Stan poprzedniego commita 5631d0c2: 5 workflow success, pozostałe w toku lub pending w momencie odczytu (nie stan nowego SHA). Release-hardening może przesunąć ref poprzez generator metadanych; weryfikować końcowy HEAD.
 - Następny krok: odczyt wyników nowego commita, testy completion i hotspot, audyt continuity J-003/J-004; nie deklarować pełnego release.
+
+## Checkpoint — korekta kierunku 2026-11-24
+
+- Zdalny HEAD przed korektą: `efe0423e9f3375beef8ea962afba7c09e03305ec`. Wszystkie 6 workflow dla kodu `40709fcf8affbeb343e11e44ba4aac9ad2ec2115` zakończone success, w tym release-hardening 45495010823 oraz persistent-runtime-e2e 45495010985. Automatyczny commit metadanych nie jest samodzielnym dowodem odbioru na żywo. J-001/J-002: CI PASS, live odbiór v127.30.10 NOT_RUN.
+- Operator przywrócił docelowy remote-only ordinary-chat przez autoryzowane MCP/Cloudflare; brak ZIP/executora/handoffu w normalnej rozmowie. J-012: ANALYZING. Istniejący `chatgpt_ingress_policy.py` nadal domyślnie wybiera hybrid_adaptive, `negotiate_chatgpt_ingress` nadal promuje proces lokalny, instrukcje projektu nakazują lokalny fallback. Zmiana planu sama nie wdraża tej funkcji.
+- Kolejny krok: zbieżność policy, capability, preflight, loadera i ich kontraktów; zachować jawny operator_recovery i regresje lokalnego PC. Nie usuwać istniejących testów bez snapshotów. Dalszy odbiór live ChatGPT/MCP i PC NOT_RUN. Budżet usage_unknown.
