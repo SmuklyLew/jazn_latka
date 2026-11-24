@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.9",
-  "active_definition_count": 3603,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
+  "active_definition_count": 3606,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17099,6 +17099,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 280
+    },
+    "tests/test_daemon_runtime_owned_completion.py::test_runtime_owned_finalization_uses_runtime_evidence": {
+      "path": "tests/test_daemon_runtime_owned_completion.py",
+      "name": "test_runtime_owned_finalization_uses_runtime_evidence",
+      "purpose": "Runtime owned finalization uses runtime evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_daemon_runtime_owned_completion.py::test_runtime_owned_completion_rejects_missing_or_conflicting_evidence": {
+      "path": "tests/test_daemon_runtime_owned_completion.py",
+      "name": "test_runtime_owned_completion_rejects_missing_or_conflicting_evidence",
+      "purpose": "Runtime owned completion rejects missing or conflicting evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 96
+    },
+    "tests/test_daemon_runtime_owned_completion.py::test_runtime_owned_completion_does_not_replace_host_phase_two": {
+      "path": "tests/test_daemon_runtime_owned_completion.py",
+      "name": "test_runtime_owned_completion_does_not_replace_host_phase_two",
+      "purpose": "Runtime owned completion does not replace host phase two",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "host",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.host_visible_finalization"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 107
     },
     "tests/test_daemon_shutdown_ack_before_teardown.py::test_authenticated_shutdown_is_scheduled_before_ack": {
       "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
