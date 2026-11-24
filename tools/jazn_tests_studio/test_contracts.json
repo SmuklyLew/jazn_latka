@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3610,
+  "active_definition_count": 3613,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -60517,7 +60517,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 45
+      "line": 50
     },
     "tests/test_run_py_host_preflight.py::test_run_py_host_preflight_blocks_stable_truncated_attachment": {
       "path": "tests/test_run_py_host_preflight.py",
@@ -60535,7 +60535,61 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 64
+      "line": 69
+    },
+    "tests/test_run_py_host_preflight.py::test_external_preflight_payload_cannot_select_operator_mode": {
+      "path": "tests/test_run_py_host_preflight.py",
+      "name": "test_external_preflight_payload_cannot_select_operator_mode",
+      "purpose": "External preflight payload cannot select operator mode",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
+    "tests/test_run_py_host_preflight.py::test_explicit_remote_mode_cannot_be_overridden_by_input": {
+      "path": "tests/test_run_py_host_preflight.py",
+      "name": "test_explicit_remote_mode_cannot_be_overridden_by_input",
+      "purpose": "Explicit remote mode cannot be overridden by input",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 125
+    },
+    "tests/test_run_py_host_preflight.py::test_input_free_operator_diagnostic_retains_compatibility": {
+      "path": "tests/test_run_py_host_preflight.py",
+      "name": "test_input_free_operator_diagnostic_retains_compatibility",
+      "purpose": "Input free operator diagnostic retains compatibility",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 142
     },
     "tests/test_run_studio_dependency_preflight.py::test_inspection_uses_canonical_profiles_without_requiring_optional": {
       "path": "tests/test_run_studio_dependency_preflight.py",
