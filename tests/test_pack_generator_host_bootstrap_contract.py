@@ -62,6 +62,18 @@ def test_system_manifest_declares_host_bootstrap_truth_boundary(tmp_path: Path) 
     assert contract["package_can_create_host_executor"] is False
     assert contract["remote_runtime_transport_bundled"] is False
     assert contract["host_capability_negotiation_required"] is True
+    assert contract["ordinary_chatgpt_ingress_mode"] == "remote_only"
+    assert contract["ordinary_chatgpt_execution_routes"] == ["remote_runtime_external"]
+    assert contract["ordinary_chatgpt_no_ready_route_action"] == "host_diagnostic"
+    for capability in (
+        "local_executor_probe", "system_discovery", "memory_discovery",
+        "materialization", "bootstrap", "daemon_start", "handoff",
+    ):
+        assert contract[f"ordinary_chatgpt_{capability}_allowed"] is False
+    assert contract["local_bootstrap_scope"] == "explicit_operator_recovery_or_local_pc"
+    assert contract["operator_recovery_requires_explicit_opt_in"] is True
+    assert contract["operator_recovery_handoff_requires_consent"] is True
+    assert contract["remote_runtime_route_ready_from_package_alone"] is False
     assert contract["supported_execution_routes"] == [
         "local_executor",
         "remote_runtime_external",

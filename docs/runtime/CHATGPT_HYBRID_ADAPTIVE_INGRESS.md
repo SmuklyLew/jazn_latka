@@ -1,5 +1,7 @@
 # ChatGPT Hybrid/Adaptive Ingress — 16.3.25.5.115
 
+> **Referencja historyczna v114/v115.** Poniższa polityka nie obowiązuje jako domyślna ordinary-chat od v127.30.10 (J-012). Aktualny kontrakt: `CHATGPT_REMOTE_ONLY_INGRESS.md`. Legacy hybrid może być użyty wyłącznie w jawnie wybranym kontekście migracyjnym; nie jest automatyczną trasą. Lokalne operacje pozostają w jawnym `operator_recovery` lub na lokalnym PC. Zachowano treść historyczną dla audytu.
+
 **Code-first (2026-10-13):** To dokumentacja integracyjna, a nie bieżący status procesu. Żaden opis nie zastępuje wywołania adaptera Python/MCP. Adapter publiczny wylicza SHA-256 finalnego tekstu w kodzie, sprawdza opcjonalny digest, a kanoniczna finalizacja nadal chroni continuation token, lineage i persistence. Wdrażane zmiany wymagają odrębnego live-host acceptance po podłączeniu aplikacji.
 
 ## Cel

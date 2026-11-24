@@ -17,8 +17,8 @@ ChatGPT / host capability
         |
         +-- OpenAI Secure MCP Tunnel -> stdio MCP target
         |
-        +-- hybrid local fallback: verified host executor / run.py
-        +-- operator_recovery: explicit service/handoff mode
+        +-- local PC / explicit operator_recovery (separate service scope)
+        +-- registered MCP app binding (verified current-message capability)
         v
 persistent Jaźń daemon on loopback
         |
@@ -110,7 +110,7 @@ migrowane leniwie do SQLite bez ich usuwania.
 
 ## 5. Zdalny ingress hosta
 
-Od 16.3.25.5.115 zwykła wiadomość ChatGPT działa w `hybrid_adaptive` z zachowaniem routingu v114 oraz Desktop/App Binding convergence. Zweryfikowana aplikacja/MCP i świeży `jazn_status` są trasą preferowaną. Jeżeli remote route nie jest conversation-ready **przed submittem tury**, host może wykonać bounded local executor/bootstrap fallback. Po przyjęciu requestu trasa jest zamrożona: resume/finalization używają tego samego requestu bez replayu. Ordinary-chat nie używa automatycznego `host_handoff`; ten pozostaje wyłącznie jawnym `operator_recovery`.
+Od v127.30.10 (J-012) ordinary-chat działa wyłącznie w `remote_only`. Wymaga bieżącego pełnego toolsetu MCP/app oraz rzeczywiście wywołanego, świeżego `jazn_status` potwierdzającego auth, instancję, wersję, kontrakt, readiness i heartbeat. Brak gotowej trasy oznacza `host_diagnostic`, bez lokalnego executora, discovery SYSTEM/MEMORY, materializacji, bootstrapu, startu daemona lub handoffu. Po przyjęciu requestu trasa jest zamrożona: resume/finalization używają tego samego requestu bez replayu. Lokalne recovery jest osobną, jawnie autoryzowaną operacją. Szczegóły: `CHATGPT_REMOTE_ONLY_INGRESS.md`.
 
 Dla ChatGPT Desktop/workspace plugin może wiązać istniejący registered MCP
 app przez `.app.json` bez własnego `mcp.json`. To nie tworzy nowego
@@ -334,7 +334,9 @@ enough to set `remote_runtime_available=true`.
 Operational procedures, failure injection and rollback are specified in
 `docs/runtime/PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
 
-## 14. Remote-only ChatGPT ingress in 16.3.25.5.113 (historical; superseded by v114)
+## 14. Remote-only ChatGPT ingress in 16.3.25.5.113 (historical; restored for v127.30.10)
+
+Sekcja 13 opisuje historię v114, nie aktualną politykę. Dla v127.30.10 obowiązuje sekcja 5 oraz `CHATGPT_REMOTE_ONLY_INGRESS.md`.
 
 Normalna wiadomość ChatGPT wymaga bieżącej ekspozycji dokładnie czterech
 kanonicznych akcji: `jazn_status`, `jazn_generate_visible_reply`,

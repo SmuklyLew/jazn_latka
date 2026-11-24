@@ -147,6 +147,19 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
         "schema_version": HOST_BOOTSTRAP_CONTRACT_SCHEMA,
         "applicable": True,
         "content_role": "system_operator",
+        "ordinary_chatgpt_ingress_mode": "remote_only",
+        "ordinary_chatgpt_execution_routes": ["remote_runtime_external"],
+        "ordinary_chatgpt_no_ready_route_action": "host_diagnostic",
+        "ordinary_chatgpt_local_executor_probe_allowed": False,
+        "ordinary_chatgpt_system_discovery_allowed": False,
+        "ordinary_chatgpt_memory_discovery_allowed": False,
+        "ordinary_chatgpt_materialization_allowed": False,
+        "ordinary_chatgpt_bootstrap_allowed": False,
+        "ordinary_chatgpt_daemon_start_allowed": False,
+        "ordinary_chatgpt_handoff_allowed": False,
+        "local_bootstrap_scope": "explicit_operator_recovery_or_local_pc",
+        "operator_recovery_requires_explicit_opt_in": True,
+        "operator_recovery_handoff_requires_consent": True,
         "active_system_root_eligible": not missing,
         "bootstrap_member": "CHATGPT_BOOTSTRAP.py",
         "entrypoint": "run.py",
@@ -282,6 +295,7 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             ],
         },
         "host_capability_negotiation_required": True,
+        # Capability inventory for all host modes, not ordinary-chat authorization.
         "supported_execution_routes": [
             "local_executor",
             "remote_runtime_external",
@@ -295,7 +309,10 @@ def build_host_bootstrap_contract(plan: PackPlan) -> dict[str, Any]:
             "a public endpoint is deployed, authenticated, healthy, reachable, or registered with the current ChatGPT "
             "host. After verified extraction, the bootstrap may run dependency-free host-preflight in the same already "
             "running Python interpreter without spawning a child process; this still does not prove daemon/runtime readiness. "
-            "When local process execution exists, the canonical ChatGPT bridge is main.py chat-gpt (normally reached "
+            "Ordinary ChatGPT is remote-only and fails closed without a verified current-message MCP route; "
+            "no local discovery, materialization, bootstrap, daemon start or handoff is authorized by this package. "
+            "Only in explicit operator recovery or on a local PC, when local process execution exists, "
+            "the canonical ChatGPT bridge is main.py chat-gpt (normally reached "
             "through the thin run.py starter), uses the surrounding ChatGPT host as its language-model channel, and "
             "does not require OPENAI_API_KEY or a --model argument. Exported host contracts use main.py subcommands; "
             "legacy --chat-gpt/--daemon-* flags remain internal compatibility only. Live status is the activation readiness authority; "

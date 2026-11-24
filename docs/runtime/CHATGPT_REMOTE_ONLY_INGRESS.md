@@ -1,6 +1,6 @@
-# ChatGPT Remote-only Ingress — 16.3.25.5.113
+# ChatGPT Remote-only Ingress — v127.30.10
 
-> **Status historyczny.** Ten kontrakt obowiązywał do v16.3.25.5.113. Od v16.3.25.5.114 ordinary-chat używa `hybrid_adaptive`: verified remote ma pierwszeństwo, a przed submittem tury dozwolony jest bounded verified local bootstrap. Bieżący kontrakt: `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md`.
+> **Aktualny kontrakt docelowy v127.30.10 (J-012).** Przywrócono remote-only zgodnie z korektą operatora z 2026-11-24. Historyczna polityka `hybrid_adaptive` v114/v115 pozostaje w `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md` wyłącznie jako referencja migracyjna. Implementacja i rzeczywisty odbiór są odrębnymi dowodami; zob. `../project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md`.
 
 ## Cel
 
@@ -22,7 +22,7 @@ ChatGPT current message
 ```
 
 W ordinary-chat nie wykonuje się `container.exec`, `python.exec`, terminala,
-discovery ZIP-a, materializacji SYSTEM-u ani host handoffu jako fallbacku.
+discovery SYSTEM/MEMORY, materializacji, bootstrapu, startu daemona ani host handoffu jako fallbacku. Brak zweryfikowanej trasy daje `host_diagnostic` bez imitacji Jaźni. Wymagana jest weryfikacja auth, instancji, wersji, kontraktu, readiness i świeżego heartbeat.
 
 ## Wymagany toolset
 
@@ -48,7 +48,10 @@ uzupełniać brakującego narzędzia executorem.
 Dopuszczalne produkcyjne transporty prowadzą do tego samego persistent runtime:
 
 1. publiczny HTTPS MCP / Streamable HTTP;
-2. OpenAI Secure MCP Tunnel dla prywatnego/lokalnego MCP.
+2. OpenAI Secure MCP Tunnel dla prywatnego/lokalnego MCP;
+3. `registered_mcp_app` — istniejące zarejestrowane powiązanie aplikacji, wymagające faktycznego wywołania i świeżego statusu, nie osobny runtime.
+
+Preferowana produkcyjna trasa publiczna: autoryzowany HTTPS MCP przez stabilny Cloudflare Named Tunnel do gatewaya, bez publicznego wystawiania prywatnego daemona lub MEMORY.
 
 Secure MCP Tunnel nie wymaga publicznego inbound listenera MCP, ale wymaga
 konfiguracji tunelu, runtime API key oraz odpowiednich uprawnień organizacji /
