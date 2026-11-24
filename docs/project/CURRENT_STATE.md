@@ -6,6 +6,8 @@
 
 Rzeczywisty release jest obliczany z `version.py`; master HEAD i statusy workflow sprawdzaj w GitHub. Rzeczywisty daemon i accepted visible turn sprawdzaj przez kod (`run.py status --json`, `jazn_status`, turn finalization), a nie przez ten tekst. Nowa ścieżka adaptera HTTP wylicza SHA-256 UTF-8 kodem, nadal zachowując kanoniczną finalizację. SYSTEM ZIP pozostaje tylko paczką, a MEMORY oddzielną zdolnością wymagającą walidacji.
 
+> **Korekta gałęzi v127.30.10 (2026-11-24):** ordinary-chat = verified remote-only lub host_diagnostic; lokalny bootstrap wyłącznie jawny operator_recovery/lokalny PC. Bieżący plan i dowody tej gałęzi: `releases/v127.30.10/IMPLEMENTATION_PLAN.md` oraz `IMPLEMENTATION_PROGRESS.md` w tym samym katalogu. Poniższy snapshot nie stanowi aktualnego kontraktu ani live odbioru.
+
 ## Poprzedni snapshot statusu (HISTORICAL_ONLY; nie jest bieżącym masterem)
 
 

@@ -756,6 +756,9 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
     root = Path(destination).resolve()
     return {
         "schema_version": "chatgpt_local_launch/v1",
+        "scope": "explicit_operator_recovery_or_local_pc",
+        "ordinary_chatgpt_allowed": False,
+        "operator_recovery_requires_explicit_opt_in": True,
         "cwd": str(root),
         "requires_host_process_execution": True,
         "package_can_create_host_executor": False,
@@ -833,7 +836,7 @@ def build_chatgpt_local_launch_contract(destination: Path) -> dict[str, object]:
             "accepted_finalization_required": True,
         },
         "truth_boundary": (
-            "This contract is launch intent, not proof of process creation. The ChatGPT "
+            "This contract is launch intent for explicit operator recovery or local PC, not ordinary ChatGPT authorization or proof of process creation. The ChatGPT "
             "bridge uses the surrounding ChatGPT host as the language-model channel and "
             "does not require OPENAI_API_KEY or a --model flag. Canonical exported argv uses main.py subcommands; legacy --chat-gpt/--daemon-* flags remain internal compatibility only. A host without process "
             "execution cannot satisfy this local contract; it must use a separately "
@@ -849,6 +852,19 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
     chatgpt_launch = build_chatgpt_local_launch_contract(root)
     return {
         "schema_version": POST_MATERIALIZATION_ACTIVATION_SCHEMA_VERSION,
+        "ordinary_chatgpt_ingress_mode": "remote_only",
+        "ordinary_chatgpt_execution_routes": ["remote_runtime_external"],
+        "ordinary_chatgpt_no_ready_route_action": "host_diagnostic",
+        "ordinary_chatgpt_local_executor_probe_allowed": False,
+        "ordinary_chatgpt_system_discovery_allowed": False,
+        "ordinary_chatgpt_memory_discovery_allowed": False,
+        "ordinary_chatgpt_materialization_allowed": False,
+        "ordinary_chatgpt_bootstrap_allowed": False,
+        "ordinary_chatgpt_daemon_start_allowed": False,
+        "ordinary_chatgpt_handoff_allowed": False,
+        "local_bootstrap_scope": "explicit_operator_recovery_or_local_pc",
+        "operator_recovery_requires_explicit_opt_in": True,
+        "operator_recovery_handoff_requires_consent": True,
         "active_root_candidate": str(root),
         "startup_evidence_contract_member": "latka_jazn/resources/chatgpt_startup_evidence_contract.json",
         "materialization_requires_exact_discovered_file_id": True,
@@ -856,6 +872,9 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
         "operator_entrypoint": "run.py",
         "control_plane": "main.py",
         "local": {
+            "scope": "explicit_operator_recovery_or_local_pc",
+            "ordinary_chatgpt_allowed": False,
+            "operator_recovery_requires_explicit_opt_in": True,
             "requires_host_python_execution": True,
             "package_can_create_host_executor": False,
             "same_interpreter_preflight_supported": True,
@@ -894,6 +913,8 @@ def build_post_materialization_activation_contract(destination: Path) -> dict[st
             "secure_tunnel_fallback": "openai_secure_mcp_tunnel",
         },
         "truth_boundary": (
+            "Ordinary ChatGPT requires a verified current-message remote MCP route or host_diagnostic, never local fallback. "
+            "Local activation is scoped to explicit operator recovery or local PC. "
             "Materialization proves only that a verified operator exists on disk. "
             "Same-interpreter preflight can reuse the Python process already executing "
             "CHATGPT_BOOTSTRAP.py and does not create a child process, but it does not "

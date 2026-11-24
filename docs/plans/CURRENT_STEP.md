@@ -6,6 +6,8 @@
 
 ## Aktywny zakres code-first
 
+- Dla gałęzi v127.30.10 obowiązuje `../project/releases/v127.30.10/IMPLEMENTATION_PLAN.md` i aktualny checkpoint. Korekta 2026-11-24: ordinary-chat jest remote-only; poniższy historyczny snapshot v115 nie upoważnia do lokalnego fallbacku.
+
 - Pozostawić `run.py` cienkim starterem, `main.py` jedynym control plane, a persistent daemon właścicielem trwałej tury.
 - Ograniczyć modelowi instrukcje do sterowania potrzebnym generowaniem; wejście, SHA-256 finalnego tekstu, uwierzytelnienie, walidacja i idempotencja mają być deterministyczne w Pythonie.
 - Zachować `request_id/turn_id/trace_id` i finalizację `display_exact`; nie dodawać replayu przy utracie odpowiedzi.

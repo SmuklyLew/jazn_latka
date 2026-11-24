@@ -47,7 +47,7 @@ Do NOT put tokens in source code, committed environment files, shell history, sc
 | Scenario | Outcome |
 | --- | --- |
 | Missing opt-in/token/granted scope/catalog model | No network call |
-| No current Jaźń MCP tool exposure | Existing bounded local fallback applies when host process execution exists |
+| No current Jaźń MCP tool exposure | Ordinary ChatGPT: host_diagnostic, no local fallback. Explicit operator recovery/local PC remains separate. |
 | Fresh ready MCP toolset | Existing persistent remote runtime wins |
 | Host pre-spawn failure | No fake Jaźń activation or package-missing claim |
 | SSE failed/incomplete or missing response.completed | No model candidate output |

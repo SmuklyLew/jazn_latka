@@ -166,3 +166,31 @@ def test_system_package_manifest_carries_same_chatgpt_launch_truth(tmp_path: Pat
         "valid_MessageEnvelope",
         "accepted_finalization",
     ]
+
+
+def test_standalone_bootstrap_and_package_manifest_share_ingress_scope(tmp_path: Path) -> None:
+    activation = bootstrap.build_post_materialization_activation_contract(tmp_path / "active")
+    manifest = build_host_bootstrap_contract(_plan(tmp_path))
+    assert activation["ordinary_chatgpt_ingress_mode"] == manifest["ordinary_chatgpt_ingress_mode"] == "remote_only"
+    assert activation["ordinary_chatgpt_execution_routes"] == manifest["ordinary_chatgpt_execution_routes"] == ["remote_runtime_external"]
+    assert activation["ordinary_chatgpt_no_ready_route_action"] == manifest["ordinary_chatgpt_no_ready_route_action"] == "host_diagnostic"
+    for capability in (
+        "local_executor_probe", "system_discovery", "memory_discovery",
+        "materialization", "bootstrap", "daemon_start", "handoff",
+    ):
+        key = f"ordinary_chatgpt_{capability}_allowed"
+        assert activation[key] is False
+        assert manifest[key] is False
+    assert activation["local_bootstrap_scope"] == manifest["local_bootstrap_scope"] == "explicit_operator_recovery_or_local_pc"
+    assert activation["operator_recovery_requires_explicit_opt_in"] is True
+    assert activation["operator_recovery_handoff_requires_consent"] is True
+    assert manifest["operator_recovery_requires_explicit_opt_in"] is True
+    assert manifest["operator_recovery_handoff_requires_consent"] is True
+    local = cast(dict[str, Any], activation["local"])
+    bridge = cast(dict[str, Any], local["chatgpt_bridge"])
+    for contract in (local, bridge):
+        assert contract["scope"] == "explicit_operator_recovery_or_local_pc"
+        assert contract["ordinary_chatgpt_allowed"] is False
+        assert contract["operator_recovery_requires_explicit_opt_in"] is True
+    assert local["activation_readiness_source"] == "live_status"
+    assert bridge["nonstreaming_turn_contract"]["message_replay_allowed"] is False

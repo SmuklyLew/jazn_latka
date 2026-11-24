@@ -44,7 +44,7 @@ Historyczne plany nie pozostają jako compatibility pointery w aktywnym root `pl
 - `project/` — current state, release timeline, assumptions, architecture/governance.
 - `plans/` — tylko bieżące owner plans + historyczne `only_to_check/`.
 - `memory/` — operacyjna dokumentacja pamięci i narzędzi.
-- `runtime/` — lifecycle/host/runtime/operator; bieżący ChatGPT ingress v115: `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md` + `CHATGPT_PLUGIN_RUNTIME.md`; trwały MCP: `PERSISTENT_REMOTE_MCP_RUNTIME.md` + `PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
+- `runtime/` — lifecycle/host/runtime/operator; docelowy ChatGPT ingress v127.30.10: `CHATGPT_REMOTE_ONLY_INGRESS.md` (v114/v115 hybrid: historyczne `CHATGPT_HYBRID_ADAPTIVE_INGRESS.md`) + `CHATGPT_PLUGIN_RUNTIME.md`; trwały MCP: `PERSISTENT_REMOTE_MCP_RUNTIME.md` + `PERSISTENT_REMOTE_MCP_OPERATIONS.md`.
 - `packaging/` — pakowanie, release i dystrybucja.
 - `nlp/` — kontrakty NLP/resources.
 - `tools/` — dokumentacja narzędzi.
