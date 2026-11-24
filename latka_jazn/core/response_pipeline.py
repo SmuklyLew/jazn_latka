@@ -53,7 +53,7 @@ class ResponsePipeline:
             or not state.answer_validation.accepted
             or state.repair_used
             or state.decision_dict.get("model_generated") is not True
-            or state.decision_dict.get("fallback_classification") != "not_fallback"
+            or str(state.decision_dict.get("fallback_classification") or "not_fallback") != "not_fallback"
         ):
             return None
         if state.decision_dict.get("source_origin_detail") == "runtime_model_guided_synthesis_retry":

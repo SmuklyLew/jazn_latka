@@ -85,6 +85,17 @@ def test_first_accepted_model_response_has_correct_lineage(tmp_path: Path, monke
     assert entry.model_candidate_validated is True
 
 
+def test_missing_fallback_classification_does_not_erase_valid_model_origin(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    monkeypatch.setenv("JAZN_MEMORY_MODE", "off")
+    state = _state()
+    state.decision_dict.pop("fallback_classification")
+    response = ResponsePipeline.selected_model_response(state)
+    assert response is not None
+    assert _ledger_entry(tmp_path, response).model_provider == "first_attempt"
+
+
 def test_accepted_retry_overrides_failed_initial_candidate(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("JAZN_MEMORY_MODE", "off")
     response = ResponsePipeline.selected_model_response(_state(retry_selected=True))
