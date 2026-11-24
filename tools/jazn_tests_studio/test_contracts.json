@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.7",
-  "active_definition_count": 3589,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.8",
+  "active_definition_count": 3595,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -59345,6 +59345,134 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 63
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_first_accepted_model_response_has_correct_lineage": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_first_accepted_model_response_has_correct_lineage",
+      "purpose": "First accepted model response has correct lineage",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 76
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_accepted_retry_overrides_failed_initial_candidate": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_accepted_retry_overrides_failed_initial_candidate",
+      "purpose": "Accepted retry overrides failed initial candidate",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_unselected_or_rejected_model_never_gets_credit": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_unselected_or_rejected_model_never_gets_credit",
+      "purpose": "Unselected or rejected model never gets credit",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 108
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_ledger_does_not_credit_non_generated_model_candidate": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_ledger_does_not_credit_non_generated_model_candidate",
+      "purpose": "Ledger does not credit non generated model candidate",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 119
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_successful_checkpoint_is_reported_successful": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_successful_checkpoint_is_reported_successful",
+      "purpose": "Successful checkpoint is reported successful",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
+    },
+    "tests/test_response_origin_and_session_checkpoint.py::test_explicit_checkpoint_failure_remains_failure": {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "name": "test_explicit_checkpoint_failure_remains_failure",
+      "purpose": "Explicit checkpoint failure remains failure",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.response_pipeline",
+        "latka_jazn.core.runtime_session",
+        "latka_jazn.core.source_origin_ledger"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 161
     },
     "tests/test_rest_cloud_performance_hygiene.py::test_historical_large_ollama_context_is_bounded_grounded_and_content_free": {
       "path": "tests/test_rest_cloud_performance_hygiene.py",
