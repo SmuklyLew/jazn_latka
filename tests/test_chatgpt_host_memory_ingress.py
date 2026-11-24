@@ -107,4 +107,4 @@ def test_runbook_no_longer_requires_default_memory_zip_join_or_repack() -> None:
     assert "bez obowiązkowego joinu ZIP" in text
     assert "Legacy repack v3 jest jawną ścieżką migracji/eksportu" in text
     assert "wymagany bezpieczny repack v3" not in text
-    assert "w ordinary `hybrid_adaptive` handoff pozostaje zabroniony".replace("`", "\x60") in text
+    assert "w ordinary `remote_only` handoff pozostaje zabroniony".replace("`", "\x60") in text

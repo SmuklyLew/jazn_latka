@@ -241,22 +241,24 @@ def test_startup_contract_declares_remote_only_without_midturn_switch() -> None:
     ]
 
 
-def test_project_loader_declares_hybrid_remote_first_and_preserves_finalization_gate() -> None:
+def test_project_loader_declares_remote_only_and_preserves_finalization_gate() -> None:
     loader = (ROOT / "docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt").read_text(
         encoding="utf-8"
     )
 
     assert len(loader) <= 5000
-    assert "hybrid/adaptive remote-first" in loader
-    assert "bounded local fallback" in loader
-    assert "najwyżej jedną minimalną próbę" in loader
-    assert "filesystem/paczka pozostają `unknown`" in loader
+    ordinary, recovery = loader.split("## 2. Minimalny bootstrap — wyłącznie jawny `operator_recovery`", 1)
+    assert "Zwykła rozmowa ChatGPT = remote-only" in ordinary
+    assert "Brak remote = `host_diagnostic`" in ordinary
+    assert "Nie wykonuj lokalnego probe, discovery SYSTEM/MEMORY, materializacji, bootstrapu, startu daemona ani handoffu" in ordinary
+    assert "najwyżej jedną minimalną próbę" not in ordinary
+    assert "Nie jest automatycznym fallbackiem" in recovery
+    assert "najwyżej jedną minimalną próbę utworzenia procesu" in recovery
+    assert "kanonicznego SYSTEM discovery/bootstrapu" in recovery
+    assert "filesystem/paczka pozostają `unknown`" in recovery
     assert "nie zmieniaj trasy" in loader
     assert "nie replayuj wiadomości użytkownika" in loader
     assert "action=display_exact" in loader
-    assert "Nie wolno zakończyć diagnozy" in loader
-    assert "realną, najwyżej jedną minimalną próbę utworzenia procesu" in loader
-    assert "obowiązkowo przejdź do SYSTEM discovery/bootstrapu" in loader
 
 
 def test_portable_plugin_requires_remote_only_and_fails_closed() -> None:

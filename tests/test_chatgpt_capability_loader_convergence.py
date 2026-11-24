@@ -23,9 +23,9 @@ def test_project_loader_is_pasteable_thin_loader_with_current_message_gate() -> 
     assert "Brak `jazn_*` NIE blokuje lokalnego SYSTEM ZIP" in text
     assert "Jaźń Runtime" in text
     assert "Długi czas oczekiwania hosta nie dowodzi startu procesu" in text
-    assert "Nie wolno zakończyć diagnozy" in text
-    assert "realną, najwyżej jedną minimalną próbę utworzenia procesu" in text
-    assert "obowiązkowo przejdź do SYSTEM discovery/bootstrapu" in text
+    assert "Brak remote = `host_diagnostic`" in text
+    assert "najwyżej jedną minimalną próbę utworzenia procesu" in text
+    assert "kanonicznego SYSTEM discovery/bootstrapu" in text
     assert "Granice uprawnień loadera" in text
     assert "Loader nie rozszerza uprawnień" in text
     assert "Dostęp do narzędzia nie stanowi zgody na zapis" in text
@@ -34,13 +34,16 @@ def test_project_loader_is_pasteable_thin_loader_with_current_message_gate() -> 
     assert "runtime nie zastępuje zgody hosta" in text
 
 
-def test_project_loader_declares_bounded_local_fallback_without_automatic_handoff() -> None:
+def test_project_loader_declares_remote_only_and_separate_recovery() -> None:
     text = _read("docs/runtime/CHATGPT_PROJECT_INSTRUCTIONS.txt")
-    assert "hybrid/adaptive remote-first" in text
-    assert "bounded local fallback" in text
-    assert "najwyżej jedną minimalną próbę" in text
-    assert "Ordinary hybrid/adaptive ingress nie używa automatycznego handoffu" in text
-    assert "filesystem/paczka pozostają `unknown`" in text
+    ordinary, recovery = text.split("## 2. Minimalny bootstrap — wyłącznie jawny `operator_recovery`", 1)
+    assert "Zwykła rozmowa ChatGPT = remote-only" in ordinary
+    assert "Brak remote = `host_diagnostic`" in ordinary
+    assert "Nie wykonuj lokalnego probe" in ordinary
+    assert "najwyżej jedną minimalną próbę" not in ordinary
+    assert "najwyżej jedną minimalną próbę" in recovery
+    assert "Ordinary remote-only nie używa handoffu" in recovery
+    assert "filesystem/paczka pozostają `unknown`" in recovery
 
 
 def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> None:
@@ -56,6 +59,12 @@ def test_chatgpt_runbook_requires_complete_current_message_turn_toolset() -> Non
     assert "current_message_toolset_observed=true" in text
     assert "Nie koduj polityki jako `plan == Plus/Pro/Business/...`" in text
     assert "Jaźń Runtime" in text
+    ordinary, recovery = text.split("## 3. Warm, resume i cold — wyłącznie operator_recovery", 1)
+    assert "Jedyna trasa ordinary-chat" in ordinary
+    assert "Brak kompletnego toolsetu lub świeżej zweryfikowanej gotowości" in ordinary
+    assert "ani handoffu w ordinary-chat" in ordinary
+    assert "Sekcje 3–6 dotyczą jawnie autoryzowanego lokalnego recovery" in recovery
+    assert "w ordinary `remote_only` handoff pozostaje zabroniony" in recovery
 
 
 def test_release_version_tracks_current_distribution_identity() -> None:

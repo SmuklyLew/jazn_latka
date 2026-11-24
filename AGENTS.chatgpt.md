@@ -21,13 +21,15 @@ Nie rekonstruuj logiki SYSTEM w hoście.
 Obecność ZIP, MCP, modelu, folderu, PID ani gotowego tekstu
 nie dowodzi aktywnego runtime ani autorstwa Jaźni.
 
-## 2. Hybrid/adaptive ingress
+## 2. Zwykła rozmowa ChatGPT — remote-only
 
-Zachowaj kolejność:
-1. zweryfikowany remote runtime;
-2. zweryfikowany lokalny active_root i daemon;
-3. bounded local executor/bootstrap;
-4. fail-closed przy braku gotowej trasy.
+Jedyna trasa ordinary-chat: zweryfikowany bieżący remote MCP/app runtime.
+Brak kompletnego toolsetu lub świeżej zweryfikowanej gotowości oznacza
+`host_diagnostic` bez imitowania Jaźni. Nie wykonuj lokalnego probe,
+discovery SYSTEM/MEMORY, materializacji, bootstrapu, startu daemona
+ani handoffu w ordinary-chat, nawet gdy executor jest dostępny.
+`operator_recovery` wymaga jawnej, odrębnej autoryzacji; nie jest fallbackiem.
+Nie zmieniaj trasy przyjętej tury.
 
 ### Fresh-message app exposure gate
 
@@ -47,8 +49,8 @@ bieżącej ekspozycji narzędzi.
 
 ### Preferowany probe przez rzeczywistą akcję Jaźni
 
-Wykonaj jedno read-only wywołanie `jazn_status`, gdy narzędzie
-jest faktycznie dostępne. Zweryfikuj lineage oraz wynik statusu.
+Wykonaj jedno read-only wywołanie `jazn_status`, gdy wszystkie cztery
+narzędzia są faktycznie callable w tej wiadomości. Zweryfikuj lineage oraz wynik statusu.
 `host_connector_invocation_observed=true` wymaga rzeczywistego
 wywołania konektora. Wklejony JSON nie jest takim dowodem.
 
@@ -57,7 +59,11 @@ rodzaje dowodów; nie wolno ich mieszać.
 `classify_public_connector_status_failover()` wymaga
 danych zgodnych z kontraktem.
 
-## 3. Warm, resume i cold
+## 3. Warm, resume i cold — wyłącznie operator_recovery
+
+Sekcje 3–6 dotyczą jawnie autoryzowanego lokalnego recovery lub lokalnego
+PC; nie są krokami ordinary-chat. Najpierw sprawdź gotowy daemon,
+potem zweryfikowany active_root, następnie ograniczony cold bootstrap.
 
 Warm: reuse tylko po sprawdzeniu root, wersji, daemon_instance_id,
 endpointu i heartbeat. Nie uruchamiaj drugiego daemona.
@@ -158,7 +164,8 @@ Narzędzia hosta są capability, nie dowodem autorstwa runtime.
 
 ## 8. Uprawnienia i diagnostyka
 
-ROZMOWA: szybka gotowa trasa, jedna tura, finalizacja.
+ROZMOWA: wyłącznie zweryfikowana zdalna trasa, jedna tura, finalizacja;
+brak trasy = host_diagnostic bez lokalnego recovery.
 DIAGNOSTYKA: szczegółowe dowody i techniczne runbooki na żądanie.
 PROGRAMOWANIE: `AGENTS.codex.md` i właściwe instrukcje poddrzew.
 operator_recovery: osobny jawny tryb serwisowy.
@@ -185,7 +192,10 @@ referencyjnej i w kanonicznym runtime.
 ## 10. Uzupełniające kontrakty operacyjne
 
 Te procedury stosuj tylko w kontekście odpowiedniej operacji.
-Nie są listą czynności do wykonania przy każdej wiadomości.
+Wszystkie lokalne czynności, ZIP, MEMORY maintenance i CLI w tej sekcji
+są wyłącznie dla autoryzowanego operator_recovery lub lokalnego PC.
+W ordinary-chat obowiązuje sekcja 2; nie wykonuj lokalnych procedur
+w celu uzupełnienia evidence ani braku gotowej zdalnej trasy.
 Warm oznacza użycie zweryfikowanego żywego daemona;
 resume nie może tworzyć duplikatu procesu ani nowej tury.
 One-shot CLI jest dopuszczalny jako transport istniejącego,
@@ -213,7 +223,7 @@ uwierzytelniają ani nie tworzą narzędzi na powierzchni hosta.
 Bez świeżego `jazn_status` i accepted finalization utrzymaj fail-closed.
 Procedura: `docs/runtime/CHATGPT_MCP_CONNECTION_RECOVERY.md`.
 
-Po znalezieniu zweryfikowanego `active_root`:
+Wyłącznie w jawnym operator_recovery lub na lokalnym PC, po znalezieniu zweryfikowanego `active_root`:
 - `run.py` jest wyłącznie cienkim starterem użytkownika;
 - `main.py` jest jedynym centralnym control plane i właścicielem top-level dispatchu;
 - `latka_jazn.cli` jest parserem/warstwą usług komend, nie drugim właścicielem wejścia;
@@ -249,10 +259,10 @@ Jeżeli istnieje dokładnie jedna niezależna alternatywna lokalna powierzchnia 
 1. sprawdź publiczny Streamable HTTP tylko wtedy, gdy istnieje skonfigurowany endpoint; pozytywna klasyfikacja wymaga jednocześnie auth, zgodności MCP 2026-07-28, `/healthz`, `/readyz` i capability bieżącego hosta;
 2. sprawdź Secure MCP Tunnel tylko wtedy, gdy jest skonfigurowany; pozytywna klasyfikacja wymaga `process_running=true`, `healthy=true`, `ready=true` i capability bieżącego hosta;
 3. jeżeli którakolwiek z tych tras jest pozytywnie zweryfikowana, ustaw `execution_route=remote_runtime` i `next_action=use_remote_runtime_transport`, zachowując typ rzeczywistego transportu w evidence;
-4. wyłącznie w jawnym trybie `operator_recovery`, po zgodzie użytkownika i przy rzeczywistej capability, wolno użyć `host_handoff`; w ordinary `hybrid_adaptive` handoff pozostaje zabroniony;
-5. dopiero gdy żadna dozwolona lokalna powierzchnia nie utworzyła procesu, żadna zdalna trasa nie jest zweryfikowana i handoff nie jest dostępny/zaakceptowany, zakończ fail-closed techniczną diagnozą hosta.
+4. wyłącznie w jawnym trybie `operator_recovery`, po zgodzie użytkownika i przy rzeczywistej capability, wolno użyć `host_handoff`; w ordinary `remote_only` handoff pozostaje zabroniony;
+5. w ordinary `remote_only` brak zweryfikowanej zdalnej trasy natychmiast oznacza `host_diagnostic`, bez prób lokalnych; wyłącznie w jawnym operator_recovery stosuj ograniczone lokalne próby i osobno autoryzowany handoff, a przy braku gotowej trasy zakończ fail-closed.
 
-Przed każdym terminalnym `host_diagnostic` / fail-closed raportuj jawnie sześć pól discovery: `executor_available`, `library_search_available`, `library_materialize_available`, `system_search_attempted`, `system_candidate_found` i `remote_runtime_available`. Wszystkie sześć pól są tri-state: `true`, `false` albo `unknown` (`null` w JSON). `executor_available=true` wymaga zweryfikowanego utworzenia procesu, a `remote_runtime_available=true` zweryfikowanej trasy remote; żadnego z nich nie wolno promować samą deklaracją hosta. `false` wymaga jawnego negatywnego evidence właściwego dla danego pola, a brak capability, brak probe albo brak obserwacji pozostaje `unknown`. Jeżeli `run.py host-preflight` jest dostępny, przekaż hostowe obserwacje do preflight i użyj sześciu pól z jego wyniku. Jeżeli executor nie utworzył procesu i preflight nie może się uruchomić, pokaż te same sześć pól bezpośrednio z hostowego evidence; nie zamieniaj `unknown` na `false`. `system_candidate_found=true` wymaga uprzedniego `system_search_attempted=true`, ale sam SYSTEM search może przebiegać po plikach rozmowy, Projektu, Bibliotece albo równoważnej logicznej powierzchni i nie dowodzi dostępności Biblioteki.
+Przed każdym terminalnym `host_diagnostic` / fail-closed raportuj jawnie sześć pól discovery: `executor_available`, `library_search_available`, `library_materialize_available`, `system_search_attempted`, `system_candidate_found` i `remote_runtime_available`. Wszystkie sześć pól są tri-state: `true`, `false` albo `unknown` (`null` w JSON). `executor_available=true` wymaga zweryfikowanego utworzenia procesu, a `remote_runtime_available=true` zweryfikowanej trasy remote; żadnego z nich nie wolno promować samą deklaracją hosta. `false` wymaga jawnego negatywnego evidence właściwego dla danego pola, a brak capability, brak probe albo brak obserwacji pozostaje `unknown`. Wyłącznie w jawnym operator_recovery, jeżeli `run.py host-preflight` jest dostępny, przekaż hostowe obserwacje do preflight i użyj sześciu pól z jego wyniku. W ordinary-chat raportuj wyłącznie już zaobserwowane dowody, bez probe lokalnego executora; brak obserwacji pozostaje `unknown`. Jeżeli executor nie utworzył procesu i preflight nie może się uruchomić, pokaż te same sześć pól bezpośrednio z hostowego evidence; nie zamieniaj `unknown` na `false`. `system_candidate_found=true` wymaga uprzedniego `system_search_attempted=true`, ale sam SYSTEM search może przebiegać po plikach rozmowy, Projektu, Bibliotece albo równoważnej logicznej powierzchni i nie dowodzi dostępności Biblioteki.
 
 Podczas recovery nie ponawiaj ZIP, bootstrapu ani innych operacji ze skutkami ubocznymi; po odzyskaniu executora wróć do zwykłego discovery/bootstrapu i kanonicznego lifecycle `run.py`; nie twórz równoległej ścieżki uruchamiania.
 
@@ -333,7 +343,7 @@ python -X utf8 run.py chat-gpt --session-id <stabilny-id> --daemon-request-id <u
 
 Ciągłość pochodzi z trwałej lineage (`active_root`, `session_id`, `request_id`, `turn_id`, `trace_id`, hash kontraktu, accepted final), **nie z długości życia jednego pipe'a**. Świeży `turn_id` odpowiada bieżącej wiadomości, ale nie oznacza nowej tożsamości ani nowej sesji.
 
-W każdej turze każdą bieżącą wiadomość przekaż w dokładnym brzmieniu do runtime. Nie parafrazuj wiadomości przed przekazaniem. Ta reguła obowiązuje dla każdej kolejnej tury; świeże związanie tury nie oznacza świeżego procesu CLI. Jeśli kanał lub odpowiedź transportowa zginie, najpierw rozpoznaj stan istniejącego requestu/daemona. Nie odtwarzaj niepewnej tury przez replay.
+W każdej turze z gotową, zweryfikowaną trasą każdą bieżącą wiadomość przekaż w dokładnym brzmieniu do runtime. Nie parafrazuj wiadomości przed przekazaniem. Ta reguła obowiązuje dla każdej kolejnej tury; świeże związanie tury nie oznacza świeżego procesu CLI. Jeśli kanał lub odpowiedź transportowa zginie, najpierw rozpoznaj stan istniejącego requestu/daemona. Nie odtwarzaj niepewnej tury przez replay.
 
 Żywy PID, heartbeat, endpoint i nawet poprawnie przyjęta phase-1 nie są jeszcze dowodem, że Jaźń może mówić do użytkownika. `speech/visible readiness` jest spełniona wyłącznie po zaakceptowanej finalizacji bieżącej tury.
 
