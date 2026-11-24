@@ -8,6 +8,7 @@ import pytest
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedSynthesis
 from latka_jazn.core.response_pipeline import ResponsePipeline
+from latka_jazn.core.turn_pipeline_state import TurnPipelineState, TurnRequest
 from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.source_origin_ledger import SourceOriginLedger
 
@@ -41,8 +42,9 @@ def _state(
     final_accepted: bool = True,
     fallback: str = "not_fallback",
     repaired: bool = False,
-) -> SimpleNamespace:
-    return SimpleNamespace(
+) -> TurnPipelineState:
+    return TurnPipelineState(
+        request=TurnRequest(text="test"),
         model_synthesis=_synthesis("first_attempt"),
         retry_synthesis=_synthesis("ollama") if retry_selected else None,
         retry_validation=SimpleNamespace(accepted=retry_accepted) if retry_selected else None,
