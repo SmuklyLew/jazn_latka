@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 
@@ -97,11 +98,17 @@ def test_short_loader_is_consistent_with_cold_path() -> None:
     assert "action=display_exact" in loader
 
 
+class _LocalEvidence(TypedDict, total=False):
+    local_process_created: bool
+    verified_system: bool
+    local_runtime_ready: bool
+
+
 @pytest.mark.parametrize("evidence", [
     {},
     {"local_process_created": True},
     {"local_process_created": True, "verified_system": True},
     {"verified_system": True, "local_runtime_ready": True},
 ])
-def test_default_remote_only_never_promotes_local_execution(evidence: dict[str, bool]) -> None:
+def test_default_remote_only_never_promotes_local_execution(evidence: _LocalEvidence) -> None:
     assert select(complete_remote_toolset=False, **evidence) is Action.HOST_DIAGNOSTIC

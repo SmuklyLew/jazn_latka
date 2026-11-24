@@ -200,7 +200,9 @@ def test_ordinary_ingress_cannot_promote_local_executor(
     assert result["execution_route"] == "host_diagnostic"
     assert result["next_action"] == "report_capability_evidence_and_stop_without_impersonation"
     assert result["accepted_visible_turn"] is False
-    assert "no_local_bootstrap" in result["host_recovery_hint"]
+    hint = result["host_recovery_hint"]
+    assert isinstance(hint, str)
+    assert "no_local_bootstrap" in hint
 
 
 def test_evidence_payload_cannot_enable_operator_mode(
