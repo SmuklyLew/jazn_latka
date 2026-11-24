@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.23.8",
-  "active_definition_count": 3596,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.23.9",
+  "active_definition_count": 3603,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -67587,6 +67587,178 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 129
+    },
+    "tests/test_session_grounding_continuity.py::test_natural_session_reference": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_natural_session_reference",
+      "purpose": "Natural session reference",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_session_grounding_continuity.py::test_conditional_absence_is_not_a_recall_prohibition": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_conditional_absence_is_not_a_recall_prohibition",
+      "purpose": "Conditional absence is not a recall prohibition",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_session_grounding_continuity.py::test_session_permission_is_scoped": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_session_permission_is_scoped",
+      "purpose": "Session permission is scoped",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_session_grounding_continuity.py::test_validator_rejects_false_recall_and_false_absence": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_validator_rejects_false_recall_and_false_absence",
+      "purpose": "Validator rejects false recall and false absence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_session_grounding_continuity.py::test_integrity_role_conflicts_correction_and_reopen": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_integrity_role_conflicts_correction_and_reopen",
+      "purpose": "Integrity role conflicts correction and reopen",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_session_grounding_continuity.py::test_accepted_fact_uses_rule_handler_and_is_persisted": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_accepted_fact_uses_rule_handler_and_is_persisted",
+      "purpose": "Accepted fact uses rule handler and is persisted",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_session_grounding_continuity.py::test_contextual_compilation_preserves_older_relevant_turn": {
+      "path": "tests/test_session_grounding_continuity.py",
+      "name": "test_contextual_compilation_preserves_older_relevant_turn",
+      "purpose": "Contextual compilation preserves older relevant turn",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.memory_intent_contract",
+        "latka_jazn.core.runtime_answer_validator",
+        "latka_jazn.core.session_fact",
+        "latka_jazn.core.turn_response_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
     },
     "tests/test_session_recall_compound_guard.py::test_session_record_recall_is_not_falsely_compound": {
       "path": "tests/test_session_recall_compound_guard.py",
