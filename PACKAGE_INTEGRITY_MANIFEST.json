@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-23T22:07:21+00:00",
-  "updated_at_utc": "2026-11-23T22:07:21+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-24T17:45:27+00:00",
+  "updated_at_utc": "2026-11-24T17:45:27+00:00",
   "start_file": "run.py",
-  "file_count": 3893,
-  "static_file_count": 3893,
+  "file_count": 3894,
+  "static_file_count": 3894,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2984,
-      "sha256": "8bb7b0d23255c40d35cbb8306b462cc5f3c0c30d5cef04d8128be83e2c1604eb",
+      "sha256": "42f55da5e4f367be0db217f96e1ff37b5ea1052493e6a82fe9d3f42d0b9ef2e7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5827,8 +5827,8 @@
     },
     {
       "path": "latka_jazn/core/conversation_runner.py",
-      "size_bytes": 35708,
-      "sha256": "5884e775670b35f7700965d49626f232ef277a77bd9f2d05a7fd9fede0d089ea",
+      "size_bytes": 36033,
+      "sha256": "a9aeb36c211b7db4e196eb5e5391df063a6fd9d290ac91ff4e54d3fa15bf193e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7042,8 +7042,8 @@
     },
     {
       "path": "latka_jazn/core/response_pipeline.py",
-      "size_bytes": 19001,
-      "sha256": "83d0200b10323ea194a8c790a81d096ba89a05775b70b42fa31630495b17ec2e",
+      "size_bytes": 20358,
+      "sha256": "1d7b96597f5efb1110a3b745001a85d57c6c70e799a31ede960efb88b0c3c068",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7420,8 +7420,8 @@
     },
     {
       "path": "latka_jazn/core/source_origin_ledger.py",
-      "size_bytes": 7585,
-      "sha256": "9b1f85474f195023897ffca7e1500becb4adc669e28d4ecc01ee56a66b15fa1c",
+      "size_bytes": 7706,
+      "sha256": "5fdbe52bf938068382e70c3cf382b827aedc73bb214e3d7fe22b0581c9f6c109",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11822,7 +11822,7 @@
     {
       "path": "latka_jazn/version.py",
       "size_bytes": 29735,
-      "sha256": "cadd008c5ed9fe41bcdb73598d0da4912425850b1e2f9624d8db910e2d94fd55",
+      "sha256": "b726d0c18b5cbde8a8429c747bdcd985cdd87694d5fbeccc2c9c0a34dde99a5b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -32250,6 +32250,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_response_origin_and_session_checkpoint.py",
+      "size_bytes": 6511,
+      "sha256": "c1ef31fced2774f592460b273365089160e241efabe850965e66ce5105669ada",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_rest_cloud_performance_hygiene.py",
       "size_bytes": 10754,
       "sha256": "efebce1e56f45f35fcde0cfe8bef67f9cc1467e0369144b6c5e5d99cfe281395",
@@ -34834,8 +34843,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3161453,
-      "sha256": "aef037a57a8991a51c3f2af4d5f79c34532bf01d8bbb60e0a5250ec10485848d",
+      "size_bytes": 3167087,
+      "sha256": "41d4bc72ca11f0e40b1d12fddcc5ea47474e02e8ebb263e8c3a5a8ca2959beff",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35492,11 +35501,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"

@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "2bdde5b883a17672ba3a5330014020c7d53edfbf",
-  "base_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
-  "commit_date": "2026-11-23T22:07:21Z",
+  "base_merge_commit": "5462fc2fa0dcf50ee4b33826b438a49093251355",
+  "base_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
+  "commit_date": "2026-11-24T17:45:27Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-23T22:07:21+00:00",
+  "generated_at_utc": "2026-11-24T17:45:27+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "65ce591280c357aa6346509cc58d43f0090322b3",
+  "git_tree_sha": "63cc228081b414fadc556c997983a87ce8f0ef06",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,17 +18,17 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "2bdde5b883a17672ba3a5330014020c7d53edfbf",
-    "source_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence"
+    "source_commit": "5462fc2fa0dcf50ee4b33826b438a49093251355",
+    "source_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence"
   },
   "metadata_only_paths": [
     "PACKAGE_INTEGRITY_MANIFEST.json",
     "SOURCE_PROVENANCE.json"
   ],
-  "release_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
   "remote_url": "https://github.com/SmuklyLew/jazn_latka",
   "repository": "SmuklyLew/jazn_latka",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
   "schema_contract": {
     "accepted_schema_versions": [
       "source_provenance/v2"
@@ -48,11 +48,11 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "2bdde5b883a17672ba3a5330014020c7d53edfbf",
+  "source_commit": "5462fc2fa0dcf50ee4b33826b438a49093251355",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
-  "source_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
+  "source_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
   "tag": null,
   "truth_boundary": "Git fields were derived from canonical Git objects. The provenance records the immutable code/content commit rather than pretending a self-referential metadata commit can name itself. Only descendants changing SOURCE_PROVENANCE.json and PACKAGE_INTEGRITY_MANIFEST.json remain valid. Contract schema identity is independent from runtime/release identity. source_commit/source_version identify the immutable code-content source; lineage.base_* identifies the resolved merge-base when available; legacy aliases remain for migration compatibility only.",
-  "update_version": "16.3.25.5.116.0.34.94.6.127.23.7-jss-v104-v80-convergence",
+  "update_version": "16.3.25.5.116.0.34.94.6.127.23.8-jss-v104-v80-convergence",
   "version_source": "latka_jazn/version.py"
 }
