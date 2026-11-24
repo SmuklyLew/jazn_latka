@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3613,
+  "active_definition_count": 3614,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -10122,6 +10122,25 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 114
+    },
+    "tests/test_chatgpt_post_materialization_launch_contract.py::test_standalone_bootstrap_and_package_manifest_share_ingress_scope": {
+      "path": "tests/test_chatgpt_post_materialization_launch_contract.py",
+      "name": "test_standalone_bootstrap_and_package_manifest_share_ingress_scope",
+      "purpose": "Standalone bootstrap and package manifest share ingress scope",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 15,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.cli_commands.lifecycle"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 171
     },
     "tests/test_chatgpt_powershell_ci_catalog_order.py::test_powershell_pr_materializes_then_checks_catalog_before_release_metadata": {
       "path": "tests/test_chatgpt_powershell_ci_catalog_order.py",
