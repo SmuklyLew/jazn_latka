@@ -26,12 +26,27 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
         allow_abbrev=False,
     )
     parser.add_argument("--input", help="Optional JSON contract path or '-' for stdin")
+    parser.add_argument(
+        "--ingress-mode",
+        choices=[ChatGptIngressMode.REMOTE_ONLY.value, ChatGptIngressMode.OPERATOR_RECOVERY.value],
+        help=(
+            "External evidence defaults to remote-only. Explicit operator recovery "
+            "allows local attachment probes; bare local diagnostics retain compatibility."
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="Pretty-print JSON output")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     try:
-        payload = json_object_from_file(args.input) if args.input else {
-            "ingress_mode": ChatGptIngressMode.OPERATOR_RECOVERY.value,
+        # Mode is selected by the caller, never by untrusted JSON evidence.
+        # A direct, input-free local diagnostic is the existing operator entrypoint.
+        ingress_mode = normalize_chatgpt_ingress_mode(
+            args.ingress_mode or (
+                ChatGptIngressMode.REMOTE_ONLY.value if args.input is not None
+                else ChatGptIngressMode.OPERATOR_RECOVERY.value
+            )
+        )
+        payload = json_object_from_file(args.input) if args.input is not None else {
             "package_required": False,
             "executor_observations": [{
                 "surface": "current_local_python_process",
@@ -43,15 +58,14 @@ def run_host_preflight_cli(argv: Sequence[str] | None = None) -> int:
             "attachments": [],
         }
         package_required = optional_bool(payload, "package_required", False)
-        ingress_mode = normalize_chatgpt_ingress_mode(
-            payload.get(
-                "ingress_mode",
-                ChatGptIngressMode.OPERATOR_RECOVERY.value,
-            )
+        # Ordinary ingress cannot inspect local paths supplied by an evidence file.
+        attachment_reports = (
+            attachment_reports_from_payload(payload)
+            if ingress_mode is ChatGptIngressMode.OPERATOR_RECOVERY else ()
         )
         decision = plan_chatgpt_host_preflight(
             executor_observations_from_payload(payload),
-            attachment_reports=attachment_reports_from_payload(payload),
+            attachment_reports=attachment_reports,
             package_required=bool(package_required),
             discovery_evidence=discovery_evidence_from_payload(payload),
             ingress_mode=ingress_mode,

@@ -10,11 +10,16 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _run_preflight(tmp_path: Path, payload: dict[str, object]) -> subprocess.CompletedProcess[str]:
+def _run_preflight(
+    tmp_path: Path, payload: dict[str, object], *, ingress_mode: str | None = "operator_recovery",
+) -> subprocess.CompletedProcess[str]:
     contract = tmp_path / "host-preflight.json"
     contract.write_text(json.dumps(payload), encoding="utf-8")
+    command = [sys.executable, str(ROOT / "run.py"), "host-preflight", "--input", str(contract), "--json"]
+    if ingress_mode is not None:
+        command.extend(["--ingress-mode", ingress_mode])
     return subprocess.run(
-        [sys.executable, str(ROOT / "run.py"), "host-preflight", "--input", str(contract), "--json"],
+        command,
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -90,3 +95,63 @@ def test_run_py_host_preflight_blocks_stable_truncated_attachment(tmp_path: Path
     assert result["package_state"] == "incomplete"
     assert result["reason_code"] == "attachment_package_incomplete"
     assert result["attachments"][0]["state"] == "incomplete"
+
+
+def test_external_preflight_payload_cannot_select_operator_mode(tmp_path: Path) -> None:
+    completed = _run_preflight(
+        tmp_path,
+        {
+            "ingress_mode": "operator_recovery",
+            "executor_observations": _degraded_executor_payload(),
+            "package_required": True,
+            # The operator parser would reject this malformed attachment before planning.
+            "attachments": [{"expected_size_bytes": 32}],
+        },
+        ingress_mode=None,
+    )
+
+    assert completed.returncode == 3, completed.stderr
+    result = json.loads(completed.stdout)
+    assert result["ingress_mode"] == "remote_only"
+    assert result["local_executor_fallback_allowed"] is False
+    assert result["bootstrap_allowed"] is False
+    assert result["gate_passed"] is False
+    assert result["handoff_required"] is False
+    assert result["package_state"] == "unknown"
+    assert result["attachments"] == []
+    assert result["canonical_resume_entrypoint"] is None
+
+
+def test_explicit_remote_mode_cannot_be_overridden_by_input(tmp_path: Path) -> None:
+    completed = _run_preflight(
+        tmp_path,
+        {
+            "ingress_mode": "hybrid_adaptive",
+            "executor_observations": _degraded_executor_payload(),
+        },
+        ingress_mode="remote_only",
+    )
+
+    assert completed.returncode == 3, completed.stderr
+    result = json.loads(completed.stdout)
+    assert result["ingress_mode"] == "remote_only"
+    assert result["bootstrap_allowed"] is False
+    assert result["execution_route"] == "none"
+
+
+def test_input_free_operator_diagnostic_retains_compatibility() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "run.py"), "host-preflight", "--json"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    assert result["ingress_mode"] == "operator_recovery"
+    assert result["bootstrap_allowed"] is True
+    assert result["runtime_state"] == "unverified"
