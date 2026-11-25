@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3632,
+  "active_definition_count": 3637,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51638,11 +51638,14 @@
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.model_adapters.base",
         "latka_jazn.model_adapters.chatgpt_runtime_adapter",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 43
+      "line": 46
     },
     "tests/test_model_executor_preflight.py::test_null_adapter_is_unavailable_without_fake_attempt": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51659,11 +51662,14 @@
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.model_adapters.base",
         "latka_jazn.model_adapters.chatgpt_runtime_adapter",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 57
     },
     "tests/test_model_executor_preflight.py::test_non_language_voice_adapter_is_unavailable": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51680,11 +51686,14 @@
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.model_adapters.base",
         "latka_jazn.model_adapters.chatgpt_runtime_adapter",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 66
     },
     "tests/test_model_executor_preflight.py::test_non_object_adapter_status_is_unavailable": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51701,11 +51710,14 @@
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.model_adapters.base",
         "latka_jazn.model_adapters.chatgpt_runtime_adapter",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 70
+      "line": 73
     },
     "tests/test_model_executor_preflight.py::test_configured_local_model_is_only_retry_eligible_executor": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51722,11 +51734,136 @@
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.model_adapters.base",
         "latka_jazn.model_adapters.chatgpt_runtime_adapter",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 82
+      "line": 85
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_openai_api_is_external_not_a_local_retry_executor": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_openai_api_is_external_not_a_local_retry_executor",
+      "purpose": "Stage05 openai api is external not a local retry executor",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 93
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_siwc_is_distinct_external_oauth_not_chatgpt_host": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_siwc_is_distinct_external_oauth_not_chatgpt_host",
+      "purpose": "Stage05 siwc is distinct external oauth not chatgpt host",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_unverified_lan_compatible_backend_fails_closed": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_unverified_lan_compatible_backend_fails_closed",
+      "purpose": "Stage05 unverified lan compatible backend fails closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 116
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_loopback_compatible_backend_stays_local": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_loopback_compatible_backend_stays_local",
+      "purpose": "Stage05 loopback compatible backend stays local",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 127
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_compatible_remote_dns_is_not_mislabelled_local": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_compatible_remote_dns_is_not_mislabelled_local",
+      "purpose": "Stage05 compatible remote dns is not mislabelled local",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 136
     },
     "tests/test_model_guided_speech_boundaries.py::test_non_object_adapter_description_fails_closed": {
       "path": "tests/test_model_guided_speech_boundaries.py",
