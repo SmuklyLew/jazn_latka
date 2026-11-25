@@ -801,6 +801,7 @@ class DaemonChatJob:
     host_finalization_gate_settled_at_utc: str | None = None
     host_finalization_gate_wait_seconds: float = 0.0
     host_finalization_error_code: str | None = None
+    host_projection_recovery_status: str = "not_reverified"
     turn_context: TurnExecutionContext | None = field(default=None, repr=False)
     active_session_worker: RuntimeSessionWorker | HardIsolatedRuntimeSessionWorker | None = field(default=None, repr=False)
     done_event: threading.Event = field(default_factory=threading.Event, repr=False)
@@ -870,6 +871,7 @@ class DaemonChatJob:
             "host_finalization_gate_settled_at_utc": self.host_finalization_gate_settled_at_utc,
             "host_finalization_gate_wait_seconds": self.host_finalization_gate_wait_seconds,
             "host_finalization_error_code": self.host_finalization_error_code,
+            "host_projection_recovery_status": self.host_projection_recovery_status,
             "next_turn_acceptance_state": (
                 "waiting_for_host_finalization"
                 if self.status == DAEMON_CHAT_JOB_HOST_WAIT_STATE
@@ -2196,6 +2198,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 changed = True
                 continue
 
+            self._recover_committed_job_projections_locked(predecessor)
             self._promote_host_finalization_waiter_locked(job, predecessor=predecessor)
             changed = True
 
@@ -2473,12 +2476,69 @@ class JaznDaemonServer(ThreadingHTTPServer):
             changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
                 changed = True
+            if job is not None:
+                self._recover_committed_job_projections_locked(job)
             changed = self._advance_host_finalization_waiters_locked(source="chat_job_probe") or changed
             if changed:
                 self._persist_chat_jobs_locked(stage="host_finalization_reconciled")
             if job is not None:
                 self._reconcile_committed_notification_locked(job)
             return job
+
+    def _recover_committed_job_projections_locked(self, job: DaemonChatJob) -> None:
+        """Repair the existing commit under the owning daemon lock, never execute a turn."""
+        if not (job.status == "completed" or (
+            job.status == "recovered_after_restart"
+            and job.recovery_disposition == "completed_request_result_unavailable"
+        )):
+            return
+        turn_id = str(job.host_turn_id or "")
+        trace_id = str(job.host_trace_id or "")
+        digest = str(job.host_request_contract_hash or "")
+        user_hash = str(job.user_text_sha256 or "")
+        if not (turn_id and trace_id and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and re.fullmatch(r"[0-9a-f]{64}", user_hash)):
+            return
+        # An in-process success receipt is not a persistent substitute for
+        # re-verification after restart. Pending repairs remain retryable.
+        if job.host_projection_recovery_status == "published":
+            return
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError, read_committed_host_request,
+        )
+        from latka_jazn.core.conversation_turn_api import RunnerOperations
+
+        try:
+            record = read_committed_host_request(self.config.root, turn_id=turn_id)
+            binding = record.get("binding")
+            if not (isinstance(binding, dict)
+                    and record.get("request_contract_hash") == digest
+                    and binding.get("daemon_request_id") == job.request_id
+                    and binding.get("turn_id") == turn_id and binding.get("trace_id") == trace_id
+                    and binding.get("user_text_sha256") == user_hash):
+                job.host_projection_recovery_status = "binding_mismatch"
+                return
+            # Do not alter session state under an executing worker. The
+            # canonical projection also checks before-state/continuity hashes.
+            if any(other is not job and other.status == "running"
+                   and other.session_id == job.session_id
+                   for other in self.chat_jobs.values()):
+                job.host_projection_recovery_status = "deferred_active_session"
+                return
+            repair = RunnerOperations.recover_projection(
+                config=self.config, turn_id=turn_id, request_id=job.request_id,
+            )
+            capture = repair.get("capture") or {}
+            conversation = repair.get("conversation") or {}
+            session = repair.get("session") or {}
+            job.host_projection_recovery_status = (
+                "published" if repair.get("acceptance_state") == "already_committed"
+                and capture.get("projection_status") == "published"
+                and conversation.get("ok") is True and session.get("saved") is True
+                else "pending_recovery"
+            )
+        except (HostRequestStoreError, OSError, RuntimeError, ValueError, TypeError):
+            job.host_projection_recovery_status = "pending_recovery"
 
     def _reconcile_committed_notification_locked(self, job: DaemonChatJob) -> bool:
         """Repair only the durable notification of an already accepted job.

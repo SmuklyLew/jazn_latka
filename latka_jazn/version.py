@@ -1,3 +1,4 @@
+# v127.30.10 stage05: owning-daemon committed projection recovery (unreleased).
 # v127.30.10 stage05: shared public CLI/JSONL phase-one authority (unreleased).
 # v127.30.10 stage05: crash-released conversation projection lock and historical acceptance order (unreleased).
 # v127.30.10 stage05: guarded committed session projection and exact pointer recovery (unreleased).

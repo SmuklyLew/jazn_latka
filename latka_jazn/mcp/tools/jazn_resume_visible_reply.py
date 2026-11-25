@@ -222,6 +222,19 @@ def run(
     except HostRequestStoreError as exc:
         return _tool_error(str(exc))
     if committed is not None:
+        if daemon_endpoint is not None:
+            # Historical text can be delivered offline, but only an authenticated
+            # poll of the same job may attest owning-daemon projection recovery.
+            try:
+                observed = gateway.result(request_id)
+                if (observed.get("request_id") == request_id
+                        and observed.get("host_turn_id") == committed.get("turn_id")
+                        and observed.get("host_trace_id") == committed.get("trace_id")
+                        and observed.get("host_request_contract_hash") == host_request_contract_hash
+                        and observed.get("host_projection_recovery_status") == "published"):
+                    committed["projection_status"] = "published"
+            except (GatewayError, OSError, RuntimeError, ValueError, TypeError):
+                pass
         return {
             "content": [{"type": "text", "text": committed["final_visible_text"]}],
             "structuredContent": committed,
@@ -250,6 +263,14 @@ def run(
     if action == "display_exact":
         display = _display_exact(runtime_result, presentation)
         capture = _object_or_none(runtime_result.get("host_visible_reply_capture")) or {}
+        if display.get("isError") is not True and daemon_endpoint is not None:
+            # Public readers do not publish session state in the client process.
+            if envelope.get("host_turn_id") == capture.get("turn_id") and capture.get("turn_id"):
+                display.setdefault("_meta", {})["projection_recovery"] = {
+                    "recovery_only": True,
+                    "projection_status": envelope.get("host_projection_recovery_status") or "not_reverified",
+                }
+            return display
         if display.get("isError") is not True and capture.get("projection_status") == "pending_recovery":
             from latka_jazn.config import JaznConfig
             from latka_jazn.core.chat_command_contract import (
