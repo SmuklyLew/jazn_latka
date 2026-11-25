@@ -31,12 +31,33 @@ def test_client_cannot_elevate_paid_inference_permission(
 
 def test_ollama_http_failure_opens_shared_model_circuit_without_replay(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
+    wire_calls: list[tuple[str, str]] = []
     recovered = threading.Event()
 
     class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            wire_calls.append(("GET", self.path))
+            if self.path != "/api/tags":
+                self.send_error(404)
+                return
+            # Synthetic installed-model evidence required by the real
+            # pre-inference authorization gate. Never mock the gate itself.
+            body = json.dumps({"models": [{
+                "name": "synthetic:latest",
+                "model": "synthetic:latest",
+                "size": 123456,
+                "digest": "a" * 64,
+            }]}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
         def do_POST(self) -> None:
             self.rfile.read(int(self.headers["Content-Length"]))
             calls.append(self.path)
+            wire_calls.append(("POST", self.path))
             if not recovered.is_set():
                 self.send_response(503)
                 self.end_headers()
@@ -72,6 +93,7 @@ def test_ollama_http_failure_opens_shared_model_circuit_without_replay(tmp_path:
         assert not blocked.generated
         assert blocked.transport["attempts"][0]["request_dispatched"] is False
         assert calls == ["/api/chat"] * 3
+        assert wire_calls == [("GET", "/api/tags"), ("POST", "/api/chat")] * 3
         other = LocalLlmAdapter(root=tmp_path, model="different", api_base=base)
         assert other.describe()["model_transport_circuit"]["state"] == "closed"
         recovered.set()
@@ -79,6 +101,7 @@ def test_ollama_http_failure_opens_shared_model_circuit_without_replay(tmp_path:
         result = rebuilt.generate(request)
         assert result.generated
         assert calls == ["/api/chat"] * 4
+        assert wire_calls == [("GET", "/api/tags"), ("POST", "/api/chat")] * 4
         assert rebuilt.describe()["model_transport_circuit"]["state"] == "closed"
     finally:
         server.shutdown()
