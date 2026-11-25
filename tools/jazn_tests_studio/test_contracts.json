@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3686,
+  "active_definition_count": 3688,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -17372,7 +17372,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 71
+      "line": 72
     },
     "tests/test_daemon_shutdown_ack_before_teardown.py::test_shutdown_marker_reuses_last_evidence_without_full_reverification": {
       "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
@@ -17390,7 +17390,25 @@
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 90
+      "line": 91
+    },
+    "tests/test_daemon_shutdown_ack_before_teardown.py::test_shutdown_waits_for_finalization_lock_before_ack": {
+      "path": "tests/test_daemon_shutdown_ack_before_teardown.py",
+      "name": "test_shutdown_waits_for_finalization_lock_before_ack",
+      "purpose": "The actual shutdown handler cannot interrupt a held phase-2 job lock.",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 177
     },
     "tests/test_daemon_shutdown_http_body.py::test_authenticated_shutdown_ack_with_real_http_request": {
       "path": "tests/test_daemon_shutdown_http_body.py",
@@ -17428,7 +17446,7 @@
       ],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 72
+      "line": 73
     },
     "tests/test_dependency_audit_local_tools.py::test_tool_sibling_package_is_local_but_external_import_remains": {
       "path": "tests/test_dependency_audit_local_tools.py",
@@ -51856,7 +51874,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 107
+      "line": 108
     },
     "tests/test_model_executor_preflight.py::test_stage05_unverified_lan_compatible_backend_fails_closed": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51880,7 +51898,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 118
+      "line": 119
     },
     "tests/test_model_executor_preflight.py::test_stage05_loopback_compatible_backend_stays_local": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51904,7 +51922,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 130
     },
     "tests/test_model_executor_preflight.py::test_stage05_compatible_remote_dns_is_not_mislabelled_local": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51928,7 +51946,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 139
     },
     "tests/test_model_executor_preflight.py::test_stage05_deceptive_localhost_suffix_is_never_trusted": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51956,7 +51974,33 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 149
+      "line": 150
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_unapproved_openai_preflight_is_unavailable_without_network": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_unapproved_openai_preflight_is_unavailable_without_network",
+      "purpose": "Stage05 unapproved openai preflight is unavailable without network",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "network"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 159
     },
     "tests/test_model_guided_speech_boundaries.py::test_non_object_adapter_description_fails_closed": {
       "path": "tests/test_model_guided_speech_boundaries.py",
