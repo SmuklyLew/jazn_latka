@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3675,
+  "active_definition_count": 3678,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71143,6 +71143,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 89
+    },
+    "tests/test_stage05_ollama_cloud_boundary.py::test_cloud_selector_cannot_reach_either_ollama_adapter": {
+      "path": "tests/test_stage05_ollama_cloud_boundary.py",
+      "name": "test_cloud_selector_cannot_reach_either_ollama_adapter",
+      "purpose": "Cloud selector cannot reach either ollama adapter",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_stage05_ollama_cloud_boundary.py::test_remote_metadata_excludes_alias_even_if_running": {
+      "path": "tests/test_stage05_ollama_cloud_boundary.py",
+      "name": "test_remote_metadata_excludes_alias_even_if_running",
+      "purpose": "Remote metadata excludes alias even if running",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_stage05_ollama_cloud_boundary.py::test_automatic_ollama_discovery_uses_local_egress_policy": {
+      "path": "tests/test_stage05_ollama_cloud_boundary.py",
+      "name": "test_automatic_ollama_discovery_uses_local_egress_policy",
+      "purpose": "Automatic ollama discovery uses local egress policy",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
     },
     "tests/test_stage05_ollama_runtime_first.py::test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable": {
       "path": "tests/test_stage05_ollama_runtime_first.py",
