@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T03:22:21+00:00",
-  "updated_at_utc": "2026-11-25T03:22:21+00:00",
+  "generated_at_utc": "2026-11-25T03:31:04+00:00",
+  "updated_at_utc": "2026-11-25T03:31:04+00:00",
   "start_file": "run.py",
-  "file_count": 3932,
-  "static_file_count": 3932,
+  "file_count": 3934,
+  "static_file_count": 3934,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "89f08998793a7658316b2890463e22398a954120bb98ced8cb48fa81cd7e1f2e",
+      "sha256": "b872552668585336079ba5d4ceadfcf2430946e05963e8d010b9d6be52f33880",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 21280,
-      "sha256": "d9f131d7364fc77c2de83e5523fc1675f38a146e5af084e2895cbab901b14a8b",
+      "size_bytes": 22409,
+      "sha256": "1f6a4afda2d482226fe58a8f6f94a8ffc5d3c1a1593ea3640e0efcdd078ed0af",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7159,8 +7159,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 257673,
-      "sha256": "0500890e37d633a1a82e52f8f71c1975bd977bdc3b2005626e706a4297406e8b",
+      "size_bytes": 258103,
+      "sha256": "35291dfc9f564dce2a1cf735ffc2b494b48016588744bc42129cf1f85d378a1f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -19380,6 +19380,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/test_daemon_completed_request_replay_v127_30_10_pre_pyright_7a7d96d.py",
+      "size_bytes": 4339,
+      "sha256": "89474a734d09f5b708bff00da4636fe79571002a6b54dea986f704de05efcb77",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/test_daemon_result_transport_live_diagnostics__pre_v16_3_25_5_116_0_34_29.py",
       "size_bytes": 7351,
       "sha256": "d004e7deda1414352fd20aa8fdedad5e19fc7235c4c61422480eac9ae00beca3",
@@ -20184,6 +20193,15 @@
       "path": "tests/archive/v127.30.10-pre-plugin-aab2549.md",
       "size_bytes": 908,
       "sha256": "446517c05bebe7378304819da38c8e1cebbff189648f7bd61b7d95bdc3aa2fe4",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127.30.10-pre-pyright-7a7d96d.md",
+      "size_bytes": 436,
+      "sha256": "6718c62a993e85a80c63214fac64906d5768859342cc29925462dd3c2071d115",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -28579,8 +28597,8 @@
     },
     {
       "path": "tests/test_daemon_completed_request_replay.py",
-      "size_bytes": 4339,
-      "sha256": "89474a734d09f5b708bff00da4636fe79571002a6b54dea986f704de05efcb77",
+      "size_bytes": 4727,
+      "sha256": "89f8ab0b9b6be94f3fbf940c226aef8f6b8806f7291d2b717f3c52a777de8b70",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35186,7 +35204,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 3190645,
-      "sha256": "e29cec9a6a7fe964f40b1a525a1fb5dab18953098b318af2358186b99a78f6b4",
+      "sha256": "b4aeb438c2b6af0190302109ff3c04d799bb52903215bc44af7397094fcd38a0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
