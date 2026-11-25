@@ -1,12 +1,12 @@
 {
   "base_branch": "master",
-  "base_merge_commit": "1e7b3b757748ebb394387139a5022feef7773452",
+  "base_merge_commit": "da3d6d296417cb65ab373a7ae6b02f13a4d52737",
   "base_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "commit_date": "2026-11-25T20:48:00Z",
+  "commit_date": "2026-11-25T21:03:42Z",
   "dirty": false,
-  "generated_at_utc": "2026-11-25T20:48:00+00:00",
+  "generated_at_utc": "2026-11-25T21:03:42+00:00",
   "generation_mode": "release_metadata",
-  "git_tree_sha": "62ca3a81d9bb1dfdb908767edc57a6e5a23d3f04",
+  "git_tree_sha": "e21da9775f3eeb5f7bb5a803121ea065ad9b64a7",
   "legacy_aliases": {
     "base_merge_commit": "source_commit",
     "base_version": "source_version",
@@ -18,7 +18,7 @@
     "base_version": "16.3.25.5.116.0.34.94.6.74-recall-ollama-jss-status",
     "relationship": "merge_base_to_immutable_source_commit",
     "resolution": "resolved",
-    "source_commit": "1e7b3b757748ebb394387139a5022feef7773452",
+    "source_commit": "da3d6d296417cb65ab373a7ae6b02f13a4d52737",
     "source_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence"
   },
   "metadata_only_paths": [
@@ -48,7 +48,7 @@
     }
   },
   "schema_version": "source_provenance/v2",
-  "source_commit": "1e7b3b757748ebb394387139a5022feef7773452",
+  "source_commit": "da3d6d296417cb65ab373a7ae6b02f13a4d52737",
   "source_commit_policy": "base_merge_commit identifies the immutable code/content commit; current HEAD may be that commit or a descendant changing only release metadata files",
   "source_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "tag": null,
