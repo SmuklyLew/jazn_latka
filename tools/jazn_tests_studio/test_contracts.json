@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3620,
+  "active_definition_count": 3623,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -55768,6 +55768,7 @@
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core",
+        "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.daemon_autostart",
         "latka_jazn.core.epistemic_decision_ledger",
         "latka_jazn.db.runtime_sqlite"
@@ -55792,6 +55793,7 @@
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core",
+        "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.daemon_autostart",
         "latka_jazn.core.epistemic_decision_ledger",
         "latka_jazn.db.runtime_sqlite"
@@ -55817,6 +55819,7 @@
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core",
+        "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.daemon_autostart",
         "latka_jazn.core.epistemic_decision_ledger",
         "latka_jazn.db.runtime_sqlite"
@@ -55841,6 +55844,7 @@
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core",
+        "latka_jazn.core.conversation_state_store",
         "latka_jazn.core.daemon_autostart",
         "latka_jazn.core.epistemic_decision_ledger",
         "latka_jazn.db.runtime_sqlite"
@@ -55848,6 +55852,32 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 293
+    },
+    "tests/test_persistent_runtime_e2e_hardening.py::test_interrupted_host_finalization_restarts_without_replay_or_false_acceptance": {
+      "path": "tests/test_persistent_runtime_e2e_hardening.py",
+      "name": "test_interrupted_host_finalization_restarts_without_replay_or_false_acceptance",
+      "purpose": "A lost phase-2 acknowledgement is not permission to submit again.",
+      "expected": "Pytest completes this contract cleanly and all 15 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "host",
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 15,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.db.runtime_sqlite"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 357
     },
     "tests/test_persistent_runtime_lifecycle_transport.py::test_ensure_starts_resolved_subject_b_never_requested_a": {
       "path": "tests/test_persistent_runtime_lifecycle_transport.py",
@@ -70251,6 +70281,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 142
+    },
+    "tests/test_stage04_transport_model_continuity.py::test_disconnected_http_client_polls_same_request_and_switches_model": {
+      "path": "tests/test_stage04_transport_model_continuity.py",
+      "name": "test_disconnected_http_client_polls_same_request_and_switches_model",
+      "purpose": "Losing an HTTP response must not create a second daemon turn.",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 20,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "native_docstring",
+      "line": 52
+    },
+    "tests/test_stage04_transport_model_continuity.py::test_turn_scoped_model_change_keeps_real_accepted_session_history": {
+      "path": "tests/test_stage04_transport_model_continuity.py",
+      "name": "test_turn_scoped_model_change_keeps_real_accepted_session_history",
+      "purpose": "Turn scoped model change keeps real accepted session history",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 178
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
