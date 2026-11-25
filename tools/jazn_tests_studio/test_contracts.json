@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3647,
+  "active_definition_count": 3651,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -64839,10 +64839,10 @@
       "description_source": "source_identity",
       "line": 71
     },
-    "tests/test_runtime_stability_package_smoke.py::test_chat_integrity_check_retries_transient_missing_consensus": {
+    "tests/test_runtime_stability_package_smoke.py::test_chat_integrity_check_does_not_replay_missing_consensus": {
       "path": "tests/test_runtime_stability_package_smoke.py",
-      "name": "test_chat_integrity_check_retries_transient_missing_consensus",
-      "purpose": "Chat integrity check retries transient missing consensus",
+      "name": "test_chat_integrity_check_does_not_replay_missing_consensus",
+      "purpose": "Chat integrity check does not replay missing consensus",
       "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
@@ -64883,7 +64883,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 124
+      "line": 125
     },
     "tests/test_runtime_stability_package_smoke.py::test_chat_integrity_check_selects_payload_before_trailing_json_noise": {
       "path": "tests/test_runtime_stability_package_smoke.py",
@@ -64906,7 +64906,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 148
+      "line": 149
     },
     "tests/test_runtime_stability_package_smoke.py::test_chat_integrity_check_does_not_mask_explicit_integrity_mismatch": {
       "path": "tests/test_runtime_stability_package_smoke.py",
@@ -64929,7 +64929,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 163
+      "line": 165
     },
     "tests/test_runtime_stability_package_smoke.py::test_inactive_status_snapshot_is_a_valid_smoke_observation": {
       "path": "tests/test_runtime_stability_package_smoke.py",
@@ -64952,7 +64952,53 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 184
+      "line": 186
+    },
+    "tests/test_runtime_stability_package_smoke.py::test_chat_integrity_check_rejects_unapproved_candidate": {
+      "path": "tests/test_runtime_stability_package_smoke.py",
+      "name": "test_chat_integrity_check_rejects_unapproved_candidate",
+      "purpose": "Chat integrity check rejects unapproved candidate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "package",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.tools",
+        "latka_jazn.tools.package_export",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 200
+    },
+    "tests/test_runtime_stability_package_smoke.py::test_inactive_chat_denial_requires_diagnostic_without_final_text": {
+      "path": "tests/test_runtime_stability_package_smoke.py",
+      "name": "test_inactive_chat_denial_requires_diagnostic_without_final_text",
+      "purpose": "Inactive chat denial requires diagnostic without final text",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "package",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn",
+        "latka_jazn.tools",
+        "latka_jazn.tools.package_export",
+        "latka_jazn.tools.source_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 212
     },
     "tests/test_runtime_stability_provenance.py::test_clean_checkout_provenance_uses_real_git_objects": {
       "path": "tests/test_runtime_stability_provenance.py",
@@ -70787,6 +70833,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_stage05_paid_factory_authorization.py::test_explicit_paid_adapter_denied_without_opt_in": {
+      "path": "tests/test_stage05_paid_factory_authorization.py",
+      "name": "test_explicit_paid_adapter_denied_without_opt_in",
+      "purpose": "Explicit paid adapter denied without opt in",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.model_adapters"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 11
+    },
+    "tests/test_stage05_paid_factory_authorization.py::test_paid_adapter_explicit_opt_in_allows_construction_only": {
+      "path": "tests/test_stage05_paid_factory_authorization.py",
+      "name": "test_paid_adapter_explicit_opt_in_allows_construction_only",
+      "purpose": "Paid adapter explicit opt in allows construction only",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.model_adapters"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
     },
     "tests/test_stage05_runtime_identity_authority.py::test_disabled_autostart_never_authorizes_conversation_without_daemon": {
       "path": "tests/test_stage05_runtime_identity_authority.py",
