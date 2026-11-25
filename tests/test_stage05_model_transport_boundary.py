@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from email.message import Message
 from urllib.error import HTTPError
 import json
 import threading
@@ -47,7 +48,7 @@ def test_ollama_http_failure_opens_shared_model_circuit_without_replay(tmp_path:
             self.end_headers()
             self.wfile.write(body)
 
-        def log_message(self, *_args: object) -> None:
+        def log_message(self, format: str, *args: object) -> None:
             pass
 
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -89,7 +90,7 @@ def test_non_transient_http_denial_does_not_open_circuit(monkeypatch: pytest.Mon
     calls = []
     def denied(request, *, timeout):
         calls.append(request.full_url)
-        raise HTTPError(request.full_url, 401, "denied", {}, None)
+        raise HTTPError(request.full_url, 401, "denied", Message(), None)
     monkeypatch.setattr("latka_jazn.model_adapters.local_llm_adapter.urlopen", denied)
     adapter = LocalLlmAdapter(model="synthetic")
     for _ in range(4):
