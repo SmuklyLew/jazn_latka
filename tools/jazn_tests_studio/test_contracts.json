@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3614,
+  "active_definition_count": 3619,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -55741,6 +55741,7 @@
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -55755,7 +55756,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 134
     },
     "tests/test_persistent_runtime_e2e_hardening.py::test_epistemic_ledger_uses_canonical_runtime_journal_policy": {
       "path": "tests/test_persistent_runtime_e2e_hardening.py",
@@ -55764,6 +55765,7 @@
       "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "e2e",
       "tags": [
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -55778,7 +55780,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 150
+      "line": 154
     },
     "tests/test_persistent_runtime_e2e_hardening.py::test_host_finalization_does_not_end_liveness_and_pending_turn_recovers_after_restart": {
       "path": "tests/test_persistent_runtime_e2e_hardening.py",
@@ -55788,6 +55790,7 @@
       "category": "e2e",
       "tags": [
         "host",
+        "repository",
         "runtime"
       ],
       "markers": [],
@@ -55802,7 +55805,31 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 172
+      "line": 176
+    },
+    "tests/test_persistent_runtime_e2e_hardening.py::test_real_daemon_job_loop_continues_session_across_os_processes": {
+      "path": "tests/test_persistent_runtime_e2e_hardening.py",
+      "name": "test_real_daemon_job_loop_continues_session_across_os_processes",
+      "purpose": "Real daemon job loop continues session across os processes",
+      "expected": "Pytest completes this contract cleanly and all 24 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [
+        "repository",
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 24,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.daemon_autostart",
+        "latka_jazn.core.epistemic_decision_ledger",
+        "latka_jazn.db.runtime_sqlite"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 272
     },
     "tests/test_persistent_runtime_lifecycle_transport.py::test_ensure_starts_resolved_subject_b_never_requested_a": {
       "path": "tests/test_persistent_runtime_lifecycle_transport.py",
@@ -74166,6 +74193,92 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 26
+    },
+    "tests/test_turn_session_provenance_continuity.py::test_real_runner_distinguishes_new_session_and_in_process_reuse": {
+      "path": "tests/test_turn_session_provenance_continuity.py",
+      "name": "test_real_runner_distinguishes_new_session_and_in_process_reuse",
+      "purpose": "Real runner distinguishes new session and in process reuse",
+      "expected": "Pytest completes this contract cleanly and all 22 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 22,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.session_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_turn_session_provenance_continuity.py::test_history_reuse_is_not_checkpoint_resurrection_or_local_worker_reuse": {
+      "path": "tests/test_turn_session_provenance_continuity.py",
+      "name": "test_history_reuse_is_not_checkpoint_resurrection_or_local_worker_reuse",
+      "purpose": "History reuse is not checkpoint resurrection or local worker reuse",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.session_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
+    },
+    "tests/test_turn_session_provenance_continuity.py::test_empty_or_unverified_checkpoint_has_no_accepted_session_credit": {
+      "path": "tests/test_turn_session_provenance_continuity.py",
+      "name": "test_empty_or_unverified_checkpoint_has_no_accepted_session_credit",
+      "purpose": "Empty or unverified checkpoint has no accepted session credit",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.session_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 111
+    },
+    "tests/test_turn_session_provenance_continuity.py::test_input_checkpoint_is_not_credited_after_worker_mutation_or_count_mismatch": {
+      "path": "tests/test_turn_session_provenance_continuity.py",
+      "name": "test_input_checkpoint_is_not_credited_after_worker_mutation_or_count_mismatch",
+      "purpose": "Input checkpoint is not credited after worker mutation or count mismatch",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.conversation_state_store",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.core.session_provenance"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
     },
     "tests/test_turn_settlement_authority_convergence.py::test_unverified_consumed_record_cannot_recover_runtime_turn_not_accepted_job": {
       "path": "tests/test_turn_settlement_authority_convergence.py",
