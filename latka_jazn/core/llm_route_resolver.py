@@ -207,7 +207,9 @@ def build_llm_route_status(
         env=env_map,
         infer_host_environment=infer_host_environment,
     )
-    bridge_available = bool(environment.is_chatgpt_host_bridge)
+    # A declared host channel is not evidence that a remote generator is ready.
+    bridge_declared = bool(environment.is_chatgpt_host_bridge)
+    bridge_available = bridge_declared and _truthy(env_map.get("JAZN_CHATGPT_HOST_GENERATION_VERIFIED"))
 
     if probe_local:
         local_probe = probe_ollama(config, env_map)
@@ -221,13 +223,13 @@ def build_llm_route_status(
             "configured_model": configured,
             "running_models": [],
             "installed_models": [],
-            "available": bool(configured),
+            "available": False,
             "endpoint_reachable": None,
-            "reason": "probe_skipped",
+            "reason": "probe_skipped_unverified",
             "errors": [],
         }
     local_status = {
-        "checked": True,
+        "checked": bool(probe_local),
         "available": bool(local_probe.get("available")),
         "provider": "ollama",
         "adapter": OLLAMA_ADAPTER,
@@ -240,12 +242,14 @@ def build_llm_route_status(
     selected_local = local_probe if local_probe.get("available") else None
 
     chatgpt_status = {
-        "checked": True,
+        "checked": bool(bridge_available),
         "available": bridge_available,
+        "declared": bridge_declared,
+        "generation_verified": bridge_available,
         "adapter": CHATGPT_ADAPTER,
         "basis": list(environment.detection_basis),
         "environment_host": environment.environment_host,
-        "truth_boundary": "Host bridge oznacza, że widzialną wypowiedź tworzy host ChatGPT; lokalny Python nie wywołuje modelu ChatGPT.",
+        "truth_boundary": "Host bridge jest zadeklarowanym kanałem; gotowość do generacji wymaga niezależnie zweryfikowanego hosta, a lokalny Python nie wywołuje modelu ChatGPT.",
     }
     openai_status = {
         "checked": True,
@@ -279,7 +283,7 @@ def build_llm_route_status(
     if mode == "chatgpt_bridge":
         if bridge_available:
             return status(True, ROUTE_CHATGPT_BRIDGE, "forced ChatGPT host bridge available", adapter=CHATGPT_ADAPTER)
-        return status(False, ROUTE_NULL, "forced ChatGPT host bridge unavailable", error="chatgpt_bridge_unavailable", adapter=NULL_ADAPTER)
+        return status(False, ROUTE_NULL, "forced ChatGPT host bridge unverified", error="chatgpt_bridge_unverified", adapter=NULL_ADAPTER)
     if mode == "openai_api":
         if not api_key_present:
             return status(False, ROUTE_NULL, "forced OpenAI API route blocked: OPENAI_API_KEY missing", error="openai_api_key_missing", adapter=NULL_ADAPTER)
@@ -291,9 +295,11 @@ def build_llm_route_status(
         return status(True, ROUTE_CHATGPT_BRIDGE, "confirmed ChatGPT host bridge available", adapter=CHATGPT_ADAPTER)
     if selected_local:
         return status(True, ROUTE_LOCAL, "local Ollama endpoint and model available", adapter=OLLAMA_ADAPTER)
+    # Auto selection must not silently send local or private context to paid
+    # external inference. Explicit openai_api mode is the only authorized route.
     if api_key_present and paid_allowed:
-        return status(True, ROUTE_OPENAI_PAID, "host and Ollama unavailable; paid OpenAI API explicitly allowed", adapter=OPENAI_ADAPTER)
-    return status(True, ROUTE_NULL, "no host bridge, no usable Ollama model, and paid OpenAI API unavailable or not allowed", adapter=NULL_ADAPTER)
+        return status(True, ROUTE_NULL, "paid API configured but auto external transfer disabled", adapter=NULL_ADAPTER)
+    return status(True, ROUTE_NULL, "no verified host generation or usable Ollama model; core remains available without a generative model", adapter=NULL_ADAPTER)
 
 
 def apply_llm_route_to_config(config: Any, route_status: LlmRouteStatus) -> Any:
