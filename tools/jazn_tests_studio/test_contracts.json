@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3679,
+  "active_definition_count": 3686,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -29606,6 +29606,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 89
+    },
+    "tests/test_jazn_run_studio_delivery_ack.py::test_structural_acceptance_without_live_authority_stays_pending": {
+      "path": "tests/test_jazn_run_studio_delivery_ack.py",
+      "name": "test_structural_acceptance_without_live_authority_stays_pending",
+      "purpose": "Structural acceptance without live authority stays pending",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
     },
     "tests/test_jazn_run_studio_env_guard.py::test_external_secret_file_only_enters_child_environment_and_redactor": {
       "path": "tests/test_jazn_run_studio_env_guard.py",
@@ -70622,6 +70639,65 @@
       "description_source": "source_identity",
       "line": 39
     },
+    "tests/test_stage05_daemon_owned_finalization.py::test_daemon_serializes_public_phase2": {
+      "path": "tests/test_stage05_daemon_owned_finalization.py",
+      "name": "test_daemon_serializes_public_phase2",
+      "purpose": "Daemon serializes public phase2",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_stage05_daemon_owned_finalization.py::test_public_phase2_lost_post_does_not_fall_back": {
+      "path": "tests/test_stage05_daemon_owned_finalization.py",
+      "name": "test_public_phase2_lost_post_does_not_fall_back",
+      "purpose": "Public phase2 lost post does not fall back",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
+    },
+    "tests/test_stage05_daemon_owned_finalization.py::test_instance_is_part_of_phase1_contract_hash": {
+      "path": "tests/test_stage05_daemon_owned_finalization.py",
+      "name": "test_instance_is_part_of_phase1_contract_hash",
+      "purpose": "Instance is part of phase1 contract hash",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 140
+    },
     "tests/test_stage05_jsonl_authority.py::test_unbound_jsonl_cannot_create_runtime": {
       "path": "tests/test_stage05_jsonl_authority.py",
       "name": "test_unbound_jsonl_cannot_create_runtime",
@@ -71287,6 +71363,78 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 21
+    },
+    "tests/test_stage05_paid_transport_authorization.py::test_turn_denial_remains_denied_despite_operator_environment": {
+      "path": "tests/test_stage05_paid_transport_authorization.py",
+      "name": "test_turn_denial_remains_denied_despite_operator_environment",
+      "purpose": "Turn denial remains denied despite operator environment",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.core.llm_route_resolver",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_stage05_paid_transport_authorization.py::test_direct_adapter_refuses_before_transport": {
+      "path": "tests/test_stage05_paid_transport_authorization.py",
+      "name": "test_direct_adapter_refuses_before_transport",
+      "purpose": "Direct adapter refuses before transport",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "PermissionError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.core.llm_route_resolver",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_stage05_paid_transport_authorization.py::test_explicit_network_denial_is_not_paid_opt_in": {
+      "path": "tests/test_stage05_paid_transport_authorization.py",
+      "name": "test_explicit_network_denial_is_not_paid_opt_in",
+      "purpose": "Explicit network denial is not paid opt in",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "network"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.core.llm_route_resolver",
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_responses_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
     },
     "tests/test_stage05_public_daemon_ack_authority.py::test_public_accepted_ack_requires_durable_capture": {
       "path": "tests/test_stage05_public_daemon_ack_authority.py",
