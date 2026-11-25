@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3658,
+  "active_definition_count": 3662,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70581,6 +70581,88 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 178
+    },
+    "tests/test_stage05_jsonl_authority.py::test_unbound_jsonl_cannot_create_runtime": {
+      "path": "tests/test_stage05_jsonl_authority.py",
+      "name": "test_unbound_jsonl_cannot_create_runtime",
+      "purpose": "Unbound jsonl cannot create runtime",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_stage05_jsonl_authority.py::test_jsonl_lost_transport_preserves_preallocated_request_without_replay": {
+      "path": "tests/test_stage05_jsonl_authority.py",
+      "name": "test_jsonl_lost_transport_preserves_preallocated_request_without_replay",
+      "purpose": "Jsonl lost transport preserves preallocated request without replay",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_stage05_jsonl_authority.py::test_jsonl_phase2_requires_live_bound_job": {
+      "path": "tests/test_stage05_jsonl_authority.py",
+      "name": "test_jsonl_phase2_requires_live_bound_job",
+      "purpose": "Jsonl phase2 requires live bound job",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_stage05_jsonl_authority.py::test_jsonl_does_not_reconstruct_missing_daemon_phase1": {
+      "path": "tests/test_stage05_jsonl_authority.py",
+      "name": "test_jsonl_does_not_reconstruct_missing_daemon_phase1",
+      "purpose": "Jsonl does not reconstruct missing daemon phase1",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 115
     },
     "tests/test_stage05_llm_route_independence.py::test_no_probe_does_not_turn_configured_model_into_ready_model": {
       "path": "tests/test_stage05_llm_route_independence.py",
