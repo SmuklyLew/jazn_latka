@@ -1,3 +1,4 @@
+# v127.30.10 stage05: move terminal failure operator ACK off Qt thread (unreleased).
 # v127.30.10 stage05: bounded model circuit admission without evicting active authority (unreleased).
 # v127.30.10 stage05: public pending recovery requires original daemon authority (unreleased).
 # v127.30.10 stage05: monotonic durable daemon finalization notification recovery (unreleased).

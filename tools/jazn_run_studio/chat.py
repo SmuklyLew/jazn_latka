@@ -360,9 +360,17 @@ class ChatClient:
                     or proof.get("session_id") != self.session_id
                     or proof.get("daemon_url") != self.daemon_url):
                 raise StudioError("Brak potwierdzonej terminalnej porażki dla tej tury")
-            # Recheck immediately before releasing the pending checkpoint.
-            # No user text is sent; a replaced/unavailable daemon retains the request.
-            if self._verify_terminal_failure({}, request_id, expected_proof=proof) != proof:
+            proof = dict(proof)
+
+        # Never hold the shared client lock across a slow subprocess/HTTP
+        # validation. GUI status polling also acquires this lock.
+        checked = self._verify_terminal_failure({}, request_id, expected_proof=proof)
+        with self.lock:
+            if (self.pending != request_id or self._awaiting_gui_ack is not None
+                    or self._confirmed_failed != proof or self.session_id != proof["session_id"]):
+                raise StudioError("Stan tury zmienił się podczas weryfikacji; nie zamknięto checkpointu")
+            self._require_same_endpoint()
+            if checked != proof:
                 self._confirmed_failed = None
                 raise StudioError("Utracono niezależny dowód terminalnej porażki; zachowano request_id")
             archive = _path_without_links(

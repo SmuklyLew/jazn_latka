@@ -72,7 +72,12 @@ class ChatViewMixin:
         self.button("Połącz", self.connect_local_chat, connection_row)
         self.button("Rozłącz transport", lambda: self.core.stop_owned("chat"), connection_row)
         self.button("Wznów wynik", self.resume_chat, connection_row)
-        self.button("Zamknij nieudaną turę", self.close_failed_chat, connection_row)
+        self.close_failed_chat_button = self.button("Zamknij nieudaną turę", self.close_failed_chat, connection_row)
+        self._terminal_failure_inflight = None
+        self._terminal_failure_results = queue.Queue(maxsize=1)
+        self._terminal_failure_timer = QTimer(self)
+        self._terminal_failure_timer.setInterval(50)
+        self._terminal_failure_timer.timeout.connect(self._poll_terminal_failure_resolution)
         controls.addLayout(connection_row)
         layout.addWidget(self.chat_controls)
         self.chat_controls_toggle.toggled.connect(self.chat_controls.setVisible)
@@ -288,6 +293,8 @@ class ChatViewMixin:
     def select_local_conversation(self: Any, session_id: str,
                                   *, create: bool = False) -> None:
         """Never transfer a conversation between daemon endpoint identities."""
+        if self._terminal_failure_inflight is not None:
+            raise StudioError("Trwa weryfikacja zamknięcia tury; nie zmieniono sesji")
         from .chat_session_catalog import SESSION_ID, remember_session, load_sessions
         from .chat import ChatClient
         if not isinstance(session_id, str) or SESSION_ID.fullmatch(session_id) is None:
@@ -351,6 +358,8 @@ class ChatViewMixin:
 
 
     def send_chat(self: Any) -> None:
+        if self._terminal_failure_inflight is not None:
+            raise StudioError("Trwa weryfikacja zamknięcia tury")
         if self.core.chat is None:
             raise StudioError("Najpierw połącz czat")
         text = self.message.toPlainText()
@@ -373,6 +382,8 @@ class ChatViewMixin:
             self._begin_chat_activity(self.core.chat.pending, "Sprawdzanie poprzedniego wyniku")
 
     def close_failed_chat(self: Any) -> None:
+        if self._terminal_failure_inflight is not None:
+            raise StudioError("Trwa weryfikacja zamknięcia tury")
         chat = self.core.chat
         if chat is None or not chat.can_resolve_terminal_failure():
             raise StudioError(
@@ -392,9 +403,52 @@ class ChatViewMixin:
         )
         if choice != QMessageBox.StandardButton.Yes:
             return
-        chat.resolve_terminal_failure(request_id)
-        self._end_chat_activity()
-        self._record_chat_diagnostic(
-            "Nieudaną turę zarchiwizowano bez przypisania jej "
-            "zaakceptowanej odpowiedzi."
-        )
+        # Confirmation precedes all side effects. The worker owns the
+        # potentially slow proof check and durable archive, not Qt widgets.
+        self._terminal_failure_inflight = (chat, request_id)
+        self.close_failed_chat_button.setEnabled(False)
+        self.send_button.setEnabled(False)
+        results = self._terminal_failure_results
+        self._record_chat_diagnostic("Sprawdzanie dowodu terminalnej porażki; nie ponowiono wiadomości.")
+
+        def worker() -> None:
+            ok = False
+            try:
+                chat.resolve_terminal_failure(request_id)
+                ok = True
+            except (OSError, ValueError, StudioError):
+                pass
+            finally:
+                results.put_nowait((chat, request_id, ok))
+
+        try:
+            threading.Thread(target=worker, name="jss-terminal-failure-ack", daemon=True).start()
+        except RuntimeError:
+            self._terminal_failure_inflight = None
+            self.close_failed_chat_button.setEnabled(True)
+            self._end_chat_activity()
+            raise StudioError("Nie uruchomiono weryfikacji; zachowano żądanie")
+        self._terminal_failure_timer.start()
+
+    def _poll_terminal_failure_resolution(self: Any) -> None:
+        # Called by the GUI-owned timer. No network I/O or worker join here.
+        try:
+            chat, request_id, ok = self._terminal_failure_results.get_nowait()
+        except queue.Empty:
+            return
+        self._terminal_failure_timer.stop()
+        self._terminal_failure_inflight = None
+        self.close_failed_chat_button.setEnabled(True)
+        if self.core.chat is not chat or chat.pending not in {None, request_id}:
+            return  # Stale completion cannot update another conversation.
+        if ok and chat.pending is None:
+            self._end_chat_activity()
+            self._record_chat_diagnostic(
+                "Nieudaną turę zarchiwizowano bez przypisania jej "
+                "zaakceptowanej odpowiedzi."
+            )
+        else:
+            self._end_chat_activity("Nie potwierdzono zamknięcia tury — sprawdź Historię operacji.")
+            self._record_chat_diagnostic(
+                "Nie potwierdzono zamknięcia tury. Nie ponowiono wiadomości; sprawdź request_id."
+            )
