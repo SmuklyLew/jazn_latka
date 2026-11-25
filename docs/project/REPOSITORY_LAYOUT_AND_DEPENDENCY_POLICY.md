@@ -155,9 +155,10 @@ zgodna instancja i heartbeat. Brak zweryfikowanego remote oznacza
 ChatGPT host bridge nie wymaga `OPENAI_API_KEY`, ale wybór kanału nie dowodzi
 gotowości MCP ani zaakceptowanej phase-2 finalization.
 
-`run.py chat-gpt`, JSONL i daemon-bound CLI pozostają kompatybilnościowym
-transportem lokalnego PC i jawnego operator recovery, z tym samym `session_id`
-i `request_id`, bez replayu i bez drugiego właściciela stanu.
+`python -X utf8 run.py chat-gpt --session-id <id>` jest jawną komendą
+kompatybilnościową dla lokalnego PC lub autoryzowanego `operator_recovery`.
+JSONL i daemon-bound CLI pozostają poza ordinary-chat i używają tego samego
+`session_id`/`request_id`, bez replayu i bez drugiego właściciela stanu.
 JSS jest klientem operatorskim SYSTEM, nie modelem ChatGPT ani drugim
 lifecycle. Brak JSS, ChatGPT/MCP, Ollama lub OpenAI API nie zatrzymuje
 już działającego daemona; zdolność generowania może być ograniczona.
