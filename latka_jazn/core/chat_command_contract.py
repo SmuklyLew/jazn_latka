@@ -913,6 +913,7 @@ def build_chatgpt_host_bridge_turn_contract(
     daemon = json_object(result.get("daemon"))
     daemon_job = json_object(result.get("daemon_job"))
     daemon_request_id = str(daemon.get("request_id") or daemon_job.get("request_id") or "").strip()
+    daemon_instance_id = str(daemon.get("daemon_instance_id") or daemon_job.get("daemon_instance_id") or "").strip()
     runtime_summary = {
         "route": runtime_route,
         "detected_intent": detected_intent,
@@ -980,6 +981,7 @@ def build_chatgpt_host_bridge_turn_contract(
         "session_continuity_commit": session_continuity_commit,
         "session_continuity_commit_sha256": session_continuity_commit_sha256,
         "daemon_request_id": daemon_request_id,
+        "daemon_instance_id": daemon_instance_id,
         "runtime_summary": runtime_summary,
         "runtime_ownership_contract": ownership,
         "host_generation_policy": host_policy,
@@ -1359,6 +1361,7 @@ def authorize_public_host_finalization(
     host: str = "127.0.0.1",
     port: int = 8787,
     marker_output: Path | None = None,
+    authority: dict[str, Any] | None = None,
 ) -> str | None:
     """Require the durable binding and a live authenticated daemon job.
 
@@ -1404,6 +1407,7 @@ def authorize_public_host_finalization(
             and status.get("package_integrity_verified") is True
             and status.get("source_provenance_verified") is True
             and instance
+            and binding.get("daemon_instance_id") == instance
             and str(status.get("runtime_version") or "") == binding.get("runtime_version")
             and Path(str(status.get("active_root") or "")).resolve() == Path(config.root).resolve()
         ):
@@ -1422,7 +1426,72 @@ def authorize_public_host_finalization(
             return "phase2_daemon_job_not_verified"
     except (HostRequestStoreError, OSError, TypeError, ValueError, RuntimeError):
         return "phase2_authority_unavailable"
+    if authority is not None:
+        authority.update(request_id=request_id, daemon_instance_id=instance, **values)
     return None
+
+
+def persist_public_host_visible_reply(
+    *, config: JaznConfig, payload: dict[str, Any],
+    chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
+    host: str = "127.0.0.1", port: int = 8787,
+    marker_output: Path | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """Public phase-2 is a single authenticated submission to the owning daemon.
+
+    Never fall back to the internal local transaction or replay a lost POST.
+    """
+    from latka_jazn.core.host_action_evidence import current_host_action_evidence_context
+    from latka_jazn.core.runtime_daemon import submit_daemon_host_finalization
+
+    authority: dict[str, Any] = {}
+
+    def diagnostic(code: str, *, uncertain: bool = False) -> tuple[dict[str, Any], list[str]]:
+        return ({
+            "ok": False, "accepted": False, "action": "host_diagnostic",
+            "error_code": code, "must_not_claim_runtime_voice": True,
+            "must_not_replay": True, "recovery_required": uncertain,
+            "request_id": authority.get("request_id"),
+            "turn_id": payload.get("turn_id"), "trace_id": payload.get("trace_id"),
+            "host_request_contract_hash": payload.get("host_request_contract_hash"),
+            "chatgpt_host_bridge": {
+                "phase": "host_diagnostic_required",
+                "diagnostic_reason": code,
+                "daemon_request_id": authority.get("request_id"),
+            },
+        }, [])
+
+    reason = authorize_public_host_finalization(
+        config, payload, host=host, port=port, marker_output=marker_output, authority=authority,
+    )
+    if reason or not authority:
+        return diagnostic(reason or "phase2_authority_unavailable")
+    try:
+        response = submit_daemon_host_finalization(
+            config, authority=authority, candidate=payload,
+            chat_bridge_meta=chat_bridge_meta, contract=contract,
+            host_action_evidence=current_host_action_evidence_context().get("evidence") or [],
+            host=host, port=port,
+        )
+    except (OSError, ValueError, TypeError, RuntimeError):
+        return diagnostic("phase2_submission_outcome_unknown", uncertain=True)
+    if (response.get("request_id") != authority["request_id"]
+            or response.get("daemon_instance_id") != authority["daemon_instance_id"]):
+        return diagnostic("phase2_response_binding_unverified", uncertain=True)
+    result = response.get("result")
+    if not isinstance(result, dict):
+        return diagnostic("phase2_response_missing", uncertain=True)
+    if result.get("action") == "host_diagnostic":
+        return diagnostic(str(result.get("error_code") or "phase2_rejected"),
+                          uncertain=result.get("recovery_required") is True)
+    presentation = build_chatgpt_host_presentation_packet(result)
+    if presentation.get("action") == "display_exact":
+        if (result.get("host_finalization_lifecycle_complete") is not True
+                or json_object(result.get("daemon_job_lifecycle")).get("ok") is not True):
+            return diagnostic("host_finalization_lifecycle_incomplete", uncertain=True)
+    elif presentation.get("action") != "generate_then_finalize":
+        return diagnostic("phase2_response_not_authorized", uncertain=True)
+    return result, []
 
 
 def _jsonl_phase2_authorization_error(
@@ -1666,11 +1735,12 @@ def run_jsonl_chat_bridge(
                             line_index=line_index,
                         ), output_mode=output_mode)
                         continue
-                    persisted, missing = persist_chatgpt_host_visible_reply(
+                    persisted, missing = persist_public_host_visible_reply(
                         config=config,
                         payload=payload,
                         chat_bridge_meta=meta,
                         contract=contract,
+                        host=daemon_host, port=daemon_port, marker_output=daemon_marker_output,
                     )
                     if missing:
                         write_chat_bridge_payload(stdout, error_payload(

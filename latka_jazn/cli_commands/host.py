@@ -15,6 +15,7 @@ from latka_jazn.core.chat_command_contract import (
     build_chatgpt_host_presentation_packet,
     chat_gpt_contract,
     persist_chatgpt_host_visible_reply,
+    persist_public_host_visible_reply,
 )
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
@@ -110,7 +111,9 @@ def _notify_daemon(
         }
 
 
-def finalize_payload(args: Any) -> dict[str, Any]:
+def finalize_payload(
+    args: Any, *, daemon_endpoint: tuple[str, int, Path | None] | None = None,
+) -> dict[str, Any]:
     """Complete the canonical phase-2 host-visible finalization lifecycle.
 
     Unlike the pre-v16.3.25.5.41 implementation this function does not stop at
@@ -179,7 +182,15 @@ def finalize_payload(args: Any) -> dict[str, Any]:
             expected_trace_id=str(args.trace_id),
             expected_request_contract_hash=host_request_contract_hash,
         ):
-            persisted, errors = persist_chatgpt_host_visible_reply(
+            finalizer = persist_chatgpt_host_visible_reply
+            if daemon_endpoint is not None:
+                def daemon_finalizer(**kwargs: Any) -> tuple[dict[str, Any] | None, list[str]]:
+                    return persist_public_host_visible_reply(
+                        **kwargs, host=daemon_endpoint[0], port=daemon_endpoint[1],
+                        marker_output=daemon_endpoint[2],
+                    )
+                finalizer = daemon_finalizer
+            persisted, errors = finalizer(
                 config=JaznConfig(root=root),
                 payload=payload,
                 chat_bridge_meta={
@@ -197,6 +208,14 @@ def finalize_payload(args: Any) -> dict[str, Any]:
             "error_code": "host_action_evidence_invalid",
             "error": f"{type(exc).__name__}:{exc}",
         }
+    if daemon_endpoint is not None:
+        # Public transaction and ACK already ran under the daemon authority.
+        # Never synthesize a rejection ACK after an uncertain POST.
+        if isinstance(persisted, dict):
+            return persisted
+        return {"ok": False, "accepted": False, "action": "host_diagnostic",
+                "error_code": "phase2_response_missing", "must_not_replay": True,
+                "must_not_claim_runtime_voice": True, "recovery_required": True}
     if errors or not isinstance(persisted, dict):
         lifecycle = host_request_lifecycle_state(root, turn_id=str(args.turn_id))
         state = str(lifecycle.get("state") or "")
@@ -315,7 +334,10 @@ def finalize_public_payload(args: Any) -> dict[str, Any]:
             "error_code": reason, "must_not_claim_runtime_voice": True,
             "must_not_replay": True, **binding,
         }
-    result = finalize_payload(args)
+    result = finalize_payload(args, daemon_endpoint=(
+        str(getattr(args, "daemon_host", "127.0.0.1")),
+        int(getattr(args, "daemon_port", 8787)), getattr(args, "daemon_marker_output", None),
+    ))
     if result.get("accepted") is True and result.get("host_finalization_lifecycle_complete") is not True:
         # The reply may already be committed. Only recover its delivery; never
         # publish a new visible turn or resubmit the candidate on a lost ACK.

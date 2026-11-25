@@ -186,6 +186,9 @@ def canonical_host_request_binding(bridge: Mapping[str, Any]) -> dict[str, Any]:
         # Omit the field for legacy/one-shot contracts so their pre-v16.0.7 hash
         # remains valid. Daemon turns bind both phases to one logical job.
         binding["daemon_request_id"] = daemon_request_id
+        instance_id = str(bridge.get("daemon_instance_id") or "").strip()
+        if instance_id:
+            binding["daemon_instance_id"] = instance_id
     return binding
 
 

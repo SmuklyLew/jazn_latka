@@ -1,3 +1,4 @@
+# v127.30.10 stage05: daemon-owned public phase-2 transaction and durable ACK (unreleased).
 # v127.30.10 stage05: independent live Studio display authority and exact durable turn evidence (unreleased).
 # v127.30.10 stage05: block known Ollama cloud selectors and remote aliases in discovery (unreleased).
 # v127.30.10 stage05: constrain HTTP inference egress and deny redirects (unreleased).

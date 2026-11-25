@@ -24,7 +24,7 @@ def test_public_entrypoints_require_same_live_authority(
 ) -> None:
     digest = "a" * 64
     binding = {"turn_id": "turn", "trace_id": "trace", "daemon_request_id": "request",
-               "runtime_version": PACKAGE_VERSION_FULL}
+               "runtime_version": PACKAGE_VERSION_FULL, "daemon_instance_id": "instance"}
     pending = {"found": True, "state": "pending", "binding": binding,
                "request_contract_hash": digest}
     status = {"active_state": "active_trusted", "endpoint_identity_matches": True,
@@ -75,7 +75,7 @@ def test_cli_lost_finalization_ack_cannot_display_committed_candidate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(host, "authorize_public_host_finalization", lambda *_a, **_k: None)
-    monkeypatch.setattr(host, "finalize_payload", lambda _a: {
+    monkeypatch.setattr(host, "finalize_payload", lambda _a, **_k: {
         "ok": True, "accepted": True, "host_finalization_lifecycle_complete": False,
         "final_visible_text": "already committed",
     })

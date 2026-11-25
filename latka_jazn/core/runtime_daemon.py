@@ -2679,6 +2679,127 @@ class JaznDaemonServer(ThreadingHTTPServer):
             return True
         return changed
 
+    def finalize_public_host_candidate(
+        self, *, authority: dict[str, Any], candidate: dict[str, Any],
+        chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
+        host_action_evidence: Any,
+    ) -> dict[str, Any]:
+        """The owning daemon serializes authority, claim, commit and lifecycle ACK.
+
+        A graceful shutdown uses the same lock. Abrupt process failure still
+        relies on the canonical pending/claimed/consumed recovery protocol.
+        """
+        from latka_jazn.core.chat_command_contract import (
+            build_chatgpt_host_presentation_packet, persist_chatgpt_host_visible_reply,
+        )
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError, host_request_lifecycle_state,
+            mark_daemon_finalization_notification,
+        )
+        from latka_jazn.core.host_action_evidence import host_action_evidence_scope
+
+        request_id = str(authority.get("request_id") or "")
+        turn_id = str(candidate.get("turn_id") or "")
+        trace_id = str(candidate.get("trace_id") or "")
+        digest = str(candidate.get("host_request_contract_hash") or "").strip().lower()
+
+        def response(result: dict[str, Any]) -> dict[str, Any]:
+            return {"ok": result.get("ok") is True, "request_id": request_id,
+                    "daemon_instance_id": self.daemon_instance_id, "result": result}
+
+        def deny(code: str, *, uncertain: bool = False) -> dict[str, Any]:
+            return response({
+                "ok": False, "accepted": False, "action": "host_diagnostic",
+                "error_code": code, "must_not_claim_runtime_voice": True,
+                "must_not_replay": True, "recovery_required": uncertain,
+            })
+
+        with self._chat_jobs_lock:
+            if self.shutdown_requested.is_set() or self.state.status != DAEMON_MARKER_STATUS_ACTIVE:
+                return deny("phase2_daemon_not_accepting")
+            if (not request_id or not turn_id or not trace_id
+                    or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or authority.get("daemon_instance_id") != self.daemon_instance_id
+                    or authority.get("turn_id") != turn_id or authority.get("trace_id") != trace_id
+                    or authority.get("host_request_contract_hash") != digest):
+                return deny("phase2_authority_binding_mismatch")
+            job = self.chat_jobs.get(request_id)
+            if (job is None or job.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE
+                    or not job.phase_result_ready()
+                    or job.host_turn_id != turn_id or job.host_trace_id != trace_id
+                    or job.host_request_contract_hash != digest):
+                return deny("phase2_daemon_job_not_verified")
+            try:
+                lifecycle = host_request_lifecycle_state(self.config.root, turn_id=turn_id)
+                binding = lifecycle.get("binding")
+                if not (
+                    lifecycle.get("found") is True and lifecycle.get("state") == "pending"
+                    and lifecycle.get("request_contract_hash") == digest
+                    and isinstance(binding, dict)
+                    and binding.get("daemon_request_id") == request_id
+                    and binding.get("daemon_instance_id") == self.daemon_instance_id
+                    and binding.get("turn_id") == turn_id and binding.get("trace_id") == trace_id
+                    and binding.get("runtime_version") == PACKAGE_VERSION_FULL
+                ):
+                    return deny("phase2_durable_binding_not_verified")
+                with host_action_evidence_scope(
+                    host_action_evidence, expected_turn_id=turn_id,
+                    expected_trace_id=trace_id, expected_request_contract_hash=digest,
+                ):
+                    persisted, errors = persist_chatgpt_host_visible_reply(
+                        config=self.config, payload=candidate,
+                        chat_bridge_meta=chat_bridge_meta, contract=contract,
+                    )
+                if errors or not isinstance(persisted, dict):
+                    # The durable store, not the caller, determines whether the
+                    # failed attempt is pending, expired or indeterminate.
+                    lifecycle = host_request_lifecycle_state(self.config.root, turn_id=turn_id)
+                    state = lifecycle.get("state")
+                    if state in {"claimed", "indeterminate", "consumed"}:
+                        return deny("phase2_persistence_recovery_required", uncertain=True)
+                    expired = state == "expired"
+                    self.note_host_finalization(
+                        request_id=request_id, turn_id=turn_id, trace_id=trace_id,
+                        request_contract_hash=digest, outcome="expired" if expired else "rejected",
+                        reason="runtime_finalization_rejected",
+                        terminal=expired or any("regeneration_budget_exhausted" in x for x in errors),
+                    )
+                    return deny("runtime_finalization_rejected")
+                presentation = build_chatgpt_host_presentation_packet(persisted)
+                action = presentation.get("action")
+                if action == "generate_then_finalize":
+                    _, error = self.note_host_finalization(
+                        request_id=request_id, turn_id=turn_id, trace_id=trace_id,
+                        request_contract_hash=digest, outcome="regeneration_requested",
+                        reason="host_candidate_regeneration_requested",
+                    )
+                    if error is not None:
+                        return deny("phase2_regeneration_lifecycle_unverified", uncertain=True)
+                    persisted["daemon_job_lifecycle"] = {"ok": True, "request_id": request_id}
+                    return response(persisted)
+                if action != "display_exact":
+                    return deny("phase2_final_not_displayable", uncertain=True)
+                _, error = self.note_public_host_finalization(
+                    request_id=request_id, turn_id=turn_id, trace_id=trace_id,
+                    request_contract_hash=digest, outcome="accepted",
+                    reason="host_visible_reply_finalized", terminal=True,
+                )
+                if error is not None:
+                    return deny("host_finalization_lifecycle_incomplete", uncertain=True)
+                settlement = mark_daemon_finalization_notification(
+                    self.config.root, turn_id=turn_id, request_contract_hash=digest,
+                    delivered=True, error=None,
+                )
+                persisted.update(
+                    accepted=True, host_finalization_lifecycle_complete=True,
+                    daemon_job_lifecycle={"ok": True, "request_id": request_id,
+                                          "daemon_instance_id": self.daemon_instance_id},
+                    turn_settlement=settlement,
+                )
+                return response(persisted)
+            except (HostRequestStoreError, OSError, ValueError, TypeError, RuntimeError):
+                return deny("phase2_persistence_recovery_required", uncertain=True)
+
     def note_public_host_finalization(
         self,
         *,
@@ -2942,6 +3063,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "marker_sha_source": marker_sha_source,
                 "marker_write_degraded": marker_write_degraded,
                 "request_id": job.request_id,
+                "daemon_instance_id": self.daemon_instance_id,
                 "async_job": True,
             }
             if job.command == "--chat-gpt" or job.client in {"chatgpt_daemon_bridge", "secure_mcp_gateway"}:
@@ -3553,7 +3675,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self._heartbeat_thread.start()
 
     def close_sessions(self) -> None:
-        self.shutdown_requested.set()
+        with self._chat_jobs_lock:
+            self.shutdown_requested.set()
         if self.rest_cycle_controller is not None:
             try:
                 self.rest_cycle_controller.stop()
@@ -3905,6 +4028,22 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         if not self._authenticated(mutating=True):
             return
         self._daemon_server().state.note_request()
+        if path == "/host-finalize":
+            payload_in = self._read_json_or_text()
+            if (not isinstance(payload_in, dict)
+                    or payload_in.get("__daemon_error__")
+                    or any(not isinstance(payload_in.get(key), dict)
+                           for key in ("authority", "candidate", "chat_bridge_meta", "contract"))):
+                self._json_response({"ok": False, "error_code": "invalid_phase2_payload"},
+                                    status=HTTPStatus.BAD_REQUEST)
+                return
+            response = self._daemon_server().finalize_public_host_candidate(
+                authority=payload_in["authority"], candidate=payload_in["candidate"],
+                chat_bridge_meta=payload_in["chat_bridge_meta"], contract=payload_in["contract"],
+                host_action_evidence=payload_in.get("host_action_evidence"),
+            )
+            self._json_response(response)
+            return
         if path == "/chat-finalization":
             payload_in = self._read_json_or_text()
             if not isinstance(payload_in, dict):
@@ -4042,7 +4181,8 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             # it unread can reset the connection on Windows before the ACK.
             self._drain_bounded_request_body()
             daemon_server = self._daemon_server()
-            daemon_server.shutdown_requested.set()
+            with daemon_server._chat_jobs_lock:
+                daemon_server.shutdown_requested.set()
 
             def stop_later() -> None:
                 # Give the small ACK a chance to flush, but complete shutdown
@@ -4063,6 +4203,12 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             })
             return
         self._json_response({"ok": False, "error": "not_found", "path": path}, status=404)
+
+
+class _DenyDaemonRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str,
+                         headers: Any, newurl: str) -> None:
+        return None
 
 
 def http_json(
@@ -4086,13 +4232,32 @@ def http_json(
     # Preserve the existing opener for non-loopback requests.
     target = urllib.parse.urlsplit(url)
     open_url = (
-        urllib.request.build_opener(urllib.request.ProxyHandler({})).open
+        urllib.request.build_opener(urllib.request.ProxyHandler({}), _DenyDaemonRedirect()).open
         if target.scheme == "http" and target.hostname in LOOPBACK_CLIENTS
         else urllib.request.urlopen
     )
     with open_url(req, timeout=timeout) as response:
         raw = response.read()
         return json.loads(raw.decode("utf-8", errors="strict"))
+
+
+def submit_daemon_host_finalization(
+    config: JaznConfig, *, authority: dict[str, Any], candidate: dict[str, Any],
+    chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
+    host_action_evidence: list[dict[str, Any]],
+    host: str = DEFAULT_DAEMON_HOST, port: int = DEFAULT_DAEMON_PORT,
+) -> dict[str, Any]:
+    """One authenticated, non-retried phase-2 POST to a loopback daemon."""
+    if host not in LOOPBACK_CLIENTS or not 1 <= int(port) <= 65535:
+        raise ValueError("phase2_daemon_endpoint_invalid")
+    token = read_daemon_auth_token(config.root)
+    if not token:
+        raise ValueError("phase2_daemon_auth_unavailable")
+    return http_json("POST", daemon_url(host, int(port), "/host-finalize"), {
+        "authority": authority, "candidate": candidate,
+        "chat_bridge_meta": chat_bridge_meta, "contract": contract,
+        "host_action_evidence": host_action_evidence,
+    }, token=token, timeout=30.0)
 
 
 def run_daemon(
@@ -4164,7 +4329,8 @@ def run_daemon(
     try:
         server.serve_forever(poll_interval=0.25)
     finally:
-        server.shutdown_requested.set()
+        with server._chat_jobs_lock:
+            server.shutdown_requested.set()
         try:
             server.close_sessions()
         finally:

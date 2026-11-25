@@ -2366,7 +2366,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
             "final_text": final_text,
             "final_text_sha256": sha256_host_visible_text(final_text),
         }
-        from latka_jazn.core.chat_command_contract import authorize_public_host_finalization
+        from latka_jazn.core.chat_command_contract import (
+            authorize_public_host_finalization, persist_public_host_visible_reply,
+        )
 
         finalize_cfg = config or JaznConfig()
         authority_error = authorize_public_host_finalization(
@@ -2380,8 +2382,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 "must_not_replay": True,
             }, ensure_ascii=False))
             return 2
-        result, missing = persist_chatgpt_host_visible_reply(
-            config=finalize_cfg,
+        result, missing = persist_public_host_visible_reply(
+            config=finalize_cfg, host=ns.daemon_host, port=ns.daemon_port,
+            marker_output=ns.daemon_marker_output,
             payload=payload,
             chat_bridge_meta={
                 "client": "chatgpt_visible_layer_cli",

@@ -68,7 +68,7 @@ def test_jsonl_phase2_requires_live_bound_job(tmp_path: Path, monkeypatch: pytes
         "final_text_sha256": digest, "host_request_contract_hash": digest,
     }
     binding = {"turn_id": "turn", "trace_id": "trace", "daemon_request_id": "request",
-               "runtime_version": PACKAGE_VERSION_FULL}
+               "runtime_version": PACKAGE_VERSION_FULL, "daemon_instance_id": "instance"}
     record = {"found": True, "state": "pending", "binding": binding, "request_contract_hash": digest}
     status = {"active_state": "active_trusted", "endpoint_identity_matches": True,
               "endpoint_instance_matches": True, "heartbeat_fresh": True,

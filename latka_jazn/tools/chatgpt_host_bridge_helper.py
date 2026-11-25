@@ -13,7 +13,7 @@ from latka_jazn.core.chat_command_contract import (
     CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS,
     authorize_public_host_finalization,
     chat_gpt_contract,
-    persist_chatgpt_host_visible_reply,
+    persist_public_host_visible_reply,
     write_chat_bridge_payload,
 )
 from latka_jazn.version import schema_version
@@ -298,7 +298,7 @@ def record_chatgpt_host_visible_reply_from_runtime_packet(
     reason = authorize_public_host_finalization(config, reply_payload or {})
     if reason:
         return None, [reason]
-    return persist_chatgpt_host_visible_reply(
+    return persist_public_host_visible_reply(
         config=config,
         payload=reply_payload or {},
         chat_bridge_meta=build_chatgpt_host_reply_helper_meta(line_index=1),
@@ -405,7 +405,7 @@ def main(argv: list[str] | None = None, *, stdin: TextIO | None = None, stdout: 
                     "must_not_replay": True,
                 })
                 return 2
-            output, persist_missing = persist_chatgpt_host_visible_reply(
+            output, persist_missing = persist_public_host_visible_reply(
                 config=config,
                 payload=reply_payload or {},
                 chat_bridge_meta=build_chatgpt_host_reply_helper_meta(line_index=1),

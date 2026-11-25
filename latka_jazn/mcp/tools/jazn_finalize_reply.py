@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import (
     authorize_public_host_finalization, command_contract, persist_chatgpt_host_visible_reply,
+    persist_public_host_visible_reply,
 )
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
@@ -156,7 +157,7 @@ def run_public(
         final_text=final_text, final_text_sha256=final_text_sha256,
         used_memory_item_ids=used_memory_item_ids,
         external_tool_evidence=external_tool_evidence,
-        lifecycle_gateway=lifecycle_gateway,
+        lifecycle_gateway=lifecycle_gateway, daemon_endpoint=(host, port),
     )
 
 
@@ -169,6 +170,7 @@ def _finalize_resolved(
     used_memory_item_ids: list[str] | None,
     external_tool_evidence: list[dict[str, Any]] | None,
     lifecycle_gateway: HostFinalizationLifecycleGateway | None,
+    daemon_endpoint: tuple[str, int] | None = None,
 ) -> dict[str, Any]:
 
     canonical_hash = sha256_host_visible_text(final_text)
@@ -240,7 +242,14 @@ def _finalize_resolved(
         "used_memory_item_ids": list(used_memory_item_ids or []),
         "external_tool_evidence": list(external_tool_evidence or []),
     }
-    persisted, errors = persist_chatgpt_host_visible_reply(
+    finalizer = persist_chatgpt_host_visible_reply
+    if daemon_endpoint is not None:
+        def daemon_finalizer(**kwargs: Any) -> tuple[dict[str, Any] | None, list[str]]:
+            return persist_public_host_visible_reply(
+                **kwargs, host=daemon_endpoint[0], port=daemon_endpoint[1],
+            )
+        finalizer = daemon_finalizer
+    persisted, errors = finalizer(
         config=JaznConfig(root=runtime_root),
         payload=payload,
         chat_bridge_meta={
@@ -251,6 +260,16 @@ def _finalize_resolved(
         },
         contract=command_contract("--chat-gpt", process_lifecycle="mcp_two_phase"),
     )
+    if daemon_endpoint is not None and (
+        not isinstance(persisted, dict) or persisted.get("action") == "host_diagnostic" or errors
+    ):
+        result = persisted if isinstance(persisted, dict) else {}
+        return _error(str(result.get("error_code") or "phase2_response_missing"),
+                      must_not_claim_runtime_voice=True, must_not_replay=True,
+                      recovery_required=result.get("recovery_required") is True or not result,
+                      daemon_request_id=binding.get("daemon_request_id"),
+                      turn_id=binding["turn_id"], trace_id=binding["trace_id"],
+                      host_request_contract_hash=request_contract_hash)
     if errors or not isinstance(persisted, dict):
         reasons = [str(item) for item in errors]
         expired = any("expired" in item for item in reasons)
@@ -287,12 +306,11 @@ def _finalize_resolved(
             turn_id=str(binding["turn_id"]),
             request_contract_hash=request_contract_hash,
         )
-        lifecycle = _notify_lifecycle(
-            lifecycle_gateway,
-            pending,
-            outcome="regeneration_requested",
+        lifecycle = (persisted.get("daemon_job_lifecycle") or {}
+                     if daemon_endpoint is not None else _notify_lifecycle(
+            lifecycle_gateway, pending, outcome="regeneration_requested",
             reason="host_candidate_regeneration_requested",
-        )
+        ))
         return {
             'content': [{'type': 'text', 'text': 'Regenerate once from the same runtime contract, then call jazn_finalize_reply again. Do not display this intermediate result.'}],
             'structuredContent': {
@@ -342,16 +360,14 @@ def _finalize_resolved(
         )
 
     final_hash = sha256_host_visible_text(final_visible_text)
-    lifecycle = _notify_lifecycle(
-        lifecycle_gateway,
-        pending,
-        outcome="accepted",
-        reason="host_visible_reply_finalized",
-        terminal=True,
-    )
+    lifecycle = (persisted.get("daemon_job_lifecycle") or {}
+                 if daemon_endpoint is not None else _notify_lifecycle(
+        lifecycle_gateway, pending, outcome="accepted",
+        reason="host_visible_reply_finalized", terminal=True,
+    ))
     delivered = lifecycle.get("ok") is True
     try:
-        settlement = mark_daemon_finalization_notification(
+        settlement = persisted.get("turn_settlement") if daemon_endpoint is not None else mark_daemon_finalization_notification(
             runtime_root,
             turn_id=str(binding["turn_id"]),
             request_contract_hash=request_contract_hash,
