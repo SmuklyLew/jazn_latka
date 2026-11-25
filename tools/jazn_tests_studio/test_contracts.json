@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3671,
+  "active_definition_count": 3675,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70993,6 +70993,94 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 44
+    },
+    "tests/test_stage05_model_http_egress.py::test_inference_http_does_not_follow_redirect": {
+      "path": "tests/test_stage05_model_http_egress.py",
+      "name": "test_inference_http_does_not_follow_redirect",
+      "purpose": "Inference http does not follow redirect",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "HTTPError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_stage05_model_http_egress.py::test_local_transport_refuses_unapproved_destination_before_open": {
+      "path": "tests/test_stage05_model_http_egress.py",
+      "name": "test_local_transport_refuses_unapproved_destination_before_open",
+      "purpose": "Local transport refuses unapproved destination before open",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "URLError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_stage05_model_http_egress.py::test_local_adapters_cannot_bypass_egress_policy": {
+      "path": "tests/test_stage05_model_http_egress.py",
+      "name": "test_local_adapters_cannot_bypass_egress_policy",
+      "purpose": "Local adapters cannot bypass egress policy",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 78
+    },
+    "tests/test_stage05_model_http_egress.py::test_loopback_inference_ignores_proxy_environment": {
+      "path": "tests/test_stage05_model_http_egress.py",
+      "name": "test_loopback_inference_ignores_proxy_environment",
+      "purpose": "Loopback inference ignores proxy environment",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
     },
     "tests/test_stage05_model_transport_boundary.py::test_client_cannot_elevate_paid_inference_permission": {
       "path": "tests/test_stage05_model_transport_boundary.py",
