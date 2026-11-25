@@ -8,8 +8,10 @@ import hashlib
 import json
 import os
 import re
-import time
+import sqlite3
 import uuid
+
+from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import schema_version
@@ -88,6 +90,7 @@ class ConversationTurnRecord:
         user_text: str,
         assistant_text: str,
         source: str,
+        accepted_at_utc: str | None = None,
     ) -> "ConversationTurnRecord":
         resolved_session = str(session_id or "").strip()
         resolved_turn = str(turn_id or "").strip()
@@ -102,13 +105,19 @@ class ConversationTurnRecord:
         if not visible.strip():
             raise ValueError("assistant_text_required")
         user = str(user_text or "")
+        accepted_at = datetime.now(timezone.utc)
+        if accepted_at_utc is not None:
+            accepted_at = datetime.fromisoformat(accepted_at_utc.replace("Z", "+00:00"))
+            if accepted_at.utcoffset() is None:
+                raise ValueError("accepted_at_timezone_missing")
+            accepted_at = accepted_at.astimezone(timezone.utc)
         return cls(
             session_id=resolved_session,
             turn_id=resolved_turn,
             trace_id=resolved_trace,
             user_text=user,
             assistant_text=visible,
-            accepted_at_utc=datetime.now(timezone.utc).isoformat(),
+            accepted_at_utc=accepted_at.isoformat(),
             source=str(source or "runtime").strip() or "runtime",
             user_text_sha256=hashlib.sha256(user.encode("utf-8")).hexdigest(),
             assistant_text_sha256=hashlib.sha256(visible.encode("utf-8")).hexdigest(),
@@ -196,6 +205,7 @@ class ConversationStateStore:
         assistant_text: str,
         source: str,
         lock_timeout_seconds: float = 2.0,
+        accepted_at_utc: str | None = None,
     ) -> dict[str, Any]:
         record = ConversationTurnRecord.build(
             session_id=session_id,
@@ -204,89 +214,73 @@ class ConversationStateStore:
             user_text=user_text,
             assistant_text=assistant_text,
             source=source,
+            accepted_at_utc=accepted_at_utc,
         )
         payload = self._record_payload(record)
         path = self._turn_path(record.session_id, record.turn_id)
         path.parent.mkdir(parents=True, exist_ok=True)
-        lock_path = self._lock_path(record.session_id, record.turn_id)
-        deadline = time.monotonic() + max(0.05, float(lock_timeout_seconds))
-        lock_fd: int | None = None
-        while lock_fd is None:
-            try:
-                lock_fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-            except FileExistsError:
-                if time.monotonic() >= deadline:
-                    return {
-                        "ok": False,
-                        "status": "turn_commit_lock_timeout",
-                        "path": str(path),
-                        "session_id": record.session_id,
-                        "turn_id": record.turn_id,
-                    }
-                time.sleep(0.01)
+        # Use an OS-held, cross-process lock rather than file existence as
+        # ownership. A killed writer cannot strand the next recovery forever.
+        # The persistent sidecar must not be unlinked: another process may
+        # already be waiting on the same inode.
         try:
-            os.write(lock_fd, record.turn_id.encode("utf-8"))
-            os.fsync(lock_fd)
-            if path.is_file():
-                try:
-                    existing_raw = json.loads(path.read_text(encoding="utf-8"))
-                except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-                    return {
-                        "ok": False,
-                        "status": "existing_turn_unreadable",
-                        "error_type": type(exc).__name__,
-                        "path": str(path),
-                        "session_id": record.session_id,
-                        "turn_id": record.turn_id,
-                    }
-                existing, error = self._validate_payload(existing_raw)
-                if error is not None or existing is None:
-                    return {
-                        "ok": False,
-                        "status": "existing_turn_invalid",
-                        "error": error,
-                        "path": str(path),
-                        "session_id": record.session_id,
-                        "turn_id": record.turn_id,
-                    }
-                same_binding = all(
-                    str(existing.get(key) or "") == str(payload.get(key) or "")
-                    for key in (
-                        "session_id",
-                        "turn_id",
-                        "trace_id",
-                        "user_text_sha256",
-                        "assistant_text_sha256",
+            with runtime_sqlite_write_guard(path, timeout_ms=max(50, int(lock_timeout_seconds * 1000))):
+                if path.is_file():
+                    try:
+                        existing_raw = json.loads(path.read_text(encoding="utf-8"))
+                    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                        return {
+                            "ok": False,
+                            "status": "existing_turn_unreadable",
+                            "error_type": type(exc).__name__,
+                            "path": str(path),
+                            "session_id": record.session_id,
+                            "turn_id": record.turn_id,
+                        }
+                    existing, error = self._validate_payload(existing_raw)
+                    if error is not None or existing is None:
+                        return {
+                            "ok": False,
+                            "status": "existing_turn_invalid",
+                            "error": error,
+                            "path": str(path),
+                            "session_id": record.session_id,
+                            "turn_id": record.turn_id,
+                        }
+                    same_binding = all(
+                        str(existing.get(key) or "") == str(payload.get(key) or "")
+                        for key in (
+                            "session_id",
+                            "turn_id",
+                            "trace_id",
+                            "user_text_sha256",
+                            "assistant_text_sha256",
+                        )
                     )
-                )
+                    return {
+                        "ok": same_binding,
+                        "status": "already_committed" if same_binding else "turn_commit_conflict",
+                        "idempotent": same_binding,
+                        "path": str(path),
+                        "session_id": record.session_id,
+                        "turn_id": record.turn_id,
+                        "trace_id": record.trace_id,
+                        "record_sha256": existing.get("record_sha256"),
+                    }
+                _atomic_write_json(path, payload)
                 return {
-                    "ok": same_binding,
-                    "status": "already_committed" if same_binding else "turn_commit_conflict",
-                    "idempotent": same_binding,
+                    "ok": True,
+                    "status": "committed",
+                    "idempotent": False,
                     "path": str(path),
                     "session_id": record.session_id,
                     "turn_id": record.turn_id,
                     "trace_id": record.trace_id,
-                    "record_sha256": existing.get("record_sha256"),
+                    "record_sha256": payload["record_sha256"],
                 }
-            _atomic_write_json(path, payload)
-            return {
-                "ok": True,
-                "status": "committed",
-                "idempotent": False,
-                "path": str(path),
-                "session_id": record.session_id,
-                "turn_id": record.turn_id,
-                "trace_id": record.trace_id,
-                "record_sha256": payload["record_sha256"],
-            }
-        finally:
-            if lock_fd is not None:
-                os.close(lock_fd)
-            try:
-                lock_path.unlink(missing_ok=True)
-            except OSError:
-                pass
+        except sqlite3.OperationalError:
+            return {"ok": False, "status": "turn_commit_lock_timeout",
+                    "path": str(path), "session_id": record.session_id, "turn_id": record.turn_id}
 
     def verify_turn_binding(
         self, *, session_id: str, turn_id: str, trace_id: str,

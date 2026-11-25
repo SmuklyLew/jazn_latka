@@ -338,7 +338,7 @@ def finalize_host_candidate(
         try:
             conversation_state = ports.commit_conversation(
                 config=config,
-                pending=pending,
+                pending=consumed,
                 binding=binding,
                 final_visible_text=reply["final_text"],
             )

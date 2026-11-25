@@ -881,6 +881,8 @@ def _commit_host_finalized_conversation_state(
         user_text=str(commit.get("user_text") or ""),
         assistant_text=final_visible_text,
         source="chatgpt_host_visible_reply",
+        accepted_at_utc=(str(pending["consumed_at_utc"])
+                         if pending.get("consumed_at_utc") else None),
     )
 
 
