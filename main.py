@@ -2593,6 +2593,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
             daemon_bound=transport_observability.get("selected_transport") == "persistent_daemon",
             daemon_host=ns.daemon_host,
             daemon_port=ns.daemon_port,
+            daemon_marker_output=ns.daemon_marker_output,
         )
 
     if ns.local_llm:

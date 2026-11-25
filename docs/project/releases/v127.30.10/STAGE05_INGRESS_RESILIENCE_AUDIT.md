@@ -29,3 +29,7 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 ### Granica adresu OpenAI API i timeoutu
 - `model_api_base` jest teraz adresem operatora, nie uprawnieniem klienta; próba nadpisania w konfiguracji tury kończy się ValueError przed użyciem tak zmienionego adaptera. Brak dowodu pełnej autoryzacji redirectów, innych endpointów, env oraz fallback adaptera.
 - Model timeout wymaga skończonej dodatniej liczby; limit górny i pełny budżet wykonania pozostają OPEN. Regresje syntetyczne, CI wymagane.
+
+### JSONL / phase-2 — kolejna iteracja
+- Publiczny bridge nie tworzy już in-process session i nie dopuszcza one-shot degraded. Każda próba ma prealokowany request_id; po utracie wyniku nie replayować. ChatGPT JSONL nie rekonstruuje phase-1 po stronie klienta.
+- JSONL host_visible_reply przed istniejącym finalizatorem sprawdza trwałe powiązanie i aktualny autoryzowany job/instance/version/root/heartbeat. Snapshot joba zwraca instance ID. To dodatkowa kontrola ingress, nie nowa finalizacja, nie atomowy lease; CLI host-finalize i MCP wymagają osobnego audytu. Pozostałe kanały, ACK i live Ollama OPEN; CI pending.

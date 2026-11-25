@@ -5,13 +5,13 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, TextIO
 
 from latka_jazn.core.host_stdout_delivery import write_complete_stdout
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
-from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.conversation_channel import (
@@ -30,6 +30,7 @@ from latka_jazn.core.chatgpt_host_pending_store import (
     claim_pending_host_request,
     consume_claimed_host_request,
     continuation_ttl_for_bridge,
+    host_request_lifecycle_state,
     mark_claimed_host_request_indeterminate,
     persist_pending_host_request,
     release_claimed_host_request,
@@ -50,7 +51,7 @@ from latka_jazn.core.memory_recall_observability import (
     correlate_memory_recall_transport,
     memory_recall_truth_boundary_violation,
 )
-from latka_jazn.core.turn_timeout import RuntimeSessionWorker, RuntimeTurnTimeoutError, runtime_turn_timeout_seconds
+from latka_jazn.core.turn_timeout import RuntimeTurnTimeoutError
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
 
 ACCEPTED_CHATGPT_INPUT_FIELDS = ("message", "text", "user_text", "content", "prompt")
@@ -1351,6 +1352,69 @@ def _mark_verified_one_shot_transport(turn_transport: dict[str, Any]) -> None:
         turn_transport["fallback_reason"] = "verified_one_shot_fallback_allowed"
 
 
+def _jsonl_phase2_authorization_error(
+    config: JaznConfig,
+    payload: dict[str, Any],
+    *,
+    host: str,
+    port: int,
+    marker_output: Path | None,
+) -> str | None:
+    """Require the durable binding and a live authenticated daemon job.
+
+    This is only an ingress gate. The canonical transaction still validates
+    and claims the candidate and owns all finalization writes.
+    """
+    from latka_jazn.core.daemon_autostart import status_allows_runtime_turn
+    from latka_jazn.core.runtime_daemon import chat_daemon_result, status_daemon
+
+    values, missing = extract_chatgpt_host_visible_reply_payload(payload)
+    if missing:
+        return "invalid_host_visible_reply"
+    try:
+        state = host_request_lifecycle_state(config.root, turn_id=values["turn_id"])
+        binding = json_object(state.get("binding"))
+        request_id = str(binding.get("daemon_request_id") or "")
+        if not (
+            state.get("found") is True
+            and state.get("state") == "pending"
+            and request_id
+            and state.get("request_contract_hash") == values["host_request_contract_hash"]
+            and binding.get("turn_id") == values["turn_id"]
+            and binding.get("trace_id") == values["trace_id"]
+        ):
+            return "jsonl_phase2_durable_binding_not_verified"
+        status = status_daemon(config, host=host, port=port, marker_output=marker_output)
+        instance = str(status.get("daemon_instance_id") or "")
+        if not (
+            status_allows_runtime_turn(status)
+            and status.get("endpoint_identity_matches") is True
+            and status.get("endpoint_instance_matches") is True
+            and status.get("heartbeat_fresh") is True
+            and status.get("package_integrity_verified") is True
+            and status.get("source_provenance_verified") is True
+            and instance
+            and str(status.get("runtime_version") or "") == binding.get("runtime_version")
+            and Path(str(status.get("active_root") or "")).resolve() == Path(config.root).resolve()
+        ):
+            return "jsonl_phase2_daemon_not_verified"
+        job = chat_daemon_result(config, request_id, host=host, port=port)
+        if not (
+            job.get("accepted") is True
+            and job.get("request_id") == request_id
+            and job.get("daemon_instance_id") == instance
+            and job.get("awaiting_host_finalization") is True
+            and job.get("phase_result_ready") is True
+            and job.get("host_turn_id") == values["turn_id"]
+            and job.get("host_trace_id") == values["trace_id"]
+            and job.get("host_request_contract_hash") == values["host_request_contract_hash"]
+        ):
+            return "jsonl_phase2_daemon_job_not_verified"
+    except (HostRequestStoreError, OSError, TypeError, ValueError, RuntimeError):
+        return "jsonl_phase2_authority_unavailable"
+    return None
+
+
 def run_jsonl_chat_bridge(
     *,
     config: JaznConfig,
@@ -1366,6 +1430,7 @@ def run_jsonl_chat_bridge(
     daemon_bound: bool = False,
     daemon_host: str = "127.0.0.1",
     daemon_port: int = 8787,
+    daemon_marker_output: Path | None = None,
 ) -> int:
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
@@ -1375,6 +1440,21 @@ def run_jsonl_chat_bridge(
         raise RuntimeError("chat_bridge_stdout_unavailable")
     if output_mode not in CHAT_BRIDGE_OUTPUT_MODES:
         raise ValueError(f"unsupported chat bridge output_mode: {output_mode}")
+    if not daemon_bound or one_shot_degraded:
+        write_chat_bridge_payload(stdout, {
+            "schema_version": schema_version("chat_bridge_error"),
+            "ok": False,
+            "accepted": False,
+            "action": "host_diagnostic",
+            "error_code": "jsonl_verified_daemon_required",
+            "must_not_claim_runtime_voice": True,
+            "runtime_turn_invoked": False,
+            "error": "Publiczny JSONL wymaga istniejącego, zweryfikowanego daemona.",
+        }, output_mode=output_mode)
+        return 1
+
+    from latka_jazn.core.runtime_daemon import normalize_daemon_request_id
+
     if command == "--chat-gpt":
         apply_chatgpt_cli_settings(config)
     elif command == "--chat-open-ai":
@@ -1410,7 +1490,6 @@ def run_jsonl_chat_bridge(
         return 3
 
     sessions: dict[str, Any] = {}
-    generated_session: Any | None = None
     turn_model_channel_config = model_channel_config_from_config(config)
 
     def bridge_meta(
@@ -1458,8 +1537,22 @@ def run_jsonl_chat_bridge(
         input_field: str | None = None,
         line_index: int | None = None,
         runtime_turn_invoked: bool = False,
+        request_id: str | None = None,
     ) -> dict[str, Any]:
         return {
+            "action": "host_diagnostic",
+            "must_not_claim_runtime_voice": True,
+            **({
+                "request_id": request_id,
+                "request_acceptance": "unknown",
+                "must_not_replay": True,
+                "safe_recovery": "poll_same_request_id_before_any_retry",
+                "chatgpt_host_bridge": {
+                    "phase": "host_diagnostic_required",
+                    "daemon_request_id": request_id,
+                    "diagnostic_reason": error_code,
+                },
+            } if request_id else {}),
             "schema_version": schema_version("chat_bridge_error"),
             "chat_bridge": bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index),
             "chat_command_contract": contract,
@@ -1476,48 +1569,20 @@ def run_jsonl_chat_bridge(
         }
 
     def get_session(payload_session_id: str | None, *, client: str) -> tuple[Any, str]:
-        nonlocal generated_session
-
-        def create_session(selected_session_id: str | None) -> Any:
-            if daemon_bound:
-                return DaemonConversationSession(
-                    config,
-                    session_id=selected_session_id,
-                    no_carryover=no_carryover,
-                    source_client=client,
-                    command=command,
-                    host=daemon_host,
-                    port=daemon_port,
-                    model_channel_config=turn_model_channel_config,
-                )
-            return RuntimeSessionWorker(
-                session_factory=JaznRuntimeSession,
-                config=config,
-                session_id=selected_session_id,
+        selected = resolve_canonical_chat_session_id(payload_session_id or session_id)
+        source = "payload" if payload_session_id else "cli_arg" if session_id else "canonical_default"
+        if selected not in sessions:
+            sessions[selected] = DaemonConversationSession(
+                config,
+                session_id=selected,
                 no_carryover=no_carryover,
                 source_client=client,
                 command=command,
-                timeout_seconds=runtime_turn_timeout_seconds(config),
+                host=daemon_host,
+                port=daemon_port,
+                model_channel_config=turn_model_channel_config,
             )
-
-        if payload_session_id:
-            if payload_session_id not in sessions:
-                sessions[payload_session_id] = create_session(payload_session_id)
-            return sessions[payload_session_id], "payload"
-        if session_id:
-            if session_id not in sessions:
-                sessions[session_id] = create_session(session_id)
-            return sessions[session_id], "cli_arg"
-        if daemon_bound:
-            canonical_default = resolve_canonical_chat_session_id(None)
-            if canonical_default not in sessions:
-                sessions[canonical_default] = create_session(canonical_default)
-            return sessions[canonical_default], "canonical_default"
-        if generated_session is None:
-            created_session = create_session(None)
-            generated_session = created_session
-            sessions[created_session.state.session_id] = created_session
-        return generated_session, "generated"
+        return sessions[selected], source
 
     try:
         for line_index, line in enumerate(stdin, 1):
@@ -1560,6 +1625,20 @@ def run_jsonl_chat_bridge(
                 client = str(payload.get("client") or default_client)
                 if command == "--chat-gpt" and is_chatgpt_host_visible_reply_payload(payload):
                     meta = bridge_meta(client=client, input_kind="json_host_visible_reply", input_field="type", line_index=line_index)
+                    authority_error = _jsonl_phase2_authorization_error(
+                        config, payload, host=daemon_host, port=daemon_port,
+                        marker_output=daemon_marker_output,
+                    )
+                    if authority_error:
+                        write_chat_bridge_payload(stdout, error_payload(
+                            error_code=authority_error,
+                            error="Brak potwierdzonej autoryzacji phase-2 przez aktualny daemon.",
+                            client=client,
+                            input_kind="json_host_visible_reply",
+                            input_field="type",
+                            line_index=line_index,
+                        ), output_mode=output_mode)
+                        continue
                     persisted, missing = persist_chatgpt_host_visible_reply(
                         config=config,
                         payload=payload,
@@ -1598,7 +1677,17 @@ def run_jsonl_chat_bridge(
                 classification_text = user_text
 
             try:
+                payload_request_id = normalize_daemon_request_id(payload_request_id)
                 session, session_id_source = get_session(payload_session_id, client=client)
+            except (TypeError, ValueError) as exc:
+                write_chat_bridge_payload(stdout, error_payload(
+                    error_code="invalid_jsonl_turn_binding",
+                    error=str(exc),
+                    client=client, input_kind=input_kind, input_field=input_field,
+                    line_index=line_index,
+                ), output_mode=output_mode)
+                continue
+            try:
                 result = session.process_user_text(
                     classification_text,
                     client=client,
@@ -1607,7 +1696,7 @@ def run_jsonl_chat_bridge(
                     process_reused=True,
                     command=command,
                     model_channel_config=turn_model_channel_config,
-                    **({"request_id": payload_request_id} if payload_request_id else {}),
+                    request_id=payload_request_id,
                 )
             except RuntimeTurnTimeoutError as exc:
                 write_chat_bridge_payload(stdout, error_payload(
@@ -1621,31 +1710,22 @@ def run_jsonl_chat_bridge(
                     input_field=input_field,
                     line_index=line_index,
                     runtime_turn_invoked=True,
+                    request_id=payload_request_id,
                 ), output_mode=output_mode)
                 continue
             except Exception as exc:
                 write_chat_bridge_payload(stdout, error_payload(
                     error_code="runtime_turn_failed",
-                    error=f"Runtime Jaźni przerwał turę: {type(exc).__name__}: {exc}",
+                    error=f"Nie potwierdzono wyniku tury: {type(exc).__name__}. Sprawdź ten sam request_id.",
                     client=client,
                     input_kind=input_kind,
                     input_field=input_field,
                     line_index=line_index,
                     runtime_turn_invoked=True,
+                    request_id=payload_request_id,
                 ), output_mode=output_mode)
                 continue
             attach_cli_flag_warning(result, input_warning)
-            if one_shot_degraded:
-                _mark_verified_one_shot_transport(turn_transport)
-                result["one_shot_degraded"] = True
-                result["process_lifecycle"] = "one_shot"
-                result["daemon_confirmed"] = False
-                result["background_claim_allowed"] = False
-                result["host_transport_diagnostic"] = {
-                    "code": "one_shot_degraded",
-                    "message": "Daemon nie został potwierdzony; wykonano zweryfikowaną turę jednorazową.",
-                    "must_not_modify_final_visible_text": True,
-                }
             if turn_transport:
                 result["transport_observability"] = dict(turn_transport)
             result["chat_bridge"] = bridge_meta(client=client, input_kind=input_kind, input_field=input_field, line_index=line_index)
@@ -1658,15 +1738,30 @@ def run_jsonl_chat_bridge(
             }
             # Zachowujemy stary klucz dla zgodności z narzędziami, które już czytają --chat-gpt.
             if command == "--chat-gpt":
-                attach_chatgpt_host_contract(
-                    result,
-                    config=config,
-                    user_text=user_text,
-                    chat_bridge_meta=result["chat_bridge"],
-                )
+                # The daemon creates phase-1. A client must not reconstruct
+                # a missing contract or persist a new pending request.
+                daemon_job = json_object(result.get("daemon_job"))
+                bridge = json_object(result.get("chatgpt_host_bridge"))
+                if not (
+                    daemon_job.get("accepted") is True
+                    and daemon_job.get("request_id") == payload_request_id
+                    and bridge
+                    and bridge.get("daemon_request_id") == payload_request_id
+                    and (bridge.get("phase") != "host_visible_generation_requested"
+                         or bridge.get("pending_request_persisted") is True)
+                ):
+                    write_chat_bridge_payload(stdout, error_payload(
+                        error_code="jsonl_daemon_turn_contract_unverified",
+                        error="Brak zgodnego kontraktu tury z daemona. Nie ponawiaj wiadomości.",
+                        client=client, input_kind=input_kind, input_field=input_field,
+                        line_index=line_index, runtime_turn_invoked=True,
+                        request_id=payload_request_id,
+                    ), output_mode=output_mode)
+                    continue
+                result["chatgpt_host_presentation"] = build_chatgpt_host_presentation_packet(result)
             result["chat_command_contract"] = contract
-            # poprzednia linia runtime: most nie może nadpisać blokady runtime truth gate przez ok=True.
-            result["ok"] = bool(result.get("ok", True))
+            # The bridge cannot promote a missing success flag to acceptance.
+            result["ok"] = result.get("ok") is True
             write_chat_bridge_payload(stdout, result, output_mode=output_mode)
     finally:
         for session in sessions.values():

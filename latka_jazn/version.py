@@ -1,3 +1,4 @@
+# v127.30.10 stage05: public JSONL daemon-only and live job phase-2 ingress gate (unreleased).
 # v127.30.10 stage05: prevent client external endpoint redirection and nonfinite timeout (unreleased).
 # v127.30.10 stage05: model POST circuit and non-escalating client inference permission (unreleased).
 # v127.30.10 stage05: truthful release readiness, no smoke replay and explicit paid adapter opt-in (unreleased).

@@ -3701,6 +3701,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
 
     def _chat_job_response(self, job: DaemonChatJob, *, created: bool, force_envelope: bool = False) -> None:
         snapshot = job.snapshot(include_result=True)
+        snapshot["daemon_instance_id"] = self._daemon_server().daemon_instance_id
         snapshot["created"] = bool(created)
         snapshot["idempotent_replay"] = not bool(created)
         snapshot["daemon_chat_jobs"] = self._daemon_server().chat_job_summary()
