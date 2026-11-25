@@ -418,3 +418,5 @@ def version_slug(version: str = PACKAGE_VERSION) -> str:
 
 def generation_mode(prefix: str, *, version: str = PACKAGE_VERSION) -> str:
     return f"{prefix}_{version_slug(version)}"
+
+# v127.30.10 Stage 05: monotonic paid-inference denial and explicit transport authorization (unreleased candidate).

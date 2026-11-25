@@ -84,6 +84,8 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
                 truth_boundary="Explicit adapter selection and an API key do not authorize paid external inference.",
             )
         return OpenaiResponsesAdapter(
+            operator_opt_in=True,
+            network_permitted=bool(getattr(config, "allow_network", True)),
             model=str(getattr(config, "model_name", "") or ""),
             api_base=str(getattr(config, "model_api_base", "https://api.openai.com/v1")),
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),

@@ -32,7 +32,7 @@ def test_model_transport_circuit_survives_adapter_reconstruction(
             obj = OpenAICompatibleLocalAdapter(root=tmp_path, model="synthetic")
             monkeypatch.setattr(obj, "_post_json", transport)
         elif provider == "paid":
-            obj = OpenaiResponsesAdapter(root=tmp_path, model="synthetic", api_key="synthetic-not-sent")
+            obj = OpenaiResponsesAdapter(root=tmp_path, model="synthetic", api_key="synthetic-not-sent", operator_opt_in=True)
             monkeypatch.setattr(obj, "_post_json", transport)
         else:
             return SiwcPlanUsageAdapter(root=tmp_path, model="synthetic", access_token="synthetic-not-sent",

@@ -48,6 +48,8 @@ def _truthy(value: str | None) -> bool:
 
 def paid_openai_allowed(config: Any, env: Mapping[str, str]) -> bool:
     """One opt-in policy shared by routing and direct factory construction."""
+    if getattr(config, "paid_openai_turn_denied", False) or not getattr(config, "allow_network", True):
+        return False
     if "JAZN_ALLOW_PAID_OPENAI" in env:
         return _truthy(env.get("JAZN_ALLOW_PAID_OPENAI"))
     return bool(getattr(config, "allow_paid_openai_api", False))

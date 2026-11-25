@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
+from urllib.parse import urlsplit
 from .model_http_transport import open_model_request as urlopen
 
 from latka_jazn.core.json_types import json_object
@@ -41,7 +42,11 @@ class OpenaiResponsesAdapter:
         timeout_seconds: float = 45.0,
         max_output_tokens: int = 800,
         root: str | Path | None = None,
+        operator_opt_in: bool = False,
+        network_permitted: bool = True,
     ) -> None:
+        self._operator_opt_in = operator_opt_in is True
+        self._network_permitted = network_permitted is True
         self.api_key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY", "")
         self.model = str(model or "").strip()
         self.api_base = api_base.rstrip("/")
@@ -52,10 +57,38 @@ class OpenaiResponsesAdapter:
         self._last_generation_succeeded = False
         self._last_probe_error: str | None = None
 
+    def _authorization_failure(self) -> str | None:
+        if not self._operator_opt_in:
+            return "paid_openai_not_allowed"
+        if not self._network_permitted:
+            return "openai_network_permission_missing"
+        try:
+            parsed = urlsplit(self.api_base)
+            port = parsed.port
+            valid = (
+                parsed.scheme == "https" and bool(parsed.hostname)
+                and parsed.username is None and parsed.password is None
+                and not parsed.query and not parsed.fragment
+                and (port is None or 1 <= port <= 65535)
+                and not any(char.isspace() or ord(char) < 32 for char in self.api_base)
+            )
+        except ValueError:
+            valid = False
+        if not valid:
+            return "openai_endpoint_not_authorized"
+        return None
+
+    def _require_authorized_transport(self) -> None:
+        reason = self._authorization_failure()
+        if reason:
+            raise PermissionError(reason)
+
     def describe(self) -> dict[str, Any]:
-        configured = bool(self.api_key and self.model)
-        failure_reason = None
-        if not self.api_key:
+        failure_reason = self._authorization_failure()
+        configured = bool(self.api_key and self.model and not failure_reason)
+        if failure_reason:
+            pass
+        elif not self.api_key:
             failure_reason = "openai_api_key_missing"
         elif not self.model:
             failure_reason = "model_name_missing"
@@ -101,6 +134,11 @@ class OpenaiResponsesAdapter:
         )
 
     def generate(self, request: ModelAdapterRequest) -> ModelAdapterResponse:
+        reason = self._authorization_failure()
+        if reason:
+            self._last_generation_succeeded = False
+            self._last_probe_error = reason
+            return self._response(status=reason)
         if not self.api_key or not self.model:
             return self._response(status="not_configured")
         payload = self._build_payload(request)
@@ -274,7 +312,7 @@ class OpenaiResponsesAdapter:
         return parsed if isinstance(parsed, (dict, list)) else None
 
     def _status_snapshot(self) -> AdapterStatusSnapshot:
-        configured = bool(self.api_key and self.model)
+        configured = bool(self.api_key and self.model and not self._authorization_failure())
         return AdapterStatusSnapshot(
             adapter_id=self.name,
             provider="openai",
@@ -334,6 +372,7 @@ class OpenaiResponsesAdapter:
         return self.state_tracker.load(session_id), session_id
 
     def _post_json(self, payload: dict[str, Any]) -> dict[str, Any]:
+        self._require_authorized_transport()
         if os.name == "nt":
             return self._post_json_windows(payload)
         req = Request(
@@ -349,6 +388,7 @@ class OpenaiResponsesAdapter:
         return data
 
     def _post_json_windows(self, payload: dict[str, Any]) -> dict[str, Any]:
+        self._require_authorized_transport()
         script = (
             "$ErrorActionPreference='Stop';"
             "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;"

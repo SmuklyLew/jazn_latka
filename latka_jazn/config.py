@@ -209,6 +209,8 @@ class JaznConfig:
     llm_route_mode: str = field(default_factory=lambda: os.environ.get("JAZN_LLM_ROUTE", "auto").strip().lower())
     allow_paid_openai_api: bool = field(default_factory=lambda: _env_bool("JAZN_ALLOW_PAID_OPENAI", False))
     openai_paid_model_name: str = field(default_factory=lambda: _env_first("JAZN_OPENAI_MODEL", "JAZN_MODEL_NAME", default="").strip())
+    # Internal, monotonic per-turn restriction; never accepted from channel payload.
+    paid_openai_turn_denied: bool = False
     model_adapter: str = field(default_factory=lambda: os.environ.get("JAZN_MODEL_ADAPTER", "null").strip().lower())
     model_name: str = field(default_factory=lambda: _env_first("JAZN_OPENAI_MODEL", "JAZN_MODEL_NAME", default="").strip())
     model_api_base: str = field(default_factory=lambda: _env_first("JAZN_OPENAI_API_BASE", "JAZN_MODEL_API_BASE", default="https://api.openai.com/v1").strip().rstrip("/"))

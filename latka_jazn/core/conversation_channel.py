@@ -175,6 +175,10 @@ def apply_model_channel_config(
             # Client-selected model/channel settings can narrow permission,
             # never grant a privilege absent from the daemon's own config.
             value = bool(getattr(config, field, False)) and value is True
+            if hasattr(routed, "paid_openai_turn_denied"):
+                routed.paid_openai_turn_denied = bool(
+                    getattr(config, "paid_openai_turn_denied", False) or not value
+                )
         setattr(routed, field, value)
     return routed
 
