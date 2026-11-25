@@ -215,7 +215,10 @@ from latka_jazn.nlp_reasoning.source_registry import PolishReasoningSourceRegist
 from latka_jazn.nlp_reasoning.adapters.online_lookup import PolishOnlineLookupPlanner
 from latka_jazn.core.turn_route_trace import TurnRouteTrace
 from latka_jazn.nlp_reasoning.lexical_resource_registry import LexicalResourceRegistry
-from latka_jazn.core.chat_command_contract import BridgeOutputMode
+from latka_jazn.core.chat_command_contract import (
+    BridgeOutputMode, public_phase1_authorization_error, public_phase1_diagnostic,
+    build_chatgpt_host_presentation_packet, chatgpt_result_has_displayable_runtime_final,
+)
 from latka_jazn.core.conversation_entrypoint_contract import auto_route_priority_text
 from latka_jazn.core.chat_command_contract import apply_chat_cli_settings, apply_chatgpt_cli_settings, apply_ollama_cli_settings, apply_openai_cli_settings, attach_chatgpt_host_contract, attach_cli_flag_warning, build_chatgpt_host_bridge_turn_contract, guard_cli_flags_in_user_text, persist_chatgpt_host_visible_reply, resolve_ollama_cli_settings, run_jsonl_chat_bridge, write_chat_bridge_payload, write_local_ollama_visible_reply, runtime_owned_visible_reply_verified
 from latka_jazn.core.host_visible_finalization import sha256_host_visible_text
@@ -698,6 +701,7 @@ def _prepare_chatgpt_daemon_presentation(
     request_id: str | None,
     user_text: str = "",
     retrieval_transport_observability: dict[str, Any] | None = None,
+    public_transport: bool = False,
 ) -> dict[str, Any]:
     """Normalize daemon submit/poll output into the canonical ChatGPT host contract.
 
@@ -860,7 +864,18 @@ def _prepare_chatgpt_daemon_presentation(
         explicit_user_text=user_text,
     )
     existing_host_bridge = _as_dict(result.get("chatgpt_host_bridge"))
-    if user_text_binding_error is None:
+    if public_transport and (not existing_host_bridge or user_text_binding_error is not None):
+        if not chatgpt_result_has_displayable_runtime_final(result):
+            return public_phase1_diagnostic(normalized_request_id, user_text_binding_error or "public_daemon_contract_missing")
+        # A completed runtime-owned final may have no host bridge. Derive
+        # presentation only; never persist a new host generation contract.
+        result["chatgpt_host_bridge"] = build_chatgpt_host_bridge_turn_contract(
+            result, user_text=resolved_user_text or "", chat_bridge_meta=bridge_meta,
+        )
+        result["chatgpt_host_presentation"] = build_chatgpt_host_presentation_packet(result)
+    elif public_transport:
+        result["chatgpt_host_presentation"] = build_chatgpt_host_presentation_packet(result)
+    elif user_text_binding_error is None:
         attach_chatgpt_host_contract(
             result,
             config=cfg,
@@ -1795,12 +1810,21 @@ def legacy_main(argv: list[str] | None = None) -> int:
             port=ns.daemon_port,
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
+        reason = public_phase1_authorization_error(
+            cfg, payload, request_id=ns.daemon_result, host=ns.daemon_host, port=ns.daemon_port,
+            marker_output=ns.daemon_marker_output,
+        )
+        if reason:
+            write_chat_bridge_payload(sys.stdout, public_phase1_diagnostic(ns.daemon_result, reason),
+                output_mode="host_packet" if ns.chat_gpt else "final_visible_text" if ns.daemon_final_only else "jsonl")
+            return 1
         payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
         if ns.chat_gpt or ns.daemon_final_only:
             presented = _prepare_chatgpt_daemon_presentation(
                 cfg=cfg,
                 payload=payload,
                 request_id=ns.daemon_result,
+                public_transport=True,
                 retrieval_transport_observability=_verified_daemon_poll_transport(
                     cfg=cfg, host=ns.daemon_host, port=ns.daemon_port,
                     payload=payload,
@@ -1837,6 +1861,14 @@ def legacy_main(argv: list[str] | None = None) -> int:
             request_id=ns.daemon_request_id,
             timeout=min(DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS, max(0.5, ns.daemon_wait_budget)),
         )
+        reason = public_phase1_authorization_error(
+            cfg, payload, request_id=ns.daemon_request_id, host=ns.daemon_host, port=ns.daemon_port,
+            marker_output=ns.daemon_marker_output,
+        )
+        if reason:
+            write_chat_bridge_payload(sys.stdout, public_phase1_diagnostic(
+                ns.daemon_request_id or str(payload.get("request_id") or _as_dict(payload.get("daemon_job")).get("request_id") or "") or None, reason))
+            return 1
         payload.setdefault("daemon_autostart", daemon_ensure.to_dict())
         payload.setdefault("selected_channel", getattr(ns, "daemon_channel", "chatgpt"))
         payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
@@ -1868,6 +1900,14 @@ def legacy_main(argv: list[str] | None = None) -> int:
             timeout=wait_budget,
             poll_interval=ns.daemon_poll_interval,
         )
+        reason = public_phase1_authorization_error(
+            cfg, payload, request_id=ns.daemon_request_id, host=ns.daemon_host, port=ns.daemon_port,
+            marker_output=ns.daemon_marker_output,
+        )
+        if reason:
+            write_chat_bridge_payload(sys.stdout, public_phase1_diagnostic(
+                ns.daemon_request_id or str(payload.get("request_id") or _as_dict(payload.get("daemon_job")).get("request_id") or "") or None, reason))
+            return 1
         payload.setdefault("daemon_autostart", daemon_ensure.to_dict())
         payload.setdefault("selected_channel", getattr(ns, "daemon_channel", "chatgpt"))
         payload.setdefault("daemon_completion", _daemon_cli_completion(payload))
@@ -1879,6 +1919,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 payload=payload,
                 request_id=ns.daemon_request_id,
                 user_text=text,
+                public_transport=True,
             )
             write_chat_bridge_payload(sys.stdout, presented, output_mode="final_visible_text")
             phase = str(_as_dict(presented.get("chatgpt_host_bridge")).get("phase") or "")

@@ -1455,6 +1455,61 @@ def authorize_public_host_finalization(
     return None
 
 
+def public_phase1_authorization_error(
+    config: JaznConfig, payload: dict[str, Any], *, request_id: str | None,
+    host: str, port: int, marker_output: Path | None = None,
+) -> str | None:
+    """Do not expose a generation contract from an unverified public job."""
+    nested = json_object(payload.get("result"))
+    candidate = nested or payload
+    job = json_object(payload.get("daemon_job")) or json_object(candidate.get("daemon_job")) or payload
+    bridge = json_object(candidate.get("chatgpt_host_bridge"))
+    presentation = json_object(candidate.get("chatgpt_host_presentation"))
+    requires = (
+        job.get("phase_result_ready") is True
+        or job.get("awaiting_host_finalization") is True
+        or bridge.get("phase") == "host_visible_generation_requested"
+        or presentation.get("action") == "generate_then_finalize"
+        or chatgpt_result_requires_host_visible_reply(dict(candidate))
+    )
+    if not requires:
+        return None
+    bound_request = str(job.get("request_id") or "")
+    instance = str(job.get("daemon_instance_id") or "")
+    if not (
+        bound_request and (request_id is None or bound_request == request_id)
+        and job.get("accepted") is True and job.get("phase_result_ready") is True
+        and job.get("awaiting_host_finalization") is True
+        and instance and bridge.get("phase") == "host_visible_generation_requested"
+        and bridge.get("pending_request_persisted") is True
+        and bridge.get("daemon_request_id") == bound_request
+        and bridge.get("daemon_instance_id") == instance
+        and bridge.get("turn_id") == job.get("host_turn_id")
+        and bridge.get("trace_id") == job.get("host_trace_id")
+        and bridge.get("host_request_contract_hash") == job.get("host_request_contract_hash")
+    ):
+        return "phase1_public_job_binding_unverified"
+    authority: dict[str, Any] = {}
+    reason = authorize_public_host_finalization(
+        config, bridge, host=host, port=port, marker_output=marker_output, authority=authority,
+    )
+    if (reason or authority.get("request_id") != bound_request
+            or authority.get("daemon_instance_id") != instance):
+        return "phase1_public_authority_unverified"
+    return None
+
+
+def public_phase1_diagnostic(request_id: str | None, reason: str) -> dict[str, Any]:
+    """No generation context, text or continuation can escape a failed gate."""
+    return {"ok": False, "accepted": False, "action": "host_diagnostic",
+            "error_code": reason, "request_id": request_id, "must_not_replay": True,
+            "must_not_claim_runtime_voice": True,
+            "chatgpt_host_bridge": {"phase": "host_diagnostic_required", "status": reason,
+                                    "diagnostic_reason": reason, "daemon_request_id": request_id,
+                                    "host_must_generate_visible_reply": False,
+                                    "host_reply_finalization_required": False}}
+
+
 def persist_public_host_visible_reply(
     *, config: JaznConfig, payload: dict[str, Any],
     chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
@@ -1892,6 +1947,14 @@ def run_jsonl_chat_bridge(
                         line_index=line_index, runtime_turn_invoked=True,
                         request_id=payload_request_id,
                     ), output_mode=output_mode)
+                    continue
+                reason = public_phase1_authorization_error(
+                    config, result, request_id=payload_request_id, host=daemon_host,
+                    port=daemon_port, marker_output=daemon_marker_output,
+                )
+                if reason:
+                    write_chat_bridge_payload(stdout, public_phase1_diagnostic(payload_request_id, reason),
+                                              output_mode=output_mode)
                     continue
                 result["chatgpt_host_presentation"] = build_chatgpt_host_presentation_packet(result)
             result["chat_command_contract"] = contract
