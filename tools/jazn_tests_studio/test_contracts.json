@@ -29944,13 +29944,13 @@
       "path": "tests/test_jazn_run_studio_integrations.py",
       "name": "test_chat_checkpoints_identity_before_sending_and_blocks_replay",
       "purpose": "Chat checkpoints identity before sending and blocks replay",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 7,
       "expected_exceptions": [
         "StudioError"
       ],
@@ -29980,7 +29980,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 139
     },
     "tests/test_jazn_run_studio_integrations.py::test_local_final_validator_checks_integrity_binding_and_lineage": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -30000,7 +30000,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 144
+      "line": 156
     },
     "tests/test_jazn_run_studio_integrations.py::test_public_jsonl_bridge_preserves_preallocated_request_id": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -30020,7 +30020,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 158
+      "line": 170
     },
     "tests/test_jazn_run_studio_integrations.py::test_integrated_python_studio_executes_original_detect_host_command": {
       "path": "tests/test_jazn_run_studio_integrations.py",
@@ -30041,7 +30041,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 181
+      "line": 193
     },
     "tests/test_jazn_run_studio_job_error_contract.py::test_job_report_encodes_absent_error_as_json_null": {
       "path": "tests/test_jazn_run_studio_job_error_contract.py",
@@ -33461,7 +33461,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 56
+      "line": 59
     },
     "tests/test_jss_bounded_stdin_transport.py::test_chat_stdin_write_watchdog_preserves_identity_without_replay": {
       "path": "tests/test_jss_bounded_stdin_transport.py",
@@ -33480,7 +33480,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 100
     },
     "tests/test_jss_bounded_stdin_transport.py::test_helper_stalled_stdin_is_bounded_by_single_execution_deadline": {
       "path": "tests/test_jss_bounded_stdin_transport.py",
@@ -33497,7 +33497,7 @@
       "targets": [],
       "status": "current",
       "description_source": "native_docstring",
-      "line": 116
+      "line": 119
     },
     "tests/test_jss_chat_activity_history_qt.py::test_transport_identifiers_live_only_in_closed_history": {
       "path": "tests/test_jss_chat_activity_history_qt.py",
@@ -70791,7 +70791,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 14
     },
     "tests/test_stage05_conversation_projection_crash.py::test_legacy_orphan_sentinel_cannot_block_recovery_or_be_deleted": {
       "path": "tests/test_stage05_conversation_projection_crash.py",
@@ -70810,7 +70810,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 44
+      "line": 53
     },
     "tests/test_stage05_conversation_projection_crash.py::test_historical_projection_retains_acceptance_order_not_recovery_time": {
       "path": "tests/test_stage05_conversation_projection_crash.py",
@@ -70829,7 +70829,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 55
+      "line": 64
     },
     "tests/test_stage05_daemon_owned_finalization.py::test_daemon_serializes_public_phase2": {
       "path": "tests/test_stage05_daemon_owned_finalization.py",
