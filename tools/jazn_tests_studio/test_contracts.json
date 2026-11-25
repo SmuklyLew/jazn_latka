@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3619,
+  "active_definition_count": 3620,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16858,6 +16858,24 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 122
+    },
+    "tests/test_daemon_completed_request_replay.py::test_completed_request_tombstone_survives_multiple_daemon_restarts": {
+      "path": "tests/test_daemon_completed_request_replay.py",
+      "name": "test_completed_request_tombstone_survives_multiple_daemon_restarts",
+      "purpose": "Completed request tombstone survives multiple daemon restarts",
+      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 18,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.runtime_daemon"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 30
     },
     "tests/test_daemon_instance_identity.py::test_instance_identity_allows_windows_redirector_pid_difference": {
       "path": "tests/test_daemon_instance_identity.py",
@@ -55829,7 +55847,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 272
+      "line": 293
     },
     "tests/test_persistent_runtime_lifecycle_transport.py::test_ensure_starts_resolved_subject_b_never_requested_a": {
       "path": "tests/test_persistent_runtime_lifecycle_transport.py",
