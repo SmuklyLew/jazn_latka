@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import os
-from hashlib import sha256
+from re import fullmatch
 from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
@@ -32,6 +32,8 @@ class ChatClient:
         self.session_id = "studio-" + uuid4().hex
         self.pending: str | None = None
         self._pending_user_text_sha256: str | None = None
+        self._pending_daemon_instance_id: str | None = None
+        self._preparing_request: str | None = None
         # The pending request is bound to this endpoint for its entire life.
         # Switching ports during resume could otherwise poll the wrong daemon.
         self.daemon_url = core.settings.daemon_url
@@ -46,7 +48,6 @@ class ChatClient:
             if self.checkpoint.stat().st_size > 4096:
                 raise StudioError("Nieprawidłowy checkpoint rozmowy")
             saved = json.loads(self.checkpoint.read_bytes())
-            from re import fullmatch
             for key in ("session_id", "request_id"):
                 if saved.get(key) is not None and not fullmatch(r"[A-Za-z0-9_-]{1,128}", saved[key]):
                     raise StudioError("Nieprawidłowy identyfikator checkpointu")
@@ -65,6 +66,13 @@ class ChatClient:
                 ):
                     raise StudioError("Nieprawidłowy hash wiadomości checkpointu")
                 self._pending_user_text_sha256 = digest
+                pin = saved.get("expected_daemon_instance_id")
+                if "expected_daemon_instance_id" in saved and (
+                    not isinstance(pin, str) or fullmatch(r"[A-Za-z0-9_.:-]{1,256}", pin) is None
+                    or self.pending is None or digest is None
+                ):
+                    raise StudioError("Nieprawidłowa instancja checkpointu")
+                self._pending_daemon_instance_id = pin
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
@@ -73,6 +81,8 @@ class ChatClient:
                 "daemon_url": self.daemon_url}
         if self.pending is not None and self._pending_user_text_sha256 is not None:
             data["user_text_sha256"] = self._pending_user_text_sha256
+        if self.pending is not None and self._pending_daemon_instance_id is not None:
+            data["expected_daemon_instance_id"] = self._pending_daemon_instance_id
         fd, name = tempfile.mkstemp(dir=self.checkpoint.parent, prefix=".chat-")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
@@ -213,6 +223,24 @@ class ChatClient:
             message = "Transport zamknięty. Brak nierozstrzygniętego żądania w tej sesji."
         self.core.emit("chat", "chat_state", message)
 
+    def _prepare_admission(self, message: str) -> tuple[str, str]:
+        self._require_same_endpoint()
+        checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
+                       "tools.jazn_run_studio.validation_worker"], cwd=self.core.root,
+                      data=json.dumps({"mode": "prepare_admission", "message": message,
+                                       "session_id": self.session_id,
+                                       "daemon_url": self.daemon_url}, ensure_ascii=False).encode("utf-8"),
+                      timeout=10)
+        if checked.returncode or len(checked.stdout) > 4096:
+            raise StudioError("Niezweryfikowana instancja przed submit")
+        result = json.loads(checked.stdout)
+        pin, digest = result.get("daemon_instance_id"), result.get("user_text_sha256")
+        if (result.get("admission_verified") is not True
+                or not isinstance(pin, str) or fullmatch(r"[A-Za-z0-9_.:-]{1,256}", pin) is None
+                or not isinstance(digest, str) or fullmatch(r"[0-9a-f]{64}", digest) is None):
+            raise StudioError("Niezweryfikowana instancja przed submit")
+        return pin, digest
+
     def send(self, message: str) -> str:
         self._require_same_endpoint()
         with self.lock:
@@ -225,26 +253,50 @@ class ChatClient:
                 raise StudioError("Najpierw połącz lokalny czat")
             self.pending = "studio-turn-" + uuid4().hex
             self._confirmed_failed = None
-            # The JSONL ingress strips surrounding whitespace before admission.
-            # Bind exactly that canonical user text; never store the prompt.
-            self._pending_user_text_sha256 = sha256(message.strip().encode("utf-8")).hexdigest()
-            self._save()  # Durable identity before any bytes can reach runtime.
-            payload = {"message": message, "session_id": self.session_id, "request_id": self.pending}
-            data = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
-            # The checkpoint above is durable before dispatch. Pipe write/flush
-            # may block indefinitely if the child is alive but never reads stdin.
-            # Keep that I/O completely off the Qt thread; a separate watchdog
-            # cancels only this owned transport after the bounded write budget.
+            # Reserve in memory, then acquire live evidence off the GUI thread.
+            # No bytes can reach stdin before the pinned checkpoint is durable.
             write_done = threading.Event()
             owned_job = job
             stdin = job.proc.stdin
             request_id = self.pending
+            self._preparing_request = request_id
+            self._pending_daemon_instance_id = None
+            self._pending_user_text_sha256 = None
+            session_id = self.session_id
 
             def write_once() -> None:
                 try:
+                    pin, digest = self._prepare_admission(message)
+                    with self.lock:
+                        self._require_same_endpoint()
+                        if (self.pending != request_id or self._preparing_request != request_id
+                                or self.session_id != session_id or self.job is not owned_job
+                                or owned_job.cancel.is_set() or owned_job.proc is None
+                                or owned_job.proc.poll() is not None):
+                            raise StudioError("Stan transportu zmienił się przed submit")
+                        self._pending_daemon_instance_id = pin
+                        self._pending_user_text_sha256 = digest
+                        self._save()
+                        self._preparing_request = None
+                    payload = {"message": message, "session_id": session_id, "request_id": request_id,
+                               "expected_daemon_instance_id": pin}
+                    data = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+                except (OSError, ValueError, TypeError, AttributeError, subprocess.SubprocessError, StudioError):
+                    with self.lock:
+                        if self.pending == request_id and self._preparing_request == request_id:
+                            # No transport write has been attempted. If a
+                            # checkpoint write was attempted, retain its identity.
+                            if self._pending_daemon_instance_id is None:
+                                self.pending = None
+                                self.started_at = 0.0
+                            self._preparing_request = None
+                    self.core.emit("chat", "chat_state", "Nie wysłano wiadomości — brak dowodu przyjęcia: " + request_id)
+                    return
+                try:
+                    threading.Thread(target=watch_write, name="jss-chat-stdin-watchdog", daemon=True).start()
                     stdin.write(data)
                     stdin.flush()
-                except (OSError, ValueError):
+                except (OSError, ValueError, RuntimeError):
                     self.core.emit("chat", "chat_state",
                         "Niepewny transport. Zachowano request_id; wznów ten sam wynik bez ponowienia wiadomości.")
                     owned_job.cancel.set()
@@ -259,7 +311,6 @@ class ChatClient:
 
             self.started_at = time.monotonic()
             threading.Thread(target=write_once, name="jss-chat-stdin-write", daemon=True).start()
-            threading.Thread(target=watch_write, name="jss-chat-stdin-watchdog", daemon=True).start()
             return request_id
 
     def _verify_terminal_failure(
@@ -283,6 +334,8 @@ class ChatClient:
                     or any(not isinstance(value, str) for value in proof.values())
                     or proof.get("request_id") != request or proof.get("session_id") != self.session_id
                     or proof.get("daemon_url") != self.daemon_url or not proof.get("daemon_instance_id")
+                    or (self._pending_daemon_instance_id is not None
+                        and proof.get("daemon_instance_id") != self._pending_daemon_instance_id)
                     or (self._pending_user_text_sha256 is not None
                         and proof.get("user_text_sha256") != self._pending_user_text_sha256)
                     or (expected_proof is not None and proof != expected_proof)):
@@ -294,6 +347,8 @@ class ChatClient:
     def receive(self, payload: dict[str, Any]) -> None:
         with self.lock:
             request = self.pending
+            if self._preparing_request is not None:
+                return  # No admitted request exists while preflight is in progress.
         if not request:
             self.core.emit("chat", "chat_state", "Odebrano diagnostykę transportu bez aktywnego żądania.")
             return
@@ -332,6 +387,10 @@ class ChatClient:
             with self.lock:
                 if self.pending != request:
                     raise ValueError("Request changed during validation")
+                if (self._pending_daemon_instance_id is not None
+                        and result.get("daemon_instance_id") != self._pending_daemon_instance_id):
+                    self.core.emit("chat", "chat_state", "Brak zaakceptowanej wypowiedzi z przypisanej instancji; zachowano request_id.")
+                    return
                 if (self._pending_user_text_sha256 is not None
                         and result.get("user_text_sha256") != self._pending_user_text_sha256):
                     self.core.emit("chat", "chat_state",
@@ -363,6 +422,7 @@ class ChatClient:
                 raise
             self._awaiting_gui_ack = None
             self._pending_user_text_sha256 = None
+            self._pending_daemon_instance_id = None
 
     def can_resolve_terminal_failure(self) -> bool:
         with self.lock:
@@ -392,7 +452,9 @@ class ChatClient:
                     or self._confirmed_failed != proof or self.session_id != proof["session_id"]):
                 raise StudioError("Stan tury zmienił się podczas weryfikacji; nie zamknięto checkpointu")
             self._require_same_endpoint()
-            if (checked != proof or (self._pending_user_text_sha256 is not None
+            if (checked != proof or (self._pending_daemon_instance_id is not None
+                    and proof.get("daemon_instance_id") != self._pending_daemon_instance_id)
+                    or (self._pending_user_text_sha256 is not None
                     and proof.get("user_text_sha256") != self._pending_user_text_sha256)):
                 self._confirmed_failed = None
                 raise StudioError("Utracono niezależny dowód terminalnej porażki; zachowano request_id")
@@ -430,9 +492,13 @@ class ChatClient:
                 raise
             self._confirmed_failed = None
             self._pending_user_text_sha256 = None
+            self._pending_daemon_instance_id = None
 
     def resume(self) -> None:
-        request = self.pending
+        with self.lock:
+            if self._preparing_request is not None:
+                raise StudioError("Trwa weryfikacja przed submit; nie rozpoczęto odpytywania")
+            request = self.pending
         if not request:
             raise StudioError("Brak oczekującego request_id")
         argv = self.resume_command(request)

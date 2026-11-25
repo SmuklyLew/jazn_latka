@@ -31,6 +31,7 @@ def test_hash_is_persisted_before_transport_write_and_survives_restart(tmp_path:
 
     stdin = SimpleNamespace(write=write, flush=lambda: None)
     client.job = Job(key="chat", proc=cast(Popen[bytes], SimpleNamespace(poll=lambda: None, stdin=stdin)))
+    monkeypatch.setattr(client, "_prepare_admission", lambda _message: ("instance-original", digest))
     request = client.send(message)
     assert written.wait(2)
     checkpoint, submitted = observed[0]
@@ -41,6 +42,8 @@ def test_hash_is_persisted_before_transport_write_and_survives_restart(tmp_path:
     restored = studio_chat.ChatClient(core)
     assert restored.pending == request
     assert restored._pending_user_text_sha256 == digest
+    assert checkpoint["expected_daemon_instance_id"] == submitted["expected_daemon_instance_id"] == "instance-original"
+    assert restored._pending_daemon_instance_id == "instance-original"
 
 
 @pytest.mark.parametrize("receipt_hash", ["same", "other", "missing"])

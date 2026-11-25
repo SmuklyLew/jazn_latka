@@ -156,7 +156,10 @@ class EventViewMixin:
                 message = str(value)
                 self._record_chat_diagnostic(message)
                 chat = self.core.chat
-                if (chat is not None and self._chat_activity_request == chat.pending
+                if (chat is not None and self._chat_activity_request is not None
+                        and message == "Nie wysłano wiadomości — brak dowodu przyjęcia: " + self._chat_activity_request):
+                    self._end_chat_activity("Nie wysłano wiadomości — sprawdź Historię operacji.")
+                elif (chat is not None and self._chat_activity_request == chat.pending
                         and self._chat_activity_request is not None):
                     # A finished/uncertain attempt is not ongoing generation.
                     # Keep the original request and checkpoint for manual

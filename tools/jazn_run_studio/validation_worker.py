@@ -6,6 +6,7 @@ import json
 import re
 import sys
 from datetime import datetime
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -58,11 +59,11 @@ def _job_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
     return job if isinstance(job, dict) else payload if isinstance(nested, dict) else {}
 
 
-def _verified_live_job(root: Path, daemon_url: str, instance: str, request_id: str) -> dict[str, Any]:
-    """One shared authority gate for success and terminal failure receipts."""
+def _verified_live_status(root: Path, daemon_url: str, instance: str | None = None) -> tuple[Any, int, str]:
+    """One authority gate for admission, accepted results and terminal failures."""
     from latka_jazn.config import JaznConfig
     from latka_jazn.core.daemon_autostart import status_allows_runtime_turn
-    from latka_jazn.core.runtime_daemon import chat_daemon_result, status_daemon
+    from latka_jazn.core.runtime_daemon import status_daemon, validate_expected_daemon_instance
 
     endpoint = urlsplit(daemon_url)
     port = endpoint.port
@@ -81,13 +82,34 @@ def _verified_live_job(root: Path, daemon_url: str, instance: str, request_id: s
         and status.get("heartbeat_fresh") is True
         and status.get("package_integrity_verified") is True
         and status.get("source_provenance_verified") is True
-        and status.get("daemon_instance_id") == instance
+        and (instance is None or status.get("daemon_instance_id") == instance)
         and status.get("active_root")
         and Path(str(status["active_root"])).resolve() == root
     ):
         raise ValueError("daemon_authority_not_verified")
-    live = chat_daemon_result(cfg, request_id, host="127.0.0.1", port=port, timeout=2.0)
-    return live
+    observed = validate_expected_daemon_instance(status.get("daemon_instance_id"))
+    return cfg, port, observed
+
+
+def _verified_live_job(root: Path, daemon_url: str, instance: str, request_id: str) -> dict[str, Any]:
+    from latka_jazn.core.runtime_daemon import chat_daemon_result
+    cfg, port, _observed = _verified_live_status(root, daemon_url, instance)
+    return chat_daemon_result(cfg, request_id, host="127.0.0.1", port=port, timeout=2.0)
+
+
+def prepare_admission(message: str, *, root: Path, daemon_url: str) -> dict[str, Any]:
+    """Read-only pre-submit evidence; no inference or job creation."""
+    from latka_jazn.core.chat_command_contract import guard_cli_flags_in_user_text
+    try:
+        original = message.strip()
+        if not original or len(message.encode("utf-8")) > 65536:
+            raise ValueError("invalid_message")
+        effective, _warning = guard_cli_flags_in_user_text(original)
+        _, _, instance = _verified_live_status(root, daemon_url)
+        return {"admission_verified": True, "daemon_instance_id": instance,
+                "user_text_sha256": sha256((effective or original).encode("utf-8")).hexdigest()}
+    except (OSError, ValueError, TypeError, RuntimeError, KeyError):
+        return {"admission_verified": False, "error": "daemon_admission_authority_unverified"}
 
 
 def _terminal_failure_proof(job: dict[str, Any], request_id: str, session_id: str,
@@ -255,6 +277,10 @@ def main() -> int:
     data = json.loads(raw)
     if not isinstance(data.get("daemon_url"), str) or not isinstance(data.get("session_id"), str):
         result = {"accepted": False, "error": "live_authority_parameters_missing", "must_not_replay": True}
+    elif data.get("mode") == "prepare_admission":
+        message = data.get("message")
+        result = (prepare_admission(message, root=Path.cwd(), daemon_url=data["daemon_url"])
+                  if isinstance(message, str) else {"admission_verified": False})
     elif data.get("mode") == "terminal_failure":
         proof = data.get("expected_proof")
         if proof is not None and (not isinstance(proof, dict)
