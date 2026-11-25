@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3690,
+  "active_definition_count": 3697,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70789,6 +70789,62 @@
       "description_source": "source_identity",
       "line": 140
     },
+    "tests/test_stage05_durable_ack_recovery.py::test_delivered_outbox_is_monotonic_across_repeated_notifications": {
+      "path": "tests/test_stage05_durable_ack_recovery.py",
+      "name": "test_delivered_outbox_is_monotonic_across_repeated_notifications",
+      "purpose": "Delivered outbox is monotonic across repeated notifications",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_stage05_durable_ack_recovery.py::test_ack_reconciliation_requires_exact_durable_capture_and_job_metadata": {
+      "path": "tests/test_stage05_durable_ack_recovery.py",
+      "name": "test_ack_reconciliation_requires_exact_durable_capture_and_job_metadata",
+      "purpose": "Ack reconciliation requires exact durable capture and job metadata",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
+    },
+    "tests/test_stage05_durable_ack_recovery.py::test_accepted_ack_reports_job_persistence_failure_and_retry_only_repairs_metadata": {
+      "path": "tests/test_stage05_durable_ack_recovery.py",
+      "name": "test_accepted_ack_reports_job_persistence_failure_and_retry_only_repairs_metadata",
+      "purpose": "Accepted ack reports job persistence failure and retry only repairs metadata",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
     "tests/test_stage05_jsonl_authority.py::test_unbound_jsonl_cannot_create_runtime": {
       "path": "tests/test_stage05_jsonl_authority.py",
       "name": "test_unbound_jsonl_cannot_create_runtime",
@@ -71160,6 +71216,48 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 44
+    },
+    "tests/test_stage05_model_circuit_capacity.py::test_registry_capacity_preserves_existing_circuit": {
+      "path": "tests/test_stage05_model_circuit_capacity.py",
+      "name": "test_registry_capacity_preserves_existing_circuit",
+      "purpose": "Registry capacity preserves existing circuit",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "CircuitOpenError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_stage05_model_circuit_capacity.py::test_registry_pressure_during_live_operation_keeps_original_object": {
+      "path": "tests/test_stage05_model_circuit_capacity.py",
+      "name": "test_registry_pressure_during_live_operation_keeps_original_object",
+      "purpose": "Registry pressure during live operation keeps original object",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [
+        "CircuitOpenError"
+      ],
+      "targets": [
+        "latka_jazn.model_adapters",
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
     },
     "tests/test_stage05_model_http_egress.py::test_inference_http_does_not_follow_redirect": {
       "path": "tests/test_stage05_model_http_egress.py",
@@ -71546,6 +71644,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 14
+    },
+    "tests/test_stage05_public_phase1_recovery.py::test_public_resume_requires_same_live_instance": {
+      "path": "tests/test_stage05_public_phase1_recovery.py",
+      "name": "test_public_resume_requires_same_live_instance",
+      "purpose": "Public resume requires same live instance",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_stage05_public_phase1_recovery.py::test_public_resume_refuses_external_endpoint_without_poll": {
+      "path": "tests/test_stage05_public_phase1_recovery.py",
+      "name": "test_public_resume_refuses_external_endpoint_without_poll",
+      "purpose": "Public resume refuses external endpoint without poll",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 54
     },
     "tests/test_stage05_public_phase2_authority.py::test_public_entrypoints_require_same_live_authority": {
       "path": "tests/test_stage05_public_phase2_authority.py",
