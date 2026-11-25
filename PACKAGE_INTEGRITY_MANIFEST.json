@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T17:15:25+00:00",
-  "updated_at_utc": "2026-11-25T17:15:25+00:00",
+  "generated_at_utc": "2026-11-25T17:27:16+00:00",
+  "updated_at_utc": "2026-11-25T17:27:16+00:00",
   "start_file": "run.py",
-  "file_count": 3970,
-  "static_file_count": 3970,
+  "file_count": 3977,
+  "static_file_count": 3977,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "5fece5076f8b5891668fe0ac38d42c06d90fcd55807aac00f618ffd935eb02e5",
+      "sha256": "7366e5de6501d8b9d15159b9bc4e3c5bf000f35ed769427ff9336dd1ed6259f3",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 55279,
-      "sha256": "3c07a27b81445d974cdf85f43fa0c654c4e25f3345222f42cbb61aecb4039ca2",
+      "size_bytes": 58709,
+      "sha256": "543e0e425baba091a5314e7f5910cc1330e01aa230c35ea76e63c1e45a7107cd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2767,8 +2767,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/STAGE05_INGRESS_RESILIENCE_AUDIT.md",
-      "size_bytes": 11108,
-      "sha256": "78edb061215c13feb56bfb8f59c24c6c5b45de2b7b67c87b7c77965a4b8fcd53",
+      "size_bytes": 13530,
+      "sha256": "2b909cb5333d1ebdef2381fc6641ed11da8a092f71cc87f1a80648e20fc203c8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5224,8 +5224,8 @@
     },
     {
       "path": "latka_jazn/cli_commands/host.py",
-      "size_bytes": 17381,
-      "sha256": "5acc42a4bf0447975ed3aa7d2f57c74f1e27ea24740e691829a6d7102d3a022d",
+      "size_bytes": 18601,
+      "sha256": "b31ede9f46b87da0e3e2a4b7cab87a696edf9826e7166ea6ceaf7f6d981ad008",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5242,8 +5242,8 @@
     },
     {
       "path": "latka_jazn/config.py",
-      "size_bytes": 23196,
-      "sha256": "f999b5ab366b519ae0f4e575d1921b3da8e0ddfe314a39d039d3a80708b7e60d",
+      "size_bytes": 23323,
+      "sha256": "4289686107da2da97421bbcf261ec90cbf014967496826b2eada349186303d2b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5530,8 +5530,8 @@
     },
     {
       "path": "latka_jazn/core/chat_command_contract.py",
-      "size_bytes": 84464,
-      "sha256": "6e49eb57c8da9335133307f17f7e36b6add3ba4fba6fe09ab9681166de83f12a",
+      "size_bytes": 88220,
+      "sha256": "35451aea993fb5733069ef06d335e72f121c9de801f6f08c652fd73719dd5ca7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5647,8 +5647,8 @@
     },
     {
       "path": "latka_jazn/core/chatgpt_host_pending_store.py",
-      "size_bytes": 35988,
-      "sha256": "fabe52fb4b302993f48603c1b100dfeddc5d4fb32041e53ed417707a3cb583e5",
+      "size_bytes": 36142,
+      "sha256": "1a05e78ab6e45f3fc89fa13240cd316e6e762fb9fe7f7fad3ef6da610d889355",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5845,8 +5845,8 @@
     },
     {
       "path": "latka_jazn/core/conversation_channel.py",
-      "size_bytes": 6687,
-      "sha256": "796c0f8773802656b5c9b3dc393be208766d08f4a914eea95e89c7f07621dd59",
+      "size_bytes": 6902,
+      "sha256": "5286a1e269516f0f07aacb2019cfc65809f63dc5a68f2f54882e39e5e4d8f54c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6574,8 +6574,8 @@
     },
     {
       "path": "latka_jazn/core/llm_route_resolver.py",
-      "size_bytes": 14257,
-      "sha256": "04a39375e1ef2f9398bd5fb67d556a702fbbb111d94023db0572b40f0793a814",
+      "size_bytes": 14382,
+      "sha256": "33811743e7e5f04f9d40d8680a8bef0da7d9f3ef32208b479cbef2cf3f675b71",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7186,8 +7186,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 260568,
-      "sha256": "ecaa930cb620fcff75ea27b9396dd924537ae19f3b8f316fba278c3acb6fc467",
+      "size_bytes": 270191,
+      "sha256": "9620385224ad4e3c47236bffd74ec4d09621f14379c9400aca4e4c971f4e990e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -8212,8 +8212,8 @@
     },
     {
       "path": "latka_jazn/mcp/tools/jazn_finalize_reply.py",
-      "size_bytes": 15624,
-      "sha256": "0c37ec486a9e2d454a511b8c79bdf0fff15673de3c390bf42e912a82b94619ed",
+      "size_bytes": 16993,
+      "sha256": "8598a8e31af34f01662b68dd40526ba017d50bad2c55a950f9b19f4c3275f086",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9085,8 +9085,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/factory.py",
-      "size_bytes": 13360,
-      "sha256": "3e24d4d505df9ebcbb38e380ad1f8570acd521d6cb8a75efcd690f2050048b9c",
+      "size_bytes": 13470,
+      "sha256": "01f592d0f4aadee773b6faf5c812811e4d6ad80f38137fcb3cf275456cf25ce5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -9139,8 +9139,8 @@
     },
     {
       "path": "latka_jazn/model_adapters/openai_responses_adapter.py",
-      "size_bytes": 19496,
-      "sha256": "bd2b613a0f1d4424568927afd4a9eb09d6fea34ae023f41a889ccdd36ab7e9c4",
+      "size_bytes": 21168,
+      "sha256": "3b6d7ed41d89b2d6b9589705e189466f839504c18b950d10a14f4d81f6544a2b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10696,8 +10696,8 @@
     },
     {
       "path": "latka_jazn/tools/chatgpt_host_bridge_helper.py",
-      "size_bytes": 20911,
-      "sha256": "92a599299e4066b47f0d549e56460610df9e4c6011f82aef11147b717f4d1369",
+      "size_bytes": 20908,
+      "sha256": "6c8c17445c28c5579014cca61858ded6069283bc128e44e0ecb78df5c8c01a0e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11893,8 +11893,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 31461,
-      "sha256": "498ee1ba1bce893444d0f57c56844ff60db72cfc3cddd54e00c4a1cba03149db",
+      "size_bytes": 31670,
+      "sha256": "9c0fe89c5c25de9f1bf54aecc8353d3b1140ceab9c31e475e268af9c8754e345",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -12010,8 +12010,8 @@
     },
     {
       "path": "main.py",
-      "size_bytes": 150865,
-      "sha256": "c2bf45ddefac20497d1c78a12076e6a03fe37571032e271e41d1043faf035a1f",
+      "size_bytes": 151017,
+      "sha256": "b5d6b15391f0936fd20eb8e1f0dbce483d47e95e354e1f74b25af0b5e5922300",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20361,6 +20361,33 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-daemon-finalize-22b370b282a4/test_stage05_jsonl_authority.py",
+      "size_bytes": 6870,
+      "sha256": "beb94bda37b44c0987d072eba0c64fa9d8ecc86a4f372921b4f1f3946bc1ee47",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127.30.10-stage05-daemon-finalize-22b370b282a4/test_stage05_public_phase2_authority.py",
+      "size_bytes": 5042,
+      "sha256": "f8f87b30795eab1edc47c9017c913323a4ec6ac1c93b33ed82fb8a0013ae7228",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127.30.10-stage05-daemon-finalize-fixture-2393574a43e8/test_stage05_daemon_owned_finalization.py",
+      "size_bytes": 6442,
+      "sha256": "a4a1605c9226ebd3db0369308b464963d429273dfb3e0caa74d1aa6f2efa4941",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127.30.10-stage05-entrypoint-auto-contract-26cf5bd47b3d/test_conversation_runtime_orchestration_convergence.py",
       "size_bytes": 5808,
       "sha256": "093e49ced9d10d6adccc9cd0aa18fcf5fe2b223ee93f02ea300f813c388f9e57",
@@ -20388,6 +20415,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-paid-transport-d49719833ac6/test_stage05_remaining_model_circuits.py",
+      "size_bytes": 3994,
+      "sha256": "9b495dfce0c696cb215e8aa1836f5860d01e4a906e1638d11d724bf77ba4db9d",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127.30.10-stage05-pyright-5102e622b7e0/test_stage05_model_transport_boundary.py",
       "size_bytes": 4357,
       "sha256": "fcb4af54b61bb624649d36fd077af1182e883232e2ce3d1951e1aaa8e630b215",
@@ -20409,6 +20445,15 @@
       "path": "tests/archive/v127.30.10-stage05-runtime-first-764a3e60270f/test_ollama_only_hotfix.py",
       "size_bytes": 11114,
       "sha256": "1df57575080bb050996a61404238f5a008d90b7b0a654a7deb2a525570c0d1e8",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/archive/v127.30.10-stage05-studio-ack-2dcc958ae363/test_jazn_run_studio_delivery_ack.py",
+      "size_bytes": 3942,
+      "sha256": "670ae4d1080d5e497cb90a39c6f381b71a7e54e958e8d69715a252676a126141",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -29956,8 +30001,8 @@
     },
     {
       "path": "tests/test_jazn_run_studio_delivery_ack.py",
-      "size_bytes": 3942,
-      "sha256": "670ae4d1080d5e497cb90a39c6f381b71a7e54e958e8d69715a252676a126141",
+      "size_bytes": 4622,
+      "sha256": "46e09431f4d0823423ef06dbbb06fd75255a61128ae77ef96b2e017531526ce7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33438,9 +33483,18 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_daemon_owned_finalization.py",
+      "size_bytes": 6478,
+      "sha256": "c2b11605a3499bbe5a1debd37ac4b3c49fd5407f900b44072640b85b4d972d39",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_stage05_jsonl_authority.py",
-      "size_bytes": 6870,
-      "sha256": "beb94bda37b44c0987d072eba0c64fa9d8ecc86a4f372921b4f1f3946bc1ee47",
+      "size_bytes": 6904,
+      "sha256": "53eead70ce61444b839b817a9b4691dad959e8b9fc2f416efa1c7572a579ad7a",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33510,6 +33564,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_paid_transport_authorization.py",
+      "size_bytes": 3185,
+      "sha256": "444e8567ca57115dfadcadeb14690a0fe22cadfb43d6d9602327713bcb96c971",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_stage05_public_daemon_ack_authority.py",
       "size_bytes": 2779,
       "sha256": "7c978ee08cfc8facc3f6acfd5c92ae0649a24704c53e5cd7385a631c28e31d26",
@@ -33520,8 +33583,8 @@
     },
     {
       "path": "tests/test_stage05_public_phase2_authority.py",
-      "size_bytes": 5042,
-      "sha256": "f8f87b30795eab1edc47c9017c913323a4ec6ac1c93b33ed82fb8a0013ae7228",
+      "size_bytes": 5082,
+      "sha256": "545eeef50d640245d2a3713b80a9f5def0a411e8cca703ab0d9019567c03f5c0",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33529,8 +33592,8 @@
     },
     {
       "path": "tests/test_stage05_remaining_model_circuits.py",
-      "size_bytes": 3994,
-      "sha256": "9b495dfce0c696cb215e8aa1836f5860d01e4a906e1638d11d724bf77ba4db9d",
+      "size_bytes": 4016,
+      "sha256": "363e8cb7ad5f51289d21a711d839efc47cf93e6ccf93248e7442c5c35b196ecd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35527,8 +35590,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3243855,
-      "sha256": "49c5b05413922af4fbf5f15379a82a2ff1df0e7c6761165c2e2c46aa450167a1",
+      "size_bytes": 3249891,
+      "sha256": "1cee72339b7697e01586c2ec3bdc009cff7d247ccf2a30374cf8635f74a86e81",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
