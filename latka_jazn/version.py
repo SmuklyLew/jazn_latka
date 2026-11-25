@@ -1,3 +1,4 @@
+# v127.30.10 stage05: runtime-first CLI and isolated PC acceptance preparation (unreleased).
 # v127.30.10 stage05: common live phase-2 authorization for public ingress (unreleased).
 # v127.30.10 stage05: public JSONL daemon-only and live job phase-2 ingress gate (unreleased).
 # v127.30.10 stage05: prevent client external endpoint redirection and nonfinite timeout (unreleased).

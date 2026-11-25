@@ -37,3 +37,6 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 ### Wspólna autoryzacja publicznej phase-2
 - Jedna funkcja `authorize_public_host_finalization` (JSONL, oba dispatchery host-finalize, MCP server/public HTTP backend, legacy record-final-reply, helper zapisujący). Kontrakt wymaga live daemon job, a nie samego tokenu lub hasha. MCP endpoint jest konfiguracją operatora; niedozwolony endpoint odrzucony. CLI nie promuje niepotwierdzonego ACK do accepted display.
 - Transakcyjne funkcje wewnętrzne pozostają dostępne dla unit-testów; żadna z wymienionych publicznych tras nie powinna ich wywołać bez bramki. Audyt dalszych callerów, atomowy lease, ACK/recovery, restart, real MCP/Ollama nadal OPEN. CI nowego SHA wymagane.
+
+### Runtime-first i przygotowanie PC
+- Auto chat, jawne OpenAI, direct_message oraz daemon-submit/send przenoszą sprawdzenie daemona przed wybór/probe modelu; auto chat używa tego samego ensure receipt. Usunięto pozostały TTY Ollama fallback in-process. Nowe CI wymagane. Debug-direct, pełna authoritatywność phase-2 i pozostałe adaptery nadal do audytu. Real PC acceptance: STAGE05_PC_ACCEPTANCE.md (NOT_RUN).

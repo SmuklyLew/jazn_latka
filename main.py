@@ -176,7 +176,6 @@ from latka_jazn.core.self_knowledge_contract import build_self_knowledge_packet
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_chat import run_persistent_chat
-from latka_jazn.core.runtime_session import JaznRuntimeSession
 from latka_jazn.core.conversation_channel import (
     CANONICAL_OLLAMA_COMMAND,
     CANONICAL_OPENAI_COMMAND,
@@ -226,7 +225,6 @@ from latka_jazn.core.cli_normalization import normalize_cli_argv
 from latka_jazn.core.model_guided_speech_runtime import build_model_guided_speech_status
 from latka_jazn.core.daemon_autostart import DaemonEnsureResult
 from latka_jazn.core.daemon_autostart import daemon_autostart_policy_status, ensure_daemon_for_runtime_turn
-from latka_jazn.core.turn_timeout import RuntimeSessionWorker, runtime_turn_timeout_seconds
 from latka_jazn.core.runtime_daemon import (
     DEFAULT_DAEMON_CHAT_CLI_WAIT_BUDGET_SECONDS,
     DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS,
@@ -1041,6 +1039,8 @@ def _ensure_daemon_or_error(
     print(json.dumps({
         "ok": False,
         "error_code": "daemon_ensure_failed",
+        "action": "host_diagnostic",
+        "must_not_claim_runtime_voice": True,
         "command": command,
         "diagnostic": diagnostic,
         "daemon_autostart": result.to_dict(),
@@ -1438,27 +1438,23 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
             port=ns.daemon_port,
         )
     if stdin_is_tty:
-        if daemon_bound:
-            session = DaemonConversationSession(
-                cfg,
-                session_id=ns.session_id,
-                no_carryover=ns.no_carryover,
-                source_client="ollama_terminal_chat",
-                command="--chat-ollama",
-                host=ns.daemon_host,
-                port=ns.daemon_port,
-                model_channel_config=model_channel_config_from_config(cfg),
-            )
-        else:
-            session = RuntimeSessionWorker(
-                session_factory=JaznRuntimeSession,
-                config=cfg,
-                session_id=ns.session_id,
-                no_carryover=ns.no_carryover,
-                source_client="ollama_terminal_chat",
-                command="--chat-ollama",
-                timeout_seconds=runtime_turn_timeout_seconds(cfg),
-            )
+        if not daemon_bound:
+            print(json.dumps({
+                "ok": False, "action": "host_diagnostic",
+                "error_code": "ollama_verified_daemon_required",
+                "must_not_claim_runtime_voice": True,
+            }, ensure_ascii=False))
+            return 1
+        session = DaemonConversationSession(
+            cfg,
+            session_id=ns.session_id,
+            no_carryover=ns.no_carryover,
+            source_client="ollama_terminal_chat",
+            command="--chat-ollama",
+            host=ns.daemon_host,
+            port=ns.daemon_port,
+            model_channel_config=model_channel_config_from_config(cfg),
+        )
         try:
             run_persistent_chat(
                 session,
@@ -1673,22 +1669,6 @@ def legacy_main(argv: list[str] | None = None) -> int:
     if ns.final_only and not ns.chat_gpt:
         parser.error("--final-only jest legacy aliasem i wymaga kanonicznego --chat-gpt")
 
-    # --chat is the universal route. A confirmed ChatGPT host wins; otherwise
-    # local Ollama is probed and the runtime falls back truthfully without a model.
-    if ns.chat_loop and not ns.chat_gpt:
-        cfg = config or JaznConfig()
-        route_status = build_llm_route_status(
-            cfg,
-            command="--chat",
-            infer_host_environment=True,
-            probe_local=True,
-        )
-        apply_llm_route_to_config(cfg, route_status)
-        config = cfg
-        if route_status.selected_route == ROUTE_CHATGPT_BRIDGE:
-            ns.chat_gpt = True
-            ns.chat_loop = False
-
     if ns.bridge_discovery:
         cfg = config or JaznConfig()
         print(json.dumps(discover_runtime_bridges(cfg), ensure_ascii=False, indent=2, sort_keys=True))
@@ -1839,13 +1819,13 @@ def legacy_main(argv: list[str] | None = None) -> int:
     if ns.daemon_submit:
         cfg = config or JaznConfig()
         text = _message_from_remainder(ns.message)
+        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-submit", explicit=True)
+        if daemon_exit is not None:
+            return daemon_exit
         channel_options, channel_error = _daemon_cli_channel_settings(ns, cfg)
         if channel_error is not None:
             print(json.dumps(channel_error, ensure_ascii=False, sort_keys=True))
             return 3
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-submit", explicit=True)
-        if daemon_exit is not None:
-            return daemon_exit
         payload = chat_daemon_submit(
             cfg,
             text,
@@ -1868,13 +1848,13 @@ def legacy_main(argv: list[str] | None = None) -> int:
     if ns.daemon_send or ns.daemon_final_only:
         cfg = config or JaznConfig()
         text = _message_from_remainder(ns.message)
+        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-send", explicit=True)
+        if daemon_exit is not None:
+            return daemon_exit
         channel_options, channel_error = _daemon_cli_channel_settings(ns, cfg)
         if channel_error is not None:
             print(json.dumps(channel_error, ensure_ascii=False, sort_keys=True))
             return 3
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--daemon-send", explicit=True)
-        if daemon_exit is not None:
-            return daemon_exit
         wait_budget = min(max(0.0, ns.daemon_chat_timeout), max(0.0, ns.daemon_wait_budget))
         payload = chat_daemon(
             cfg,
@@ -2539,6 +2519,24 @@ def legacy_main(argv: list[str] | None = None) -> int:
         return 0
 
 
+    # Resolve a conversational language channel only after the runtime gate.
+    # Keep this below observational/control commands. Reuse the same ensure
+    # receipt if automatic routing selects the ChatGPT bridge.
+    auto_daemon_ensure: DaemonEnsureResult | None = None
+    if ns.chat_loop and not ns.chat_gpt:
+        cfg = config or JaznConfig()
+        auto_daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat")
+        if daemon_exit is not None:
+            return daemon_exit
+        route_status = build_llm_route_status(
+            cfg, command="--chat", infer_host_environment=True, probe_local=True,
+        )
+        apply_llm_route_to_config(cfg, route_status)
+        config = cfg
+        if route_status.selected_route == ROUTE_CHATGPT_BRIDGE:
+            ns.chat_gpt = True
+            ns.chat_loop = False
+
     if ns.chat_gpt:
         cfg = apply_chatgpt_cli_settings(config or JaznConfig())
         bridge_text = _message_from_remainder(ns.message)
@@ -2548,9 +2546,12 @@ def legacy_main(argv: list[str] | None = None) -> int:
         # is retained only as a compatibility/recovery one-shot, never as the
         # normal ChatGPT conversation lifecycle.
         output_mode = _bridge_text_output_mode(ns, bridge_text)
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-gpt")
-        if daemon_exit is not None:
-            return daemon_exit
+        if auto_daemon_ensure is not None:
+            daemon_ensure = auto_daemon_ensure
+        else:
+            daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-gpt")
+            if daemon_exit is not None:
+                return daemon_exit
         transport_observability = daemon_ensure.transport_observability()
         runtime_cfg = _runtime_config_for_transport(cfg, transport_observability)
         if bridge_text:
@@ -2615,6 +2616,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
 
     if ns.chat_open_ai:
         cfg = config or JaznConfig()
+        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-open-ai")
+        if daemon_exit is not None:
+            return daemon_exit
         route_status = build_llm_route_status(cfg, command="--chat-open-ai", infer_host_environment=False, probe_local=False)
         if route_status.openai_api.get("api_key_present") and not route_status.openai_api.get("allowed"):
             print(json.dumps({
@@ -2633,9 +2637,6 @@ def legacy_main(argv: list[str] | None = None) -> int:
             max_output_tokens=ns.openai_max_output_tokens,
         )
         bridge_text = _message_from_remainder(ns.message)
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-open-ai")
-        if daemon_exit is not None:
-            return daemon_exit
         daemon_bound = daemon_ensure.selected_transport == "persistent_daemon"
         output_mode = _bridge_text_output_mode(ns, bridge_text)
         bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
@@ -2670,11 +2671,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
         return 0 if payload.get("ok", True) else 2
 
     if ns.chat_loop:
-        cfg = config or apply_chat_cli_settings(JaznConfig(), infer_host_environment=True, probe_local=True)
+        # The automatic route above has already established the runtime.
+        cfg = config or JaznConfig()
         bridge_text = _message_from_remainder(ns.message)
-        daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat")
-        if daemon_exit is not None:
-            return daemon_exit
         if bridge_text:
             return _run_chat_command_one_shot(
                 cfg=cfg,
@@ -2710,10 +2709,12 @@ def legacy_main(argv: list[str] | None = None) -> int:
 
     text = _message_from_remainder(ns.message)
     if text and not ns.cognitive_frame and not ns.debug_direct:
-        cfg = config or apply_chat_cli_settings(JaznConfig(), infer_host_environment=True, probe_local=True)
+        cfg = config or JaznConfig()
         _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "direct_message")
         if daemon_exit is not None:
             return daemon_exit
+        if config is None:
+            cfg = apply_chat_cli_settings(cfg, infer_host_environment=True, probe_local=True)
         return _run_chat_command_one_shot(
             cfg=cfg, text=text, session_id=ns.session_id, no_carryover=ns.no_carryover,
             source_client="cli_direct_conversation", lifecycle="one_shot",
