@@ -1358,6 +1358,11 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
         float(getattr(cfg, "runtime_turn_timeout_seconds", 45.0)),
         effective_ollama_timeout + 30.0,
     )
+    # Establish the runtime independently of the requested language executor.
+    # Model discovery is a client capability, not a prerequisite for core startup.
+    _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-ollama")
+    if daemon_exit is not None:
+        return daemon_exit
     cfg, ollama_probe = resolve_ollama_cli_settings(
         cfg,
         model=ns.ollama_model,
@@ -1399,8 +1404,9 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
                 "Przy wielu modelach wskaż --ollama-model <nazwa>; gdy endpoint nie odpowiada, uruchom Ollamę."
             ),
             "ollama_probe": ollama_probe,
+            "daemon_preflight": _daemon_ensure.to_dict(),
             "suggested_command": suggested_command,
-            "truth_boundary": "Runtime nie przechodzi do rozmowy, dopóki /api/tags nie potwierdzi konkretnego modelu.",
+            "truth_boundary": "Brak modelu blokuje wyłącznie tę trasę Ollama. Nie zatrzymuje daemonu; jego stan przed probe opisuje daemon_preflight. Tura nie została przekazana.",
         }
         if stdin_is_tty:
             print(error_payload["error"], file=sys.stderr)
@@ -1411,9 +1417,6 @@ def _run_chat_ollama_command(ns: argparse.Namespace, cfg: JaznConfig) -> int:
             print(json.dumps(error_payload, ensure_ascii=False, sort_keys=True))
         return 3
 
-    _daemon_ensure, daemon_exit = _ensure_daemon_or_error(ns, cfg, "--chat-ollama")
-    if daemon_exit is not None:
-        return daemon_exit
     daemon_bound = getattr(_daemon_ensure, "selected_transport", None) == "persistent_daemon"
     if bridge_text:
         return _run_chat_command_one_shot(

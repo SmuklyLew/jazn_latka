@@ -322,13 +322,27 @@ def test_chat_ollama_offers_ambiguous_models_for_interactive_selection(monkeypat
             },
         ),
     )
-    monkeypatch.setattr(main_module, "_ensure_daemon_or_error", lambda *args, **kwargs: (None, 17))
+    from types import SimpleNamespace
+
+    class FakeSession:
+        def __init__(self, *args, **kwargs) -> None:
+            self.state = SimpleNamespace(session_id="synthetic")
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(
+        main_module, "_ensure_daemon_or_error",
+        lambda *args, **kwargs: (SimpleNamespace(selected_transport="persistent_daemon"), None),
+    )
+    monkeypatch.setattr(main_module, "DaemonConversationSession", FakeSession)
+    monkeypatch.setattr(main_module, "run_persistent_chat", lambda *args, **kwargs: None)
     monkeypatch.setattr(main_module.sys, "stdin", TtyInput("2\n"))
 
     exit_code = main_module.main(["--chat-ollama", "--no-runtime-preflight", "--no-ensure-daemon"])
     captured = capsys.readouterr()
 
-    assert exit_code == 17
+    assert exit_code == 0
     assert cfg.local_model_name == "qwen3:8b"
     assert "1. gemma3:latest" in captured.out
     assert "2. qwen3:8b" in captured.out
