@@ -246,5 +246,12 @@ def recover_committed_host_presentation(
         "must_display_exactly": True,
         "recovered_existing_request": True,
         "recovered_committed_delivery_only": True,
+        "historical_delivery_only": True,
+        "new_turn_authorized": False,
+        "original_daemon_instance_id": binding.get("daemon_instance_id"),
+        "daemon_finalization_notification_state": accepted.get("daemon_finalization_notification_state"),
+        # The consumed capture predates projection publication. Historical
+        # delivery must not assert that those separate writes succeeded.
+        "projection_status": "not_reverified",
         "must_not_resubmit_user_message": True,
     }

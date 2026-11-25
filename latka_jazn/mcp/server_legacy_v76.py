@@ -456,9 +456,10 @@ class JaznMcpServer:
                 request_id=request_id,
             )
         if name == "jazn_resume_visible_reply":
-            return jazn_resume_visible_reply.run(
+            return jazn_resume_visible_reply.run_public(
                 root=self.root,
                 gateway=self.gateway,
+                daemon_url=self.gateway.config.daemon_url,
                 daemon_request_id=str(args["daemon_request_id"]),
                 turn_id=args.get("turn_id"),
                 host_request_contract_hash=args.get("host_request_contract_hash"),
@@ -559,12 +560,16 @@ class JaznMcpServer:
                 if (
                     name == "jazn_generate_visible_reply"
                     and request_id
-                    and (cached is None or _result_action(cached) == "poll_runtime")
+                    and (cached is None or _result_action(cached) in {"poll_runtime", "generate_then_finalize"})
                 ):
-                    stored = jazn_resume_visible_reply.run(
+                    cached_contract = (cached or {}).get("structuredContent") or {}
+                    stored = jazn_resume_visible_reply.run_public(
                         root=self.root,
                         gateway=self.gateway,
+                        daemon_url=self.gateway.config.daemon_url,
                         daemon_request_id=request_id,
+                        turn_id=cached_contract.get("turn_id"),
+                        host_request_contract_hash=cached_contract.get("host_request_contract_hash"),
                     )
                 else:
                     stored = cached or _tool_error("idempotency_result_unavailable")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hmac
 from pathlib import Path
 from typing import Any, Mapping, Protocol, cast
+from urllib.parse import urlsplit
 
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
@@ -43,6 +44,7 @@ def _tool_error(reason: str, *, response: dict[str, Any] | None = None) -> dict[
         "structuredContent": {
             "ok": False,
             "action": "host_diagnostic",
+            "must_not_claim_runtime_voice": True,
             "reason": reason,
             "recovery_attempted": True,
             "must_not_resubmit_user_message": True,
@@ -173,6 +175,28 @@ def _validate_runtime_binding(
         raise HostRequestStoreError("host_request_contract_hash_mismatch")
 
 
+def run_public(
+    *,
+    root: Path, gateway: HostRuntimeRecoveryGateway, daemon_url: str,
+    daemon_request_id: str, turn_id: str | None = None,
+    host_request_contract_hash: str | None = None,
+) -> dict[str, Any]:
+    """Public MCP recovery must not issue a generation lease to a stale instance."""
+    try:
+        endpoint = urlsplit(daemon_url)
+        host, port = endpoint.hostname, endpoint.port
+        if (endpoint.scheme != "http" or host not in {"127.0.0.1", "localhost", "::1"}
+                or port is None or not 1 <= port <= 65535 or endpoint.username is not None
+                or endpoint.password is not None or endpoint.path not in {"", "/"}
+                or endpoint.query or endpoint.fragment):
+            return _tool_error("phase1_daemon_endpoint_invalid")
+    except ValueError:
+        return _tool_error("phase1_daemon_endpoint_invalid")
+    return run(root=root, gateway=gateway, daemon_request_id=daemon_request_id,
+               turn_id=turn_id, host_request_contract_hash=host_request_contract_hash,
+               daemon_endpoint=(host, port))
+
+
 def run(
     *,
     root: Path,
@@ -180,7 +204,9 @@ def run(
     daemon_request_id: str,
     turn_id: str | None = None,
     host_request_contract_hash: str | None = None,
+    daemon_endpoint: tuple[str, int] | None = None,
 ) -> dict[str, Any]:
+    """Internal transport seam; public dispatch uses run_public."""
     request_id = str(daemon_request_id or "").strip()
     if not request_id:
         return _tool_error("daemon_request_id_missing")
@@ -275,6 +301,33 @@ def run(
             presentation=presentation,
             runtime_result=runtime_result,
         )
+        if daemon_endpoint is not None:
+            from latka_jazn.config import JaznConfig
+            from latka_jazn.core.chat_command_contract import authorize_public_host_finalization
+
+            bound = _object_or_none(record.get("binding")) or {}
+            authority: dict[str, Any] = {}
+            reason = authorize_public_host_finalization(
+                JaznConfig(root=Path(root)), {
+                    "turn_id": bound.get("turn_id"), "trace_id": bound.get("trace_id"),
+                    "host_request_contract_hash": record.get("request_contract_hash"),
+                }, host=daemon_endpoint[0], port=daemon_endpoint[1], authority=authority,
+            )
+            job = _object_or_none(runtime_result.get("daemon_job")) or envelope
+            if (reason or not authority
+                    or authority.get("request_id") != request_id
+                    or not bound.get("daemon_instance_id")
+                    or authority.get("daemon_instance_id") != bound.get("daemon_instance_id")
+                    or job.get("daemon_instance_id") != bound.get("daemon_instance_id")
+                    or job.get("request_id") != request_id
+                    or job.get("accepted") is not True
+                    or job.get("awaiting_host_finalization") is not True
+                    or job.get("phase_result_ready") is not True
+                    or job.get("host_turn_id") != bound.get("turn_id")
+                    or job.get("host_trace_id") != bound.get("trace_id")
+                    or job.get("host_request_contract_hash") != record.get("request_contract_hash")):
+                # No intermediate/private context or continuation leaves this gate.
+                return _tool_error("phase1_resume_authority_not_verified")
         continuation = reissue_pending_continuation(Path(root), record)
     except HostRequestStoreError as exc:
         return _tool_error(str(exc), response=envelope)
