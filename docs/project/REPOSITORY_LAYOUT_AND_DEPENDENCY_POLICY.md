@@ -92,14 +92,14 @@ Pełny kontrakt: `docs/runtime/WORKSPACE_ISOLATION_CONTRACT.md`.
 - lifecycle i diagnostyka: `python -X utf8 run.py <command>`;
 - domyślna rozmowa: `python -X utf8 run.py`;
 - uniwersalna rozmowa i auto-routing: `python -X utf8 run.py chat ...`;
-- host ChatGPT: preferowany `python -X utf8 run.py chat-gpt --session-id <id>` z jednym otwartym stdin/JSONL bridge; jeżeli host nie utrzymuje persistent stdio, krótkie procesy `chat-gpt` są dozwolone wyłącznie jako transport `daemon_bound_transactional_turns` z prealokowanym `request_id`, bez lokalnego replayu;
+- ChatGPT ordinary-chat: autoryzowany MCP Streamable HTTP przez chroniony gateway do gotowego persistent daemona; przy braku verified remote wyłącznie host diagnostic, bez lokalnego bootstrapu. `run.py chat-gpt`/JSONL to ścieżka kompatybilnościowa lokalnego PC lub jawnego `operator_recovery`, nie domyślna trasa hosta;
 - wyspecjalizowany backend Ollama: `python -X utf8 run.py chat-ollama ...`;
 - logika komend, lifecycle i routingu nie może być implementowana w `run.py`.
 
 Warstwa modelu nie jest właścicielem tożsamości, pamięci, provenance,
 uprawnień ani finalizacji. Te granice pozostają w runtime Jaźni.
 
-`run.py chat` nie oznacza „lokalny model”. Jest kontraktem wyboru kanału językowego; w trybie `auto` priorytet wynosi: potwierdzony host ChatGPT → dostępna lokalna Ollama → jawnie dopuszczone płatne OpenAI API → prawdomówny `null_fallback`. Tę kolejność definiuje wspólny kontrakt kodu, nie osobne opisy w help/discovery.
+`run.py chat` nie oznacza „lokalny model”. Jest kontraktem wyboru kanału językowego; w trybie `auto` katalog priorytetów zachowuje: wybrany host-visible ChatGPT → zweryfikowana lokalna Ollama → jawnie wybrany OpenAI API → `null_fallback`. Sam wybór host bridge nie dowodzi gotowości MCP ani finalizacji. Pominięty probe Ollama nie daje pozytywnej dostępności, a płatny API wymaga jawnego trybu `openai_api` (sam klucz i flaga nie uruchamiają automatycznego transferu). Zwykły ChatGPT podlega odrębnemu gate `remote_only`.
 
 ## 4. Polityka zależności: stdlib/host-first
 
@@ -147,9 +147,20 @@ zmiany ich historycznego wyniku.
 
 ## 5. ChatGPT
 
-ChatGPT w Projekcie jest hostem/runtime executor channel, a nie pakietem Python
-instalowanym przez Jaźń. Nie dodawaj `openai` SDK jako zależności tylko po to,
-aby rozmawiać z Jaźnią w środowisku ChatGPT. Lokalna ścieżka hosta preferuje jedną utrzymywaną sesję `run.py chat-gpt`/stdin JSONL. Gdy host nie udostępnia persistent/streaming stdio, ten sam publiczny entrypoint pracuje przez krótkie procesy CLI związane z trwałym daemonem: host prealokuje unikalny `request_id`, zachowuje stabilny `session_id`, polluje/resume'uje ten sam request i nigdy nie zamienia niepewnego transportu na niezależną lokalną turę. Nie wymaga `OPENAI_API_KEY`; MCP jest opcjonalnym transportem hosta, nie warunkiem działania na ChatGPT.
+ChatGPT w zwykłej rozmowie jest klientem zewnętrznego runtime przez autoryzowany
+MCP Streamable HTTP, a nie lokalnym LLM ani płatnym OpenAI API. Obowiązuje
+`remote_only`: cztery callable narzędzia, świeży `jazn_status`, autoryzacja,
+zgodna instancja i heartbeat. Brak zweryfikowanego remote oznacza
+`host_diagnostic`, bez local executor, ZIP, bootstrapu i handoffu.
+ChatGPT host bridge nie wymaga `OPENAI_API_KEY`, ale wybór kanału nie dowodzi
+gotowości MCP ani zaakceptowanej phase-2 finalization.
+
+`run.py chat-gpt`, JSONL i daemon-bound CLI pozostają kompatybilnościowym
+transportem lokalnego PC i jawnego operator recovery, z tym samym `session_id`
+i `request_id`, bez replayu i bez drugiego właściciela stanu.
+JSS jest klientem operatorskim SYSTEM, nie modelem ChatGPT ani drugim
+lifecycle. Brak JSS, ChatGPT/MCP, Ollama lub OpenAI API nie zatrzymuje
+już działającego daemona; zdolność generowania może być ograniczona.
 
 Instrukcje Projektu pozostają cienkim loaderem. Dostęp do terminala, plików,
 sieci i innych narzędzi jest capability hosta i musi być wykrywany, a nie

@@ -87,6 +87,7 @@ def test_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
         probe_local=False,
     )
     assert chatgpt.selected_route == ROUTE_CHATGPT_HOST
+    assert chatgpt.chatgpt_bridge["generation_verified"] is False
 
     local = build_llm_route_status(
         config,
@@ -95,7 +96,8 @@ def test_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
         infer_host_environment=True,
         probe_local=False,
     )
-    assert local.selected_route == ROUTE_OLLAMA_LOCAL
+    assert local.selected_route == ROUTE_NULL_FALLBACK
+    assert local.local["reason"] == "probe_skipped_unverified"
 
     paid = build_llm_route_status(
         config,
@@ -104,7 +106,8 @@ def test_auto_route_behavior_matches_declared_priority(tmp_path: Path) -> None:
         infer_host_environment=True,
         probe_local=False,
     )
-    assert paid.selected_route == ROUTE_OPENAI_PAID
+    assert paid.selected_route == ROUTE_NULL_FALLBACK
+    assert paid.paid_route is False
 
     fallback = build_llm_route_status(
         config,

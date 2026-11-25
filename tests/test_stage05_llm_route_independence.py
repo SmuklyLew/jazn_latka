@@ -6,9 +6,7 @@ from dataclasses import dataclass
 import pytest
 
 from latka_jazn.core import llm_route_resolver as router
-from latka_jazn.core.model_guided_speech_runtime import build_speech_adapter_for_turn
 from latka_jazn.core.runtime_environment import NULL_ADAPTER
-from latka_jazn.model_adapters.null_model_adapter import NullModelAdapter
 
 
 @dataclass
@@ -56,18 +54,19 @@ def test_host_declaration_is_not_live_generator_proof() -> None:
     )
     assert route.chatgpt_bridge["declared"] is True
     assert route.chatgpt_bridge["generation_verified"] is False
-    assert route.selected_route == router.ROUTE_NULL
-    assert route.reason.endswith("without a generative model")
+    assert route.selected_route == router.ROUTE_CHATGPT_BRIDGE
+    assert route.chatgpt_bridge["availability_scope"] == "host_visible_generation_request_not_live_mcp"
+    assert route.paid_route is False
 
 
-def test_explicit_verified_host_route_stays_distinct_from_local_model() -> None:
+def test_explicit_host_route_does_not_trust_env_verified_marker() -> None:
     route = router.build_llm_route_status(
         Config(), command="--chat-gpt",
         env=_env(JAZN_LLM_ROUTE="chatgpt_bridge", JAZN_CHATGPT_HOST_GENERATION_VERIFIED="1"),
         probe_local=False,
     )
     assert route.selected_route == router.ROUTE_CHATGPT_BRIDGE
-    assert route.chatgpt_bridge["generation_verified"] is True
+    assert route.chatgpt_bridge["generation_verified"] is False
     assert route.local["available"] is False
     assert route.paid_route is False
 
@@ -119,19 +118,27 @@ def test_host_and_local_priority_is_explicit(
     monkeypatch.setattr(router, "probe_ollama", _synthetic_probe)
     route = router.build_llm_route_status(
         Config(), command="--chat-gpt",
-        env=_env(JAZN_CHATGPT_HOST_GENERATION_VERIFIED="1"),
+        env=_env(),
         probe_local=True,
     )
     assert route.selected_route == router.ROUTE_CHATGPT_BRIDGE
     assert route.local["available"] is True
+    assert route.chatgpt_bridge["generation_verified"] is False
     assert route.paid_route is False
 
 
-def test_no_models_keeps_null_runtime_candidate_without_external_transfer(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_no_models_keeps_null_runtime_candidate_without_external_transfer() -> None:
     route = router.build_llm_route_status(Config(), env=_env(), probe_local=False)
     assert route.ok is True
     assert route.selected_route == router.ROUTE_NULL
     assert route.selected_adapter == NULL_ADAPTER
     assert route.error is None
+
+
+def test_forced_host_route_without_host_channel_is_fail_closed() -> None:
+    route = router.build_llm_route_status(
+        Config(), env=_env(JAZN_LLM_ROUTE="chatgpt_bridge"), probe_local=False,
+    )
+    assert route.ok is False
+    assert route.error == "chatgpt_bridge_unavailable"
+    assert route.selected_route == router.ROUTE_NULL

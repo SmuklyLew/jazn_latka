@@ -103,6 +103,8 @@ def test_universal_chat_prefers_confirmed_chatgpt_host(monkeypatch, tmp_path: Pa
     )
     assert status.selected_route == ROUTE_CHATGPT_BRIDGE
     assert status.selected_adapter == CHATGPT_ADAPTER
+    assert status.chatgpt_bridge["declared"] is True
+    assert status.chatgpt_bridge["generation_verified"] is False
 
 
 def test_universal_chat_terminal_keeps_ollama_as_backend(tmp_path: Path) -> None:
