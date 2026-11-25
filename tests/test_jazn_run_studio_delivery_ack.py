@@ -35,7 +35,7 @@ def _client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[studio_cha
 
 
 def _accepted() -> dict:
-    return {"accepted": True, "text": "test visible result",
+    return {"accepted": True, "live_authority_verified": True, "text": "test visible result",
             "request_id": "studio-turn-1", "session_id": "local",
             "turn_id": "turn-1", "trace_id": "trace-1"}
 
@@ -95,3 +95,15 @@ def test_restart_reloads_pending_request_without_replay(
     restarted = studio_chat.ChatClient(core)
     assert restarted.pending == "studio-turn-1"
     assert restarted._awaiting_gui_ack is None
+
+
+def test_structural_acceptance_without_live_authority_stays_pending(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    client, core = _client(tmp_path, monkeypatch)
+    payload = _accepted()
+    del payload["live_authority_verified"]
+    monkeypatch.setattr(studio_chat, "run", lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=json.dumps(payload).encode("utf-8")))
+    client.receive({"request_id": "studio-turn-1"})
+    assert client.pending == "studio-turn-1"
+    assert not any(event[1] == "chat_final" for event in core.recorded_events)
+    with pytest.raises(StudioError):
+        client.acknowledge_final("studio-turn-1")

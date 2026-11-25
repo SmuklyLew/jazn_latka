@@ -252,3 +252,6 @@
 
 ### Stage 05 — paid transport authorization follow-through
 - Enforce monotonic turn-level denial even when the operator environment opts in; the internal flag is not client-settable. Paid direct Responses adapter now requires explicit constructor opt-in, network permission and a credential-free HTTPS base URL before generation or either HTTP dispatch method. Factory passes the opt-in only after its existing operator-policy check. Added eight synthetic negative cases; archived the previous circuit-test fixture and retained its assertions. No external inference executed. CI pending; not an acceptance claim.
+
+
+- Studio delivery ACK regression: initial full Ubuntu suite for 6fb48d92 returned 4686 PASS, 2 FAIL, 25 SKIP, 6 subtests (run 45662759072). Two GUI delivery mocks lacked the new live-authority receipt. Archived the original fixture and updated the mock to represent successful authority validation without changing old assertions. Added negative test for structural acceptance without live authority. Production gate unchanged; rerun required.
