@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3640,
+  "active_definition_count": 3643,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16144,7 +16144,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 26
+      "line": 28
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_universal_chat_contract_keeps_runtime_as_owner": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16168,7 +16168,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_chatgpt_entrypoint_is_host_bridge_not_openai_api": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16193,7 +16193,55 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 51
+    },
+    "tests/test_conversation_runtime_orchestration_convergence.py::test_paid_api_is_explicit_and_not_in_auto_priority": {
+      "path": "tests/test_conversation_runtime_orchestration_convergence.py",
+      "name": "test_paid_api_is_explicit_and_not_in_auto_priority",
+      "purpose": "Paid api is explicit and not in auto priority",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_entrypoint_contract",
+        "latka_jazn.core.llm_route_resolver",
+        "latka_jazn.core.runtime_environment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 61
+    },
+    "tests/test_conversation_runtime_orchestration_convergence.py::test_ollama_entrypoint_is_not_chatgpt_or_paid_api": {
+      "path": "tests/test_conversation_runtime_orchestration_convergence.py",
+      "name": "test_ollama_entrypoint_is_not_chatgpt_or_paid_api",
+      "purpose": "Ollama entrypoint is not chatgpt or paid api",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_entrypoint_contract",
+        "latka_jazn.core.llm_route_resolver",
+        "latka_jazn.core.runtime_environment",
+        "latka_jazn.version"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_universal_chat_detects_chatgpt_visible_host_before_terminal_default": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16218,7 +16266,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 60
+      "line": 80
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_auto_route_behavior_matches_declared_priority": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16242,7 +16290,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 74
+      "line": 94
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_bridge_discovery_exposes_universal_conversation_and_legacy_alias": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16266,7 +16314,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 122
+      "line": 142
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16291,7 +16339,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 161
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_release_identity_supersedes_with_accepted_visible_turn_convergence": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16315,7 +16363,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 174
     },
     "tests/test_conversation_state_restart_continuity.py::test_conversation_state_survives_store_recreation": {
       "path": "tests/test_conversation_state_restart_continuity.py",
@@ -70696,6 +70744,26 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 164
+    },
+    "tests/test_stage05_transport_circuit_isolation.py::test_failed_model_transport_does_not_open_daemon_transport_circuit": {
+      "path": "tests/test_stage05_transport_circuit_isolation.py",
+      "name": "test_failed_model_transport_does_not_open_daemon_transport_circuit",
+      "purpose": "Failed model transport does not open daemon transport circuit",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [
+        "CircuitOpenError",
+        "TimeoutError"
+      ],
+      "targets": [
+        "latka_jazn.runtime.resilience"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
