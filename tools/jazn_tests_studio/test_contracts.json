@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3708,
+  "active_definition_count": 3711,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71956,6 +71956,61 @@
       "description_source": "source_identity",
       "line": 34
     },
+    "tests/test_stage05_studio_instance_checkpoint.py::test_pinned_studio_final_requires_original_instance": {
+      "path": "tests/test_stage05_studio_instance_checkpoint.py",
+      "name": "test_pinned_studio_final_requires_original_instance",
+      "purpose": "Pinned studio final requires original instance",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_stage05_studio_instance_checkpoint.py::test_terminal_failure_receipt_must_match_presubmit_pin": {
+      "path": "tests/test_stage05_studio_instance_checkpoint.py",
+      "name": "test_terminal_failure_receipt_must_match_presubmit_pin",
+      "purpose": "Terminal failure receipt must match presubmit pin",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_stage05_studio_instance_checkpoint.py::test_invalid_persisted_pin_is_not_silently_downgraded": {
+      "path": "tests/test_stage05_studio_instance_checkpoint.py",
+      "name": "test_invalid_persisted_pin_is_not_silently_downgraded",
+      "purpose": "Invalid persisted pin is not silently downgraded",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 53
+    },
     "tests/test_stage05_studio_live_authority.py::test_live_studio_final_authority": {
       "path": "tests/test_stage05_studio_live_authority.py",
       "name": "test_live_studio_final_authority",
@@ -71980,13 +72035,13 @@
       "path": "tests/test_stage05_studio_presubmit_hash.py",
       "name": "test_hash_is_persisted_before_transport_write_and_survives_restart",
       "purpose": "Hash is persisted before transport write and survives restart",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [],
       "status": "current",
@@ -72010,7 +72065,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 47
+      "line": 50
     },
     "tests/test_stage05_studio_presubmit_hash.py::test_bound_checkpoint_requires_matching_independent_failure_hash": {
       "path": "tests/test_stage05_studio_presubmit_hash.py",
@@ -72031,7 +72086,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 69
+      "line": 72
     },
     "tests/test_stage05_studio_presubmit_hash.py::test_corrupt_checkpoint_hash_refuses_restore": {
       "path": "tests/test_stage05_studio_presubmit_hash.py",
@@ -72050,7 +72105,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 86
+      "line": 89
     },
     "tests/test_stage05_studio_terminal_failure_async_qt.py::test_terminal_failure_validation_runs_off_gui_and_releases_client_lock": {
       "path": "tests/test_stage05_studio_terminal_failure_async_qt.py",
