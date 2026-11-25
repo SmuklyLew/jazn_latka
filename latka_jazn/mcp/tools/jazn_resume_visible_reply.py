@@ -6,6 +6,7 @@ from typing import Any, Mapping, Protocol, cast
 from urllib.parse import urlsplit
 
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
+from latka_jazn.runtime.turn_runtime import TurnProtocolViolation
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
 from latka_jazn.core.chatgpt_host_recovery import (
     recover_pending_host_request,
@@ -234,6 +235,8 @@ def run(
 
         runner = ConversationRunner.for_transport(gateway)
         envelope = runner.resume_turn(ResumeRequest(TurnHandle(request_id))).result
+    except TurnProtocolViolation:
+        return _tool_error("runtime_poll_binding_invalid")
     except GatewayError as exc:
         reason = str(exc)
         if reason.startswith("daemon_unavailable:"):
