@@ -16,6 +16,8 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
+from latka_jazn.runtime.resilience import CircuitOpenError
+from .model_transport_health import model_transport_breaker, record_model_transport_error
 
 SIWC_RESPONSES_URL = "https://api.openai.com/v1/responses"
 SIWC_REQUIRED_SCOPE = "chatgpt.tokens.use.direct"
@@ -110,6 +112,7 @@ class SiwcPlanUsageAdapter:
         network_permitted: bool = True,
         timeout_seconds: float = 45.0,
         stream_transport: StreamTransport | None = None,
+        root: object | None = None,
     ) -> None:
         self.model = str(model or "").strip()
         self._access_token = str(access_token or "")
@@ -121,6 +124,7 @@ class SiwcPlanUsageAdapter:
         self._network_permitted = bool(network_permitted)
         self.timeout_seconds = max(1.0, float(timeout_seconds))
         self._transport = stream_transport or _https_stream
+        self._transport_breaker = model_transport_breaker(root=root, provider="openai_siwc", endpoint=SIWC_RESPONSES_URL, model=self.model)
         self._last_error: str | None = None
         self._completed = False
 
@@ -176,6 +180,7 @@ class SiwcPlanUsageAdapter:
                 "stream": True,
                 "store": False,
                 "automatic_route_selection": False,
+                "model_transport_circuit": self._transport_breaker.snapshot().to_dict(),
             },
         )
 
@@ -204,7 +209,8 @@ class SiwcPlanUsageAdapter:
             validated=status == "completed" and bool(text),
             status_snapshot=snapshot,
             endpoint_used=SIWC_RESPONSES_URL if ready else None,
-            transport={"provider": "siwc_oauth", "store": False, "stream": True, "retry_safe": False},
+            transport={"provider": "siwc_oauth", "store": False, "stream": True, "retry_safe": False,
+                       "model_transport_circuit": self._transport_breaker.snapshot().to_dict()},
             usage=usage,
             truth_boundary=(
                 "Completed model inference is not an accepted/finalized Jaźń reply. "
@@ -250,6 +256,12 @@ class SiwcPlanUsageAdapter:
         except (TypeError, ValueError):
             return self._response(status="siwc_request_unsupported")
 
+        try:
+            self._transport_breaker.acquire()
+        except CircuitOpenError:
+            self._last_error = "model_circuit_open"
+            return self._response(status=self._last_error)
+
         chunks: list[str] = []
         text_size = 0
         try:
@@ -268,6 +280,7 @@ class SiwcPlanUsageAdapter:
                         raise ValueError("siwc_text_too_large")
                     chunks.append(delta)
                 elif kind in {"response.failed", "response.incomplete", "error"}:
+                    self._transport_breaker.record_failure("siwc_response_not_completed")
                     self._last_error = "siwc_response_not_completed"
                     return self._response(status="siwc_response_not_completed")
                 elif kind == "response.completed":
@@ -278,8 +291,10 @@ class SiwcPlanUsageAdapter:
                     if len(final_text) > _MAX_TEXT_CHARS:
                         raise ValueError("siwc_text_too_large")
                     if not final_text.strip():
+                        self._transport_breaker.record_failure("siwc_empty_completion")
                         self._last_error = "siwc_empty_completion"
                         return self._response(status="siwc_empty_completion")
+                    self._transport_breaker.record_success()
                     self._completed = True
                     self._last_error = None
                     return self._response(
@@ -288,11 +303,14 @@ class SiwcPlanUsageAdapter:
                         model=str(remote.get("model") or self.model),
                         usage=remote.get("usage") if isinstance(remote.get("usage"), dict) else None,
                     )
+            self._transport_breaker.record_failure("siwc_stream_missing_completion")
             self._last_error = "siwc_stream_missing_completion"
             return self._response(status=self._last_error)
         except HTTPError as exc:
+            record_model_transport_error(self._transport_breaker, exc)
             self._last_error = "siwc_http_" + str(exc.code)
-        except (OSError, URLError, TimeoutError, ValueError, UnicodeError, json.JSONDecodeError):
+        except (OSError, URLError, TimeoutError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
+            record_model_transport_error(self._transport_breaker, exc)
             self._last_error = "siwc_stream_transport_error"
         # Do not log exceptions, URLs with tokens, SSE frames, or input context.
         return self._response(status=self._last_error or "siwc_stream_transport_error")

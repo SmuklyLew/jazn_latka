@@ -100,6 +100,7 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
             operator_opt_in=_truthy(os.environ.get("JAZN_SIWC_OPERATOR_OPT_IN")),
             network_permitted=bool(getattr(config, "allow_network", True)),
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
+            root=getattr(config, "root", None),
         )
     if name in {"local", "ollama", "local_llm_adapter"}:
         return LocalLlmAdapter(
@@ -121,6 +122,7 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
             api_key=os.environ.get("JAZN_LOCAL_LLM_API_KEY", "ollama"),
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
             max_output_tokens=int(getattr(config, "model_max_output_tokens", 800)),
+            root=getattr(config, "root", None),
         )
     if name in {"local_llm", "openai_compatible", "openai_compatible_local", "openai_compatible_local_adapter", "external_openai_compatible"}:
         return OpenAICompatibleLocalAdapter(
@@ -131,6 +133,7 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
             api_key=os.environ.get("JAZN_LOCAL_LLM_API_KEY", ""),
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
             max_output_tokens=int(getattr(config, "model_max_output_tokens", 800)),
+            root=getattr(config, "root", None),
         )
     if name in {"llama_cpp", "llamacpp", "llama.cpp"}:
         return OpenAICompatibleLocalAdapter(
@@ -140,6 +143,7 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
             api_base=str(getattr(config, "llama_cpp_model_api_base", "http://127.0.0.1:8080/v1")),
             timeout_seconds=float(getattr(config, "model_timeout_seconds", 45.0)),
             max_output_tokens=int(getattr(config, "model_max_output_tokens", 800)),
+            root=getattr(config, "root", None),
         )
     if name in {"codex", "codex_development", CODEX_ADAPTER}:
         return ContractOnlyModelAdapter(

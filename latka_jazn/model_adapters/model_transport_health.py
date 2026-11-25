@@ -5,6 +5,8 @@ from collections import OrderedDict
 from hashlib import sha256
 from pathlib import Path
 from threading import RLock
+from typing import Callable, TypeVar
+from urllib.error import HTTPError
 
 from latka_jazn.runtime.resilience import CircuitBreaker
 
@@ -37,3 +39,28 @@ def model_transport_breaker(
         if len(_CIRCUITS) > _MAX_CIRCUITS:
             _CIRCUITS.popitem(last=False)
         return breaker
+
+_T = TypeVar("_T")
+
+
+def record_model_transport_error(breaker: CircuitBreaker, exc: Exception) -> None:
+    """Classify transport failures without retaining exception text or credentials."""
+    if isinstance(exc, HTTPError):
+        if exc.code not in {408, 429} and not 500 <= exc.code <= 599:
+            breaker.record_non_transient_response()
+            return
+        breaker.record_failure(f"http_error_{exc.code}")
+        return
+    breaker.record_failure(type(exc).__name__)
+
+
+def model_transport_once(breaker: CircuitBreaker, operation: Callable[[], _T]) -> _T:
+    """Exactly one attempt; an uncertain POST is never retried here."""
+    breaker.acquire()
+    try:
+        value = operation()
+    except Exception as exc:
+        record_model_transport_error(breaker, exc)
+        raise
+    breaker.record_success()
+    return value

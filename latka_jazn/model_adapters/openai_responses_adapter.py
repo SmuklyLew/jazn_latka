@@ -14,6 +14,8 @@ from latka_jazn.core.json_types import json_object
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
 from .openai_state_tracker import OpenAIStateTracker
+from latka_jazn.runtime.resilience import CircuitOpenError
+from .model_transport_health import model_transport_breaker, model_transport_once
 
 
 DEFAULT_EXECUTION_INSTRUCTIONS = (
@@ -45,6 +47,7 @@ class OpenaiResponsesAdapter:
         self.timeout_seconds = timeout_seconds
         self.max_output_tokens = max_output_tokens
         self.state_tracker = OpenAIStateTracker(Path(root)) if root is not None else None
+        self._transport_breaker = model_transport_breaker(root=root, provider="openai", endpoint=self.api_base, model=self.model)
         self._last_generation_succeeded = False
         self._last_probe_error: str | None = None
 
@@ -84,6 +87,7 @@ class OpenaiResponsesAdapter:
                 "model": self.model or "not_configured",
                 "api_base": self.api_base,
                 "state_tracker": "enabled" if self.state_tracker else "disabled",
+                "model_transport_circuit": self._transport_breaker.snapshot().to_dict(),
                 "supports_responses_api": True,
                 "supports_tool_requests": True,
                 "supports_structured_output": True,
@@ -105,7 +109,7 @@ class OpenaiResponsesAdapter:
         elif state and state.previous_response_id:
             payload["previous_response_id"] = state.previous_response_id
         try:
-            data = self._post_json(payload)
+            data = model_transport_once(self._transport_breaker, lambda: self._post_json(payload))
             text = str(data.get("output_text") or "").strip() or self._extract_output_text(data)
             tool_calls = self._extract_tool_calls(data)
             structured = self._parse_structured_output(text, request.response_schema)
@@ -129,6 +133,12 @@ class OpenaiResponsesAdapter:
                 continuation_id=str(data.get("id") or "") or None,
                 reasoning_metadata={"effort_requested": request.reasoning_effort, "hidden_reasoning_exposed": False},
             )
+        except CircuitOpenError:
+            self._last_probe_error = "model_circuit_open"
+            return self._response(status=self._last_probe_error)
+        except subprocess.TimeoutExpired:
+            self._last_probe_error = "model_transport_timeout"
+            return self._response(status=self._last_probe_error)
         except HTTPError as exc:
             self._last_probe_error = f"http_error_{exc.code}"
             return self._response(status=self._last_probe_error)
@@ -304,7 +314,8 @@ class OpenaiResponsesAdapter:
             adapter_id=self.name,
             endpoint_used="/responses" if status not in {"not_configured"} else None,
             status_snapshot=self._status_snapshot(),
-            transport={"api_base": self.api_base, "store": False},
+            transport={"api_base": self.api_base, "store": False,
+                       "model_transport_circuit": self._transport_breaker.snapshot().to_dict()},
             usage=usage,
             tool_calls=tool_calls or [],
             structured_output=structured_output,
@@ -345,7 +356,7 @@ class OpenaiResponsesAdapter:
             "$body=[Console]::In.ReadToEnd();"
             "$headers=@{Authorization=('Bearer '+$env:OPENAI_API_KEY)};"
             "try{$r=Invoke-RestMethod -Uri $env:JAZN_ADAPTER_API_URL -Method Post -Headers $headers "
-            "-ContentType 'application/json; charset=utf-8' -Body $body -TimeoutSec ([int]$env:JAZN_ADAPTER_TIMEOUT);"
+            "-ContentType 'application/json; charset=utf-8' -Body $body -MaximumRedirection 0 -TimeoutSec ([int]$env:JAZN_ADAPTER_TIMEOUT);"
             "$r|ConvertTo-Json -Depth 100 -Compress}"
             "catch{if($_.ErrorDetails.Message){[Console]::Error.Write($_.ErrorDetails.Message)}"
             "else{[Console]::Error.Write($_.Exception.Message)};exit 1}"

@@ -7,6 +7,8 @@ from urllib.request import Request, urlopen
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
+from latka_jazn.runtime.resilience import CircuitOpenError
+from .model_transport_health import model_transport_breaker, model_transport_once
 
 
 SYSTEM_PROMPT = (
@@ -40,6 +42,7 @@ class OpenAICompatibleLocalAdapter:
         self.timeout_seconds = timeout_seconds
         self.max_output_tokens = max_output_tokens
         self.name = adapter_id or f"{self.provider}_openai_compatible_adapter"
+        self._transport_breaker = model_transport_breaker(root=root, provider=self.provider, endpoint=self.api_base, model=self.model)
         self._endpoint_reachable: bool | None = None
         self._probe_state = "not_probed" if self.model else "not_configured"
         self._last_probe_error: str | None = None
@@ -80,6 +83,7 @@ class OpenAICompatibleLocalAdapter:
                 "api_base": self.api_base,
                 "preferred_endpoint": order[0] if order else None,
                 "fallback_endpoints": order[1:],
+                "model_transport_circuit": self._transport_breaker.snapshot().to_dict(),
             },
         )
 
@@ -97,7 +101,7 @@ class OpenAICompatibleLocalAdapter:
         target = endpoint or self.endpoint_order()[0]
         payload = self._payload_for(target, ModelAdapterRequest(prompt="Odpowiedz: OK"), probe=True)
         try:
-            data = self._post_json(target, payload)
+            data = model_transport_once(self._transport_breaker, lambda: self._post_json(target, payload))
             text = self._extract_text(target, data)
             if not text:
                 raise ValueError("probe_empty_output")
@@ -118,12 +122,14 @@ class OpenAICompatibleLocalAdapter:
         attempts: list[dict[str, Any]] = []
         for endpoint in self.endpoint_order():
             try:
-                data = self._post_json(endpoint, self._payload_for(endpoint, request))
+                payload = self._payload_for(endpoint, request)
+                data = model_transport_once(self._transport_breaker, lambda: self._post_json(endpoint, payload))
                 self._endpoint_reachable = True
                 text = self._extract_text(endpoint, data)
                 attempts.append({"endpoint": endpoint, "status": "completed" if text else "empty"})
                 if not text:
-                    continue
+                    # The POST may have executed; empty output is not proof of non-execution.
+                    break
                 self._last_generation_succeeded = True
                 self._probe_state = "probed_ok"
                 self._last_probe_error = None
@@ -141,6 +147,12 @@ class OpenAICompatibleLocalAdapter:
                 error = self._error_status(exc)
                 attempts.append({"endpoint": endpoint, "status": error})
                 self._last_probe_error = error
+                if isinstance(exc, CircuitOpenError):
+                    return self._response(status="model_circuit_open", sources=attempts)
+                # Compatibility negotiation is allowed only on a definitive
+                # endpoint rejection, not a timeout, 5xx or partial response.
+                if not isinstance(exc, HTTPError) or exc.code not in {404, 405}:
+                    break
         self._endpoint_reachable = False
         self._probe_state = "probed_fail"
         return self._response(status=f"{self.provider}_provider_unavailable", sources=attempts)
@@ -193,6 +205,8 @@ class OpenAICompatibleLocalAdapter:
 
     @staticmethod
     def _error_status(exc: Exception) -> str:
+        if isinstance(exc, CircuitOpenError):
+            return "model_circuit_open"
         if isinstance(exc, HTTPError):
             return f"http_error_{exc.code}"
         if isinstance(exc, (URLError, TimeoutError, OSError)):
@@ -233,6 +247,7 @@ class OpenAICompatibleLocalAdapter:
             source_origin="model_adapter",
             endpoint_used=endpoint_used,
             status_snapshot=self._status_snapshot(),
-            transport={"api_base": self.api_base, "endpoint_used": endpoint_used},
+            transport={"api_base": self.api_base, "endpoint_used": endpoint_used,
+                       "model_transport_circuit": self._transport_breaker.snapshot().to_dict()},
             usage=usage,
         )

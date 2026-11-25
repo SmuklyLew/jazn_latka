@@ -40,3 +40,6 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 
 ### Runtime-first i przygotowanie PC
 - Auto chat, jawne OpenAI, direct_message oraz daemon-submit/send przenoszą sprawdzenie daemona przed wybór/probe modelu; auto chat używa tego samego ensure receipt. Usunięto pozostały TTY Ollama fallback in-process. Nowe CI wymagane. Debug-direct, pełna authoritatywność phase-2 i pozostałe adaptery nadal do audytu. Real PC acceptance: STAGE05_PC_ACCEPTANCE.md (NOT_RUN).
+
+### Pozostałe adaptery transportowe
+- OpenAI-compatible, OpenAI Responses i SIWC mają wspólny process-local circuit per root/provider/endpoint/model; syntetyczne testy bez sieci. Compatible nie ponawia POST przy niejednoznacznym wyniku ani odmowie auth, z zachowaniem negocjacji 404/405. SIWC partial stream nie jest sukcesem. Windows Responses wyłącza redirect. CI pending. Pełna autoryzacja endpointów, cloud, pozostałych redirectów, atomowość phase-2 i realny odbiór nadal OPEN.
