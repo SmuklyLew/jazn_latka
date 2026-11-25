@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3645,
+  "active_definition_count": 3647,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -11250,10 +11250,10 @@
       "description_source": "source_identity",
       "line": 108
     },
-    "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_default_policy_allows_verified_one_shot_fallback": {
+    "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_default_policy_requires_verified_daemon": {
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
-      "name": "test_chatgpt_default_policy_allows_verified_one_shot_fallback",
-      "purpose": "Chatgpt default policy allows verified one shot fallback",
+      "name": "test_chatgpt_default_policy_requires_verified_daemon",
+      "purpose": "Chatgpt default policy requires verified daemon",
       "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
@@ -11314,13 +11314,13 @@
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
       "name": "test_default_chatgpt_ensure_does_not_spawn_daemon_when_inactive",
       "purpose": "Default chatgpt ensure does not spawn daemon when inactive",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -11348,19 +11348,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 84
+      "line": 86
     },
-    "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_main_reaches_local_bridge_when_daemon_is_unavailable": {
+    "tests/test_chatgpt_runtime_fallback_hardening.py::test_chatgpt_main_refuses_local_bridge_when_daemon_is_unavailable": {
       "path": "tests/test_chatgpt_runtime_fallback_hardening.py",
-      "name": "test_chatgpt_main_reaches_local_bridge_when_daemon_is_unavailable",
-      "purpose": "Chatgpt main reaches local bridge when daemon is unavailable",
-      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "name": "test_chatgpt_main_refuses_local_bridge_when_daemon_is_unavailable",
+      "purpose": "Chatgpt main refuses local bridge when daemon is unavailable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 6,
+      "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -11368,7 +11368,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 115
+      "line": 117
     },
     "tests/test_chatgpt_sandbox_bootstrap_hardening.py::test_explicit_sha_without_local_sidecar_materializes_operator": {
       "path": "tests/test_chatgpt_sandbox_bootstrap_hardening.py",
@@ -56226,13 +56226,14 @@
       "description_source": "source_identity",
       "line": 276
     },
-    "tests/test_persistent_runtime_lifecycle_transport.py::test_inactive_chatgpt_reports_controlled_one_shot_fallback": {
+    "tests/test_persistent_runtime_lifecycle_transport.py::test_inactive_chatgpt_reports_host_diagnostic_without_fallback": {
       "path": "tests/test_persistent_runtime_lifecycle_transport.py",
-      "name": "test_inactive_chatgpt_reports_controlled_one_shot_fallback",
-      "purpose": "Inactive chatgpt reports controlled one shot fallback",
+      "name": "test_inactive_chatgpt_reports_host_diagnostic_without_fallback",
+      "purpose": "Inactive chatgpt reports host diagnostic without fallback",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
+        "host",
         "runtime"
       ],
       "markers": [],
@@ -70786,6 +70787,52 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_stage05_runtime_identity_authority.py::test_disabled_autostart_never_authorizes_conversation_without_daemon": {
+      "path": "tests/test_stage05_runtime_identity_authority.py",
+      "name": "test_disabled_autostart_never_authorizes_conversation_without_daemon",
+      "purpose": "Disabled autostart never authorizes conversation without daemon",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 17
+    },
+    "tests/test_stage05_runtime_identity_authority.py::test_chatgpt_transport_loss_never_replays_as_local_bridge": {
+      "path": "tests/test_stage05_runtime_identity_authority.py",
+      "name": "test_chatgpt_transport_loss_never_replays_as_local_bridge",
+      "purpose": "Chatgpt transport loss never replays as local bridge",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
     },
     "tests/test_stage05_transport_circuit_isolation.py::test_failed_model_transport_does_not_open_daemon_transport_circuit": {
       "path": "tests/test_stage05_transport_circuit_isolation.py",
