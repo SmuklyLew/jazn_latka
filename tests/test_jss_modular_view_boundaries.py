@@ -35,6 +35,7 @@ OWNERS = {
         "send_chat",
         "resume_chat",
         "close_failed_chat",
+        "_poll_terminal_failure_resolution",
         "_animate_chat_activity",
         "_begin_chat_activity",
         "_end_chat_activity",
