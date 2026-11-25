@@ -4,7 +4,9 @@ import json
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
-from .model_http_transport import open_local_model_request as urlopen
+from .model_http_transport import (
+    OllamaInferenceRequest, OllamaModelAuthorizationError, open_local_model_request as urlopen,
+)
 from latka_jazn.core.ollama_inference_policy import ollama_cloud_model_name
 
 from .adapter_contract import AdapterContract, describe_with_contract
@@ -159,6 +161,11 @@ class OpenAICompatibleLocalAdapter:
                 self._last_probe_error = error
                 if isinstance(exc, CircuitOpenError):
                     return self._response(status="model_circuit_open", sources=attempts)
+                if isinstance(exc, OllamaModelAuthorizationError):
+                    self._last_generation_succeeded = False
+                    self._probe_state = "probed_fail"
+                    self._endpoint_reachable = None if error == "ollama_model_metadata_unavailable" else True
+                    return self._response(status=error, sources=attempts)
                 # Compatibility negotiation is allowed only on a definitive
                 # endpoint rejection, not a timeout, 5xx or partial response.
                 if not isinstance(exc, HTTPError) or exc.code not in {404, 405}:
@@ -183,7 +190,15 @@ class OpenAICompatibleLocalAdapter:
         headers = {"Content-Type": "application/json; charset=utf-8"}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
-        request = Request(f"{self.api_base}{endpoint}", data=json.dumps(payload, ensure_ascii=False).encode("utf-8"), headers=headers, method="POST")
+        encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        if self.provider == "ollama":
+            base = self.api_base.removesuffix("/v1")
+            request = OllamaInferenceRequest(
+                f"{self.api_base}{endpoint}", data=encoded, headers=headers,
+                model=self.model, metadata_url=f"{base}/api/tags",
+            )
+        else:
+            request = Request(f"{self.api_base}{endpoint}", data=encoded, headers=headers, method="POST")
         with urlopen(request, timeout=self.timeout_seconds) as response:
             data = json.loads(response.read().decode("utf-8"))
         if not isinstance(data, dict):

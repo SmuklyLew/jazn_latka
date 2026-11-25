@@ -10,7 +10,9 @@ from typing import Any
 from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
-from .model_http_transport import open_local_model_request as urlopen
+from .model_http_transport import (
+    OllamaInferenceRequest, OllamaModelAuthorizationError, open_local_model_request as urlopen,
+)
 from latka_jazn.core.ollama_inference_policy import ollama_cloud_model_name, ollama_model_identity, ollama_remote_model_entry
 
 from .adapter_contract import AdapterContract, describe_with_contract
@@ -395,11 +397,11 @@ class LocalLlmAdapter:
             })
             self._record_performance_sample(metadata)
             return "", metadata, error
-        req = Request(
+        req = OllamaInferenceRequest(
             f"{self.api_base}/api/chat",
             data=encoded,
             headers={"Content-Type": "application/json"},
-            method="POST",
+            model=self.model, metadata_url=f"{self.api_base}/api/tags",
         )
         transport_started = perf_counter()
         try:
@@ -459,6 +461,17 @@ class LocalLlmAdapter:
             )
             self._transport_breaker.record_success()
             return text, metadata, None
+        except OllamaModelAuthorizationError as exc:
+            code = str(exc)
+            if code == "ollama_model_metadata_unavailable":
+                self._transport_breaker.record_failure(code)
+            else:
+                self._transport_breaker.record_non_transient_response()
+            metadata.update({
+                "status": code, "error_code": code, "error_type": type(exc).__name__,
+                "error": code, "timed_out": False, "request_dispatched": False,
+            })
+            return "", metadata, exc
         except HTTPError as exc:
             if exc.code in {408, 429} or 500 <= exc.code <= 599:
                 self._transport_breaker.record_failure(f"http_error_{exc.code}")
@@ -533,7 +546,10 @@ class LocalLlmAdapter:
             self._last_probe_error = str(
                 last.get("error_code") or "local_provider_unavailable"
             )
-        if not context_rejected and not isinstance(error, CircuitOpenError):
+        if isinstance(error, OllamaModelAuthorizationError):
+            self._endpoint_reachable = None if status == "ollama_model_metadata_unavailable" else True
+            self._probe_state = "probed_fail"
+        elif not context_rejected and not isinstance(error, CircuitOpenError):
             # The request received HTTP or response bytes; only connection/timeout
             # failures imply that the configured endpoint was unreachable.
             if isinstance(error, HTTPError) or status == "invalid_provider_response":

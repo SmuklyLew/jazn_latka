@@ -10,6 +10,7 @@ from typing import Callable, TypeVar
 from urllib.error import HTTPError
 
 from latka_jazn.runtime.resilience import CircuitBreaker, CircuitBreakerSnapshot, CircuitOpenError
+from .model_http_transport import OllamaModelAuthorizationError
 
 # A daemon can reconstruct a speech adapter for each turn. Share its circuit
 # across those instances, but never across unrelated roots, models or providers.
@@ -80,6 +81,12 @@ _T = TypeVar("_T")
 
 def record_model_transport_error(breaker: CircuitBreaker, exc: Exception) -> None:
     """Classify transport failures without retaining exception text or credentials."""
+    if isinstance(exc, OllamaModelAuthorizationError):
+        if str(exc) == "ollama_model_metadata_unavailable":
+            breaker.record_failure(str(exc))
+        else:
+            breaker.record_non_transient_response()
+        return
     if isinstance(exc, HTTPError):
         if exc.code not in {408, 429} and not 500 <= exc.code <= 599:
             breaker.record_non_transient_response()
