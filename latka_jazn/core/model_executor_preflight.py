@@ -34,7 +34,7 @@ def _endpoint_location(value: object) -> str:
         return "unknown"
     if parsed.scheme not in {"http", "https"} or not host or parsed.username or parsed.password:
         return "unknown"
-    if host == "localhost" or host.endswith(".localhost") or host == "127.0.0.1" or host == "::1":
+    if host in {"localhost", "127.0.0.1", "::1"}:
         return "loopback"
     # Arbitrary LAN IPs, DNS names and proxies are NOT known to be local.
     return "external_or_unverified"

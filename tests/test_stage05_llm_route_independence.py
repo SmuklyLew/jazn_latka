@@ -142,3 +142,38 @@ def test_forced_host_route_without_host_channel_is_fail_closed() -> None:
     assert route.ok is False
     assert route.error == "chatgpt_bridge_unavailable"
     assert route.selected_route == router.ROUTE_NULL
+
+
+def test_stage05_local_failure_never_activates_paid_api_auto_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    failed_probe = {**_synthetic_probe(None, None), "available": False,
+                    "endpoint_reachable": False, "reason": "local_provider_unavailable"}
+    monkeypatch.setattr(router, "probe_ollama", lambda *_args, **_kwargs: failed_probe)
+    route = router.build_llm_route_status(
+        Config(), env=_env(JAZN_ALLOW_PAID_OPENAI="1",
+                           OPENAI_API_KEY="synthetic-not-sent"),
+        probe_local=True,
+    )
+    assert route.selected_route == router.ROUTE_NULL
+    assert route.local["available"] is False
+    assert route.paid_route is False
+    assert route.openai_api["api_key_present"] is True
+
+
+def test_stage05_forced_local_failure_is_not_external_replay(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    failed_probe = {**_synthetic_probe(None, None), "available": False,
+                    "endpoint_reachable": False, "reason": "local_provider_unavailable"}
+    monkeypatch.setattr(router, "probe_ollama", lambda *_args, **_kwargs: failed_probe)
+    route = router.build_llm_route_status(
+        Config(), env=_env(JAZN_LLM_ROUTE="local",
+                           OPENAI_API_KEY="synthetic-not-sent",
+                           JAZN_ALLOW_PAID_OPENAI="1"),
+        probe_local=True,
+    )
+    assert route.ok is False
+    assert route.error == "local_llm_unavailable"
+    assert route.selected_route == router.ROUTE_NULL
+    assert route.paid_route is False

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
+
 from latka_jazn.core.model_executor_preflight import resolve_model_executor
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
 from latka_jazn.model_adapters.chatgpt_runtime_adapter import ChatgptRuntimeAdapter
@@ -141,3 +143,13 @@ def test_stage05_compatible_remote_dns_is_not_mislabelled_local() -> None:
     preflight = resolve_model_executor(adapter)
     assert preflight.executor == "unavailable"
     assert preflight.available is False
+
+
+@pytest.mark.parametrize("host", ["localhost.evil.invalid", "model.localhost.evil.invalid"])
+def test_stage05_deceptive_localhost_suffix_is_never_trusted(host: str) -> None:
+    adapter = OpenAICompatibleLocalAdapter(
+        model="synthetic", api_base=f"https://{host}/v1",
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "unavailable"
+    assert preflight.retry_allowed is False
