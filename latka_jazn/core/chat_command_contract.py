@@ -1352,13 +1352,13 @@ def _mark_verified_one_shot_transport(turn_transport: dict[str, Any]) -> None:
         turn_transport["fallback_reason"] = "verified_one_shot_fallback_allowed"
 
 
-def _jsonl_phase2_authorization_error(
+def authorize_public_host_finalization(
     config: JaznConfig,
     payload: dict[str, Any],
     *,
-    host: str,
-    port: int,
-    marker_output: Path | None,
+    host: str = "127.0.0.1",
+    port: int = 8787,
+    marker_output: Path | None = None,
 ) -> str | None:
     """Require the durable binding and a live authenticated daemon job.
 
@@ -1368,8 +1368,18 @@ def _jsonl_phase2_authorization_error(
     from latka_jazn.core.daemon_autostart import status_allows_runtime_turn
     from latka_jazn.core.runtime_daemon import chat_daemon_result, status_daemon
 
-    values, missing = extract_chatgpt_host_visible_reply_payload(payload)
-    if missing:
+    # The ingress policy binds the existing turn, not the candidate's prose.
+    # Full envelope, semantic and persistence validation remains in the
+    # existing finalization transaction.
+    trace = json_object(payload.get("trace"))
+    values = {
+        "turn_id": str(payload.get("turn_id") or trace.get("turn_id") or "").strip(),
+        "trace_id": str(payload.get("trace_id") or trace.get("trace_id") or "").strip(),
+        "host_request_contract_hash": str(payload.get("host_request_contract_hash") or "").strip().lower(),
+    }
+    if not values["turn_id"] or not values["trace_id"] or not re.fullmatch(
+        r"[0-9a-f]{64}", values["host_request_contract_hash"]
+    ):
         return "invalid_host_visible_reply"
     try:
         state = host_request_lifecycle_state(config.root, turn_id=values["turn_id"])
@@ -1383,7 +1393,7 @@ def _jsonl_phase2_authorization_error(
             and binding.get("turn_id") == values["turn_id"]
             and binding.get("trace_id") == values["trace_id"]
         ):
-            return "jsonl_phase2_durable_binding_not_verified"
+            return "phase2_durable_binding_not_verified"
         status = status_daemon(config, host=host, port=port, marker_output=marker_output)
         instance = str(status.get("daemon_instance_id") or "")
         if not (
@@ -1397,7 +1407,7 @@ def _jsonl_phase2_authorization_error(
             and str(status.get("runtime_version") or "") == binding.get("runtime_version")
             and Path(str(status.get("active_root") or "")).resolve() == Path(config.root).resolve()
         ):
-            return "jsonl_phase2_daemon_not_verified"
+            return "phase2_daemon_not_verified"
         job = chat_daemon_result(config, request_id, host=host, port=port)
         if not (
             job.get("accepted") is True
@@ -1409,10 +1419,27 @@ def _jsonl_phase2_authorization_error(
             and job.get("host_trace_id") == values["trace_id"]
             and job.get("host_request_contract_hash") == values["host_request_contract_hash"]
         ):
-            return "jsonl_phase2_daemon_job_not_verified"
+            return "phase2_daemon_job_not_verified"
     except (HostRequestStoreError, OSError, TypeError, ValueError, RuntimeError):
-        return "jsonl_phase2_authority_unavailable"
+        return "phase2_authority_unavailable"
     return None
+
+
+def _jsonl_phase2_authorization_error(
+    config: JaznConfig,
+    payload: dict[str, Any],
+    *,
+    host: str,
+    port: int,
+    marker_output: Path | None,
+) -> str | None:
+    # Compatibility seam for JSONL callers; all live authority checks are shared.
+    _values, missing = extract_chatgpt_host_visible_reply_payload(payload)
+    if missing:
+        return "invalid_host_visible_reply"
+    return authorize_public_host_finalization(
+        config, payload, host=host, port=port, marker_output=marker_output,
+    )
 
 
 def run_jsonl_chat_bridge(

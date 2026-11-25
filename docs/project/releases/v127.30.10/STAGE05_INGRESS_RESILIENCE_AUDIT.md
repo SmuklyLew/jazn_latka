@@ -33,3 +33,7 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 ### JSONL / phase-2 — kolejna iteracja
 - Publiczny bridge nie tworzy już in-process session i nie dopuszcza one-shot degraded. Każda próba ma prealokowany request_id; po utracie wyniku nie replayować. ChatGPT JSONL nie rekonstruuje phase-1 po stronie klienta.
 - JSONL host_visible_reply przed istniejącym finalizatorem sprawdza trwałe powiązanie i aktualny autoryzowany job/instance/version/root/heartbeat. Snapshot joba zwraca instance ID. To dodatkowa kontrola ingress, nie nowa finalizacja, nie atomowy lease; CLI host-finalize i MCP wymagają osobnego audytu. Pozostałe kanały, ACK i live Ollama OPEN; CI pending.
+
+### Wspólna autoryzacja publicznej phase-2
+- Jedna funkcja `authorize_public_host_finalization` (JSONL, oba dispatchery host-finalize, MCP server/public HTTP backend, legacy record-final-reply, helper zapisujący). Kontrakt wymaga live daemon job, a nie samego tokenu lub hasha. MCP endpoint jest konfiguracją operatora; niedozwolony endpoint odrzucony. CLI nie promuje niepotwierdzonego ACK do accepted display.
+- Transakcyjne funkcje wewnętrzne pozostają dostępne dla unit-testów; żadna z wymienionych publicznych tras nie powinna ich wywołać bez bramki. Audyt dalszych callerów, atomowy lease, ACK/recovery, restart, real MCP/Ollama nadal OPEN. CI nowego SHA wymagane.

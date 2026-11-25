@@ -910,7 +910,7 @@ def main(
         )
         return 0 if payload.get("ok") else 1
     if ns.command == "host-finalize":
-        payload = host_commands.finalize_payload(ns)
+        payload = host_commands.finalize_public_payload(ns)
         _emit(payload, as_json=True)
         return 0 if payload.get("accepted") else 2
     if ns.command == "host-recover-delivery":

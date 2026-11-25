@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Protocol
+from urllib.parse import urlsplit
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.core.chat_command_contract import command_contract, persist_chatgpt_host_visible_reply
+from latka_jazn.core.chat_command_contract import (
+    authorize_public_host_finalization, command_contract, persist_chatgpt_host_visible_reply,
+)
 from latka_jazn.core.chatgpt_host_pending_store import (
     HostRequestStoreError,
     issue_continuation_token,
@@ -77,26 +80,96 @@ def run(
     external_tool_evidence: list[dict[str, Any]] | None = None,
     lifecycle_gateway: HostFinalizationLifecycleGateway | None = None,
 ) -> dict[str, Any]:
+    """Internal transaction/test seam; public MCP dispatch must use run_public."""
     runtime_root = Path(root).expanduser().resolve()
     try:
         pending = resolve_continuation_token(runtime_root, continuation_token)
     except HostRequestStoreError as exc:
-        reason = str(exc)
-        outcome = (
-            "replay_rejected"
-            if reason == "host_request_replay_detected"
-            else "expired"
-            if reason == "host_request_expired"
-            else "rejected"
-        )
-        lifecycle = _notify_lifecycle(
-            lifecycle_gateway,
-            dict(getattr(exc, "record", {}) or {}),
-            outcome=outcome,
-            reason=reason,
-            terminal=reason in {"host_request_expired", "host_request_persistence_indeterminate"},
-        )
-        return _error(f"host_request:{exc}", daemon_job_lifecycle=lifecycle)
+        return _continuation_error(exc, lifecycle_gateway)
+    return _finalize_resolved(
+        runtime_root=runtime_root, pending=pending,
+        final_text=final_text, final_text_sha256=final_text_sha256,
+        used_memory_item_ids=used_memory_item_ids,
+        external_tool_evidence=external_tool_evidence,
+        lifecycle_gateway=lifecycle_gateway,
+    )
+
+
+def _continuation_error(
+    exc: HostRequestStoreError, lifecycle_gateway: HostFinalizationLifecycleGateway | None,
+) -> dict[str, Any]:
+    reason = str(exc)
+    outcome = (
+        "replay_rejected"
+        if reason == "host_request_replay_detected"
+        else "expired"
+        if reason == "host_request_expired"
+        else "rejected"
+    )
+    lifecycle = _notify_lifecycle(
+        lifecycle_gateway,
+        dict(getattr(exc, "record", {}) or {}),
+        outcome=outcome,
+        reason=reason,
+        terminal=reason in {"host_request_expired", "host_request_persistence_indeterminate"},
+    )
+    return _error(f"host_request:{exc}", daemon_job_lifecycle=lifecycle)
+
+
+def run_public(
+    *,
+    root: Path,
+    continuation_token: str,
+    final_text: str,
+    final_text_sha256: str,
+    daemon_url: str,
+    lifecycle_gateway: HostFinalizationLifecycleGateway,
+    used_memory_item_ids: list[str] | None = None,
+    external_tool_evidence: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Authenticated MCP ingress: endpoint is operator-owned, never a tool argument."""
+    runtime_root = Path(root).expanduser().resolve()
+    try:
+        endpoint = urlsplit(daemon_url)
+        host = endpoint.hostname
+        port = endpoint.port
+        if endpoint.scheme != "http" or host not in {"127.0.0.1", "localhost", "::1"} or port is None:
+            return _error("phase2_daemon_endpoint_invalid", must_not_claim_runtime_voice=True)
+    except ValueError:
+        return _error("phase2_daemon_endpoint_invalid", must_not_claim_runtime_voice=True)
+    try:
+        pending = resolve_continuation_token(runtime_root, continuation_token)
+    except HostRequestStoreError as exc:
+        return _continuation_error(exc, lifecycle_gateway)
+    binding_value = pending.get("binding")
+    binding = binding_value if isinstance(binding_value, dict) else {}
+    reason = authorize_public_host_finalization(
+        JaznConfig(root=runtime_root), {
+            "turn_id": binding.get("turn_id"), "trace_id": binding.get("trace_id"),
+            "host_request_contract_hash": pending.get("request_contract_hash"),
+        }, host=host, port=port,
+    )
+    if reason:
+        return _error(reason, must_not_claim_runtime_voice=True, must_not_replay=True)
+    return _finalize_resolved(
+        runtime_root=runtime_root, pending=pending,
+        final_text=final_text, final_text_sha256=final_text_sha256,
+        used_memory_item_ids=used_memory_item_ids,
+        external_tool_evidence=external_tool_evidence,
+        lifecycle_gateway=lifecycle_gateway,
+    )
+
+
+def _finalize_resolved(
+    *,
+    runtime_root: Path,
+    pending: dict[str, Any],
+    final_text: str,
+    final_text_sha256: str,
+    used_memory_item_ids: list[str] | None,
+    external_tool_evidence: list[dict[str, Any]] | None,
+    lifecycle_gateway: HostFinalizationLifecycleGateway | None,
+) -> dict[str, Any]:
 
     canonical_hash = sha256_host_visible_text(final_text)
     supplied_hash = str(final_text_sha256 or "").strip().lower()

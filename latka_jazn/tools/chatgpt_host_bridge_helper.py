@@ -11,6 +11,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import (
     CHATGPT_BRIDGE_PROTOCOL,
     CHATGPT_HOST_VISIBLE_REPLY_TEXT_FIELDS,
+    authorize_public_host_finalization,
     chat_gpt_contract,
     persist_chatgpt_host_visible_reply,
     write_chat_bridge_payload,
@@ -294,6 +295,9 @@ def record_chatgpt_host_visible_reply_from_runtime_packet(
     )
     if missing:
         return None, missing
+    reason = authorize_public_host_finalization(config, reply_payload or {})
+    if reason:
+        return None, [reason]
     return persist_chatgpt_host_visible_reply(
         config=config,
         payload=reply_payload or {},
@@ -392,8 +396,17 @@ def main(argv: list[str] | None = None, *, stdin: TextIO | None = None, stdout: 
         if args.build_only:
             output = reply_payload or {}
         else:
+            config = JaznConfig(root=args.root) if args.root else JaznConfig()
+            reason = authorize_public_host_finalization(config, reply_payload or {})
+            if reason:
+                write_chat_bridge_payload(stdout, {
+                    "ok": False, "accepted": False, "action": "host_diagnostic",
+                    "error_code": reason, "must_not_claim_runtime_voice": True,
+                    "must_not_replay": True,
+                })
+                return 2
             output, persist_missing = persist_chatgpt_host_visible_reply(
-                config=JaznConfig(root=args.root) if args.root else JaznConfig(),
+                config=config,
                 payload=reply_payload or {},
                 chat_bridge_meta=build_chatgpt_host_reply_helper_meta(line_index=1),
                 contract=chat_gpt_contract().to_dict(),

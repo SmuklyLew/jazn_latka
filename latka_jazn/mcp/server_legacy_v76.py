@@ -464,7 +464,10 @@ class JaznMcpServer:
                 host_request_contract_hash=args.get("host_request_contract_hash"),
             )
         if name == "jazn_finalize_reply":
-            return jazn_finalize_reply.run(root=self.root, lifecycle_gateway=self.gateway, **args)
+            return jazn_finalize_reply.run_public(
+                root=self.root, lifecycle_gateway=self.gateway,
+                daemon_url=self.gateway.config.daemon_url, **args,
+            )
         if name == "jazn_audit_lookup":
             return jazn_audit_lookup.run(
                 audit_database=self.audit_database,

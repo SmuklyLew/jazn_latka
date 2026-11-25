@@ -11,6 +11,7 @@ from typing import Any
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayConfig, GatewayError, SecureHostRuntimeGateway
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import (
+    authorize_public_host_finalization,
     build_chatgpt_host_presentation_packet,
     chat_gpt_contract,
     persist_chatgpt_host_visible_reply,
@@ -294,6 +295,39 @@ def finalize_payload(args: Any) -> dict[str, Any]:
 
 
 
+def finalize_public_payload(args: Any) -> dict[str, Any]:
+    """Only CLI ingress; internal finalize_payload is the transaction seam."""
+    root = Path(args.root).expanduser().resolve()
+    binding = {
+        "turn_id": str(args.turn_id),
+        "trace_id": str(args.trace_id),
+        "host_request_contract_hash": str(getattr(args, "host_request_contract_hash", "") or ""),
+    }
+    reason = authorize_public_host_finalization(
+        JaznConfig(root=root), binding,
+        host=str(getattr(args, "daemon_host", "127.0.0.1")),
+        port=int(getattr(args, "daemon_port", 8787)),
+        marker_output=getattr(args, "daemon_marker_output", None),
+    )
+    if reason:
+        return {
+            "ok": False, "accepted": False, "action": "host_diagnostic",
+            "error_code": reason, "must_not_claim_runtime_voice": True,
+            "must_not_replay": True, **binding,
+        }
+    result = finalize_payload(args)
+    if result.get("accepted") is True and result.get("host_finalization_lifecycle_complete") is not True:
+        # The reply may already be committed. Only recover its delivery; never
+        # publish a new visible turn or resubmit the candidate on a lost ACK.
+        return {
+            "ok": False, "accepted": False, "action": "host_diagnostic",
+            "error_code": "host_finalization_lifecycle_incomplete",
+            "must_not_claim_runtime_voice": True, "must_not_replay": True,
+            "recovery_required": True, **binding,
+        }
+    return result
+
+
 def build_host_finalize_parser(*, default_root: Path) -> argparse.ArgumentParser:
     """Build the canonical ``run.py host-finalize`` parser.
 
@@ -327,6 +361,7 @@ def build_host_finalize_parser(*, default_root: Path) -> argparse.ArgumentParser
     parser.add_argument("--host-action-evidence-file", type=Path)
     parser.add_argument("--daemon-host", default="127.0.0.1")
     parser.add_argument("--daemon-port", type=int, default=8787)
+    parser.add_argument("--daemon-marker-output", type=Path, default=None)
     parser.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024)
     return parser
 
@@ -367,6 +402,6 @@ def _emit_json_stdout(payload: dict[str, Any]) -> None:
 
 def run_host_finalize_cli(argv: list[str], *, default_root: Path) -> int:
     args = build_host_finalize_parser(default_root=Path(default_root).resolve()).parse_args(argv)
-    payload = finalize_payload(args)
+    payload = finalize_public_payload(args)
     _emit_json_stdout(payload)
     return 0 if payload.get("accepted") else 2
