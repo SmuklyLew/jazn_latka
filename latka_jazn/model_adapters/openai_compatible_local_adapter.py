@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+from .model_http_transport import open_local_model_request as urlopen
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
@@ -19,7 +20,7 @@ SYSTEM_PROMPT = (
 
 
 class OpenAICompatibleLocalAdapter:
-    """Shared transport for local/external OpenAI-compatible model backends."""
+    """OpenAI-compatible transport; inference egress restricted to loopback."""
 
     name = "openai_compatible_local_adapter"
 

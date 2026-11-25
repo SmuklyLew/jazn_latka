@@ -46,3 +46,7 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 
 ### Publiczny ACK daemona
 - /chat-finalization accepted wymaga teraz odczytu kanonicznego consumed capture z walidacją envelope/projection i zgodności całej lineage pod lockiem zadania. Brak zapisu nie może przez ten endpoint zakończyć joba. To atomowa kontrola ACK względem przejścia joba, nie atomowa autoryzacja całej transakcji hosta. CI pending, pozostałe ryzyka niezamknięte.
+
+### Etap 05 — granica HTTP inferencji (baza b8479d714b2b02c97d26a4a54a1ad0949fbc3b19)
+- Native Ollama (probe i POST) oraz OpenAI-compatible: loopback-only, bez automatycznych przekierowań i proxy środowiskowego. Bezpośredni transport nie może ominąć preflight dla nieautoryzowanego URL. OpenAI Responses urllib odrzuca redirect; Windows już stosuje MaximumRedirection 0, SIWC ma własną ochronę. Bez zmiany globalnego opener/lifecycle.
+- 30 nowych przypadków syntetycznych: 20 redirect GET/POST, 8 niedozwolonych URL, bezpośrednia próba obu adapterów i proxy. Testy lokalnego HTTP, nie realnego LLM. CI pending; local pytest NOT_RUN. Nie dowodzi braku dalszej inferencji cloud w serwerze loopback. Pełna autoryzacja, budżet, atomowy phase-2 i Studio nadal OPEN. Źródła: https://docs.python.org/3/library/urllib.request.html oraz https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html. Bez zmian master, MEMORY, płatnego API, poprzednich testów. Zachowano wersję nieopublikowanego kandydata v127.30.10, local worktree/usage unknown.

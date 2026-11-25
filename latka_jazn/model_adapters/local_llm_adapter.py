@@ -9,7 +9,8 @@ from .model_transport_health import model_transport_breaker
 from typing import Any
 from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+from .model_http_transport import open_local_model_request as urlopen
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse

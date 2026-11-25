@@ -7,7 +7,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+from .model_http_transport import open_model_request as urlopen
 
 from latka_jazn.core.json_types import json_object
 
