@@ -1,0 +1,22 @@
+# Etap 05 — audyt ingress i odporności (iteracja 2026-11-25)
+
+Baza: e291870dd6c831307408894b5c669590a2d71f0e. Zakres audytu statycznego jest częściowy; nie stanowi odbioru live ani dowodu braku wszystkich obejść.
+
+| Powierzchnia | Obserwacja kodu | Stan |
+|---|---|---|
+| main.py / CLI chat-gpt | ensure obowiązkowe; błąd transportu zachowuje request_id, host_diagnostic | poprzednie CI PASS, live NOT_RUN |
+| main.py / chat-ollama | ensure przed discovery, błąd modelu nie wysyła tury | poprzednie CI PASS, live Ollama NOT_RUN |
+| main.py / chat, direct_message, jawne OpenAI | wybór modelu przed ensure nadal wymaga konwergencji | OPEN |
+| core/chat_command_contract.py / JSONL | daemon_bound korzysta z DaemonConversationSession; default false pozwala tworzyć RuntimeSessionWorker/JaznRuntimeSession; phase-2 deleguje do ConversationRunner.finalize_candidate | audyt wszystkich wywołań oraz authority phase-2 OPEN; nie usuwać debug/test bez rozpoznania |
+| tools/jazn_run_studio/chat.py + validation_worker.py | trwały request przed wysłaniem, jeden pipe write, poll po tym samym ID, worker weryfikuje request/session/turn/trace i lokalny visible gate | weryfikacja niezależnej lineage/persistence/instancji oraz negatywna macierz OPEN |
+| core/chat_command_contract.py / runtime_owned_visible_reply_verified | sprawdza truth, hash, answer/execution state i author_source; samo to nie dowodzi persistence ani instancji | OPEN |
+| mcp/http_gateway.py, mcp/server.py | powierzchnie generate/resume/finalize; pełny audyt principal/request/instance oraz utraty transportu OPEN | real ChatGPT/MCP BLOCKED |
+| model_adapters/factory.py | jawny adapter omija resolver; dodatkowy wspólny opt-in paid OpenAI w tej zmianie | CI pending; direct constructor oraz autoryzacja innych endpointów/cloud nadal OPEN |
+| core/model_executor_preflight.py | loopback to lokalizacja endpointu, nie dowód lokalności inferencji; external_model dostępny konfiguracyjnie | Ollama cloud/redirect, SIWC i allow_network OPEN |
+| runtime/resilience.py + bridge/secure_host_runtime_gateway.py | TransportSupervisor istnieje i jest używany przez gateway; nie wykazano integracji ze wszystkimi adapterami | circuit breakers dla inferencji, trwałość i fault injection OPEN |
+| tools/release_readiness.py | wcześniej rozmowa bez daemona oraz retry nowej wiadomości; obecnie osobny negatywny test, pojedynczy submit na tym samym izolowanym porcie po live status, obowiązkowy display_exact | CI pending |
+| release-hardening.yml | poprzedni raport 14/15 exit_code=1 maskowany przez tee; shell: bash włącza pipefail, oba acceptance uruchamiane również na push tej gałęzi | CI pending |
+
+Źródła: kod wskazanych modułów na bazowym SHA, release-hardening 45553986336/job/139005398994 (14/15, chat_gpt_turn_and_integrity_consensus FAIL), Ubuntu 139002758226 (4561 PASS, 25 SKIP, 6 subtests PASS), E2E 45553986324 (Windows/Ubuntu PASS); dokumentacja GitHub Actions workflow syntax / shell: bash.
+
+Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testowanych integracjach, brak replayu, zachowanie sesji, daemon żywy po awarii modelu, jawna zgoda na transfer, komplet wymaganych bramek Windows/Ubuntu oraz rzeczywista Ollama. Nie utożsamiać PASS symulacji z odbiorem rzeczywistego LLM/MCP. Brak MCP toolsetu i lokalnego worktree/exec potwierdzonego na hoście; live testy NOT_RUN. Nie wykonano płatnego API ani zmian prywatnej MEMORY.

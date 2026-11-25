@@ -12,7 +12,7 @@ from .siwc_plan_usage_adapter import SiwcPlanUsageAdapter
 from .local_llm_adapter import LocalLlmAdapter
 from .adapter_contract import ContractOnlyModelAdapter, backend_config_skeletons
 from .openai_compatible_local_adapter import OpenAICompatibleLocalAdapter
-from latka_jazn.core.llm_route_resolver import apply_llm_route_to_config, build_llm_route_status
+from latka_jazn.core.llm_route_resolver import apply_llm_route_to_config, build_llm_route_status, paid_openai_allowed
 from latka_jazn.core.runtime_environment import CHATGPT_ADAPTER, CODEX_ADAPTER, NULL_ADAPTER, OPENAI_COMPATIBLE_ADAPTER, apply_effective_runtime_adapter, detect_runtime_environment
 
 
@@ -75,6 +75,14 @@ def build_model_adapter(config: Any, *, resolve_route: bool = True):
             root=getattr(config, "root", None),
         )
     if name in {"openai", "openai_responses", "openai_responses_adapter"} and bool(getattr(config, "allow_network", True)):
+        if not paid_openai_allowed(config, os.environ):
+            return ContractOnlyModelAdapter(
+                provider="openai", model=str(getattr(config, "model_name", "") or ""),
+                endpoint=str(getattr(config, "model_api_base", "") or ""),
+                adapter_id="openai_responses_adapter", kind="remote_responses_api",
+                failure_reason="paid_openai_not_allowed", response_status="paid_openai_not_allowed",
+                truth_boundary="Explicit adapter selection and an API key do not authorize paid external inference.",
+            )
         return OpenaiResponsesAdapter(
             model=str(getattr(config, "model_name", "") or ""),
             api_base=str(getattr(config, "model_api_base", "https://api.openai.com/v1")),

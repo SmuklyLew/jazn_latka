@@ -11,6 +11,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+from uuid import uuid4
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
@@ -110,61 +111,65 @@ def _chat_payload_from_output(output: str) -> dict[str, Any] | None:
     return None
 
 
-def _run_chat_integrity_check(isolated: Path) -> dict[str, Any]:
-    chat_input = json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n"
-    port = _free_port()
-    marker = workspace_runtime_path(isolated) / "package_smoke_chat_marker.json"
-    attempts: list[dict[str, Any]] = []
-    final_result: dict[str, Any] = {"returncode": 2, "stdout": "", "stderr": ""}
-    final_consensus: dict[str, Any] = {}
-    ok = False
-
-    for attempt_number in (1, 2):
-        result = _run(
-            isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
-            "--daemon-port", str(port), "--daemon-marker-output", str(marker),
-            input_text=chat_input, timeout=120.0,
-        )
-        chat = _chat_payload_from_output(result["stdout"])
-        consensus = json_object((chat or {}).get("final_visible_integrity_consensus"))
-        has_final_text = bool((chat or {}).get("final_visible_text"))
-        ok = (
-            result["returncode"] == 0
-            and has_final_text
-            and consensus.get("valid") is True
-            and consensus.get("mismatch") is False
-        )
-        attempts.append({
-            "attempt": attempt_number,
-            "returncode": result["returncode"],
-            "payload_found": chat is not None,
-            "has_final_visible_text": has_final_text,
-            "consensus": consensus,
-            "stdout_tail": result["stdout"][-2000:],
-            "stderr_tail": result["stderr"][-2000:],
-        })
-        final_result = result
-        final_consensus = consensus
-        if ok:
-            break
-        retryable_missing_contract = (
-            result["returncode"] == 0
-            and (chat is None or not has_final_text or not consensus)
-        )
-        if not retryable_missing_contract:
-            break
-
+def _run_chat_integrity_check(isolated: Path, *, port: int, marker: Path) -> dict[str, Any]:
+    """Submit exactly once to an already verified isolated daemon."""
+    request_id = "package-smoke-" + uuid4().hex
+    chat_input = json.dumps({"text": "Działasz?", "request_id": request_id}, ensure_ascii=False) + "\n"
+    result = _run(
+        isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+        "--daemon-port", str(port), "--daemon-marker-output", str(marker),
+        input_text=chat_input, timeout=120.0,
+    )
+    chat = _chat_payload_from_output(result["stdout"])
+    consensus = json_object((chat or {}).get("final_visible_integrity_consensus"))
+    presentation = json_object((chat or {}).get("chatgpt_host_presentation"))
+    has_final_text = bool((chat or {}).get("final_visible_text"))
+    ok = (
+        result["returncode"] == 0
+        and has_final_text
+        and consensus.get("valid") is True
+        and consensus.get("mismatch") is False
+        and presentation.get("action") == "display_exact"
+    )
     return _check(
         "chat_gpt_turn_and_integrity_consensus",
         ok,
-        returncode=final_result["returncode"],
-        consensus=final_consensus,
-        stderr=final_result["stderr"][-2000:],
-        attempt_count=len(attempts),
-        retry_used=len(attempts) > 1,
-        attempts=attempts,
+        returncode=result["returncode"],
+        consensus=consensus,
+        presentation_action=presentation.get("action"),
+        request_id=request_id,
+        stderr=result["stderr"][-2000:],
+        attempt_count=1,
+        retry_used=False,
+        attempts=[{
+            "attempt": 1, "returncode": result["returncode"],
+            "payload_found": chat is not None, "has_final_visible_text": has_final_text,
+            "consensus": consensus, "stdout_tail": result["stdout"][-2000:],
+            "stderr_tail": result["stderr"][-2000:],
+        }],
         port=port,
         marker_output=str(marker),
+    )
+
+
+def _run_inactive_chat_denial(isolated: Path, *, port: int, marker: Path) -> dict[str, Any]:
+    """A configured language channel cannot replace a missing daemon."""
+    result = _run(
+        isolated, "main.py", "--root", str(isolated), "--no-ensure-daemon", "--chat-gpt",
+        "--daemon-port", str(port), "--daemon-marker-output", str(marker),
+        input_text=json.dumps({"text": "Działasz?"}, ensure_ascii=False) + "\n",
+        timeout=60.0,
+    )
+    payload = _json_document(result["stdout"]) or {}
+    return _check(
+        "inactive_daemon_chat_denied",
+        result["returncode"] == 1
+        and payload.get("ok") is False
+        and payload.get("error_code") == "daemon_ensure_failed"
+        and not payload.get("final_visible_text"),
+        returncode=result["returncode"],
+        error_code=payload.get("error_code"),
+        final_text_present=bool(payload.get("final_visible_text")),
     )
 
 
@@ -214,14 +219,14 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
     checks.append(_check("doctor", doctor_result["returncode"] == 0 and bool((doctor or {}).get("ok")),
                          returncode=doctor_result["returncode"], report=doctor))
 
-    checks.append(_run_chat_integrity_check(isolated))
-
     port = _free_port()
     marker = isolated / "workspace_runtime" / "package_smoke_daemon_marker.json"
     cfg = JaznConfig(root=isolated)
     startup: dict[str, Any] | None = None
     daemon_status: dict[str, Any] | None = None
     stop_report: dict[str, Any] | None = None
+    daemon_ok = False
+    checks.append(_run_inactive_chat_denial(isolated, port=port, marker=marker))
     try:
         startup = start_daemon(cfg, port=port, marker_output=marker, startup_timeout=20.0)
         daemon_status = status_daemon(cfg, port=port, marker_output=marker, probe_endpoint=True)
@@ -241,6 +246,14 @@ def _run_isolated_system_checks(isolated: Path, checks: list[dict[str, Any]]) ->
                              startup=startup, status=daemon_status, cli_status=cli_live_daemon))
     except Exception as exc:
         checks.append(_check("isolated_daemon_start_status", False, port=port, error=repr(exc)))
+    try:
+        if daemon_ok:
+            checks.append(_run_chat_integrity_check(isolated, port=port, marker=marker))
+        else:
+            checks.append(_check("chat_gpt_turn_and_integrity_consensus", False,
+                                 error="verified_isolated_daemon_required"))
+    except Exception as exc:
+        checks.append(_check("chat_gpt_turn_and_integrity_consensus", False, error=repr(exc)))
     finally:
         try:
             stop_report = stop_daemon(cfg, port=port, marker_output=marker, timeout=20.0)

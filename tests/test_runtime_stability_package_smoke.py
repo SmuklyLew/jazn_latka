@@ -102,23 +102,24 @@ def _chat_result(payload: dict, *, returncode: int = 0, suffix: str = "") -> dic
     }
 
 
-def test_chat_integrity_check_retries_transient_missing_consensus(monkeypatch, tmp_path: Path) -> None:
+def test_chat_integrity_check_does_not_replay_missing_consensus(monkeypatch, tmp_path: Path) -> None:
     responses = iter([
         _chat_result({"final_visible_text": "Działam.", "final_visible_integrity_consensus": {}}),
         _chat_result({
             "final_visible_text": "Działam.",
             "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+            "chatgpt_host_presentation": {"action": "display_exact"},
         }),
     ])
     monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: next(responses))
 
-    result = release_readiness._run_chat_integrity_check(tmp_path)
+    result = release_readiness._run_chat_integrity_check(tmp_path, port=43127, marker=release_readiness.workspace_runtime_path(tmp_path) / "package_smoke_chat_marker.json")
 
-    assert result["ok"] is True
-    assert result["attempt_count"] == 2
-    assert result["retry_used"] is True
+    assert result["ok"] is False
+    assert result["attempt_count"] == 1
+    assert result["retry_used"] is False
     assert result["attempts"][0]["consensus"] == {}
-    assert result["consensus"]["valid"] is True
+    assert result["consensus"] == {}
 
 
 def test_chat_integrity_check_uses_isolated_transport_identity(monkeypatch, tmp_path: Path) -> None:
@@ -129,12 +130,12 @@ def test_chat_integrity_check_uses_isolated_transport_identity(monkeypatch, tmp_
         return _chat_result({
             "final_visible_text": "Działam.",
             "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+            "chatgpt_host_presentation": {"action": "display_exact"},
         })
 
-    monkeypatch.setattr(release_readiness, "_free_port", lambda: 43127)
     monkeypatch.setattr(release_readiness, "_run", run_once)
 
-    result = release_readiness._run_chat_integrity_check(tmp_path)
+    result = release_readiness._run_chat_integrity_check(tmp_path, port=43127, marker=release_readiness.workspace_runtime_path(tmp_path) / "package_smoke_chat_marker.json")
 
     args = captured["args"]
     assert isinstance(args, tuple)
@@ -149,11 +150,12 @@ def test_chat_integrity_check_selects_payload_before_trailing_json_noise(monkeyp
     payload = {
         "final_visible_text": "Działam.",
         "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+            "chatgpt_host_presentation": {"action": "display_exact"},
     }
     response = _chat_result(payload, suffix=json.dumps({"kind": "diagnostic_noise"}) + "\n")
     monkeypatch.setattr(release_readiness, "_run", lambda *_args, **_kwargs: response)
 
-    result = release_readiness._run_chat_integrity_check(tmp_path)
+    result = release_readiness._run_chat_integrity_check(tmp_path, port=43127, marker=release_readiness.workspace_runtime_path(tmp_path) / "package_smoke_chat_marker.json")
 
     assert result["ok"] is True
     assert result["attempt_count"] == 1
@@ -174,7 +176,7 @@ def test_chat_integrity_check_does_not_mask_explicit_integrity_mismatch(monkeypa
 
     monkeypatch.setattr(release_readiness, "_run", run_once)
 
-    result = release_readiness._run_chat_integrity_check(tmp_path)
+    result = release_readiness._run_chat_integrity_check(tmp_path, port=43127, marker=release_readiness.workspace_runtime_path(tmp_path) / "package_smoke_chat_marker.json")
 
     assert result["ok"] is False
     assert result["attempt_count"] == 1
@@ -193,3 +195,23 @@ def test_inactive_status_snapshot_is_a_valid_smoke_observation() -> None:
     assert release_readiness._inactive_snapshot_contract_ok({"returncode": 1}, payload) is True
     assert release_readiness._inactive_snapshot_contract_ok({"returncode": 0}, payload) is False
     assert release_readiness._inactive_snapshot_contract_ok({"returncode": 1}, None) is False
+
+
+def test_chat_integrity_check_rejects_unapproved_candidate(monkeypatch, tmp_path: Path) -> None:
+    response = _chat_result({
+        "final_visible_text": "Działam.",
+        "final_visible_integrity_consensus": {"valid": True, "mismatch": False},
+        "chatgpt_host_presentation": {"action": "host_diagnostic"},
+    })
+    monkeypatch.setattr(release_readiness, "_run", lambda *_a, **_k: response)
+    result = release_readiness._run_chat_integrity_check(tmp_path, port=43127, marker=tmp_path / "marker.json")
+    assert result["ok"] is False
+    assert result["attempt_count"] == 1
+
+
+def test_inactive_chat_denial_requires_diagnostic_without_final_text(monkeypatch, tmp_path: Path) -> None:
+    payload = {"ok": False, "error_code": "daemon_ensure_failed"}
+    monkeypatch.setattr(release_readiness, "_run", lambda *_a, **_k: _chat_result(payload, returncode=1))
+    assert release_readiness._run_inactive_chat_denial(tmp_path, port=43127, marker=tmp_path / "marker.json")["ok"]
+    payload["final_visible_text"] = "unapproved"
+    assert not release_readiness._run_inactive_chat_denial(tmp_path, port=43127, marker=tmp_path / "marker.json")["ok"]

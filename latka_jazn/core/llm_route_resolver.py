@@ -43,6 +43,13 @@ def _truthy(value: str | None) -> bool:
     return str(value or "").strip().casefold() in {"1", "true", "yes", "tak", "on"}
 
 
+def paid_openai_allowed(config: Any, env: Mapping[str, str]) -> bool:
+    """One opt-in policy shared by routing and direct factory construction."""
+    if "JAZN_ALLOW_PAID_OPENAI" in env:
+        return _truthy(env.get("JAZN_ALLOW_PAID_OPENAI"))
+    return bool(getattr(config, "allow_paid_openai_api", False))
+
+
 def _normalize_mode(value: str | None) -> str:
     raw = str(value or "auto").strip().casefold().replace("-", "_") or "auto"
     aliases = {
@@ -197,7 +204,7 @@ def build_llm_route_status(
 ) -> LlmRouteStatus:
     env_map: Mapping[str, str] = env if env is not None else os.environ
     mode = _normalize_mode(env_map.get("JAZN_LLM_ROUTE") or str(getattr(config, "llm_route_mode", "auto") or "auto"))
-    paid_allowed = _truthy(env_map.get("JAZN_ALLOW_PAID_OPENAI")) if "JAZN_ALLOW_PAID_OPENAI" in env_map else bool(getattr(config, "allow_paid_openai_api", False))
+    paid_allowed = paid_openai_allowed(config, env_map)
     api_key_present = bool(str(env_map.get("OPENAI_API_KEY") or "").strip())
     openai_model = _env_get(env_map, "JAZN_OPENAI_MODEL", "JAZN_MODEL_NAME", default=str(getattr(config, "openai_paid_model_name", getattr(config, "model_name", "")) or ""))
 

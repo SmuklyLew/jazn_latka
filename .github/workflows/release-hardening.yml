@@ -25,11 +25,11 @@ concurrency:
 
 jobs:
   acceptance_monitor:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/fix/v12730-10-runtime-architecture-hardening')
     uses: ./.github/workflows/jazn-monitor-dev-tests.yml
 
   acceptance_persistent_runtime:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/fix/v12730-10-runtime-architecture-hardening')
     uses: ./.github/workflows/persistent-runtime-e2e.yml
 
   manifest_sync:
@@ -675,6 +675,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/$JAZN_FINALIZATION_DIR"
 
       - name: Verify clean release package once
+        shell: bash
         run: >-
           python -X utf8 run.py package-smoke --profile release --json
           | tee "$RUNNER_TEMP/$JAZN_FINALIZATION_DIR/package-smoke-release.json"
