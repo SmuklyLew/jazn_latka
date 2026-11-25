@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3651,
+  "active_definition_count": 3654,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70791,6 +70791,68 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 164
+    },
+    "tests/test_stage05_model_transport_boundary.py::test_client_cannot_elevate_paid_inference_permission": {
+      "path": "tests/test_stage05_model_transport_boundary.py",
+      "name": "test_client_cannot_elevate_paid_inference_permission",
+      "purpose": "Client cannot elevate paid inference permission",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 22
+    },
+    "tests/test_stage05_model_transport_boundary.py::test_ollama_http_failure_opens_shared_model_circuit_without_replay": {
+      "path": "tests/test_stage05_model_transport_boundary.py",
+      "name": "test_ollama_http_failure_opens_shared_model_circuit_without_replay",
+      "purpose": "Ollama http failure opens shared model circuit without replay",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_stage05_model_transport_boundary.py::test_non_transient_http_denial_does_not_open_circuit": {
+      "path": "tests/test_stage05_model_transport_boundary.py",
+      "name": "test_non_transient_http_denial_does_not_open_circuit",
+      "purpose": "Non transient http denial does not open circuit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.conversation_channel",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 88
     },
     "tests/test_stage05_ollama_runtime_first.py::test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable": {
       "path": "tests/test_stage05_ollama_runtime_first.py",
