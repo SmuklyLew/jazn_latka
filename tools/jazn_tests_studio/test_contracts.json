@@ -53331,7 +53331,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_ollama_only_hotfix.py::test_ollama_contract_is_local_and_keyless": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53352,7 +53352,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 47
     },
     "tests/test_ollama_only_hotfix.py::test_apply_ollama_cli_settings_applies_timeout_and_token_limit": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53373,7 +53373,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 54
+      "line": 55
     },
     "tests/test_ollama_only_hotfix.py::test_apply_ollama_cli_settings_does_not_mutate_process_environment": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53394,7 +53394,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 83
+      "line": 84
     },
     "tests/test_ollama_only_hotfix.py::test_active_repository_has_no_removed_local_backend_integration": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53415,7 +53415,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 112
+      "line": 113
     },
     "tests/test_ollama_only_hotfix.py::test_resolve_ollama_cli_settings_selects_single_discovered_model": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53436,7 +53436,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 129
+      "line": 130
     },
     "tests/test_ollama_only_hotfix.py::test_resolve_ollama_cli_settings_keeps_multiple_models_ambiguous": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53457,19 +53457,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 167
+      "line": 168
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_without_message_uses_human_terminal_loop": {
       "path": "tests/test_ollama_only_hotfix.py",
       "name": "test_chat_ollama_without_message_uses_human_terminal_loop",
       "purpose": "Chat ollama without message uses human terminal loop",
-      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 7,
+      "assertion_count": 9,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -53478,19 +53478,19 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 205
+      "line": 206
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_with_piped_stdin_keeps_jsonl_contract": {
       "path": "tests/test_ollama_only_hotfix.py",
       "name": "test_chat_ollama_with_piped_stdin_keeps_jsonl_contract",
       "purpose": "Chat ollama with piped stdin keeps jsonl contract",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "contract",
       "tags": [
         "repository"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -53499,7 +53499,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 264
+      "line": 272
     },
     "tests/test_ollama_only_hotfix.py::test_chat_ollama_offers_ambiguous_models_for_interactive_selection": {
       "path": "tests/test_ollama_only_hotfix.py",
@@ -53520,7 +53520,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 302
+      "line": 314
     },
     "tests/test_ollama_probe.py::test_ollama_probe_reports_configured_model_without_generation": {
       "path": "tests/test_ollama_probe.py",
