@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.chat_command_contract import apply_ollama_cli_settings, command_contract
@@ -211,8 +212,10 @@ def test_chat_ollama_without_message_uses_human_terminal_loop(monkeypatch) -> No
             return True
 
     class FakeWorker:
-        def __init__(self, **kwargs) -> None:
+        def __init__(self, config, **kwargs) -> None:
+            self.config = config
             self.kwargs = kwargs
+            self.state = SimpleNamespace(session_id="synthetic")
             self.closed = False
 
         def close(self) -> None:
@@ -235,8 +238,11 @@ def test_chat_ollama_without_message_uses_human_terminal_loop(monkeypatch) -> No
             },
         ),
     )
-    monkeypatch.setattr(main_module, "_ensure_daemon_or_error", lambda *args, **kwargs: (None, None))
-    monkeypatch.setattr(main_module, "RuntimeSessionWorker", FakeWorker)
+    monkeypatch.setattr(
+        main_module, "_ensure_daemon_or_error",
+        lambda *args, **kwargs: (SimpleNamespace(selected_transport="persistent_daemon"), None),
+    )
+    monkeypatch.setattr(main_module, "DaemonConversationSession", FakeWorker)
     monkeypatch.setattr(
         main_module,
         "run_persistent_chat",
@@ -259,6 +265,8 @@ def test_chat_ollama_without_message_uses_human_terminal_loop(monkeypatch) -> No
     assert worker.kwargs["command"] == "--chat-ollama"
     assert worker.kwargs["source_client"] == "ollama_terminal_chat"
     assert worker.closed is True
+    assert worker.config is cfg
+    assert worker.kwargs["model_channel_config"]["local_model_name"] == "gemma3:latest"
 
 
 def test_chat_ollama_with_piped_stdin_keeps_jsonl_contract(monkeypatch) -> None:
@@ -282,7 +290,10 @@ def test_chat_ollama_with_piped_stdin_keeps_jsonl_contract(monkeypatch) -> None:
             },
         ),
     )
-    monkeypatch.setattr(main_module, "_ensure_daemon_or_error", lambda *args, **kwargs: (None, None))
+    monkeypatch.setattr(
+        main_module, "_ensure_daemon_or_error",
+        lambda *args, **kwargs: (SimpleNamespace(selected_transport="persistent_daemon"), None),
+    )
     monkeypatch.setattr(
         main_module,
         "run_jsonl_chat_bridge",
@@ -297,6 +308,7 @@ def test_chat_ollama_with_piped_stdin_keeps_jsonl_contract(monkeypatch) -> None:
     assert isinstance(jsonl_call, dict)
     assert jsonl_call["command"] == "--chat-ollama"
     assert jsonl_call["output_mode"] == "jsonl"
+    assert jsonl_call["daemon_bound"] is True
 
 
 def test_chat_ollama_offers_ambiguous_models_for_interactive_selection(monkeypatch, capsys) -> None:
@@ -322,8 +334,6 @@ def test_chat_ollama_offers_ambiguous_models_for_interactive_selection(monkeypat
             },
         ),
     )
-    from types import SimpleNamespace
-
     class FakeSession:
         def __init__(self, *args, **kwargs) -> None:
             self.state = SimpleNamespace(session_id="synthetic")
