@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3665,
+  "active_definition_count": 3667,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70581,6 +70581,46 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 178
+    },
+    "tests/test_stage05_cli_runtime_first.py::test_runtime_gate_precedes_model_discovery": {
+      "path": "tests/test_stage05_cli_runtime_first.py",
+      "name": "test_runtime_gate_precedes_model_discovery",
+      "purpose": "Runtime gate precedes model discovery",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 19
+    },
+    "tests/test_stage05_cli_runtime_first.py::test_auto_route_checks_daemon_once_before_discovery_and_submission": {
+      "path": "tests/test_stage05_cli_runtime_first.py",
+      "name": "test_auto_route_checks_daemon_once_before_discovery_and_submission",
+      "purpose": "Auto route checks daemon once before discovery and submission",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
     },
     "tests/test_stage05_jsonl_authority.py::test_unbound_jsonl_cannot_create_runtime": {
       "path": "tests/test_stage05_jsonl_authority.py",
