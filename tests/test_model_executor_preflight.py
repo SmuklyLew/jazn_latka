@@ -6,6 +6,9 @@ from latka_jazn.core.model_executor_preflight import resolve_model_executor
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer
 from latka_jazn.model_adapters.chatgpt_runtime_adapter import ChatgptRuntimeAdapter
 from latka_jazn.model_adapters.null_model_adapter import NullModelAdapter
+from latka_jazn.model_adapters.openai_responses_adapter import OpenaiResponsesAdapter
+from latka_jazn.model_adapters.openai_compatible_local_adapter import OpenAICompatibleLocalAdapter
+from latka_jazn.model_adapters.siwc_plan_usage_adapter import SiwcPlanUsageAdapter, SIWC_REQUIRED_SCOPE
 
 
 @dataclass
@@ -84,3 +87,57 @@ def test_configured_local_model_is_only_retry_eligible_executor() -> None:
     assert preflight.executor == "local_model"
     assert preflight.available is True
     assert preflight.retry_allowed is True
+
+
+
+def test_stage05_openai_api_is_external_not_a_local_retry_executor() -> None:
+    adapter = OpenaiResponsesAdapter(
+        api_key="synthetic-not-sent", model="synthetic-model",
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "external_model"
+    assert preflight.available is True  # configured only; endpoint unprobed
+    assert preflight.retry_allowed is False
+    assert "authorization" in preflight.reason
+    assert adapter.describe()["probe_state"] == "not_probed"
+
+
+def test_stage05_siwc_is_distinct_external_oauth_not_chatgpt_host() -> None:
+    adapter = SiwcPlanUsageAdapter(
+        model="synthetic", access_token="synthetic-not-sent",
+        granted_scopes=SIWC_REQUIRED_SCOPE, operator_opt_in=True,
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "external_model"
+    assert preflight.retry_allowed is False
+    assert preflight.provider == "openai_siwc"
+
+
+def test_stage05_unverified_lan_compatible_backend_fails_closed() -> None:
+    adapter = OpenAICompatibleLocalAdapter(
+        model="synthetic", api_base="http://192.168.1.55:8080/v1",
+        provider="openai_compatible",
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "unavailable"
+    assert preflight.retry_allowed is False
+    assert "unverified" in preflight.reason
+
+
+def test_stage05_loopback_compatible_backend_stays_local() -> None:
+    adapter = OpenAICompatibleLocalAdapter(
+        model="synthetic", api_base="http://127.0.0.1:8080/v1",
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "local_model"
+    assert preflight.retry_allowed is True
+
+
+def test_stage05_compatible_remote_dns_is_not_mislabelled_local() -> None:
+    adapter = OpenAICompatibleLocalAdapter(
+        model="synthetic", api_base="https://models.example.invalid/v1",
+        provider="openai_compatible",
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "unavailable"
+    assert preflight.available is False

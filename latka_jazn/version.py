@@ -1,3 +1,4 @@
+# v127.30.10 stage05: classify external inference separately from local model executor; gate compatible non-loopback endpoints.
 # v127.30.10: separate verified session quote projection from recovery orchestration.
 # V127.23.7: distinguish unmeasured SQLite status counters from observed zero.
 # V127.23: stream embedded ChatGPT HTML and guard technical content/music identities in Memory Rebuild Studio.

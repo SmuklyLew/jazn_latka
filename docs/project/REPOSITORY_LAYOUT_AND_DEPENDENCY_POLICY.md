@@ -152,6 +152,7 @@ MCP Streamable HTTP, a nie lokalnym LLM ani płatnym OpenAI API. Obowiązuje
 `remote_only`: cztery callable narzędzia, świeży `jazn_status`, autoryzacja,
 zgodna instancja i heartbeat. Brak zweryfikowanego remote oznacza
 `host_diagnostic`, bez local executor, ZIP, bootstrapu i handoffu.
+Nie dodawaj `openai` SDK do rdzenia tylko po to, aby host ChatGPT korzystał z Jaźni.
 ChatGPT host bridge nie wymaga `OPENAI_API_KEY`, ale wybór kanału nie dowodzi
 gotowości MCP ani zaakceptowanej phase-2 finalization.
 
