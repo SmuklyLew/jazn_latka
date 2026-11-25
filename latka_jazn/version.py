@@ -1,3 +1,4 @@
+# v127.30.10 stage05: guarded committed session projection and exact pointer recovery (unreleased).
 # v127.30.10 stage05: bind Studio admission to live daemon before transport (unreleased).
 # v127.30.10 stage05: propagate explicit daemon admission instance pins (unreleased).
 # v127.30.10 stage05: verify fresh installed Ollama metadata at inference boundary (unreleased).

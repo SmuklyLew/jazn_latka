@@ -8,7 +8,10 @@ import hashlib
 import json
 import os
 import re
+import sqlite3
 import uuid
+
+from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 
 from latka_jazn.core.json_types import mapping_object
 from latka_jazn.core.runtime_root import workspace_runtime_path
@@ -482,6 +485,7 @@ class RuntimeSessionStateStore:
         *,
         continuity_context: Any = None,
         turn_count: int | None = None,
+        projection_binding: Mapping[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         state_payload = state.to_dict()
         previous = self._previous_checkpoint(self.path, state.session_id)
@@ -509,6 +513,8 @@ class RuntimeSessionStateStore:
                 "memory recovery, or that a process remained alive."
             ),
         }
+        if projection_binding is not None:
+            checkpoint["host_finalization_projection"] = dict(projection_binding)
         checkpoint["checkpoint_sha256"] = _sha256_json(self._checkpoint_hash_material(checkpoint))
         return {**state_payload, "_continuity": checkpoint}, checkpoint
 
@@ -535,6 +541,59 @@ class RuntimeSessionStateStore:
         *,
         continuity_context: Any = None,
         turn_count: int | None = None,
+        projection_binding: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        # Shared pointer and per-session checkpoints are one cooperating writer
+        # domain. This lock is re-entrant for the host projection CAS.
+        try:
+            with runtime_sqlite_write_guard(self.latest_path, timeout_ms=2000):
+                return self._save_locked(state, continuity_context=continuity_context,
+                                         turn_count=turn_count, projection_binding=projection_binding)
+        except (sqlite3.Error, OSError) as exc:
+            self.last_save_status = {
+                "session_state_saved": False, "continuity_checkpoint_written": False,
+                "latest_session_pointer_saved": False, "session_state_save_error_type": type(exc).__name__,
+            }
+            return dict(self.last_save_status)
+
+    def repair_committed_projection_pointer(
+        self, state: RuntimeSessionState, checkpoint: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Re-publish an exact validated checkpoint, without advancing its generation.
+
+        The caller holds the shared checkpoint writer guard and has verified
+        the immutable host-finalization binding. Never overwrite another valid
+        or indeterminate primary checkpoint.
+        """
+        primary = self._path_for_session(state.session_id)
+        payload = {**state.to_dict(), "_continuity": dict(checkpoint)}
+        if primary.is_file():
+            existing, existing_checkpoint, error = self._load_path(primary)
+            if error or existing is None or existing_checkpoint != dict(checkpoint):
+                return {"session_state_saved": False, "status": "primary_projection_conflict"}
+        else:
+            _atomic_write_json(primary, payload)
+        if self.latest_path.is_file():
+            latest, latest_checkpoint, error = self._load_path(self.latest_path)
+            if error or latest is None:
+                return {"session_state_saved": False, "status": "latest_projection_unverified"}
+            if latest_checkpoint == dict(checkpoint):
+                return {"session_state_saved": True, "status": "already_published",
+                        "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256")}
+            candidate_time = _parse_utc(state.last_turn_at or state.created_at)
+            latest_time = _parse_utc(latest.last_turn_at or latest.created_at)
+            if candidate_time is None or latest_time is None:
+                return {"session_state_saved": False, "status": "latest_projection_time_unverified"}
+            if latest_time >= candidate_time:
+                return {"session_state_saved": True, "status": "newer_pointer_preserved",
+                        "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256")}
+        _atomic_write_json(self.latest_path, payload)
+        return {"session_state_saved": True, "status": "pointer_recovered",
+                "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256")}
+
+    def _save_locked(
+        self, state: RuntimeSessionState, *, continuity_context: Any = None,
+        turn_count: int | None = None, projection_binding: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         primary = self._path_for_session(state.session_id)
         self.path = primary
@@ -542,6 +601,7 @@ class RuntimeSessionStateStore:
             state,
             continuity_context=continuity_context,
             turn_count=turn_count,
+            projection_binding=projection_binding,
         )
         primary_saved = False
         latest_saved = False

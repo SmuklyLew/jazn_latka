@@ -157,6 +157,20 @@ def recover_committed_projection(service: FinalizationService, *, turn_id: str,
     projected = service.publish_committed_capture(capture)
     result: dict[str, Any] = {"acceptance_state": "already_committed", "recovery_only": True,
                             "settlement_authority": "durable_host_request_store", "capture": projected}
+    if ports is None:
+        # Use the same canonical projection ports as first finalization.
+        # No host candidate is accepted or generated again.
+        from latka_jazn.core.chat_command_contract import (
+            extract_chatgpt_host_visible_reply_payload, build_chatgpt_host_presentation_packet,
+            _commit_host_finalized_conversation_state, _commit_host_finalized_session_continuity,
+        )
+        from latka_jazn.core.host_finalization_transaction import HostFinalizationPorts
+        ports = HostFinalizationPorts(
+            extract_payload=extract_chatgpt_host_visible_reply_payload,
+            presentation=build_chatgpt_host_presentation_packet,
+            commit_conversation=_commit_host_finalized_conversation_state,
+            commit_session=_commit_host_finalized_session_continuity,
+        )
     if ports is not None:
         for name, commit in (("conversation", ports.commit_conversation), ("session", ports.commit_session)):
             try:

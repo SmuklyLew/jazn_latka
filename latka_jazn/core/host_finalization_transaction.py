@@ -352,7 +352,7 @@ def finalize_host_candidate(
         try:
             session_continuity = ports.commit_session(
                 config=config,
-                pending=pending,
+                pending=consumed,
                 binding=binding,
                 final_visible_text=reply["final_text"],
             )

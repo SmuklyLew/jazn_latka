@@ -761,49 +761,71 @@ def _commit_host_finalized_session_continuity(
     if not session_id:
         return {"saved": False, "status": "continuity_session_id_missing"}
     store = RuntimeSessionStateStore(config.root)
-    state = store.load_or_create(
-        session_id=session_id,
-        source_client=str(commit.get("source_client") or "chatgpt_host"),
-        no_carryover=False,
-    )
-    current_hash = _canonical_mapping_sha256(state.to_dict())
-    expected_before = str(commit.get("session_state_before_sha256") or "").strip().lower()
-    if not expected_before or current_hash != expected_before:
-        return {
-            "saved": False,
-            "status": "session_advanced_or_phase_one_checkpoint_missing",
-            "continuity_readiness": "degraded_continuity",
-            "replay_allowed": False,
-            "current_state_sha256": current_hash,
-            "expected_state_sha256": expected_before or None,
-            "truth_boundary": (
-                "A newer or non-matching durable session state was preserved instead of being overwritten by a delayed finalizer."
-            ),
+    from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
+
+    # The before-state comparison and checkpoint write must share the same
+    # cross-process writer guard as ordinary session persistence.
+    with runtime_sqlite_write_guard(store.latest_path, timeout_ms=2000):
+        state = store.load_or_create(
+            session_id=session_id,
+            source_client=str(commit.get("source_client") or "chatgpt_host"),
+            no_carryover=False,
+        )
+        projection_binding = {
+            "turn_id": binding.get("turn_id"), "trace_id": binding.get("trace_id"),
+            "continuity_commit_sha256": expected_commit_hash,
+            "final_text_sha256": hashlib.sha256(final_visible_text.encode("utf-8")).hexdigest(),
         }
-    task_state = json_object(commit.get("dialogue_task_state"))
-    state.update(
-        user_text=str(commit.get("user_text") or ""),
-        visible_text=final_visible_text,
-        intent=str(commit.get("detected_intent") or "unknown"),
-        route=str(commit.get("runtime_route") or "unknown"),
-        task_state=task_state,
-    )
-    try:
-        before_count = max(0, int(commit.get("turn_count_before") or 0))
-    except (TypeError, ValueError):
-        before_count = 0
-    save_status = store.save(
-        state,
-        continuity_context=json_object(commit.get("wake_state_runtime")),
-        turn_count=before_count + 1,
-    )
-    return {
-        "saved": bool(save_status.get("session_state_saved")),
-        "status": "saved" if save_status.get("session_state_saved") else "save_degraded",
-        "session_id": session_id,
-        "task_state_persisted": bool(task_state),
-        "save_status": save_status,
-    }
+        checkpoint = store.loaded_continuity
+        if checkpoint is not None and checkpoint.get("host_finalization_projection") == projection_binding:
+            repaired = store.repair_committed_projection_pointer(state, checkpoint)
+            return {"saved": repaired.get("session_state_saved") is True,
+                    "status": repaired.get("status"), "session_id": session_id,
+                    "save_status": repaired, "recovery_only": True}
+        current_hash = _canonical_mapping_sha256(state.to_dict())
+        expected_before = str(commit.get("session_state_before_sha256") or "").strip().lower()
+        if not expected_before or current_hash != expected_before:
+            return {
+                "saved": False,
+                "status": "session_advanced_or_phase_one_checkpoint_missing",
+                "continuity_readiness": "degraded_continuity",
+                "replay_allowed": False,
+                "current_state_sha256": current_hash,
+                "expected_state_sha256": expected_before or None,
+                "truth_boundary": (
+                    "A newer or non-matching durable session state was preserved instead of being overwritten by a delayed finalizer."
+                ),
+            }
+        task_state = json_object(commit.get("dialogue_task_state"))
+        state.update(
+            user_text=str(commit.get("user_text") or ""),
+            visible_text=final_visible_text,
+            intent=str(commit.get("detected_intent") or "unknown"),
+            route=str(commit.get("runtime_route") or "unknown"),
+            task_state=task_state,
+        )
+        # Use acceptance time, not recovery wall clock, so a historical repair
+        # cannot steal the latest-session pointer from a later accepted turn.
+        accepted_at = pending.get("consumed_at_utc")
+        if isinstance(accepted_at, str) and accepted_at:
+            state.last_turn_at = accepted_at
+        try:
+            before_count = max(0, int(commit.get("turn_count_before") or 0))
+        except (TypeError, ValueError):
+            before_count = 0
+        save_status = store.save(
+            state,
+            continuity_context=json_object(commit.get("wake_state_runtime")),
+            turn_count=before_count + 1,
+            projection_binding=projection_binding,
+        )
+        return {
+            "saved": bool(save_status.get("session_state_saved")),
+            "status": "saved" if save_status.get("session_state_saved") else "save_degraded",
+            "session_id": session_id,
+            "task_state_persisted": bool(task_state),
+            "save_status": save_status,
+        }
 
 
 def _commit_host_finalized_conversation_state(
