@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T03:58:22+00:00",
-  "updated_at_utc": "2026-11-25T03:58:22+00:00",
+  "generated_at_utc": "2026-11-25T04:13:21+00:00",
+  "updated_at_utc": "2026-11-25T04:13:21+00:00",
   "start_file": "run.py",
-  "file_count": 3937,
-  "static_file_count": 3937,
+  "file_count": 3938,
+  "static_file_count": 3938,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "d4dca0d332d7eb467ee1c2b3e136973a0a0d49e224522026e97a699b7d235345",
+      "sha256": "598bf3a83e854fb3316863ed16c8ae19efd6c52a2d3972cf29b2b514b5facf5f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 24123,
-      "sha256": "408c957b06764aeb73b8d05ec28d693966de2169e38793ef5beff40e70055bce",
+      "size_bytes": 25628,
+      "sha256": "65feb28020909699fa68c98d8e303b689da5361ba5464912b4961f2d5b7a1dcd",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -6556,8 +6556,8 @@
     },
     {
       "path": "latka_jazn/core/llm_route_resolver.py",
-      "size_bytes": 12259,
-      "sha256": "b85a54f9d64a65f870dfe83bb22d91e15877f6669b6231a20183583d02b8ed35",
+      "size_bytes": 12757,
+      "sha256": "bb8ebc9de05cf89e22cc2c615a421cc9f26ae56d167fc2f6867911142b0ea1ce",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33267,6 +33267,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_llm_route_independence.py",
+      "size_bytes": 4929,
+      "sha256": "cb5ce9b4df7240997a80f046fdb7d0385b3a205e162b6582b87e1a8e43a21273",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_startup_index_ollama_visible.py",
       "size_bytes": 7503,
       "sha256": "c1793bc1938dfe563b252d208b445faa88ae517b8c4e918c6e16d39e83ddb96c",
@@ -35230,8 +35239,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3193756,
-      "sha256": "6839fc4610586b311fdd754a4fa1b77c59c3b614b8fd12bc1293b1585aa45e4a",
+      "size_bytes": 3200984,
+      "sha256": "a90975037c9e4b45cebc7779ec3910e2edbfcbeecfe9c34c320e9a36abadfb48",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
