@@ -6,6 +6,8 @@ from time import monotonic, sleep
 from typing import Any
 
 import pytest
+
+pytest.importorskip("PySide6")
 from PySide6.QtWidgets import QMessageBox
 
 from tools.jazn_run_studio.chat import ChatClient
