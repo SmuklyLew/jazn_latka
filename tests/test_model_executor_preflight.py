@@ -166,4 +166,9 @@ def test_stage05_unapproved_openai_preflight_is_unavailable_without_network() ->
     assert preflight.available is False
     assert preflight.retry_allowed is False
     assert preflight.reason == "paid_openai_not_allowed"
-    assert adapter.describe()["probe_state"] == "not_probed"
+    # AdapterContract normalizes unauthorized/unconfigured adapters to not_configured.
+    status = adapter.describe()
+    assert status["probe_state"] == "not_configured"
+    assert status["configured"] is False
+    assert status["can_attempt_model_guided_speech"] is False
+    assert status["endpoint_reachable"] is None
