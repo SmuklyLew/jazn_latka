@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3699,
+  "active_definition_count": 3703,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71876,6 +71876,82 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 21
+    },
+    "tests/test_stage05_studio_presubmit_hash.py::test_hash_is_persisted_before_transport_write_and_survives_restart": {
+      "path": "tests/test_stage05_studio_presubmit_hash.py",
+      "name": "test_hash_is_persisted_before_transport_write_and_survives_restart",
+      "purpose": "Hash is persisted before transport write and survives restart",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_stage05_studio_presubmit_hash.py::test_bound_checkpoint_rejects_substituted_final_receipt": {
+      "path": "tests/test_stage05_studio_presubmit_hash.py",
+      "name": "test_bound_checkpoint_rejects_substituted_final_receipt",
+      "purpose": "Bound checkpoint rejects substituted final receipt",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 47
+    },
+    "tests/test_stage05_studio_presubmit_hash.py::test_bound_checkpoint_requires_matching_independent_failure_hash": {
+      "path": "tests/test_stage05_studio_presubmit_hash.py",
+      "name": "test_bound_checkpoint_requires_matching_independent_failure_hash",
+      "purpose": "Bound checkpoint requires matching independent failure hash",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_stage05_studio_presubmit_hash.py::test_corrupt_checkpoint_hash_refuses_restore": {
+      "path": "tests/test_stage05_studio_presubmit_hash.py",
+      "name": "test_corrupt_checkpoint_hash_refuses_restore",
+      "purpose": "Corrupt checkpoint hash refuses restore",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "StudioError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 86
     },
     "tests/test_stage05_studio_terminal_failure_async_qt.py::test_terminal_failure_validation_runs_off_gui_and_releases_client_lock": {
       "path": "tests/test_stage05_studio_terminal_failure_async_qt.py",
