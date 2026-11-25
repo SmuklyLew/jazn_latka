@@ -71373,11 +71373,11 @@
       "path": "tests/test_stage05_model_transport_boundary.py",
       "name": "test_ollama_http_failure_opens_shared_model_circuit_without_replay",
       "purpose": "Ollama http failure opens shared model circuit without replay",
-      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 12,
+      "assertion_count": 14,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -71407,7 +71407,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 89
+      "line": 112
     },
     "tests/test_stage05_ollama_cloud_boundary.py::test_cloud_selector_cannot_reach_either_ollama_adapter": {
       "path": "tests/test_stage05_ollama_cloud_boundary.py",
