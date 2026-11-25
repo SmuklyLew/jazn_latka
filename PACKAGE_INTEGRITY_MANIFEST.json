@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T06:08:55+00:00",
-  "updated_at_utc": "2026-11-25T06:08:55+00:00",
+  "generated_at_utc": "2026-11-25T06:37:46+00:00",
+  "updated_at_utc": "2026-11-25T06:37:46+00:00",
   "start_file": "run.py",
-  "file_count": 3956,
-  "static_file_count": 3956,
+  "file_count": 3957,
+  "static_file_count": 3957,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "a7c73afbbcde6487184a24f3970c558b9bdb72bfbb51dd17823a03db389eb673",
+      "sha256": "9e3a284bb37ea12877f05f435f789aa1bb657a935454e8c230959827fad5467c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 40316,
-      "sha256": "5c1b11e2610949038ca88e982c940f1028b124fffe367eddd4a58e659aa6a70e",
+      "size_bytes": 41060,
+      "sha256": "6036bc8187b695dbd1751feb201db37855ee0235af042b03d92a74b2cd42f401",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20361,6 +20361,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-pyright-5102e622b7e0/test_stage05_model_transport_boundary.py",
+      "size_bytes": 4357,
+      "sha256": "fcb4af54b61bb624649d36fd077af1182e883232e2ce3d1951e1aaa8e630b215",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127.30.10-stage05-readiness-no-replay-e291870dd6c8/test_runtime_stability_package_smoke.py",
       "size_bytes": 7649,
       "sha256": "9c8ef8a68dc1248e2e1859cc56e5f764dd819083c3088f9023171443e909e5a6",
@@ -33394,8 +33403,8 @@
     },
     {
       "path": "tests/test_stage05_model_transport_boundary.py",
-      "size_bytes": 4357,
-      "sha256": "fcb4af54b61bb624649d36fd077af1182e883232e2ce3d1951e1aaa8e630b215",
+      "size_bytes": 4410,
+      "sha256": "0a69d6aae277c1905bf2f89b857407ac7cdb6d15005215e13103bc16d60e9846",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35402,7 +35411,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 3222809,
-      "sha256": "bdd0f41949f77dfe0b35f3abb9b19b469bf5098c4e450f65fb421a5f9dc5fcec",
+      "sha256": "fe502aff6a672c8443d3a273a8537a8878267b88eebc9ca4ea87f94f9ca14b1e",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
