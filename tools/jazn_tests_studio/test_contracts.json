@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3643,
+  "active_definition_count": 3645,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70744,6 +70744,48 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 164
+    },
+    "tests/test_stage05_ollama_runtime_first.py::test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable": {
+      "path": "tests/test_stage05_ollama_runtime_first.py",
+      "name": "test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable",
+      "purpose": "Ollama model probe is not attempted if daemon is unavailable",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 23
+    },
+    "tests/test_stage05_ollama_runtime_first.py::test_ollama_unavailable_is_a_route_failure_after_runtime_readiness": {
+      "path": "tests/test_stage05_ollama_runtime_first.py",
+      "name": "test_ollama_unavailable_is_a_route_failure_after_runtime_readiness",
+      "purpose": "Ollama unavailable is a route failure after runtime readiness",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.daemon_autostart"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
     },
     "tests/test_stage05_transport_circuit_isolation.py::test_failed_model_transport_does_not_open_daemon_transport_circuit": {
       "path": "tests/test_stage05_transport_circuit_isolation.py",
