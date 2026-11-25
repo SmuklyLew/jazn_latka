@@ -11,6 +11,7 @@ from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 from .model_http_transport import open_local_model_request as urlopen
+from latka_jazn.core.ollama_inference_policy import ollama_cloud_model_name, ollama_model_identity, ollama_remote_model_entry
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
@@ -87,6 +88,7 @@ class LocalLlmAdapter:
         self._probe_state = "not_probed" if self.model else "not_configured"
         self._last_probe_error: str | None = None
         self._last_generation_succeeded = False
+        self._cloud_model_detected = False
         self._last_generation: dict[str, Any] = {}
         self._performance_samples: list[dict[str, float]] = []
 
@@ -161,6 +163,13 @@ class LocalLlmAdapter:
         )
 
     def probe(self) -> dict:
+        if ollama_cloud_model_name(self.model):
+            self._cloud_model_detected = True
+            self._probe_state = "probed_fail"
+            self._last_probe_error = "ollama_cloud_model_not_authorized"
+            payload = self.describe()
+            payload["probe_ok"] = False
+            return payload
         if not self.model:
             self._endpoint_reachable = None
             self._probe_state = "not_configured"
@@ -173,10 +182,24 @@ class LocalLlmAdapter:
             if not isinstance(data, dict) or not isinstance(data.get("models"), list):
                 raise OllamaResponseContractError("ollama_tags_response_invalid")
             models = data["models"]
+            blocked = {
+                ollama_model_identity(str(item.get(field)))
+                for item in models if isinstance(item, dict) and ollama_remote_model_entry(item)
+                for field in ("name", "model") if item.get(field)
+            }
+            if ollama_model_identity(self.model) in blocked:
+                self._cloud_model_detected = True
+                self._endpoint_reachable = True
+                self._probe_state = "probed_fail"
+                self._last_probe_error = "ollama_cloud_model_not_authorized"
+                payload = self.describe()
+                payload["probe_ok"] = False
+                payload["configured_model_installed"] = False
+                return payload
             names = sorted({
                 str(item.get("name") or item.get("model") or "").strip()
                 for item in (models if isinstance(models, list) else [])
-                if isinstance(item, dict)
+                if isinstance(item, dict) and not ollama_remote_model_entry(item)
             } - {""})
             installed = self.model in names or (":" not in self.model and f"{self.model}:latest" in names)
             self._endpoint_reachable = True
@@ -543,6 +566,11 @@ class LocalLlmAdapter:
         )
 
     def generate(self, request: ModelAdapterRequest) -> ModelAdapterResponse:
+        if self._cloud_model_detected or ollama_cloud_model_name(self.model):
+            self._last_generation_succeeded = False
+            self._last_probe_error = "ollama_cloud_model_not_authorized"
+            return ModelAdapterResponse(text="", provider="ollama", model=self.model,
+                                        status=self._last_probe_error, adapter_id=self.name)
         if not self.model:
             return ModelAdapterResponse(
                 text="",

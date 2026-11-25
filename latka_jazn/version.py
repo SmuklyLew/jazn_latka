@@ -1,3 +1,4 @@
+# v127.30.10 stage05: block known Ollama cloud selectors and remote aliases in discovery (unreleased).
 # v127.30.10 stage05: constrain HTTP inference egress and deny redirects (unreleased).
 # v127.30.10 stage05: require committed host capture before public daemon acceptance ACK (unreleased).
 # v127.30.10 stage05: share model circuit across compatible, Responses and SIWC transports (unreleased).

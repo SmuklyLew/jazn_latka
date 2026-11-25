@@ -5,6 +5,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 from .model_http_transport import open_local_model_request as urlopen
+from latka_jazn.core.ollama_inference_policy import ollama_cloud_model_name
 
 from .adapter_contract import AdapterContract, describe_with_contract
 from .base import AdapterStatusSnapshot, ModelAdapterRequest, ModelAdapterResponse
@@ -96,6 +97,10 @@ class OpenAICompatibleLocalAdapter:
         return ["/responses", "/chat/completions"]
 
     def probe(self, *, endpoint: str | None = None) -> AdapterStatusSnapshot:
+        if self.provider == "ollama" and ollama_cloud_model_name(self.model):
+            self._probe_state = "probed_fail"
+            self._last_probe_error = "ollama_cloud_model_not_authorized"
+            return self._status_snapshot()
         if not self.model or not self.api_base:
             self._probe_state = "not_configured"
             return self._status_snapshot()
@@ -118,6 +123,10 @@ class OpenAICompatibleLocalAdapter:
         return self._status_snapshot()
 
     def generate(self, request: ModelAdapterRequest) -> ModelAdapterResponse:
+        if self.provider == "ollama" and ollama_cloud_model_name(self.model):
+            self._last_generation_succeeded = False
+            self._last_probe_error = "ollama_cloud_model_not_authorized"
+            return self._response(status=self._last_probe_error)
         if not self.model or not self.api_base:
             return self._response(status="not_configured")
         attempts: list[dict[str, Any]] = []

@@ -5,7 +5,10 @@ import os
 from dataclasses import asdict, dataclass
 from typing import Any, Mapping
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+from latka_jazn.core.ollama_inference_policy import (
+    ollama_cloud_model_name, ollama_model_identity, ollama_remote_model_entry,
+)
 
 from latka_jazn.core.runtime_environment import (
     CHATGPT_ADAPTER,
@@ -78,6 +81,12 @@ def _ollama_base_url(value: str) -> str:
     return base or "http://127.0.0.1:11434"
 
 
+def urlopen(request: Request, *, timeout: float) -> Any:
+    # Lazy import avoids resolver/factory initialization cycles.
+    from latka_jazn.model_adapters.model_http_transport import open_local_model_request
+    return open_local_model_request(request, timeout=timeout)
+
+
 def _http_json(url: str, *, timeout_seconds: float) -> dict[str, Any]:
     request = Request(url, headers={"Accept": "application/json"}, method="GET")
     with urlopen(request, timeout=timeout_seconds) as response:
@@ -85,7 +94,7 @@ def _http_json(url: str, *, timeout_seconds: float) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
-def _model_names(payload: dict[str, Any]) -> list[str]:
+def _model_names(payload: dict[str, Any], blocked: set[str]) -> list[str]:
     result: list[str] = []
     models = payload.get("models")
     if isinstance(models, list):
@@ -93,6 +102,12 @@ def _model_names(payload: dict[str, Any]) -> list[str]:
             if not isinstance(item, dict):
                 continue
             name = str(item.get("model") or item.get("name") or "").strip()
+            if ollama_remote_model_entry(item):
+                for field in ("name", "model"):
+                    alias = str(item.get(field) or "").strip()
+                    if alias:
+                        blocked.add(ollama_model_identity(alias))
+                continue
             if name and name not in result:
                 result.append(name)
     return result
@@ -125,21 +140,26 @@ def probe_ollama(
     installed: list[str] = []
     errors: list[str] = []
     endpoint_reachable = False
+    blocked: set[str] = set()
     for path, target in (("/api/ps", running), ("/api/tags", installed)):
         try:
             data = _http_json(base_url + path, timeout_seconds=timeout_seconds)
-            target.extend(_model_names(data))
+            target.extend(_model_names(data, blocked))
             endpoint_reachable = True
         except HTTPError as exc:
             errors.append(f"{path}:http_{exc.code}")
         except (URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
             errors.append(f"{path}:unavailable")
 
+    running = [name for name in running if ollama_model_identity(name) not in blocked]
+    installed = [name for name in installed if ollama_model_identity(name) not in blocked]
     union = list(dict.fromkeys([*running, *installed]))
     selected = ""
     reason = "ollama_unavailable"
     if configured_model:
-        if configured_model in union:
+        if ollama_cloud_model_name(configured_model) or ollama_model_identity(configured_model) in blocked:
+            reason = "ollama_cloud_model_not_authorized"
+        elif configured_model in union:
             selected = configured_model
             reason = "configured_model_available"
         elif endpoint_reachable:
