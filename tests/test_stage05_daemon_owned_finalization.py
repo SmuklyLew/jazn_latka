@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 import threading
-from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -25,7 +24,7 @@ def test_daemon_serializes_public_phase2(
     server = object.__new__(daemon.JaznDaemonServer)
     server.config = JaznConfig(root=tmp_path)
     server.daemon_instance_id = "instance"
-    server.state = daemon.DaemonState(root=str(tmp_path), host="127.0.0.1", port=8787)
+    server.state = daemon.DaemonRuntimeState(root=str(tmp_path), host="127.0.0.1", port=8787)
     server._chat_jobs_lock = threading.RLock()
     server.shutdown_requested = threading.Event()
     digest = "a" * 64
@@ -33,6 +32,7 @@ def test_daemon_serializes_public_phase2(
         request_id="r", user_text="synthetic", input_field="message",
         session_id="s", no_carryover=False, client="chatgpt_daemon_bridge",
         status="awaiting_host_finalization", result={"ok": True},
+        phase_result_ready_at_utc="2026-11-25T16:00:00+00:00",
         host_turn_id="t", host_trace_id="x", host_request_contract_hash=digest,
     )
     server.chat_jobs = {"r": job}
