@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T04:59:08+00:00",
-  "updated_at_utc": "2026-11-25T04:59:08+00:00",
+  "generated_at_utc": "2026-11-25T05:14:51+00:00",
+  "updated_at_utc": "2026-11-25T05:14:51+00:00",
   "start_file": "run.py",
-  "file_count": 3944,
-  "static_file_count": 3944,
+  "file_count": 3946,
+  "static_file_count": 3946,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "eae687dd5416f55792e9d808b31c12c05df14e555568a87e40cc733e8a5c2d22",
+      "sha256": "2526b2948929af292f5b06118fa9bbf1912fc5fbb42b34535ecbedfb515a762b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 30714,
-      "sha256": "8118e544f0ab6be095c182599f573d431c3289cee217b2c4f0ac1c6828280015",
+      "size_bytes": 32716,
+      "sha256": "996ccb49aac572392771a2e7b81c0aa9e38ed25af35171b2126cc5749fc38b6c",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -5836,8 +5836,8 @@
     },
     {
       "path": "latka_jazn/core/conversation_entrypoint_contract.py",
-      "size_bytes": 4704,
-      "sha256": "8be6df357128b1081a87815535fc152ab2257b478eddff65e0b366bb32f69e61",
+      "size_bytes": 4765,
+      "sha256": "4574661891e64d0922e409de79ae66e0d10928eec7024b7805f7733f06a481c6",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11848,8 +11848,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 30055,
-      "sha256": "0892a1a24737539e95b0af6c623807dd559ea6bef8a507f81df78b3f6bb66b86",
+      "size_bytes": 30173,
+      "sha256": "1546f67edf75308efc91c5b0e569b509c968c16395a15efa2f13ebbe3ca8bfe1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20316,6 +20316,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-entrypoint-auto-contract-26cf5bd47b3d/test_conversation_runtime_orchestration_convergence.py",
+      "size_bytes": 5808,
+      "sha256": "093e49ced9d10d6adccc9cd0aa18fcf5fe2b223ee93f02ea300f813c388f9e57",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v12719-pre-pyright/test_ollama_self_state_validated_retry.py",
       "size_bytes": 7292,
       "sha256": "9578e6b4276fbdd43fa6efa06050e76c8c0f55580d486072f1ccde07813a25d2",
@@ -28606,8 +28615,8 @@
     },
     {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
-      "size_bytes": 5808,
-      "sha256": "093e49ced9d10d6adccc9cd0aa18fcf5fe2b223ee93f02ea300f813c388f9e57",
+      "size_bytes": 6695,
+      "sha256": "66bf2ba9eae8d8ee89885af7b90c2cd83bf84ff8664e96d31e17d73643b474e8",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33330,6 +33339,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_transport_circuit_isolation.py",
+      "size_bytes": 2281,
+      "sha256": "44a0a6fc3edcae1229cd3059aba8f40a976eef4ba5f83682ef8c77c2c1710b55",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_startup_index_ollama_visible.py",
       "size_bytes": 7503,
       "sha256": "c1793bc1938dfe563b252d208b445faa88ae517b8c4e918c6e16d39e83ddb96c",
@@ -35293,8 +35311,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3210474,
-      "sha256": "c6090e04d36108322d842220a3989864aaea575093be179e37dae64a212e42fa",
+      "size_bytes": 3213296,
+      "sha256": "36921799bb2532554f52b0f5eb9cb3051b8089a45ff97902f076432b301b2267",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
