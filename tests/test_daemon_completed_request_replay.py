@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
+from typing import TypedDict
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon import (
@@ -15,6 +16,13 @@ from latka_jazn.core.runtime_daemon import (
     JaznDaemonServer,
     daemon_chat_request_fingerprint,
 )
+
+
+class _Request(TypedDict):
+    user_text: str
+    session_id: str
+    no_carryover: bool
+    client: str
 
 
 def _server(root: Path) -> JaznDaemonServer:
@@ -32,12 +40,12 @@ def test_completed_request_tombstone_survives_multiple_daemon_restarts(
 ) -> None:
     root = tmp_path / "synthetic_system"
     root.mkdir()
-    request = dict(
-        user_text="CANARY-DO-NOT-PERSIST",
-        session_id="synthetic-session",
-        no_carryover=False,
-        client="daemon_http",
-    )
+    request: _Request = {
+        "user_text": "CANARY-DO-NOT-PERSIST",
+        "session_id": "synthetic-session",
+        "no_carryover": False,
+        "client": "daemon_http",
+    }
     request_id = "synthetic-completed-request"
     fingerprint = daemon_chat_request_fingerprint(
         **request,
@@ -76,13 +84,17 @@ def test_completed_request_tombstone_survives_multiple_daemon_restarts(
             assert recovered.status == "recovered_after_restart"
             assert recovered.recovery_disposition == "completed_request_result_unavailable"
             assert recovered.snapshot()["ok"] is False
+            summary = daemon.chat_job_summary()
+            assert summary["terminal_failure_total"] == 0
+            assert summary["completed_request_tombstones_current"] == 1
             again, created, error = daemon.submit_chat_job(
                 request_id=request_id, input_field="message", **request
             )
             assert again is recovered and created is False and error is None
+            changed_request: _Request = {**request, "user_text": "different"}
             different, created, conflict = daemon.submit_chat_job(
                 request_id=request_id, input_field="message",
-                **{**request, "user_text": "different"},
+                **changed_request,
             )
             assert different is None and created is False
             assert conflict is not None and conflict["error_code"] == "request_id_conflict"

@@ -1524,6 +1524,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             elif previous_status == "failed":
                 self.state.chat_job_failed_count += 1
                 self._reconcile_host_finalization_job_locked(recovered)
+            elif previous_status == "completed":
+                # A tombstone blocks replay but is not a new failure or a
+                # newly completed turn in this daemon instance.
+                pass
             else:
                 self.state.chat_job_recovered_count += 1
         if self.chat_jobs:
@@ -1665,6 +1669,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "execution_timeout_total": self.state.chat_job_execution_timeout_count,
                 "cancelled_total": self.state.chat_job_cancelled_count,
                 "recovered_total": self.state.chat_job_recovered_count,
+                "completed_request_tombstones_current": sum(
+                    job.recovery_disposition == "completed_request_result_unavailable"
+                    for job in self.chat_jobs.values()
+                ),
                 "host_finalization_expired_total": self.state.chat_job_host_finalization_expired_count,
                 "host_finalization_rejected_total": self.state.chat_job_host_finalization_rejected_count,
                 "host_finalization_replay_rejected_total": self.state.chat_job_host_finalization_replay_rejected_count,
