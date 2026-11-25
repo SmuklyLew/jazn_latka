@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3667,
+  "active_definition_count": 3671,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71136,6 +71136,26 @@
       "description_source": "source_identity",
       "line": 21
     },
+    "tests/test_stage05_public_daemon_ack_authority.py::test_public_accepted_ack_requires_durable_capture": {
+      "path": "tests/test_stage05_public_daemon_ack_authority.py",
+      "name": "test_public_accepted_ack_requires_durable_capture",
+      "purpose": "Public accepted ack requires durable capture",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
     "tests/test_stage05_public_phase2_authority.py::test_public_entrypoints_require_same_live_authority": {
       "path": "tests/test_stage05_public_phase2_authority.py",
       "name": "test_public_entrypoints_require_same_live_authority",
@@ -71199,6 +71219,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 91
+    },
+    "tests/test_stage05_remaining_model_circuits.py::test_model_transport_circuit_survives_adapter_reconstruction": {
+      "path": "tests/test_stage05_remaining_model_circuits.py",
+      "name": "test_model_transport_circuit_survives_adapter_reconstruction",
+      "purpose": "Model transport circuit survives adapter reconstruction",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_stage05_remaining_model_circuits.py::test_compatible_transport_does_not_replay_uncertain_or_denied_post": {
+      "path": "tests/test_stage05_remaining_model_circuits.py",
+      "name": "test_compatible_transport_does_not_replay_uncertain_or_denied_post",
+      "purpose": "Compatible transport does not replay uncertain or denied post",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 62
+    },
+    "tests/test_stage05_remaining_model_circuits.py::test_compatible_explicit_unsupported_endpoint_can_negotiate": {
+      "path": "tests/test_stage05_remaining_model_circuits.py",
+      "name": "test_compatible_explicit_unsupported_endpoint_can_negotiate",
+      "purpose": "Compatible explicit unsupported endpoint can negotiate",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
     },
     "tests/test_stage05_runtime_identity_authority.py::test_disabled_autostart_never_authorizes_conversation_without_daemon": {
       "path": "tests/test_stage05_runtime_identity_authority.py",
