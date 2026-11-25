@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3637,
+  "active_definition_count": 3640,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -51645,7 +51645,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 46
+      "line": 48
     },
     "tests/test_model_executor_preflight.py::test_null_adapter_is_unavailable_without_fake_attempt": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51669,7 +51669,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 59
     },
     "tests/test_model_executor_preflight.py::test_non_language_voice_adapter_is_unavailable": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51693,7 +51693,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 66
+      "line": 68
     },
     "tests/test_model_executor_preflight.py::test_non_object_adapter_status_is_unavailable": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51717,7 +51717,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 73
+      "line": 75
     },
     "tests/test_model_executor_preflight.py::test_configured_local_model_is_only_retry_eligible_executor": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51741,7 +51741,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 85
+      "line": 87
     },
     "tests/test_model_executor_preflight.py::test_stage05_openai_api_is_external_not_a_local_retry_executor": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51765,7 +51765,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 93
+      "line": 95
     },
     "tests/test_model_executor_preflight.py::test_stage05_siwc_is_distinct_external_oauth_not_chatgpt_host": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51791,7 +51791,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 105
+      "line": 107
     },
     "tests/test_model_executor_preflight.py::test_stage05_unverified_lan_compatible_backend_fails_closed": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51815,7 +51815,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 116
+      "line": 118
     },
     "tests/test_model_executor_preflight.py::test_stage05_loopback_compatible_backend_stays_local": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51839,7 +51839,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 129
     },
     "tests/test_model_executor_preflight.py::test_stage05_compatible_remote_dns_is_not_mislabelled_local": {
       "path": "tests/test_model_executor_preflight.py",
@@ -51863,7 +51863,35 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 136
+      "line": 138
+    },
+    "tests/test_model_executor_preflight.py::test_stage05_deceptive_localhost_suffix_is_never_trusted": {
+      "path": "tests/test_model_executor_preflight.py",
+      "name": "test_stage05_deceptive_localhost_suffix_is_never_trusted",
+      "purpose": "Stage05 deceptive localhost suffix is never trusted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter",
+        "latka_jazn.model_adapters.null_model_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter",
+        "latka_jazn.model_adapters.openai_responses_adapter",
+        "latka_jazn.model_adapters.siwc_plan_usage_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
     },
     "tests/test_model_guided_speech_boundaries.py::test_non_object_adapter_description_fails_closed": {
       "path": "tests/test_model_guided_speech_boundaries.py",
@@ -70632,6 +70660,42 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 138
+    },
+    "tests/test_stage05_llm_route_independence.py::test_stage05_local_failure_never_activates_paid_api_auto_fallback": {
+      "path": "tests/test_stage05_llm_route_independence.py",
+      "name": "test_stage05_local_failure_never_activates_paid_api_auto_fallback",
+      "purpose": "Stage05 local failure never activates paid api auto fallback",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_environment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 147
+    },
+    "tests/test_stage05_llm_route_independence.py::test_stage05_forced_local_failure_is_not_external_replay": {
+      "path": "tests/test_stage05_llm_route_independence.py",
+      "name": "test_stage05_forced_local_failure_is_not_external_replay",
+      "purpose": "Stage05 forced local failure is not external replay",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_environment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 164
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
