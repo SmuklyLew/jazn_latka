@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T20:14:11+00:00",
-  "updated_at_utc": "2026-11-25T20:14:11+00:00",
+  "generated_at_utc": "2026-11-25T20:23:17+00:00",
+  "updated_at_utc": "2026-11-25T20:23:17+00:00",
   "start_file": "run.py",
-  "file_count": 3986,
-  "static_file_count": 3986,
+  "file_count": 3988,
+  "static_file_count": 3988,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "abefef3d91fdc3286ab1ace81b52191a7c7387dff778e95e70c735bdf96b100e",
+      "sha256": "bdff3783077e8899a5529a449e77e6946d8b4b6b819d73df45eb1e78da293544",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 68007,
-      "sha256": "417b1abb1aa3b29f4e16079fd517a61afebdd31dea2b2f05ad15da5522daa308",
+      "size_bytes": 68880,
+      "sha256": "078c3f68d316ae6f27d44d95e32a62a592d02a7f12a95cdee042460366a47836",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2767,8 +2767,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/STAGE05_INGRESS_RESILIENCE_AUDIT.md",
-      "size_bytes": 22506,
-      "sha256": "e3690df02e5d42130e0dbdfe0b7a95e1c68f96856f0209d9a2da27cae391a902",
+      "size_bytes": 23379,
+      "sha256": "ebdb4e79145949083d15f2e703e93be2ec8634758f419a76c2349cf731e86d45",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20442,6 +20442,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-qt-optional-2f931225abea/test_stage05_studio_terminal_failure_async_qt.py",
+      "size_bytes": 2989,
+      "sha256": "fe3cd592b1c79d8dcc750e7fa37c6b7bba7655181b74d8cc7091d1dacc8139f3",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v127.30.10-stage05-readiness-no-replay-e291870dd6c8/test_runtime_stability_package_smoke.py",
       "size_bytes": 7649,
       "sha256": "9c8ef8a68dc1248e2e1859cc56e5f764dd819083c3088f9023171443e909e5a6",
@@ -33691,8 +33700,17 @@
     },
     {
       "path": "tests/test_stage05_studio_terminal_failure_async_qt.py",
-      "size_bytes": 2989,
-      "sha256": "fe3cd592b1c79d8dcc750e7fa37c6b7bba7655181b74d8cc7091d1dacc8139f3",
+      "size_bytes": 3021,
+      "sha256": "6cef0cd72b6618662f9e7ae4b43754b71143ef1e345e97456d8bce1a3257feb1",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
+      "path": "tests/test_stage05_terminal_failure_recheck_concurrency.py",
+      "size_bytes": 2351,
+      "sha256": "b444f066b4844f76a73566f76b3fa424c033ee88bf7b4431745b16d8d2f72132",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35671,8 +35689,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3259960,
-      "sha256": "a78b40c4abd211753174e24e41dc636994ca61aae91f6099290c33e88a7e793c",
+      "size_bytes": 3260748,
+      "sha256": "1e9bb804d34a95d65f3e86be8b7d92ed6229d2837f0475791a800fc4242fe2a5",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
