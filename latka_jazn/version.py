@@ -1,3 +1,4 @@
+# v127.30.10 stage05: require committed host capture before public daemon acceptance ACK (unreleased).
 # v127.30.10 stage05: share model circuit across compatible, Responses and SIWC transports (unreleased).
 # v127.30.10 stage05: runtime-first CLI and isolated PC acceptance preparation (unreleased).
 # v127.30.10 stage05: common live phase-2 authorization for public ingress (unreleased).

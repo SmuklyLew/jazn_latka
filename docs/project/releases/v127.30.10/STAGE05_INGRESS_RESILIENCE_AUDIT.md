@@ -43,3 +43,6 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 
 ### Pozostałe adaptery transportowe
 - OpenAI-compatible, OpenAI Responses i SIWC mają wspólny process-local circuit per root/provider/endpoint/model; syntetyczne testy bez sieci. Compatible nie ponawia POST przy niejednoznacznym wyniku ani odmowie auth, z zachowaniem negocjacji 404/405. SIWC partial stream nie jest sukcesem. Windows Responses wyłącza redirect. CI pending. Pełna autoryzacja endpointów, cloud, pozostałych redirectów, atomowość phase-2 i realny odbiór nadal OPEN.
+
+### Publiczny ACK daemona
+- /chat-finalization accepted wymaga teraz odczytu kanonicznego consumed capture z walidacją envelope/projection i zgodności całej lineage pod lockiem zadania. Brak zapisu nie może przez ten endpoint zakończyć joba. To atomowa kontrola ACK względem przejścia joba, nie atomowa autoryzacja całej transakcji hosta. CI pending, pozostałe ryzyka niezamknięte.

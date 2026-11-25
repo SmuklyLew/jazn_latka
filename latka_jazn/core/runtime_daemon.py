@@ -2679,6 +2679,59 @@ class JaznDaemonServer(ThreadingHTTPServer):
             return True
         return changed
 
+    def note_public_host_finalization(
+        self,
+        *,
+        request_id: str,
+        turn_id: str,
+        trace_id: str,
+        request_contract_hash: str,
+        outcome: str,
+        reason: str,
+        terminal: bool = False,
+    ) -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
+        """A public ACK cannot manufacture an accepted finalization.
+
+        Hold the job lock across the durable proof check and the existing
+        state transition. This does not replace the finalization transaction.
+        """
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError,
+            read_committed_host_request,
+        )
+
+        with self._chat_jobs_lock:
+            if str(outcome or "").strip().lower() == "accepted":
+                job = self.chat_jobs.get(str(request_id))
+                if job is None:
+                    return None, {"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}
+                try:
+                    record = read_committed_host_request(self.config.root, turn_id=turn_id)
+                except (HostRequestStoreError, OSError, RuntimeError, ValueError, TypeError):
+                    return job, {
+                        "ok": False, "error_code": "host_finalization_committed_capture_required",
+                        "request_id": request_id,
+                    }
+                binding = record.get("binding")
+                digest = str(request_contract_hash or "").strip().lower()
+                if not (
+                    isinstance(binding, dict)
+                    and digest
+                    and record.get("request_contract_hash") == digest
+                    and binding.get("daemon_request_id") == request_id
+                    and binding.get("turn_id") == turn_id
+                    and binding.get("trace_id") == trace_id
+                ):
+                    return job, {
+                        "ok": False, "error_code": "host_finalization_committed_binding_mismatch",
+                        "request_id": request_id,
+                    }
+            return self.note_host_finalization(
+                request_id=request_id, turn_id=turn_id, trace_id=trace_id,
+                request_contract_hash=request_contract_hash, outcome=outcome,
+                reason=reason, terminal=terminal,
+            )
+
     def note_host_finalization(
         self,
         *,
@@ -3867,7 +3920,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                     status=HTTPStatus.BAD_REQUEST,
                 )
                 return
-            job, error = self._daemon_server().note_host_finalization(
+            job, error = self._daemon_server().note_public_host_finalization(
                 request_id=str(payload_in["request_id"]),
                 turn_id=str(payload_in["turn_id"]),
                 trace_id=str(payload_in["trace_id"]),
