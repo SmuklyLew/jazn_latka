@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3704,
+  "active_definition_count": 3708,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71645,6 +71645,84 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 49
+    },
+    "tests/test_stage05_pinned_daemon_admission.py::test_replacement_daemon_refuses_pinned_submit_before_job_lookup": {
+      "path": "tests/test_stage05_pinned_daemon_admission.py",
+      "name": "test_replacement_daemon_refuses_pinned_submit_before_job_lookup",
+      "purpose": "Replacement daemon refuses pinned submit before job lookup",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
+    },
+    "tests/test_stage05_pinned_daemon_admission.py::test_matching_pin_admits_once": {
+      "path": "tests/test_stage05_pinned_daemon_admission.py",
+      "name": "test_matching_pin_admits_once",
+      "purpose": "Matching pin admits once",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_stage05_pinned_daemon_admission.py::test_pinned_chat_transport_does_not_accept_replacement_result": {
+      "path": "tests/test_stage05_pinned_daemon_admission.py",
+      "name": "test_pinned_chat_transport_does_not_accept_replacement_result",
+      "purpose": "Pinned chat transport does not accept replacement result",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_stage05_pinned_daemon_admission.py::test_jsonl_forwards_explicit_pin_or_refuses_malformed": {
+      "path": "tests/test_stage05_pinned_daemon_admission.py",
+      "name": "test_jsonl_forwards_explicit_pin_or_refuses_malformed",
+      "purpose": "Jsonl forwards explicit pin or refuses malformed",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
     },
     "tests/test_stage05_public_daemon_ack_authority.py::test_public_accepted_ack_requires_durable_capture": {
       "path": "tests/test_stage05_public_daemon_ack_authority.py",
