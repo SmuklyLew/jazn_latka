@@ -1,6 +1,7 @@
 """Synthetic pipe-backpressure regressions; no Ollama, daemon or real MEMORY."""
 from __future__ import annotations
 
+from hashlib import sha256
 import json
 import subprocess
 from pathlib import Path
@@ -42,7 +43,7 @@ class BlockedStdin:
         pass
 
 
-def _client(root: Path) -> tuple[ChatClient, Job, BlockedStdin]:
+def _client(root: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[ChatClient, Job, BlockedStdin]:
     core = Controller(root, Settings(model="synthetic-model"))
     client = ChatClient(core)
     pipe = BlockedStdin()
@@ -50,17 +51,19 @@ def _client(root: Path) -> tuple[ChatClient, Job, BlockedStdin]:
     # Test-only synthetic Popen contract; no child process or runtime is launched.
     job.proc = cast(subprocess.Popen[bytes], SimpleNamespace(stdin=pipe, poll=lambda: None))
     client.job = job
+    monkeypatch.setattr(client, "_prepare_admission",
+                        lambda message: ("synthetic-instance", sha256(message.strip().encode("utf-8")).hexdigest()))
     return client, job, pipe
 
 
-def test_chat_stalled_stdin_does_not_block_qt_event_loop(synthetic_root: Path) -> None:
+def test_chat_stalled_stdin_does_not_block_qt_event_loop(synthetic_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Timer must fire while the child pipe is still refusing to read stdin."""
     pytest.importorskip("PySide6")
     from PySide6.QtCore import QCoreApplication, QEventLoop, QTimer
 
     app = QCoreApplication.instance() or QCoreApplication([])
     assert app is not None
-    client, _job, pipe = _client(synthetic_root)
+    client, _job, pipe = _client(synthetic_root, monkeypatch)
     loop = QEventLoop()
     observed: dict[str, object] = {}
     started = time.monotonic()
@@ -100,7 +103,7 @@ def test_chat_stdin_write_watchdog_preserves_identity_without_replay(
     import tools.jazn_run_studio.chat as chat_module
 
     monkeypatch.setattr(chat_module, "CHAT_STDIN_WRITE_TIMEOUT_SECONDS", 0.05)
-    client, job, pipe = _client(synthetic_root)
+    client, job, pipe = _client(synthetic_root, monkeypatch)
     try:
         request = client.send("Nie ponawiaj wiadomości")
         assert pipe.entered.wait(1.0)

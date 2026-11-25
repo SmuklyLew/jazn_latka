@@ -14,7 +14,7 @@ from types import SimpleNamespace
 import pytest
 
 from tools.jazn_run_studio import external, probes, studio_worker
-from tools.jazn_run_studio.core import Controller, Settings, StudioError, discovery
+from tools.jazn_run_studio.core import Controller, Job, Settings, StudioError, discovery
 from tools.jazn_run_studio.chat import ChatClient
 
 
@@ -103,17 +103,29 @@ def test_studio_schemas_come_from_original_parsers() -> None:
 
 def test_chat_checkpoints_identity_before_sending_and_blocks_replay(core: Controller, monkeypatch: pytest.MonkeyPatch) -> None:
     client = ChatClient(core)
-    pipe = io.BytesIO()
+    checkpoints: list[dict] = []
+    class ObservedPipe(io.BytesIO):
+        def write(self, data, /):
+            checkpoints.append(json.loads(client.checkpoint.read_bytes()))
+            return super().write(data)
+
+    pipe = ObservedPipe()
     proc = SimpleNamespace(stdin=pipe, poll=lambda: None)
-    monkeypatch.setattr(client, "job", SimpleNamespace(proc=proc))
+    job = Job("chat")
+    monkeypatch.setattr(job, "proc", proc)
+    monkeypatch.setattr(client, "job", job)
+    monkeypatch.setattr(client, "_prepare_admission",
+                        lambda message: ("synthetic-instance", sha256(message.strip().encode("utf-8")).hexdigest()))
     request = client.send("Dokładny tekst")
-    persisted = json.loads(client.checkpoint.read_bytes())
     # Dispatch is intentionally asynchronous so the Qt event loop cannot
     # block on a stalled child pipe. The checkpoint precedes any write.
     deadline = time.monotonic() + 3.0
     while not pipe.getvalue() and time.monotonic() < deadline:
         time.sleep(0.01)
     frame = json.loads(pipe.getvalue())
+    assert len(checkpoints) == 1
+    persisted = checkpoints[0]
+    assert persisted["expected_daemon_instance_id"] == frame["expected_daemon_instance_id"] == "synthetic-instance"
     assert persisted["request_id"] == frame["request_id"] == request
     assert frame["session_id"] == client.session_id
     assert frame["message"] == "Dokładny tekst"

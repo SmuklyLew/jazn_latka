@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+from typing import TypedDict
 
 from latka_jazn.core.conversation_state_store import ConversationStateStore
 
@@ -24,7 +25,15 @@ def test_terminated_writer_releases_os_lock_and_allows_exact_projection(tmp_path
     )
     child = subprocess.Popen([sys.executable, "-X", "utf8", "-c", code, str(path), str(ready)],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    kwargs = {"session_id": "s", "turn_id": "t", "trace_id": "x",
+    class TurnArgs(TypedDict):
+        session_id: str
+        turn_id: str
+        trace_id: str
+        user_text: str
+        assistant_text: str
+        source: str
+
+    kwargs: TurnArgs = {"session_id": "s", "turn_id": "t", "trace_id": "x",
               "user_text": "synthetic", "assistant_text": "synthetic response", "source": "test"}
     try:
         deadline = time.monotonic() + 8
