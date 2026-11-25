@@ -352,3 +352,76 @@ def test_real_daemon_job_loop_continues_session_across_os_processes(tmp_path: Pa
     assert resumed["session_prior_accepted_turn_id"] == first["turn_id"]
     assert resumed["session_prior_accepted_trace_id"] == first["trace_id"]
     assert resumed["continuity_checkpoint_sha256"] != expected_sha
+
+
+def test_interrupted_host_finalization_restarts_without_replay_or_false_acceptance(
+    tmp_path: Path,
+) -> None:
+    """A lost phase-2 acknowledgement is not permission to submit again."""
+    from latka_jazn.core.conversation_state_store import ConversationStateStore
+
+    request_id = "stage04-interrupted-finalization"
+    first = _server(tmp_path)
+    try:
+        pending = _submit(first, request_id)
+        original_binding = (
+            pending.host_turn_id,
+            pending.host_trace_id,
+            pending.host_request_contract_hash,
+        )
+        mismatched, error = first.note_host_finalization(
+            request_id=request_id,
+            turn_id=str(pending.host_turn_id),
+            trace_id=str(pending.host_trace_id),
+            request_contract_hash="f" * 64,
+            outcome="accepted",
+            reason="simulated_lost_client_binding",
+            terminal=True,
+        )
+        assert mismatched is pending
+        assert error is not None
+        assert error["error_code"] == "host_finalization_job_binding_mismatch"
+        assert pending.status == "awaiting_host_finalization"
+        assert ConversationStateStore(tmp_path).load_context_projection("session-v1636")[
+            "total_turn_count"
+        ] == 0
+    finally:
+        first.close_sessions()
+        first.server_close()
+
+    restarted = _server(tmp_path)
+    try:
+        recovered = restarted.get_chat_job(request_id)
+        assert recovered is not None
+        assert recovered.status == "awaiting_host_finalization"
+        assert (
+            recovered.host_turn_id,
+            recovered.host_trace_id,
+            recovered.host_request_contract_hash,
+        ) == original_binding
+        duplicate, created, error = restarted.submit_chat_job(
+            user_text=request_id, input_field="message", session_id="session-v1636",
+            no_carryover=False, client="chatgpt_daemon_bridge",
+            request_id=request_id,
+        )
+        assert duplicate is recovered and created is False and error is None
+        assert recovered.result is not None
+        assert recovered.result["automatic_replay_performed"] is False
+        assert ConversationStateStore(tmp_path).load_context_projection("session-v1636")[
+            "total_turn_count"
+        ] == 0
+        _accept(restarted, recovered)
+        assert recovered.status == "completed"
+        # The daemon ACK does not by itself create accepted visible content.
+        assert ConversationStateStore(tmp_path).load_context_projection("session-v1636")[
+            "total_turn_count"
+        ] == 0
+        again, created, error = restarted.submit_chat_job(
+            user_text=request_id, input_field="message", session_id="session-v1636",
+            no_carryover=False, client="chatgpt_daemon_bridge",
+            request_id=request_id,
+        )
+        assert again is recovered and created is False and error is None
+    finally:
+        restarted.close_sessions()
+        restarted.server_close()
