@@ -70812,7 +70812,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 22
+      "line": 23
     },
     "tests/test_stage05_model_transport_boundary.py::test_ollama_http_failure_opens_shared_model_circuit_without_replay": {
       "path": "tests/test_stage05_model_transport_boundary.py",
@@ -70832,7 +70832,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 31
+      "line": 32
     },
     "tests/test_stage05_model_transport_boundary.py::test_non_transient_http_denial_does_not_open_circuit": {
       "path": "tests/test_stage05_model_transport_boundary.py",
@@ -70852,7 +70852,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 88
+      "line": 89
     },
     "tests/test_stage05_ollama_runtime_first.py::test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable": {
       "path": "tests/test_stage05_ollama_runtime_first.py",
