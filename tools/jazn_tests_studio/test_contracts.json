@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3711,
+  "active_definition_count": 3719,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70690,6 +70690,50 @@
       "description_source": "source_identity",
       "line": 178
     },
+    "tests/test_stage05_all_projection_recovery.py::test_recovery_republishes_exact_checkpoint_without_rewinding": {
+      "path": "tests/test_stage05_all_projection_recovery.py",
+      "name": "test_recovery_republishes_exact_checkpoint_without_rewinding",
+      "purpose": "Recovery republishes exact checkpoint without rewinding",
+      "expected": "Pytest completes this contract cleanly and all 13 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 13,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.tools.chatgpt_host_bridge_helper"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_stage05_all_projection_recovery.py::test_default_recovery_repairs_missing_conversation_and_session_projection": {
+      "path": "tests/test_stage05_all_projection_recovery.py",
+      "name": "test_default_recovery_repairs_missing_conversation_and_session_projection",
+      "purpose": "Default recovery repairs missing conversation and session projection",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chatgpt_host_pending_store",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.tools.chatgpt_host_bridge_helper"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 73
+    },
     "tests/test_stage05_cli_runtime_first.py::test_runtime_gate_precedes_model_discovery": {
       "path": "tests/test_stage05_cli_runtime_first.py",
       "name": "test_runtime_gate_precedes_model_discovery",
@@ -70729,6 +70773,63 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_stage05_conversation_projection_crash.py::test_terminated_writer_releases_os_lock_and_allows_exact_projection": {
+      "path": "tests/test_stage05_conversation_projection_crash.py",
+      "name": "test_terminated_writer_releases_os_lock_and_allows_exact_projection",
+      "purpose": "Terminated writer releases os lock and allows exact projection",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
+    "tests/test_stage05_conversation_projection_crash.py::test_legacy_orphan_sentinel_cannot_block_recovery_or_be_deleted": {
+      "path": "tests/test_stage05_conversation_projection_crash.py",
+      "name": "test_legacy_orphan_sentinel_cannot_block_recovery_or_be_deleted",
+      "purpose": "Legacy orphan sentinel cannot block recovery or be deleted",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 44
+    },
+    "tests/test_stage05_conversation_projection_crash.py::test_historical_projection_retains_acceptance_order_not_recovery_time": {
+      "path": "tests/test_stage05_conversation_projection_crash.py",
+      "name": "test_historical_projection_retains_acceptance_order_not_recovery_time",
+      "purpose": "Historical projection retains acceptance order not recovery time",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.conversation_state_store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
     },
     "tests/test_stage05_daemon_owned_finalization.py::test_daemon_serializes_public_phase2": {
       "path": "tests/test_stage05_daemon_owned_finalization.py",
@@ -71536,6 +71637,27 @@
       "description_source": "source_identity",
       "line": 49
     },
+    "tests/test_stage05_owning_daemon_projection_recovery.py::test_owning_daemon_repairs_only_exact_committed_job": {
+      "path": "tests/test_stage05_owning_daemon_projection_recovery.py",
+      "name": "test_owning_daemon_repairs_only_exact_committed_job",
+      "purpose": "Owning daemon repairs only exact committed job",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_turn_api"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
     "tests/test_stage05_paid_factory_authorization.py::test_explicit_paid_adapter_denied_without_opt_in": {
       "path": "tests/test_stage05_paid_factory_authorization.py",
       "name": "test_explicit_paid_adapter_denied_without_opt_in",
@@ -71723,6 +71845,44 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 85
+    },
+    "tests/test_stage05_public_cli_phase1_authority.py::test_public_phase1_requires_exact_job_and_live_authority": {
+      "path": "tests/test_stage05_public_cli_phase1_authority.py",
+      "name": "test_public_phase1_requires_exact_job_and_live_authority",
+      "purpose": "Public phase1 requires exact job and live authority",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_stage05_public_cli_phase1_authority.py::test_public_cli_presentation_never_reconstructs_missing_phase1": {
+      "path": "tests/test_stage05_public_cli_phase1_authority.py",
+      "name": "test_public_cli_presentation_never_reconstructs_missing_phase1",
+      "purpose": "Public cli presentation never reconstructs missing phase1",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 59
     },
     "tests/test_stage05_public_daemon_ack_authority.py::test_public_accepted_ack_requires_durable_capture": {
       "path": "tests/test_stage05_public_daemon_ack_authority.py",
