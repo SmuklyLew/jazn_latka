@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3703,
+  "active_definition_count": 3704,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71472,6 +71472,27 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 55
+    },
+    "tests/test_stage05_ollama_presend_metadata_http.py::test_ollama_metadata_before_inference": {
+      "path": "tests/test_stage05_ollama_presend_metadata_http.py",
+      "name": "test_ollama_metadata_before_inference",
+      "purpose": "Ollama metadata before inference",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter",
+        "latka_jazn.model_adapters.openai_compatible_local_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 18
     },
     "tests/test_stage05_ollama_runtime_first.py::test_ollama_model_probe_is_not_attempted_if_daemon_is_unavailable": {
       "path": "tests/test_stage05_ollama_runtime_first.py",
