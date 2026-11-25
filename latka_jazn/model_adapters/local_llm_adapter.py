@@ -4,6 +4,8 @@ import json
 import math
 import os
 from time import perf_counter
+from latka_jazn.runtime.resilience import CircuitOpenError
+from .model_transport_health import model_transport_breaker
 from typing import Any
 from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
@@ -77,6 +79,9 @@ class LocalLlmAdapter:
             raise ValueError("ollama_timeout_must_be_positive_finite")
         self.timeout_seconds = timeout_seconds
         self.max_output_tokens = max_output_tokens
+        self._transport_breaker = model_transport_breaker(
+            root=root, provider="ollama", endpoint=self.api_base, model=self.model,
+        )
         self._endpoint_reachable: bool | None = None
         self._probe_state = "not_probed" if self.model else "not_configured"
         self._last_probe_error: str | None = None
@@ -150,6 +155,7 @@ class LocalLlmAdapter:
                 "api_base": self.api_base,
                 "last_generation": dict(self._last_generation),
                 "local_request_performance": self._performance_summary(),
+                "model_transport_circuit": self._transport_breaker.snapshot().to_dict(),
             },
         )
 
@@ -373,6 +379,20 @@ class LocalLlmAdapter:
         )
         transport_started = perf_counter()
         try:
+            self._transport_breaker.acquire()
+        except CircuitOpenError as exc:
+            metadata.update({
+                "status": "model_circuit_open",
+                "error_code": "model_circuit_open",
+                "error_type": type(exc).__name__,
+                "timed_out": False,
+                "request_dispatched": False,
+                "wall_clock_duration_ms": round(max(0.0, perf_counter() - request_started) * 1000.0, 3),
+                "model_transport_circuit": self._transport_breaker.snapshot().to_dict(),
+            })
+            return "", metadata, exc
+        try:
+            metadata["request_dispatched"] = True
             with urlopen(req, timeout=self.timeout_seconds) as response:
                 data = json.loads(response.read().decode("utf-8"))
             if not isinstance(data, dict):
@@ -413,8 +433,13 @@ class LocalLlmAdapter:
                     "timed_out": False,
                 }
             )
+            self._transport_breaker.record_success()
             return text, metadata, None
         except HTTPError as exc:
+            if exc.code in {408, 429} or 500 <= exc.code <= 599:
+                self._transport_breaker.record_failure(f"http_error_{exc.code}")
+            else:
+                self._transport_breaker.record_non_transient_response()
             metadata.update(
                 {
                     "status": f"http_error_{exc.code}",
@@ -435,6 +460,8 @@ class LocalLlmAdapter:
                 "model_request_timeout" if timed_out else
                 "local_provider_unavailable"
             )
+            # Persist no exception message, prompt or endpoint credentials.
+            self._transport_breaker.record_failure(error_code)
             metadata.update(
                 {
                     "status": (
@@ -450,6 +477,7 @@ class LocalLlmAdapter:
             )
             return "", metadata, exc
         finally:
+            metadata["model_transport_circuit"] = self._transport_breaker.snapshot().to_dict()
             metadata["request_transport_duration_ms"] = round(
                 max(0.0, perf_counter() - transport_started) * 1000.0,
                 3,
@@ -481,7 +509,7 @@ class LocalLlmAdapter:
             self._last_probe_error = str(
                 last.get("error_code") or "local_provider_unavailable"
             )
-        if not context_rejected:
+        if not context_rejected and not isinstance(error, CircuitOpenError):
             # The request received HTTP or response bytes; only connection/timeout
             # failures imply that the configured endpoint was unreachable.
             if isinstance(error, HTTPError) or status == "invalid_provider_response":

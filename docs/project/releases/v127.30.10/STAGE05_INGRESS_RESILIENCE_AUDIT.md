@@ -20,3 +20,8 @@ Baza: e291870dd6c831307408894b5c669590a2d71f0e. Zakres audytu statycznego jest c
 Źródła: kod wskazanych modułów na bazowym SHA, release-hardening 45553986336/job/139005398994 (14/15, chat_gpt_turn_and_integrity_consensus FAIL), Ubuntu 139002758226 (4561 PASS, 25 SKIP, 6 subtests PASS), E2E 45553986324 (Windows/Ubuntu PASS); dokumentacja GitHub Actions workflow syntax / shell: bash.
 
 Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testowanych integracjach, brak replayu, zachowanie sesji, daemon żywy po awarii modelu, jawna zgoda na transfer, komplet wymaganych bramek Windows/Ubuntu oraz rzeczywista Ollama. Nie utożsamiać PASS symulacji z odbiorem rzeczywistego LLM/MCP. Brak MCP toolsetu i lokalnego worktree/exec potwierdzonego na hoście; live testy NOT_RUN. Nie wykonano płatnego API ani zmian prywatnej MEMORY.
+
+### Aktualizacja: klient i model transport
+- Potwierdzono, że `apply_model_channel_config` kopiował `allow_paid_openai_api` z żądania do config tury. Nowa kontrola ogranicza permission do przecięcia operator/klient. Adres docelowy, chmurowe modele Ollama, przekierowania, fallback adaptera i inne ścieżki inferencji nadal wymagają audytu.
+- Circuit breaker został połączony z konkretną granicą POST /api/chat, współdzielony między adapterami w tym samym procesie, z izolacją per model i root. CI pending. Test loopback nie jest testem rzeczywistego modelu ani live daemona.
+- JSONL `daemon_bound=False` nadal tworzy RuntimeSessionWorker, a host_visible_reply deleguje do ConversationRunner.finalize_candidate. Audyt i migracja wymagają zachowania testów phase-2, powiązania z właściwą instancją i persistence; OPEN. Nie deklarować pełnej Runtime Identity Authority.

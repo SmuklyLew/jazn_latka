@@ -163,6 +163,10 @@ def apply_model_channel_config(
         return config
     routed = copy.copy(config)
     for field, value in normalized.items():
+        if field == "allow_paid_openai_api":
+            # Client-selected model/channel settings can narrow permission,
+            # never grant a privilege absent from the daemon's own config.
+            value = bool(getattr(config, field, False)) and value is True
         setattr(routed, field, value)
     return routed
 
