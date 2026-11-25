@@ -288,6 +288,36 @@ class ConversationStateStore:
             except OSError:
                 pass
 
+    def verify_turn_binding(
+        self, *, session_id: str, turn_id: str, trace_id: str,
+        user_text_sha256: str, assistant_text: str, record_sha256: str,
+    ) -> bool:
+        """Read only the exact durable record; do not use a compacted projection."""
+        if not all((session_id, turn_id, trace_id, user_text_sha256, assistant_text, record_sha256)):
+            return False
+        try:
+            path = self._turn_path(session_id, turn_id)
+            if (self.storage_root.is_symlink() or path.parent.is_symlink()
+                    or path.is_symlink() or not path.is_file()):
+                return False
+            # Match the bounded Studio protocol, with space for record metadata.
+            with path.open("rb") as stream:
+                raw = stream.read(4 * 1024 * 1024 + 1)
+            if len(raw) > 4 * 1024 * 1024:
+                return False
+            record, error = self._validate_payload(json.loads(raw))
+        except (OSError, UnicodeError, ValueError, TypeError):
+            return False
+        return bool(
+            error is None and record is not None
+            and record.get("session_id") == session_id
+            and record.get("turn_id") == turn_id
+            and record.get("trace_id") == trace_id
+            and record.get("user_text_sha256") == user_text_sha256
+            and record.get("assistant_text") == assistant_text
+            and record.get("record_sha256") == record_sha256
+        )
+
     def load_context_projection(
         self,
         session_id: str,

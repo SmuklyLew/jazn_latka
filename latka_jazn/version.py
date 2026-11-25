@@ -1,3 +1,4 @@
+# v127.30.10 stage05: independent live Studio display authority and exact durable turn evidence (unreleased).
 # v127.30.10 stage05: block known Ollama cloud selectors and remote aliases in discovery (unreleased).
 # v127.30.10 stage05: constrain HTTP inference egress and deny redirects (unreleased).
 # v127.30.10 stage05: require committed host capture before public daemon acceptance ACK (unreleased).

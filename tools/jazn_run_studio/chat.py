@@ -298,14 +298,16 @@ class ChatClient:
             self.core.emit("chat", "chat_state", message)
             return
         # No unaccepted candidate or user prompt is sent into the shared log registry.
+        self._require_same_endpoint()
         checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
                        "tools.jazn_run_studio.validation_worker"], cwd=self.core.root,
                       data=json.dumps({"payload": payload, "request_id": request,
-                                       "session_id": self.session_id}, ensure_ascii=False).encode("utf-8"), timeout=30)
+                                       "session_id": self.session_id,
+                                       "daemon_url": self.daemon_url}, ensure_ascii=False).encode("utf-8"), timeout=30)
         if checked.returncode or len(checked.stdout) > 2097152:
             raise ValueError("Final validator failed")
         result = json.loads(checked.stdout)
-        if result.get("accepted") is True:
+        if result.get("accepted") is True and result.get("live_authority_verified") is True:
             with self.lock:
                 if self.pending != request:
                     raise ValueError("Request changed during validation")
