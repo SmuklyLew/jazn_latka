@@ -34911,7 +34911,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 121
+      "line": 122
     },
     "tests/test_jss_modular_view_boundaries.py::test_studio_module_imports_preserve_canonical_controller_boundary": {
       "path": "tests/test_jss_modular_view_boundaries.py",
@@ -34926,7 +34926,7 @@
       "targets": [],
       "status": "current",
       "description_source": "source_identity",
-      "line": 137
+      "line": 138
     },
     "tests/test_jss_monitor_cadence_persistence.py::test_interval_roundtrip": {
       "path": "tests/test_jss_monitor_cadence_persistence.py",
