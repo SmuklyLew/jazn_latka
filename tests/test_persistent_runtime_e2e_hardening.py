@@ -234,6 +234,27 @@ try:
             "Zacytuj pierwszych trzech słów mojej poprzedniej wiadomości.")
     args = dict(user_text=text, input_field="message", session_id=session,
                 no_carryover=False, client="daemon_http", request_id="stage04-" + phase)
+    if phase == "resumed":
+        # The first process already committed this request. A second process
+        # must never execute it again, even though no visible result is kept
+        # in the metadata-only daemon recovery ledger.
+        previous_args = dict(args)
+        previous_args["user_text"] = "Jaka jest godzina?"
+        previous_args["request_id"] = "stage04-first"
+        recovered, created, error = server.submit_chat_job(**previous_args)
+        assert error is None and created is False and recovered is not None
+        assert recovered.status == "recovered_after_restart"
+        assert recovered.error == "completed_request_result_unavailable"
+        assert recovered.result is not None
+        assert recovered.result["automatic_replay_performed"] is False
+        assert recovered.result["ok"] is False
+        assert "final_visible_text" not in recovered.result
+        conflict_args = dict(previous_args)
+        conflict_args["user_text"] = "Different input for same request ID"
+        conflicted, created, error = server.submit_chat_job(**conflict_args)
+        assert conflicted is None and created is False
+        assert error is not None and error["error_code"] == "request_id_conflict"
+        assert ConversationStateStore(root).load_context_projection(session)["total_turn_count"] == 1
     job, created, error = server.submit_chat_job(**args)
     assert created is True and error is None and job is not None
     assert job.done_event.wait(90), "daemon job did not settle"

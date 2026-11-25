@@ -1242,7 +1242,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 job.status == "failed"
                 and str(job.error or result_error_code) == "runtime_turn_not_accepted"
             )
-            if job.terminal() and not recoverable_terminal_rejection:
+            # Keep a metadata-only tombstone for an already completed turn.
+            # A daemon restart or an in-memory TTL must never make an accepted
+            # request_id eligible for a second execution.  The visible result
+            # is intentionally NOT stored in this recovery ledger.
+            completed_tombstone = (
+                job.status == "completed"
+                or job.recovery_disposition == "completed_request_result_unavailable"
+            )
+            if job.terminal() and not (
+                recoverable_terminal_rejection or completed_tombstone
+            ):
                 continue
             recoverable.append({
                 "request_id": job.request_id,
@@ -1258,10 +1268,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "created_at_utc": job.created_at_utc,
                 "started_at_utc": job.started_at_utc,
                 "completed_at_utc": job.completed_at_utc,
-                "status": job.status,
-                "error": job.error,
-                "result_error_code": result_error_code or None,
-                "recovery_disposition": job.recovery_disposition,
+                "status": "completed" if completed_tombstone else job.status,
+                "error": None if completed_tombstone else job.error,
+                "result_error_code": None if completed_tombstone else (result_error_code or None),
+                "recovery_disposition": (
+                    "completed_request_result_unavailable"
+                    if completed_tombstone else job.recovery_disposition
+                ),
                 "last_heartbeat_at_utc": job.last_heartbeat_at_utc,
                 "execution_timeout_seconds": job.execution_timeout_seconds,
                 "timeout_profile": job.timeout_profile,
@@ -1280,11 +1293,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_finalization_gate_wait_seconds": job.host_finalization_gate_wait_seconds,
                 "host_finalization_error_code": job.host_finalization_error_code,
             })
-        # Failed, phase-1-recoverable turns must remain discoverable even after
-        # their *in-memory* TTL.  Keep the metadata-only record from the
-        # previous durable snapshot when a separate job is persisted later.
-        # A terminal success or reconciliation still takes precedence over
-        # any historical rejection for the same request ID.
+        # Rejections and completed request IDs outlive the in-memory TTL.
+        # Preserve the metadata-only record from the previous durable snapshot
+        # when a separate job is persisted later. Never restore visible text.
         live_ids = set(self.chat_jobs)
         if self._chat_state_path.is_file():
             previous = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
@@ -1295,11 +1306,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     continue
                 request_id = str(raw.get("request_id") or "")
                 if (not request_id or request_id in live_ids
-                        or raw.get("status") != "failed"
-                        or str(raw.get("error") or raw.get("result_error_code") or "")
-                        != "runtime_turn_not_accepted"
+                        or raw.get("status") not in {"failed", "completed"}
+                        or (
+                            raw.get("status") == "failed"
+                            and str(raw.get("error") or raw.get("result_error_code") or "")
+                            != "runtime_turn_not_accepted"
+                        )
                         or not raw.get("request_fingerprint")
-                        or not raw.get("completed_at_utc")
+                        or not _parse_iso_utc(raw.get("completed_at_utc"))
                         or "user_text" in raw):
                     continue
                 # Copy only known metadata keys. No user prompt or response
@@ -1382,12 +1396,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for raw in jobs:
             if not isinstance(raw, dict) or str(raw.get("status")) not in {
                 "accepted", "queued", "running", "starting", DAEMON_CHAT_JOB_HOST_PENDING_STATE,
-                DAEMON_CHAT_JOB_HOST_WAIT_STATE, "failed",
+                DAEMON_CHAT_JOB_HOST_WAIT_STATE, "failed", "completed",
             }:
                 continue
             if str(raw.get("status") or "") == "failed" and str(
                 raw.get("error") or raw.get("result_error_code") or ""
             ) != "runtime_turn_not_accepted":
+                continue
+            if "user_text" in raw or (
+                raw.get("status") == "completed"
+                and _parse_iso_utc(raw.get("completed_at_utc")) is None
+            ):
                 continue
             request_id = str(raw.get("request_id") or "").strip()
             request_fingerprint = str(raw.get("request_fingerprint") or "").strip()
@@ -1429,6 +1448,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
                     else "runtime_turn_not_accepted"
                     if previous_status == "failed"
+                    else "completed_request_result_unavailable"
+                    if previous_status == "completed"
                     else "interrupted daemon job recovered without automatic replay"
                 ),
                 last_heartbeat_at_utc=str(raw.get("last_heartbeat_at_utc")) if raw.get("last_heartbeat_at_utc") else None,
@@ -1439,6 +1460,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     if previous_status == DAEMON_CHAT_JOB_HOST_PENDING_STATE
                     else "durable_host_settlement_recovery_pending"
                     if previous_status == "failed"
+                    else "completed_request_result_unavailable"
+                    if previous_status == "completed"
                     else "failed_without_replay"
                 ),
                 result=(
@@ -1458,6 +1481,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         "automatic_replay_performed": False,
                     }
                     if previous_status == "failed"
+                    else {
+                        "ok": False,
+                        "error_code": "completed_request_result_unavailable",
+                        "request_id": request_id,
+                        "recovery_disposition": "completed_request_result_unavailable",
+                        "automatic_replay_performed": False,
+                    }
+                    if previous_status == "completed"
                     else {
                         "ok": False,
                         "error_code": "recovered_after_restart",
@@ -2218,9 +2249,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
             existing = self.chat_jobs.get(normalized_id)
             if existing is None:
                 # The terminal in-memory cache can expire before the durable
-                # request ledger. Recover its identity before deciding that a
-                # submit with the same request_id is a *new* execution.
-                existing = self._read_expired_failed_chat_job_locked(normalized_id)
+                # request ledger. Recover its fingerprint (including completed
+                # requests) before allowing any execution of the same ID.
+                existing = self._read_terminal_chat_job_tombstone_locked(normalized_id)
                 if existing is not None:
                     self.chat_jobs[normalized_id] = existing
             if existing is None:
@@ -2333,8 +2364,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self.start_chat_worker()
         return job, created, None
 
-    def _read_expired_failed_chat_job_locked(self, request_id: str) -> DaemonChatJob | None:
-        """Rehydrate only a durable terminal rejection, never replay the user text.
+    def _read_terminal_chat_job_tombstone_locked(self, request_id: str) -> DaemonChatJob | None:
+        """Rehydrate a completed request or durable rejection without replaying user text.
 
         A memory TTL is a cache-eviction policy, not evidence that the
         original daemon request never existed. Invalid metadata fails closed.
@@ -2349,9 +2380,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for raw in jobs:
             if not isinstance(raw, dict) or raw.get("request_id") != request_id:
                 continue
-            if (raw.get("status") != "failed"
-                    or str(raw.get("error") or raw.get("result_error_code") or "")
-                    != "runtime_turn_not_accepted"
+            source_status = str(raw.get("status") or "")
+            if (source_status not in {"failed", "completed"}
+                    or (source_status == "failed" and str(
+                        raw.get("error") or raw.get("result_error_code") or ""
+                    ) != "runtime_turn_not_accepted")
+                    or "user_text" in raw
                     or not isinstance(raw.get("request_fingerprint"), str)
                     or not raw.get("request_fingerprint")
                     or not _parse_iso_utc(raw.get("completed_at_utc"))):
@@ -2375,15 +2409,33 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     created_at_utc=str(raw.get("created_at_utc") or ""),
                     started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
                     completed_at_utc=str(raw["completed_at_utc"]),
-                    status="failed",
-                    error="runtime_turn_not_accepted",
-                    recovery_disposition="durable_terminal_rejection_rehydrated",
+                    status=(
+                        "recovered_after_restart"
+                        if source_status == "completed" else "failed"
+                    ),
+                    error=(
+                        "completed_request_result_unavailable"
+                        if source_status == "completed" else "runtime_turn_not_accepted"
+                    ),
+                    recovery_disposition=(
+                        "completed_request_result_unavailable"
+                        if source_status == "completed"
+                        else "durable_terminal_rejection_rehydrated"
+                    ),
                     result={
                         "ok": False,
-                        "error_code": "runtime_turn_not_accepted",
+                        "error_code": (
+                            "completed_request_result_unavailable"
+                            if source_status == "completed"
+                            else "runtime_turn_not_accepted"
+                        ),
                         "request_id": request_id,
                         "automatic_replay_performed": False,
-                        "recovery_disposition": "durable_terminal_rejection_rehydrated",
+                        "recovery_disposition": (
+                            "completed_request_result_unavailable"
+                            if source_status == "completed"
+                            else "durable_terminal_rejection_rehydrated"
+                        ),
                     },
                 )
             except (ValueError, TypeError):
@@ -2397,7 +2449,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._cleanup_chat_jobs_locked()
             job = self.chat_jobs.get(str(request_id))
             if job is None:
-                job = self._read_expired_failed_chat_job_locked(str(request_id))
+                job = self._read_terminal_chat_job_tombstone_locked(str(request_id))
                 if job is not None:
                     self.chat_jobs[job.request_id] = job
             changed = False
