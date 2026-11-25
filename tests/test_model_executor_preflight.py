@@ -94,7 +94,8 @@ def test_configured_local_model_is_only_retry_eligible_executor() -> None:
 
 def test_stage05_openai_api_is_external_not_a_local_retry_executor() -> None:
     adapter = OpenaiResponsesAdapter(
-        api_key="synthetic-not-sent", model="synthetic-model",
+        api_key="synthetic-not-sent", model="synthetic-model", operator_opt_in=True,
+        api_base="https://api.openai.com/v1", network_permitted=True,
     )
     preflight = resolve_model_executor(adapter)
     assert preflight.executor == "external_model"
@@ -153,3 +154,16 @@ def test_stage05_deceptive_localhost_suffix_is_never_trusted(host: str) -> None:
     preflight = resolve_model_executor(adapter)
     assert preflight.executor == "unavailable"
     assert preflight.retry_allowed is False
+
+
+def test_stage05_unapproved_openai_preflight_is_unavailable_without_network() -> None:
+    adapter = OpenaiResponsesAdapter(
+        api_key="synthetic-not-sent", model="synthetic-model",
+        api_base="https://api.openai.com/v1", operator_opt_in=False,
+    )
+    preflight = resolve_model_executor(adapter)
+    assert preflight.executor == "unavailable"
+    assert preflight.available is False
+    assert preflight.retry_allowed is False
+    assert preflight.reason == "paid_openai_not_allowed"
+    assert adapter.describe()["probe_state"] == "not_probed"

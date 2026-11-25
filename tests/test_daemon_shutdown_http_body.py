@@ -31,6 +31,7 @@ def test_authenticated_shutdown_ack_with_real_http_request(
             last_response_write_error=None,
         ),
         shutdown_requested=threading.Event(),
+        _chat_jobs_lock=threading.RLock(),
         auth_token="shutdown-test-token",
         shutdown=None,
     )

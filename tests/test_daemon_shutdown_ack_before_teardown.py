@@ -22,6 +22,7 @@ def test_authenticated_shutdown_is_scheduled_before_ack(
         config=SimpleNamespace(root=tmp_path),
         state=SimpleNamespace(pid=12345, note_request=lambda: None),
         shutdown_requested=threading.Event(),
+        _chat_jobs_lock=threading.RLock(),
         shutdown=lambda: shutdown_completed.set(),
     )
     handler = object.__new__(runtime_daemon.JaznDaemonHandler)
@@ -98,6 +99,7 @@ def test_shutdown_marker_reuses_last_evidence_without_full_reverification(
             self.state = SimpleNamespace(pid=12345, status="running")
             self.daemon_instance_id = "verified-instance"
             self.shutdown_requested = threading.Event()
+            self._chat_jobs_lock = threading.RLock()
             self.rest_cycle_controller = None
             self.memory_sync_controller = None
             self.auth_token_path = tmp_path / "nonexistent-token"
@@ -170,3 +172,68 @@ def test_shutdown_marker_reuses_last_evidence_without_full_reverification(
     nested = marker["runtime_daemon"]
     assert isinstance(nested, dict)
     assert nested["status"] == runtime_daemon.DAEMON_MARKER_STATUS_STOPPED
+
+
+def test_shutdown_waits_for_finalization_lock_before_ack(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """The actual shutdown handler cannot interrupt a held phase-2 job lock."""
+    lock = threading.RLock()
+    attempted = threading.Event()
+    acknowledged = threading.Event()
+    shutdown_completed = threading.Event()
+    errors: list[BaseException] = []
+
+    class ObservedLock:
+        def __enter__(self) -> None:
+            attempted.set()
+            lock.acquire()
+
+        def __exit__(self, *_args: object) -> None:
+            lock.release()
+
+    instance = SimpleNamespace(
+        daemon_instance_id="synthetic-runtime",
+        config=SimpleNamespace(root=tmp_path),
+        state=SimpleNamespace(pid=12345, note_request=lambda: None),
+        shutdown_requested=threading.Event(),
+        _chat_jobs_lock=ObservedLock(),
+        shutdown=shutdown_completed.set,
+    )
+    handler = object.__new__(runtime_daemon.JaznDaemonHandler)
+    handler.headers = HTTPMessage()
+    monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_loopback_only", lambda _: True)
+    monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_request_path_and_query",
+                        lambda _: ("/shutdown", {}))
+    monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_authenticated",
+                        lambda _, *, mutating=False: mutating)
+    monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_daemon_server", lambda _: instance)
+
+    def reply(_self: object, payload: dict[str, object]) -> None:
+        assert instance.shutdown_requested.is_set()
+        assert payload["ok"] is True
+        acknowledged.set()
+
+    monkeypatch.setattr(runtime_daemon.JaznDaemonHandler, "_json_response", reply)
+
+    def request_stop() -> None:
+        try:
+            handler.do_POST()
+        except BaseException as exc:
+            errors.append(exc)
+
+    worker = threading.Thread(target=request_stop, daemon=True)
+    # A separate thread models an in-flight finalization holding the same
+    # reentrant lock. The existing daemon-owned phase-2 tests independently
+    # verify that the real finalizer holds its job lock throughout persistence.
+    with lock:
+        worker.start()
+        assert attempted.wait(timeout=2.0)
+        assert not instance.shutdown_requested.is_set()
+        assert not acknowledged.is_set()
+        assert not shutdown_completed.is_set()
+    worker.join(timeout=2.0)
+    assert not worker.is_alive()
+    assert not errors
+    assert acknowledged.is_set()
+    assert shutdown_completed.wait(timeout=2.0)
