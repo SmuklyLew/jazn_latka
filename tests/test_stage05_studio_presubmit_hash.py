@@ -4,13 +4,15 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 from pathlib import Path
+from subprocess import Popen
 from threading import Event
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
 from tools.jazn_run_studio import chat as studio_chat
-from tools.jazn_run_studio.core import StudioError
+from tools.jazn_run_studio.core import Job, StudioError
 from test_jazn_run_studio_delivery_ack import _client, _accepted
 from test_jazn_chat_terminal_recovery import _client as _failure_client, _failed_result, _live_validation
 
@@ -28,7 +30,7 @@ def test_hash_is_persisted_before_transport_write_and_survives_restart(tmp_path:
         written.set()
 
     stdin = SimpleNamespace(write=write, flush=lambda: None)
-    client.job = SimpleNamespace(proc=SimpleNamespace(poll=lambda: None, stdin=stdin), cancel=Event())
+    client.job = Job(key="chat", proc=cast(Popen[bytes], SimpleNamespace(poll=lambda: None, stdin=stdin)))
     request = client.send(message)
     assert written.wait(2)
     checkpoint, submitted = observed[0]
