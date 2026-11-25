@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from hashlib import sha256
 from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
@@ -30,6 +31,7 @@ class ChatClient:
         self.lock = threading.RLock()
         self.session_id = "studio-" + uuid4().hex
         self.pending: str | None = None
+        self._pending_user_text_sha256: str | None = None
         # The pending request is bound to this endpoint for its entire life.
         # Switching ports during resume could otherwise poll the wrong daemon.
         self.daemon_url = core.settings.daemon_url
@@ -56,12 +58,21 @@ class ChatClient:
             else:
                 self.session_id = saved["session_id"]
                 self.pending = saved.get("request_id")
+                digest = saved.get("user_text_sha256")
+                if digest is not None and (
+                    not isinstance(digest, str) or fullmatch(r"[0-9a-f]{64}", digest) is None
+                    or self.pending is None
+                ):
+                    raise StudioError("Nieprawidłowy hash wiadomości checkpointu")
+                self._pending_user_text_sha256 = digest
 
     def _save(self) -> None:
         self.checkpoint.parent.mkdir(parents=True, exist_ok=True)
         _path_without_links(self.checkpoint)
         data = {"session_id": self.session_id, "request_id": self.pending,
                 "daemon_url": self.daemon_url}
+        if self.pending is not None and self._pending_user_text_sha256 is not None:
+            data["user_text_sha256"] = self._pending_user_text_sha256
         fd, name = tempfile.mkstemp(dir=self.checkpoint.parent, prefix=".chat-")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
@@ -214,6 +225,9 @@ class ChatClient:
                 raise StudioError("Najpierw połącz lokalny czat")
             self.pending = "studio-turn-" + uuid4().hex
             self._confirmed_failed = None
+            # The JSONL ingress strips surrounding whitespace before admission.
+            # Bind exactly that canonical user text; never store the prompt.
+            self._pending_user_text_sha256 = sha256(message.strip().encode("utf-8")).hexdigest()
             self._save()  # Durable identity before any bytes can reach runtime.
             payload = {"message": message, "session_id": self.session_id, "request_id": self.pending}
             data = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
@@ -269,6 +283,8 @@ class ChatClient:
                     or any(not isinstance(value, str) for value in proof.values())
                     or proof.get("request_id") != request or proof.get("session_id") != self.session_id
                     or proof.get("daemon_url") != self.daemon_url or not proof.get("daemon_instance_id")
+                    or (self._pending_user_text_sha256 is not None
+                        and proof.get("user_text_sha256") != self._pending_user_text_sha256)
                     or (expected_proof is not None and proof != expected_proof)):
                 return None
             return proof
@@ -316,6 +332,11 @@ class ChatClient:
             with self.lock:
                 if self.pending != request:
                     raise ValueError("Request changed during validation")
+                if (self._pending_user_text_sha256 is not None
+                        and result.get("user_text_sha256") != self._pending_user_text_sha256):
+                    self.core.emit("chat", "chat_state",
+                        "Niezgodny hash wiadomości; zachowano request_id.")
+                    return
                 if self._awaiting_gui_ack == request:
                     return  # Duplicate transport completion, not a second visible turn.
                 self._awaiting_gui_ack = request
@@ -341,6 +362,7 @@ class ChatClient:
                 self.started_at = previous_started
                 raise
             self._awaiting_gui_ack = None
+            self._pending_user_text_sha256 = None
 
     def can_resolve_terminal_failure(self) -> bool:
         with self.lock:
@@ -370,7 +392,8 @@ class ChatClient:
                     or self._confirmed_failed != proof or self.session_id != proof["session_id"]):
                 raise StudioError("Stan tury zmienił się podczas weryfikacji; nie zamknięto checkpointu")
             self._require_same_endpoint()
-            if checked != proof:
+            if (checked != proof or (self._pending_user_text_sha256 is not None
+                    and proof.get("user_text_sha256") != self._pending_user_text_sha256)):
                 self._confirmed_failed = None
                 raise StudioError("Utracono niezależny dowód terminalnej porażki; zachowano request_id")
             archive = _path_without_links(
@@ -406,6 +429,7 @@ class ChatClient:
                 self.pending, self.started_at = request_id, old_started
                 raise
             self._confirmed_failed = None
+            self._pending_user_text_sha256 = None
 
     def resume(self) -> None:
         request = self.pending

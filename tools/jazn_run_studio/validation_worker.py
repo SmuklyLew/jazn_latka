@@ -244,6 +244,7 @@ def validate_live(
     except (OSError, ValueError, TypeError, RuntimeError, KeyError):
         return deny("authority_verification_unavailable")
     return {**independent, "daemon_instance_id": instance,
+            "user_text_sha256": live["user_text_sha256"],
             "record_sha256": persistence["record_sha256"], "live_authority_verified": True}
 
 
