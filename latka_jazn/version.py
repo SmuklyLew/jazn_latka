@@ -1,3 +1,4 @@
+# v127.30.10 stage05: align explicit entrypoint contract and add synthetic circuit isolation regression (unreleased).
 # v127.30.10 stage05: negative route fallback and hostname spoofing regressions (unreleased; gate open).
 # v127.30.10 stage05: classify external inference separately from local model executor; gate compatible non-loopback endpoints.
 # v127.30.10: separate verified session quote projection from recovery orchestration.

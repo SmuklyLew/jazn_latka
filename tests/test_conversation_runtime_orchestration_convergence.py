@@ -8,6 +8,8 @@ from latka_jazn.core.conversation_entrypoint_contract import (
     AUTO_ROUTE_PRIORITY,
     CANONICAL_CHAT_COMMAND,
     CANONICAL_CHATGPT_COMMAND,
+    CANONICAL_OLLAMA_COMMAND,
+    CANONICAL_OPENAI_COMMAND,
     ROUTE_CHATGPT_HOST,
     ROUTE_NULL_FALLBACK,
     ROUTE_OLLAMA_LOCAL,
@@ -27,11 +29,10 @@ def test_canonical_auto_route_priority_is_shared_and_truthful() -> None:
     assert AUTO_ROUTE_PRIORITY == (
         ROUTE_CHATGPT_HOST,
         ROUTE_OLLAMA_LOCAL,
-        ROUTE_OPENAI_PAID,
         ROUTE_NULL_FALLBACK,
     )
     assert auto_route_priority_text() == (
-        "chatgpt_host_bridge -> ollama_local -> openai_api_paid -> null_fallback"
+        "chatgpt_host_bridge -> ollama_local -> null_fallback"
     )
 
 
@@ -55,6 +56,25 @@ def test_chatgpt_entrypoint_is_host_bridge_not_openai_api() -> None:
     assert contract.requires_api_key is False
     assert contract.uses_openai_api is False
     assert contract.host_finalization_policy == "two_phase_action_first"
+
+
+def test_paid_api_is_explicit_and_not_in_auto_priority() -> None:
+    contract = conversation_entrypoint_contract(CANONICAL_OPENAI_COMMAND)
+    assert contract.route_mode == "openai_api"
+    assert contract.route_priority == (ROUTE_OPENAI_PAID,)
+    assert contract.requires_api_key is True
+    assert contract.uses_openai_api is True
+    assert ROUTE_OPENAI_PAID not in AUTO_ROUTE_PRIORITY
+
+
+def test_ollama_entrypoint_is_not_chatgpt_or_paid_api() -> None:
+    contract = conversation_entrypoint_contract(CANONICAL_OLLAMA_COMMAND)
+    assert contract.operator_command == "run.py chat-ollama"
+    assert contract.route_mode == "local"
+    assert contract.route_priority == (ROUTE_OLLAMA_LOCAL,)
+    assert contract.requires_api_key is False
+    assert contract.uses_openai_api is False
+    assert contract.host_finalization_policy == "runtime_owned_visible_finalization"
 
 
 def test_universal_chat_detects_chatgpt_visible_host_before_terminal_default(tmp_path: Path) -> None:

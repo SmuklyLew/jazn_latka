@@ -16,10 +16,10 @@ ROUTE_OLLAMA_LOCAL = "ollama_local"
 ROUTE_OPENAI_PAID = "openai_api_paid"
 ROUTE_NULL_FALLBACK = "null_fallback"
 
+# Paid external inference is an explicit opt-in route, never an automatic fallback.
 AUTO_ROUTE_PRIORITY: tuple[str, ...] = (
     ROUTE_CHATGPT_HOST,
     ROUTE_OLLAMA_LOCAL,
-    ROUTE_OPENAI_PAID,
     ROUTE_NULL_FALLBACK,
 )
 
