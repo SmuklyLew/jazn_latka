@@ -2417,6 +2417,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     created_at_utc=str(raw.get("created_at_utc") or ""),
                     started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
                     completed_at_utc=str(raw["completed_at_utc"]),
+                    host_turn_id=str(raw.get("host_turn_id") or "") or None,
+                    host_trace_id=str(raw.get("host_trace_id") or "") or None,
+                    host_request_contract_hash=str(raw.get("host_request_contract_hash") or "") or None,
                     status=(
                         "recovered_after_restart"
                         if source_status == "completed" else "failed"
@@ -2466,7 +2469,53 @@ class JaznDaemonServer(ThreadingHTTPServer):
             changed = self._advance_host_finalization_waiters_locked(source="chat_job_probe") or changed
             if changed:
                 self._persist_chat_jobs_locked(stage="host_finalization_reconciled")
+            if job is not None:
+                self._reconcile_committed_notification_locked(job)
             return job
+
+    def _reconcile_committed_notification_locked(self, job: DaemonChatJob) -> bool:
+        """Repair only the durable notification of an already accepted job.
+
+        A completed tombstone may confirm the historical projection after a
+        restart, but must not authorize new generation or synthesize final text.
+        """
+        from latka_jazn.core.chatgpt_host_pending_store import (
+            HostRequestStoreError, read_committed_host_request, mark_daemon_finalization_notification,
+        )
+
+        if not (job.status == "completed" or (
+            job.status == "recovered_after_restart"
+            and job.recovery_disposition == "completed_request_result_unavailable"
+        )):
+            return False
+        turn_id = str(job.host_turn_id or "")
+        trace_id = str(job.host_trace_id or "")
+        digest = str(job.host_request_contract_hash or "")
+        user_hash = str(job.user_text_sha256 or "")
+        if not (turn_id and trace_id and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and re.fullmatch(r"[0-9a-f]{64}", user_hash)):
+            return False
+        try:
+            record = read_committed_host_request(self.config.root, turn_id=turn_id)
+            binding = record.get("binding")
+            if not (isinstance(binding, dict)
+                    and record.get("request_contract_hash") == digest
+                    and binding.get("daemon_request_id") == job.request_id
+                    and binding.get("turn_id") == turn_id and binding.get("trace_id") == trace_id
+                    and binding.get("user_text_sha256") == user_hash):
+                return False
+            if record.get("daemon_finalization_notification_state") == "delivered":
+                return True
+            # A failed write of the job journal must never be reported as a
+            # durable ACK. Retry only the projection, not candidate acceptance.
+            if self._persist_chat_jobs_locked(stage="host_finalization_ack_recovery") is not True:
+                return False
+            settlement = mark_daemon_finalization_notification(
+                self.config.root, turn_id=turn_id, request_contract_hash=digest, delivered=True,
+            )
+            return settlement.get("daemon_finalization_notification_state") == "delivered"
+        except (HostRequestStoreError, OSError, RuntimeError, ValueError, TypeError):
+            return False
 
     def _terminalize_host_finalization_locked(
         self,
@@ -2893,7 +2942,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 if job.status == "completed":
                     # Exactly-once/idempotent ACK: the same bound acceptance may
                     # be retried by the host without mutating counters/reason or
-                    # touching any newer turn.
+                    # touching any newer turn. Re-persist metadata in case
+                    # the previous transition succeeded only in memory.
+                    if self._persist_chat_jobs_locked(stage="host_finalization_notification_retry") is not True:
+                        return job, {"ok": False, "error_code": "host_finalization_job_persist_failed",
+                                     "request_id": request_id}
                     return job, None
                 return job, {
                     "ok": False,
@@ -2935,7 +2988,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "request_id": request_id,
                 }
             self._advance_host_finalization_waiters_locked(source="host_finalization_notification")
-            self._persist_chat_jobs_locked(stage="host_finalization_notification")
+            persisted = self._persist_chat_jobs_locked(stage="host_finalization_notification")
+            if normalized_outcome == "accepted" and persisted is not True:
+                return job, {"ok": False, "error_code": "host_finalization_job_persist_failed",
+                             "request_id": request_id}
             return job, None
 
     def _process_chat_job(

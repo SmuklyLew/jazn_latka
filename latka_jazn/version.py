@@ -1,3 +1,4 @@
+# v127.30.10 stage05: monotonic durable daemon finalization notification recovery (unreleased).
 # v127.30.10 stage05: independently verify terminal Studio failure before operator ACK (unreleased).
 # v127.30.10 stage05: daemon-owned public phase-2 transaction and durable ACK (unreleased).
 # v127.30.10 stage05: independent live Studio display authority and exact durable turn evidence (unreleased).

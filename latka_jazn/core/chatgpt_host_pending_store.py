@@ -808,22 +808,33 @@ def mark_daemon_finalization_notification(
 ) -> dict[str, Any]:
     """Record outbox delivery status without changing the canonical consumed state."""
 
+    import sqlite3
+    from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
+
     path = _path(root, "consumed", turn_id)
-    record = _read(path)
-    expected = str(record.get("request_contract_hash") or "")
-    supplied = str(request_contract_hash or "").strip().lower()
-    if not hmac.compare_digest(expected, supplied):
-        raise HostRequestStoreError("host_request_contract_hash_mismatch")
-    record["settlement_authority"] = "durable_host_request_store"
-    record["daemon_finalization_notification_attempts"] = int(
-        record.get("daemon_finalization_notification_attempts") or 0
-    ) + 1
-    record["daemon_finalization_notification_last_at_utc"] = _utc_now().isoformat()
-    record["daemon_finalization_notification_state"] = (
-        "delivered" if delivered else "pending_retry"
-    )
-    record["daemon_finalization_notification_error"] = None if delivered else str(
-        error or "daemon_finalization_notification_failed"
-    )
-    _atomic_write(path, record)
-    return _host_request_lifecycle_payload(record, state="consumed")
+    try:
+        # Use the existing cross-process file guard; no database is opened.
+        with runtime_sqlite_write_guard(path, timeout_ms=2000):
+            record = _read(path)
+            expected = str(record.get("request_contract_hash") or "")
+            supplied = str(request_contract_hash or "").strip().lower()
+            if not hmac.compare_digest(expected, supplied):
+                raise HostRequestStoreError("host_request_contract_hash_mismatch")
+            # A late failure or duplicate ACK must not regress delivered -> pending_retry.
+            if record.get("daemon_finalization_notification_state") == "delivered":
+                return _host_request_lifecycle_payload(record, state="consumed")
+            record["settlement_authority"] = "durable_host_request_store"
+            record["daemon_finalization_notification_attempts"] = int(
+                record.get("daemon_finalization_notification_attempts") or 0
+            ) + 1
+            record["daemon_finalization_notification_last_at_utc"] = _utc_now().isoformat()
+            record["daemon_finalization_notification_state"] = (
+                "delivered" if delivered else "pending_retry"
+            )
+            record["daemon_finalization_notification_error"] = None if delivered else str(
+                error or "daemon_finalization_notification_failed"
+            )
+            _atomic_write(path, record)
+            return _host_request_lifecycle_payload(record, state="consumed")
+    except sqlite3.Error as exc:
+        raise HostRequestStoreError("daemon_finalization_notification_lock_failed") from exc
