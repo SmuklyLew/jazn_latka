@@ -51980,13 +51980,13 @@
       "path": "tests/test_model_executor_preflight.py",
       "name": "test_stage05_unapproved_openai_preflight_is_unavailable_without_network",
       "purpose": "Stage05 unapproved openai preflight is unavailable without network",
-      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "network"
       ],
       "markers": [],
-      "assertion_count": 5,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.model_executor_preflight",
