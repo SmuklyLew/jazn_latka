@@ -25,3 +25,7 @@ Kryterium końcowe: zero nieautoryzowanych nowych wypowiedzi we wszystkich testo
 - Potwierdzono, że `apply_model_channel_config` kopiował `allow_paid_openai_api` z żądania do config tury. Nowa kontrola ogranicza permission do przecięcia operator/klient. Adres docelowy, chmurowe modele Ollama, przekierowania, fallback adaptera i inne ścieżki inferencji nadal wymagają audytu.
 - Circuit breaker został połączony z konkretną granicą POST /api/chat, współdzielony między adapterami w tym samym procesie, z izolacją per model i root. CI pending. Test loopback nie jest testem rzeczywistego modelu ani live daemona.
 - JSONL `daemon_bound=False` nadal tworzy RuntimeSessionWorker, a host_visible_reply deleguje do ConversationRunner.finalize_candidate. Audyt i migracja wymagają zachowania testów phase-2, powiązania z właściwą instancją i persistence; OPEN. Nie deklarować pełnej Runtime Identity Authority.
+
+### Granica adresu OpenAI API i timeoutu
+- `model_api_base` jest teraz adresem operatora, nie uprawnieniem klienta; próba nadpisania w konfiguracji tury kończy się ValueError przed użyciem tak zmienionego adaptera. Brak dowodu pełnej autoryzacji redirectów, innych endpointów, env oraz fallback adaptera.
+- Model timeout wymaga skończonej dodatniej liczby; limit górny i pełny budżet wykonania pozostają OPEN. Regresje syntetyczne, CI wymagane.

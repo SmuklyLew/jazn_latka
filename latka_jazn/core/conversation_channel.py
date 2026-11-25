@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import math
 import os
 import re
 from typing import Any, Mapping
@@ -125,7 +126,7 @@ def normalize_model_channel_config(
             if isinstance(value, bool):
                 raise TypeError(f"model_channel_config_number_required:{field}")
             number = float(value)
-            if number <= 0.0:
+            if not math.isfinite(number) or number <= 0.0:
                 raise ValueError(f"model_channel_config_positive_required:{field}")
             normalized[field] = number
             continue
@@ -163,6 +164,13 @@ def apply_model_channel_config(
         return config
     routed = copy.copy(config)
     for field, value in normalized.items():
+        if field == "model_api_base":
+            # The daemon's API credential is scoped to its operator-selected
+            # destination. Never accept a client-supplied external API base.
+            configured_base = str(getattr(config, field, "") or "").strip().rstrip("/")
+            if str(value).rstrip("/") != configured_base:
+                raise ValueError("model_channel_external_endpoint_override_forbidden")
+            continue
         if field == "allow_paid_openai_api":
             # Client-selected model/channel settings can narrow permission,
             # never grant a privilege absent from the daemon's own config.
