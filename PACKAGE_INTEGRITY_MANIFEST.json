@@ -3,11 +3,11 @@
   "version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
   "package_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-25T14:12:21+00:00",
-  "updated_at_utc": "2026-11-25T14:12:21+00:00",
+  "generated_at_utc": "2026-11-25T14:18:32+00:00",
+  "updated_at_utc": "2026-11-25T14:18:32+00:00",
   "start_file": "run.py",
-  "file_count": 3964,
-  "static_file_count": 3964,
+  "file_count": 3965,
+  "static_file_count": 3965,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 2990,
-      "sha256": "58c83f5373ad845d2ef2b95a80fc2129b3d74df04a507dce0560bd3e4bd4a8b8",
+      "sha256": "b00bf069c90ae67b893b0cdce924ed76fb982c0f40dd6fb6aec0c1e566eb5013",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 50771,
-      "sha256": "84211a4c538e6f736fb448596a507923ca1ff53b4c0b9ea3a2a52c789795fd05",
+      "size_bytes": 51614,
+      "sha256": "88c3ee7c36cfcb1aaf7631926a30cc672e1b4df9ba30545f4ca5aa4df6c4a277",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -20397,6 +20397,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/archive/v127.30.10-stage05-tty-daemon-7d66c93a8ab5/test_ollama_only_hotfix.py",
+      "size_bytes": 11590,
+      "sha256": "d7c911c1b370a067361c6754a34509d400450427a7d7076cc1dacfa3d1eb117b",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/archive/v12719-pre-pyright/test_ollama_self_state_validated_retry.py",
       "size_bytes": 7292,
       "sha256": "9578e6b4276fbdd43fa6efa06050e76c8c0f55580d486072f1ccde07813a25d2",
@@ -32152,8 +32161,8 @@
     },
     {
       "path": "tests/test_ollama_only_hotfix.py",
-      "size_bytes": 11590,
-      "sha256": "d7c911c1b370a067361c6754a34509d400450427a7d7076cc1dacfa3d1eb117b",
+      "size_bytes": 12010,
+      "sha256": "24b15fcff9ce950552bcc93c0e9a9648ea4193ef6b157e89dbd8484e1e233b65",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -35474,7 +35483,7 @@
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
       "size_bytes": 3236933,
-      "sha256": "20a77294ec4f61567014e7a13c0e51035f7babd17bd7fa0b2757f8402b773831",
+      "sha256": "74cdfe489dfd115832670d9b25641652c1aa353f2b0b99aeed5910e5e80b6772",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
