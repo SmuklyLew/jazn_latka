@@ -530,9 +530,9 @@ def _try_chat_gpt_one_shot_via_daemon(
 ) -> int | None:
     """Prefer a live daemon for `--chat-gpt -- <text>` without exposing a second public flag.
 
-    The daemon already owns the initialized runtime session.  When its marker is
-    absent or the endpoint cannot be verified, the caller falls back to the local
-    JSONL bridge, preserving compatibility.
+    The daemon owns the initialized runtime session. If its identity cannot be
+    verified or transport fails, the caller must stop rather than start a local
+    conversation or replay a possibly accepted turn.
     """
     if not text.strip() or not _env_flag_enabled("JAZN_CHATGPT_PREFER_DAEMON", default=True):
         return None
@@ -555,9 +555,8 @@ def _try_chat_gpt_one_shot_via_daemon(
         required=trusted_time_required,
     )
     if trusted_time_sync is not None and trusted_time_sync.get("ok") is not True:
-        # The current CLI process already has the explicit host timestamp.  If
-        # the long-lived daemon rejects it, fall back to the local bridge so a
-        # degraded daemon cannot overwrite a trusted per-turn timestamp.
+        # A rejected timestamp cannot authorize a separate local conversation.
+        # Preserve the daemon boundary and return a host diagnostic.
         return None
     daemon_session_id = resolve_canonical_chat_session_id(
         session_id or os.environ.get("JAZN_CHATGPT_DAEMON_SESSION_ID")
@@ -604,10 +603,10 @@ def _try_chat_gpt_one_shot_via_daemon(
             "daemon_marker_path": str(marker_path),
             "daemon_status_active_state": status.get("active_state"),
             "daemon_session_id": daemon_session_id,
-            "fallback_if_unavailable": "local_jsonl_runtime_session",
+            "fallback_if_unavailable": "host_diagnostic",
             "trusted_time_sync": trusted_time_sync,
             "transport_observability": dict(transport_observability or {}),
-            "truth_boundary": "--chat-gpt używa daemon fast path tylko gdy marker i lokalny endpoint potwierdzają żywy runtime; jawnie dostarczony czas hosta jest najpierw synchronizowany do procesu daemonu, a przy odrzuceniu most wraca do lokalnego JSONL bridge.",
+            "truth_boundary": "--chat-gpt używa daemon fast path tylko gdy marker i lokalny endpoint potwierdzają żywy runtime; jawnie dostarczony czas hosta jest najpierw synchronizowany do procesu daemonu, a przy odrzuceniu most nie inicjuje lokalnej tury.",
         })
     result["chatgpt_bridge"] = result.get("chat_bridge")
     if result.get("error_code") == "daemon_chat_pending":
@@ -1025,10 +1024,7 @@ def _ensure_daemon_or_error(
 ) -> tuple[DaemonEnsureResult, int | None]:
     result = _ensure_daemon_for_cli_turn(ns, cfg, command, explicit=explicit)
     decision = result.decision if isinstance(result.decision, dict) else {}
-    if result.ok or (
-        result.selected_transport == "verified_one_shot_fallback"
-        and result.one_shot_allowed
-    ):
+    if result.ok:
         return result, None
     # Do not turn a transport/root identity failure into a memory failure.
     # A second daemon on the same endpoint must never be treated as this runtime.
@@ -1070,24 +1066,34 @@ def _runtime_config_for_transport(
 def _handle_failed_daemon_turn_transport(
     daemon_ensure: DaemonEnsureResult,
     transport_observability: dict[str, Any],
-) -> int | None:
+    *,
+    request_id: str,
+) -> int:
     decision = daemon_ensure.decision if isinstance(daemon_ensure.decision, dict) else {}
-    if decision.get("explicit_ensure") or decision.get("env_force"):
-        print(json.dumps({
-            "ok": False,
-            "error_code": "daemon_turn_transport_failed_after_explicit_ensure",
-            "transport_observability": transport_observability,
-            "truth_boundary": "Jawne wymaganie persistent daemonu nie może po cichu przejść do one-shot po błędzie transportu tury.",
-        }, ensure_ascii=False, indent=2, sort_keys=True))
-        return 1
-    if transport_observability.get("selected_transport") == "persistent_daemon":
-        transport_observability.update({
-            "selected_transport": "verified_one_shot_fallback",
+    # The submit may already have been accepted. Never replay the message or
+    # start a separate local runtime after losing the transport.
+    explicit = bool(decision.get("explicit_ensure") or decision.get("env_force"))
+    print(json.dumps({
+        "ok": False,
+        "error_code": (
+            "daemon_turn_transport_failed_after_explicit_ensure"
+            if explicit else "daemon_turn_transport_unavailable"
+        ),
+        "action": "host_diagnostic",
+        "request_id": request_id,
+        "request_acceptance": "unknown",
+        "must_not_claim_runtime_voice": True,
+        "must_not_replay": True,
+        "transport_observability": {
+            **transport_observability,
+            "selected_transport": "host_diagnostic",
             "fallback_reason": "daemon_turn_transport_unavailable",
-            "one_shot_allowed": True,
+            "one_shot_allowed": False,
             "one_shot_verified": False,
-        })
-    return None
+        },
+        "truth_boundary": "Brak potwierdzonego wyniku daemonu. Sprawdź ten sam request_id; nie generuj odpowiedzi w imieniu Jaźni ani nie ponawiaj wiadomości.",
+    }, ensure_ascii=False, indent=2, sort_keys=True))
+    return 1
 
 
 def _run_chat_command_one_shot(
@@ -2534,6 +2540,9 @@ def legacy_main(argv: list[str] | None = None) -> int:
         transport_observability = daemon_ensure.transport_observability()
         runtime_cfg = _runtime_config_for_transport(cfg, transport_observability)
         if bridge_text:
+            from uuid import uuid4
+
+            request_id = ns.daemon_request_id or str(uuid4())
             delegated = _try_chat_gpt_one_shot_via_daemon(
                 cfg=runtime_cfg,
                 text=bridge_text,
@@ -2543,7 +2552,7 @@ def legacy_main(argv: list[str] | None = None) -> int:
                 port=ns.daemon_port,
                 timeout=ns.daemon_chat_timeout,
                 output_mode=output_mode,
-                request_id=ns.daemon_request_id,
+                request_id=request_id,
                 wait_budget=ns.daemon_wait_budget,
                 poll_interval=ns.daemon_poll_interval,
                 trusted_time_iso=(ns.trusted_time_iso or os.environ.get("JAZN_TRUSTED_TIME_ISO")) if trusted_time_env is not None else None,
@@ -2558,12 +2567,11 @@ def legacy_main(argv: list[str] | None = None) -> int:
             )
             if delegated is not None:
                 return delegated
-            transport_exit = _handle_failed_daemon_turn_transport(
+            return _handle_failed_daemon_turn_transport(
                 daemon_ensure,
                 transport_observability,
+                request_id=request_id,
             )
-            if transport_exit is not None:
-                return transport_exit
         bridge_stdin = io.StringIO(bridge_text + "\n") if bridge_text else None
         if bridge_stdin is None and ns.final_only and not ns.chat_gpt_final_only and sys.stdin.isatty():
             print(

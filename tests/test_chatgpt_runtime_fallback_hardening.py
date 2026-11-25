@@ -18,12 +18,12 @@ def _inactive_status() -> dict[str, Any]:
     }
 
 
-def test_chatgpt_default_policy_allows_verified_one_shot_fallback() -> None:
+def test_chatgpt_default_policy_requires_verified_daemon() -> None:
     decision = daemon_autostart.daemon_autostart_decision("--chat-gpt", env={})
 
     assert decision.command_known_runtime_turn is True
     assert decision.should_ensure is False
-    assert decision.reason == "verified_one_shot_fallback_allowed"
+    assert decision.reason == "verified_daemon_required"
 
 
 def test_generic_chat_still_requires_daemon_by_default() -> None:
@@ -77,8 +77,10 @@ def test_default_chatgpt_ensure_does_not_spawn_daemon_when_inactive(
     assert starts == []
     assert result.ok is False
     assert result.ensured is False
-    assert result.reason == "verified_one_shot_fallback_allowed"
+    assert result.reason == "verified_daemon_required"
     assert result.decision["should_ensure"] is False
+    assert result.selected_transport == "host_diagnostic"
+    assert result.one_shot_allowed is False
 
 
 def test_explicit_chatgpt_ensure_still_attempts_daemon_and_reports_failure(
@@ -112,7 +114,7 @@ def test_explicit_chatgpt_ensure_still_attempts_daemon_and_reports_failure(
     assert result.decision["explicit_ensure"] is True
 
 
-def test_chatgpt_main_reaches_local_bridge_when_daemon_is_unavailable(
+def test_chatgpt_main_refuses_local_bridge_when_daemon_is_unavailable(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -129,7 +131,7 @@ def test_chatgpt_main_reaches_local_bridge_when_daemon_is_unavailable(
     monkeypatch.setattr(
         main_module,
         "_try_chat_gpt_one_shot_via_daemon",
-        lambda **_kwargs: None,
+        lambda **_kwargs: pytest.fail("inactive daemon must block submission"),
     )
     calls: list[dict[str, Any]] = []
 
@@ -150,9 +152,5 @@ def test_chatgpt_main_reaches_local_bridge_when_daemon_is_unavailable(
         ]
     )
 
-    assert exit_code == 0
-    assert len(calls) == 1
-    assert calls[0]["command"] == "--chat-gpt"
-    assert calls[0]["require_openai_api_key"] is False
-    assert calls[0]["output_mode"] == "host_packet"
-    assert calls[0]["one_shot_degraded"] is True
+    assert exit_code == 1
+    assert calls == []

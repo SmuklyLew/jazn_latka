@@ -315,7 +315,7 @@ def test_healthy_subject_b_reports_persistent_daemon_reuse(
     }
 
 
-def test_inactive_chatgpt_reports_controlled_one_shot_fallback(
+def test_inactive_chatgpt_reports_host_diagnostic_without_fallback(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -329,9 +329,9 @@ def test_inactive_chatgpt_reports_controlled_one_shot_fallback(
         env={},
     )
 
-    assert result.selected_transport == "verified_one_shot_fallback"
-    assert result.fallback_reason == "verified_one_shot_fallback_allowed"
-    assert result.one_shot_allowed is True
+    assert result.selected_transport == "host_diagnostic"
+    assert result.fallback_reason == "verified_daemon_required"
+    assert result.one_shot_allowed is False
     assert result.one_shot_verified is False
 
 

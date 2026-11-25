@@ -50,12 +50,11 @@ RUNTIME_TURN_COMMANDS = {
     "direct_message",
 }
 
-# ChatGPT normally keeps one long-lived stdin/JSONL bridge open and reuses a
-# verified live daemon. These one-shot commands are compatibility/recovery
-# fallbacks for hosts that lost the bridge; they are not the canonical ChatGPT
-# conversation lifecycle. Explicit --ensure-daemon / JAZN_ENSURE_DAEMON still
-# override fallback behavior and remain fail-closed through the policy below.
-VERIFIED_ONE_SHOT_FALLBACK_COMMANDS = {
+# ChatGPT CLI is a client of an existing daemon. Explicit operator ensure may
+# start it, but no conversational command may replace an unavailable daemon
+# with an independent in-process runtime. Keep the legacy status field empty.
+VERIFIED_ONE_SHOT_FALLBACK_COMMANDS: frozenset[str] = frozenset()
+EXISTING_DAEMON_CLIENT_COMMANDS = {
     "--chat-gpt",
     "--chat-gpt-final-only",
 }
@@ -332,11 +331,11 @@ def daemon_autostart_decision(
             command_known_runtime_turn=command_known_runtime_turn,
             command_observational=command_observational,
         )
-    if command_norm in VERIFIED_ONE_SHOT_FALLBACK_COMMANDS:
+    if command_norm in EXISTING_DAEMON_CLIENT_COMMANDS:
         return DaemonAutostartDecision(
             command=command_norm,
             should_ensure=False,
-            reason="verified_one_shot_fallback_allowed",
+            reason="verified_daemon_required",
             env_autostart=env_autostart,
             env_force=env_force,
             command_known_runtime_turn=command_known_runtime_turn,
@@ -397,10 +396,6 @@ def ensure_daemon_for_runtime_turn(
         )
     if not decision.should_ensure:
         boundary_failure = _fallback_truth_boundary_failure(status_before)
-        one_shot_allowed = bool(
-            decision.command in VERIFIED_ONE_SHOT_FALLBACK_COMMANDS
-            and boundary_failure is None
-        )
         return DaemonEnsureResult(
             ok=False,
             ensured=False,
@@ -409,17 +404,13 @@ def ensure_daemon_for_runtime_turn(
             decision=decision.to_dict(),
             status_before=status_before,
             status_after=status_before,
-            selected_transport=(
-                "verified_one_shot_fallback"
-                if one_shot_allowed
-                else "host_diagnostic"
-            ),
+            selected_transport="host_diagnostic",
             fallback_reason=(boundary_failure or decision.reason),
             requested_runtime_root=requested_root,
             resolved_active_root=resolved_root,
             daemon_endpoint_root=endpoint_root,
             daemon_identity_verified=False,
-            one_shot_allowed=one_shot_allowed,
+            one_shot_allowed=False,
         )
     subject_config = _resolved_subject_config(config, status_before)
     if subject_config is None:
@@ -496,7 +487,7 @@ def daemon_autostart_policy_status(env: Mapping[str, str] | None = None) -> dict
         "degraded_turn_blocking_reasons": sorted(DEGRADED_TURN_BLOCKING_REASONS),
         "truth_boundary": (
             "Autostart jest kontraktem liveness dla tras rozmowy, nie dowodem świadomości ani zgodą na start przy komendach status/stop. "
-            "Kanoniczny --chat-gpt utrzymuje jeden proces mostu stdin/JSONL i ponownie używa zweryfikowanego żywego daemonu; one-shot jest wyłącznie kontrolowanym fallbackiem recovery/compatibility. Jawne wymaganie daemonu pozostaje fail-closed. "
+            "Kanoniczny --chat-gpt utrzymuje jeden proces mostu stdin/JSONL i ponownie używa zweryfikowanego żywego daemonu; one-shot jest wyłącznie klientem istniejącego daemonu; brak zweryfikowanego daemonu oznacza host_diagnostic. Jawne ensure pozostaje operacją operatorską. "
             "active_degraded dopuszcza turę tylko wtedy, gdy status_daemon jawnie potwierdza zgodność endpointu i świeży heartbeat; nieznane degradacje są fail-closed."
         ),
     }

@@ -1,3 +1,4 @@
+# v127.30.10 stage05: disallow CLI conversation fallback without verified daemon (unreleased).
 # v127.30.10 stage05: ensure runtime before explicit Ollama model discovery (unreleased).
 # v127.30.10 stage05: align explicit entrypoint contract and add synthetic circuit isolation regression (unreleased).
 # v127.30.10 stage05: negative route fallback and hostname spoofing regressions (unreleased; gate open).
