@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
   "system_version": "16.3.25.5.116.0.34.94.6.127.30.10",
-  "active_definition_count": 3631,
+  "active_definition_count": 3632,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -16224,13 +16224,13 @@
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
       "name": "test_auto_route_behavior_matches_declared_priority",
       "purpose": "Auto route behavior matches declared priority",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [
         "runtime"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 7,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -16266,7 +16266,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 119
+      "line": 122
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_chatgpt_project_loader_requires_fresh_runtime_turn_before_host_text": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16291,7 +16291,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 138
+      "line": 141
     },
     "tests/test_conversation_runtime_orchestration_convergence.py::test_release_identity_supersedes_with_accepted_visible_turn_convergence": {
       "path": "tests/test_conversation_runtime_orchestration_convergence.py",
@@ -16315,7 +16315,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 151
+      "line": 154
     },
     "tests/test_conversation_state_restart_continuity.py::test_conversation_state_survives_store_recreation": {
       "path": "tests/test_conversation_state_restart_continuity.py",
@@ -70334,40 +70334,36 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 41
+      "line": 39
     },
     "tests/test_stage05_llm_route_independence.py::test_host_declaration_is_not_live_generator_proof": {
       "path": "tests/test_stage05_llm_route_independence.py",
       "name": "test_host_declaration_is_not_live_generator_proof",
       "purpose": "Host declaration is not live generator proof",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 4,
+      "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 52
+      "line": 50
     },
-    "tests/test_stage05_llm_route_independence.py::test_explicit_verified_host_route_stays_distinct_from_local_model": {
+    "tests/test_stage05_llm_route_independence.py::test_explicit_host_route_does_not_trust_env_verified_marker": {
       "path": "tests/test_stage05_llm_route_independence.py",
-      "name": "test_explicit_verified_host_route_stays_distinct_from_local_model",
-      "purpose": "Explicit verified host route stays distinct from local model",
+      "name": "test_explicit_host_route_does_not_trust_env_verified_marker",
+      "purpose": "Explicit host route does not trust env verified marker",
       "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
@@ -70378,13 +70374,11 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 63
+      "line": 62
     },
     "tests/test_stage05_llm_route_independence.py::test_auto_never_uses_paid_api_as_implicit_fallback": {
       "path": "tests/test_stage05_llm_route_independence.py",
@@ -70400,13 +70394,11 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 76
+      "line": 75
     },
     "tests/test_stage05_llm_route_independence.py::test_explicit_paid_route_requires_two_separate_guards": {
       "path": "tests/test_stage05_llm_route_independence.py",
@@ -70420,13 +70412,11 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 87
+      "line": 86
     },
     "tests/test_stage05_llm_route_independence.py::test_local_only_route_is_preserved_with_real_probe_evidence": {
       "path": "tests/test_stage05_llm_route_independence.py",
@@ -70440,35 +70430,31 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 103
+      "line": 102
     },
     "tests/test_stage05_llm_route_independence.py::test_host_and_local_priority_is_explicit": {
       "path": "tests/test_stage05_llm_route_independence.py",
       "name": "test_host_and_local_priority_is_explicit",
       "purpose": "Host and local priority is explicit",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 116
+      "line": 115
     },
     "tests/test_stage05_llm_route_independence.py::test_no_models_keeps_null_runtime_candidate_without_external_transfer": {
       "path": "tests/test_stage05_llm_route_independence.py",
@@ -70484,13 +70470,31 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core",
-        "latka_jazn.core.model_guided_speech_runtime",
-        "latka_jazn.core.runtime_environment",
-        "latka_jazn.model_adapters.null_model_adapter"
+        "latka_jazn.core.runtime_environment"
       ],
       "status": "current",
       "description_source": "source_identity",
       "line": 130
+    },
+    "tests/test_stage05_llm_route_independence.py::test_forced_host_route_without_host_channel_is_fail_closed": {
+      "path": "tests/test_stage05_llm_route_independence.py",
+      "name": "test_forced_host_route_without_host_channel_is_fail_closed",
+      "purpose": "Forced host route without host channel is fail closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_environment"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 138
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
@@ -70716,13 +70720,13 @@
       "path": "tests/test_startup_stability.py",
       "name": "test_universal_chat_prefers_confirmed_chatgpt_host",
       "purpose": "Universal chat prefers confirmed chatgpt host",
-      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "host"
       ],
       "markers": [],
-      "assertion_count": 2,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -70758,7 +70762,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 108
+      "line": 110
     },
     "tests/test_startup_stability.py::test_ollama_discovery_prefers_single_running_model": {
       "path": "tests/test_startup_stability.py",
@@ -70781,7 +70785,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 123
+      "line": 125
     },
     "tests/test_startup_stability.py::test_universal_chat_selects_ollama_when_host_is_absent": {
       "path": "tests/test_startup_stability.py",
@@ -70806,7 +70810,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 141
+      "line": 143
     },
     "tests/test_startup_stability.py::test_universal_chat_uses_truthful_null_fallback": {
       "path": "tests/test_startup_stability.py",
@@ -70829,7 +70833,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 151
+      "line": 153
     },
     "tests/test_startup_stability.py::test_ollama_adapter_uses_native_chat_endpoint": {
       "path": "tests/test_startup_stability.py",
@@ -70852,7 +70856,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 159
+      "line": 161
     },
     "tests/test_startup_stability.py::test_daemon_technical_process_always_starts_through_main_py": {
       "path": "tests/test_startup_stability.py",
@@ -70875,7 +70879,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 176
+      "line": 178
     },
     "tests/test_studio_operator_paths.py::test_defaults_are_external_and_discovery_does_not_create_directories": {
       "path": "tests/test_studio_operator_paths.py",
