@@ -120,6 +120,8 @@ class DaemonConversationSession:
             reset_session=self._reset_session_pending,
             request_id=request_id,
             timeout=wait_timeout,
+            **({"expected_daemon_instance_id": kwargs["expected_daemon_instance_id"]}
+               if "expected_daemon_instance_id" in kwargs else {}),
         )
         if result.get("accepted") is True or result.get("ok") is True:
             self._reset_session_pending = False

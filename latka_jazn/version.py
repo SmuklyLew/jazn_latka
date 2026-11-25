@@ -1,3 +1,4 @@
+# v127.30.10 stage05: propagate explicit daemon admission instance pins (unreleased).
 # v127.30.10 stage05: verify fresh installed Ollama metadata at inference boundary (unreleased).
 # v127.30.10 stage05: pre-submit Studio user text digest binding (unreleased).
 # v127.30.10 stage05: move terminal failure operator ACK off Qt thread (unreleased).

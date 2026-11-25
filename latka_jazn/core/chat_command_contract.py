@@ -1549,7 +1549,7 @@ def run_jsonl_chat_bridge(
         }, output_mode=output_mode)
         return 1
 
-    from latka_jazn.core.runtime_daemon import normalize_daemon_request_id
+    from latka_jazn.core.runtime_daemon import normalize_daemon_request_id, validate_expected_daemon_instance
 
     if command == "--chat-gpt":
         apply_chatgpt_cli_settings(config)
@@ -1692,6 +1692,7 @@ def run_jsonl_chat_bridge(
             input_field = "plain_text"
             payload_session_id = None
             payload_request_id = None
+            expected_instance: str | None = None
             client = default_client
 
             try:
@@ -1756,6 +1757,17 @@ def run_jsonl_chat_bridge(
                     continue
                 payload_session_id = str(payload.get("session_id") or "").strip() or None
                 payload_request_id = str(payload.get("request_id") or "").strip() or None
+                if "expected_daemon_instance_id" in payload:
+                    try:
+                        expected_instance = validate_expected_daemon_instance(payload["expected_daemon_instance_id"])
+                    except ValueError:
+                        write_chat_bridge_payload(stdout, error_payload(
+                            error_code="invalid_expected_daemon_instance",
+                            error="Nieprawidłowy identyfikator oczekiwanej instancji daemona.",
+                            client=client, input_kind=input_kind, input_field="expected_daemon_instance_id",
+                            line_index=line_index, request_id=payload_request_id,
+                        ), output_mode=output_mode)
+                        continue
                 user_text, input_kind, input_field = extract_user_text_from_payload(payload)
 
             if not user_text.strip():
@@ -1794,6 +1806,8 @@ def run_jsonl_chat_bridge(
                     command=command,
                     model_channel_config=turn_model_channel_config,
                     request_id=payload_request_id,
+                    **({"expected_daemon_instance_id": expected_instance}
+                       if expected_instance is not None else {}),
                 )
             except RuntimeTurnTimeoutError as exc:
                 write_chat_bridge_payload(stdout, error_payload(

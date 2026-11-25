@@ -888,6 +888,13 @@ class DaemonChatJob:
         return payload
 
 
+def validate_expected_daemon_instance(value: object) -> str:
+    """A supplied instance pin must be explicit and must not be normalized away."""
+    if not isinstance(value, str) or re.fullmatch(r"[A-Za-z0-9_.:-]{1,256}", value) is None:
+        raise ValueError("invalid_expected_daemon_instance")
+    return value
+
+
 def normalize_daemon_request_id(value: str | None) -> str:
     candidate = str(value or "").strip()
     if not candidate:
@@ -3968,6 +3975,20 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         if isinstance(payload, dict) and payload.get("__daemon_error__"):
             error_code = str(payload.get("__daemon_error__"))
             return None, False, {"ok": False, "error_code": error_code, **payload}
+        if isinstance(payload, dict) and "expected_daemon_instance_id" in payload:
+            try:
+                expected = validate_expected_daemon_instance(payload["expected_daemon_instance_id"])
+            except ValueError:
+                return None, False, {"ok": False, "accepted": False,
+                                     "error_code": "invalid_expected_daemon_instance",
+                                     "must_not_resubmit_user_message": True}
+            # The process instance is immutable for this server's lifetime.
+            # Reject before looking up or creating any job in a replacement daemon.
+            if expected != self._daemon_server().daemon_instance_id:
+                return None, False, {"ok": False, "accepted": False,
+                                     "error_code": "daemon_instance_mismatch",
+                                     "request_id": payload.get("request_id"),
+                                     "must_not_resubmit_user_message": True}
         user_text, input_field = extract_daemon_user_text(payload)
         if not user_text:
             return None, False, {"ok": False, "error_code": "empty_message", "input_field": input_field}
@@ -5513,6 +5534,7 @@ def chat_daemon_submit(
     reset_session: bool = False,
     request_id: str | None = None,
     timeout: float = DEFAULT_HTTP_TIMEOUT_SECONDS,
+    expected_daemon_instance_id: str | None = None,
 ) -> dict[str, Any]:
     text = str(user_text or "").strip()
     if not text:
@@ -5537,6 +5559,12 @@ def chat_daemon_submit(
     }
     if session_id:
         payload["session_id"] = session_id
+    if expected_daemon_instance_id is not None:
+        try:
+            payload["expected_daemon_instance_id"] = validate_expected_daemon_instance(expected_daemon_instance_id)
+        except ValueError:
+            return {"ok": False, "accepted": False, "error_code": "invalid_expected_daemon_instance",
+                    "request_id": normalized_request_id, "must_not_resubmit_user_message": True}
     try:
         result = http_json(
             "POST",
@@ -5545,6 +5573,14 @@ def chat_daemon_submit(
             timeout=max(0.1, float(timeout)),
             token=read_daemon_auth_token(config.root),
         )
+        if expected_daemon_instance_id is not None and (
+            result.get("accepted") is not True
+            or result.get("daemon_instance_id") != expected_daemon_instance_id
+            or result.get("request_id") != normalized_request_id
+        ):
+            return {"ok": False, "accepted": False, "error_code": "daemon_submit_authority_unverified",
+                    "request_id": normalized_request_id, "request_acceptance": "unknown",
+                    "must_not_resubmit_user_message": True}
         result.setdefault("accepted", True)
         result.setdefault("request_id", normalized_request_id)
         return result
@@ -5693,6 +5729,7 @@ def chat_daemon(
     request_id: str | None = None,
     timeout: float = DEFAULT_DAEMON_CHAT_TIMEOUT_SECONDS,
     poll_interval: float = DEFAULT_DAEMON_CHAT_POLL_INTERVAL_SECONDS,
+    expected_daemon_instance_id: str | None = None,
 ) -> dict[str, Any]:
     submit_timeout = min(DEFAULT_HTTP_TIMEOUT_SECONDS, max(0.5, float(timeout)))
     submitted = chat_daemon_submit(
@@ -5708,9 +5745,17 @@ def chat_daemon(
         reset_session=reset_session,
         request_id=request_id,
         timeout=submit_timeout,
+        **({"expected_daemon_instance_id": expected_daemon_instance_id}
+           if expected_daemon_instance_id is not None else {}),
     )
     if submitted.get("accepted") is not True:
         return submitted
+    if expected_daemon_instance_id is not None and (
+        submitted.get("daemon_instance_id") != expected_daemon_instance_id
+        or (request_id is not None and submitted.get("request_id") != request_id)
+    ):
+        return {"ok": False, "accepted": False, "error_code": "daemon_submit_authority_unverified",
+                "request_id": request_id, "must_not_resubmit_user_message": True}
     if submitted.get("done") is True or submitted.get("phase_result_ready") is True:
         return _unwrap_daemon_chat_job(submitted)
 
@@ -5750,6 +5795,14 @@ def chat_daemon(
             "request_id_contains_unsafe_characters",
         }:
             return polled
+        if expected_daemon_instance_id is not None and (
+            polled.get("daemon_instance_id") != expected_daemon_instance_id
+            or polled.get("request_id") != normalized_request_id
+            or polled.get("accepted") is not True
+        ):
+            return {"ok": False, "accepted": False, "error_code": "daemon_poll_authority_unverified",
+                    "request_id": normalized_request_id, "submit_acknowledged": True,
+                    "must_not_resubmit_user_message": True}
         last_payload = polled
         if polled.get("done") is True or polled.get("phase_result_ready") is True:
             return _unwrap_daemon_chat_job(polled)
