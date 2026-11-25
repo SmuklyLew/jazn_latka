@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -56,16 +58,116 @@ def _job_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
     return job if isinstance(job, dict) else payload if isinstance(nested, dict) else {}
 
 
+def _verified_live_job(root: Path, daemon_url: str, instance: str, request_id: str) -> dict[str, Any]:
+    """One shared authority gate for success and terminal failure receipts."""
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.core.daemon_autostart import status_allows_runtime_turn
+    from latka_jazn.core.runtime_daemon import chat_daemon_result, status_daemon
+
+    endpoint = urlsplit(daemon_url)
+    port = endpoint.port
+    if (endpoint.scheme != "http" or endpoint.hostname != "127.0.0.1"
+            or port is None or not 1 <= port <= 65535
+            or endpoint.username is not None or endpoint.password is not None
+            or endpoint.path not in {"", "/"} or endpoint.query or endpoint.fragment):
+        raise ValueError("daemon_endpoint_invalid")
+    root = root.resolve()
+    cfg = JaznConfig(root=root)
+    status = status_daemon(cfg, host="127.0.0.1", port=port)
+    if not (
+        status_allows_runtime_turn(status)
+        and status.get("endpoint_identity_matches") is True
+        and status.get("endpoint_instance_matches") is True
+        and status.get("heartbeat_fresh") is True
+        and status.get("package_integrity_verified") is True
+        and status.get("source_provenance_verified") is True
+        and status.get("daemon_instance_id") == instance
+        and status.get("active_root")
+        and Path(str(status["active_root"])).resolve() == root
+    ):
+        raise ValueError("daemon_authority_not_verified")
+    live = chat_daemon_result(cfg, request_id, host="127.0.0.1", port=port, timeout=2.0)
+    return live
+
+
+def _terminal_failure_proof(job: dict[str, Any], request_id: str, session_id: str,
+                            daemon_url: str) -> dict[str, str] | None:
+    result = job.get("result")
+    if not isinstance(result, dict):
+        return None
+    code = result.get("error_code")
+    instance = job.get("daemon_instance_id")
+    completed = job.get("completed_at_utc")
+    user_hash = job.get("user_text_sha256")
+    if not (
+        job.get("accepted") is True and job.get("ok") is False
+        and job.get("request_id") == request_id and job.get("session_id") == session_id
+        and job.get("job_status") == "failed" and job.get("done") is True
+        and job.get("awaiting_host_finalization") is False
+        and job.get("phase_result_ready") is False and result.get("ok") is False
+        and result.get("request_id", request_id) == request_id
+        and not any(job.get(key) for key in
+                    ("host_turn_id", "host_trace_id", "host_request_contract_hash"))
+        and isinstance(instance, str) and 0 < len(instance) <= 256
+        and isinstance(code, str) and re.fullmatch(r"[A-Za-z0-9_]{1,100}", code)
+        and isinstance(user_hash, str) and re.fullmatch(r"[0-9a-f]{64}", user_hash)
+        and isinstance(completed, str)
+    ):
+        return None
+    try:
+        if datetime.fromisoformat(completed.replace("Z", "+00:00")).utcoffset() is None:
+            return None
+    except ValueError:
+        return None
+    return {"request_id": request_id, "session_id": session_id, "error_code": code,
+            "daemon_url": daemon_url, "daemon_instance_id": instance,
+            "completed_at_utc": completed, "user_text_sha256": user_hash}
+
+
+def validate_terminal_failure(
+    payload: dict[str, Any], request_id: str, session_id: str,
+    *, root: Path, daemon_url: str, expected_proof: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """A transport failure is never sufficient to release a pending request."""
+    from latka_jazn.core.turn_settlement import resolve_durable_turn_settlement
+
+    def deny(code: str) -> dict[str, Any]:
+        return {"accepted": False, "terminal_failure_verified": False,
+                "error": code, "must_not_replay": True}
+
+    received = expected_proof if expected_proof is not None else _terminal_failure_proof(
+        _job_snapshot(payload), request_id, session_id, daemon_url)
+    if not received or any(received.get(k) != v for k, v in (
+        ("request_id", request_id), ("session_id", session_id), ("daemon_url", daemon_url)
+    )):
+        return deny("terminal_failure_binding_missing")
+    try:
+        instance = received["daemon_instance_id"]
+        if not isinstance(instance, str) or not instance:
+            return deny("daemon_instance_missing")
+        live = _verified_live_job(root, daemon_url, instance, request_id)
+        proof = _terminal_failure_proof(live, request_id, session_id, daemon_url)
+        if proof is None or proof != received:
+            return deny("terminal_failure_independent_result_mismatch")
+        settlement = resolve_durable_turn_settlement(
+            root, daemon_request_id=request_id, expected_user_text_sha256=proof["user_text_sha256"])
+        # A recoverable host settlement may supersede an execution rejection.
+        # Missing is the only safe outcome here; invalid/ambiguous is not missing.
+        if settlement.get("found") is not False or settlement.get("state") != "missing":
+            return deny("terminal_failure_durable_settlement_unresolved")
+    except (OSError, ValueError, TypeError, RuntimeError, KeyError):
+        return deny("terminal_failure_authority_unavailable")
+    return {"accepted": False, "terminal_failure_verified": True,
+            "failure_proof": proof, "must_not_replay": True}
+
+
 def validate_live(
     payload: dict[str, Any], request_id: str, session_id: str,
     *, root: Path, daemon_url: str,
 ) -> dict[str, Any]:
     """Independent read-only authority gate used by the Studio subprocess."""
-    from latka_jazn.config import JaznConfig
     from latka_jazn.core.conversation_state_store import ConversationStateStore
-    from latka_jazn.core.daemon_autostart import status_allows_runtime_turn
     from latka_jazn.core.message_envelope import MessageEnvelope
-    from latka_jazn.core.runtime_daemon import chat_daemon_result, status_daemon
 
     def deny(code: str) -> dict[str, Any]:
         return {"accepted": False, "error": code, "must_not_replay": True}
@@ -79,29 +181,7 @@ def validate_live(
     if not isinstance(instance, str) or not instance:
         return deny("daemon_instance_missing")
     try:
-        endpoint = urlsplit(daemon_url)
-        port = endpoint.port
-        if (endpoint.scheme != "http" or endpoint.hostname != "127.0.0.1"
-                or port is None or not 1 <= port <= 65535
-                or endpoint.username is not None or endpoint.password is not None
-                or endpoint.path not in {"", "/"} or endpoint.query or endpoint.fragment):
-            return deny("daemon_endpoint_invalid")
-        root = root.resolve()
-        cfg = JaznConfig(root=root)
-        status = status_daemon(cfg, host="127.0.0.1", port=port)
-        if not (
-            status_allows_runtime_turn(status)
-            and status.get("endpoint_identity_matches") is True
-            and status.get("endpoint_instance_matches") is True
-            and status.get("heartbeat_fresh") is True
-            and status.get("package_integrity_verified") is True
-            and status.get("source_provenance_verified") is True
-            and status.get("daemon_instance_id") == instance
-            and status.get("active_root")
-            and Path(str(status["active_root"])).resolve() == root
-        ):
-            return deny("daemon_authority_not_verified")
-        live = chat_daemon_result(cfg, request_id, host="127.0.0.1", port=port, timeout=2.0)
+        live = _verified_live_job(root, daemon_url, instance, request_id)
         if not (
             live.get("accepted") is True
             and live.get("ok") is True
@@ -174,6 +254,16 @@ def main() -> int:
     data = json.loads(raw)
     if not isinstance(data.get("daemon_url"), str) or not isinstance(data.get("session_id"), str):
         result = {"accepted": False, "error": "live_authority_parameters_missing", "must_not_replay": True}
+    elif data.get("mode") == "terminal_failure":
+        proof = data.get("expected_proof")
+        if proof is not None and (not isinstance(proof, dict)
+                                  or any(not isinstance(v, str) for v in proof.values())):
+            result = {"accepted": False, "terminal_failure_verified": False,
+                      "error": "terminal_failure_proof_invalid", "must_not_replay": True}
+        else:
+            result = validate_terminal_failure(
+                data["payload"], data["request_id"], data["session_id"],
+                root=Path.cwd(), daemon_url=data["daemon_url"], expected_proof=proof)
     else:
         result = validate_live(data["payload"], data["request_id"], data["session_id"],
                                root=Path.cwd(), daemon_url=data["daemon_url"])

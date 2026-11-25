@@ -248,6 +248,33 @@ class ChatClient:
             threading.Thread(target=watch_write, name="jss-chat-stdin-watchdog", daemon=True).start()
             return request_id
 
+    def _verify_terminal_failure(
+        self, payload: dict[str, Any], request: str, *, expected_proof: dict[str, str] | None = None,
+    ) -> dict[str, str] | None:
+        try:
+            self._require_same_endpoint()
+            checked = run([python_executable(self.core.settings), "-X", "utf8", "-m",
+                           "tools.jazn_run_studio.validation_worker"], cwd=self.core.root,
+                          data=json.dumps({"mode": "terminal_failure", "payload": payload,
+                                           "request_id": request, "session_id": self.session_id,
+                                           "daemon_url": self.daemon_url,
+                                           "expected_proof": expected_proof}, ensure_ascii=False).encode("utf-8"),
+                          timeout=10)
+            if checked.returncode or len(checked.stdout) > 2097152:
+                return None
+            result = json.loads(checked.stdout)
+            proof = result.get("failure_proof") if isinstance(result, dict) else None
+            if (not isinstance(result, dict) or result.get("terminal_failure_verified") is not True
+                    or not isinstance(proof, dict)
+                    or any(not isinstance(value, str) for value in proof.values())
+                    or proof.get("request_id") != request or proof.get("session_id") != self.session_id
+                    or proof.get("daemon_url") != self.daemon_url or not proof.get("daemon_instance_id")
+                    or (expected_proof is not None and proof != expected_proof)):
+                return None
+            return proof
+        except (OSError, ValueError, TypeError, subprocess.SubprocessError, StudioError):
+            return None
+
     def receive(self, payload: dict[str, Any]) -> None:
         with self.lock:
             request = self.pending
@@ -261,33 +288,11 @@ class ChatClient:
             code = str(code_value)
             if not code.isascii() or not code.replace("_", "").isalnum() or len(code) > 100:
                 code = "runtime_error"
-            job_value = payload.get("daemon_job")
-            job = job_value if isinstance(job_value, dict) else payload
-            job_result = job.get("result")
-            result = job_result if isinstance(job_result, dict) else {}
-            confirmed = bool(
-                job.get("request_id") == request
-                and job.get("session_id") == self.session_id
-                and job.get("job_status") == "failed"
-                and job.get("done") is True
-                and job.get("ok") is False
-                and result.get("ok") is False
-                and result.get("error_code") == code
-                and job.get("completed_at_utc")
-                and not job.get("awaiting_host_finalization")
-                and not job.get("phase_result_ready")
-                and not any(job.get(key) for key in (
-                    "host_turn_id", "host_trace_id", "host_request_contract_hash"
-                ))
-            )
+            proof = self._verify_terminal_failure(payload, request)
+            confirmed = proof is not None and proof.get("error_code") == code
             with self.lock:
                 if self.pending == request:
-                    self._confirmed_failed = (
-                        {"request_id": request, "session_id": self.session_id,
-                         "error_code": code, "daemon_url": self.daemon_url,
-                         "completed_at_utc": str(job["completed_at_utc"])}
-                        if confirmed else None
-                    )
+                    self._confirmed_failed = proof if confirmed and self._awaiting_gui_ack is None else None
             message = (
                 "Potwierdzona nieudana tura: " + code +
                 ". Bez ponawiania wiadomości możesz wybrać Zamknij nieudaną turę."
@@ -355,6 +360,11 @@ class ChatClient:
                     or proof.get("session_id") != self.session_id
                     or proof.get("daemon_url") != self.daemon_url):
                 raise StudioError("Brak potwierdzonej terminalnej porażki dla tej tury")
+            # Recheck immediately before releasing the pending checkpoint.
+            # No user text is sent; a replaced/unavailable daemon retains the request.
+            if self._verify_terminal_failure({}, request_id, expected_proof=proof) != proof:
+                self._confirmed_failed = None
+                raise StudioError("Utracono niezależny dowód terminalnej porażki; zachowano request_id")
             archive = _path_without_links(
                 self.checkpoint.with_name("chat-terminal-failure-" + request_id + ".json")
             )

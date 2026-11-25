@@ -38,17 +38,44 @@ def _client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[studio_cha
 
 def _failed_result(client: studio_chat.ChatClient, *, request_id: str = "studio-turn-1") -> dict[str, Any]:
     return {
-        "ok": False, "request_id": request_id, "session_id": client.session_id,
+        "ok": False, "accepted": True, "request_id": request_id, "session_id": client.session_id,
+        "daemon_instance_id": "synthetic-instance", "user_text_sha256": "a" * 64,
+        "awaiting_host_finalization": False,
         "job_status": "failed", "done": True, "phase_result_ready": False,
         "completed_at_utc": "2026-11-05T22:49:52+00:00",
         "result": {"ok": False, "error_code": "runtime_turn_not_accepted", "request_id": request_id},
     }
 
 
+def _live_validation(client: studio_chat.ChatClient, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    from tools.jazn_run_studio.validation_worker import validate_terminal_failure
+    status: dict[str, Any] = {
+        "active_state": "active_trusted", "endpoint_identity_matches": True,
+        "endpoint_instance_matches": True, "heartbeat_fresh": True,
+        "package_integrity_verified": True, "source_provenance_verified": True,
+        "daemon_instance_id": "synthetic-instance", "active_root": str(client.core.root),
+    }
+    live = _failed_result(client)
+    monkeypatch.setattr(runtime_daemon, "status_daemon", lambda *_a, **_k: status)
+    monkeypatch.setattr(runtime_daemon, "chat_daemon_result", lambda *_a, **_k: live)
+
+    def worker(*_a: Any, **kwargs: Any) -> CompletedProcess[bytes]:
+        data = json.loads(kwargs["data"])
+        receipt = validate_terminal_failure(
+            data["payload"], data["request_id"], data["session_id"],
+            root=client.core.root, daemon_url=data["daemon_url"], expected_proof=data.get("expected_proof"),
+        )
+        return CompletedProcess([], 0, json.dumps(receipt).encode(), b"")
+
+    monkeypatch.setattr(studio_chat, "run", worker)
+    return live
+
+
 def test_only_verified_terminal_failure_can_be_archived(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, core = _client(tmp_path, monkeypatch)
+    _live_validation(client, monkeypatch)
     client.receive(_failed_result(client))
     assert client.can_resolve_terminal_failure()
     assert not any(kind == "chat_final" for _key, kind, _value in core.events)
@@ -69,6 +96,7 @@ def test_inconsistent_failure_proof_never_unblocks_chat(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, changed: str,
 ) -> None:
     client, _core = _client(tmp_path, monkeypatch)
+    _live_validation(client, monkeypatch)
     value = _failed_result(client)
     value[changed] = {
         "session_id": "other-session", "request_id": "other-request",
@@ -85,6 +113,7 @@ def test_chat_job_not_found_is_not_evidence_of_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, core = _client(tmp_path, monkeypatch)
+    _live_validation(client, monkeypatch)
     missing = {"ok": False, "error_code": "chat_job_not_found", "request_id": client.pending}
     client.receive(missing)
     assert not client.can_resolve_terminal_failure()
@@ -112,6 +141,7 @@ def test_restart_requires_fresh_failure_proof(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, core = _client(tmp_path, monkeypatch)
+    _live_validation(client, monkeypatch)
     client.receive(_failed_result(client))
     restored = studio_chat.ChatClient(core)  # type: ignore[arg-type]
     assert restored.pending == "studio-turn-1"
@@ -221,3 +251,47 @@ def test_unknown_request_remains_unknown(tmp_path: Path) -> None:
         assert server.get_chat_job("not-present") is None
     finally:
         server.server_close()
+
+
+@pytest.mark.parametrize("damage", ["wrong_instance", "different_job", "different_error", "not_done", "host_pending", "missing", "unavailable", "durable_settlement"])
+def test_independent_failure_proof_is_mandatory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str) -> None:
+    client, _core = _client(tmp_path, monkeypatch)
+    live = _live_validation(client, monkeypatch)
+    if damage == "wrong_instance":
+        live["daemon_instance_id"] = "other"
+    elif damage == "different_job":
+        live["request_id"] = "other"
+    elif damage == "different_error":
+        live["result"]["error_code"] = "other"
+    elif damage == "not_done":
+        live["done"] = False
+    elif damage == "host_pending":
+        live["host_turn_id"] = "host-turn"
+    elif damage == "missing":
+        live.clear()
+    elif damage == "unavailable":
+        def unavailable(*_a: Any, **_k: Any) -> dict[str, Any]:
+            raise TimeoutError("synthetic")
+        monkeypatch.setattr(runtime_daemon, "chat_daemon_result", unavailable)
+    elif damage == "durable_settlement":
+        from latka_jazn.core import turn_settlement
+        monkeypatch.setattr(turn_settlement, "resolve_durable_turn_settlement",
+                            lambda *_a, **_k: {"found": True, "state": "consumed", "valid": True})
+    client.receive(_failed_result(client))
+    assert not client.can_resolve_terminal_failure()
+    with pytest.raises(StudioError):
+        client.resolve_terminal_failure("studio-turn-1")
+    assert client.pending == "studio-turn-1"
+    assert not list(tmp_path.glob("chat-terminal-failure-*.json"))
+
+
+def test_terminal_failure_rechecked_before_archive(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    client, _core = _client(tmp_path, monkeypatch)
+    live = _live_validation(client, monkeypatch)
+    client.receive(_failed_result(client))
+    assert client.can_resolve_terminal_failure()
+    live["daemon_instance_id"] = "restarted"
+    with pytest.raises(StudioError):
+        client.resolve_terminal_failure("studio-turn-1")
+    assert client.pending == "studio-turn-1"
+    assert not list(tmp_path.glob("chat-terminal-failure-*.json"))
