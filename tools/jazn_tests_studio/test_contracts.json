@@ -16863,11 +16863,11 @@
       "path": "tests/test_daemon_completed_request_replay.py",
       "name": "test_completed_request_tombstone_survives_multiple_daemon_restarts",
       "purpose": "Completed request tombstone survives multiple daemon restarts",
-      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 20 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "integration",
       "tags": [],
       "markers": [],
-      "assertion_count": 18,
+      "assertion_count": 20,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -16875,7 +16875,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 30
+      "line": 38
     },
     "tests/test_daemon_instance_identity.py::test_instance_identity_allows_windows_redirector_pid_difference": {
       "path": "tests/test_daemon_instance_identity.py",
