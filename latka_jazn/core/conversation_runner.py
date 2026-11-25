@@ -14,6 +14,7 @@ from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
 from latka_jazn.core.session_provenance import (
     build_session_provenance,
+    project_turn_session_load,
     repair_final_visible_integrity,
     validate_final_visible_integrity,
 )
@@ -200,6 +201,8 @@ class ConversationRunner(RunnerOperations):
             self.wake_state_runtime_status,
         )
         self.no_carryover = no_carryover
+        self._last_locally_accepted_turn_id: str | None = None
+        self._checkpoint_state_unchanged = True
         self._turn_count = int(
             self.state_store.last_load_metadata.get("continuity_turn_count") or 0
         )
@@ -337,6 +340,17 @@ class ConversationRunner(RunnerOperations):
                 conversation_history,
                 allow_history=not self.no_carryover,
             )
+        # Capture evidence BEFORE this turn can mutate or persist any state.
+        turn_load_metadata = project_turn_session_load(
+            session_id=self.state.session_id,
+            initial_load_metadata=self.state_store.last_load_metadata,
+            conversation_history=conversation_history,
+            last_locally_accepted_turn_id=getattr(self, "_last_locally_accepted_turn_id", None),
+            previous_user_text=self.state.last_user_text,
+            previous_visible_text=getattr(self.state, "last_visible_text", None),
+            history_allowed=not turn_scoped_no_carryover,
+            checkpoint_state_unchanged=getattr(self, "_checkpoint_state_unchanged", False),
+        )
         ctx = {
             "client": client,
             "lifecycle": lifecycle,
@@ -566,6 +580,8 @@ class ConversationRunner(RunnerOperations):
             }
 
             if answer_ok:
+                # This worker may no longer represent its original disk checkpoint.
+                self._checkpoint_state_unchanged = False
                 _update_runtime_session_state(
                     self.state,
                     user_text=user_text,
@@ -614,6 +630,11 @@ class ConversationRunner(RunnerOperations):
                         "turn_id": turn_context.turn_id,
                         "trace_id": turn_context.trace_id,
                     }
+                self._last_locally_accepted_turn_id = (
+                    turn_context.turn_id
+                    if canonical_persistence_ok and conversation_state_status.get("ok") is True
+                    else None
+                )
                 if conversation_state_status.get("ok") is not True:
                     result["persistence_degraded"] = True
                     result["persistence_state"] = "degraded"
@@ -672,7 +693,7 @@ class ConversationRunner(RunnerOperations):
                     lifecycle=lifecycle,
                     process_reused=process_reused,
                     engine_reused_between_turns=True,
-                    load_metadata=self.state_store.last_load_metadata,
+                    load_metadata=turn_load_metadata,
                     save_status=save_status,
                 )
                 session_provenance["final_visible_integrity_valid"] = bool(

@@ -3,6 +3,10 @@ from __future__ import annotations
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
+import json
+import os
+import subprocess
+import sys
 from types import SimpleNamespace
 
 from latka_jazn.config import JaznConfig
@@ -200,3 +204,130 @@ def test_host_finalization_does_not_end_liveness_and_pending_turn_recovers_after
     finally:
         second.close_sessions()
         second.server_close()
+
+
+# Run the real daemon job loop in two separate OS processes.  Thread-backed
+# session workers are intentional in this fixture; full CLI/public MCP and
+# hard-isolated worker lifecycle acceptance remain separate gates.
+_DAEMON_CONTINUITY_CHILD = r'''
+import json
+import os
+import sys
+from pathlib import Path
+from latka_jazn.config import JaznConfig
+from latka_jazn.core.runtime_daemon import JaznDaemonServer, JaznDaemonHandler
+from latka_jazn.core.conversation_state_store import ConversationStateStore
+
+root = Path(sys.argv[1])
+phase = sys.argv[2]
+output = Path(sys.argv[3])
+session = "stage04-process-continuity"
+server = JaznDaemonServer(
+    ("127.0.0.1", 0), JaznDaemonHandler,
+    config=JaznConfig(root=root, memory_mode="off"),
+    marker_path=root / "workspace_runtime" / "JAZN_ACTIVE_RUNTIME.json",
+    hard_worker_process_isolation=False,
+    execution_timeout_seconds=60,
+)
+try:
+    text = ("Jaka jest godzina?" if phase == "first" else
+            "Zacytuj pierwszych trzech słów mojej poprzedniej wiadomości.")
+    args = dict(user_text=text, input_field="message", session_id=session,
+                no_carryover=False, client="daemon_http", request_id="stage04-" + phase)
+    job, created, error = server.submit_chat_job(**args)
+    assert created is True and error is None and job is not None
+    assert job.done_event.wait(90), "daemon job did not settle"
+    assert job.status == "completed", repr(job.result)
+    result = job.result
+    assert isinstance(result, dict)
+    assert result["answer_ok"] is True
+    assert result["canonical_persistence_ok"] is True
+    assert result["conversation_state_persistence"]["ok"] is True
+    assert result["session_persistence_ok"] is True
+    # Same request in the same process must not append another accepted turn.
+    again, duplicate_created, duplicate_error = server.submit_chat_job(**args)
+    assert duplicate_error is None and duplicate_created is False and again is job
+    store = ConversationStateStore(root)
+    history = store.load_context_projection(session)
+    assert history["invalid_record_count"] == 0
+    assert store.load_context_projection("stage04-foreign-session")["turns"] == []
+    report = {
+        "pid": os.getpid(),
+        "instance": server.daemon_instance_id,
+        "session": result["session"]["session_id"],
+        "turn_id": result["trace"]["turn_id"],
+        "trace_id": result["trace"]["trace_id"],
+        "body": result["conversation_decision"]["body"],
+        "provenance": result["session_provenance"],
+        "history_count": history["total_turn_count"],
+        "first_record": store.lookup_accepted_turn(session, selector="first")["record"],
+    }
+finally:
+    server.close_sessions()
+    server.server_close()
+output.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+'''
+
+
+def test_real_daemon_job_loop_continues_session_across_os_processes(tmp_path: Path) -> None:
+    root = tmp_path / "system"
+    root.mkdir()
+    (root / "main.py").write_text("# isolated daemon fixture\n", encoding="utf-8")
+    env = {key: value for key, value in os.environ.items() if not key.startswith("JAZN_")}
+    env.update({
+        "JAZN_RUNTIME_WORKSPACE_DIR": str(root / "workspace_runtime"),
+        "JAZN_MEMORY_ROOT": str(root / "memory"),
+        "JAZN_MEMORY_MODE": "off",
+        "JAZN_MODEL_ADAPTER": "null",
+        "JAZN_LLM_ROUTE": "off",
+        "JAZN_NETWORK_TIME_FIRST": "0",
+        "JAZN_NETWORK_TIME_IN_TURN": "0",
+        "JAZN_ALLOW_NETWORK": "0",
+        "JAZN_DICTIONARY_ALLOW_NETWORK": "0",
+        "JAZN_MEMORY_SYNC_MODE": "off",
+    })
+    project = Path(__file__).resolve().parents[1]
+
+    def run(phase: str) -> dict:
+        output = tmp_path / (phase + ".json")
+        completed = subprocess.run(
+            [sys.executable, "-X", "utf8", "-c", _DAEMON_CONTINUITY_CHILD,
+             str(root), phase, str(output)],
+            cwd=project, env=env, capture_output=True, text=True,
+            encoding="utf-8", timeout=120, check=False,
+        )
+        assert completed.returncode == 0, completed.stderr[-4000:] + completed.stdout[-4000:]
+        assert output.is_file()
+        return json.loads(output.read_text(encoding="utf-8"))
+
+    first = run("first")
+    assert first["provenance"]["session_loaded_from"] == "new"
+    assert first["provenance"]["session_reused"] is False
+    assert first["history_count"] == 1
+    # Use the actual durable checkpoint AFTER the first child has exited.
+    checkpoint_files = list((root / "workspace_runtime" / "runtime_sessions").glob("*.json"))
+    assert len(checkpoint_files) == 1
+    checkpoint = json.loads(checkpoint_files[0].read_text(encoding="utf-8"))
+    assert checkpoint["session_id"] == first["session"]
+    assert checkpoint["last_user_text"] == "Jaka jest godzina?"
+    expected_sha = checkpoint["_continuity"]["checkpoint_sha256"]
+
+    second = run("resumed")
+    # Independently constructed daemon instance and actual subprocess exit.
+    assert first["instance"] != second["instance"]
+    assert first["pid"] > 0 and second["pid"] > 0
+    assert first["session"] == second["session"]
+    assert first["turn_id"] != second["turn_id"]
+    assert first["trace_id"] != second["trace_id"]
+    assert second["history_count"] == 2
+    assert second["first_record"] == first["first_record"]
+    assert second["body"] == "Jaka jest godzina?"
+    resumed = second["provenance"]
+    assert resumed["session_loaded_from"] == "session_checkpoint"
+    assert resumed["session_reused"] is True
+    assert resumed["session_resurrected_from_disk"] is True
+    assert resumed["session_reuse_evidence"] == "checkpoint_matches_accepted_history"
+    assert resumed["session_input_checkpoint_sha256"] == expected_sha
+    assert resumed["session_prior_accepted_turn_id"] == first["turn_id"]
+    assert resumed["session_prior_accepted_trace_id"] == first["trace_id"]
+    assert resumed["continuity_checkpoint_sha256"] != expected_sha

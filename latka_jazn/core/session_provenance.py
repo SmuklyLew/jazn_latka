@@ -10,6 +10,102 @@ from latka_jazn.core.message_envelope import normalize_newlines
 
 SCHEMA_VERSION = schema_version("session_provenance")
 
+def project_turn_session_load(
+    *,
+    session_id: str,
+    initial_load_metadata: Mapping[str, Any],
+    conversation_history: Mapping[str, Any],
+    last_locally_accepted_turn_id: str | None,
+    previous_user_text: str | None,
+    previous_visible_text: str | None,
+    history_allowed: bool,
+    checkpoint_state_unchanged: bool = False,
+) -> dict[str, Any]:
+    """Project pre-turn continuity evidence without mutating load metadata.
+
+    The canonical history store, not the session ID, process flag, counter,
+    caller-supplied text or the current turn's save, supplies accepted history.
+    A checkpoint's integrity alone does not prove that it contains the latest
+    accepted turn. Historical worker initialization is reported separately.
+    """
+    initial_source = str(initial_load_metadata.get("session_loaded_from") or "new")
+    initial_disk = initial_load_metadata.get("session_resurrected_from_disk") is True
+    turns = conversation_history.get("turns")
+    history_verified = bool(
+        history_allowed
+        and conversation_history.get("session_id") == session_id
+        and conversation_history.get("invalid_record_count") == 0
+        and conversation_history.get("projection_sha256")
+        and isinstance(turns, list)
+    )
+    latest = (
+        turns[-1]
+        if history_verified and isinstance(turns, list) and turns
+        and isinstance(turns[-1], Mapping)
+        else {}
+    )
+    prior_turn_id = str(latest.get("turn_id") or "") or None
+    prior_trace_id = str(latest.get("trace_id") or "") or None
+    checkpoint_sha = initial_load_metadata.get("continuity_checkpoint_sha256")
+    checkpoint_count = initial_load_metadata.get("continuity_turn_count")
+    current_state_matches = (
+        previous_user_text is not None
+        and previous_visible_text is not None
+        and latest.get("user_text") == previous_user_text
+        and latest.get("assistant_text") == previous_visible_text
+    )
+    checkpoint_verified = bool(
+        checkpoint_state_unchanged
+        and isinstance(checkpoint_count, int)
+        and not isinstance(checkpoint_count, bool)
+        and checkpoint_count > 0
+        and checkpoint_count == conversation_history.get("total_turn_count")
+        and initial_disk
+        and initial_load_metadata.get("session_checkpoint_integrity_verified") is True
+        and initial_load_metadata.get("session_carryover_blocked") is not True
+        and isinstance(checkpoint_sha, str)
+        and len(checkpoint_sha) == 64
+    )
+    source = "new" if initial_source == "new" and not last_locally_accepted_turn_id else "carryover_unverified"
+    evidence = "none"
+    disk_used = False
+    input_checkpoint_sha = None
+    if not history_allowed:
+        if source != "new":
+            source = "carryover_disabled"
+    elif prior_turn_id and prior_trace_id:
+        if last_locally_accepted_turn_id == prior_turn_id and current_state_matches:
+            source = "in_process"
+            evidence = "previous_locally_accepted_turn"
+        elif (
+            checkpoint_verified
+            and current_state_matches
+            and initial_source in {"session_checkpoint", "latest_session_pointer"}
+        ):
+            source = initial_source
+            evidence = "checkpoint_matches_accepted_history"
+            disk_used = True
+            input_checkpoint_sha = checkpoint_sha
+        else:
+            source = "accepted_session_history"
+            evidence = "verified_accepted_history_projection"
+    return {
+        "session_loaded_from": source,
+        "session_reused": evidence != "none",
+        "session_resurrected_from_disk": disk_used,
+        "session_initial_loaded_from": initial_source,
+        "session_initial_resurrected_from_disk": initial_disk,
+        "session_reuse_evidence": evidence,
+        "session_prior_accepted_turn_id": prior_turn_id,
+        "session_prior_accepted_trace_id": prior_trace_id,
+        "session_history_verified_before_turn": history_verified,
+        "session_history_count_before_turn": (
+            conversation_history.get("total_turn_count", 0) if history_verified else None
+        ),
+        "session_input_checkpoint_sha256": input_checkpoint_sha,
+    }
+
+
 def build_session_provenance(
     *,
     session_id: str,
@@ -41,6 +137,20 @@ def build_session_provenance(
         "session_reused": bool(load_metadata.get("session_reused", False)),
         "session_resurrected_from_disk": bool(load_metadata.get("session_resurrected_from_disk", False)),
         "session_loaded_from": str(load_metadata.get("session_loaded_from") or "new"),
+        **{
+            key: load_metadata[key]
+            for key in (
+                "session_initial_loaded_from",
+                "session_initial_resurrected_from_disk",
+                "session_reuse_evidence",
+                "session_prior_accepted_turn_id",
+                "session_prior_accepted_trace_id",
+                "session_history_verified_before_turn",
+                "session_history_count_before_turn",
+                "session_input_checkpoint_sha256",
+            )
+            if key in load_metadata
+        },
         "background_process_claim_allowed": False,
         "truth_boundary": truth_boundary,
         **save_status,

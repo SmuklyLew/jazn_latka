@@ -358,6 +358,7 @@ class RuntimeSessionStateStore:
             }
             state.clear_carryover()
             self.last_load_metadata.update(
+                session_reused=False,
                 restart_continuity_status=status["status"],
                 restart_continuity_verified=False,
                 session_carryover_blocked=True,
