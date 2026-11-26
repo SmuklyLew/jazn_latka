@@ -12,6 +12,7 @@ from typing import Any, Literal, TextIO
 from latka_jazn.core.host_stdout_delivery import write_complete_stdout
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.model_transport_failure import terminal_local_model_failure
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.conversation_channel import (
@@ -625,6 +626,8 @@ def chatgpt_result_requires_host_visible_reply(result: dict[str, Any]) -> bool:
         decision["requires_host_model"] = False
         result["requires_host_model"] = False
         return False
+    if terminal_local_model_failure(decision) is not None:
+        return False
     return bool(
         runtime_turn.get("requires_host_model")
         or decision.get("requires_host_model")
@@ -899,6 +902,28 @@ def build_chatgpt_host_bridge_turn_contract(
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
     displayable_runtime_final = chatgpt_result_has_displayable_runtime_final(result)
+    model_failure = terminal_local_model_failure(decision)
+    if not displayable_runtime_final and model_failure is not None:
+        daemon = json_object(result.get("daemon"))
+        daemon_job = json_object(result.get("daemon_job"))
+        # No generation context, host request hash or settlement is issued for
+        # a failed local executor. Retain the diagnostic and lineage only.
+        return {
+            "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
+            "runtime_version": result.get("runtime_version") or PACKAGE_VERSION_FULL,
+            "phase": "host_diagnostic_required",
+            "status": "local_model_transport_failed",
+            "diagnostic_reason": model_failure["error_code"],
+            "turn_id": trace.get("turn_id"),
+            "trace_id": trace.get("trace_id"),
+            "daemon_request_id": daemon.get("request_id") or daemon_job.get("request_id"),
+            "daemon_instance_id": daemon.get("daemon_instance_id") or daemon_job.get("daemon_instance_id"),
+            "host_must_generate_visible_reply": False,
+            "host_reply_finalization_required": False,
+            "display_exact_runtime_final": False,
+            "model_transport_failure": model_failure,
+            "must_not_replay": True,
+        }
     requires_host = bool(not displayable_runtime_final and chatgpt_result_requires_host_visible_reply(result))
     detected_intent = str(
         decision.get("detected_user_intent")
@@ -1169,7 +1194,11 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "chatgpt_host_bridge": bridge,
         "daemon_request_id": bridge.get("daemon_request_id"),
         "poll_command": bridge.get("poll_command"),
-        "diagnostic_reason": memory_violation,
+        "diagnostic_reason": memory_violation or (
+            bridge.get("diagnostic_reason")
+            if action == "host_diagnostic" and bridge.get("status") == "local_model_transport_failed"
+            else None
+        ),
         "runtime_checks": {
             "validation_accepted": validation.get("accepted"),
             "final_visible_integrity_valid": integrity.get("valid"),
@@ -1225,7 +1254,10 @@ def attach_chatgpt_host_contract(
     result["chatgpt_bridge"] = dict(chat_bridge_meta)
     bridge_value = result.get("chatgpt_host_bridge")
     bridge = bridge_value if isinstance(bridge_value, dict) else {}
-    if not bridge:
+    if not bridge or (
+        terminal_local_model_failure(result.get("conversation_decision")) is not None
+        and not chatgpt_result_has_displayable_runtime_final(result)
+    ):
         bridge = build_chatgpt_host_bridge_turn_contract(
             result,
             user_text=user_text,
