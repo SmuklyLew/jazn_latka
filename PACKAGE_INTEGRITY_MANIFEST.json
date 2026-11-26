@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-26T20:42:30+00:00",
-  "updated_at_utc": "2026-11-26T20:42:30+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-26T21:04:17+00:00",
+  "updated_at_utc": "2026-11-26T21:04:17+00:00",
   "start_file": "run.py",
-  "file_count": 4009,
-  "static_file_count": 4009,
+  "file_count": 4010,
+  "static_file_count": 4010,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3002,
-      "sha256": "740d071a08b32fc43648693bd9ef80071d4f416eedb9fab78179a57c001522dd",
+      "sha256": "be210273740ff93ac22814873d29c499efc5219953d35ba324a671c2d5d61980",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -554,7 +554,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1953,
-      "sha256": "9ecf73128068991493b9025a608ef31e4063061e28fe455b9c6558397e2066d9",
+      "sha256": "06bf4b11eed7a58206bae3e26f662a0d8b9640c5bed6923a70a64b2e3aabf57b",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 85990,
-      "sha256": "470f7d2c6b86f3bb6a1fb7a90ed10d86cb36b96a375f584b0a799d41e762a796",
+      "size_bytes": 87746,
+      "sha256": "f1959386a6929e2b5c284bea6069cce4a9b849be0296a0d7c49458c3180c06d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2776,8 +2776,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/STAGE05_PC_ACCEPTANCE.md",
-      "size_bytes": 7689,
-      "sha256": "07565957931cb879361683da5c48f3885beb08d6eab7f426443a961cf0463f0f",
+      "size_bytes": 8465,
+      "sha256": "2e1f4e53a1c57206f4f93d501cdd71887e73d7941696a23c4189d1dc564cd690",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -7213,8 +7213,8 @@
     },
     {
       "path": "latka_jazn/core/runtime_daemon.py",
-      "size_bytes": 290410,
-      "sha256": "32be8e601a3b96e41bcb1ce794eebc3d707afa3e51601ff9fae1f327c14f17ff",
+      "size_bytes": 291704,
+      "sha256": "ffec20697a6fec1cf838bceb8a50e86381ca1087833a32599ee00b2b36380287",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10400,7 +10400,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 8704,
-      "sha256": "2fa5ae61c817272869ea4a9b0a2baf943c349655ee84c7b46bd282d7943fe5b3",
+      "sha256": "1ac74a534ab26ed1b1df00f6f613df7ee1e3dfe6438f34442cc44a6f7adc25b9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11920,8 +11920,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 33049,
-      "sha256": "96aea6b611c8cdc3d3b3788eaef9eb188ec5be4e1ffe1ac5ca6820934bb4ffa7",
+      "size_bytes": 33127,
+      "sha256": "19811a617e2f09dc8821e5cf62c97a73bd3cf744a51e872bafabe2cf73356e5d",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33690,6 +33690,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "size_bytes": 5433,
+      "sha256": "f1307643917c3ef15eb8a2f79eec1bb775eacbfafb816d28c9904202ca603133",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_stage05_jsonl_authority.py",
       "size_bytes": 6904,
       "sha256": "53eead70ce61444b839b817a9b4691dad959e8b9fc2f416efa1c7572a579ad7a",
@@ -35878,8 +35887,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3283921,
-      "sha256": "6929acb7a53f72f1dec056b0bd088e98e2c8e24e70b464f20742fbfa6281913d",
+      "size_bytes": 3287923,
+      "sha256": "945c73534afe1f0d01b55d98b24302f1772cea3d5e0d7213d609ba37c0e005d7",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -36536,11 +36545,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.2-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.3-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
