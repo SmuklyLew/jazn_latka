@@ -5433,6 +5433,25 @@ def status_daemon(
         heartbeat_fresh_threshold_seconds = marker_heartbeat_threshold
         heartbeat_source = "marker"
 
+    # A final stopped marker can retain a recent timestamp, but that is
+    # historical evidence, not a live heartbeat. Only a fresh endpoint probe
+    # and a dead OS PID may confirm the recorded stop; a foreign or live
+    # endpoint must still pass the ordinary identity checks.
+    stopped_confirmed = bool(
+        package_integrity_verified and source_provenance_verified
+        and marker_root_valid and isinstance(marker, dict)
+        and marker.get("daemon_status") == DAEMON_MARKER_STATUS_STOPPED
+        and marker.get("runtime_process_active") is False
+        and marker.get("active_state") == "inactive"
+        and isinstance(marker.get("stopped_at_utc"), str)
+        and _parse_iso_utc(marker.get("stopped_at_utc")) is not None
+        and pid_int and not raw_os_pid_alive
+        and probe_endpoint and not endpoint_reachable
+    )
+    if stopped_confirmed:
+        marker_heartbeat_fresh = False
+        heartbeat_is_fresh = False
+
     process_identity_confirmed = endpoint_identity_matches
     if (
         process_fingerprint_match is False
@@ -5472,6 +5491,8 @@ def status_daemon(
         active_state_reason = root_resolution.error or "active_root_marker_invalid"
     elif not marker_root_valid:
         active_state_reason = "active_runtime_marker_missing"
+    elif stopped_confirmed:
+        active_state_reason = "daemon_stopped_confirmed"
     elif (
         process_fingerprint_match is False
         and not process_identity_confirmed
@@ -5524,6 +5545,9 @@ def status_daemon(
     if not probe_endpoint:
         readiness_state = "endpoint_not_probed"
         observation_state = "endpoint_not_probed"
+    elif stopped_confirmed:
+        readiness_state = "not_ready"
+        observation_state = "stopped_verified"
     elif active_state == "active_trusted":
         readiness_state = "ready"
         observation_state = "live_verified"
@@ -5604,13 +5628,14 @@ def status_daemon(
         "endpoint_heartbeat_fresh": ping_heartbeat_fresh if endpoint_reachable else None,
         "endpoint_heartbeat_age_seconds": ping_heartbeat_age if endpoint_reachable else None,
         "active_state_reason": active_state_reason,
-        "recommended_repair": _daemon_degraded_recommendation(
+        "stopped_confirmed": stopped_confirmed,
+        "recommended_repair": None if stopped_confirmed or not probe_endpoint else _daemon_degraded_recommendation(
             endpoint_reachable=endpoint_reachable,
             endpoint_root_matches=endpoint_root_matches,
             endpoint_pid_matches=endpoint_pid_matches,
             endpoint_instance_matches=endpoint_instance_matches,
             timestamp_trusted=timestamp_trusted,
-            heartbeat_fresh=heartbeat_is_fresh,
+            heartbeat_fresh=heartbeat_is_fresh and (endpoint_reachable or os_pid_alive),
         ),
         "truth_boundary": (
             "Status active_trusted wymaga pełnej zgodności rozmiarów i SHA-256 manifestu, "

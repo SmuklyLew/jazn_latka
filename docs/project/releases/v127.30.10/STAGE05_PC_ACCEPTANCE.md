@@ -7,7 +7,7 @@ Status: procedura przygotowana; rzeczywisty odbiór NOT_RUN. Nie jest instrukcj�
 W nowym PowerShell, oddzielny katalog; nie modyfikować D:\.AI\jazn_latka_master, nie kopiować prywatnej MEMORY, .settings_local ani markerów. Sprawdzić czy nie ma konfiguracji środowiskowej wskazującej prywatne ścieżki pamięci/aktywnego runtime. W razie wątpliwości przerwać. Użyć istniejącego venv operatora, bez instalacji zależności. Przykładowy katalog musi być nieistniejący.
 
 ```powershell
-$Branch = 'fix/v12730-10-runtime-architecture-hardening'
+$Branch = 'fix/v12730-10-pc-acceptance-remediation-20261126'
 $Root = 'D:\.AI\jazn_latka_v12730-10_stage05_pc'
 $Py = 'D:\.AI\.venv\Scripts\python.exe'
 if (Test-Path -LiteralPath $Root) { throw 'Wybierz nowy katalog testowy' }
@@ -15,8 +15,11 @@ if (-not (Test-Path -LiteralPath $Py)) { throw 'Brak wskazanego interpretera' }
 git clone --branch $Branch --single-branch https://github.com/SmuklyLew/jazn_latka.git $Root
 if ($LASTEXITCODE -ne 0) { throw 'Klon nieudany' }
 Set-Location -LiteralPath $Root
-git rev-parse HEAD
-git status --short
+$ExpectedSha = Read-Host 'Pełny SHA kandydata zatwierdzonego do odbioru'
+$ActualSha = (git rev-parse HEAD).Trim()
+if ($ExpectedSha -notmatch '^[0-9a-f]{40}$' -or $ActualSha -ne $ExpectedSha) { throw 'SHA niezgodny z kandydatem odbioru' }
+if (git status --porcelain) { throw 'Worktree nie jest czysty' }
+$ActualSha
 $env:JAZN_DEPENDENCY_AUTOBOOTSTRAP = '0'
 $env:JAZN_MEMORY_MODE = 'off'
 $env:JAZN_MEMORY_SYNC_MODE = 'off'
@@ -54,7 +57,7 @@ $env:JAZN_OLLAMA_BASE_URL = 'http://127.0.0.1:11435'
 $env:JAZN_LLM_ROUTE = 'auto'
 (Invoke-RestMethod "$($env:JAZN_OLLAMA_BASE_URL)/api/tags").models | Select-Object name
 ```
-Wybrać faktycznie zainstalowany lokalny model; gemma3:latest tylko jeśli istnieje. Ustawić `$env:JAZN_OLLAMA_MODEL`. Odrzucić model cloud i brak logu local-only. Ustawić `$Model = $env:JAZN_OLLAMA_MODEL`. Zweryfikować status nieaktywnego testowego daemonu i tożsamość root; potem wykonać odmowę rozmowy:
+Wybrać faktycznie zainstalowany lokalny model; gemma3:latest tylko jeśli istnieje. Ustawić `$env:JAZN_OLLAMA_MODEL`. Odrzucić model cloud i brak logu local-only. Ustawić `$Model = $env:JAZN_OLLAMA_MODEL`. W każdym nowym PowerShell ponownie ustawić izolowany root, interpreter, port, wszystkie zmienne sekcji 1 i 2 oraz model; zmienne `$env:` nie są automatycznie przenoszone do niezależnego terminala. Przed każdym submit lub restartem sprawdzić, że `JAZN_OLLAMA_BASE_URL` jest dokładnie `http://127.0.0.1:11435` dla tego przykładu, model jest oczekiwany, port daemonu jest testowy, a root i SHA odpowiadają kandydatowi. Przy rozbieżności przerwać, bez fallbacku do portu produkcyjnego. Zweryfikować status nieaktywnego testowego daemonu i tożsamość root; potem wykonać odmowę rozmowy:
 ```powershell
 & $Py -X utf8 run.py status --root $Root --daemon-port $Port --json
 & $Py -X utf8 main.py --root $Root --daemon-port $Port --no-ensure-daemon --chat-gpt -- 'Test braku daemona'
