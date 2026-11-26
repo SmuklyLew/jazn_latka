@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.3",
-  "active_definition_count": 3733,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.4",
+  "active_definition_count": 3738,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71111,6 +71111,120 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 181
+    },
+    "tests/test_stage05_f02_local_model_failure.py::test_failure_evidence_contains_only_bounded_observed_fields": {
+      "path": "tests/test_stage05_f02_local_model_failure.py",
+      "name": "test_failure_evidence_contains_only_bounded_observed_fields",
+      "purpose": "Failure evidence contains only bounded observed fields",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 48
+    },
+    "tests/test_stage05_f02_local_model_failure.py::test_completed_semantic_candidate_and_unknown_or_unbound_failures_not_classified": {
+      "path": "tests/test_stage05_f02_local_model_failure.py",
+      "name": "test_completed_semantic_candidate_and_unknown_or_unbound_failures_not_classified",
+      "purpose": "Completed semantic candidate and unknown or unbound failures not classified",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_stage05_f02_local_model_failure.py::test_latest_failed_semantic_retry_preserves_actual_transport_cause": {
+      "path": "tests/test_stage05_f02_local_model_failure.py",
+      "name": "test_latest_failed_semantic_retry_preserves_actual_transport_cause",
+      "purpose": "Latest failed semantic retry preserves actual transport cause",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 72
+    },
+    "tests/test_stage05_f02_local_model_failure.py::test_recovery_does_not_repeat_failed_local_transport": {
+      "path": "tests/test_stage05_f02_local_model_failure.py",
+      "name": "test_recovery_does_not_repeat_failed_local_transport",
+      "purpose": "Recovery does not repeat failed local transport",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 82
+    },
+    "tests/test_stage05_f02_local_model_failure.py::test_failed_local_executor_cannot_create_or_persist_host_request": {
+      "path": "tests/test_stage05_f02_local_model_failure.py",
+      "name": "test_failed_local_executor_cannot_create_or_persist_host_request",
+      "purpose": "Failed local executor cannot create or persist host request",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
     },
     "tests/test_stage05_f08_stopped_daemon_status.py::test_confirmed_stop_is_inactive_without_repair_advice": {
       "path": "tests/test_stage05_f08_stopped_daemon_status.py",
