@@ -937,6 +937,10 @@ def daemon_chat_request_fingerprint(
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+class _ChatAdmissionLedgerError(ValueError):
+    """The earlier admission history cannot safely be classified as absent."""
+
+
 class JaznDaemonServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
@@ -1044,6 +1048,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             DEFAULT_DAEMON_CHAT_WATCHDOG_INTERVAL_SECONDS,
         ))
         self._chat_state_path = self.marker_path.parent / "daemon_chat_jobs.json"
+        self._chat_ledger_guard_path = self._chat_state_path.with_name(
+            "daemon_chat_jobs.admission-established"
+        )
+        self._chat_ledger_seen = False
         self._recover_chat_jobs()
         self.rest_cycle_controller: RestCycleController | None = None
         self._rest_cycle_init_error: str | None = None
@@ -1242,6 +1250,47 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._session_last_used_monotonic[key] = time.monotonic()
             return existing, "payload" if normalized else "generated"
 
+    def _read_chat_admission_ledger_locked(self) -> list[dict[str, Any]] | None:
+        """Distinguish a virgin ledger from missing, unreadable or invalid history."""
+        try:
+            raw_text = self._chat_state_path.read_text(encoding="utf-8")
+        except FileNotFoundError as exc:
+            try:
+                self._chat_ledger_guard_path.stat()
+                established = True
+            except FileNotFoundError:
+                established = False
+            except OSError as guard_error:
+                raise _ChatAdmissionLedgerError("daemon_chat_ledger_unreadable") from guard_error
+            if (self._chat_ledger_seen or established or any(
+                self._chat_state_path.parent.glob("daemon_chat_jobs.json.corrupt-*")
+            )):
+                raise _ChatAdmissionLedgerError("daemon_chat_ledger_missing") from exc
+            return None
+        except UnicodeError as exc:
+            self._chat_ledger_seen = True
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid") from exc
+        except OSError as exc:
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unreadable") from exc
+        self._chat_ledger_seen = True
+        try:
+            payload = json.loads(raw_text)
+        except (ValueError, RecursionError) as exc:
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid") from exc
+        rows = payload.get("jobs") if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
+        seen: set[str] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
+            request_id = row.get("request_id")
+            if (not isinstance(request_id, str) or not request_id
+                    or request_id in seen or "user_text" in row):
+                raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
+            seen.add(request_id)
+        return rows
+
     def _persist_chat_jobs_locked_unsafe(self) -> None:
         recoverable = []
         for job in self.chat_jobs.values():
@@ -1305,20 +1354,20 @@ class JaznDaemonServer(ThreadingHTTPServer):
         # Preserve the metadata-only record from the previous durable snapshot
         # when a separate job is persisted later. Never restore visible text.
         live_ids = set(self.chat_jobs)
-        if self._chat_state_path.is_file():
-            previous = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
-            if not isinstance(previous, dict) or not isinstance(previous.get("jobs"), list):
-                raise ValueError("invalid_chat_recovery_metadata")
-            for raw in previous["jobs"]:
+        previous = self._read_chat_admission_ledger_locked()
+        if previous is not None:
+            for raw in previous:
                 if not isinstance(raw, dict):
                     continue
                 request_id = str(raw.get("request_id") or "")
-                if (not request_id or request_id in live_ids
-                        or str(raw.get("status") or "") not in DAEMON_CHAT_JOB_TERMINAL_STATES
-                        or not raw.get("request_fingerprint")
-                        or not _parse_iso_utc(raw.get("completed_at_utc"))
-                        or "user_text" in raw):
+                if request_id in live_ids:
                     continue
+                if (str(raw.get("status") or "") not in DAEMON_CHAT_JOB_TERMINAL_STATES
+                        or not isinstance(raw.get("request_fingerprint"), str)
+                        or not raw.get("request_fingerprint")
+                        or not _parse_iso_utc(raw.get("completed_at_utc"))):
+                    # An unrepresented durable identity is not disposable.
+                    raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
                 # Copy only known metadata keys. No user prompt or response
                 # is resurrected, stored, or exposed by the durable tombstone.
                 keys = (
@@ -1340,6 +1389,15 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 )
                 recoverable.append({key: raw.get(key) for key in keys})
                 live_ids.add(request_id)
+        # This marker is only an existence witness, not a second request ledger.
+        # Publish it before the first admission; an interrupted initialization
+        # deliberately requires operator recovery rather than guessing absence.
+        try:
+            self._chat_ledger_guard_path.stat()
+        except FileNotFoundError:
+            write_json_atomic(self._chat_ledger_guard_path, {
+                "schema_version": "daemon_chat_admission_established/v1",
+            })
         write_json_atomic(
             self._chat_state_path,
             {
@@ -1349,6 +1407,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "jobs": recoverable,
             },
         )
+        self._chat_ledger_seen = True
 
     def _persist_chat_jobs_locked(self, *, stage: str = "runtime") -> bool:
         try:
@@ -1465,13 +1524,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
         return job
 
     def _recover_chat_jobs(self) -> None:
-        if not self._chat_state_path.is_file():
-            return
         try:
-            payload = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError, UnicodeError) as exc:
+            jobs = self._read_chat_admission_ledger_locked()
+        except _ChatAdmissionLedgerError as exc:
             self.state.recovery_persist_failure_count += 1
-            self.state.last_recovery_persist_error = f"recovery_read: {type(exc).__name__}: {exc}"
+            self.state.last_recovery_persist_error = f"recovery_read: {exc}"
+            if str(exc) != "daemon_chat_ledger_invalid":
+                return
             quarantine = self._chat_state_path.with_name(
                 f"{self._chat_state_path.name}.corrupt-{int(time.time())}-{uuid.uuid4().hex[:8]}"
             )
@@ -1487,10 +1546,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 error=self.state.last_recovery_persist_error,
             )
             return
-        if not isinstance(payload, dict):
-            return
-        jobs = payload.get("jobs")
-        if not isinstance(jobs, list):
+        if jobs is None:
             return
         for raw in jobs:
             if isinstance(raw, dict) and self._additional_terminal_record(raw):
@@ -2368,9 +2424,21 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 # The terminal in-memory cache can expire before the durable
                 # request ledger. Recover its fingerprint (including completed
                 # requests) before allowing any execution of the same ID.
-                existing = self._read_terminal_chat_job_tombstone_locked(normalized_id)
+                try:
+                    rows = self._read_chat_admission_ledger_locked() or []
+                except _ChatAdmissionLedgerError as exc:
+                    return None, {
+                        "ok": False, "error_code": str(exc),
+                        "request_id": normalized_id, "must_not_resubmit_user_message": True,
+                    }
+                existing = self._read_terminal_chat_job_tombstone_locked(normalized_id, rows=rows)
                 if existing is not None:
                     self.chat_jobs[normalized_id] = existing
+                elif any(row.get("request_id") == normalized_id for row in rows):
+                    return None, {
+                        "ok": False, "error_code": "daemon_chat_ledger_unresolved_record",
+                        "request_id": normalized_id, "must_not_resubmit_user_message": True,
+                    }
             if existing is None:
                 return None, None
             same_request = existing.request_fingerprint == request_fingerprint
@@ -2501,20 +2569,20 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self.start_chat_worker()
         return job, created, None
 
-    def _read_terminal_chat_job_tombstone_locked(self, request_id: str) -> DaemonChatJob | None:
+    def _read_terminal_chat_job_tombstone_locked(
+        self, request_id: str, *, rows: list[dict[str, Any]] | None = None,
+    ) -> DaemonChatJob | None:
         """Rehydrate a completed request or durable rejection without replaying user text.
 
         A memory TTL is a cache-eviction policy, not evidence that the
         original daemon request never existed. Invalid metadata fails closed.
         """
-        try:
-            payload = json.loads(self._chat_state_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError):
-            return None
-        jobs = payload.get("jobs") if isinstance(payload, dict) else None
-        if not isinstance(jobs, list):
-            return None
-        for raw in jobs:
+        if rows is None:
+            try:
+                rows = self._read_chat_admission_ledger_locked() or []
+            except _ChatAdmissionLedgerError:
+                return None
+        for raw in rows:
             if not isinstance(raw, dict) or raw.get("request_id") != request_id:
                 continue
             source_status = str(raw.get("status") or "")

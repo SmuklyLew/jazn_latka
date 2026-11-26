@@ -24,7 +24,7 @@ $env:JAZN_ALLOW_PAID_OPENAI = '0'
 $env:JAZN_DAEMON_AUTOSTART = '0'
 & $Py -X utf8 run.py --version
 & $Py -m pip check
-& $Py -X utf8 run.py host-preflight --root $Root --json
+& $Py -X utf8 run.py host-preflight --json
 ```
 
 Sprawdzić wynik preflight; nie omijać błędu, nie uruchamiać auto-recovery ani automatycznego pobierania. Jeżeli preflight nie przyjmuje --root, sprawdzić --help i użyć bieżącego katalogu. Zarejestrować SHA, interpreter, sys.prefix/base_prefix, wersję Ollama, logi wyników (bez sekretów). Najpierw celowane testy:
