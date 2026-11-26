@@ -134,6 +134,18 @@ def _project_verified_session_quote(state: TurnPipelineState, engine: JaznEngine
         )
 
 
+def _semantic_retry_allowed(state: TurnPipelineState) -> bool:
+    """Transport failure is not permission to repeat a model request."""
+    if state.candidate_valid or not state.model_executor.retry_allowed:
+        return False
+    if getattr(state.model_executor, "executor", None) == "local_model":
+        failure = ollama_transport_failure(state.model_synthesis.adapter_response)
+        if failure is not None:
+            state.decision_dict["model_guided_retry_suppressed_reason"] = failure["error_code"]
+            return False
+    return True
+
+
 class RecoveryPolicy:
     """Turn-local recovery policy over the existing runtime services."""
 
@@ -146,15 +158,7 @@ class RecoveryPolicy:
         state.speech_truth_gate_required = _speech_truth_gate_required(state.detected_dialogue_intent, state.handler_result)
         if state.speech_truth_gate_required:
             state.candidate_valid = bool(state.model_synthesis.used and state.first_validation.accepted and not state.template_origin.get("template_id"))
-            transport_failure = (
-                ollama_transport_failure(state.model_synthesis.adapter_response)
-                if state.model_executor.executor == "local_model" else None
-            )
-            if transport_failure is not None:
-                # A failed HTTP generation is not a rejected semantic candidate.
-                # A second POST could repeat an already executed inference.
-                state.decision_dict["model_guided_retry_suppressed_reason"] = transport_failure["error_code"]
-            if not state.candidate_valid and state.model_executor.retry_allowed and transport_failure is None:
+            if _semantic_retry_allowed(state):
                 retry_draft, retry_policy = _validated_self_state_retry(state, engine)
                 state.retry_synthesis = engine.model_guided_response_synthesizer.synthesize(
                     adapter=state.speech_adapter or engine.model_adapter,

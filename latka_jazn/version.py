@@ -1,3 +1,4 @@
+# v127.30.10.5 stage05 F02: preserve diagnostic input binding and semantic retry compatibility.
 # v127.30.10.4 stage05 F02: preserve observed local transport failure; no implicit retry or host handoff.
 # v127.30.10.3 stage05 F08: distinguish confirmed stop from endpoint failure.
 # v127.30.10.2 stage05 F01: fail closed on ambiguous admission ledger history.
@@ -294,7 +295,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.4"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.5"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
