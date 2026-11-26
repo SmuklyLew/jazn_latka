@@ -1,0 +1,199 @@
+{
+  "schema_version": "stage05_pc_evidence_results/v1",
+  "acceptance_date": "2026-11-26",
+  "tested_commit": "282dc4e821ef5bf5815b4f4f7860f98c385931db",
+  "tested_branch": "fix/v12730-10-runtime-architecture-hardening",
+  "platform": "Windows",
+  "evidence_scope": "original_pc_acceptance",
+  "source": "operator_supplied_console_output",
+  "original_files_independently_read": false,
+  "tests_reexecuted": false,
+  "release_accepted": false,
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10-jss-v104-v80-convergence",
+  "environment": {
+    "python": "3.14.4",
+    "ollama": "0.40.14",
+    "model": "gemma3:latest",
+    "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "memory_mode": "off",
+    "cloud_disabled": true,
+    "paid_openai_allowed": false
+  },
+  "overall_status": "RELEASE_BLOCKED",
+  "stage06_allowed": false,
+  "OR01": {
+    "status": "PASS",
+    "qualification": "After operator remediation of venv; not evidence of a SYSTEM defect or production dependency readiness.",
+    "basis": "STAGE05_PC_FINDINGS_AND_REMEDIATION.md"
+  },
+  "OR02": {
+    "status": "PASS",
+    "tests": 280,
+    "passed": 280,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "source_sha256": "0832c91b281a0181a6dbcd41320aaf6a1be010ff97d6bd5a443f75726b891704"
+  },
+  "OR03": {
+    "status": "PARTIAL",
+    "real_local_inference_observed": true,
+    "conversation_persistence_observed": true,
+    "message_envelope_valid_observed": true,
+    "cli_finalization": "completed_job_unverified",
+    "cli_finalized_successfully": false,
+    "limitations": [
+      "Local completion is not accepted host phase-2 finalization.",
+      "Semantic quality and truncation remain unresolved."
+    ]
+  },
+  "OR04": {
+    "status": "PARTIAL",
+    "fault_triggered": true,
+    "generated_tokens": 206,
+    "ctrl_break_sent": true,
+    "scheduler_shutdown_observed": true,
+    "http_500_chat_count": 1,
+    "source_sha256": "23aaaaf62ecb1e0f35e2eb3ec01518f8d22bef067ed619013b1c54b45268cdf0",
+    "same_daemon_instance_after_fault": true,
+    "daemon_ready_after_fault": true,
+    "runtime_write_ready_after_fault": true,
+    "heartbeat_fresh_after_fault": true,
+    "submitted_before": 5,
+    "submitted_after": 6,
+    "completed_before": 3,
+    "completed_after": 3,
+    "rejected_before": 2,
+    "rejected_after": 3,
+    "pending_after": 0,
+    "terminal_error_code": "host_finalization_contract_not_persisted",
+    "public_poll_error_code": "phase1_public_job_binding_unverified",
+    "public_poll_must_not_replay": true,
+    "public_poll_must_not_claim_runtime_voice": true,
+    "read_only_poll_checks": {
+      "passed": 10,
+      "total": 10
+    },
+    "circuit_breaker_open_half_open_verified": false,
+    "limitations": [
+      "Model failure classification and durable terminal admission remain unresolved.",
+      "No replay attempted."
+    ]
+  },
+  "OR05": {
+    "status": "FAIL",
+    "restart_ok": true,
+    "stop_ok": true,
+    "start_ok": true,
+    "reloaded": true,
+    "instance_changed": true,
+    "pid_changed": true,
+    "same_root": true,
+    "same_version": true,
+    "package_integrity_verified": true,
+    "source_provenance_verified": true,
+    "runtime_ready_after": true,
+    "runtime_write_ready_after": true,
+    "heartbeat_fresh_after": true,
+    "submitted_before": 8,
+    "completed_before": 5,
+    "rejected_before": 3,
+    "pending_before": 0,
+    "pending_after": 0,
+    "recovered_after_restart": 3,
+    "conversation_records_before": 2,
+    "source_sha256": "ba51d86e70af4cc91056f8aca59457b8459b92543d6fe4e81c86c52d2e060723",
+    "continuity_before_restart": {
+      "passed": 18,
+      "total": 18
+    },
+    "isolation_technical_checks": {
+      "passed": 20,
+      "total": 20,
+      "semantic_grounding_pass": false,
+      "observation": "New session did not inherit Mira, but generated an unsupported project name."
+    },
+    "durable_state_checks": {
+      "passed": 11,
+      "total": 11,
+      "records_byte_identical": true,
+      "session_state_sha256_before_after": "5e95754c82da028763b1daef0668ad89b30dbda4ee02388b6f2b0f50f1dfb185",
+      "checkpoint_generation_before": 4,
+      "checkpoint_generation_after": 6,
+      "turn_count_before_after": 2,
+      "checkpoint_sha256_before": "44bf432519e707e14869c78a3151a9532b2ac6b93d282fad04423d23c1fc99f0",
+      "checkpoint_sha256_after": "1c7145f8e1d9cea89977e356fad68b555921e3a7deec1a5b1e14cce5e55b040d"
+    },
+    "post_restart_continuity": {
+      "passed": 34,
+      "total": 34,
+      "basis": "Existing repository findings report; not a new verification.",
+      "checkpoint_generation": 7,
+      "turn_count": 3
+    },
+    "historical_poll": {
+      "passed": 11,
+      "total": 11,
+      "no_new_submission": true,
+      "no_new_completion": true,
+      "no_new_rejection": true,
+      "no_new_terminal_failure": true,
+      "session_unchanged": true,
+      "conversation_records_unchanged": true,
+      "completed_old_result_disposition": "completed_request_result_unavailable",
+      "interrupted_request_error_code": "chat_job_not_found"
+    },
+    "durable_admission_registry": {
+      "accepted_requests": 9,
+      "retained": 6,
+      "missing": 3,
+      "missing_terminal_state": "host_finalization_rejected",
+      "basis": "Existing repository findings report and operator evidence.",
+      "actual_duplicate_execution_tested": false
+    },
+    "blocking_reason": "F01: missing durable admission records for rejected accepted jobs; replay risk not resolved."
+  },
+  "OR06": {
+    "status": "NOT_RUN",
+    "qualification": "Final acceptance not performed; remaining controlled local phase-2, authorization and transport checks outstanding."
+  },
+  "shutdown": {
+    "status": "PASS",
+    "stopped": true,
+    "shutdown_requested": true,
+    "process_exit_observed": true,
+    "endpoint_down_observed": true,
+    "stop_exit_code": 0,
+    "status_exit_code": 1,
+    "active_state": "inactive",
+    "process_state": "dead",
+    "daemon_port_free": true,
+    "package_integrity_checked_files": 4003,
+    "package_integrity_verified": true,
+    "source_provenance_verified": true,
+    "sqlite_operational_store": {
+      "sqlite_version": "3.50.4",
+      "audit_records": 63,
+      "memory_records": 58,
+      "audit_integrity": "ok",
+      "memory_integrity": "ok",
+      "audit_foreign_key_violations": 0,
+      "memory_foreign_key_violations": 0,
+      "wal_reset_fix_available": false,
+      "wal_reset_mitigation_required": true
+    },
+    "response_write_error_count": 6,
+    "last_response_write_error": "ConnectionAbortedError",
+    "diagnostic_observation": "F08: stopped daemon still received an endpoint_unreachable repair recommendation."
+  },
+  "findings_reference": "STAGE05_PC_FINDINGS_AND_REMEDIATION.md",
+  "procedure_reference": "STAGE05_PC_ACCEPTANCE.md",
+  "evidence_manifest": "STAGE05_PC_EVIDENCE_MANIFEST.json",
+  "limitations": [
+    "Evidence is operator-reported; original PC files were not independently read.",
+    "Historical results apply exclusively to tested_commit, not the remediation branch head.",
+    "No autobiographical MEMORY continuity, live ChatGPT/MCP/Cloudflare, or accepted host phase-2 demonstrated by these results.",
+    "No new PC tests or replay performed; no release approval."
+  ],
+  "next_gate": "Remediate and verify F01–F08, run required CI on the candidate SHA, repeat isolated PC acceptance in a new directory, and complete remaining controlled phase-2/authorization/transport checks before stage 06."
+}

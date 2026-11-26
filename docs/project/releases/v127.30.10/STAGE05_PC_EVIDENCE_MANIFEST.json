@@ -1,0 +1,120 @@
+{
+  "schema_version": "stage05_pc_evidence_manifest/v1",
+  "acceptance_date": "2026-11-26",
+  "tested_commit": "282dc4e821ef5bf5815b4f4f7860f98c385931db",
+  "tested_branch": "fix/v12730-10-runtime-architecture-hardening",
+  "platform": "Windows",
+  "evidence_scope": "original_pc_acceptance",
+  "source": "operator_supplied_console_output",
+  "original_files_independently_read": false,
+  "tests_reexecuted": false,
+  "release_accepted": false,
+  "artifact_count": 9,
+  "artifacts": [
+    {
+      "group": "OR02",
+      "file": "stage05-junit.xml",
+      "bytes": 43216,
+      "modified": "2026-11-26T14:37:42.9745198+01:00",
+      "sha256": "0832c91b281a0181a6dbcd41320aaf6a1be010ff97d6bd5a443f75726b891704",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR04_initial_attempt",
+      "file": "ollama-fault.log",
+      "bytes": 134,
+      "modified": "2026-11-26T16:35:26.0526272+01:00",
+      "sha256": "43c683dec262a1de46dd12c511b82e31e1c93c9653f2945fd123ad694bb5bb30",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR04_controlled_failure",
+      "file": "ollama-fault.log",
+      "bytes": 52118,
+      "modified": "2026-11-26T16:56:06.1683188+01:00",
+      "sha256": "23aaaaf62ecb1e0f35e2eb3ec01518f8d22bef067ed619013b1c54b45268cdf0",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "ready-after.json",
+      "bytes": 13048,
+      "modified": "2026-11-26T17:27:23.2718708+01:00",
+      "sha256": "d2de7d974e09b9f47e8f4047874aa7ddbe2b0bad6801c5e48db9101127ed405e",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "ready-before.json",
+      "bytes": 13402,
+      "modified": "2026-11-26T17:25:28.6084929+01:00",
+      "sha256": "4264811775021e6a8cb1999c97233289f93187f8572d40ef7cf8006ea84a0a3e",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "records-before.json",
+      "bytes": 635,
+      "modified": "2026-11-26T17:25:28.6099957+01:00",
+      "sha256": "f5b62eaa721ae2a347c647132a3b8dee9930a1adb47983993e56a268975186fd",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "restart-result.json",
+      "bytes": 161522,
+      "modified": "2026-11-26T17:27:03.7275710+01:00",
+      "sha256": "ba51d86e70af4cc91056f8aca59457b8459b92543d6fe4e81c86c52d2e060723",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "status-after.json",
+      "bytes": 188073,
+      "modified": "2026-11-26T17:27:23.1102283+01:00",
+      "sha256": "2b173cde77ef2bc45f861fd6453047db7caedc11bd7e3465ca5371d7e909e2f8",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    },
+    {
+      "group": "OR05",
+      "file": "status-before.json",
+      "bytes": 188966,
+      "modified": "2026-11-26T17:25:28.6074849+01:00",
+      "sha256": "d6eeff26d7a42b3f4371bbe77bab16954e4ae42d9707b19f44b796836624ba27",
+      "original_retained_locally": true,
+      "original_uploaded": false
+    }
+  ],
+  "runtime_artifact_inventory": [
+    {
+      "directory": "conversation_state",
+      "file_count": 12,
+      "total_bytes": 11385
+    },
+    {
+      "directory": "runtime_sessions",
+      "file_count": 6,
+      "total_bytes": 20315
+    },
+    {
+      "directory": "turn_checkpoints",
+      "file_count": 2,
+      "total_bytes": 56070
+    }
+  ],
+  "inventory_scope": "Operator-reported inventory after graceful shutdown; runtime inventory counts include all files, not necessarily conversation JSON records.",
+  "git_worktree_clean_reported": true,
+  "daemon_port_free_reported": true,
+  "hash_basis": "SHA-256 values transcribed from operator's Get-FileHash output; original file bytes not available to the publisher.",
+  "redaction_policy": "No absolute PC paths, raw logs, memory databases, tokens, or workspace_runtime files included. Logical artifact groups replace temporary directory paths.",
+  "related_results": "STAGE05_PC_EVIDENCE_RESULTS.json",
+  "truth_boundary": "This is a manifest of reported local evidence, not a package integrity manifest, independent authentication of original artifacts, or release acceptance."
+}
