@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.2",
-  "active_definition_count": 3728,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.3",
+  "active_definition_count": 3733,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71111,6 +71111,100 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 181
+    },
+    "tests/test_stage05_f08_stopped_daemon_status.py::test_confirmed_stop_is_inactive_without_repair_advice": {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "name": "test_confirmed_stop_is_inactive_without_repair_advice",
+      "purpose": "Confirmed stop is inactive without repair advice",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_stage05_f08_stopped_daemon_status.py::test_stopped_marker_does_not_override_live_pid_or_foreign_endpoint": {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "name": "test_stopped_marker_does_not_override_live_pid_or_foreign_endpoint",
+      "purpose": "Stopped marker does not override live pid or foreign endpoint",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 74
+    },
+    "tests/test_stage05_f08_stopped_daemon_status.py::test_read_only_snapshot_cannot_confirm_stop_or_suggest_endpoint_repair": {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "name": "test_read_only_snapshot_cannot_confirm_stop_or_suggest_endpoint_repair",
+      "purpose": "Read only snapshot cannot confirm stop or suggest endpoint repair",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 89
+    },
+    "tests/test_stage05_f08_stopped_daemon_status.py::test_dead_pid_with_fresh_history_without_stop_marker_is_not_a_confirmed_stop": {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "name": "test_dead_pid_with_fresh_history_without_stop_marker_is_not_a_confirmed_stop",
+      "purpose": "Dead pid with fresh history without stop marker is not a confirmed stop",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_stage05_f08_stopped_daemon_status.py::test_unverified_package_cannot_confirm_stop": {
+      "path": "tests/test_stage05_f08_stopped_daemon_status.py",
+      "name": "test_unverified_package_cannot_confirm_stop",
+      "purpose": "Unverified package cannot confirm stop",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "package"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 112
     },
     "tests/test_stage05_jsonl_authority.py::test_unbound_jsonl_cannot_create_runtime": {
       "path": "tests/test_stage05_jsonl_authority.py",
