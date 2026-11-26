@@ -104,3 +104,38 @@ Przykład host-preflight z --root nie jest przyjmowany przez parser tego SHA; ru
 - Ollama — Chat API: https://docs.ollama.com/api/chat
 
 Ten dokument jest zapisem dowodów i kryteriów naprawy, nie implementacją. Naprawy SYSTEM, ich testy, ponowny odbiór i release pozostają NOT_RUN w chwili jego utworzenia.
+
+## 6. Checkpoint audytu F01 i końcowego stopu PC (2026-11-26)
+
+Status: **ANALYZING / RELEASE BLOCKED**. Referencyjny HEAD audytu: `aa8f9b16be7a6a84b0d5876f576aa029380c15ca`; kod runtime analizowany na tym refie, bez zmian SYSTEM. Cztery workflow dokumentacyjnego SHA `02a7d9809a5c359be44aa273cc8a86371d4651f1` zakończone success (Pyright 45869198838, release-hardening 45869198850, MCP 45869198833, memory-cloud 45869198827). Nie są dowodem napraw F01–F07.
+
+### 6.1 F01: dodatkowe miejsca wymagające wspólnej poprawki
+
+W [runtime_daemon.py na referencyjnym SHA](https://github.com/SmuklyLew/jazn_latka/blob/aa8f9b16be7a6a84b0d5876f576aa029380c15ca/latka_jazn/core/runtime_daemon.py) audyt statyczny wskazuje:
+
+| Zakres | Obserwacja |
+|---|---|
+| 1245–1349 | Filtrowanie terminalnych zadań przy zapisie i scalaniu poprzedniego snapshotu zachowuje completed oraz szczególny failed/runtime_turn_not_accepted, lecz nie wszystkie przyjęte stany. |
+| 1359–1375, 2340–2365 | Wrapper zapisu przechwytuje błędy storage i zwraca False. Admission umieszcza zadanie w kolejce przed zapisem i nie sprawdza wyniku bool; obsługa wyjątku wokół wrappera nie rozlicza zwróconego False. Ryzyko wykonania lub ACK bez trwałego admission wymaga osobnego fault-injection. |
+| 1377–1543 | Recovery pomija inne terminalne stany, a uszkodzony JSON jest kwarantannowany; brak/nieprawidłowy rejestr wymaga odrębnej polityki admission, nie założenia pustej historii. |
+| 1545–1556, 2266–2295, 2385–2466 | Cache TTL usuwa terminalne zadania z RAM; odczyt tombstone obsługuje tylko określone stany. Błąd odczytu, uszkodzony wpis i brak wpisu zwracają None, który ścieżka admission interpretuje jako brak istniejącego zadania. To rozbieżność z deklarowanym fail-closed. |
+| 2468–2505 | Poll wykorzystuje odczyt tombstone, reconcile i owning-daemon projection recovery. Zachować autoryzację, lineage i odzyskiwanie istniejącego commita bez wykonywania nowej tury; nie rekonstruować widocznej odpowiedzi z samego tombstone. |
+
+To potwierdzenie ścieżek statycznych i ryzyk, nie dowód wykonania replay ani nowego testu regresyjnego. Poprawka nie może ograniczać się do usunięcia jednego warunku terminalnego. Należy uzgodnić reprezentację trwałego wpisu i jednoznaczne rozróżnienie absent / found / unreadable / invalid, a następnie objąć wspólnym kontraktem admission, recovery, merge i TTL. Zachować dozwolone istniejące mechanizmy host settlement. Nie zapisywać promptów, treści odpowiedzi ani sekretów w tombstones.
+
+Kolejność test-first: (a) wszystkie zaakceptowane terminalne statusy po restart i TTL, (b) błąd zapisu przed wykonaniem, (c) uszkodzony/brakujący rejestr po wcześniejszym admission, (d) konkurencyjny duplikat i konflikt tożsamości/fingerprintu, (e) crash przed/po durable admission oraz przed/po commit/publish, (f) wcześniejsze poprawne host-settlement i recovery. Dla każdej próby kontrolować liczbę wywołań modelu, nowych zapisów i przyjętych jobów. Wyłącznie izolowane syntetyczne fixture.
+
+Uzasadnienie: AWS Builders' Library opisuje konieczność atomowego powiązania identyfikatora klienta z mutacją stanu; RFC 9110 §9.2.2 odradza automatyczne retry operacji nieidempotentnej bez wiedzy o jej skutku. Nie oznacza to gwarancji nieograniczonego exactly-once dla zewnętrznej inferencji; w niejednoznacznym oknie obowiązuje brak replayu. SQLite 3.50.4 użyta na PC pozostaje w zakresie WAL-reset opisanym w oficjalnej dokumentacji, poprawka w 3.51.3+ i backportach 3.50.7/3.44.6; czyste integrity_check nie dowodzi usunięcia ryzyka współbieżności.
+
+### 6.2 Uzupełnienie dowodów PC: graceful shutdown
+
+Operator potwierdził kanoniczny stop izolowanego daemona: `stopped=true`, `shutdown_requested=true`, `process_exit_observed=true`, `endpoint_down_observed=true`, exit 0. Ponowny status: inactive, process_state=dead, endpoint_reachable=false, runtime_core_ready=false, exit 1 zgodnie z kontraktem statusu. Niezależne sprawdzenie PID/portu zakończone DAEMON SHUTDOWN PASS. Manifest 4003 plików i source provenance OK; głęboki odczyt operacyjnych baz SQLite: audit 63, memory 58, integrity OK i 0 naruszeń FK. MEMORY pozostawała off. Odbiór dotyczy starego SHA, nie naprawionego wydania.
+
+- F05: końcowy licznik response_write_error_count wzrósł do 6; last_response_write_error = ConnectionAbortedError (klient rozłączył się przed zapisaniem odpowiedzi). Brak przypisania konkretnego błędu do stopu lub utraty tury. Rozliczyć z logami i testem transportu.
+- F08 (P2, diagnostyka lifecycle, OBSERVED): po świadomym stopie raport zawiera recommended_repair=endpoint_unreachable sugerujący ponowny stop/start, mimo stopped_daemon_runtime, nieżywego procesu i nieaktywnego endpointu. Historyczny marker ma jeszcze świeży wiek heartbeat, natomiast nie jest dowodem żywego procesu. Test ma odróżniać prawidłowy stop od awarii endpointu i nie zalecać samoczynnego uruchomienia. Nie zmieniać status exit code=1 dla nieaktywnego procesu.
+- Status snapshotu może zachowywać poprzednie liczniki i stan workerów; nie interpretować ich jako bieżących po stopie. Nie usuwać markerów ani rejestrów.
+- Zachować testowy klon jako dowód, nie uruchamiać nowych tur, nie restartować, nie odtwarzać historycznych requestów. Ponowny odbiór tylko w nowym katalogu po naprawie.
+
+### 6.3 Stan środowiska implementacyjnego
+
+GitHub API dostępne. Próba odczytu refu przez terminal Git zakończyła się błędem DNS (Could not resolve host: github.com); brak dostępnego checkout tego SHA w tej próbie. Handoff do środowiska roboczego nie został przyjęty. Nie wykonano pytest, nie zmieniono kodu runtime ani wersji i nie synchronizowano ręcznie metadanych. Lokalny worktree niezweryfikowany; limit hosta: usage_unknown. Następna bezpieczna operacja: zweryfikowany osobny checkout aktualnej gałęzi, pełny odczyt właściwych zależności/kontraktów i uruchomienie testu odtwarzającego F01 przed poprawką. Nie przechodzić do etapu 06.
