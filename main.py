@@ -1316,6 +1316,30 @@ def _runtime_owned_daemon_completion(
     )
 
 
+def _runtime_owned_daemon_poll_completion(payload: dict[str, Any], job: dict[str, Any]) -> bool:
+    """A read-only /chat-result snapshot contains the final evidence under result."""
+    if (
+        job is not payload
+        or payload.get("accepted") is not True
+        or payload.get("ok") is not True
+        or payload.get("job_status") != "completed"
+        or payload.get("done") is not True
+        or any(key in payload for key in (
+            "execution_state", "host_finalization_pending", "host_visible_finalization",
+            "chatgpt_host_bridge", "final_visible_text", "final_visible_integrity",
+            "final_response_contract", "conversation_state_persistence",
+            "runtime_truth_gate", "canonical_persistence_ok", "answer_ok",
+        ))
+    ):
+        return False
+    result = payload.get("result")
+    if not isinstance(result, dict) or "daemon_job" in result:
+        return False
+    # Reuse the same verification as the flat send response. Never synthesize
+    # or merge missing proof from a different result, or authorize host phase-2.
+    return _runtime_owned_daemon_completion(result, job)
+
+
 def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
     """Expose job vs finalization without treating ready phase-1 as success."""
     nested = payload.get("daemon_job")
@@ -1328,7 +1352,8 @@ def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
     )
     integrity = payload.get("final_visible_integrity")
     final = payload.get("host_visible_finalization")
-    accepted_finalization = (
+    runtime_poll_verified = _runtime_owned_daemon_poll_completion(payload, job)
+    accepted_finalization = runtime_poll_verified or (
         status == "completed" and done is True
         and payload.get("ok") is True
         and payload.get("execution_state") == "final_visible_answer"
@@ -1356,7 +1381,13 @@ def _daemon_cli_completion(payload: dict[str, Any]) -> dict[str, Any]:
         "phase_result_ready": phase_ready,
         "finalization": finalization,
         "finalized_successfully": accepted_finalization,
-        "truth_boundary": "Processing completion and accepted host finalization are distinct.",
+        "finalization_evidence_source": (
+            "runtime_owned_poll" if runtime_poll_verified
+            else "runtime_owned_result" if accepted_finalization and not isinstance(final, dict)
+            else "host_finalization_result" if accepted_finalization
+            else None
+        ),
+        "truth_boundary": "Processing completion, runtime-owned finalization and host finalization are distinct.",
     }
 
 
