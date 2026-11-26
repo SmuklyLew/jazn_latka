@@ -1,3 +1,4 @@
+# v127.30.10.1 stage05 F01: terminal request retention and persistence-before-queue admission.
 # v127.30.10 stage05: owning-daemon committed projection recovery (unreleased).
 # v127.30.10 stage05: shared public CLI/JSONL phase-one authority (unreleased).
 # v127.30.10 stage05: crash-released conversation projection lock and historical acceptance order (unreleased).
@@ -290,7 +291,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.1"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

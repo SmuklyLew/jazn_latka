@@ -210,7 +210,18 @@ def test_marker_failure_does_not_destroy_completed_job(tmp_path: Path) -> None:
 def test_recovery_persist_failure_does_not_kill_worker(tmp_path: Path) -> None:
     server = _server(tmp_path)
     server.write_marker = lambda **_kwargs: {"manifest_current_sha256": None}  # type: ignore[method-assign]
-    server._persist_chat_jobs_locked_unsafe = lambda: (_ for _ in ()).throw(OSError("recovery unavailable"))  # type: ignore[method-assign]
+    persist_admission = server._persist_chat_jobs_locked_unsafe
+    calls = 0
+
+    def fail_after_durable_admission() -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            persist_admission()
+            return
+        raise OSError("recovery unavailable after admission")
+
+    server._persist_chat_jobs_locked_unsafe = fail_after_durable_admission  # type: ignore[method-assign]
     try:
         job, created, error = server.submit_chat_job(
             user_text="hej",

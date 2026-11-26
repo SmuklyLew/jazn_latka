@@ -1247,10 +1247,6 @@ class JaznDaemonServer(ThreadingHTTPServer):
         for job in self.chat_jobs.values():
             result_value = job.result if isinstance(job.result, dict) else {}
             result_error_code = str(result_value.get("error_code") or "")
-            recoverable_terminal_rejection = bool(
-                job.status == "failed"
-                and str(job.error or result_error_code) == "runtime_turn_not_accepted"
-            )
             # Keep a metadata-only tombstone for an already completed turn.
             # A daemon restart or an in-memory TTL must never make an accepted
             # request_id eligible for a second execution.  The visible result
@@ -1259,10 +1255,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 job.status == "completed"
                 or job.recovery_disposition == "completed_request_result_unavailable"
             )
-            if job.terminal() and not (
-                recoverable_terminal_rejection or completed_tombstone
-            ):
-                continue
+            terminal_error_code = (
+                self._terminal_metadata_code(result_error_code, job.error, job.status)
+                if job.terminal() and not completed_tombstone else None
+            )
             recoverable.append({
                 "request_id": job.request_id,
                 "request_fingerprint": job.request_fingerprint,
@@ -1278,8 +1274,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "started_at_utc": job.started_at_utc,
                 "completed_at_utc": job.completed_at_utc,
                 "status": "completed" if completed_tombstone else job.status,
-                "error": None if completed_tombstone else job.error,
-                "result_error_code": None if completed_tombstone else (result_error_code or None),
+                "error": None if completed_tombstone else (terminal_error_code or job.error),
+                "result_error_code": None if completed_tombstone else (terminal_error_code or result_error_code or None),
                 "recovery_disposition": (
                     "completed_request_result_unavailable"
                     if completed_tombstone else job.recovery_disposition
@@ -1292,7 +1288,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "host_trace_id": job.host_trace_id,
                 "host_request_contract_hash": job.host_request_contract_hash,
                 "host_request_expires_at_utc": job.host_request_expires_at_utc,
-                "host_finalization_reason": job.host_finalization_reason,
+                "host_finalization_reason": (
+                    self._terminal_metadata_code(job.host_finalization_reason)
+                    if job.terminal() else job.host_finalization_reason
+                ),
                 "host_finalization_attempt_count": job.host_finalization_attempt_count,
                 "previous_request_id": job.previous_request_id,
                 "previous_runtime_turn_id": job.previous_runtime_turn_id,
@@ -1315,12 +1314,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     continue
                 request_id = str(raw.get("request_id") or "")
                 if (not request_id or request_id in live_ids
-                        or raw.get("status") not in {"failed", "completed"}
-                        or (
-                            raw.get("status") == "failed"
-                            and str(raw.get("error") or raw.get("result_error_code") or "")
-                            != "runtime_turn_not_accepted"
-                        )
+                        or str(raw.get("status") or "") not in DAEMON_CHAT_JOB_TERMINAL_STATES
                         or not raw.get("request_fingerprint")
                         or not _parse_iso_utc(raw.get("completed_at_utc"))
                         or "user_text" in raw):
@@ -1374,6 +1368,102 @@ class JaznDaemonServer(ThreadingHTTPServer):
             )
             return False
 
+    @staticmethod
+    def _terminal_metadata_code(*values: object) -> str | None:
+        """Persist machine-readable failure codes, never free-form exception text."""
+        for value in values:
+            if isinstance(value, str) and re.fullmatch(r"[a-z][a-z0-9_]{0,127}", value):
+                return value
+        return None
+
+    @staticmethod
+    def _additional_terminal_record(raw: dict[str, Any]) -> bool:
+        status = str(raw.get("status") or "")
+        return (
+            status in DAEMON_CHAT_JOB_TERMINAL_STATES
+            and status != "completed"
+            and not (
+                status == "failed"
+                and str(raw.get("error") or raw.get("result_error_code") or "")
+                == "runtime_turn_not_accepted"
+            )
+        )
+
+    def _rehydrate_terminal_request_locked(
+        self, raw: dict[str, Any],
+    ) -> DaemonChatJob | None:
+        """Restore a metadata-only terminal receipt without granting execution authority."""
+        status = str(raw.get("status") or "")
+        request_id = raw.get("request_id")
+        fingerprint = raw.get("request_fingerprint")
+        if (
+            not self._additional_terminal_record(raw)
+            or not isinstance(request_id, str) or not request_id
+            or not isinstance(fingerprint, str) or not fingerprint
+            or "user_text" in raw
+            or not _parse_iso_utc(raw.get("completed_at_utc"))
+        ):
+            return None
+        error_code = self._terminal_metadata_code(
+            raw.get("result_error_code"), raw.get("error"), status,
+        ) or "terminal_request_result_unavailable"
+        disposition = (
+            self._terminal_metadata_code(raw.get("recovery_disposition"))
+            or "terminal_request_result_unavailable"
+        )
+        try:
+            job = DaemonChatJob(
+                request_id=request_id,
+                user_text="",
+                input_field=str(raw.get("input_field") or "recovered_metadata"),
+                session_id=str(raw["session_id"]) if raw.get("session_id") is not None else None,
+                no_carryover=bool(raw.get("no_carryover")),
+                client=str(raw.get("client") or "daemon_http"),
+                command=str(raw.get("command") or "--chat"),
+                model_channel_config=normalize_model_channel_config(
+                    raw.get("model_channel_config")
+                    if isinstance(raw.get("model_channel_config"), dict) else {}
+                ),
+                reset_session=bool(raw.get("reset_session")),
+                request_fingerprint=fingerprint,
+                user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
+                created_at_utc=str(raw.get("created_at_utc") or ""),
+                started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
+                completed_at_utc=str(raw["completed_at_utc"]),
+                status=status,
+                error=error_code,
+                recovery_disposition=disposition,
+                host_turn_id=str(raw.get("host_turn_id") or "") or None,
+                host_trace_id=str(raw.get("host_trace_id") or "") or None,
+                host_request_contract_hash=str(raw.get("host_request_contract_hash") or "") or None,
+                host_request_expires_at_utc=str(raw.get("host_request_expires_at_utc") or "") or None,
+                host_finalization_reason=self._terminal_metadata_code(raw.get("host_finalization_reason")),
+                host_finalization_attempt_count=int(raw.get("host_finalization_attempt_count") or 0),
+                previous_request_id=str(raw.get("previous_request_id") or "") or None,
+                previous_runtime_turn_id=str(raw.get("previous_runtime_turn_id") or "") or None,
+                previous_trace_id=str(raw.get("previous_trace_id") or "") or None,
+                host_finalization_gate_state=str(raw.get("host_finalization_gate_state") or "not_required"),
+                host_finalization_gate_wait_started_at_utc=str(raw.get("host_finalization_gate_wait_started_at_utc") or "") or None,
+                host_finalization_gate_wait_seconds=float(raw.get("host_finalization_gate_wait_seconds") or 0.0),
+                host_finalization_error_code=self._terminal_metadata_code(raw.get("host_finalization_error_code")),
+                last_heartbeat_at_utc=str(raw.get("last_heartbeat_at_utc") or "") or None,
+                execution_timeout_seconds=float(raw.get("execution_timeout_seconds") or self.execution_timeout_seconds),
+                timeout_profile=str(raw.get("timeout_profile") or "default"),
+                result={
+                    "ok": False,
+                    "error_code": error_code,
+                    "request_id": request_id,
+                    "recovery_disposition": disposition,
+                    "automatic_replay_performed": False,
+                    "must_not_replay": True,
+                    "must_not_claim_runtime_voice": True,
+                },
+            )
+        except (ValueError, TypeError):
+            return None
+        job.done_event.set()
+        return job
+
     def _recover_chat_jobs(self) -> None:
         if not self._chat_state_path.is_file():
             return
@@ -1403,6 +1493,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
         if not isinstance(jobs, list):
             return
         for raw in jobs:
+            if isinstance(raw, dict) and self._additional_terminal_record(raw):
+                historical = self._rehydrate_terminal_request_locked(raw)
+                if historical is not None:
+                    self.chat_jobs[historical.request_id] = historical
+                continue
             if not isinstance(raw, dict) or str(raw.get("status")) not in {
                 "accepted", "queued", "running", "starting", DAEMON_CHAT_JOB_HOST_PENDING_STATE,
                 DAEMON_CHAT_JOB_HOST_WAIT_STATE, "failed", "completed",
@@ -1552,6 +1647,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             completed = _parse_iso_utc(job.completed_at_utc)
             if completed is not None and (now - completed).total_seconds() > ttl_seconds:
                 stale_ids.append(request_id)
+        # Keep terminal receipts in memory if a prior snapshot write failed.
+        if (stale_ids and self.state.last_recovery_persist_error
+                and not self._persist_chat_jobs_locked(stage="before_cache_eviction")):
+            return
         for request_id in stale_ids:
             self.chat_jobs.pop(request_id, None)
 
@@ -2337,31 +2436,51 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         audit_db_path=self.config.audit_db_path,
                     ),
                 )
-                if predecessor is not None:
-                    self._begin_host_finalization_gate_locked(job, predecessor)
-                self.chat_jobs[normalized_id] = job
-                try:
-                    if predecessor is None:
-                        self._chat_queue.put_nowait(job)
-                    self._persist_chat_jobs_locked(stage="job_submitted")
-                except queue.Full:
-                    self.chat_jobs.pop(normalized_id, None)
-                    self._persist_chat_jobs_locked(stage="job_submit_queue_full")
+                if predecessor is None and self._chat_queue.full():
                     return None, False, {
                         "ok": False,
                         "error_code": "daemon_chat_queue_full",
                         "queue_capacity": self._chat_queue.maxsize,
                     }
-                except (OSError, TypeError, ValueError) as exc:
+                if predecessor is not None:
+                    self._begin_host_finalization_gate_locked(job, predecessor)
+                self.chat_jobs[normalized_id] = job
+                # Admission is ordered before both queue visibility and the ACK.
+                try:
+                    persisted = self._persist_chat_jobs_locked(stage="job_submitted")
+                except (OSError, TypeError, ValueError):
+                    persisted = False
+                if persisted is not True:
                     self.chat_jobs.pop(normalized_id, None)
+                    if job.host_finalization_gate_wait_started_at_utc is not None:
+                        self.state.chat_job_host_finalization_gate_wait_count -= 1
                     return None, False, {
                         "ok": False,
                         "error_code": "daemon_chat_state_persist_failed",
-                        "error": f"{type(exc).__name__}: {exc}",
+                        "request_id": normalized_id,
+                        "must_not_resubmit_user_message": True,
                     }
                 self.state.chat_job_submitted_count += 1
                 self.state.chat_job_pending_count += 1
                 self.state.last_chat_job_id = normalized_id
+                if predecessor is None:
+                    try:
+                        self._chat_queue.put_nowait(job)
+                    except queue.Full:
+                        # The identity was already committed; retain its receipt.
+                        job.status = "failed"
+                        job.error = "daemon_chat_queue_full_after_admission"
+                        job.completed_at_utc = utc_now_iso()
+                        job.result = {
+                            "ok": False,
+                            "error_code": job.error,
+                            "request_id": normalized_id,
+                            "automatic_replay_performed": False,
+                        }
+                        self.state.chat_job_failed_count += 1
+                        self.state.chat_job_pending_count -= 1
+                        self._persist_chat_jobs_locked(stage="job_submit_queue_full_after_admission")
+                        job.done_event.set()
                 return job, True, None
 
         submission_lock = self._session_submission_lock(session_id)
@@ -2399,6 +2518,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
             if not isinstance(raw, dict) or raw.get("request_id") != request_id:
                 continue
             source_status = str(raw.get("status") or "")
+            if self._additional_terminal_record(raw):
+                return self._rehydrate_terminal_request_locked(raw)
             if (source_status not in {"failed", "completed"}
                     or (source_status == "failed" and str(
                         raw.get("error") or raw.get("result_error_code") or ""
