@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.28",
-  "active_definition_count": 3819,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.29",
+  "active_definition_count": 3822,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -72078,6 +72078,91 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 181
+    },
+    "tests/test_stage05_f01_wake_and_global_context_scope.py::test_normalization_uri_never_opens_other_file": {
+      "path": "tests/test_stage05_f01_wake_and_global_context_scope.py",
+      "name": "test_normalization_uri_never_opens_other_file",
+      "purpose": "Normalization uri never opens other file",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_wake_report",
+        "latka_jazn.memory.wake_state_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_stage05_f01_wake_and_global_context_scope.py::test_wake_and_rest_roundtrip_in_literal_scoped_root_and_memory_off": {
+      "path": "tests/test_stage05_f01_wake_and_global_context_scope.py",
+      "name": "test_wake_and_rest_roundtrip_in_literal_scoped_root_and_memory_off",
+      "purpose": "Wake and rest roundtrip in literal scoped root and memory off",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_wake_report",
+        "latka_jazn.memory.wake_state_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 63
+    },
+    "tests/test_stage05_f01_wake_and_global_context_scope.py::test_global_state_alias_refused_before_hydration_or_write": {
+      "path": "tests/test_stage05_f01_wake_and_global_context_scope.py",
+      "name": "test_global_state_alias_refused_before_hydration_or_write",
+      "purpose": "Global state alias refused before hydration or write",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.memory.normalization_sidecar",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_wake_report",
+        "latka_jazn.memory.wake_state_runtime"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 134
     },
     "tests/test_stage05_f01_windows_workspace_alias.py::test_dos_comparison_only_normalizes_the_drive_alias": {
       "path": "tests/test_stage05_f01_windows_workspace_alias.py",
