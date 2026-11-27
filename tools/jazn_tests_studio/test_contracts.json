@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.8",
-  "active_definition_count": 3749,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.9",
+  "active_definition_count": 3753,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71019,6 +71019,84 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 103
+    },
+    "tests/test_stage05_f01_durable_write_and_poll.py::test_durable_atomic_write_flushes_before_publish_and_syncs_parent": {
+      "path": "tests/test_stage05_f01_durable_write_and_poll.py",
+      "name": "test_durable_atomic_write_flushes_before_publish_and_syncs_parent",
+      "purpose": "Durable atomic write flushes before publish and syncs parent",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_stage05_f01_durable_write_and_poll.py::test_file_sync_failure_does_not_publish": {
+      "path": "tests/test_stage05_f01_durable_write_and_poll.py",
+      "name": "test_file_sync_failure_does_not_publish",
+      "purpose": "File sync failure does not publish",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OSError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
+    },
+    "tests/test_stage05_f01_durable_write_and_poll.py::test_ambiguous_publish_never_enqueues_or_acknowledges": {
+      "path": "tests/test_stage05_f01_durable_write_and_poll.py",
+      "name": "test_ambiguous_publish_never_enqueues_or_acknowledges",
+      "purpose": "Ambiguous publish never enqueues or acknowledges",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 12,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_stage05_f01_durable_write_and_poll.py::test_authenticated_http_poll_distinguishes_absence_from_unverified_history": {
+      "path": "tests/test_stage05_f01_durable_write_and_poll.py",
+      "name": "test_authenticated_http_poll_distinguishes_absence_from_unverified_history",
+      "purpose": "Authenticated http poll distinguishes absence from unverified history",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 11,
+      "expected_exceptions": [
+        "HTTPError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 114
     },
     "tests/test_stage05_f01_terminal_request_retention.py::test_terminal_identity_survives_restart_eviction_and_snapshot_merge": {
       "path": "tests/test_stage05_f01_terminal_request_retention.py",
