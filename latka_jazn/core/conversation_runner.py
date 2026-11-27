@@ -10,7 +10,7 @@ from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.memory_intent_contract import is_session_dialogue_reference, parse_session_turn_reference, session_history_forbidden
 from latka_jazn.core.conversation_channel import canonical_chat_command, normalize_model_channel_config
 from latka_jazn.core.json_types import json_object
-from latka_jazn.core.model_transport_failure import terminal_local_model_failure
+from latka_jazn.core.model_transport_failure import model_failure_projection, terminal_model_failure
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
 from latka_jazn.core.session_provenance import (
@@ -109,8 +109,8 @@ def _update_runtime_session_state(
 def _host_finalization_pending(result: dict[str, Any], *, can_continue: bool) -> tuple[bool, list[str]]:
     """Recognize a complete, safe phase-1 contract without treating it as a final answer."""
     decision = json_object(result.get("conversation_decision"))
-    if terminal_local_model_failure(decision) is not None:
-        # A local generation failure does not authorize a host phase-2.
+    if terminal_model_failure(decision) is not None:
+        # A failed or unavailable selected executor does not authorize host phase-2.
         return False, []
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
@@ -522,12 +522,9 @@ class ConversationRunner(RunnerOperations):
             # A complete phase-1 request is a successful runtime execution, but it
             # is not a displayable answer and must not commit final-answer state.
             result["ok"] = bool(answer_ok or host_pending)
-            model_failure = terminal_local_model_failure(result.get("conversation_decision"))
+            model_failure = terminal_model_failure(result.get("conversation_decision"))
             if not answer_ok and not host_pending and model_failure is not None:
-                failure_key = (
-                    "model_generation_limit" if model_failure.get("failure_kind") == "generation_limit"
-                    else "model_transport_failure"
-                )
+                failure_key, _ = model_failure_projection(model_failure)
                 result[failure_key] = model_failure
                 if not result.get("error_code"):
                     result["error_code"] = model_failure["error_code"]

@@ -1,7 +1,8 @@
 """Bounded evidence of a failed model transport, not a host-generation request.
 
-Only the observed local Ollama adapter failure is classified here. No provider
-text, endpoint URL, prompt, credentials, or guessed cause crosses this boundary.
+Observed local Ollama failures and a verified unavailable auto/null executor
+are distinguished here. No provider text, endpoint URL, prompt, credentials,
+or guessed cause crosses this boundary.
 """
 from __future__ import annotations
 
@@ -110,3 +111,72 @@ def terminal_local_model_failure(decision: object) -> dict[str, Any] | None:
     if synthesis.get("used") is True:
         return None
     return ollama_terminal_attempt_failure(synthesis.get("adapter_response"))
+
+
+
+def terminal_model_failure(decision: object) -> dict[str, Any] | None:
+    """Distinguish a known transport failure from no selected generator.
+
+    A missing or unprobed endpoint is not evidence of a failed HTTP request.
+    Only the runtime's selected auto/null route and its actual no-generation
+    synthesis qualify here. An explicit host route or runtime-exact answer
+    must remain governed by the existing finalization contract.
+    """
+    local_failure = terminal_local_model_failure(decision)
+    if local_failure is not None:
+        return local_failure
+    value = json_object(decision)
+    preflight = json_object(value.get("model_executor_preflight"))
+    speech = json_object(value.get("model_guided_speech_status"))
+    route = json_object(speech.get("llm_route_status"))
+    host = json_object(route.get("chatgpt_bridge"))
+    synthesis = json_object(value.get("model_guided_synthesis"))
+    if not (
+        value.get("model_generated") is False
+        and value.get("requires_host_model") is True
+        and value.get("fallback_classification") == "cannot_answer_directly"
+        and preflight.get("executor") == "unavailable"
+        and preflight.get("available") is False
+        and preflight.get("retry_allowed") is False
+        and preflight.get("adapter_id") == "null_model_adapter"
+        and preflight.get("provider") == "none"
+        and preflight.get("reason") == "external_model_not_configured"
+        and speech.get("selected_route") == "null_fallback"
+        and speech.get("selected_adapter") == "null_model_adapter"
+        and speech.get("reason") == "null_fallback_no_model_guided_speech"
+        and speech.get("can_attempt_model_guided_speech") is False
+        and speech.get("can_generate_model_guided_speech") is False
+        and speech.get("can_complete_model_guided_speech_via_host") is False
+        and speech.get("requires_host_model") is False
+        and route.get("route_mode") == "auto"
+        and route.get("selected_route") == "null_fallback"
+        and route.get("paid_route") is False
+        and host.get("declared") is False
+        and host.get("available") is False
+        and synthesis.get("used") is False
+        and synthesis.get("provider") == "none"
+        and synthesis.get("reason") == "external_model_not_configured"
+        and not synthesis.get("host_generation_context")
+        and not synthesis.get("adapter_response")
+        and not value.get("model_guided_retry_synthesis")
+    ):
+        return None
+    return {
+        "provider": "none",
+        "adapter_id": "null_model_adapter",
+        "selected_route": "null_fallback",
+        "error_code": "external_model_not_configured",
+        "failure_kind": "executor_unavailable",
+        "request_dispatched": False,
+        "automatic_retry_allowed": False,
+        "host_generation_authorized": False,
+    }
+
+
+def model_failure_projection(failure: dict[str, Any]) -> tuple[str, str]:
+    """Use the same diagnostic field and bridge status in both projections."""
+    if failure.get("failure_kind") == "executor_unavailable":
+        return "model_executor_unavailable", "model_executor_unavailable"
+    if failure.get("failure_kind") == "generation_limit":
+        return "model_generation_limit", "local_model_output_limit_reached"
+    return "model_transport_failure", "local_model_transport_failed"

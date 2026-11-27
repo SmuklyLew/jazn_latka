@@ -1,3 +1,4 @@
+# v127.30.10.10 stage05 F02: diagnose unavailable auto/null executor without host phase-2.
 # v127.30.10.9 stage05 F01: synchronize admission writes and distinguish uncertain poll history.
 # v127.30.10.8 stage05 F06: protect migration, read-only comparison and backup paths.
 # v127.30.10.7 stage05 F04/F05: output limit is not a final answer; exact wire and ledger serialization.
@@ -299,7 +300,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.9"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.10"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (
