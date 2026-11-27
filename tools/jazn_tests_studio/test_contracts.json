@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.23",
-  "active_definition_count": 3798,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.24",
+  "active_definition_count": 3801,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71216,6 +71216,70 @@
       "description_source": "source_identity",
       "line": 77
     },
+    "tests/test_stage05_f01_offline_admission_authority.py::test_offline_owner_proof_is_read_only_and_fails_closed": {
+      "path": "tests/test_stage05_f01_offline_admission_authority.py",
+      "name": "test_offline_owner_proof_is_read_only_and_fails_closed",
+      "purpose": "Offline owner proof is read only and fails closed",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 43
+    },
+    "tests/test_stage05_f01_offline_admission_authority.py::test_offline_recovery_never_opens_committed_store_for_other_owner": {
+      "path": "tests/test_stage05_f01_offline_admission_authority.py",
+      "name": "test_offline_recovery_never_opens_committed_store_for_other_owner",
+      "purpose": "Offline recovery never opens committed store for other owner",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
+    },
+    "tests/test_stage05_f01_offline_admission_authority.py::test_offline_proof_rejects_witness_changed_during_read": {
+      "path": "tests/test_stage05_f01_offline_admission_authority.py",
+      "name": "test_offline_proof_rejects_witness_changed_during_read",
+      "purpose": "Offline proof rejects witness changed during read",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 97
+    },
     "tests/test_stage05_f01_owner_loopback_transport.py::test_verified_mcp_context_reaches_daemon_and_does_not_bleed": {
       "path": "tests/test_stage05_f01_owner_loopback_transport.py",
       "name": "test_verified_mcp_context_reaches_daemon_and_does_not_bleed",
@@ -71312,21 +71376,24 @@
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
       "name": "test_public_owner_gate_across_restart_and_token_resolution",
       "purpose": "Public owner gate across restart and token resolution",
-      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 8,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.mcp",
         "latka_jazn.mcp.public_turn_owners",
         "latka_jazn.mcp.server"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 29
+      "line": 33
     },
     "tests/test_stage05_f01_public_turn_ownership.py::test_unowned_turn_is_not_adopted": {
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
@@ -71342,13 +71409,16 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.mcp",
         "latka_jazn.mcp.public_turn_owners",
         "latka_jazn.mcp.server"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 81
+      "line": 120
     },
     "tests/test_stage05_f01_public_turn_ownership.py::test_two_owner_reservations_cannot_both_win": {
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
@@ -71362,13 +71432,16 @@
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.mcp",
         "latka_jazn.mcp.public_turn_owners",
         "latka_jazn.mcp.server"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 100
+      "line": 139
     },
     "tests/test_stage05_f01_subject_bound_idempotency.py::test_cached_generate_is_subject_bound_across_server_reopen": {
       "path": "tests/test_stage05_f01_subject_bound_idempotency.py",
