@@ -32,7 +32,7 @@ import uuid
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.admission_owner_context import (
-    ADMISSION_OWNER_HEADER, current_admission_owner, is_admission_owner_endpoint,
+    ADMISSION_OWNER_HEADER, admission_session_id, current_admission_owner, is_admission_owner_endpoint,
 )
 from latka_jazn.core.runtime_root import (
     RuntimeWorkspaceBusyError,
@@ -2554,6 +2554,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "error": str(exc),
                 "request_id": normalized_id,
             }
+        try:
+            session_id = normalize_daemon_session_id(session_id)
+            effective_session_id = admission_session_id(
+                session_id, request_id=normalized_id, owner_sha256=admission_owner_sha256,
+            )
+        except ValueError as exc:
+            return None, False, {"ok": False, "error_code": str(exc),
+                                 "request_id": normalized_id, "must_not_resubmit_user_message": True}
         request_fingerprint = daemon_chat_request_fingerprint(
             user_text=user_text,
             session_id=session_id,
@@ -2647,14 +2655,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     }
 
                 predecessor = self._latest_unsettled_session_job_locked(
-                    session_id=session_id,
+                    session_id=effective_session_id,
                     exclude_request_id=normalized_id,
                 )
                 job = DaemonChatJob(
                     request_id=normalized_id,
                     user_text=user_text,
                     input_field=input_field,
-                    session_id=session_id,
+                    session_id=effective_session_id,
                     no_carryover=bool(no_carryover),
                     client=client,
                     command=normalized_command,
@@ -2666,7 +2674,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     timeout_profile=timeout_profile,
                     turn_context=TurnExecutionContext.create(
                         request_id=normalized_id,
-                        session_id=session_id or "daemon-generated-session",
+                        session_id=effective_session_id or "daemon-generated-session",
                         timeout_seconds=job_timeout_seconds,
                         audit_db_path=self.config.audit_db_path,
                     ),
@@ -2718,7 +2726,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                         job.done_event.set()
                 return job, True, None
 
-        submission_lock = self._session_submission_lock(session_id)
+        submission_lock = self._session_submission_lock(effective_session_id)
         if submission_lock is None:
             job, created, error = create_job_serialized()
         else:

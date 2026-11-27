@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 import hashlib
+import json
+import re
 
 AUTHENTICATED_HTTP_OWNER: ContextVar[str | None] = ContextVar(
     "jazn_authenticated_http_owner", default=None,
@@ -31,3 +33,34 @@ def is_admission_owner_endpoint(path: str) -> bool:
         "/chat", "/message", "/chat-submit", "/chat-result",
         "/host-finalize", "/chat-finalization",
     } or path.startswith("/chat-result/")
+
+# Reserved for daemon-derived session identities, never a caller authority.
+PUBLIC_SESSION_PREFIX = "public-session-v1-"
+
+
+def is_public_session_id(session_id: str | None) -> bool:
+    return bool(session_id and session_id.casefold().startswith(PUBLIC_SESSION_PREFIX))
+
+
+def admission_session_id(
+    session_id: str | None, *, request_id: str, owner_sha256: str | None,
+) -> str | None:
+    """Derive a stable per-principal session namespace before worker selection.
+
+    A missing client session remains one independent session per request.
+    A caller cannot select an already-derived key, even via the local API.
+    The original client session remains the input to the admission fingerprint.
+    """
+    if is_public_session_id(session_id):
+        raise ValueError("reserved_public_session_id")
+    if owner_sha256 is None:
+        return session_id
+    if re.fullmatch(r"[0-9a-f]{64}", owner_sha256) is None:
+        raise ValueError("invalid_admission_owner")
+    material = json.dumps(
+        ["public_session/v1", owner_sha256,
+         "client_session" if session_id is not None else "request",
+         session_id if session_id is not None else request_id],
+        ensure_ascii=False, separators=(",", ":"),
+    ).encode("utf-8")
+    return PUBLIC_SESSION_PREFIX + hashlib.sha256(material).hexdigest()

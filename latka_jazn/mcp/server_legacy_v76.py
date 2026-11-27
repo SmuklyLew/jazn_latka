@@ -763,6 +763,11 @@ class JaznMcpServer:
     def handle(self, request_value: dict[str, Any]) -> dict[str, Any] | None:
         method = request_value.get("method")
         request_id = request_value.get("id")
+        public_owner = self._verified_public_owner()
+        task_owner: dict[str, str] = (
+            {"owner_subject": public_owner, "owner_transport": "public_http"}
+            if public_owner is not None else {}
+        )
         if method == "notifications/initialized":
             return None
         try:
@@ -793,21 +798,22 @@ class JaznMcpServer:
                     metadata,
                 )
                 if tool_name == "jazn_generate_visible_reply" and self._client_supports_tasks(metadata):
-                    task_result = self.task_resume.create_from_pending_result(result)
+                    task_result = self.task_resume.create_from_pending_result(result, **task_owner)
                     if task_result is not None:
                         result = task_result
             elif method == "tasks/get":
                 params = dict(request_value.get("params") or {})
-                result = self.task_resume.get(str(params.get("taskId") or ""))
+                result = self.task_resume.get(str(params.get("taskId") or ""), **task_owner)
             elif method == "tasks/cancel":
                 params = dict(request_value.get("params") or {})
-                result = self.task_resume.cancel(str(params.get("taskId") or ""))
+                result = self.task_resume.cancel(str(params.get("taskId") or ""), **task_owner)
             elif method == "tasks/update":
                 params = dict(request_value.get("params") or {})
                 responses = params.get("inputResponses")
                 result = self.task_resume.update_input(
                     str(params.get("taskId") or ""),
                     responses if isinstance(responses, Mapping) else None,
+                    **task_owner,
                 )
             else:
                 return {

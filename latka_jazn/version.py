@@ -1,3 +1,4 @@
+# v127.30.10.25 stage05 F01: isolate public session workers/checkpoints and legacy task protocol ownership.
 # v127.30.10.24 stage05 F01: require durable admission owner proof for public offline delivery and cache.
 # v127.30.10.23 stage05 F01: propagate verified owner to daemon loopback admission, poll and finalization.
 # v127.30.10.22 stage05 F01: immutable owner digest in canonical daemon admission ledger.
@@ -314,7 +315,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.24"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.25"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

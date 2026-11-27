@@ -680,15 +680,25 @@ class McpTaskResumeAdapter:
                 str(structured_map.get("host_request_contract_hash") or "") or None
             ),
         )
+        if owner_subject is None and record.owner_subject is not None:
+            raise KeyError("unknown_task")
         return record.to_task_result(creation=True)
+
+    def _protocol_record(
+        self, task_id: str, *, owner_subject: str | None, owner_transport: str | None,
+    ) -> McpTaskRecord:
+        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
+        # The store retains an explicitly trusted operator read seam. A protocol
+        # adapter (including legacy stdio) must never inherit that authority.
+        if record is None or (owner_subject is None and record.owner_subject is not None):
+            raise KeyError("unknown_task")
+        return record
 
     def get(
         self, task_id: str, *, owner_subject: str | None = None,
         owner_transport: str | None = None,
     ) -> dict[str, Any]:
-        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
-        if record is None:
-            raise KeyError("unknown_task")
+        record = self._protocol_record(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         if record.terminal:
             return record.to_task_result()
 
@@ -765,6 +775,7 @@ class McpTaskResumeAdapter:
         self, task_id: str, *, owner_subject: str | None = None,
         owner_transport: str | None = None,
     ) -> dict[str, Any]:
+        self._protocol_record(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         self.store.request_cancel(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         # Cancellation is cooperative.  We acknowledge receipt but do not lie
         # that the underlying runtime stopped before it confirms cancellation.
@@ -776,9 +787,7 @@ class McpTaskResumeAdapter:
         input_responses: Mapping[str, Any] | None = None,
         *, owner_subject: str | None = None, owner_transport: str | None = None,
     ) -> dict[str, Any]:
-        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
-        if record is None:
-            raise KeyError("unknown_task")
+        record = self._protocol_record(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         fingerprint = TaskInputDelivery.from_responses(dict(input_responses or {}))
         if self.store.confirmed_input_receipt(
             record.task_id, fingerprint.digest, fingerprint.keys,

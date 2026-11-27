@@ -77,7 +77,8 @@ def test_offline_recovery_never_opens_committed_store_for_other_owner(
         return {"final_visible_text": "synthetic-canary", "action": "display_exact"}
 
     class Offline:
-        def result(self, _request_id: str) -> dict[str, Any]:
+        def result(self, request_id: str) -> dict[str, Any]:
+            assert request_id == "synthetic-r"
             raise resume.GatewayError("daemon_unavailable:synthetic")
 
     monkeypatch.setattr(resume, "recover_committed_host_presentation", committed)

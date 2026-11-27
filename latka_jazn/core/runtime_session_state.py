@@ -13,6 +13,7 @@ import uuid
 
 from latka_jazn.db.runtime_sqlite import runtime_sqlite_write_guard
 
+from latka_jazn.core.admission_owner_context import is_public_session_id
 from latka_jazn.core.json_types import mapping_object
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.version import schema_version
@@ -267,7 +268,7 @@ class RuntimeSessionStateStore:
         errors: list[dict[str, str]] = []
         if not no_carryover:
             candidates = [requested_path]
-            if session_id and self.latest_path != requested_path:
+            if session_id and self.latest_path != requested_path and not is_public_session_id(session_id):
                 candidates.append(self.latest_path)
             for candidate in candidates:
                 if not candidate.is_file():
@@ -275,6 +276,11 @@ class RuntimeSessionStateStore:
                 state, checkpoint, error = self._load_path(candidate)
                 if error is not None or state is None:
                     errors.append({"path": str(candidate), "error": error or "unknown_load_error"})
+                    continue
+                if session_id is None and is_public_session_id(state.session_id):
+                    # An unscoped caller cannot inherit a public session from
+                    # a stale shared pointer (including one left by older code).
+                    errors.append({"path": str(candidate), "error": "public_session_requires_explicit_scope"})
                     continue
                 if session_id is not None and state.session_id != session_id:
                     errors.append({"path": str(candidate), "error": "requested_session_id_mismatch"})
@@ -573,6 +579,9 @@ class RuntimeSessionStateStore:
                 return {"session_state_saved": False, "status": "primary_projection_conflict"}
         else:
             _atomic_write_json(primary, payload)
+        if is_public_session_id(state.session_id):
+            return {"session_state_saved": True, "status": "isolated_primary_published",
+                    "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256")}
         if self.latest_path.is_file():
             latest, latest_checkpoint, error = self._load_path(self.latest_path)
             if error or latest is None:
@@ -612,8 +621,11 @@ class RuntimeSessionStateStore:
         except OSError as exc:
             errors.append(f"primary:{type(exc).__name__}:{exc}")
 
-        latest_pointer_reason = "carryover_disabled"
-        if primary_saved and self.carryover_enabled:
+        latest_required = self.carryover_enabled and not is_public_session_id(state.session_id)
+        latest_pointer_reason = (
+            "public_session_isolated" if is_public_session_id(state.session_id) else "carryover_disabled"
+        )
+        if primary_saved and latest_required:
             replace_latest, latest_pointer_reason = self._should_replace_latest(payload)
             if replace_latest:
                 try:
@@ -625,13 +637,13 @@ class RuntimeSessionStateStore:
         # A deliberately preserved newer pointer is a successful continuity
         # outcome even though this session did not replace the shared pointer.
         latest_requirement_satisfied = latest_saved or latest_pointer_reason == "existing_latest_pointer_is_newer"
-        saved = primary_saved and (latest_requirement_satisfied or not self.carryover_enabled)
+        saved = primary_saved and (latest_requirement_satisfied or not latest_required)
         self.last_save_status = {
             "session_state_saved": saved,
             "session_state_path": str(primary),
             "latest_session_pointer_path": str(self.latest_path),
             "latest_session_pointer_saved": latest_saved,
-            "latest_session_pointer_required": self.carryover_enabled,
+            "latest_session_pointer_required": latest_required,
             "latest_session_pointer_reason": latest_pointer_reason,
             "continuity_checkpoint_written": primary_saved,
             "continuity_checkpoint_sha256": checkpoint.get("checkpoint_sha256") if primary_saved else None,

@@ -51,3 +51,5 @@ Additional append-only provenance:
 | `tests/test_jss_tpa_async_persistence_qt.py` from `450273b796d0dfae802ce25fe347b8b000447b07` before persisting an invalid-interpreter refusal in its first snapshot (valid-interpreter durability barriers retained) | `test_jss_tpa_async_persistence_qt_v16_3_25_5_116_0_34_94_6_63.py` | `5cffc9e8682cfee997b357b64e84a08a8c59632d` |
 
 | `tests/test_stage05_f01_public_turn_ownership.py` from `c9fc6ef75373761c15daa8065055ead84e287838` before requiring canonical admission evidence (original assertions retained, real synthetic admission added) | `test_stage05_f01_public_turn_ownership_v16_3_25_5_116_0_34_94_6_127_30_10_23.py` | `0363d400e059638b4e2dbc88831068e27c6e1e81` |
+
+| `tests/test_stage05_f01_offline_admission_authority.py` from `b11a160c70c74a56cad7544a68c5c1f31b40d366` before aligning mock result keyword with recovery protocol (assertions retained) | `test_stage05_f01_offline_admission_authority_v16_3_25_5_116_0_34_94_6_127_30_10_24.py` | `b1f18526c68bad6d6f1af0cfbd657ebfa3b86939` |
