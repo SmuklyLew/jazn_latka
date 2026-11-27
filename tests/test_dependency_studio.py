@@ -373,8 +373,9 @@ def test_runtime_readiness_is_gated_by_required_dependencies(tmp_path: Path, mon
 
 @pytest.mark.parametrize("entrypoint", ["run.py", "main.py"])
 @pytest.mark.parametrize("private_scope", ["off", "dedicated_root"])
+@pytest.mark.parametrize("stdio_encoding", ["utf-8", "cp1250"])
 def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(
-    tmp_path: Path, entrypoint: str, private_scope: str,
+    tmp_path: Path, entrypoint: str, private_scope: str, stdio_encoding: str,
 ) -> None:
     import os
     import shutil
@@ -424,6 +425,10 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(
     env = {key: value for key, value in os.environ.items() if not key.startswith("JAZN_")}
     env.update({
         "PYTHONPATH": str(root),
+        # Deliberately override CI's inherited UTF-8 mode. Both entrypoints
+        # must produce valid UTF-8 even with legacy redirected stdio.
+        "PYTHONUTF8": "0",
+        "PYTHONIOENCODING": stdio_encoding,
         "JAZN_DEPENDENCY_AUTOBOOTSTRAP": "1",
         "JAZN_PRIVATE_CONTEXT_ISOLATION": private_scope,
     })
@@ -446,16 +451,22 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(
         [sys.executable, str(root / entrypoint), "chat"],
         cwd=root,
         capture_output=True,
-        text=True,
-        encoding="utf-8",
         timeout=30,
         check=False,
         env=env,
     )
     assert completed.returncode == 78, completed.stderr
-    assert "required_python_dependencies_not_ready" in completed.stderr
-    assert "no_verified_wheelhouse" in completed.stderr
-    assert "Traceback (most recent call last)" not in completed.stderr
+    # Decode the captured bytes in the test thread, strictly. This makes any
+    # encoding error explicit rather than losing stderr in a reader thread.
+    stderr = completed.stderr.decode("utf-8")
+    assert "required_python_dependencies_not_ready" in stderr
+    assert "no_verified_wheelhouse" in stderr
+    assert "Traceback (most recent call last)" not in stderr
+    payload = json.loads(stderr)
+    assert payload["error_code"] == "required_python_dependencies_not_ready"
+    assert payload["ok"] is False
+    assert "następnie" in payload["recovery_hint"]
+    assert "pobiera pakietów z sieci" in payload["recovery_hint"]
 
 
 

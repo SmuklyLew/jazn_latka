@@ -13,7 +13,9 @@ import time
 from typing import Any, Iterator
 
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
-from latka_jazn.core.dedicated_private_context import dedicated_workspace_path, private_child
+from latka_jazn.core.dedicated_private_context import (
+    dedicated_workspace_path, private_child, windows_path_component_reserved,
+)
 
 
 PACKAGE_DIR_NAME = "latka_jazn"
@@ -87,8 +89,7 @@ def _windows_dos_comparison_path(path: PureWindowsPath) -> PureWindowsPath | Non
     if len(drive) != 2 or drive[1] != ":" or drive[0] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
         return None
     components = path.parts[1:]
-    if any(part in {".", ".."} or part.endswith((" ", ".")) or ":" in part
-           or PureWindowsPath(part).is_reserved() for part in components):
+    if any(windows_path_component_reserved(part) for part in components):
         return None
     return PureWindowsPath(drive + "\\", *components)
 

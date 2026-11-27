@@ -132,6 +132,9 @@ if __name__ == "__main__" and _requested_command(sys.argv[1:]) == "host-prefligh
     raise SystemExit(run_host_preflight_cli(sys.argv[2:]))
 
 if __name__ == "__main__":
+    # Direct main.py must honor the same UTF-8 wire contract as run.py,
+    # including activation refusal before the full runtime is imported.
+    _configure_stdio_utf8()
     _bootstrap_entrypoint_environment(list(sys.argv[1:]))
     # Dependency-empty cleanroom must reach its established exit contract
     # before resolving optional project-local configuration modules.

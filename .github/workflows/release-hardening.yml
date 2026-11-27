@@ -478,6 +478,7 @@ jobs:
           tests/test_stage05_f01_rest_worker_scope.py
           tests/test_dependency_studio.py::test_run_entrypoint_blocks_activation_when_required_dependencies_missing
           tests/test_stage05_f01_windows_workspace_alias.py
+          tests/test_stage05_f01_windows_component_policy.py
           tests/test_root_local_workspace_layout.py
           tests/test_stage05_f01_durable_write_and_poll.py
           tests/test_stage05_f01_terminal_request_retention.py

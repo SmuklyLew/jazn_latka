@@ -6,8 +6,9 @@ creates a root, imports history, or enables multi-tenant routing.
 """
 from __future__ import annotations
 
+import ntpath
 import os
-from pathlib import Path, PureWindowsPath
+from pathlib import Path
 import stat
 
 from latka_jazn.core.admission_owner_context import (
@@ -16,6 +17,28 @@ from latka_jazn.core.admission_owner_context import (
 
 DEDICATED_CONTEXT_ENV = "JAZN_PRIVATE_CONTEXT_ISOLATION"
 DEDICATED_OWNER_ENV = "JAZN_PRIVATE_CONTEXT_OWNER_SHA256"
+
+
+def windows_path_component_reserved(part: str) -> bool:
+    """Reject ambiguous Win32 leaf names, even on a POSIX host.
+
+    Use the Windows path implementation (not host os.path) when it is
+    available. Python 3.12 has no isreserved API; the explicit conservative
+    component checks keep that supported interpreter at the same boundary.
+    The input is a single component, not a drive, namespace or whole path.
+    """
+    if not part or part in {".", ".."} or part.endswith((" ", ".")):
+        return True
+    if any(ord(char) < 32 or char in '\\"*:<>?|/' for char in part):
+        return True
+    device = part.split(".", 1)[0].rstrip(" ").upper()
+    if device in {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}:
+        return True
+    if len(device) == 4 and device[:3] in {"COM", "LPT"} and device[3] in "123456789¹²³":
+        return True
+    # getattr keeps the stdlib-only preflight import compatible with 3.12.
+    checker = getattr(ntpath, "isreserved", None)
+    return bool(checker(part)) if callable(checker) else False
 
 
 def dedicated_context_enabled() -> bool:
@@ -62,8 +85,7 @@ def private_child(base: Path, target: Path, *, directory: bool = False) -> Path:
     _inspect_component(base, directory=True)
     current = base
     for index, part in enumerate(relative.parts):
-        if (part in {"", ".", ".."} or ":" in part or part.endswith((" ", "."))
-                or PureWindowsPath(part).is_reserved()):
+        if windows_path_component_reserved(part):
             raise ValueError("private_context_path_component_invalid")
         current = current / part
         _inspect_component(current, directory=directory or index < len(relative.parts) - 1)

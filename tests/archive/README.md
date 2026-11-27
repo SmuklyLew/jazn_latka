@@ -71,3 +71,5 @@ Additional append-only provenance:
 | `tests/test_mcp_task_input_delivery_acceptance.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_mcp_task_input_delivery_acceptance_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `c9bb25f369ef61e4aeb4a8d8a31c651a363d5d20` |
 
 | `tests/test_dependency_studio.py` from `1c34472cd743c5249c7434e407ed792e513c416d` before fixing minimal preflight fixture and expanding entrypoint/scope matrix (original assertions retained) | `test_dependency_studio_v16_3_25_5_116_0_34_94_6_127_30_10_27.py` | `fabea7a012c29116bf2446e1533a9c516360c412` |
+
+| `tests/test_dependency_studio.py` from `3724a8386e339d1ce2f45dfcaeffd254f9a4a5d3` before forced non-UTF-8 child stdio and strict diagnostic decoding (original exit/error/no-traceback assertions retained) | `test_dependency_studio_v16_3_25_5_116_0_34_94_6_127_30_10_30.py` | `18173b70f0ec842c3ba2149b96c199cc2cb49187` |
