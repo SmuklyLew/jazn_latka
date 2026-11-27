@@ -6,10 +6,10 @@ from typing import Any
 import hashlib
 import json, re, time, uuid
 from latka_jazn.config import JaznConfig
-from latka_jazn.core.engine_construction import EngineRuntimeServices, load_runtime_state
+from latka_jazn.core.engine_construction import EngineRuntimeServices, load_runtime_state, validate_engine_runtime_state_path
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
-from latka_jazn.core.dedicated_private_context import dedicated_memory_path, private_database_path
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, dedicated_memory_path, private_database_path
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.emotions import AffectiveState
@@ -263,11 +263,17 @@ class JaznEngine:
 
 
     def _load_runtime_state(self) -> dict:
-        return load_runtime_state(self.runtime_state_path)
+        path = self.runtime_state_path
+        if dedicated_context_enabled():
+            path = validate_engine_runtime_state_path(self.config.root, path)
+        return load_runtime_state(path)
 
     def _save_runtime_state(self) -> None:
         try:
-            self.runtime_state_path.parent.mkdir(parents=True, exist_ok=True)
+            path = self.runtime_state_path
+            if dedicated_context_enabled():
+                path = validate_engine_runtime_state_path(self.config.root, path)
+            path.parent.mkdir(parents=True, exist_ok=True)
             prior = self._load_runtime_state()
             invocations = int(prior.get("invocations") or 0) + 1
             data = {
@@ -283,7 +289,9 @@ class JaznEngine:
                 "invocations": invocations,
                 "note": "Jednorazowe wywołania CLI zapisują minimalny stan ciągłości. To nie jest stały proces w tle; poprzednia linia runtime dopisuje jednak surowy append-only event ledger przy każdym wywołaniu runtime.",
             }
-            self.runtime_state_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            if dedicated_context_enabled():
+                path = validate_engine_runtime_state_path(self.config.root, path)
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:
             pass
 

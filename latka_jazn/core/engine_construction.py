@@ -8,6 +8,7 @@ import json
 import time
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child
 from latka_jazn.core.canon import IdentityCanon
 from latka_jazn.core.emotions import AffectiveState
 from latka_jazn.core.emotion_layers import EmotionalLayerModel
@@ -92,6 +93,20 @@ from latka_jazn.core.engine_services import EngineServices
 from latka_jazn.core.procedural_bootstrap import seed_core_procedures
 
 
+def validate_engine_runtime_state_path(root: Path, path: Path) -> Path:
+    """Reject alternate state files and leaf aliases in a dedicated installation."""
+    if not dedicated_context_enabled():
+        return path
+    workspace = workspace_runtime_path(root)
+    expected = workspace / "runtime_state.json"
+    if path != expected:
+        raise ValueError("dedicated_runtime_state_path_mismatch")
+    target = private_child(workspace, expected)
+    if target.exists() and not target.is_file():
+        raise ValueError("dedicated_runtime_state_file_required")
+    return target
+
+
 def load_runtime_state(path: Path) -> dict:
     if not path.exists():
         return {}
@@ -111,6 +126,9 @@ class EngineRuntimeServices:
         self.bound = False
 
     def build_dependencies(self) -> None:
+        self.runtime_state_path = validate_engine_runtime_state_path(
+            self.config.root, workspace_runtime_path(self.config.root) / "runtime_state.json",
+        )
         self.clock = WarsawClock(self.config.timezone)
         self.guard = IdentityPerspectiveGuard()
         self.canon = IdentityCanon.load(self.config.resolve(self.config.canon_path))
@@ -201,7 +219,6 @@ class EngineRuntimeServices:
         self.chatgpt_adapter = ChatGPTAdapter(self.config)
         self.last_granular_affect = None
         self.started_at = time.time()
-        self.runtime_state_path = workspace_runtime_path(self.config.root) / "runtime_state.json"
         self.last_turn_at: float | None = None
         self.last_user_text: str | None = None
         self.last_detected_intent: str | None = None
@@ -209,7 +226,7 @@ class EngineRuntimeServices:
         self.last_dialogue_task_state: dict[str, Any] = {}
 
     def hydrate(self) -> None:
-        state = load_runtime_state(self.runtime_state_path)
+        state = load_runtime_state(validate_engine_runtime_state_path(self.config.root, self.runtime_state_path))
         self.last_turn_at: float | None = state.get("last_turn_at") if isinstance(state.get("last_turn_at"), (int, float)) else None
         self.last_user_text: str | None = state.get("last_user_text") if isinstance(state.get("last_user_text"), str) else None
         self.last_detected_intent: str | None = state.get("last_detected_intent") if isinstance(state.get("last_detected_intent"), str) else None

@@ -665,8 +665,9 @@ def _relevant_logical_fingerprint(path: Path, *, include_content: bool) -> dict[
 
 
 def _connect_readonly(path: Path, *, immutable: bool = False) -> sqlite3.Connection:
-    options = "mode=ro&immutable=1" if immutable else "mode=ro"
-    uri = f"file:{path.resolve().as_posix()}?{options}"
+    # The canonical URI encoder preserves literal '#' and '%' in paths.
+    # Preserve the existing explicit immutable option for its callers.
+    uri = readonly_sqlite_uri(path) + ("&immutable=1" if immutable else "")
     con = sqlite3.connect(uri, uri=True)
     con.row_factory = sqlite3.Row
     return con

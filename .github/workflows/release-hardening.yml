@@ -474,6 +474,7 @@ jobs:
           tests/test_stage05_f01_session_and_task_isolation.py
           tests/test_stage05_f01_private_context_boundary.py
           tests/test_stage05_f01_dedicated_private_context.py
+          tests/test_stage05_f01_wake_and_global_context_scope.py
           tests/test_dependency_studio.py::test_run_entrypoint_blocks_activation_when_required_dependencies_missing
           tests/test_stage05_f01_windows_workspace_alias.py
           tests/test_root_local_workspace_layout.py

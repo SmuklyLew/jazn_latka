@@ -7,6 +7,7 @@ import json
 import sqlite3
 import uuid
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.memory.rest_contracts import RestContinuityStatus, canonical_json, sha256_text
 from latka_jazn.memory.rest_cycle_store import RestCycleStore
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version
@@ -124,8 +125,7 @@ def load_latest_rest_wake_report(path: str | Path) -> dict[str, Any]:
     if not target.is_file():
         return RestWakeReportBuilder._empty(RestContinuityStatus.REST_NONE, "rest_store_missing")
     try:
-        con = sqlite3.connect(f"file:{target.as_posix()}?mode=ro", uri=True)
-        con.row_factory = sqlite3.Row
+        con = connect_runtime_readonly(target)
         try:
             tables = {str(row[0]) for row in con.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
             if "rest_wake_reports" not in tables:

@@ -9,6 +9,8 @@ import json
 import sqlite3
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.core.json_types import json_object
 from latka_jazn.memory.memory_tier_store import MemoryTierStore, WorkingMemoryBudget
 from latka_jazn.memory.normalization_sidecar import MemoryNormalizationSidecar, build_wake_state_status
@@ -119,6 +121,8 @@ class WakeStateRuntimeBridge:
         return status
 
     def load(self, *, repair_missing: bool = False) -> WakeStateRuntimeStatus:
+        if dedicated_context_enabled() and self.config.memory_mode == "off":
+            return self._status("memory_disabled_by_policy", errors=["persistent_memory_disabled"])
         if not self.sidecar_path.is_file():
             source_path = self.config.normalization_source_db_path
             if repair_missing and source_path.is_file():
@@ -162,8 +166,7 @@ class WakeStateRuntimeBridge:
                 errors.append(f"wake-state source identity gate rejected status={freshness_status}")
             return self._status(freshness_status, errors=errors)
         try:
-            con = sqlite3.connect(f"file:{self.sidecar_path.resolve().as_posix()}?mode=ro", uri=True)
-            con.row_factory = sqlite3.Row
+            con = connect_runtime_readonly(self.sidecar_path)
             try:
                 tables = {
                     str(row[0])
@@ -206,8 +209,7 @@ class WakeStateRuntimeBridge:
             if not source_run_id:
                 return self._status("source_run_invalid", errors=["wake snapshot has no source_run_id"])
             run = None
-            check = sqlite3.connect(f"file:{self.sidecar_path.resolve().as_posix()}?mode=ro", uri=True)
-            check.row_factory = sqlite3.Row
+            check = connect_runtime_readonly(self.sidecar_path)
             try:
                 run = check.execute(
                     "SELECT status,ended_at_utc,dry_run,expected_item_count,normalized_item_count,coverage_complete "
@@ -319,6 +321,8 @@ class WakeStateRuntimeBridge:
             return status
 
     def end_session(self, session_id: str) -> int:
+        if dedicated_context_enabled() and self.config.memory_mode == "off":
+            return 0
         if not self.tier_path.is_file():
             return 0
         with MemoryTierStore(self.tier_path) as store:
