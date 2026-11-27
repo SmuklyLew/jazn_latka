@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.25",
-  "active_definition_count": 3806,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.26",
+  "active_definition_count": 3811,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -39047,7 +39047,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 117
+      "line": 118
     },
     "tests/test_mcp_http_tasks_bridge.py::test_tasks_extension_is_advertised_when_protocol_backend_is_available": {
       "path": "tests/test_mcp_http_tasks_bridge.py",
@@ -39977,7 +39977,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 28
+      "line": 29
     },
     "tests/test_mcp_task_input_fail_closed.py::test_task_input_update_never_mutates_outstanding_requests_without_runtime_transport": {
       "path": "tests/test_mcp_task_input_fail_closed.py",
@@ -40237,7 +40237,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 24
+      "line": 25
     },
     "tests/test_mcp_task_protocol_authorization.py::test_mcp_tasks_get_accepts_matching_authenticated_subject": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
@@ -40256,7 +40256,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 38
+      "line": 39
     },
     "tests/test_mcp_task_protocol_authorization.py::test_legacy_unowned_task_cannot_be_read_via_public_http": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
@@ -40275,7 +40275,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 50
+      "line": 52
     },
     "tests/test_mcp_task_protocol_authorization.py::test_spoofed_client_metadata_does_not_grant_task_ownership": {
       "path": "tests/test_mcp_task_protocol_authorization.py",
@@ -40294,7 +40294,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 57
+      "line": 59
     },
     "tests/test_mcp_task_registry.py::test_task_registry_is_sqlite_durable_and_idempotent": {
       "path": "tests/test_mcp_task_registry.py",
@@ -71278,7 +71278,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 99
     },
     "tests/test_stage05_f01_owner_loopback_transport.py::test_verified_mcp_context_reaches_daemon_and_does_not_bleed": {
       "path": "tests/test_stage05_f01_owner_loopback_transport.py",
@@ -71326,7 +71326,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 109
+      "line": 110
     },
     "tests/test_stage05_f01_owner_loopback_transport.py::test_ownerless_or_foreign_transport_cannot_poll_or_ack_owned_turn": {
       "path": "tests/test_stage05_f01_owner_loopback_transport.py",
@@ -71349,7 +71349,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 130
+      "line": 131
     },
     "tests/test_stage05_f01_owner_loopback_transport.py::test_owner_check_survives_daemon_restart": {
       "path": "tests/test_stage05_f01_owner_loopback_transport.py",
@@ -71370,7 +71370,125 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 154
+      "line": 155
+    },
+    "tests/test_stage05_f01_private_context_boundary.py::test_private_context_policy_never_claims_or_rewrites_data": {
+      "path": "tests/test_stage05_f01_private_context_boundary.py",
+      "name": "test_private_context_policy_never_claims_or_rewrites_data",
+      "purpose": "Private context policy never claims or rewrites data",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_stage05_f01_private_context_boundary.py::test_foreign_admission_never_reaches_worker_or_shared_context": {
+      "path": "tests/test_stage05_f01_private_context_boundary.py",
+      "name": "test_foreign_admission_never_reaches_worker_or_shared_context",
+      "purpose": "Foreign admission never reaches worker or shared context",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "PermissionError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 50
+    },
+    "tests/test_stage05_f01_private_context_boundary.py::test_public_ingress_denies_before_any_private_dispatch": {
+      "path": "tests/test_stage05_f01_private_context_boundary.py",
+      "name": "test_public_ingress_denies_before_any_private_dispatch",
+      "purpose": "Public ingress denies before any private dispatch",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 83
+    },
+    "tests/test_stage05_f01_private_context_boundary.py::test_task_result_requires_canonical_owner_and_reviewed_context": {
+      "path": "tests/test_stage05_f01_private_context_boundary.py",
+      "name": "test_task_result_requires_canonical_owner_and_reviewed_context",
+      "purpose": "Task result requires canonical owner and reviewed context",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 105
+    },
+    "tests/test_stage05_f01_private_context_boundary.py::test_public_task_poll_uses_public_recovery_not_internal_seam": {
+      "path": "tests/test_stage05_f01_private_context_boundary.py",
+      "name": "test_public_task_poll_uses_public_recovery_not_internal_seam",
+      "purpose": "Public task poll uses public recovery not internal seam",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server",
+        "latka_jazn.mcp.task_resume",
+        "latka_jazn.mcp.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
     },
     "tests/test_stage05_f01_public_turn_ownership.py::test_public_owner_gate_across_restart_and_token_resolution": {
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
@@ -71418,7 +71536,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 120
+      "line": 121
     },
     "tests/test_stage05_f01_public_turn_ownership.py::test_two_owner_reservations_cannot_both_win": {
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
@@ -71441,7 +71559,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 139
+      "line": 142
     },
     "tests/test_stage05_f01_session_and_task_isolation.py::test_canonical_admission_partitions_worker_and_gate_keys_across_restart": {
       "path": "tests/test_stage05_f01_session_and_task_isolation.py",
@@ -71557,7 +71675,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 150
+      "line": 151
     },
     "tests/test_stage05_f01_subject_bound_idempotency.py::test_cached_generate_is_subject_bound_across_server_reopen": {
       "path": "tests/test_stage05_f01_subject_bound_idempotency.py",
