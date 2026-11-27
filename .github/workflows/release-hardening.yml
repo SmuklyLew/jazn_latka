@@ -486,6 +486,7 @@ jobs:
           tests/test_stage05_f06_maintenance_transition.py
           tests/test_stage05_f06_restore_l2_l3_maintenance.py
           tests/test_stage05_f06_legacy_restore_maintenance.py
+          tests/test_stage05_f06_restore_plan_snapshot.py
           tests/test_memory_restore_tool.py
           tests/test_verified_memory_restore.py
           tests/test_stage05_windows_regression_gate.py

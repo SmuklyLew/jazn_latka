@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 import json
 import os
 import re
-import sqlite3
 import tempfile
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.db.runtime_sqlite import connect_new_portable_sqlite, connect_runtime_readonly
 from latka_jazn.tools.chat_export_importer import ChatExportImporter
 from latka_jazn.tools.chat_export_reader import ChatExportReader
 from latka_jazn.tools.memory_rebuild_catalog import CatalogStore
@@ -100,13 +101,11 @@ class MemoryRestoreOrchestrator:
             planning_db = Path(temporary) / DATABASE_FILENAMES["archive_chats"]
             current_archive = resolve_database_paths(self.settings.target_root)["archive_chats"]
             if current_archive.is_file():
-                source_con = sqlite3.connect(f"file:{current_archive}?mode=ro", uri=True)
-                target_con = sqlite3.connect(planning_db)
-                try:
-                    source_con.backup(target_con)
-                finally:
-                    target_con.close()
-                    source_con.close()
+                # The source name is data, never an unescaped SQLite URI.
+                # Only a fresh, private staging database may receive the copy.
+                with closing(connect_runtime_readonly(current_archive)) as source_con:
+                    with closing(connect_new_portable_sqlite(planning_db)) as target_con:
+                        source_con.backup(target_con)
             for index, source in enumerate(selected, 1):
                 self.emit({
                     "event": "source_inspection_started",
