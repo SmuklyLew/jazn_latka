@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.15",
-  "active_definition_count": 3765,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.16",
+  "active_definition_count": 3770,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71098,6 +71098,46 @@
       "description_source": "source_identity",
       "line": 114
     },
+    "tests/test_stage05_f01_identity_witness.py::test_witness_blocks_valid_json_identity_loss_after_restart": {
+      "path": "tests/test_stage05_f01_identity_witness.py",
+      "name": "test_witness_blocks_valid_json_identity_loss_after_restart",
+      "purpose": "Witness blocks valid json identity loss after restart",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 10,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 34
+    },
+    "tests/test_stage05_f01_identity_witness.py::test_interrupted_second_admission_witness_blocks_replay_and_new_admission": {
+      "path": "tests/test_stage05_f01_identity_witness.py",
+      "name": "test_interrupted_second_admission_witness_blocks_replay_and_new_admission",
+      "purpose": "Interrupted second admission witness blocks replay and new admission",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 77
+    },
     "tests/test_stage05_f01_terminal_request_retention.py::test_terminal_identity_survives_restart_eviction_and_snapshot_merge": {
       "path": "tests/test_stage05_f01_terminal_request_retention.py",
       "name": "test_terminal_identity_survives_restart_eviction_and_snapshot_merge",
@@ -71627,6 +71667,70 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 27
+    },
+    "tests/test_stage05_f06_portable_restore.py::test_new_portable_database_is_delete_and_source_health_handles_encoded_path": {
+      "path": "tests/test_stage05_f06_portable_restore.py",
+      "name": "test_new_portable_database_is_delete_and_source_health_handles_encoded_path",
+      "purpose": "New portable database is delete and source health handles encoded path",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 8,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 15
+    },
+    "tests/test_stage05_f06_portable_restore.py::test_portable_creation_refuses_existing_wal_without_opening": {
+      "path": "tests/test_stage05_f06_portable_restore.py",
+      "name": "test_portable_creation_refuses_existing_wal_without_opening",
+      "purpose": "Portable creation refuses existing wal without opening",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "FileExistsError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_stage05_f06_portable_restore.py::test_portable_creation_refuses_orphan_sidecar": {
+      "path": "tests/test_stage05_f06_portable_restore.py",
+      "name": "test_portable_creation_refuses_orphan_sidecar",
+      "purpose": "Portable creation refuses orphan sidecar",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
     },
     "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_refuses_vulnerable_wal_before_backup_or_open": {
       "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
