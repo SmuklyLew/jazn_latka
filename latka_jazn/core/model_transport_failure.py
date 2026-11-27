@@ -60,8 +60,60 @@ def ollama_transport_failure(response: object) -> dict[str, Any] | None:
     }
 
 
+_OLLAMA_CONTEXT_REJECTION_CODES = frozenset({
+    "local_context_required_truth_sections_invalid",
+    "local_context_required_truth_sections_overflow",
+    "local_context_required_reference_overflow",
+    "local_context_total_budget_exceeded",
+    "local_context_compilation_rejected",
+    "local_model_user_prompt_budget_exceeded",
+    "local_model_request_byte_budget_exceeded",
+    "local_model_prompt_token_budget_exceeded",
+})
+
+
+def ollama_context_rejection(response: object) -> dict[str, Any] | None:
+    """A local pre-dispatch budget refusal is not an endpoint failure."""
+    value = json_object(response)
+    if not (
+        value.get("adapter_id") == "local_llm_adapter"
+        and value.get("provider") == "ollama"
+        and value.get("generated") is False
+        and value.get("status") == "context_rejected"
+    ):
+        return None
+    transport = json_object(value.get("transport"))
+    attempts = transport.get("attempts")
+    if not isinstance(attempts, list) or not attempts:
+        return None
+    last = json_object(attempts[-1])
+    code = last.get("error_code")
+    if not (
+        isinstance(code, str) and code in _OLLAMA_CONTEXT_REJECTION_CODES
+        and transport.get("error_code") == code
+        and last.get("status") == "context_rejected"
+        and last.get("request_dispatched") is False
+        and last.get("fallback_required") is True
+    ):
+        return None
+    return {
+        "provider": "ollama", "adapter_id": "local_llm_adapter",
+        "error_code": code, "failure_kind": "context_rejection",
+        "request_dispatched": False,
+        "prior_attempt_dispatched": any(
+            json_object(attempt).get("request_dispatched") is True
+            for attempt in attempts[:-1]
+        ),
+        "automatic_retry_allowed": False,
+        "host_generation_authorized": False,
+    }
+
+
 def ollama_terminal_attempt_failure(response: object) -> dict[str, Any] | None:
-    """Distinguish a known transport failure from a completed, limited output."""
+    """Distinguish transport failures, local context refusal and output limits."""
+    context_failure = ollama_context_rejection(response)
+    if context_failure is not None:
+        return context_failure
     transport_failure = ollama_transport_failure(response)
     if transport_failure is not None:
         return transport_failure
@@ -179,4 +231,6 @@ def model_failure_projection(failure: dict[str, Any]) -> tuple[str, str]:
         return "model_executor_unavailable", "model_executor_unavailable"
     if failure.get("failure_kind") == "generation_limit":
         return "model_generation_limit", "local_model_output_limit_reached"
+    if failure.get("failure_kind") == "context_rejection":
+        return "model_context_rejection", "local_model_context_rejected"
     return "model_transport_failure", "local_model_transport_failed"

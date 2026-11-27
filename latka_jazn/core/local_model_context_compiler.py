@@ -40,11 +40,11 @@ SECTION_BUDGETS: dict[str, int] = {
 }
 
 _SELECTED_SECTIONS = tuple(key for key in SECTION_BUDGETS if key != "required_reference_ids")
+# These runtime-owned policy strings must survive verbatim or block dispatch.
+_REQUIRED_TRUTH_SECTIONS = ("forbidden_claims", "required_truth_boundaries")
 _DROP_ORDER = (
     "operational_thought_frame",
     "self_state_runtime",
-    "forbidden_claims",
-    "required_truth_boundaries",
     "voice_source_contract",
     "dialogue_context",
     "allowed_memory_items",
@@ -413,9 +413,39 @@ def compile_local_model_context(
     compact: dict[str, Any] = {}
     section_diagnostics: dict[str, dict[str, Any]] = {}
     deduplicated_current_user_message = False
+    invalid_truth_sections: list[str] = []
+    oversized_truth_sections: list[str] = []
 
     for key in _SELECTED_SECTIONS:
         section = raw.get(key)
+        if key in _REQUIRED_TRUTH_SECTIONS:
+            if section is None or section == [] or section == ():
+                continue
+            # The canonical producer emits lists of strings. Never stringify
+            # arbitrary structures or silently remove even a final qualifier.
+            if not isinstance(section, (list, tuple)) or not all(
+                isinstance(item, str) and item.strip() for item in section
+            ):
+                invalid_truth_sections.append(key)
+                continue
+            exact = list(section)
+            size = _json_chars(exact)
+            # The normal section budget is a soft allocation for these
+            # mandatory sections only; the total budget remains hard.
+            fits = size <= effective_max
+            if fits:
+                compact[key] = exact
+            else:
+                oversized_truth_sections.append(key)
+            section_diagnostics[key] = {
+                "budget_chars": effective_max,
+                "input_chars": size,
+                "output_chars": size if fits else 0,
+                "truncated": False,
+                "required": True,
+                "preserved": fits,
+            }
+            continue
         if section in (None, "", [], {}):
             continue
         if key == "user_message" and user_text and str(section).strip() == user_text.strip():
@@ -465,7 +495,13 @@ def compile_local_model_context(
     compile_status = "ready"
     error_code: str | None = None
     required_ids_preserved = fitted_references == references and not reference_overflow
-    if not required_ids_preserved:
+    if invalid_truth_sections:
+        compile_status = "blocked_required_truth_sections_invalid"
+        error_code = "local_context_required_truth_sections_invalid"
+    elif oversized_truth_sections:
+        compile_status = "blocked_required_truth_sections_overflow"
+        error_code = "local_context_required_truth_sections_overflow"
+    elif not required_ids_preserved:
         compile_status = "blocked_required_reference_overflow"
         error_code = "local_context_required_reference_overflow"
     elif _json_chars(compact) > effective_max:
@@ -480,6 +516,7 @@ def compile_local_model_context(
                 "verified_self_state_draft",
                 "conversation_history",
                 "required_reference_ids",
+                *_REQUIRED_TRUTH_SECTIONS,
             )
             if compact.get(key) not in (None, "", [], {})
         }
@@ -521,6 +558,9 @@ def compile_local_model_context(
             key: len(values) for key, values in references.items()
         },
         "required_reference_ids_preserved": required_ids_preserved,
+        "required_truth_sections_preserved": error_code is None,
+        "invalid_required_truth_sections": invalid_truth_sections,
+        "oversized_required_truth_sections": oversized_truth_sections,
         "deduplicated_current_user_message": deduplicated_current_user_message,
         "raw_payload_included": False,
         "private_reasoning_included": False,

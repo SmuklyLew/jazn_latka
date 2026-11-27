@@ -472,6 +472,7 @@ jobs:
           tests/test_stage05_f02_null_executor_failure.py
           tests/test_stage05_f03_runtime_poll_completion.py
           tests/test_stage05_f04_ollama_output_limit.py
+          tests/test_stage05_f04_required_truth_context.py
           tests/test_stage05_f05_exact_response_transport.py
           tests/test_stage05_f05_tcp_disconnect.py
           tests/test_stage05_f06_sqlite_maintenance_boundaries.py

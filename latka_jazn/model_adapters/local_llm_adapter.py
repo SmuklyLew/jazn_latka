@@ -391,6 +391,7 @@ class LocalLlmAdapter:
             error = ValueError(budget_error_code)
             metadata.update({
                 "status": "context_rejected",
+                "request_dispatched": False,
                 "error_code": budget_error_code,
                 "error_type": type(error).__name__,
                 "error": budget_error_code,
@@ -590,7 +591,11 @@ class LocalLlmAdapter:
             model=self.model,
             status=status,
             adapter_id=self.name,
-            endpoint_used="/api/chat",
+            endpoint_used=(
+                None if context_rejected and not any(
+                    attempt.get("request_dispatched") is True for attempt in attempts
+                ) else "/api/chat"
+            ),
             status_snapshot=self._status_snapshot(),
             transport={
                 "attempts": attempts,
