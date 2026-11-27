@@ -524,7 +524,11 @@ class ConversationRunner(RunnerOperations):
             result["ok"] = bool(answer_ok or host_pending)
             model_failure = terminal_local_model_failure(result.get("conversation_decision"))
             if not answer_ok and not host_pending and model_failure is not None:
-                result["model_transport_failure"] = model_failure
+                failure_key = (
+                    "model_generation_limit" if model_failure.get("failure_kind") == "generation_limit"
+                    else "model_transport_failure"
+                )
+                result[failure_key] = model_failure
                 if not result.get("error_code"):
                     result["error_code"] = model_failure["error_code"]
                 result["must_not_replay"] = True

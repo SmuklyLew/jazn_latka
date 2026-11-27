@@ -349,7 +349,8 @@ _JSON_ATOMIC_WRITE_LOCK = threading.RLock()
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    serialized = json.dumps(sanitize_status_payload(payload), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    # The durable ledger contains opaque identifiers and lineage.
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     tmp = path.with_name(
         f".{path.name}.{os.getpid()}.{threading.get_ident()}.{uuid.uuid4().hex}.tmp"
     )
@@ -679,6 +680,7 @@ class DaemonRuntimeState:
     last_status_latency_ms: int | None = None
     response_write_error_count: int = 0
     last_response_write_error: str | None = None
+    last_response_write_failure: dict[str, Any] | None = None
     timestamp_refresh_count: int = 0
     timestamp_refresh_in_progress: bool = False
     last_timestamp_refresh_at_utc: str | None = None
@@ -4165,9 +4167,35 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         except json.JSONDecodeError:
             return text
 
+    def _record_response_write_failure(
+        self, payload: dict[str, Any], *, status: int, stage: str, exc: OSError,
+    ) -> None:
+        # Never retain raw request IDs, query strings, text or exception messages.
+        path = getattr(self, "path", "").partition("?")[0]
+        endpoint = "/chat-result" if path.startswith("/chat-result/") else (
+            path if path in {"/chat-result", "/chat-submit", "/chat", "/message",
+                             "/host-finalize", "/chat-finalization", "/shutdown",
+                             "/live", "/liveness", "/ready", "/readiness",
+                             "/status", "/status-lite", "/health"} else "other"
+        )
+        job = payload.get("daemon_job")
+        request_id = job.get("request_id") if isinstance(job, dict) else payload.get("request_id")
+        request_hash = (hashlib.sha256(request_id.encode("utf-8")).hexdigest()
+                        if isinstance(request_id, str) and request_id else None)
+        state = self._daemon_server().state
+        with _DAEMON_PROCESS_EVENT_LOCK:
+            state.response_write_error_count += 1
+            state.last_response_write_error = f"{type(exc).__name__}: daemon response delivery failed"
+            state.last_response_write_failure = {
+                "endpoint": endpoint, "http_status": int(status), "stage": stage,
+                "error_type": type(exc).__name__, "request_id_sha256": request_hash,
+                "timestamp_utc": utc_now_iso(), "delivery_confirmed": False,
+            }
+
     def _json_response(self, payload: dict[str, Any], *, status: int = 200) -> None:
-        payload = sanitize_status_payload(payload)
+        # Wire serialization must preserve the exact accepted body and IDs.
         data = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        stage = "headers"
         try:
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -4175,13 +4203,14 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.send_header("Connection", "close")
             self.end_headers()
+            stage = "body"
             self.wfile.write(data)
+            stage = "flush"
             self.wfile.flush()
             self.close_connection = True
-        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, socket.timeout, OSError) as exc:
-            self._daemon_server().state.response_write_error_count += 1
-            self._daemon_server().state.last_response_write_error = f"{type(exc).__name__}: client disconnected before daemon response was written"
+        except OSError as exc:
             self.close_connection = True
+            self._record_response_write_failure(payload, status=status, stage=stage, exc=exc)
 
     def _request_path_and_query(self) -> tuple[str, dict[str, list[str]]]:
         parsed = urllib.parse.urlsplit(self.path)

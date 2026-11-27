@@ -51,9 +51,44 @@ def ollama_transport_failure(response: object) -> dict[str, Any] | None:
         "adapter_id": "local_llm_adapter",
         "endpoint": "/api/chat",
         "error_code": code,
+        "failure_kind": "transport",
         "request_dispatched": last["request_dispatched"],
         "circuit_state": circuit_state if circuit_state in ("closed", "open", "half_open") else None,
         "automatic_retry_allowed": False,
+        "host_generation_authorized": False,
+    }
+
+
+def ollama_terminal_attempt_failure(response: object) -> dict[str, Any] | None:
+    """Distinguish a known transport failure from a completed, limited output."""
+    transport_failure = ollama_transport_failure(response)
+    if transport_failure is not None:
+        return transport_failure
+    value = json_object(response)
+    if (
+        value.get("adapter_id") != "local_llm_adapter"
+        or value.get("provider") != "ollama"
+        or value.get("generated") is not False
+        or value.get("status") != "output_limit_reached"
+    ):
+        return None
+    transport = json_object(value.get("transport"))
+    attempts = transport.get("attempts")
+    if not isinstance(attempts, list) or not attempts:
+        return None
+    last = json_object(attempts[-1])
+    if not (
+        transport.get("error_code") == last.get("error_code") == "model_output_limit_reached"
+        and last.get("status") == "output_limit_reached"
+        and last.get("request_dispatched") is True
+        and last.get("done") is True and last.get("done_reason") == "length"
+    ):
+        return None
+    return {
+        "provider": "ollama", "adapter_id": "local_llm_adapter",
+        "endpoint": "/api/chat", "error_code": "model_output_limit_reached",
+        "failure_kind": "generation_limit", "request_dispatched": True,
+        "done_reason": "length", "automatic_retry_allowed": False,
         "host_generation_authorized": False,
     }
 
@@ -74,4 +109,4 @@ def terminal_local_model_failure(decision: object) -> dict[str, Any] | None:
         synthesis = json_object(value.get("model_guided_synthesis"))
     if synthesis.get("used") is True:
         return None
-    return ollama_transport_failure(synthesis.get("adapter_response"))
+    return ollama_terminal_attempt_failure(synthesis.get("adapter_response"))

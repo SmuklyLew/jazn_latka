@@ -912,7 +912,11 @@ def build_chatgpt_host_bridge_turn_contract(
             "schema_version": schema_version("chatgpt_host_bridge_turn_contract"),
             "runtime_version": result.get("runtime_version") or PACKAGE_VERSION_FULL,
             "phase": "host_diagnostic_required",
-            "status": "local_model_transport_failed",
+            "status": (
+                "local_model_output_limit_reached"
+                if model_failure.get("failure_kind") == "generation_limit"
+                else "local_model_transport_failed"
+            ),
             "diagnostic_reason": model_failure["error_code"],
             "user_text_sha256": hashlib.sha256((user_text or "").encode("utf-8")).hexdigest(),
             "turn_id": trace.get("turn_id") or runtime_turn.get("turn_id") or final_contract.get("turn_id"),
@@ -922,7 +926,8 @@ def build_chatgpt_host_bridge_turn_contract(
             "host_must_generate_visible_reply": False,
             "host_reply_finalization_required": False,
             "display_exact_runtime_final": False,
-            "model_transport_failure": model_failure,
+            ("model_generation_limit" if model_failure.get("failure_kind") == "generation_limit"
+             else "model_transport_failure"): model_failure,
             "must_not_replay": True,
         }
     requires_host = bool(not displayable_runtime_final and chatgpt_result_requires_host_visible_reply(result))
@@ -1197,7 +1202,9 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
         "poll_command": bridge.get("poll_command"),
         "diagnostic_reason": memory_violation or (
             bridge.get("diagnostic_reason")
-            if action == "host_diagnostic" and bridge.get("status") == "local_model_transport_failed"
+            if action == "host_diagnostic" and bridge.get("status") in (
+                "local_model_transport_failed", "local_model_output_limit_reached",
+            )
             else None
         ),
         "runtime_checks": {

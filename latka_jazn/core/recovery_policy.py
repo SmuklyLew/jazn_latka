@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 from latka_jazn.core.route_handler_base import RouteHandlerResult
-from latka_jazn.core.model_transport_failure import ollama_transport_failure
+from latka_jazn.core.model_transport_failure import ollama_terminal_attempt_failure
 from latka_jazn.core.turn_pipeline_state import TurnPipelineState
 from latka_jazn.core.turn_pipeline_support import _handler_body_can_cross_chatgpt_host_bridge, _model_guided_rejection_disclosure, _speech_truth_gate_required
 
@@ -139,7 +139,7 @@ def _semantic_retry_allowed(state: TurnPipelineState) -> bool:
     if state.candidate_valid or not state.model_executor.retry_allowed:
         return False
     if getattr(state.model_executor, "executor", None) == "local_model":
-        failure = ollama_transport_failure(state.model_synthesis.adapter_response)
+        failure = ollama_terminal_attempt_failure(state.model_synthesis.adapter_response)
         if failure is not None:
             state.decision_dict["model_guided_retry_suppressed_reason"] = failure["error_code"]
             return False

@@ -35,6 +35,10 @@ class OllamaResponseContractError(ValueError):
 
 
 
+class OllamaOutputLimitError(ValueError):
+    """The provider completed transport but exhausted its output budget."""
+
+
 def _as_dict(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
@@ -249,6 +253,8 @@ class LocalLlmAdapter:
             "operational_thought_frame.selected_goal i nlg_plan są wewnętrznymi instrukcjami, nie wypowiedziami użytkownika. "
             "Nie twierdź, że pamiętasz poprzednią wiadomość, jeżeli nie została przekazana jako zaakceptowany rekord bieżącej sesji. "
             "Przy braku zaakceptowanego rekordu powiedz jasno o braku źródła; nie wymyślaj jego treści. "
+            "Nie zgaduj imienia użytkownika ani innych prywatnych faktów. "
+            "Przy niepewnych faktach ogólnych zaznacz niepewność, nie wymyślaj źródeł. "
             "Gdy kontekst zawiera verified_self_state_draft, użyj zweryfikowanego body jako podstawy wypowiedzi, "
             "zachowaj operational_state i truth_boundary, nie dopowiadaj prywatnych faktów. "
             "Nie kończ generycznym pytaniem w rodzaju „W czym mogę pomóc?”, jeśli użytkownik już podał temat. "
@@ -460,6 +466,15 @@ class LocalLlmAdapter:
                 }
             )
             self._transport_breaker.record_success()
+            if data.get("done_reason") == "length":
+                # A complete HTTP frame is not proof of a complete answer.
+                code = "model_output_limit_reached"
+                metadata.update({
+                    "status": "output_limit_reached",
+                    "error_code": code,
+                    "error_type": "OllamaOutputLimitError",
+                })
+                return "", metadata, OllamaOutputLimitError(code)
             return text, metadata, None
         except OllamaModelAuthorizationError as exc:
             code = str(exc)
@@ -546,7 +561,10 @@ class LocalLlmAdapter:
             self._last_probe_error = str(
                 last.get("error_code") or "local_provider_unavailable"
             )
-        if isinstance(error, OllamaModelAuthorizationError):
+        if isinstance(error, OllamaOutputLimitError):
+            self._endpoint_reachable = True
+            self._probe_state = "probed_ok"
+        elif isinstance(error, OllamaModelAuthorizationError):
             self._endpoint_reachable = None if status == "ollama_model_metadata_unavailable" else True
             self._probe_state = "probed_fail"
         elif not context_rejected and not isinstance(error, CircuitOpenError):
@@ -561,6 +579,7 @@ class LocalLlmAdapter:
         self._last_generation = {
             "status": status,
             "error_type": type(error).__name__,
+            "done_reason": last.get("done_reason"),
             "attempt_count": len(attempts),
             "timed_out": bool(last.get("timed_out")),
             "wall_clock_duration_ms": last.get("wall_clock_duration_ms"),
