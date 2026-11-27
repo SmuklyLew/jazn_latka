@@ -8,6 +8,7 @@ import os
 import sqlite3
 import time
 
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
 from latka_jazn.version import schema_version
 
 SCHEMA_VERSION = schema_version("sqlite_archive_snapshot")
@@ -70,8 +71,7 @@ def create_sqlite_snapshot(
     temp_path = destination_path.with_name(destination_path.name + f".tmp-{os.getpid()}")
     temp_path.unlink(missing_ok=True)
 
-    source_uri = f"file:{source_path.as_posix()}?mode=ro"
-    source_con = sqlite3.connect(source_uri, uri=True, timeout=30.0)
+    source_con = connect_runtime_readonly(source_path, timeout_ms=30_000)
     target_con = sqlite3.connect(temp_path, timeout=30.0)
     try:
         source_con.execute("PRAGMA busy_timeout=30000")

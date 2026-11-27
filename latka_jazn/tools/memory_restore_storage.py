@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+from contextlib import closing
 from pathlib import Path
 from typing import Any, Sequence
 import hashlib
 import sqlite3
 
+from latka_jazn.db.runtime_sqlite import (
+    connect_runtime_readonly, readonly_sqlite_uri, require_safe_sqlite_write,
+    runtime_sqlite_write_guard,
+)
 from latka_jazn.memory.database_paths import resolve_sqlite_directory
 from latka_jazn.tools.memory_rebuild_common import DATABASE_FILENAMES, sqlite_check
 from latka_jazn.tools.memory_restore_types import ProgressCallback, SCHEMA_VERSION, atomic_json, sha256_file
@@ -18,7 +23,7 @@ def resolve_database_paths(root: str | Path) -> dict[str, Path]:
 def _database_summary(path: Path, *, include_hash: bool = False) -> dict[str, Any]:
     if not path.is_file():
         return {"exists": False, "path": str(path), "tables": {}, "integrity": None, "foreign_key_error_count": None}
-    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    con = connect_runtime_readonly(path)
     try:
         tables = [str(row[0]) for row in con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
         counts = {table: int(con.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]) for table in tables}
@@ -45,7 +50,9 @@ def database_set_summary(root: str | Path, *, include_hash: bool = False) -> dic
     return {name: _database_summary(path, include_hash=include_hash) for name, path in paths.items()}
 
 def _attach(con: sqlite3.Connection, alias: str, path: Path) -> None:
-    con.execute(f"ATTACH DATABASE ? AS {alias}", (str(path),))
+    if alias not in {"old", "new"}:
+        raise ValueError("invalid_comparison_database_alias")
+    con.execute(f"ATTACH DATABASE ? AS {alias}", (readonly_sqlite_uri(path),))
 
 def _table_columns(con: sqlite3.Connection, alias: str, table: str) -> set[str]:
     return {str(row[1]) for row in con.execute(f"PRAGMA {alias}.table_info('{table}')")}
@@ -54,8 +61,9 @@ def _logical_subset_compare(old_paths: dict[str, Path], new_paths: dict[str, Pat
     report: dict[str, Any] = {}
     old_archive, new_archive = old_paths["archive_chats"], new_paths["archive_chats"]
     if old_archive.is_file() and new_archive.is_file():
-        con = sqlite3.connect(":memory:")
+        con = sqlite3.connect(":memory:", uri=True)
         try:
+            con.execute("PRAGMA query_only=ON")
             _attach(con, "old", old_archive); _attach(con, "new", new_archive)
             archive: dict[str, Any] = {}
             if {"conversation_id", "raw_tree_sha256"} <= _table_columns(con, "old", "conversations") and {"conversation_id", "raw_tree_sha256"} <= _table_columns(con, "new", "conversations"):
@@ -71,8 +79,9 @@ def _logical_subset_compare(old_paths: dict[str, Path], new_paths: dict[str, Pat
             con.close()
     old_journal, new_journal = old_paths["journal"], new_paths["journal"]
     if old_journal.is_file() and new_journal.is_file():
-        con = sqlite3.connect(":memory:")
+        con = sqlite3.connect(":memory:", uri=True)
         try:
+            con.execute("PRAGMA query_only=ON")
             _attach(con, "old", old_journal); _attach(con, "new", new_journal)
             journal: dict[str, Any] = {}
             if {"identity_key", "content_sha256"} <= _table_columns(con, "old", "journal_entries") and {"identity_key", "content_sha256"} <= _table_columns(con, "new", "journal_entries"):
@@ -115,13 +124,18 @@ def backup_database_set(target_root: str | Path, destination: str | Path, callba
             continue
         if callback:
             callback({"event": "backup_started", "database": name, "source": str(source), "target": str(target)})
-        source_con = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
-        target_con = sqlite3.connect(target)
-        try:
-            source_con.backup(target_con)
-            validation = sqlite_check(target_con, full=True)
-        finally:
-            target_con.close(); source_con.close()
+        if source.resolve() == target.resolve():
+            raise ValueError("backup destination must differ from source")
+        # A backup destination may already exist. Check before any RW open;
+        # do not checkpoint/convert a vulnerable WAL as a side effect of backup.
+        with runtime_sqlite_write_guard(target):
+            require_safe_sqlite_write(target)
+            with closing(connect_runtime_readonly(source)) as source_con:
+                with closing(sqlite3.connect(target)) as target_con:
+                    if (target_con.execute("PRAGMA journal_mode").fetchone()[0].lower() == "wal"):
+                        require_safe_sqlite_write(target)
+                    source_con.backup(target_con)
+                    validation = sqlite_check(target_con, full=True)
         results[name] = {"exists": True, "source": str(source), "target": str(target), "validation": validation}
         if callback:
             callback({"event": "backup_completed", "database": name, "ok": validation["ok"]})
