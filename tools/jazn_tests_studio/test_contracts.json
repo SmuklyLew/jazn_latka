@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.13",
-  "active_definition_count": 3761,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.14",
+  "active_definition_count": 3762,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -73181,6 +73181,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 16
+    },
+    "tests/test_stage05_windows_regression_gate.py::test_stage05_windows_release_gate_runs_each_remediation_module_and_keeps_failure_report": {
+      "path": "tests/test_stage05_windows_regression_gate.py",
+      "name": "test_stage05_windows_release_gate_runs_each_remediation_module_and_keeps_failure_report",
+      "purpose": "Stage05 windows release gate runs each remediation module and keeps failure report",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_startup_index_ollama_visible.py::test_local_renderer_preserves_polish_emoji_and_exact_bytes": {
       "path": "tests/test_startup_index_ollama_visible.py",
