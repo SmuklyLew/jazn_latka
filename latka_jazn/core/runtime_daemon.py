@@ -346,7 +346,18 @@ def read_json_file(path: Path) -> dict[str, Any] | None:
 _JSON_ATOMIC_WRITE_LOCK = threading.RLock()
 
 
-def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+def _sync_json_parent_directory(path: Path) -> None:
+    # POSIX rename visibility alone does not persist the directory entry.
+    # Python has no portable equivalent for flushing a directory on Windows.
+    if os.name == "posix":
+        fd = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+
+def write_json_atomic(path: Path, payload: dict[str, Any], *, durable: bool = False) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     # The durable ledger contains opaque identifiers and lineage.
@@ -356,19 +367,30 @@ def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     )
     try:
         with _JSON_ATOMIC_WRITE_LOCK:
-            tmp.write_text(serialized, encoding="utf-8")
+            if durable:
+                with tmp.open("w", encoding="utf-8") as handle:
+                    handle.write(serialized)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            else:
+                tmp.write_text(serialized, encoding="utf-8")
             last_error: PermissionError | None = None
             for attempt in range(6):
                 try:
                     os.replace(tmp, path)
-                    return
+                    break
                 except PermissionError as exc:
                     last_error = exc
                     if attempt == 5:
                         raise
                     time.sleep(0.02 * (attempt + 1))
-            if last_error is not None:
-                raise last_error
+            else:
+                if last_error is not None:
+                    raise last_error
+            if durable:
+                # A failure here is an ambiguous publication, never an ACK.
+                # Do not retry the rename: its source may already be gone.
+                _sync_json_parent_directory(path)
     finally:
         try:
             tmp.unlink(missing_ok=True)
@@ -1399,7 +1421,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         except FileNotFoundError:
             write_json_atomic(self._chat_ledger_guard_path, {
                 "schema_version": "daemon_chat_admission_established/v1",
-            })
+            }, durable=True)
         write_json_atomic(
             self._chat_state_path,
             {
@@ -1408,6 +1430,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "contains_user_text": False,
                 "jobs": recoverable,
             },
+            durable=True,
         )
         self._chat_ledger_seen = True
 
@@ -2661,9 +2684,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._cleanup_chat_jobs_locked()
             job = self.chat_jobs.get(str(request_id))
             if job is None:
-                job = self._read_terminal_chat_job_tombstone_locked(str(request_id))
+                rows = self._read_chat_admission_ledger_locked() or []
+                job = self._read_terminal_chat_job_tombstone_locked(str(request_id), rows=rows)
                 if job is not None:
                     self.chat_jobs[job.request_id] = job
+                elif any(row.get("request_id") == str(request_id) for row in rows):
+                    raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
             changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
                 changed = True
@@ -4311,7 +4337,18 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             if not request_id:
                 self._json_response({"ok": False, "error_code": "missing_request_id"}, status=HTTPStatus.BAD_REQUEST)
                 return
-            job = self._daemon_server().get_chat_job(request_id)
+            server = self._daemon_server()
+            try:
+                job = server.get_chat_job(request_id)
+            except _ChatAdmissionLedgerError as exc:
+                # Absence is not proven. Return no result or new authority.
+                self._json_response({
+                    "ok": False, "error_code": str(exc), "request_id": request_id,
+                    "daemon_instance_id": server.daemon_instance_id,
+                    "admission_history_verified": False,
+                    "must_not_resubmit_user_message": True,
+                }, status=HTTPStatus.SERVICE_UNAVAILABLE)
+                return
             if job is None:
                 self._json_response({"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}, status=HTTPStatus.NOT_FOUND)
                 return
@@ -6082,6 +6119,18 @@ def chat_daemon(
         if error_code in {"daemon_chat_result_failed", "daemon_chat_result_http_error"}:
             last_poll_error = str(polled.get("error") or error_code)
             continue
+        if error_code in {
+            "daemon_chat_ledger_missing", "daemon_chat_ledger_invalid",
+            "daemon_chat_ledger_unreadable", "daemon_chat_ledger_unresolved_record",
+        }:
+            return {
+                "ok": False, "error_code": error_code,
+                "request_id": normalized_request_id, "submit_acknowledged": True,
+                "submitted_request_id": normalized_request_id,
+                "admission_history_verified": False,
+                "must_not_resubmit_user_message": True,
+                "diagnostic_reason": "acknowledged_job_history_unverified",
+            }
         if error_code == "chat_job_not_found":
             # The submit was acknowledged; the missing job is not permission
             # to replay the user's message on this or another runtime route.
