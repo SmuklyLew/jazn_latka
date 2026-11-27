@@ -458,6 +458,26 @@ jobs:
           tests/test_memory_desktop_gui_smoke.py
           tests/test_memory_desktop_tk_lifecycle.py
 
+      - name: Stage 05 F01-F06 Windows deterministic regressions
+        shell: pwsh
+        run: >-
+          python -X utf8 -m pytest
+          -q -ra --tb=short
+          --junitxml="${{ runner.temp }}/pytest-windows-stage05.xml"
+          tests/test_stage05_f01_admission_ledger_guard.py
+          tests/test_stage05_f01_durable_write_and_poll.py
+          tests/test_stage05_f01_terminal_request_retention.py
+          tests/test_stage05_f02_diagnostic_authority_binding.py
+          tests/test_stage05_f02_local_model_failure.py
+          tests/test_stage05_f02_null_executor_failure.py
+          tests/test_stage05_f03_runtime_poll_completion.py
+          tests/test_stage05_f04_ollama_output_limit.py
+          tests/test_stage05_f05_exact_response_transport.py
+          tests/test_stage05_f05_tcp_disconnect.py
+          tests/test_stage05_f06_sqlite_maintenance_boundaries.py
+          tests/test_stage05_f06_verified_restore_quiescence.py
+          tests/test_stage05_windows_regression_gate.py
+
       - name: Install JSS Qt profile for Windows GUI regressions
         shell: pwsh
         run: python -m pip install -e ".[run-studio]"
@@ -515,6 +535,7 @@ jobs:
           name: pytest-windows-failure
           path: |
             ${{ runner.temp }}/pytest-windows.xml
+            ${{ runner.temp }}/pytest-windows-stage05.xml
             ${{ runner.temp }}/pytest-windows-jss-ollama.xml
             ${{ runner.temp }}/pytest-windows-tk-actions.xml
             ${{ runner.temp }}/pytest-windows-tk-lifecycle-pages.xml
