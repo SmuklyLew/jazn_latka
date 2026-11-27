@@ -468,6 +468,7 @@ jobs:
           tests/test_stage05_f01_identity_witness.py
           tests/test_stage05_f01_subject_bound_idempotency.py
           tests/test_stage05_f01_public_turn_ownership.py
+          tests/test_stage05_f01_daemon_admission_owner.py
           tests/test_stage05_f01_windows_workspace_alias.py
           tests/test_root_local_workspace_layout.py
           tests/test_stage05_f01_durable_write_and_poll.py

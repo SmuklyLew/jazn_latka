@@ -799,6 +799,7 @@ class DaemonChatJob:
     model_channel_config: dict[str, Any] = field(default_factory=dict)
     reset_session: bool = False
     request_fingerprint: str | None = None
+    admission_owner_sha256: str | None = None
     user_text_sha256: str | None = None
     created_at_utc: str = field(default_factory=utc_now_iso)
     started_at_utc: str | None = None
@@ -934,6 +935,10 @@ def normalize_daemon_request_id(value: str | None) -> str:
     return candidate
 
 
+def _valid_admission_owner(value: object) -> bool:
+    return value is None or (isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None)
+
+
 def daemon_chat_request_fingerprint(
     *,
     user_text: str,
@@ -943,7 +948,10 @@ def daemon_chat_request_fingerprint(
     command: str = "--chat",
     model_channel_config: dict[str, Any] | None = None,
     reset_session: bool = False,
+    admission_owner_sha256: str | None = None,
 ) -> str:
+    if not _valid_admission_owner(admission_owner_sha256):
+        raise ValueError("invalid_admission_owner")
     canonical = json.dumps(
         {
             "user_text": str(user_text),
@@ -955,6 +963,8 @@ def daemon_chat_request_fingerprint(
                 model_channel_config
             ),
             "reset_session": bool(reset_session),
+            **({"admission_owner_sha256": admission_owner_sha256}
+               if admission_owner_sha256 is not None else {}),
         },
         ensure_ascii=False,
         sort_keys=True,
@@ -1282,6 +1292,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         # Sorting makes cache recovery/eviction order irrelevant.
         identities = [
             [row["request_id"], row.get("request_fingerprint")]
+            + ([row["admission_owner_sha256"]] if row.get("admission_owner_sha256") is not None else [])
             for row in sorted(rows, key=lambda row: row["request_id"])
         ]
         encoded = json.dumps(identities, ensure_ascii=False, sort_keys=True,
@@ -1354,14 +1365,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
             request_id = row.get("request_id")
             if (not isinstance(request_id, str) or not request_id
-                    or request_id in seen or "user_text" in row):
+                    or request_id in seen or "user_text" in row
+                    or not _valid_admission_owner(row.get("admission_owner_sha256"))):
                 raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
             seen.add(request_id)
         witness = self._read_chat_admission_witness_locked()
         if witness is not None and witness.get("schema_version") == "daemon_chat_admission_established/v2":
             if witness != self._chat_admission_identity_witness(rows):
                 raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
-        elif payload.get("admission_identity_witness_required") is True or (witness is not None and not rows):
+        elif (payload.get("admission_identity_witness_required") is True
+              or (witness is not None and not rows)
+              or any(row.get("admission_owner_sha256") is not None for row in rows)):
             # A missing/downgraded witness or empty legacy established ledger
             # is not proof of absence. Do not repair it from an empty cache.
             raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
@@ -1387,6 +1401,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             recoverable.append({
                 "request_id": job.request_id,
                 "request_fingerprint": job.request_fingerprint,
+                "admission_owner_sha256": job.admission_owner_sha256,
                 "user_text_sha256": job.user_text_sha256,
                 "input_field": job.input_field,
                 "session_id": job.session_id,
@@ -1447,7 +1462,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 # Copy only known metadata keys. No user prompt or response
                 # is resurrected, stored, or exposed by the durable tombstone.
                 keys = (
-                    "request_id", "request_fingerprint", "user_text_sha256",
+                    "request_id", "request_fingerprint", "admission_owner_sha256", "user_text_sha256",
                     "input_field", "session_id", "no_carryover", "client",
                     "command", "model_channel_config", "reset_session",
                     "created_at_utc", "started_at_utc", "completed_at_utc",
@@ -1468,9 +1483,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
         # Existing identities are immutable even when represented by a live job.
         # Publish a content-free identity witness before any enlarged ledger.
         # A crash between the two files deliberately fails closed on restart.
-        next_identities = {row["request_id"]: row.get("request_fingerprint") for row in recoverable}
-        if any(next_identities.get(row["request_id"]) != row.get("request_fingerprint")
-               for row in previous or []):
+        next_identities = {
+            row["request_id"]: (row.get("request_fingerprint"), row.get("admission_owner_sha256"))
+            for row in recoverable
+        }
+        if any(next_identities.get(row["request_id"]) != (
+            row.get("request_fingerprint"), row.get("admission_owner_sha256")
+        ) for row in previous or []):
             raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
         witness = self._chat_admission_identity_witness(recoverable)
         if self._read_chat_admission_witness_locked() != witness:
@@ -1564,6 +1583,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 ),
                 reset_session=bool(raw.get("reset_session")),
                 request_fingerprint=fingerprint,
+                admission_owner_sha256=raw.get("admission_owner_sha256"),
                 user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or ""),
                 started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
@@ -1667,6 +1687,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 ),
                 reset_session=bool(raw.get("reset_session")),
                 request_fingerprint=request_fingerprint,
+                admission_owner_sha256=raw.get("admission_owner_sha256"),
                 user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or utc_now_iso()),
                 started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
@@ -2452,7 +2473,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
         model_channel_config: dict[str, Any] | None = None,
         reset_session: bool = False,
         request_id: str | None = None,
+        admission_owner_sha256: str | None = None,
     ) -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
+        # Internal trusted caller seam only. HTTP payloads do not supply this
+        # value until the authenticated transport is wired end to end.
+        if not _valid_admission_owner(admission_owner_sha256):
+            return None, False, {"ok": False, "error_code": "invalid_admission_owner"}
         if self.shutdown_requested.is_set():
             return None, False, {"ok": False, "error_code": "daemon_shutting_down"}
         try:
@@ -2483,6 +2509,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             command=normalized_command,
             model_channel_config=normalized_channel_config,
             reset_session=reset_session,
+            admission_owner_sha256=admission_owner_sha256,
         )
         model_timeout_seconds = float(
             normalized_channel_config.get("model_timeout_seconds") or 0.0
@@ -2520,6 +2547,13 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     }
             if existing is None:
                 return None, None
+            if existing.admission_owner_sha256 != admission_owner_sha256:
+                # A request ID does not convey ownership, including for legacy
+                # records without a verified owner. Never adopt those records.
+                return None, {
+                    "ok": False, "error_code": "request_id_conflict",
+                    "request_id": normalized_id, "must_not_resubmit_user_message": True,
+                }
             same_request = existing.request_fingerprint == request_fingerprint
             if existing.request_fingerprint is None:
                 same_request = (
@@ -2574,6 +2608,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     model_channel_config=normalized_channel_config,
                     reset_session=bool(reset_session),
                     request_fingerprint=request_fingerprint,
+                    admission_owner_sha256=admission_owner_sha256,
                     execution_timeout_seconds=job_timeout_seconds,
                     timeout_profile=timeout_profile,
                     turn_context=TurnExecutionContext.create(
@@ -2691,6 +2726,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     ),
                     reset_session=bool(raw.get("reset_session")),
                     request_fingerprint=raw["request_fingerprint"],
+                    admission_owner_sha256=raw.get("admission_owner_sha256"),
                     user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                     created_at_utc=str(raw.get("created_at_utc") or ""),
                     started_at_utc=str(raw.get("started_at_utc")) if raw.get("started_at_utc") else None,
