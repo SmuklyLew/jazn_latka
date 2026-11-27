@@ -1238,7 +1238,10 @@ def _publish_staged_archive(staged_root: Path, runtime_root: Path) -> dict[str, 
     }
 
 
-def _run_json(root: Path, arguments: Sequence[str], *, timeout: float = 600.0) -> dict[str, Any]:
+def _run_json(
+    root: Path, arguments: Sequence[str], *, timeout: float = 600.0,
+    allowed_exit_codes: tuple[int, ...] = (0,),
+) -> dict[str, Any]:
     command = [sys.executable, "-X", "utf8", str(root / "run.py"), *arguments]
     completed = subprocess.run(
         command,
@@ -1270,7 +1273,7 @@ def _run_json(root: Path, arguments: Sequence[str], *, timeout: float = 600.0) -
         )
     payload["_exit_code"] = completed.returncode
     payload["_stderr_tail"] = completed.stderr[-2000:]
-    if completed.returncode != 0:
+    if completed.returncode not in allowed_exit_codes:
         raise VerifiedMemoryRestoreError(
             f"Komenda zakończyła się kodem {completed.returncode}: {' '.join(command)}"
         )
@@ -1306,6 +1309,68 @@ def _stop_daemon(root: Path) -> dict[str, Any]:
             f"Nie udało się zatrzymać daemona: {result['stderr'][-1200:]}"
         )
     return result
+
+
+def _same_runtime_root(value: Any, root: Path) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    try:
+        return Path(value).expanduser().resolve() == root.resolve()
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+
+def _require_inactive_supervisor(root: Path) -> dict[str, Any]:
+    # Exit 1 is the canonical inactive status, not proof by itself.
+    status = _run_json(
+        root, ["supervisor-status", "--json"], timeout=180.0, allowed_exit_codes=(0, 1),
+    )
+    if not (
+        status.get("_exit_code") == 1
+        and _same_runtime_root(status.get("root"), root)
+        and status.get("supervisor_active") is False
+        and status.get("supervisor_pid_alive") is False
+        and status.get("supervisor_identity_state") == "not_alive"
+        and not (
+            status.get("supervisor_pid") is None
+            and status.get("supervisor_owner_record_present") is not False
+        )
+    ):
+        raise VerifiedMemoryRestoreError(
+            "Supervisor nie ma potwierdzonego stanu nieaktywnego. "
+            "Zatrzymaj go w autoryzowanym trybie maintenance."
+        )
+    return status
+
+
+def _require_quiescent_runtime(root: Path) -> dict[str, Any]:
+    """Observe the canonical stopped state; never infer it from a snapshot.
+
+    Operator must separately exclude external writers and scheduled restarts.
+    This observation is not an exclusive maintenance lease.
+    """
+    supervisor = _require_inactive_supervisor(root)
+    status = _run_json(
+        root, ["status", "--json"], timeout=180.0, allowed_exit_codes=(0, 1),
+    )
+    daemon = status.get("daemon")
+    if not (
+        status.get("_exit_code") == 1
+        and _same_runtime_root(status.get("root"), root)
+        and status.get("status_scope") == "live_endpoint"
+        and isinstance(daemon, dict)
+        and _same_runtime_root(daemon.get("active_root"), root)
+        and daemon.get("stopped_confirmed") is True
+        and daemon.get("active_state") == "inactive"
+        and daemon.get("pid_alive_os_probe") is False
+        and daemon.get("endpoint_probe_performed") is True
+        and daemon.get("endpoint_reachable") is False
+    ):
+        raise VerifiedMemoryRestoreError(
+            "Brak potwierdzonego zatrzymania daemona dla tego rootu; "
+            "backup, publikacja i rollback MEMORY są zablokowane."
+        )
+    return {"daemon_status": status, "supervisor_status": supervisor}
 
 
 def build_l2_review_draft(root: Path, *, limit: int) -> dict[str, Any]:
@@ -1585,23 +1650,16 @@ def prepare(
     status = "staged"
     errors: list[str] = []
     if publish:
+        # Refuse before touching the backup or live memory. A failed stop or
+        # inconclusive status must never invoke destructive rollback.
+        if stop_daemon:
+            details["supervisor_before_stop"] = _require_inactive_supervisor(root)
+            details["daemon_stop"] = _stop_daemon(root)
+        details["status_before_backup"] = _require_quiescent_runtime(root)
         backup = _backup_runtime_memory(root, backup_root)
         details["backup"] = backup
+        details["status_before_publish"] = _require_quiescent_runtime(root)
         try:
-            if stop_daemon:
-                details["daemon_stop"] = _stop_daemon(root)
-            else:
-                status_snapshot = _run_json(
-                    root,
-                    ["status", "--snapshot", "--json"],
-                    timeout=180.0,
-                )
-                details["status_before_publish"] = status_snapshot
-                text = _canonical_json(status_snapshot).lower()
-                if "active_trusted" in text or '"daemon_active":true' in text:
-                    raise VerifiedMemoryRestoreError(
-                        "Daemon wygląda na aktywny. Użyj --stop-daemon albo zatrzymaj go ręcznie."
-                    )
             details["publication"] = _publish_staged_archive(staged_root, root)
 
             from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
@@ -1645,7 +1703,16 @@ def prepare(
                 "candidate_count": l2_draft["candidate_count"],
             }
             status = "ready_for_l2_review"
-        except BaseException:
+        except BaseException as publication_error:
+            # Publication may already have modified destination paths. Do not
+            # race a restarted daemon while trying to restore the backup.
+            try:
+                _require_quiescent_runtime(root)
+            except Exception:
+                raise VerifiedMemoryRestoreError(
+                    "Rollback zablokowany: niepotwierdzony stan maintenance. "
+                    f"Zachowano backup: {backup_root}"
+                ) from publication_error
             _restore_runtime_memory(root, backup_root)
             raise
 
