@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from latka_jazn.version_contract import normalize_component_schema
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child, private_database_path
 from dataclasses import dataclass, asdict
 from pathlib import Path, PureWindowsPath
 from typing import Any
@@ -58,6 +59,13 @@ def _safe_relative_path(root: Path, raw: str) -> str:
         if not parts or parts[0].casefold() == "memory":
             raise ShardManifestError(f"unsafe shard path: {raw!r}")
     candidate = Path(*parts)
+    if dedicated_context_enabled():
+        target = resolved_root / candidate
+        if target.suffix.casefold() in {".sqlite", ".sqlite3", ".db"}:
+            private_database_path(resolved_root, target)
+        else:
+            private_child(resolved_root, target)
+        return candidate.as_posix()
     resolved = (resolved_root / candidate).resolve()
     try:
         resolved.relative_to(resolved_root)

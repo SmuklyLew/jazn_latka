@@ -13,6 +13,9 @@ from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.dedicated_private_context import (
+    dedicated_context_enabled, dedicated_memory_path, private_child, private_database_path,
+)
 
 MEMORY_DIR_NAME = "memory"
 MEMORY_ROOT_ENV = "JAZN_MEMORY_ROOT"
@@ -28,6 +31,8 @@ def memory_root_has_payload(root: str | Path) -> bool:
     """
 
     candidate = Path(root).expanduser()
+    if dedicated_context_enabled():
+        private_child(candidate.parent, candidate, directory=True)
     if not candidate.is_dir():
         return False
     markers = (
@@ -38,6 +43,8 @@ def memory_root_has_payload(root: str | Path) -> bool:
         candidate / "sqlite" / "conversation_archive_v1" / "conversation_archive_manifest.sqlite3",
     )
     for path in markers:
+        if dedicated_context_enabled():
+            private_child(candidate, path)
         try:
             if path.is_file() and path.stat().st_size > 0:
                 return True
@@ -48,6 +55,9 @@ def memory_root_has_payload(root: str | Path) -> bool:
 def legacy_memory_root(runtime_root: str | Path) -> Path:
     """Return the historical per-version memory directory."""
 
+    scoped = dedicated_memory_path(runtime_root)
+    if scoped is not None:
+        return scoped
     return (Path(runtime_root).expanduser().resolve() / MEMORY_DIR_NAME).resolve()
 
 
@@ -61,7 +71,10 @@ def previous_host_memory_root(runtime_root: str | Path) -> Path:
     """Return the pre-v115.21.7 host-level MEMORY location for compatibility."""
 
     root = Path(runtime_root).expanduser().resolve()
-    return (workspace_runtime_path(root) / MEMORY_DIR_NAME).resolve()
+    workspace = workspace_runtime_path(root)
+    if dedicated_context_enabled():
+        return private_child(workspace, workspace / MEMORY_DIR_NAME, directory=True)
+    return (workspace / MEMORY_DIR_NAME).resolve()
 
 
 def resolve_memory_root(
@@ -77,6 +90,9 @@ def resolve_memory_root(
     existing older host MEMORY payload remains selectable until migration.
     """
 
+    scoped = dedicated_memory_path(runtime_root, configured)
+    if scoped is not None:
+        return scoped
     root = Path(runtime_root).expanduser().resolve()
     raw: str | Path | None = configured
     if raw is None or not str(raw).strip():
@@ -207,6 +223,11 @@ def memory_path(
         prefer_existing_legacy=prefer_existing_legacy,
     )
     rel = normalize_memory_relative_path(relative)
+    if dedicated_context_enabled():
+        target = base / rel
+        if target.suffix.casefold() in {".sqlite", ".sqlite3", ".db"}:
+            return private_database_path(base, target)
+        return private_child(base, target)
     target = (base / rel).resolve()
     try:
         target.relative_to(base)

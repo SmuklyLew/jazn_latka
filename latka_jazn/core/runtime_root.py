@@ -13,6 +13,7 @@ import time
 from typing import Any, Iterator
 
 from latka_jazn.core.version_source import VERSION_MODULE_RELATIVE_PATH
+from latka_jazn.core.dedicated_private_context import dedicated_workspace_path, private_child
 
 
 PACKAGE_DIR_NAME = "latka_jazn"
@@ -124,6 +125,9 @@ def default_runtime_workspace_path(root: Path) -> Path:
     A prepared modern ROOT is identified by its local_resources directory.
     """
 
+    scoped = dedicated_workspace_path(root)
+    if scoped is not None:
+        return scoped
     runtime_root = Path(root).expanduser().resolve()
     # A prepared modern SYSTEM owns its workspace within its own ROOT.  Do not
     # silently adopt the sibling workspace of another checkout/daemon.
@@ -172,6 +176,9 @@ def workspace_runtime_path(
     migrate existing state as a side effect of path discovery.
     """
 
+    scoped = dedicated_workspace_path(root, configured)
+    if scoped is not None:
+        return scoped
     runtime_root = Path(root).expanduser().resolve()
     raw: str | Path | None = configured
     configured_text = str(raw or "").strip()
@@ -212,6 +219,14 @@ def runtime_state_path(root: Path, configured: str | Path) -> Path:
 
     runtime_root = Path(root).expanduser().resolve()
     candidate = Path(configured).expanduser()
+    scoped = dedicated_workspace_path(runtime_root)
+    if scoped is not None:
+        if candidate.is_absolute():
+            return private_child(scoped, candidate)
+        parts = candidate.parts
+        if parts and parts[0].casefold() == WORKSPACE_RUNTIME_DIR_NAME.casefold():
+            return private_child(scoped, scoped.joinpath(*parts[1:]))
+        return private_child(runtime_root, runtime_root / candidate)
     if candidate.is_absolute():
         return candidate.resolve()
     parts = candidate.parts
@@ -234,6 +249,16 @@ def active_runtime_marker_path(root: Path) -> Path:
 
 def resolve_active_runtime_marker_path(root: Path, marker_path: Path | None = None) -> Path:
     runtime_root = Path(root).expanduser().resolve()
+    scoped = dedicated_workspace_path(runtime_root)
+    if scoped is not None:
+        expected = private_child(scoped, scoped / ACTIVE_RUNTIME_MARKER_NAME)
+        if marker_path is not None:
+            supplied = Path(marker_path).expanduser()
+            if not supplied.is_absolute():
+                supplied = runtime_root / supplied
+            if supplied != expected:
+                raise ValueError("dedicated_private_context_marker_override_not_allowed")
+        return expected
     if marker_path is None:
         return active_runtime_marker_path(runtime_root)
     configured = Path(marker_path).expanduser()

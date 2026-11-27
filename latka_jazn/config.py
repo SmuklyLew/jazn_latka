@@ -19,6 +19,7 @@ from latka_jazn.memory.availability import (
     runtime_memory_storage_root,
 )
 from latka_jazn.memory.memory_root import memory_path, resolve_memory_root
+from latka_jazn.core.dedicated_private_context import dedicated_context_root, private_child
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES, DEFAULT_SYNC_BATCH_WIRE_BYTES
 from latka_jazn.core.timestamp_policy import (
     TIMESTAMP_LOCAL_FALLBACK_ALLOWED_DEFAULT,
@@ -231,11 +232,15 @@ class JaznConfig:
     def __post_init__(self) -> None:
         self.root = Path(self.root).expanduser().resolve()
         self.memory_mode = resolve_memory_mode(self.memory_mode)
+        if dedicated_context_root(self.root) is not None and self.memory_sync_mode != "off":
+            raise ValueError("dedicated_private_context_sync_not_verified")
 
     def _path_under_runtime_root(self, relative: str | Path) -> Path:
         path = Path(relative)
         if path.is_absolute():
             raise ValueError(f"runtime path must be relative to runtime root: {path}")
+        if dedicated_context_root(self.root) is not None:
+            return private_child(self.root, self.root / path)
         resolved = (self.root / path).resolve()
         try:
             resolved.relative_to(self.root)

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child, private_database_path
 from latka_jazn.memory.memory_root import (
     MEMORY_ROOT_ENV,
     default_memory_root,
@@ -146,7 +147,10 @@ def core_state_root(runtime_root: str | Path) -> Path:
     """Return non-memory mutable runtime state root without creating it."""
 
     root = Path(runtime_root).expanduser().resolve()
-    return (workspace_runtime_path(root) / CORE_STATE_DIR_NAME).resolve()
+    workspace = workspace_runtime_path(root)
+    if dedicated_context_enabled():
+        return private_child(workspace, workspace / CORE_STATE_DIR_NAME, directory=True)
+    return (workspace / CORE_STATE_DIR_NAME).resolve()
 
 
 def runtime_memory_storage_root(
@@ -164,7 +168,10 @@ def runtime_memory_storage_root(
     status = build_memory_availability_status(runtime_root, mode=mode)
     if status.persistent_memory_enabled:
         return Path(status.memory_root).resolve()
-    return (core_state_root(runtime_root) / CORE_MEMORY_RUNTIME_DIR_NAME).resolve()
+    base = core_state_root(runtime_root)
+    if dedicated_context_enabled():
+        return private_child(base, base / CORE_MEMORY_RUNTIME_DIR_NAME, directory=True)
+    return (base / CORE_MEMORY_RUNTIME_DIR_NAME).resolve()
 
 
 def runtime_memory_storage_path(
@@ -175,6 +182,11 @@ def runtime_memory_storage_path(
 ) -> Path:
     base = runtime_memory_storage_root(runtime_root, mode=mode)
     rel = normalize_memory_relative_path(relative)
+    if dedicated_context_enabled():
+        target = base / rel
+        if target.suffix.casefold() in {".sqlite", ".sqlite3", ".db"}:
+            return private_database_path(base, target)
+        return private_child(base, target)
     target = (base / rel).resolve()
     try:
         target.relative_to(base)

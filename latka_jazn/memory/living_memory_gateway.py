@@ -18,6 +18,7 @@ from typing import Any
 
 from latka_jazn.core.memory_search_planner import MemorySearchPlanner
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.dedicated_private_context import dedicated_memory_path, private_child, private_database_path
 from latka_jazn.memory._living_memory_gateway_impl import (
     REGISTRY_FILENAME,
     SCHEMA_VERSION,
@@ -124,12 +125,22 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         limit: int = 6,
         should_continue: Any | None = None,
     ) -> dict[str, Any]:
+        scope = dedicated_memory_path(self.root)
         effective_plan = self._referential_plan(plan)
         result = super().search(
             effective_plan,
             limit=limit,
             should_continue=should_continue,
         )
+        if scope is not None:
+            # Verify returned evidence before it enters any caller's context.
+            # Provenance remains the original database/record, not a new claim.
+            for hit in result.get("hits") or []:
+                if not isinstance(hit, dict) or not hit.get("source_database"):
+                    raise ValueError("dedicated_private_context_unscoped_hit")
+                source = private_database_path(scope, Path(str(hit["source_database"])))
+                if not source.is_file():
+                    raise ValueError("dedicated_private_context_unscoped_hit")
         if effective_plan is not plan:
             result["referential_focus"] = {
                 "status": "previous_query_focus_selected",
@@ -143,6 +154,7 @@ class LivingMemoryGateway(_LivingMemoryGateway):
         # MEMORY mode is a process policy, not only a write policy.  When the
         # operator chooses ``off`` no persistent source (active root, env source,
         # registry source or transactional tier) may become recall evidence.
+        scope = dedicated_memory_path(self.root)
         if memory_mode() == "off":
             self._discovery_cache = []
             self._discovery_cached_at = time.monotonic()
@@ -153,7 +165,13 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             if self.root.is_file() and self.root.suffix.casefold() in {".sqlite3", ".sqlite", ".db"}
             else None
         )
-        if direct_database is not None:
+        if scope is not None:
+            if os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "").strip():
+                raise ValueError("dedicated_private_context_external_sources_not_allowed")
+            active_memory_root = scope
+            candidates = [(scope, "active_memory_root", True, "dedicated_private_context_root")]
+            # Do not open the historical source registry in this profile.
+        elif direct_database is not None:
             active_memory_root = direct_database.parent
             candidates: list[tuple[Path, str, bool, str | None]] = [
                 (direct_database, "direct_database", True, "direct_database_argument")
@@ -211,7 +229,10 @@ class LivingMemoryGateway(_LivingMemoryGateway):
                 resolved = candidate.resolve()
             except OSError:
                 continue
-            sqlite_dir = self._candidate_sqlite_dir(resolved)
+            sqlite_dir = (
+                private_child(scope, scope / "sqlite", directory=True)
+                if scope is not None else self._candidate_sqlite_dir(resolved)
+            )
             existing_index = normalized_index.get(sqlite_dir)
             if existing_index is not None:
                 existing = normalized[existing_index]
@@ -231,8 +252,14 @@ class LivingMemoryGateway(_LivingMemoryGateway):
 
         for resolved, sqlite_dir, origin, source_trusted, trust_basis in normalized:
             databases = {key: sqlite_dir / filename for key, filename in DATABASE_FILENAMES.items()}
+            native_database = (
+                sqlite_dir / CANONICAL_DATABASE_NAME
+                if scope is not None else self._candidate_native_database(resolved)
+            )
+            if scope is not None:
+                for path in (*databases.values(), native_database):
+                    private_database_path(scope, path)
             available = {key: path.is_file() for key, path in databases.items()}
-            native_database = self._candidate_native_database(resolved)
             native_probe = probe_unified_memory_database(
                 native_database,
                 busy_timeout_ms=self.busy_timeout_ms,
@@ -299,6 +326,8 @@ class LivingMemoryGateway(_LivingMemoryGateway):
             if direct_database is not None
             else resolve_memory_tier_database_path(self.root)
         )
+        if scope is not None:
+            private_database_path(scope, tier_database)
         tier_probe = probe_memory_tier_database_readonly(
             tier_database,
             busy_timeout_ms=self.busy_timeout_ms,

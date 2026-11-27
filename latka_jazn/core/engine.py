@@ -9,6 +9,7 @@ from latka_jazn.config import JaznConfig
 from latka_jazn.core.engine_construction import EngineRuntimeServices, load_runtime_state
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.dedicated_private_context import dedicated_memory_path, private_database_path
 from latka_jazn.core.canon import CanonSourceContract, IdentityCanon, default_character_profile
 from latka_jazn.core.json_types import json_object
 from latka_jazn.core.emotions import AffectiveState
@@ -1076,6 +1077,7 @@ class JaznEngine:
         zapytanie o synonimy i wskazać pliki kanoniczne, a dopiero potem
         pytać warstwy pamięci.
         """
+        scope = dedicated_memory_path(self.config.root)
         legacy_candidates = self._keyword_candidates(text)
         if turn_context is not None:
             turn_context.start_stage("memory_search_plan")
@@ -1124,171 +1126,189 @@ class JaznEngine:
         ) or any(
             str(hit.get("source_layer") or "") == "archive_chats" for hit in living_memory_hits
         )
-        # poprzednia linia runtime: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
-        # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
-        # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
-        # i dopiero potem przycinamy widoczny kontekst.
-        collection_limit = max(limit * 4, 16)
-        if turn_context is not None:
-            turn_context.start_stage("memory_legacy_recall")
-        episodes: list[dict] = []
-        legacy: list[dict] = []
-        seen_ep: set[str] = set()
-        seen_legacy: set[str] = set()
+        if scope is not None:
+            # The canonical gateway is the only audited recall lane so far.
+            # Deny legacy/raw/source-file fallback before any of those readers
+            # can run, including the no-hit case. Never rely on model filtering.
+            for hit in living_memory_hits:
+                source = private_database_path(scope, Path(str(hit.get("source_database") or "")))
+                if not source.is_file():
+                    raise ValueError("dedicated_private_context_unscoped_hit")
+            episodes = []
+            legacy = []
+            source_file_hits = []
+            conversation_archive_hits = []
+            conversation_archive_search = {
+                "status": "dedicated_private_context_unaudited_lane_disabled",
+                "issues": [],
+            }
+            raw_fallback = []
+        else:
+            # poprzednia linia runtime: nie wolno ucinać kandydatów pamięci po pierwszych pięciu
+            # trafieniach, bo świeże echo runtime-preview potrafiło zasłonić realne
+            # starsze wspomnienie. Zbieramy szerszą pulę, filtrujemy echo pytania
+            # i dopiero potem przycinamy widoczny kontekst.
+            collection_limit = max(limit * 4, 16)
+            if turn_context is not None:
+                turn_context.start_stage("memory_legacy_recall")
+            episodes: list[dict] = []
+            legacy: list[dict] = []
+            seen_ep: set[str] = set()
+            seen_legacy: set[str] = set()
 
-        # Wyszukiwanie wieloprzejściowe: najpierw focus, potem rozszerzenia.
-        for search_pass in search_plan.search_passes:
-            if turn_context is not None and not turn_context.can_continue():
-                break
-            pass_terms = [str(x) for x in (search_pass.get("terms") or []) if str(x).strip()]
-            if not pass_terms or search_pass.get("name") == "raw_chat_fallback":
-                continue
-            per_phrase = 4 if search_pass.get("name") == "exact_focus_terms" else 2
-            for phrase in pass_terms:
+            # Wyszukiwanie wieloprzejściowe: najpierw focus, potem rozszerzenia.
+            for search_pass in search_plan.search_passes:
                 if turn_context is not None and not turn_context.can_continue():
                     break
-                if "episodic_memories" in (search_pass.get("layers") or []):
-                    for ep in self.layered_memory.search_episodes(
-                        phrase,
-                        per_phrase,
-                        should_continue=turn_context.can_continue if turn_context is not None else None,
-                    ):
-                        key = ep.get("episode_id") or ep.get("scene", "")[:120]
-                        if key in seen_ep:
-                            continue
-                        seen_ep.add(key)
-                        episodes.append({
-                            "phrase": phrase,
-                            "search_pass": search_pass.get("name"),
-                            "local_time_label": ep.get("local_time_label") or ep.get("created_at_utc"),
-                            "created_at_utc": ep.get("created_at_utc"),
-                            "grounding": ep.get("grounding"),
-                            "confidence": ep.get("confidence"),
-                            "scene": str(ep.get("scene") or "")[:700],
-                            "source": ep.get("source"),
-                        })
-                        if len(episodes) >= collection_limit:
-                            break
-                if "legacy_messages" in (search_pass.get("layers") or []) and not archive_fts_hit:
-                    for row in self.store.search_messages_any(
-                        [phrase],
-                        per_phrase,
-                        should_continue=turn_context.can_continue if turn_context is not None else None,
-                    ):
-                        d = dict(row)
-                        key = f"{d.get('conversation_id')}:{d.get('author_role')}:{d.get('create_time_warsaw')}:{str(d.get('text') or '')[:80]}"
-                        if key in seen_legacy:
-                            continue
-                        seen_legacy.add(key)
-                        legacy.append({
-                            "phrase": phrase,
-                            "search_pass": search_pass.get("name"),
-                            "conversation_title": d.get("conversation_title"),
-                            "author_role": d.get("author_role"),
-                            "create_time": d.get("create_time"),
-                            "create_time_warsaw": d.get("create_time_warsaw"),
-                            "text": str(d.get("text") or "")[:700],
-                        })
-                        if len(legacy) >= collection_limit:
-                            break
+                pass_terms = [str(x) for x in (search_pass.get("terms") or []) if str(x).strip()]
+                if not pass_terms or search_pass.get("name") == "raw_chat_fallback":
+                    continue
+                per_phrase = 4 if search_pass.get("name") == "exact_focus_terms" else 2
+                for phrase in pass_terms:
+                    if turn_context is not None and not turn_context.can_continue():
+                        break
+                    if "episodic_memories" in (search_pass.get("layers") or []):
+                        for ep in self.layered_memory.search_episodes(
+                            phrase,
+                            per_phrase,
+                            should_continue=turn_context.can_continue if turn_context is not None else None,
+                        ):
+                            key = ep.get("episode_id") or ep.get("scene", "")[:120]
+                            if key in seen_ep:
+                                continue
+                            seen_ep.add(key)
+                            episodes.append({
+                                "phrase": phrase,
+                                "search_pass": search_pass.get("name"),
+                                "local_time_label": ep.get("local_time_label") or ep.get("created_at_utc"),
+                                "created_at_utc": ep.get("created_at_utc"),
+                                "grounding": ep.get("grounding"),
+                                "confidence": ep.get("confidence"),
+                                "scene": str(ep.get("scene") or "")[:700],
+                                "source": ep.get("source"),
+                            })
+                            if len(episodes) >= collection_limit:
+                                break
+                    if "legacy_messages" in (search_pass.get("layers") or []) and not archive_fts_hit:
+                        for row in self.store.search_messages_any(
+                            [phrase],
+                            per_phrase,
+                            should_continue=turn_context.can_continue if turn_context is not None else None,
+                        ):
+                            d = dict(row)
+                            key = f"{d.get('conversation_id')}:{d.get('author_role')}:{d.get('create_time_warsaw')}:{str(d.get('text') or '')[:80]}"
+                            if key in seen_legacy:
+                                continue
+                            seen_legacy.add(key)
+                            legacy.append({
+                                "phrase": phrase,
+                                "search_pass": search_pass.get("name"),
+                                "conversation_title": d.get("conversation_title"),
+                                "author_role": d.get("author_role"),
+                                "create_time": d.get("create_time"),
+                                "create_time_warsaw": d.get("create_time_warsaw"),
+                                "text": str(d.get("text") or "")[:700],
+                            })
+                            if len(legacy) >= collection_limit:
+                                break
+                    if len(episodes) >= collection_limit and len(legacy) >= collection_limit:
+                        break
                 if len(episodes) >= collection_limit and len(legacy) >= collection_limit:
                     break
-            if len(episodes) >= collection_limit and len(legacy) >= collection_limit:
-                break
 
-        episodes = self._filter_memory_context_candidates(episodes, user_text=text, kind="episode")
-        legacy = self._filter_memory_context_candidates(legacy, user_text=text, kind="legacy_message")
-        episodes = MemoryRecallPresenter.filter_temporal_candidates(
-            episodes,
-            temporal_scope=search_plan.temporal_scope,
-            timestamp_fields=("created_at_utc", "local_time_label"),
-        )[:limit]
-        legacy = MemoryRecallPresenter.filter_temporal_candidates(
-            legacy,
-            temporal_scope=search_plan.temporal_scope,
-            timestamp_fields=("create_time", "create_time_warsaw"),
-        )[:limit]
-        if turn_context is not None:
-            if archive_fts_hit and turn_context.can_continue():
-                turn_context.record_technical_event(
-                    "memory_retrieval_strategy",
-                    {
-                        "strategy": "fts_first",
-                        "archive_fts_hit": True,
-                        "legacy_message_scan_skipped": True,
-                    },
+            episodes = self._filter_memory_context_candidates(episodes, user_text=text, kind="episode")
+            legacy = self._filter_memory_context_candidates(legacy, user_text=text, kind="legacy_message")
+            episodes = MemoryRecallPresenter.filter_temporal_candidates(
+                episodes,
+                temporal_scope=search_plan.temporal_scope,
+                timestamp_fields=("created_at_utc", "local_time_label"),
+            )[:limit]
+            legacy = MemoryRecallPresenter.filter_temporal_candidates(
+                legacy,
+                temporal_scope=search_plan.temporal_scope,
+                timestamp_fields=("create_time", "create_time_warsaw"),
+            )[:limit]
+            if turn_context is not None:
+                if archive_fts_hit and turn_context.can_continue():
+                    turn_context.record_technical_event(
+                        "memory_retrieval_strategy",
+                        {
+                            "strategy": "fts_first",
+                            "archive_fts_hit": True,
+                            "legacy_message_scan_skipped": True,
+                        },
+                    )
+                turn_context.complete_stage(
+                    "memory_legacy_recall",
+                    status="completed" if turn_context.can_continue() else "cancelled",
+                    error_code=None if turn_context.can_continue() else "turn_cancelled",
                 )
-            turn_context.complete_stage(
-                "memory_legacy_recall",
-                status="completed" if turn_context.can_continue() else "cancelled",
-                error_code=None if turn_context.can_continue() else "turn_cancelled",
-            )
 
-        if turn_context is not None:
-            turn_context.start_stage("memory_source_file_scan")
-        source_file_hits = []
-        if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope:
-            source_file_hits = [hit.to_dict() for hit in self.memory_search_planner.search_source_files(search_plan, limit=limit)]
-        source_file_hits = self._filter_memory_context_candidates(
-            source_file_hits,
-            user_text=text,
-            kind="source_file",
-        )[:limit]
-        if turn_context is not None:
-            turn_context.complete_stage(
-                "memory_source_file_scan",
-                status="completed" if turn_context.can_continue() else "cancelled",
-                error_code=None if turn_context.can_continue() else "turn_cancelled",
-            )
+            if turn_context is not None:
+                turn_context.start_stage("memory_source_file_scan")
+            source_file_hits = []
+            if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope:
+                source_file_hits = [hit.to_dict() for hit in self.memory_search_planner.search_source_files(search_plan, limit=limit)]
+            source_file_hits = self._filter_memory_context_candidates(
+                source_file_hits,
+                user_text=text,
+                kind="source_file",
+            )[:limit]
+            if turn_context is not None:
+                turn_context.complete_stage(
+                    "memory_source_file_scan",
+                    status="completed" if turn_context.can_continue() else "cancelled",
+                    error_code=None if turn_context.can_continue() else "turn_cancelled",
+                )
 
-        if turn_context is not None:
-            turn_context.start_stage("memory_conversation_archive_recall")
-        if turn_context is None or turn_context.can_continue():
-            archive_options: dict[str, Any] = {
-                "limit": limit,
-                "turn_context": turn_context,
-            }
-            if search_plan.temporal_scope:
-                archive_options["temporal_scope"] = search_plan.temporal_scope
-            conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(
-                phrases,
-                **archive_options,
-            )
-        else:
-            conversation_archive_hits, conversation_archive_search = [], {
-                "status": "cancelled", "issues": ["turn_cancelled_before_conversation_archive"]
-            }
-        conversation_archive_hits = self._filter_memory_context_candidates(
-            conversation_archive_hits,
-            user_text=text,
-            kind="conversation_archive",
-        )[:limit]
-        if turn_context is not None:
-            turn_context.complete_stage(
-                "memory_conversation_archive_recall",
-                status="completed" if turn_context.can_continue() else "cancelled",
-                error_code=None if turn_context.can_continue() else "turn_cancelled",
-            )
+            if turn_context is not None:
+                turn_context.start_stage("memory_conversation_archive_recall")
+            if turn_context is None or turn_context.can_continue():
+                archive_options: dict[str, Any] = {
+                    "limit": limit,
+                    "turn_context": turn_context,
+                }
+                if search_plan.temporal_scope:
+                    archive_options["temporal_scope"] = search_plan.temporal_scope
+                conversation_archive_hits, conversation_archive_search = self._conversation_archive_context_hits(
+                    phrases,
+                    **archive_options,
+                )
+            else:
+                conversation_archive_hits, conversation_archive_search = [], {
+                    "status": "cancelled", "issues": ["turn_cancelled_before_conversation_archive"]
+                }
+            conversation_archive_hits = self._filter_memory_context_candidates(
+                conversation_archive_hits,
+                user_text=text,
+                kind="conversation_archive",
+            )[:limit]
+            if turn_context is not None:
+                turn_context.complete_stage(
+                    "memory_conversation_archive_recall",
+                    status="completed" if turn_context.can_continue() else "cancelled",
+                    error_code=None if turn_context.can_continue() else "turn_cancelled",
+                )
 
-        raw_fallback: list[dict] = []
-        raw_path = self.config.root / "memory" / "raw" / "chat.html"
-        if turn_context is not None:
-            turn_context.start_stage("memory_raw_fallback")
-        # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
-        # conversation_archive i pliki kanoniczne nie zwróciły treści.
-        if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope and phrases and not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
-            raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
-        raw_fallback = self._filter_memory_context_candidates(
-            raw_fallback,
-            user_text=text,
-            kind="raw_chat",
-        )[:3]
-        if turn_context is not None:
-            turn_context.complete_stage(
-                "memory_raw_fallback",
-                status="completed" if turn_context.can_continue() else "cancelled",
-                error_code=None if turn_context.can_continue() else "turn_cancelled",
-            )
+            raw_fallback: list[dict] = []
+            raw_path = self.config.root / "memory" / "raw" / "chat.html"
+            if turn_context is not None:
+                turn_context.start_stage("memory_raw_fallback")
+            # Surowe chat.html jest ostatecznością: uruchamia się dopiero, gdy indeksy,
+            # conversation_archive i pliki kanoniczne nie zwróciły treści.
+            if (turn_context is None or turn_context.can_continue()) and not search_plan.temporal_scope and phrases and not living_memory_hits and not legacy and not episodes and not source_file_hits and not conversation_archive_hits and raw_path.exists():
+                raw_fallback = search_raw_chat_html_snippets(raw_path, phrases, limit=3)
+            raw_fallback = self._filter_memory_context_candidates(
+                raw_fallback,
+                user_text=text,
+                kind="raw_chat",
+            )[:3]
+            if turn_context is not None:
+                turn_context.complete_stage(
+                    "memory_raw_fallback",
+                    status="completed" if turn_context.can_continue() else "cancelled",
+                    error_code=None if turn_context.can_continue() else "turn_cancelled",
+                )
 
         context = {
             "query_terms": phrases,
@@ -1296,7 +1316,8 @@ class JaznEngine:
             "retrieval_strategy": {
                 "fts_first": True,
                 "archive_fts_hit": archive_fts_hit,
-                "legacy_message_scan_skipped": archive_fts_hit,
+                "legacy_message_scan_skipped": archive_fts_hit or scope is not None,
+                **({"dedicated_private_context": "canonical_gateway_only"} if scope is not None else {}),
             },
             "episodes": episodes,
             "legacy_messages": legacy,
