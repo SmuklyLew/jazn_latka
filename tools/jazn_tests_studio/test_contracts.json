@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.10",
-  "active_definition_count": 3756,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.12",
+  "active_definition_count": 3761,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71527,6 +71527,26 @@
       "description_source": "source_identity",
       "line": 83
     },
+    "tests/test_stage05_f05_tcp_disconnect.py::test_real_tcp_reset_preserves_admission_and_exact_poll": {
+      "path": "tests/test_stage05_f05_tcp_disconnect.py",
+      "name": "test_real_tcp_reset_preserves_admission_and_exact_poll",
+      "purpose": "Real tcp reset preserves admission and exact poll",
+      "expected": "Pytest completes this contract cleanly and all 29 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 29,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 27
+    },
     "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_refuses_vulnerable_wal_before_backup_or_open": {
       "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
       "name": "test_migration_refuses_vulnerable_wal_before_backup_or_open",
@@ -71610,6 +71630,84 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 69
+    },
+    "tests/test_stage05_f06_verified_restore_quiescence.py::test_maintenance_observation_requires_canonical_evidence": {
+      "path": "tests/test_stage05_f06_verified_restore_quiescence.py",
+      "name": "test_maintenance_observation_requires_canonical_evidence",
+      "purpose": "Maintenance observation requires canonical evidence",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "VerifiedMemoryRestoreError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 35
+    },
+    "tests/test_stage05_f06_verified_restore_quiescence.py::test_confirmed_inactive_status_accepts_nonzero_exit": {
+      "path": "tests/test_stage05_f06_verified_restore_quiescence.py",
+      "name": "test_confirmed_inactive_status_accepts_nonzero_exit",
+      "purpose": "Confirmed inactive status accepts nonzero exit",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_stage05_f06_verified_restore_quiescence.py::test_prepare_never_rolls_back_without_authorized_publication_and_quiescence": {
+      "path": "tests/test_stage05_f06_verified_restore_quiescence.py",
+      "name": "test_prepare_never_rolls_back_without_authorized_publication_and_quiescence",
+      "purpose": "Prepare never rolls back without authorized publication and quiescence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "VerifiedMemoryRestoreError"
+      ],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 85
+    },
+    "tests/test_stage05_f06_verified_restore_quiescence.py::test_staging_only_never_touches_live_memory": {
+      "path": "tests/test_stage05_f06_verified_restore_quiescence.py",
+      "name": "test_staging_only_never_touches_live_memory",
+      "purpose": "Staging only never touches live memory",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
     },
     "tests/test_stage05_f08_stopped_daemon_status.py::test_confirmed_stop_is_inactive_without_repair_advice": {
       "path": "tests/test_stage05_f08_stopped_daemon_status.py",
