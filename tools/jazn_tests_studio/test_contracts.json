@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.29",
-  "active_definition_count": 3822,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.30",
+  "active_definition_count": 3827,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71851,6 +71851,155 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 142
+    },
+    "tests/test_stage05_f01_rest_worker_scope.py::test_two_spawned_workers_reopen_only_their_own_persisted_replay": {
+      "path": "tests/test_stage05_f01_rest_worker_scope.py",
+      "name": "test_two_spawned_workers_reopen_only_their_own_persisted_replay",
+      "purpose": "Two spawned workers reopen only their own persisted replay",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "RuntimeWorkerProcessError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.core.rest_cycle_controller",
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_timeout",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_replay"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_stage05_f01_rest_worker_scope.py::test_worker_scope_rejects_mismatched_environment_and_audit_before_use": {
+      "path": "tests/test_stage05_f01_rest_worker_scope.py",
+      "name": "test_worker_scope_rejects_mismatched_environment_and_audit_before_use",
+      "purpose": "Worker scope rejects mismatched environment and audit before use",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.core.rest_cycle_controller",
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_timeout",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_replay"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 128
+    },
+    "tests/test_stage05_f01_rest_worker_scope.py::test_dedicated_replay_off_and_foreign_paths_are_not_read": {
+      "path": "tests/test_stage05_f01_rest_worker_scope.py",
+      "name": "test_dedicated_replay_off_and_foreign_paths_are_not_read",
+      "purpose": "Dedicated replay off and foreign paths are not read",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.core.rest_cycle_controller",
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_timeout",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_replay"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
+    },
+    "tests/test_stage05_f01_rest_worker_scope.py::test_rest_refuses_foreign_store_and_persists_only_local_bookkeeping": {
+      "path": "tests/test_stage05_f01_rest_worker_scope.py",
+      "name": "test_rest_refuses_foreign_store_and_persists_only_local_bookkeeping",
+      "purpose": "Rest refuses foreign store and persists only local bookkeeping",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.core.rest_cycle_controller",
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_timeout",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_replay"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 176
+    },
+    "tests/test_stage05_f01_rest_worker_scope.py::test_dedicated_leaf_aliases_do_not_read_or_modify_foreign_data": {
+      "path": "tests/test_stage05_f01_rest_worker_scope.py",
+      "name": "test_dedicated_leaf_aliases_do_not_read_or_modify_foreign_data",
+      "purpose": "Dedicated leaf aliases do not read or modify foreign data",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine_construction",
+        "latka_jazn.core.rest_cycle_controller",
+        "latka_jazn.core.turn_execution",
+        "latka_jazn.core.turn_timeout",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.rest_cycle_store",
+        "latka_jazn.memory.rest_replay"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 203
     },
     "tests/test_stage05_f01_session_and_task_isolation.py::test_canonical_admission_partitions_worker_and_gate_keys_across_restart": {
       "path": "tests/test_stage05_f01_session_and_task_isolation.py",
