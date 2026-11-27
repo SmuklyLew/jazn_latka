@@ -1,13 +1,13 @@
 {
   "schema_version": "package_integrity_manifest/v2",
-  "version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
-  "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
-  "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
-  "generated_at_utc": "2026-11-27T02:31:53+00:00",
-  "updated_at_utc": "2026-11-27T02:31:53+00:00",
+  "version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
+  "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
+  "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
+  "generated_at_utc": "2026-11-27T03:00:20+00:00",
+  "updated_at_utc": "2026-11-27T03:00:20+00:00",
   "start_file": "run.py",
-  "file_count": 4030,
-  "static_file_count": 4030,
+  "file_count": 4031,
+  "static_file_count": 4031,
   "mutable_runtime_file_count": 0,
   "runtime_mutable_file_count": 0,
   "excluded_file_count": 368,
@@ -337,8 +337,8 @@
     },
     {
       "path": ".github/workflows/release-hardening.yml",
-      "size_bytes": 30387,
-      "sha256": "951136fedab54d6fbafe93a67cd810f8ea63dfb424db76566e6966e2a2a26c8a",
+      "size_bytes": 30494,
+      "sha256": "8040b0a87c5575382dae6ead1a4cbba8dd271695885e5637b450d41c7a2bca38",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -518,7 +518,7 @@
     {
       "path": "SOURCE_PROVENANCE.json",
       "size_bytes": 3008,
-      "sha256": "d0e1fba9cc2fd9a880ab7bc65bd77e894db253a4a325661e82f76f354573b483",
+      "sha256": "aee8b5c3b1ce820fda30245ecb5a2793f9afeef7ebdf8cd7eb99e86f7e8fdefe",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -554,7 +554,7 @@
     {
       "path": "deploy/chatgpt_mcp/deployment.contract.json",
       "size_bytes": 1954,
-      "sha256": "e7f6e303b14ec73fd691dd33cee531498975b974ede69009ef85e9fd03e99a9a",
+      "sha256": "407f80f7878631f246d707174c598318b0f87f3592bdff722071704250e10a63",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -2758,8 +2758,8 @@
     },
     {
       "path": "docs/project/releases/v127.30.10/IMPLEMENTATION_PROGRESS.md",
-      "size_bytes": 113892,
-      "sha256": "3ccbd89838b59efa62f49a5f971d062bf0d2cc1c6ca9476ccc9a93892689de78",
+      "size_bytes": 115524,
+      "sha256": "bc78c846d2ec6d70d9e05b3e4a6f2e956e31322f308ad401582e2c1020015206",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -10418,7 +10418,7 @@
     {
       "path": "latka_jazn/resources/startup_contract.json",
       "size_bytes": 8705,
-      "sha256": "ee229a79bc9f70c2f222a875482e923bb8d37271ce2ce14b609fb105a9a710db",
+      "sha256": "67aeb0cc9168dae87ac08ba64c8e6d6ce7936581b856157855188792fa4ea9a9",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11695,8 +11695,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_restore_runner.py",
-      "size_bytes": 24999,
-      "sha256": "5bcd5a85b187e63face8974f5a5f0ec7e9d35f6d59edcd454514a9df2212d2f8",
+      "size_bytes": 26215,
+      "sha256": "a818b3c6d0bee1fa6962f60c08d4e0de8a774c960de71d53b3cf7263a04106cc",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11713,8 +11713,8 @@
     },
     {
       "path": "latka_jazn/tools/memory_restore_types.py",
-      "size_bytes": 11006,
-      "sha256": "f2b9c18a8f35b7cb64b6906b3037416836e39edb4ac904cba8af3ee4c6d25175",
+      "size_bytes": 11246,
+      "sha256": "f8d7f62fcdafe963dc22305f57844eed3815ea0d03def6b00b3d4379b0277006",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -11938,8 +11938,8 @@
     },
     {
       "path": "latka_jazn/version.py",
-      "size_bytes": 34539,
-      "sha256": "51df3f7ea5854c6fa31971a156122de29ad3c5753db3938437d534de83ce3f47",
+      "size_bytes": 34628,
+      "sha256": "11d9a90f8d5f7a4a5ba0af5bc8f7c3a14600ce51742236ec5160220996c5f4d1",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -33816,6 +33816,15 @@
       "hash_policy": "sha256_file_bytes"
     },
     {
+      "path": "tests/test_stage05_f06_legacy_restore_maintenance.py",
+      "size_bytes": 4835,
+      "sha256": "e5f9c425f751331d21f74a68b63d7141a0e28a2c77c4d3a866a7c015cf613e0f",
+      "mutable_runtime": false,
+      "classification": "static_project_file",
+      "archive": false,
+      "hash_policy": "sha256_file_bytes"
+    },
+    {
       "path": "tests/test_stage05_f06_maintenance_transition.py",
       "size_bytes": 4487,
       "sha256": "0e70860e45cf9144d23fd5f2db3ef156f714a6a22d78892ef574eb06502ede89",
@@ -36067,8 +36076,8 @@
     },
     {
       "path": "tools/jazn_tests_studio/test_contracts.json",
-      "size_bytes": 3329178,
-      "sha256": "137da4301f8987193a8a50be7e7c82eeb8377b872949ed1a1adf4625fbc39b2a",
+      "size_bytes": 3333437,
+      "sha256": "ba78fd2681e78c9462013d901125a610c56f9c8929fef63402ad4c753aa1080f",
       "mutable_runtime": false,
       "classification": "static_project_file",
       "archive": false,
@@ -36725,11 +36734,11 @@
       "migration_target": "package_integrity_manifest/v2"
     }
   },
-  "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
+  "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
   "artifact_identity": {
-    "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
-    "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence",
-    "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.18-jss-v104-v80-convergence"
+    "runtime_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
+    "package_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence",
+    "release_version": "16.3.25.5.116.0.34.94.6.127.30.10.19-jss-v104-v80-convergence"
   },
   "legacy_aliases": {
     "version": "release_version"
