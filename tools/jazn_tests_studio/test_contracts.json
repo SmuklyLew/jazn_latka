@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.30",
-  "active_definition_count": 3827,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.31",
+  "active_definition_count": 3830,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -18306,7 +18306,7 @@
       "path": "tests/test_dependency_studio.py",
       "name": "test_run_entrypoint_blocks_activation_when_required_dependencies_missing",
       "purpose": "Run entrypoint blocks activation when required dependencies missing",
-      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
@@ -18314,7 +18314,7 @@
       "markers": [
         "parametrize"
       ],
-      "assertion_count": 4,
+      "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.admission_owner_context",
@@ -18324,7 +18324,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 376
+      "line": 377
     },
     "tests/test_dependency_studio.py::test_install_uses_fresh_environment_and_atomically_switches_activation_marker": {
       "path": "tests/test_dependency_studio.py",
@@ -18346,7 +18346,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 462
+      "line": 473
     },
     "tests/test_dependency_studio.py::test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift": {
       "path": "tests/test_dependency_studio.py",
@@ -18368,7 +18368,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 483
+      "line": 494
     },
     "tests/test_dependency_studio.py::test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape": {
       "path": "tests/test_dependency_studio.py",
@@ -18392,7 +18392,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 523
+      "line": 534
     },
     "tests/test_dependency_studio.py::test_managed_environment_rejects_missing_venv_configuration": {
       "path": "tests/test_dependency_studio.py",
@@ -18414,7 +18414,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 584
+      "line": 595
     },
     "tests/test_dependency_studio_layout_contract.py::test_project_layout_preserves_root_local_venv_selection": {
       "path": "tests/test_dependency_studio_layout_contract.py",
@@ -72312,6 +72312,77 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 134
+    },
+    "tests/test_stage05_f01_windows_component_policy.py::test_reserved_windows_leaf_refused_by_both_boundaries": {
+      "path": "tests/test_stage05_f01_windows_component_policy.py",
+      "name": "test_reserved_windows_leaf_refused_by_both_boundaries",
+      "purpose": "Reserved windows leaf refused by both boundaries",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "filterwarnings",
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 21
+    },
+    "tests/test_stage05_f01_windows_component_policy.py::test_single_component_predicate_rejects_non_leaf_or_control": {
+      "path": "tests/test_stage05_f01_windows_component_policy.py",
+      "name": "test_single_component_predicate_rejects_non_leaf_or_control",
+      "purpose": "Single component predicate rejects non leaf or control",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "filterwarnings",
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 31
+    },
+    "tests/test_stage05_f01_windows_component_policy.py::test_literal_valid_windows_leaf_is_preserved": {
+      "path": "tests/test_stage05_f01_windows_component_policy.py",
+      "name": "test_literal_valid_windows_leaf_is_preserved",
+      "purpose": "Literal valid windows leaf is preserved",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "filterwarnings",
+        "parametrize"
+      ],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
     },
     "tests/test_stage05_f01_windows_workspace_alias.py::test_dos_comparison_only_normalizes_the_drive_alias": {
       "path": "tests/test_stage05_f01_windows_workspace_alias.py",
