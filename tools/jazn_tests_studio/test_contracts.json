@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.24",
-  "active_definition_count": 3801,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.25",
+  "active_definition_count": 3806,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71242,13 +71242,13 @@
       "path": "tests/test_stage05_f01_offline_admission_authority.py",
       "name": "test_offline_recovery_never_opens_committed_store_for_other_owner",
       "purpose": "Offline recovery never opens committed store for other owner",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [
         "parametrize"
       ],
-      "assertion_count": 3,
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
@@ -71278,7 +71278,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 97
+      "line": 98
     },
     "tests/test_stage05_f01_owner_loopback_transport.py::test_verified_mcp_context_reaches_daemon_and_does_not_bleed": {
       "path": "tests/test_stage05_f01_owner_loopback_transport.py",
@@ -71442,6 +71442,122 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 139
+    },
+    "tests/test_stage05_f01_session_and_task_isolation.py::test_canonical_admission_partitions_worker_and_gate_keys_across_restart": {
+      "path": "tests/test_stage05_f01_session_and_task_isolation.py",
+      "name": "test_canonical_admission_partitions_worker_and_gate_keys_across_restart",
+      "purpose": "Canonical admission partitions worker and gate keys across restart",
+      "expected": "Pytest completes this contract cleanly and all 14 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 14,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 49
+    },
+    "tests/test_stage05_f01_session_and_task_isolation.py::test_implicit_public_session_is_per_request_and_reserved_namespace_is_casefolded": {
+      "path": "tests/test_stage05_f01_session_and_task_isolation.py",
+      "name": "test_implicit_public_session_is_per_request_and_reserved_namespace_is_casefolded",
+      "purpose": "Implicit public session is per request and reserved namespace is casefolded",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_stage05_f01_session_and_task_isolation.py::test_scoped_checkpoint_never_publishes_to_unscoped_latest": {
+      "path": "tests/test_stage05_f01_session_and_task_isolation.py",
+      "name": "test_scoped_checkpoint_never_publishes_to_unscoped_latest",
+      "purpose": "Scoped checkpoint never publishes to unscoped latest",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 92
+    },
+    "tests/test_stage05_f01_session_and_task_isolation.py::test_legacy_task_protocol_rejects_foreign_and_ownerless_caller": {
+      "path": "tests/test_stage05_f01_session_and_task_isolation.py",
+      "name": "test_legacy_task_protocol_rejects_foreign_and_ownerless_caller",
+      "purpose": "Legacy task protocol rejects foreign and ownerless caller",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 120
+    },
+    "tests/test_stage05_f01_session_and_task_isolation.py::test_legacy_task_creation_uses_verified_principal_not_metadata": {
+      "path": "tests/test_stage05_f01_session_and_task_isolation.py",
+      "name": "test_legacy_task_creation_uses_verified_principal_not_metadata",
+      "purpose": "Legacy task creation uses verified principal not metadata",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "KeyError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.runtime_session_state",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 150
     },
     "tests/test_stage05_f01_subject_bound_idempotency.py::test_cached_generate_is_subject_bound_across_server_reopen": {
       "path": "tests/test_stage05_f01_subject_bound_idempotency.py",
