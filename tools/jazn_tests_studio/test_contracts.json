@@ -1,6 +1,6 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.27",
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.28",
   "active_definition_count": 3819,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
@@ -18023,6 +18023,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18045,6 +18046,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18066,6 +18068,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18087,6 +18090,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18108,6 +18112,7 @@
       "assertion_count": 5,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18129,6 +18134,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18150,6 +18156,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18172,6 +18179,7 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18194,6 +18202,7 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18215,6 +18224,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18238,6 +18248,7 @@
         "Exception"
       ],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18259,6 +18270,7 @@
       "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18281,6 +18293,7 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
@@ -18293,22 +18306,25 @@
       "path": "tests/test_dependency_studio.py",
       "name": "test_run_entrypoint_blocks_activation_when_required_dependencies_missing",
       "purpose": "Run entrypoint blocks activation when required dependencies missing",
-      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [
         "repository"
       ],
-      "markers": [],
-      "assertion_count": 3,
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 374
+      "line": 376
     },
     "tests/test_dependency_studio.py::test_install_uses_fresh_environment_and_atomically_switches_activation_marker": {
       "path": "tests/test_dependency_studio.py",
@@ -18323,13 +18339,14 @@
       "assertion_count": 8,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 427
+      "line": 462
     },
     "tests/test_dependency_studio.py::test_managed_environment_v2_reuses_dependency_contract_but_rejects_target_drift": {
       "path": "tests/test_dependency_studio.py",
@@ -18344,13 +18361,14 @@
       "assertion_count": 3,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 448
+      "line": 483
     },
     "tests/test_dependency_studio.py::test_managed_environment_accepts_canonical_python_symlink_but_rejects_path_escape": {
       "path": "tests/test_dependency_studio.py",
@@ -18367,13 +18385,14 @@
       "assertion_count": 6,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 488
+      "line": 523
     },
     "tests/test_dependency_studio.py::test_managed_environment_rejects_missing_venv_configuration": {
       "path": "tests/test_dependency_studio.py",
@@ -18388,13 +18407,14 @@
       "assertion_count": 2,
       "expected_exceptions": [],
       "targets": [
+        "latka_jazn.core.admission_owner_context",
         "latka_jazn.core.readiness",
         "latka_jazn.dependencies.runtime",
         "latka_jazn.tools.dependency_studio"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 549
+      "line": 584
     },
     "tests/test_dependency_studio_layout_contract.py::test_project_layout_preserves_root_local_venv_selection": {
       "path": "tests/test_dependency_studio_layout_contract.py",
