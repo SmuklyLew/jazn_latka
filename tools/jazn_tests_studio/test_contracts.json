@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.26",
-  "active_definition_count": 3811,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.27",
+  "active_definition_count": 3819,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71097,6 +71097,277 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 117
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_two_dedicated_roots_keep_real_writes_retrieval_and_context_separate": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_two_dedicated_roots_keep_real_writes_retrieval_and_context_separate",
+      "purpose": "Two dedicated roots keep real writes retrieval and context separate",
+      "expected": "Pytest completes this contract cleanly and all 18 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 18,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 102
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_dedicated_memory_never_adopts_legacy_host_workspace": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_dedicated_memory_never_adopts_legacy_host_workspace",
+      "purpose": "Dedicated memory never adopts legacy host workspace",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host",
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 155
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_dedicated_context_refuses_shared_overrides": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_dedicated_context_refuses_shared_overrides",
+      "purpose": "Dedicated context refuses shared overrides",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 172
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_gateway_ignores_registry_and_rejects_environment_sources_before_probe": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_gateway_ignores_registry_and_rejects_environment_sources_before_probe",
+      "purpose": "Gateway ignores registry and rejects environment sources before probe",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "security",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 200
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_dedicated_database_aliases_are_rejected_before_probe": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_dedicated_database_aliases_are_rejected_before_probe",
+      "purpose": "Dedicated database aliases are rejected before probe",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 229
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_runtime_writer_rejects_hardlinked_default_shard_before_manifest_creation": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_runtime_writer_rejects_hardlinked_default_shard_before_manifest_creation",
+      "purpose": "Runtime writer rejects hardlinked default shard before manifest creation",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 256
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_dedicated_mode_off_for_memory_never_retrieves_persisted_records": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_dedicated_mode_off_for_memory_never_retrieves_persisted_records",
+      "purpose": "Dedicated mode off for memory never retrieves persisted records",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "memory"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 281
+    },
+    "tests/test_stage05_f01_dedicated_private_context.py::test_dedicated_mode_requires_existing_reviewed_owner_binding": {
+      "path": "tests/test_stage05_f01_dedicated_private_context.py",
+      "name": "test_dedicated_mode_requires_existing_reviewed_owner_binding",
+      "purpose": "Dedicated mode requires existing reviewed owner binding",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.core.dedicated_private_context",
+        "latka_jazn.core.engine",
+        "latka_jazn.core.memory_search_planner",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.memory",
+        "latka_jazn.memory.availability",
+        "latka_jazn.memory.living_memory_gateway",
+        "latka_jazn.memory.memory_recall_contract",
+        "latka_jazn.memory.memory_root",
+        "latka_jazn.memory.memory_tier_store",
+        "latka_jazn.memory.memory_tiers",
+        "latka_jazn.memory.runtime_memory_install",
+        "latka_jazn.memory.store"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 294
     },
     "tests/test_stage05_f01_durable_write_and_poll.py::test_durable_atomic_write_flushes_before_publish_and_syncs_parent": {
       "path": "tests/test_stage05_f01_durable_write_and_poll.py",
