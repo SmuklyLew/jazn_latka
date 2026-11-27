@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.20",
-  "active_definition_count": 3788,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.21",
+  "active_definition_count": 3790,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -72116,6 +72116,49 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_stage05_f06_restore_plan_snapshot.py::test_planning_snapshot_reads_exact_encoded_source_into_fresh_delete_db": {
+      "path": "tests/test_stage05_f06_restore_plan_snapshot.py",
+      "name": "test_planning_snapshot_reads_exact_encoded_source_into_fresh_delete_db",
+      "purpose": "Planning snapshot reads exact encoded source into fresh delete db",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_stage05_f06_restore_plan_snapshot.py::test_planning_closes_source_when_staging_open_fails": {
+      "path": "tests/test_stage05_f06_restore_plan_snapshot.py",
+      "name": "test_planning_closes_source_when_staging_open_fails",
+      "purpose": "Planning closes source when staging open fails",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [
+        "OSError",
+        "ProgrammingError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.tools",
+        "latka_jazn.tools.memory_restore"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 68
     },
     "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_refuses_vulnerable_wal_before_backup_or_open": {
       "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
