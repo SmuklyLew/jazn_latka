@@ -335,6 +335,40 @@ def connect_runtime_writable(
     return connection
 
 
+def connect_new_portable_sqlite(path: str | Path) -> sqlite3.Connection:
+    """Create a fresh, private staging database, never convert a live store.
+
+    Portable archives use DELETE even on fixed SQLite builds: a completed
+    artifact must not depend on WAL/SHM sidecars. The caller owns an isolated
+    staging directory and must close the connection before hashing/publishing.
+    Exclusive creation refuses any existing database (including symlinks).
+    """
+    db_path = Path(path).expanduser().absolute()
+    for suffix in ("-wal", "-shm", "-journal"):
+        sidecar = db_path.with_name(db_path.name + suffix)
+        if sidecar.exists() or sidecar.is_symlink():
+            raise sqlite3.OperationalError("portable_sqlite_existing_sidecar")
+    with db_path.open("xb"):
+        pass
+    require_safe_sqlite_write(db_path)
+    connection = sqlite3.connect(
+        writable_sqlite_uri(db_path).removesuffix("?mode=rwc") + "?mode=rw",
+        uri=True, timeout=DEFAULT_BUSY_TIMEOUT_MS / 1000,
+    )
+    try:
+        # New SQLite files default to DELETE. Refuse an unexpected mode,
+        # rather than changing journal mode or checkpointing an existing WAL.
+        row = connection.execute("PRAGMA journal_mode").fetchone()
+        if row is None or str(row[0]).upper() != "DELETE":
+            raise sqlite3.OperationalError("portable_sqlite_requires_delete_journal")
+        connection.execute("PRAGMA synchronous=FULL")
+        connection.execute("PRAGMA foreign_keys=ON")
+    except BaseException:
+        connection.close()
+        raise
+    return connection
+
+
 def sqlite_error_diagnostics(
     exc: BaseException,
     *,

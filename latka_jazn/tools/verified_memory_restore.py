@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack, closing
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 import hashlib
@@ -17,6 +18,7 @@ import uuid
 import zlib
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.db.runtime_sqlite import connect_new_portable_sqlite, connect_runtime_readonly
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 
 SCHEMA_VERSION = "jazn_verified_memory_restore/v1"
@@ -157,10 +159,8 @@ def _sqlite_health(path: Path, *, full: bool = True, hash_file: bool = True) -> 
     integrity: str | None = None
     foreign_rows: list[tuple[Any, ...]] = []
     try:
-        connection = sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True, timeout=30.0)
+        connection = connect_runtime_readonly(path, timeout_ms=30_000)
         try:
-            connection.execute("PRAGMA query_only=ON")
-            connection.execute("PRAGMA busy_timeout=30000")
             pragma = "integrity_check" if full else "quick_check"
             integrity = str(connection.execute(f"PRAGMA {pragma}").fetchone()[0])
             foreign_rows = [tuple(row) for row in connection.execute("PRAGMA foreign_key_check")]
@@ -238,7 +238,7 @@ def validate_test04_databases(test04_root: Path) -> dict[str, Any]:
 
     archive_path = paths["archive_chats"]
     journal_path = paths["journal"]
-    with sqlite3.connect(f"file:{archive_path.resolve().as_posix()}?mode=ro", uri=True) as connection:
+    with closing(connect_runtime_readonly(archive_path, timeout_ms=30_000)) as connection:
         tables = {
             str(row[0])
             for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")
@@ -252,7 +252,7 @@ def validate_test04_databases(test04_root: Path) -> dict[str, Any]:
             "conversations": int(connection.execute("SELECT COUNT(*) FROM conversations").fetchone()[0]),
             "nodes": int(connection.execute("SELECT COUNT(*) FROM nodes").fetchone()[0]),
         }
-    with sqlite3.connect(f"file:{journal_path.resolve().as_posix()}?mode=ro", uri=True) as connection:
+    with closing(connect_runtime_readonly(journal_path, timeout_ms=30_000)) as connection:
         tables = {
             str(row[0])
             for row in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")
@@ -530,16 +530,6 @@ class RuntimeArchiveConverter:
 
         from latka_jazn.tools.chat_export_reader import build_conversation_graph
 
-        source = sqlite3.connect(
-            f"file:{self.source_archive.resolve().as_posix()}?mode=ro",
-            uri=True,
-            timeout=30.0,
-        )
-        source.row_factory = sqlite3.Row
-        archive = sqlite3.connect(self.archive_path)
-        archive.row_factory = sqlite3.Row
-        staging = sqlite3.connect(self.staging_path)
-        fts = sqlite3.connect(self.fts_path)
         counts = {
             "sources": 0,
             "conversations": 0,
@@ -561,8 +551,12 @@ class RuntimeArchiveConverter:
             "staging_locations": [],
             "fts_locations": [],
         }
-        try:
-            source.execute("PRAGMA query_only=ON")
+        with ExitStack() as stack:
+            source = stack.enter_context(closing(connect_runtime_readonly(self.source_archive, timeout_ms=30_000)))
+            archive = stack.enter_context(closing(connect_new_portable_sqlite(self.archive_path)))
+            archive.row_factory = sqlite3.Row
+            staging = stack.enter_context(closing(connect_new_portable_sqlite(self.staging_path)))
+            fts = stack.enter_context(closing(connect_new_portable_sqlite(self.fts_path)))
             archive.executescript(ARCHIVE_SCHEMA)
             staging.executescript(STAGING_SCHEMA)
             fts.executescript(FTS_SCHEMA)
@@ -896,15 +890,7 @@ class RuntimeArchiveConverter:
             archive.commit()
             staging.commit()
             fts.commit()
-            archive.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-            staging.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-            fts.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-        finally:
-            fts.close()
-            staging.close()
-            archive.close()
-            source.close()
-
+        # DELETE-journal staging connections are closed before hashing or publishing.
         self._export_journal()
         self._build_manifest(source_rows, manifest_rows, counts)
 
@@ -953,11 +939,7 @@ class RuntimeArchiveConverter:
         }
 
     def _export_journal(self) -> None:
-        source = sqlite3.connect(
-            f"file:{self.source_journal.resolve().as_posix()}?mode=ro",
-            uri=True,
-        )
-        source.row_factory = sqlite3.Row
+        source = connect_runtime_readonly(self.source_journal, timeout_ms=30_000)
         entries: list[dict[str, Any]] = []
         try:
             for row in source.execute(
@@ -1020,7 +1002,7 @@ class RuntimeArchiveConverter:
         location_rows: dict[str, list[tuple[Any, ...]]],
         counts: dict[str, int],
     ) -> None:
-        manifest = sqlite3.connect(self.manifest_path)
+        manifest = connect_new_portable_sqlite(self.manifest_path)
         try:
             manifest.executescript(MANIFEST_SCHEMA)
             manifest.execute("PRAGMA synchronous=FULL")
@@ -1544,11 +1526,7 @@ def apply_l2_review(
     ]
     config = JaznConfig(root=root)
     pipeline = MemoryRecoveryPipeline(root)
-    sidecar = sqlite3.connect(
-        f"file:{config.normalization_sidecar_db_path.resolve().as_posix()}?mode=ro",
-        uri=True,
-    )
-    sidecar.row_factory = sqlite3.Row
+    sidecar = connect_runtime_readonly(config.normalization_sidecar_db_path, timeout_ms=30_000)
     policy = ShortTermMemoryPolicy()
     written = skipped = 0
     memory_ids: list[str] = []

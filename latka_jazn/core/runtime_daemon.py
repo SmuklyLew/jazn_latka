@@ -1274,6 +1274,48 @@ class JaznDaemonServer(ThreadingHTTPServer):
             self._session_last_used_monotonic[key] = time.monotonic()
             return existing, "payload" if normalized else "generated"
 
+    @staticmethod
+    def _chat_admission_identity_witness(rows: list[dict[str, Any]]) -> dict[str, Any]:
+        # Bind immutable admission identities, not mutable execution state.
+        # Sorting makes cache recovery/eviction order irrelevant.
+        identities = [
+            [row["request_id"], row.get("request_fingerprint")]
+            for row in sorted(rows, key=lambda row: row["request_id"])
+        ]
+        encoded = json.dumps(identities, ensure_ascii=False, sort_keys=True,
+                             separators=(",", ":")).encode("utf-8")
+        return {
+            "schema_version": "daemon_chat_admission_established/v2",
+            "identity_count": len(identities),
+            "identity_sha256": hashlib.sha256(encoded).hexdigest(),
+        }
+
+    def _read_chat_admission_witness_locked(self) -> dict[str, Any] | None:
+        try:
+            raw = self._chat_ledger_guard_path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            return None
+        except UnicodeError as exc:
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record") from exc
+        except OSError as exc:
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unreadable") from exc
+        try:
+            witness = json.loads(raw)
+        except (ValueError, RecursionError) as exc:
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record") from exc
+        if witness == {"schema_version": "daemon_chat_admission_established/v1"}:
+            return witness
+        if not (
+            isinstance(witness, dict)
+            and witness.get("schema_version") == "daemon_chat_admission_established/v2"
+            and type(witness.get("identity_count")) is int
+            and witness["identity_count"] >= 0
+            and isinstance(witness.get("identity_sha256"), str)
+            and re.fullmatch(r"[0-9a-f]{64}", witness["identity_sha256"])
+        ):
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
+        return witness
+
     def _read_chat_admission_ledger_locked(self) -> list[dict[str, Any]] | None:
         """Distinguish a virgin ledger from missing, unreadable or invalid history."""
         try:
@@ -1313,6 +1355,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     or request_id in seen or "user_text" in row):
                 raise _ChatAdmissionLedgerError("daemon_chat_ledger_invalid")
             seen.add(request_id)
+        witness = self._read_chat_admission_witness_locked()
+        if witness is not None and witness.get("schema_version") == "daemon_chat_admission_established/v2":
+            if witness != self._chat_admission_identity_witness(rows):
+                raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
+        elif payload.get("admission_identity_witness_required") is True or (witness is not None and not rows):
+            # A missing/downgraded witness or empty legacy established ledger
+            # is not proof of absence. Do not repair it from an empty cache.
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
         return rows
 
     def _persist_chat_jobs_locked_unsafe(self) -> None:
@@ -1413,21 +1463,23 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 )
                 recoverable.append({key: raw.get(key) for key in keys})
                 live_ids.add(request_id)
-        # This marker is only an existence witness, not a second request ledger.
-        # Publish it before the first admission; an interrupted initialization
-        # deliberately requires operator recovery rather than guessing absence.
-        try:
-            self._chat_ledger_guard_path.stat()
-        except FileNotFoundError:
-            write_json_atomic(self._chat_ledger_guard_path, {
-                "schema_version": "daemon_chat_admission_established/v1",
-            }, durable=True)
+        # Existing identities are immutable even when represented by a live job.
+        # Publish a content-free identity witness before any enlarged ledger.
+        # A crash between the two files deliberately fails closed on restart.
+        next_identities = {row["request_id"]: row.get("request_fingerprint") for row in recoverable}
+        if any(next_identities.get(row["request_id"]) != row.get("request_fingerprint")
+               for row in previous or []):
+            raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
+        witness = self._chat_admission_identity_witness(recoverable)
+        if self._read_chat_admission_witness_locked() != witness:
+            write_json_atomic(self._chat_ledger_guard_path, witness, durable=True)
         write_json_atomic(
             self._chat_state_path,
             {
                 "schema_version": DAEMON_SCHEMA_VERSION,
                 "persistence_contract": "daemon_chat_recovery_metadata/v2",
                 "contains_user_text": False,
+                "admission_identity_witness_required": True,
                 "jobs": recoverable,
             },
             durable=True,

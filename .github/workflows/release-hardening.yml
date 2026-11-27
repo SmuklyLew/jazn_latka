@@ -465,6 +465,7 @@ jobs:
           -q -ra --tb=short
           --junitxml="${{ runner.temp }}/pytest-windows-stage05.xml"
           tests/test_stage05_f01_admission_ledger_guard.py
+          tests/test_stage05_f01_identity_witness.py
           tests/test_stage05_f01_durable_write_and_poll.py
           tests/test_stage05_f01_terminal_request_retention.py
           tests/test_stage05_f02_diagnostic_authority_binding.py
@@ -477,6 +478,8 @@ jobs:
           tests/test_stage05_f05_tcp_disconnect.py
           tests/test_stage05_f06_sqlite_maintenance_boundaries.py
           tests/test_stage05_f06_verified_restore_quiescence.py
+          tests/test_stage05_f06_portable_restore.py
+          tests/test_verified_memory_restore.py
           tests/test_stage05_windows_regression_gate.py
 
       - name: Install JSS Qt profile for Windows GUI regressions
