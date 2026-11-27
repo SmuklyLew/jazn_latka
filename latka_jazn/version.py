@@ -1,3 +1,4 @@
+# v127.30.10.13 stage05 F02: preserve unavailable executor reason in host presentation.
 # v127.30.10.12 stage05 F06: require verified stop before memory backup, publish and rollback.
 # v127.30.10.11 stage05 F05: real TCP disconnect and same-request poll regression.
 # v127.30.10.10 stage05 F02: diagnose unavailable auto/null executor without host phase-2.
@@ -302,7 +303,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.12"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.13"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

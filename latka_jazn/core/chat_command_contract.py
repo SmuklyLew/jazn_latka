@@ -1200,6 +1200,7 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
             bridge.get("diagnostic_reason")
             if action == "host_diagnostic" and bridge.get("status") in (
                 "local_model_transport_failed", "local_model_output_limit_reached",
+                "model_executor_unavailable",
             )
             else None
         ),
