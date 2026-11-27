@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.14",
-  "active_definition_count": 3762,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.15",
+  "active_definition_count": 3765,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71470,6 +71470,87 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 22
+    },
+    "tests/test_stage05_f04_required_truth_context.py::test_required_truth_survives_item_and_section_limits_and_minimal_projection": {
+      "path": "tests/test_stage05_f04_required_truth_context.py",
+      "name": "test_required_truth_survives_item_and_section_limits_and_minimal_projection",
+      "purpose": "Required truth survives item and section limits and minimal projection",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 24
+    },
+    "tests/test_stage05_f04_required_truth_context.py::test_context_refusal_never_dispatches_or_authorizes_host": {
+      "path": "tests/test_stage05_f04_required_truth_context.py",
+      "name": "test_context_refusal_never_dispatches_or_authorizes_host",
+      "purpose": "Context refusal never dispatches or authorizes host",
+      "expected": "Pytest completes this contract cleanly and all 34 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 34,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 55
+    },
+    "tests/test_stage05_f04_required_truth_context.py::test_context_failure_classification_requires_actual_bounded_evidence": {
+      "path": "tests/test_stage05_f04_required_truth_context.py",
+      "name": "test_context_failure_classification_requires_actual_bounded_evidence",
+      "purpose": "Context failure classification requires actual bounded evidence",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.local_model_context_compiler",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.core.recovery_policy",
+        "latka_jazn.model_adapters.base",
+        "latka_jazn.model_adapters.local_llm_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 149
     },
     "tests/test_stage05_f05_exact_response_transport.py::test_exact_response_frame_and_atomic_file": {
       "path": "tests/test_stage05_f05_exact_response_transport.py",
