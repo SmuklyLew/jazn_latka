@@ -69,3 +69,5 @@ Additional append-only provenance:
 | `tests/test_stage05_f01_owner_loopback_transport.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_stage05_f01_owner_loopback_transport_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `5838a583576790e1039f2b7ea662934c9ad3db96` |
 
 | `tests/test_mcp_task_input_delivery_acceptance.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_mcp_task_input_delivery_acceptance_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `c9bb25f369ef61e4aeb4a8d8a31c651a363d5d20` |
+
+| `tests/test_dependency_studio.py` from `1c34472cd743c5249c7434e407ed792e513c416d` before fixing minimal preflight fixture and expanding entrypoint/scope matrix (original assertions retained) | `test_dependency_studio_v16_3_25_5_116_0_34_94_6_127_30_10_27.py` | `fabea7a012c29116bf2446e1533a9c516360c412` |

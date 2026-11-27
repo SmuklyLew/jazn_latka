@@ -371,7 +371,12 @@ def test_runtime_readiness_is_gated_by_required_dependencies(tmp_path: Path, mon
     assert ready.summary()["dependencies"] == "ready"
 
 
-def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp_path: Path) -> None:
+@pytest.mark.parametrize("entrypoint", ["run.py", "main.py"])
+@pytest.mark.parametrize("private_scope", ["off", "dedicated_root"])
+def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(
+    tmp_path: Path, entrypoint: str, private_scope: str,
+) -> None:
+    import os
     import shutil
     import subprocess
 
@@ -389,7 +394,13 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
         shutil.copy2(source, root / "latka_jazn" / "dependencies" / source.name)
     (root / "latka_jazn" / "core").mkdir(exist_ok=True)
     (root / "latka_jazn" / "core" / "__init__.py").write_text("", encoding="utf-8")
-    for core_name in ("runtime_root.py", "version_source.py"):
+    # The dependency-free preflight resolves canonical workspace paths. Keep
+    # its actual stdlib-only project modules, including the dedicated scope
+    # and reviewed-owner gate; deliberately omit the heavy runtime graph.
+    for core_name in (
+        "runtime_root.py", "version_source.py",
+        "dedicated_private_context.py", "admission_owner_context.py",
+    ):
         shutil.copy2(Path(__file__).parents[1] / "latka_jazn" / "core" / core_name, root / "latka_jazn" / "core" / core_name)
     (root / "latka_jazn" / "cli.py").write_text(
         "def main(argv=None):\n    return 0\n", encoding="utf-8"
@@ -408,19 +419,43 @@ def test_run_entrypoint_blocks_activation_when_required_dependencies_missing(tmp
     # heavy runtime graph is imported.
     shutil.copy2(Path(__file__).parents[1] / "main.py", root / "main.py")
 
+    # Do not let the operator's real dependency or owner configuration leak
+    # into this subprocess. Dedicated mode uses an explicitly synthetic owner.
+    env = {key: value for key, value in os.environ.items() if not key.startswith("JAZN_")}
+    env.update({
+        "PYTHONPATH": str(root),
+        "JAZN_DEPENDENCY_AUTOBOOTSTRAP": "1",
+        "JAZN_PRIVATE_CONTEXT_ISOLATION": private_scope,
+    })
+    if private_scope == "dedicated_root":
+        from latka_jazn.core.admission_owner_context import (
+            PRIVATE_CONTEXT_OWNER_FILE, PRIVATE_CONTEXT_OWNER_SCHEMA, public_owner_digest,
+        )
+        (root / "local_resources").mkdir()
+        owner = public_owner_digest("synthetic-preflight-owner")
+        binding = root / PRIVATE_CONTEXT_OWNER_FILE
+        binding.parent.mkdir()
+        binding.write_text(json.dumps({
+            "schema_version": PRIVATE_CONTEXT_OWNER_SCHEMA,
+            "owner_sha256": owner,
+            "existing_shared_context_reviewed": True,
+        }), encoding="utf-8")
+        env["JAZN_PRIVATE_CONTEXT_OWNER_SHA256"] = owner
+
     completed = subprocess.run(
-        [sys.executable, str(root / "run.py"), "chat"],
+        [sys.executable, str(root / entrypoint), "chat"],
         cwd=root,
         capture_output=True,
         text=True,
         encoding="utf-8",
         timeout=30,
         check=False,
-        env={**__import__("os").environ, "PYTHONPATH": str(root)},
+        env=env,
     )
-    assert completed.returncode == 78
+    assert completed.returncode == 78, completed.stderr
     assert "required_python_dependencies_not_ready" in completed.stderr
     assert "no_verified_wheelhouse" in completed.stderr
+    assert "Traceback (most recent call last)" not in completed.stderr
 
 
 
