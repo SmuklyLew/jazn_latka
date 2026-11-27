@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.19",
-  "active_definition_count": 3784,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.20",
+  "active_definition_count": 3788,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71310,6 +71310,91 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 181
+    },
+    "tests/test_stage05_f01_windows_workspace_alias.py::test_dos_comparison_only_normalizes_the_drive_alias": {
+      "path": "tests/test_stage05_f01_windows_workspace_alias.py",
+      "name": "test_dos_comparison_only_normalizes_the_drive_alias",
+      "purpose": "Dos comparison only normalizes the drive alias",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_stage05_f01_windows_workspace_alias.py::test_ambiguous_namespaces_or_components_are_not_aliases": {
+      "path": "tests/test_stage05_f01_windows_workspace_alias.py",
+      "name": "test_ambiguous_namespaces_or_components_are_not_aliases",
+      "purpose": "Ambiguous namespaces or components are not aliases",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_stage05_f01_windows_workspace_alias.py::test_workspace_resolver_mixed_dos_spelling": {
+      "path": "tests/test_stage05_f01_windows_workspace_alias.py",
+      "name": "test_workspace_resolver_mixed_dos_spelling",
+      "purpose": "Workspace resolver mixed dos spelling",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [
+        "parametrize",
+        "skipif"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 38
+    },
+    "tests/test_stage05_f01_windows_workspace_alias.py::test_workspace_real_escape_still_refused": {
+      "path": "tests/test_stage05_f01_windows_workspace_alias.py",
+      "name": "test_workspace_real_escape_still_refused",
+      "purpose": "Workspace real escape still refused",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "windows"
+      ],
+      "markers": [],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 66
     },
     "tests/test_stage05_f02_diagnostic_authority_binding.py::test_transport_diagnostic_retains_valid_turn_binding_without_authorizing_generation": {
       "path": "tests/test_stage05_f02_diagnostic_authority_binding.py",
