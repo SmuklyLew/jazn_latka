@@ -32,8 +32,10 @@ import uuid
 
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_root import (
+    RuntimeWorkspaceBusyError,
     active_runtime_marker_path,
     find_start_file,
+    runtime_memory_transition_lock,
     resolve_active_runtime_marker_path,
     resolve_active_runtime_root,
     workspace_runtime_path,
@@ -4741,35 +4743,41 @@ def run_daemon(
         }
         print(json.dumps(payload, ensure_ascii=False, sort_keys=True), file=sys.stderr)
         return 3
-    # Every phase is an operator-owned local JSONL diagnostic, not an alternate
-    # readiness decision. Keep the original identity and integrity gates intact.
-    append_daemon_process_event(config.root, "boot_phase", phase="release_verified", daemon_pid=os.getpid())
-    # runtime_write_v1 is a critical local write layer; initialize a clean store if the release pack omitted stale shards.
-    append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_init", daemon_pid=os.getpid())
-    build_runtime_write_access_status(config, initialize=True, writes_enabled=True)
-    append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_ready", daemon_pid=os.getpid())
-    # Write the normal active-runtime marker first; then the daemon marker extends it.
-    append_daemon_process_event(config.root, "boot_phase", phase="active_marker_write", daemon_pid=os.getpid())
-    write_active_runtime_marker(config.root, marker_output=marker_path, action="daemon_run_start")
-    append_daemon_process_event(config.root, "boot_phase", phase="http_bind", daemon_pid=os.getpid())
-    server = JaznDaemonServer(
-        (host, int(port)),
-        JaznDaemonHandler,
-        config=config,
-        marker_path=marker_path,
-        heartbeat_interval=heartbeat_interval,
-        execution_timeout_seconds=execution_timeout_seconds,
-        daemon_instance_id=daemon_instance_id,
-    )
-    server.refresh_timestamp_contract(reason="startup_background", background=True, force=True)
-    server.write_marker()
-    append_daemon_process_event(config.root, "boot_phase", phase="endpoint_bound", daemon_pid=os.getpid())
-    _emit_visible_daemon_event("started", host=host, port=int(port), root=str(config.root), heartbeat_interval_seconds=float(heartbeat_interval))
-    server.start_heartbeat()
-    if server.rest_cycle_controller is not None:
-        server.rest_cycle_controller.start()
-    if server.memory_sync_controller is not None:
-        server.memory_sync_controller.start()
+    try:
+        with runtime_memory_transition_lock(config.root):
+            # Every phase is an operator-owned local JSONL diagnostic, not an alternate
+            # readiness decision. Keep the original identity and integrity gates intact.
+            append_daemon_process_event(config.root, "boot_phase", phase="release_verified", daemon_pid=os.getpid())
+            # runtime_write_v1 is a critical local write layer; initialize a clean store if the release pack omitted stale shards.
+            append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_init", daemon_pid=os.getpid())
+            build_runtime_write_access_status(config, initialize=True, writes_enabled=True)
+            append_daemon_process_event(config.root, "boot_phase", phase="runtime_write_ready", daemon_pid=os.getpid())
+            # Write the normal active-runtime marker first; then the daemon marker extends it.
+            append_daemon_process_event(config.root, "boot_phase", phase="active_marker_write", daemon_pid=os.getpid())
+            write_active_runtime_marker(config.root, marker_output=marker_path, action="daemon_run_start")
+            append_daemon_process_event(config.root, "boot_phase", phase="http_bind", daemon_pid=os.getpid())
+            server = JaznDaemonServer(
+                (host, int(port)),
+                JaznDaemonHandler,
+                config=config,
+                marker_path=marker_path,
+                heartbeat_interval=heartbeat_interval,
+                execution_timeout_seconds=execution_timeout_seconds,
+                daemon_instance_id=daemon_instance_id,
+            )
+            server.refresh_timestamp_contract(reason="startup_background", background=True, force=True)
+            server.write_marker()
+            append_daemon_process_event(config.root, "boot_phase", phase="endpoint_bound", daemon_pid=os.getpid())
+            _emit_visible_daemon_event("started", host=host, port=int(port), root=str(config.root), heartbeat_interval_seconds=float(heartbeat_interval))
+            server.start_heartbeat()
+            if server.rest_cycle_controller is not None:
+                server.rest_cycle_controller.start()
+            if server.memory_sync_controller is not None:
+                server.memory_sync_controller.start()
+    except RuntimeWorkspaceBusyError:
+        print(json.dumps({"ok": False, "started": False,
+                          "error_code": "runtime_memory_transition_busy"}), file=sys.stderr)
+        return 4
     try:
         server.serve_forever(poll_interval=0.25)
     finally:
@@ -5226,11 +5234,19 @@ def start_daemon(
             ),
         }
     try:
-        runtime_write_status = build_runtime_write_access_status(
-            subject_config,
-            initialize=True,
-            writes_enabled=True,
-        ).to_dict()
+        with runtime_memory_transition_lock(subject_root):
+            runtime_write_status = build_runtime_write_access_status(
+                subject_config,
+                initialize=True,
+                writes_enabled=True,
+            ).to_dict()
+    except RuntimeWorkspaceBusyError:
+        return {
+            "ok": False, "started": False,
+            "error_code": "runtime_memory_transition_busy",
+            "marker_path": str(marker_path),
+            **subject_context,
+        }
     except Exception as exc:
         lowered_error = str(exc).casefold()
         permission_failure = isinstance(exc, PermissionError) or any(

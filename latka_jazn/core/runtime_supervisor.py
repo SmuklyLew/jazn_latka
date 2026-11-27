@@ -35,7 +35,9 @@ from latka_jazn.core.runtime_daemon import (  # noqa: E402
 from latka_jazn.core.process_identity import process_fingerprint, process_fingerprint_matches  # noqa: E402
 from latka_jazn.core.runtime_health import DaemonHealthClass, classify_daemon_health  # noqa: E402
 from latka_jazn.core.runtime_lifecycle import restart_daemon  # noqa: E402
-from latka_jazn.core.runtime_root import workspace_runtime_path  # noqa: E402
+from latka_jazn.core.runtime_root import (  # noqa: E402
+    RuntimeWorkspaceBusyError, runtime_memory_transition_lock, workspace_runtime_path,
+)
 from latka_jazn.version import PACKAGE_VERSION_FULL, schema_version  # noqa: E402
 
 SUPERVISOR_SCHEMA_VERSION = schema_version("persistent_runtime_supervisor")
@@ -456,7 +458,13 @@ def run_supervisor(
     stop_event: threading.Event | None = None,
 ) -> int:
     runtime_root = Path(root).expanduser().resolve()
-    claimed, _existing_pid = _claim_supervisor_pid(runtime_root)
+    try:
+        with runtime_memory_transition_lock(runtime_root):
+            claimed, _existing_pid = _claim_supervisor_pid(runtime_root)
+    except RuntimeWorkspaceBusyError:
+        # A maintenance operation owns the canonical workspace transition.
+        # Do not claim supervisor state or initiate any recovery.
+        return 42
     if not claimed:
         # A duplicate start must never overwrite the live supervisor's shared
         # state file.  The PID contract is sufficient evidence for the caller;

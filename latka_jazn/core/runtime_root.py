@@ -338,6 +338,7 @@ def runtime_workspace_transition_lock(
     name: str,
     *,
     stale_after_seconds: float = 60.0,
+    reclaim_stale: bool = True,
 ) -> Iterator[Path]:
     """Serialize mutable runtime transitions with identity-bound ownership.
 
@@ -369,7 +370,7 @@ def runtime_workspace_transition_lock(
             except OSError:
                 age = 0.0
 
-            if owner.get("reclaimable") is True:
+            if reclaim_stale and owner.get("reclaimable") is True:
                 try:
                     lock_path.unlink()
                     continue
@@ -433,6 +434,21 @@ def runtime_workspace_transition_lock(
     raise RuntimeWorkspaceBusyError(
         f"runtime workspace transition busy: {lock_path}"
     )
+
+@contextmanager
+def runtime_memory_transition_lock(root: Path) -> Iterator[Path]:
+    """Serialize cooperating startup and offline memory maintenance.
+
+    A dead owner is not authority to reclaim an interrupted memory operation.
+    Preserve the lock for explicit operator recovery; never race two stale
+    lock removals. This protects one resolved canonical workspace, not external
+    programs or processes that ignore this contract.
+    """
+    with runtime_workspace_transition_lock(
+        root, "memory-maintenance", reclaim_stale=False,
+    ) as lock_path:
+        yield lock_path
+
 
 def migrate_legacy_runtime_workspace(
     root: Path,

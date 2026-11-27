@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import ExitStack, closing
+from contextlib import ExitStack, closing, contextmanager
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 import hashlib
@@ -12,12 +12,14 @@ import shutil
 import sqlite3
 import subprocess
 import sys
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Iterator, Sequence
 from urllib.parse import quote
 import uuid
 import zlib
 
-from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.runtime_root import (
+    RuntimeWorkspaceBusyError, runtime_memory_transition_lock, workspace_runtime_path,
+)
 from latka_jazn.db.runtime_sqlite import connect_new_portable_sqlite, connect_runtime_readonly
 from latka_jazn.memory.storage_limits import DEFAULT_MAX_SQLITE_FILE_BYTES
 
@@ -1596,6 +1598,15 @@ def apply_l2_review(
     }
 
 
+@contextmanager
+def _exclusive_memory_maintenance(root: Path) -> Iterator[Path]:
+    try:
+        with runtime_memory_transition_lock(root) as lock_path:
+            yield lock_path
+    except RuntimeWorkspaceBusyError as exc:
+        raise VerifiedMemoryRestoreError("runtime_memory_transition_busy") from exc
+
+
 def prepare(
     root: Path,
     *,
@@ -1628,71 +1639,72 @@ def prepare(
     status = "staged"
     errors: list[str] = []
     if publish:
-        # Refuse before touching the backup or live memory. A failed stop or
-        # inconclusive status must never invoke destructive rollback.
-        if stop_daemon:
-            details["supervisor_before_stop"] = _require_inactive_supervisor(root)
-            details["daemon_stop"] = _stop_daemon(root)
-        details["status_before_backup"] = _require_quiescent_runtime(root)
-        backup = _backup_runtime_memory(root, backup_root)
-        details["backup"] = backup
-        details["status_before_publish"] = _require_quiescent_runtime(root)
-        try:
-            details["publication"] = _publish_staged_archive(staged_root, root)
-
-            from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
-            from latka_jazn.tools.memory_validation import validate_large_memory
-
-            pipeline = MemoryRecoveryPipeline(root)
-            recovery = pipeline.run(
-                force_recovery=True,
-                normalize_limit=None,
-                prepare_l2=False,
-                build_l3_manifest=False,
-            ).to_dict()
-            details["recovery"] = recovery
-            if not recovery.get("ok"):
-                raise VerifiedMemoryRestoreError(
-                    "Recovery/normalizacja/wake-state nie zakończyły się powodzeniem: "
-                    + _canonical_json(recovery.get("errors"))
-                )
-
-            validation = validate_large_memory(
-                root,
-                full=True,
-                include_all_sqlite=True,
-                max_errors=100,
-                table_counts=False,
-                hash_files=False,
-                output=run_dir / "memory_validation_after_prepare.json",
-            )
-            details["memory_validation"] = validation
-            if not validation.get("ok"):
-                raise VerifiedMemoryRestoreError(
-                    "Pełna walidacja pamięci po recovery nie przeszła."
-                )
-
-            l2_draft = build_l2_review_draft(root, limit=l2_limit)
-            l2_draft_path = run_dir / "l2_review_draft.json"
-            _atomic_json(l2_draft_path, l2_draft)
-            details["l2_review_draft"] = {
-                "path": str(l2_draft_path),
-                "sha256": _sha256_file(l2_draft_path),
-                "candidate_count": l2_draft["candidate_count"],
-            }
-            status = "ready_for_l2_review"
-        except BaseException as publication_error:
-            # Publication may already have modified destination paths. Do not
-            # race a restarted daemon while trying to restore the backup.
+        with _exclusive_memory_maintenance(root):
+            # Refuse before touching the backup or live memory. A failed stop or
+            # inconclusive status must never invoke destructive rollback.
+            if stop_daemon:
+                details["supervisor_before_stop"] = _require_inactive_supervisor(root)
+                details["daemon_stop"] = _stop_daemon(root)
+            details["status_before_backup"] = _require_quiescent_runtime(root)
+            backup = _backup_runtime_memory(root, backup_root)
+            details["backup"] = backup
+            details["status_before_publish"] = _require_quiescent_runtime(root)
             try:
-                _require_quiescent_runtime(root)
-            except Exception:
-                raise VerifiedMemoryRestoreError(
-                    "Rollback zablokowany: niepotwierdzony stan maintenance. "
-                    f"Zachowano backup: {backup_root}"
-                ) from publication_error
-            _restore_runtime_memory(root, backup_root)
-            raise
+                details["publication"] = _publish_staged_archive(staged_root, root)
+
+                from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
+                from latka_jazn.tools.memory_validation import validate_large_memory
+
+                pipeline = MemoryRecoveryPipeline(root)
+                recovery = pipeline.run(
+                    force_recovery=True,
+                    normalize_limit=None,
+                    prepare_l2=False,
+                    build_l3_manifest=False,
+                ).to_dict()
+                details["recovery"] = recovery
+                if not recovery.get("ok"):
+                    raise VerifiedMemoryRestoreError(
+                        "Recovery/normalizacja/wake-state nie zakończyły się powodzeniem: "
+                        + _canonical_json(recovery.get("errors"))
+                    )
+
+                validation = validate_large_memory(
+                    root,
+                    full=True,
+                    include_all_sqlite=True,
+                    max_errors=100,
+                    table_counts=False,
+                    hash_files=False,
+                    output=run_dir / "memory_validation_after_prepare.json",
+                )
+                details["memory_validation"] = validation
+                if not validation.get("ok"):
+                    raise VerifiedMemoryRestoreError(
+                        "Pełna walidacja pamięci po recovery nie przeszła."
+                    )
+
+                l2_draft = build_l2_review_draft(root, limit=l2_limit)
+                l2_draft_path = run_dir / "l2_review_draft.json"
+                _atomic_json(l2_draft_path, l2_draft)
+                details["l2_review_draft"] = {
+                    "path": str(l2_draft_path),
+                    "sha256": _sha256_file(l2_draft_path),
+                    "candidate_count": l2_draft["candidate_count"],
+                }
+                status = "ready_for_l2_review"
+            except BaseException as publication_error:
+                # Publication may already have modified destination paths. Do not
+                # race a restarted daemon while trying to restore the backup.
+                try:
+                    _require_quiescent_runtime(root)
+                except Exception:
+                    raise VerifiedMemoryRestoreError(
+                        "Rollback zablokowany: niepotwierdzony stan maintenance. "
+                        f"Zachowano backup: {backup_root}"
+                    ) from publication_error
+                _restore_runtime_memory(root, backup_root)
+                raise
 
     report = PhaseReport(
         schema_version=SCHEMA_VERSION,

@@ -508,7 +508,13 @@ class JaznMcpServer:
         )
         if len(key) > 512:
             raise ValueError("idempotency_key_too_large")
-        payload_digest = payload_hash(args)
+        # The authenticated caller is part of the idempotent operation, not
+        # part of its key. A second subject with the same request/key must
+        # conflict instead of receiving the first subject's cached result.
+        payload_digest = payload_hash(
+            {"authenticated_subject": subject, "arguments": args}
+            if name in IDEMPOTENT_SIDE_EFFECT_TOOLS else args
+        )
 
         if approval_state in DENIED_APPROVAL_STATES:
             audit_id = self._append_mcp_audit(
