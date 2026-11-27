@@ -8,7 +8,7 @@ import json
 import time
 from latka_jazn.core.clock import WarsawClock
 from latka_jazn.core.runtime_root import workspace_runtime_path
-from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child, private_database_path
 from latka_jazn.core.canon import IdentityCanon
 from latka_jazn.core.emotions import AffectiveState
 from latka_jazn.core.emotion_layers import EmotionalLayerModel
@@ -107,6 +107,16 @@ def validate_engine_runtime_state_path(root: Path, path: Path) -> Path:
     return target
 
 
+def resolve_operational_lessons_path(root: Path) -> Path:
+    """Packaged verified rules, not a mutable or imported personal memory."""
+    path = root / "latka_jazn" / "resources" / "cognition" / "v154_operational_lessons.json"
+    if dedicated_context_enabled():
+        path = private_child(root, path)
+        if path.exists() and not path.is_file():
+            raise ValueError("dedicated_operational_lessons_file_required")
+    return path
+
+
 def load_runtime_state(path: Path) -> dict:
     if not path.exists():
         return {}
@@ -129,6 +139,11 @@ class EngineRuntimeServices:
         self.runtime_state_path = validate_engine_runtime_state_path(
             self.config.root, workspace_runtime_path(self.config.root) / "runtime_state.json",
         )
+        lessons_path = resolve_operational_lessons_path(self.config.root)
+        workspace = self.config.runtime_workspace_dir
+        lexical_cache_path = workspace / "lexical_intelligence.sqlite3"
+        if dedicated_context_enabled():
+            lexical_cache_path = private_database_path(workspace, lexical_cache_path)
         self.clock = WarsawClock(self.config.timezone)
         self.guard = IdentityPerspectiveGuard()
         self.canon = IdentityCanon.load(self.config.resolve(self.config.canon_path))
@@ -164,9 +179,7 @@ class EngineRuntimeServices:
         self.runtime_answer_validator = RuntimeAnswerValidator()
         self.turn_context_resolver = TurnContextResolver()
         self.dialogue_task_state_resolver = DialogueTaskStateResolver()
-        self.operational_learning_memory = OperationalLearningMemory.from_json_file(
-            self.config.root / "latka_jazn" / "resources" / "cognition" / "v154_operational_lessons.json"
-        )
+        self.operational_learning_memory = OperationalLearningMemory.from_json_file(lessons_path)
         self.source_origin_ledger = SourceOriginLedger(self.config.root)
         self.template_registry = TemplateRegistry(self.config.root)
         self.runtime_response_synthesizer = RuntimeResponseSynthesizer()
@@ -197,7 +210,7 @@ class EngineRuntimeServices:
         self.knowledge_fabric = KnowledgeFabric()
         self.lexical_intelligence = LexicalIntelligenceEngine(
             root=self.config.root,
-            cache_path=self.config.runtime_workspace_dir / "lexical_intelligence.sqlite3",
+            cache_path=lexical_cache_path,
         )
         self.untrusted_source_guard = UntrustedSourceGuard()
         self.model_adapter = build_model_adapter(self.config)

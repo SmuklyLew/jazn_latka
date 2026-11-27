@@ -11,6 +11,9 @@ from types import SimpleNamespace
 from typing import Any, Callable, TypeVar
 
 from latka_jazn.core.turn_execution import TurnExecutionContext
+from latka_jazn.core.dedicated_private_context import (
+    DEDICATED_OWNER_ENV, dedicated_context_enabled, dedicated_context_root,
+)
 
 T = TypeVar("T")
 
@@ -401,6 +404,37 @@ def _hard_worker_state_payload(state: Any) -> dict[str, Any]:
     return {"session_id": str(session_id or "runtime-session")}
 
 
+def _worker_private_scope(config: Any) -> tuple[str, ...] | None:
+    """Snapshot non-secret data authority at worker construction.
+
+    A worker cannot silently switch owner, ROOT, memory mode or storage
+    selection after spawn. This is not an OS sandbox for arbitrary code.
+    """
+    if not dedicated_context_enabled():
+        return None
+    root = dedicated_context_root(config.root)
+    if root is None:
+        raise ValueError("dedicated_worker_scope_unverified")
+    if config.memory_sync_mode != "off":
+        raise ValueError("dedicated_private_context_sync_not_verified")
+    if os.environ.get("JAZN_MEMORY_SOURCE_ROOTS", "").strip():
+        raise ValueError("dedicated_private_context_external_sources_not_allowed")
+    # Resolve both roots, even when persistent MEMORY is disabled.
+    return (str(root), os.environ[DEDICATED_OWNER_ENV], str(config.memory_mode),
+            str(config.runtime_workspace_dir), str(config.memory_root),
+            str(config.runtime_memory_storage_root), str(config.rest_cycle_db_path))
+
+
+def _verify_worker_private_scope(
+    config: Any, expected: tuple[str, ...] | None, *, audit_db_path: Path | None = None,
+) -> None:
+    if _worker_private_scope(config) != expected:
+        raise ValueError("dedicated_worker_scope_mismatch")
+    if expected is not None and audit_db_path is not None:
+        if audit_db_path != config.audit_db_path_readonly:
+            raise ValueError("dedicated_worker_audit_path_mismatch")
+
+
 def _hard_worker_child_main(
     connection: Any,
     cancel_event: Any,
@@ -409,6 +443,7 @@ def _hard_worker_child_main(
     session_id: str | None,
     no_carryover: bool,
     source_client: str,
+    expected_private_scope: tuple[str, ...] | None = None,
 ) -> None:
     """Own the runtime session inside a spawn-safe child process.
 
@@ -419,6 +454,7 @@ def _hard_worker_child_main(
 
     session: Any | None = None
     try:
+        _verify_worker_private_scope(config, expected_private_scope)
         session = session_factory(
             config,
             session_id=session_id,
@@ -471,6 +507,19 @@ def _hard_worker_child_main(
             cancel_event.clear()
             timeout_seconds = max(0.001, float(message.get("timeout_seconds") or 0.001))
             audit_db_raw = str(message.get("audit_db_path") or "").strip()
+            try:
+                _verify_worker_private_scope(
+                    config, expected_private_scope,
+                    audit_db_path=Path(audit_db_raw) if audit_db_raw else None,
+                )
+            except (ValueError, OSError, KeyError) as exc:
+                connection.send({
+                    "kind": "error",
+                    "error_code": "runtime_worker_private_scope_unverified",
+                    "error_type": type(exc).__name__,
+                    "error": "worker private scope or audit authority no longer matches",
+                })
+                return
             turn_context = TurnExecutionContext.create(
                 request_id=str(message.get("request_id") or "") or None,
                 turn_id=str(message.get("turn_id") or "") or None,
@@ -590,6 +639,7 @@ class HardIsolatedRuntimeSessionWorker:
         self.last_turn_context: TurnExecutionContext | None = None
         self.last_termination: dict[str, Any] | None = None
         self.hard_termination_count = 0
+        self._private_scope = _worker_private_scope(config)
         context = multiprocessing.get_context(self.process_start_method)
         parent_connection, child_connection = context.Pipe(duplex=True)
         self._connection = parent_connection
@@ -605,6 +655,7 @@ class HardIsolatedRuntimeSessionWorker:
                 session_id,
                 no_carryover,
                 source_client,
+                self._private_scope,
             ),
             name=f"jazn-{command}-session-process",
             daemon=False,
@@ -717,6 +768,17 @@ class HardIsolatedRuntimeSessionWorker:
         if timeout_profile_override is not None:
             timeout_profile = timeout_profile_override
         parent_context = kwargs.pop("_turn_context", None)
+        try:
+            _verify_worker_private_scope(
+                self._config, self._private_scope,
+                audit_db_path=parent_context.audit_db_path if isinstance(parent_context, TurnExecutionContext) else None,
+            )
+        except (ValueError, OSError, KeyError) as exc:
+            raise RuntimeWorkerProcessError(
+                error_code="runtime_worker_private_scope_unverified",
+                message="worker private scope or audit authority no longer matches",
+                remote_type=type(exc).__name__,
+            ) from exc
         if not isinstance(parent_context, TurnExecutionContext):
             parent_context = TurnExecutionContext.create(
                 request_id=request_id,

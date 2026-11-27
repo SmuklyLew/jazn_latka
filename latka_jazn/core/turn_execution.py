@@ -13,6 +13,7 @@ import os
 import hashlib
 
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled, private_child, private_database_path
 from latka_jazn.core.turn_diagnostics import (
     BlindRouteFinding,
     DiagnosticSeverity,
@@ -455,6 +456,11 @@ class TurnExecutionContext:
             **dict(payload),
         }
         try:
+            if dedicated_context_enabled():
+                private_database_path(self.audit_db_path.parent, self.audit_db_path)
+                path = private_child(self.audit_db_path.parent, path)
+                if path.exists() and not path.is_file():
+                    raise ValueError("dedicated_recovery_outbox_file_required")
             path.parent.mkdir(parents=True, exist_ok=True)
             encoded = (json.dumps(record, ensure_ascii=False, sort_keys=True, default=str) + "\n").encode("utf-8")
             fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
@@ -464,7 +470,7 @@ class TurnExecutionContext:
             finally:
                 os.close(fd)
             return {"written": True, "path": str(path), "error_code": None}
-        except OSError as exc:
+        except (OSError, ValueError) as exc:
             return {
                 "written": False,
                 "path": str(path),
@@ -681,7 +687,10 @@ class TurnExecutionContext:
         self.start_stage("audit_persistence")
         store: AuditContextStore | None = None
         try:
-            store = AuditContextStore(self.audit_db_path)
+            audit_path = self.audit_db_path
+            if dedicated_context_enabled():
+                audit_path = private_database_path(audit_path.parent, audit_path)
+            store = AuditContextStore(audit_path)
             for technical_type, payload in technical:
                 enriched = {
                     "request_id": self.request_id,

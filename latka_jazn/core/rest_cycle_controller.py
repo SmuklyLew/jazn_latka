@@ -7,6 +7,7 @@ import threading
 import time
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled
 from latka_jazn.memory.continuity_readiness import build_memory_continuity_readiness
 from latka_jazn.memory.dream_sandbox import DreamSandbox
 from latka_jazn.memory.offline_rest_consolidation import OfflineRestConsolidator
@@ -72,7 +73,10 @@ class RestCycleController:
         self.runtime_busy = runtime_busy or (lambda: False)
         self._monotonic_ns = monotonic_ns
         self._utc_now = utc_now
-        self.store = store or RestCycleStore(config.rest_cycle_db_path)
+        expected_store = config.rest_cycle_db_path
+        if dedicated_context_enabled() and store is not None and store.path != expected_store:
+            raise ValueError("dedicated_rest_store_path_mismatch")
+        self.store = store or RestCycleStore(expected_store)
         self.replay = replay or RestReplayEngine(config)
         self.dream = dream or DreamSandbox(config)
         self.evaluator = evaluator or RestReflectionEvaluator()
@@ -177,6 +181,8 @@ class RestCycleController:
     def tick(self, *, force: bool = False) -> dict[str, Any] | None:
         if not self.status.enabled:
             return None
+        if dedicated_context_enabled() and self.store.path != self.config.rest_cycle_db_path:
+            raise ValueError("dedicated_rest_store_path_mismatch")
         now_ns = self._monotonic_ns()
         idle_seconds = max(0.0, (now_ns - self._last_user_activity_ns) / 1_000_000_000)
         idle_start = max(1.0, float(getattr(self.config, "rest_idle_start_seconds", 900.0)))

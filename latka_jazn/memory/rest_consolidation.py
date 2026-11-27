@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import uuid
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled
 from latka_jazn.memory.memory_tier_core_store import MemoryTierCoreStore
 from latka_jazn.memory.memory_promotion_gate import MemoryPromotionGate, PromotionDecision
 from latka_jazn.memory.memory_tiers import (
@@ -62,6 +63,8 @@ class RestConsolidationGate:
                 reasons.append("candidate_requires_user_review")
             elif self.shadow_mode:
                 reasons.append("shadow_mode_no_memory_materialization")
+            elif dedicated_context_enabled() and not self.config.memory_availability.persistent_memory_enabled:
+                reasons.append("persistent_memory_disabled_no_materialization")
             else:
                 target_tier = MemoryTier.SHORT_TERM.value
                 materialized_memory_id = self._materialize_l2(scene, evaluation, anchors)
@@ -85,6 +88,8 @@ class RestConsolidationGate:
         evaluation: DreamEvaluation,
         anchors: list[RestReplayItem],
     ) -> str:
+        if dedicated_context_enabled() and not self.config.memory_availability.persistent_memory_enabled:
+            raise PermissionError("persistent_memory_disabled_no_materialization")
         evidence = tuple(
             SourceEvidence(
                 source_type="rest_replay_anchor",

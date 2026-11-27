@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Any
@@ -8,7 +9,9 @@ import math
 import sqlite3
 
 from latka_jazn.config import JaznConfig
-from latka_jazn.memory.memory_tier_store import MemoryTierStore
+from latka_jazn.core.dedicated_private_context import dedicated_context_enabled
+from latka_jazn.db.runtime_sqlite import connect_runtime_readonly
+from latka_jazn.memory.memory_tier_support import record_from_dict
 from latka_jazn.memory.memory_tiers import MemoryKind, MemoryRecord, MemoryTier, MemoryTruthStatus
 from latka_jazn.memory.rest_contracts import RestReplayItem, sha256_text
 from latka_jazn.version import schema_version
@@ -89,9 +92,9 @@ class RestReplayEngine:
         if not self.sidecar_path.is_file():
             return []
         try:
-            uri = f"file:{self.sidecar_path.as_posix()}?mode=ro&immutable=1"
-            with sqlite3.connect(uri, uri=True) as con:
-                con.row_factory = sqlite3.Row
+            # This sidecar can be updated by normalization. Do not assert
+            # immutable=1 or skip SQLite change detection and locking.
+            with closing(connect_runtime_readonly(self.sidecar_path)) as con:
                 run = con.execute(
                     "SELECT run_id FROM normalization_runs WHERE status='ok' AND coverage_complete=1 ORDER BY ended_at_utc DESC, started_at_utc DESC LIMIT 1"
                 ).fetchone()
@@ -110,7 +113,7 @@ class RestReplayEngine:
                     """,
                     (str(run[0]),),
                 ).fetchall()
-        except sqlite3.Error:
+        except (sqlite3.Error, FileNotFoundError):
             return []
 
         out: list[RestReplayItem] = []
@@ -178,8 +181,13 @@ class RestReplayEngine:
     def _tier_candidates(self, *, now: datetime, recent: set[str]) -> list[RestReplayItem]:
         if not self.tier_path.is_file():
             return []
-        with MemoryTierStore(self.tier_path) as store:
-            records = store.list_records()
+        # The writable tier constructor initializes schema and metadata.
+        # Replay is a reader, not a maintenance or schema-upgrade operation.
+        with closing(connect_runtime_readonly(self.tier_path)) as con:
+            rows = con.execute(
+                "SELECT record_json FROM memory_records ORDER BY tier,updated_at_utc,memory_id"
+            ).fetchall()
+        records = [record_from_dict(json.loads(row["record_json"])) for row in rows]
         out: list[RestReplayItem] = []
         for record in records:
             if record.truth_status not in _ALLOWED_TRUTH:
@@ -234,6 +242,14 @@ class RestReplayEngine:
     ) -> list[RestReplayItem]:
         if limit <= 0:
             return []
+        if dedicated_context_enabled():
+            if not self.config.memory_availability.persistent_memory_enabled:
+                return []
+            # Re-resolve canonical paths (including SQLite sidecars) before
+            # every selection, rather than trusting a cached path or override.
+            if (self.tier_path != self.config.memory_tier_db_path
+                    or self.sidecar_path != self.config.normalization_sidecar_db_path):
+                raise ValueError("dedicated_rest_replay_path_mismatch")
         current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
         recent = {str(value) for value in recent_memory_ids}
         candidates = self._normalized_candidates(now=current, recent=recent)
