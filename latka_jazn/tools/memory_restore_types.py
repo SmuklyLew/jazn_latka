@@ -214,6 +214,9 @@ def target_preflight(settings: MemoryRestoreSettings, *, tool_root: Path | None 
     if normalized.mode == "developer":
         if repo_root and _is_relative_to(target, repo_root):
             errors.append("developer_target_must_be_outside_repository")
+        # A separate SYSTEM checkout is not a developer staging directory.
+        if (target / "run.py").is_file() and (target / "latka_jazn" / "version.py").is_file():
+            errors.append("developer_target_must_not_be_system_root")
     elif normalized.mode == "system":
         required = [target / "run.py", target / "PACKAGE_INTEGRITY_MANIFEST.json", target / "latka_jazn" / "version.py"]
         missing = [str(path) for path in required if not path.is_file()]

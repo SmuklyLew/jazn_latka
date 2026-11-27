@@ -1,3 +1,4 @@
+# v127.30.10.19 stage05 F06: legacy system restore shares canonical offline maintenance.
 # v127.30.10.18 stage05: durable public turn owner gates and L2/L3 offline maintenance.
 # v127.30.10.17 stage05: serialize memory publication with canonical startup and bind cached tool results to subjects.
 # v127.30.10.16 stage05 F01 identity witness and F06 portable restore staging.
@@ -308,7 +309,7 @@ from typing import Any
 # no automatic private environment mutation or MEMORY relocation.
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.18"
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.19"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

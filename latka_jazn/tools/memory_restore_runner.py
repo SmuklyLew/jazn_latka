@@ -268,6 +268,31 @@ class MemoryRestoreOrchestrator:
         expected = confirmation_token(self.settings)
         if confirmation != expected:
             raise PermissionError(f"explicit confirmation required: {expected}")
+        if self.settings.mode == "system":
+            root = Path(self.settings.target_root).resolve()
+            required = (
+                root / "run.py", root / "PACKAGE_INTEGRITY_MANIFEST.json",
+                root / "latka_jazn" / "version.py",
+            )
+            if not self.settings.target_root or not all(path.is_file() for path in required):
+                return {"ok": False, "error": "system_target_missing_runtime_files"}
+            # Use the same offline authority as verified restore and startup.
+            # A snapshot-based planning preflight is not a maintenance lease.
+            from latka_jazn.tools.verified_memory_restore import (
+                _exclusive_memory_maintenance, _require_quiescent_runtime,
+            )
+
+            with _exclusive_memory_maintenance(root):
+                _require_quiescent_runtime(root)
+                return self._run_confirmed(selected_sources, prepared_plan=prepared_plan)
+        return self._run_confirmed(selected_sources, prepared_plan=prepared_plan)
+
+    def _run_confirmed(
+        self,
+        selected_sources: Sequence[str | Path],
+        *,
+        prepared_plan: MemoryRestorePlan | None = None,
+    ) -> dict[str, Any]:
         selected_resolved = _unique_resolved_paths(selected_sources)
         plan = prepared_plan or self.plan(selected_resolved)
         if [Path(item).resolve() for item in plan.selected_sources] != selected_resolved:
