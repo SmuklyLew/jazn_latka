@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.7",
-  "active_definition_count": 3745,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.8",
+  "active_definition_count": 3749,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71368,6 +71368,90 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 83
+    },
+    "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_refuses_vulnerable_wal_before_backup_or_open": {
+      "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
+      "name": "test_migration_refuses_vulnerable_wal_before_backup_or_open",
+      "purpose": "Migration refuses vulnerable wal before backup or open",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.migrations.semantic_index",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 26
+    },
+    "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_uses_safe_mode_and_consistent_backup": {
+      "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
+      "name": "test_migration_uses_safe_mode_and_consistent_backup",
+      "purpose": "Migration uses safe mode and consistent backup",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.migrations.semantic_index",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 42
+    },
+    "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_comparison_attach_enforces_readonly_uri_even_without_query_only": {
+      "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
+      "name": "test_comparison_attach_enforces_readonly_uri_even_without_query_only",
+      "purpose": "Comparison attach enforces readonly uri even without query only",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.migrations.semantic_index",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 57
+    },
+    "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_backup_refuses_unsafe_existing_destination_before_sqlite_open": {
+      "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
+      "name": "test_backup_refuses_unsafe_existing_destination_before_sqlite_open",
+      "purpose": "Backup refuses unsafe existing destination before sqlite open",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "OperationalError"
+      ],
+      "targets": [
+        "latka_jazn.db",
+        "latka_jazn.memory.migrations.semantic_index",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 69
     },
     "tests/test_stage05_f08_stopped_daemon_status.py::test_confirmed_stop_is_inactive_without_repair_advice": {
       "path": "tests/test_stage05_f08_stopped_daemon_status.py",
