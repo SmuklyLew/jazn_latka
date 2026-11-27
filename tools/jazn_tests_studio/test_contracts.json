@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.21",
-  "active_definition_count": 3790,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.23",
+  "active_definition_count": 3798,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71020,6 +71020,84 @@
       "description_source": "source_identity",
       "line": 103
     },
+    "tests/test_stage05_f01_daemon_admission_owner.py::test_owner_is_immutable_across_restart_and_duplicate": {
+      "path": "tests/test_stage05_f01_daemon_admission_owner.py",
+      "name": "test_owner_is_immutable_across_restart_and_duplicate",
+      "purpose": "Owner is immutable across restart and duplicate",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 45
+    },
+    "tests/test_stage05_f01_daemon_admission_owner.py::test_concurrent_different_owner_never_gets_same_job": {
+      "path": "tests/test_stage05_f01_daemon_admission_owner.py",
+      "name": "test_concurrent_different_owner_never_gets_same_job",
+      "purpose": "Concurrent different owner never gets same job",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 75
+    },
+    "tests/test_stage05_f01_daemon_admission_owner.py::test_witness_detects_owner_loss_or_replacement": {
+      "path": "tests/test_stage05_f01_daemon_admission_owner.py",
+      "name": "test_witness_detects_owner_loss_or_replacement",
+      "purpose": "Witness detects owner loss or replacement",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 91
+    },
+    "tests/test_stage05_f01_daemon_admission_owner.py::test_invalid_owner_refused_before_admission": {
+      "path": "tests/test_stage05_f01_daemon_admission_owner.py",
+      "name": "test_invalid_owner_refused_before_admission",
+      "purpose": "Invalid owner refused before admission",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 117
+    },
     "tests/test_stage05_f01_durable_write_and_poll.py::test_durable_atomic_write_flushes_before_publish_and_syncs_parent": {
       "path": "tests/test_stage05_f01_durable_write_and_poll.py",
       "name": "test_durable_atomic_write_flushes_before_publish_and_syncs_parent",
@@ -71137,6 +71215,98 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 77
+    },
+    "tests/test_stage05_f01_owner_loopback_transport.py::test_verified_mcp_context_reaches_daemon_and_does_not_bleed": {
+      "path": "tests/test_stage05_f01_owner_loopback_transport.py",
+      "name": "test_verified_mcp_context_reaches_daemon_and_does_not_bleed",
+      "purpose": "Verified mcp context reaches daemon and does not bleed",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "mcp"
+      ],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [
+        "GatewayError"
+      ],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 71
+    },
+    "tests/test_stage05_f01_owner_loopback_transport.py::test_untrusted_or_invalid_owner_cannot_create_job": {
+      "path": "tests/test_stage05_f01_owner_loopback_transport.py",
+      "name": "test_untrusted_or_invalid_owner_cannot_create_job",
+      "purpose": "Untrusted or invalid owner cannot create job",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 109
+    },
+    "tests/test_stage05_f01_owner_loopback_transport.py::test_ownerless_or_foreign_transport_cannot_poll_or_ack_owned_turn": {
+      "path": "tests/test_stage05_f01_owner_loopback_transport.py",
+      "name": "test_ownerless_or_foreign_transport_cannot_poll_or_ack_owned_turn",
+      "purpose": "Ownerless or foreign transport cannot poll or ack owned turn",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 130
+    },
+    "tests/test_stage05_f01_owner_loopback_transport.py::test_owner_check_survives_daemon_restart": {
+      "path": "tests/test_stage05_f01_owner_loopback_transport.py",
+      "name": "test_owner_check_survives_daemon_restart",
+      "purpose": "Owner check survives daemon restart",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.admission_owner_context",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 154
     },
     "tests/test_stage05_f01_public_turn_ownership.py::test_public_owner_gate_across_restart_and_token_resolution": {
       "path": "tests/test_stage05_f01_public_turn_ownership.py",
