@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.17",
-  "active_definition_count": 3774,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.18",
+  "active_definition_count": 3779,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71138,6 +71138,68 @@
       "description_source": "source_identity",
       "line": 77
     },
+    "tests/test_stage05_f01_public_turn_ownership.py::test_public_owner_gate_across_restart_and_token_resolution": {
+      "path": "tests/test_stage05_f01_public_turn_ownership.py",
+      "name": "test_public_owner_gate_across_restart_and_token_resolution",
+      "purpose": "Public owner gate across restart and token resolution",
+      "expected": "Pytest completes this contract cleanly and all 8 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 8,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.public_turn_owners",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
+    },
+    "tests/test_stage05_f01_public_turn_ownership.py::test_unowned_turn_is_not_adopted": {
+      "path": "tests/test_stage05_f01_public_turn_ownership.py",
+      "name": "test_unowned_turn_is_not_adopted",
+      "purpose": "Unowned turn is not adopted",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.public_turn_owners",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 81
+    },
+    "tests/test_stage05_f01_public_turn_ownership.py::test_two_owner_reservations_cannot_both_win": {
+      "path": "tests/test_stage05_f01_public_turn_ownership.py",
+      "name": "test_two_owner_reservations_cannot_both_win",
+      "purpose": "Two owner reservations cannot both win",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.bridge.secure_host_runtime_gateway",
+        "latka_jazn.mcp",
+        "latka_jazn.mcp.public_turn_owners",
+        "latka_jazn.mcp.server"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 100
+    },
     "tests/test_stage05_f01_subject_bound_idempotency.py::test_cached_generate_is_subject_bound_across_server_reopen": {
       "path": "tests/test_stage05_f01_subject_bound_idempotency.py",
       "name": "test_cached_generate_is_subject_bound_across_server_reopen",
@@ -71819,6 +71881,51 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 60
+    },
+    "tests/test_stage05_f06_restore_l2_l3_maintenance.py::test_mutating_restore_phase_cannot_run_during_another_transition": {
+      "path": "tests/test_stage05_f06_restore_l2_l3_maintenance.py",
+      "name": "test_mutating_restore_phase_cannot_run_during_another_transition",
+      "purpose": "Mutating restore phase cannot run during another transition",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "VerifiedMemoryRestoreError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 20
+    },
+    "tests/test_stage05_f06_restore_l2_l3_maintenance.py::test_restore_requires_quiescence_while_holding_lock": {
+      "path": "tests/test_stage05_f06_restore_l2_l3_maintenance.py",
+      "name": "test_restore_requires_quiescence_while_holding_lock",
+      "purpose": "Restore requires quiescence while holding lock",
+      "expected": "Pytest completes this contract cleanly and all 0 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 0,
+      "expected_exceptions": [
+        "RuntimeWorkspaceBusyError",
+        "VerifiedMemoryRestoreError"
+      ],
+      "targets": [
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 39
     },
     "tests/test_stage05_f06_sqlite_maintenance_boundaries.py::test_migration_refuses_vulnerable_wal_before_backup_or_open": {
       "path": "tests/test_stage05_f06_sqlite_maintenance_boundaries.py",
