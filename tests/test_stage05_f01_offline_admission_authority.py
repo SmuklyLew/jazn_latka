@@ -67,8 +67,9 @@ def test_offline_owner_proof_is_read_only_and_fails_closed(
 
 @pytest.mark.parametrize("subject", ["alice", "bob"])
 def test_offline_recovery_never_opens_committed_store_for_other_owner(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, subject: str,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, subject: str, stage05_public_context: Any,
 ) -> None:
+    stage05_public_context(tmp_path, "alice", None)
     _admit(tmp_path, monkeypatch)
     calls: list[str] = []
 

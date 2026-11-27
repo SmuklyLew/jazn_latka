@@ -69,8 +69,9 @@ def _call(server: daemon.JaznDaemonServer, method: str, path: str,
 
 
 def test_verified_mcp_context_reaches_daemon_and_does_not_bleed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage05_public_context: Any,
 ) -> None:
+    stage05_public_context(tmp_path, "alice", None)
     with _running(tmp_path, monkeypatch) as server:
         gateway = _gateway(server)
         mcp = object.__new__(JaznMcpServer)
@@ -152,8 +153,9 @@ def test_ownerless_or_foreign_transport_cannot_poll_or_ack_owned_turn(
 
 
 def test_owner_check_survives_daemon_restart(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage05_public_context: Any,
 ) -> None:
+    stage05_public_context(tmp_path, "alice", None)
     alice = public_owner_digest("alice")
     with _running(tmp_path, monkeypatch) as first:
         status, value = _call(first, "POST", "/chat-submit", {

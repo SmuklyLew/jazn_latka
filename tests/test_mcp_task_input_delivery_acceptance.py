@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 import pytest
 
 from latka_jazn.mcp.task_resume import McpTaskResumeAdapter
@@ -25,7 +26,8 @@ class RuntimeReceiptGateway:
         }
 
 
-def test_mcp_task_input_end_to_end_receipt_and_fail_closed(tmp_path: Path) -> None:
+def test_mcp_task_input_end_to_end_receipt_and_fail_closed(tmp_path: Path, stage05_public_context: Any) -> None:
+    stage05_public_context(tmp_path, "alice", "request-1")
     runtime = RuntimeReceiptGateway()
     adapter = McpTaskResumeAdapter(root=tmp_path, gateway=runtime)
     task = adapter.store.create_or_get(

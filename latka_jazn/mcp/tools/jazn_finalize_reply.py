@@ -5,6 +5,8 @@ from typing import Any, Protocol
 from urllib.parse import urlsplit
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.admission_owner_context import current_admission_owner, public_private_context_authorized
+from latka_jazn.core.runtime_daemon import durable_admission_owner_matches
 from latka_jazn.core.chat_command_contract import (
     authorize_public_host_finalization, command_contract, persist_chatgpt_host_visible_reply,
     persist_public_host_visible_reply,
@@ -130,6 +132,17 @@ def run_public(
 ) -> dict[str, Any]:
     """Authenticated MCP ingress: endpoint is operator-owned, never a tool argument."""
     runtime_root = Path(root).expanduser().resolve()
+    owner = current_admission_owner()
+    if owner is not None and not public_private_context_authorized(runtime_root, owner):
+        return _error("public_private_context_owner_unverified", must_not_claim_runtime_voice=True, must_not_replay=True)
+
+    def authorized_record(record: dict[str, Any]) -> bool:
+        if owner is None:
+            return True
+        value = record.get("binding")
+        request_id = str(value.get("daemon_request_id") or "") if isinstance(value, dict) else ""
+        return durable_admission_owner_matches(runtime_root, request_id, owner)
+
     try:
         endpoint = urlsplit(daemon_url)
         host = endpoint.hostname
@@ -141,7 +154,11 @@ def run_public(
     try:
         pending = resolve_continuation_token(runtime_root, continuation_token)
     except HostRequestStoreError as exc:
+        if not authorized_record(dict(getattr(exc, "record", {}) or {})):
+            return _error("public_turn_admission_owner_unverified", must_not_claim_runtime_voice=True, must_not_replay=True)
         return _continuation_error(exc, lifecycle_gateway)
+    if not authorized_record(pending):
+        return _error("public_turn_admission_owner_unverified", must_not_claim_runtime_voice=True, must_not_replay=True)
     binding_value = pending.get("binding")
     binding = binding_value if isinstance(binding_value, dict) else {}
     reason = authorize_public_host_finalization(

@@ -18,7 +18,7 @@ from latka_jazn.bridge.secure_host_runtime_gateway import (
 )
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.runtime_daemon import durable_admission_owner_matches, normalize_daemon_request_id
-from latka_jazn.core.admission_owner_context import public_owner_digest
+from latka_jazn.core.admission_owner_context import public_owner_digest, public_private_context_authorized
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, resolve_continuation_token
 from latka_jazn.mcp.public_turn_owners import PublicTurnOwnerStore
 from latka_jazn.mcp.task_resume import McpTaskResumeAdapter, TASK_EXTENSION_ID
@@ -267,7 +267,7 @@ class JaznMcpServer:
         self.idempotency = IdempotencyStore(self.audit_database)
         self.host_audit = HostBridgeAuditStore(self.audit_database)
         self.mcp_audit = McpToolAuditStore(self.audit_database)
-        self.task_resume = McpTaskResumeAdapter(root=self.root, gateway=self.gateway)
+        self.task_resume = McpTaskResumeAdapter(root=self.root, gateway=self.gateway, daemon_url=daemon_url)
 
     def _authorize(self, name: str, arguments: dict[str, Any], meta: dict[str, Any]) -> str:
         token = arguments.pop("auth_token", None) or meta.get("authorization") or meta.get("token")
@@ -605,6 +605,10 @@ class JaznMcpServer:
             )
 
         if public_owner is not None:
+            if (name in {"jazn_generate_visible_reply", "jazn_resume_visible_reply", "jazn_finalize_reply"}
+                    and not public_private_context_authorized(self.root, public_owner_digest(public_owner))):
+                return _tool_error("public_private_context_owner_unverified", must_not_replay=True,
+                                   must_not_claim_runtime_voice=True)
             try:
                 permitted = self._authorize_public_turn_resource(name, args, request_id, public_owner)
             except (OSError, sqlite3.Error, RuntimeError, TypeError, ValueError):

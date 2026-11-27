@@ -711,7 +711,7 @@ class PublicMcpGateway:
 
     def _public_task_status(self, task_id: str) -> dict[str, Any]:
         principal = self._require_public_scope(SCOPE_TASK_READ)
-        record = McpTaskStore(self.config.root).get(
+        record = McpTaskStore(self.config.root).get_protocol_record(
             task_id, owner_subject=principal.subject, owner_transport="public_http",
         )
         if record is None:

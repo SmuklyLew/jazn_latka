@@ -33,6 +33,7 @@ import uuid
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.admission_owner_context import (
     ADMISSION_OWNER_HEADER, admission_session_id, current_admission_owner, is_admission_owner_endpoint,
+    public_private_context_authorized,
 )
 from latka_jazn.core.runtime_root import (
     RuntimeWorkspaceBusyError,
@@ -2848,6 +2849,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
             if job is not None and job.admission_owner_sha256 != admission_owner_sha256:
                 # Do not return or reconcile another principal's job.
                 raise _ChatAdmissionOwnerError("daemon_chat_owner_mismatch")
+            if (job is not None and admission_owner_sha256 is not None
+                    and not public_private_context_authorized(self.config.root, admission_owner_sha256)):
+                raise _ChatAdmissionOwnerError("public_private_context_owner_unverified")
             changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
                 changed = True
@@ -3219,6 +3223,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
             if (not _valid_admission_owner(admission_owner_sha256)
                     or (job is not None and job.admission_owner_sha256 != admission_owner_sha256)):
                 return deny("daemon_chat_owner_mismatch")
+            if (admission_owner_sha256 is not None
+                    and not public_private_context_authorized(self.config.root, admission_owner_sha256)):
+                return deny("public_private_context_owner_unverified")
             if (job is None or job.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE
                     or not job.phase_result_ready()
                     or job.host_turn_id != turn_id or job.host_trace_id != trace_id
@@ -3278,6 +3285,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     request_id=request_id, turn_id=turn_id, trace_id=trace_id,
                     request_contract_hash=digest, outcome="accepted",
                     reason="host_visible_reply_finalized", terminal=True,
+                    admission_owner_sha256=admission_owner_sha256,
                 )
                 if error is not None:
                     return deny("host_finalization_lifecycle_incomplete", uncertain=True)
@@ -3324,6 +3332,10 @@ class JaznDaemonServer(ThreadingHTTPServer):
             if (not _valid_admission_owner(admission_owner_sha256)
                     or job.admission_owner_sha256 != admission_owner_sha256):
                 return None, {"ok": False, "error_code": "daemon_chat_owner_mismatch",
+                              "request_id": request_id, "must_not_replay": True}
+            if (admission_owner_sha256 is not None
+                    and not public_private_context_authorized(self.config.root, admission_owner_sha256)):
+                return None, {"ok": False, "error_code": "public_private_context_owner_unverified",
                               "request_id": request_id, "must_not_replay": True}
             if str(outcome or "").strip().lower() == "accepted":
                 try:
@@ -3477,6 +3489,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
             )
             job.turn_context.mark_interval("worker_pickup", started_monotonic=pickup_started)
         try:
+            if (job.admission_owner_sha256 is not None
+                    and not public_private_context_authorized(self.config.root, job.admission_owner_sha256)):
+                # Refuse before worker creation, engine hydration, retrieval,
+                # wake-state, or any reset of another session's state.
+                raise RuntimeError("daemon_session_private_context_owner_unverified")
             session_init_started = time.monotonic()
             if job.reset_session and job.session_id:
                 normalized_reset_id = normalize_daemon_session_id(job.session_id)

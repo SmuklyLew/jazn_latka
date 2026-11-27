@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from latka_jazn.mcp.server import (
     JaznMcpServer, MCP_PROTOCOL_VERSION_MODERN,
@@ -35,7 +36,8 @@ def test_mcp_tasks_get_and_cancel_reject_unrelated_authenticated_subject(tmp_pat
     assert persisted.cancel_requested is False
 
 
-def test_mcp_tasks_get_accepts_matching_authenticated_subject(tmp_path: Path) -> None:
+def test_mcp_tasks_get_accepts_matching_authenticated_subject(tmp_path: Path, stage05_public_context: Any) -> None:
+    stage05_public_context(tmp_path, "alice", "request-finished-http")
     server = JaznMcpServer(root=tmp_path, allow_unauthenticated_local_test=True)
     task = server.task_resume.store.create_or_get(
         daemon_request_id="request-finished-http", owner_subject="alice", owner_transport="public_http"

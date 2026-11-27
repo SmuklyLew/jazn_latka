@@ -31,9 +31,10 @@ def _invoke(server: JaznMcpServer, name: str, args: dict[str, Any], subject: str
 
 
 def test_public_owner_gate_across_restart_and_token_resolution(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage05_public_context: Any,
 ) -> None:
     root = _root(tmp_path)
+    stage05_public_context(root, "alice", None)
     calls: list[str] = []
     polls: list[str] = []
 
@@ -117,8 +118,10 @@ def test_public_owner_gate_across_restart_and_token_resolution(
 
 
 @pytest.mark.parametrize("reason", ["daemon_unavailable:TimeoutError", "daemon_rejected:daemon_chat_ledger_unresolved_record", "existing"])
-def test_unowned_turn_is_not_adopted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, reason: str) -> None:
+def test_unowned_turn_is_not_adopted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, reason: str,
+                                   stage05_public_context: Any) -> None:
     root = _root(tmp_path)
+    stage05_public_context(root, "alice", None)
     server = JaznMcpServer(root=root, token="synthetic-token")
 
     def observe(_request_id: str) -> dict[str, Any]:

@@ -53,3 +53,19 @@ Additional append-only provenance:
 | `tests/test_stage05_f01_public_turn_ownership.py` from `c9fc6ef75373761c15daa8065055ead84e287838` before requiring canonical admission evidence (original assertions retained, real synthetic admission added) | `test_stage05_f01_public_turn_ownership_v16_3_25_5_116_0_34_94_6_127_30_10_23.py` | `0363d400e059638b4e2dbc88831068e27c6e1e81` |
 
 | `tests/test_stage05_f01_offline_admission_authority.py` from `b11a160c70c74a56cad7544a68c5c1f31b40d366` before aligning mock result keyword with recovery protocol (assertions retained) | `test_stage05_f01_offline_admission_authority_v16_3_25_5_116_0_34_94_6_127_30_10_24.py` | `b1f18526c68bad6d6f1af0cfbd657ebfa3b86939` |
+
+| `tests/conftest.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `conftest_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `5817df0755e0aa158131731566a0764dffc44d35` |
+
+| `tests/test_stage05_f01_public_turn_ownership.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_stage05_f01_public_turn_ownership_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `50ab7cfc2af3d2865d837092fcde197f2808fb9a` |
+
+| `tests/test_stage05_f01_offline_admission_authority.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_stage05_f01_offline_admission_authority_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `ec253f8206c21570d67c40fd5b554a87d36667be` |
+
+| `tests/test_stage05_f01_session_and_task_isolation.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_stage05_f01_session_and_task_isolation_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `160cd471c155a38950bc563927644f8908a09b6e` |
+
+| `tests/test_mcp_task_protocol_authorization.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_mcp_task_protocol_authorization_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `7f00414ccd4a1c7b1dc4e9ed71bc33300637e364` |
+
+| `tests/test_mcp_http_resources.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_mcp_http_resources_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `b8669e5004b61ebf57c97efc5b02452a29377af1` |
+
+| `tests/test_stage05_f01_owner_loopback_transport.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_stage05_f01_owner_loopback_transport_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `5838a583576790e1039f2b7ea662934c9ad3db96` |
+
+| `tests/test_mcp_task_input_delivery_acceptance.py` from `2396846d97c7496b8952f229771c9f4f67a4f983` before explicit synthetic private-context/admission fixtures (original assertions retained) | `test_mcp_task_input_delivery_acceptance_v16_3_25_5_116_0_34_94_6_127_30_10_25.py` | `c9bb25f369ef61e4aeb4a8d8a31c651a363d5d20` |

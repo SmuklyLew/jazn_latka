@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Callable
 
 import pytest
 
@@ -64,3 +65,45 @@ def _qt_application_session_lifetime():
         widget.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()
+
+
+@pytest.fixture
+def stage05_public_context(monkeypatch: pytest.MonkeyPatch) -> Callable[[Path, str, str | None], None]:
+    """Synthetic explicit owner binding and optional real durable admission."""
+    import json
+    from latka_jazn.config import JaznConfig
+    from latka_jazn.core import runtime_daemon as daemon
+    from latka_jazn.core.admission_owner_context import (
+        PRIVATE_CONTEXT_OWNER_FILE, PRIVATE_CONTEXT_OWNER_SCHEMA, public_owner_digest,
+    )
+
+    def bind(root: Path, subject: str, request_id: str | None) -> None:
+        owner = public_owner_digest(subject)
+        path = root / PRIVATE_CONTEXT_OWNER_FILE
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "schema_version": PRIVATE_CONTEXT_OWNER_SCHEMA, "owner_sha256": owner,
+            "existing_shared_context_reviewed": True,
+        }), encoding="utf-8")
+        if request_id is None:
+            return
+        server = daemon.JaznDaemonServer(
+            ("127.0.0.1", 0), daemon.JaznDaemonHandler,
+            config=JaznConfig(root=root, memory_mode="off"),
+            marker_path=daemon.resolve_active_runtime_marker_path(root),
+            hard_worker_process_isolation=False,
+        )
+        monkeypatch.setattr(server, "start_chat_worker", lambda: None)
+        monkeypatch.setattr(server, "start_chat_watchdog", lambda: None)
+        try:
+            job, created, error = server.submit_chat_job(
+                request_id=request_id, user_text="synthetic", session_id="synthetic",
+                input_field="message", no_carryover=False, client="synthetic",
+                admission_owner_sha256=owner,
+            )
+            assert job is not None and created and error is None
+        finally:
+            server.close_sessions()
+            server.server_close()
+
+    return bind

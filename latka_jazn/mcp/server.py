@@ -359,10 +359,10 @@ class JaznMcpServer(_V76JaznMcpServer):
             payload = self._redacted_memory_resource()
         elif uri.startswith("jazn://task/"):
             task_id = uri.removeprefix("jazn://task/").strip()
-            record = self.task_resume.store.get(
+            record = self.task_resume.store.get_protocol_record(
                 task_id, **self._authenticated_task_owner(request_value)
             )
-            if record is None or record.owner_subject is not None and not self._authenticated_task_owner(request_value).get("owner_subject"):
+            if record is None:
                 raise KeyError("unknown_task")
             payload = {"task": record.to_task_result()}
         else:

@@ -118,8 +118,9 @@ def test_scoped_checkpoint_never_publishes_to_unscoped_latest(
 
 @pytest.mark.parametrize("method", ["tasks/get", "tasks/cancel", "tasks/update"])
 def test_legacy_task_protocol_rejects_foreign_and_ownerless_caller(
-    tmp_path: Path, method: str,
+    tmp_path: Path, method: str, stage05_public_context: Any,
 ) -> None:
+    stage05_public_context(tmp_path, "alice", "owned-request")
     server = JaznMcpServer(root=tmp_path, allow_unauthenticated_local_test=True)
     task = server.task_resume.store.create_or_get(
         daemon_request_id="owned-request", owner_subject="alice", owner_transport="public_http",
@@ -148,8 +149,9 @@ def test_legacy_task_protocol_rejects_foreign_and_ownerless_caller(
 
 
 def test_legacy_task_creation_uses_verified_principal_not_metadata(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage05_public_context: Any,
 ) -> None:
+    stage05_public_context(tmp_path, "alice", "owned-r")
     server = JaznMcpServer(root=tmp_path, allow_unauthenticated_local_test=True)
     pending = {"structuredContent": {"action": "poll_runtime", "daemon_request_id": "owned-r"}}
     def call_tool(*_args: Any, **_kwargs: Any) -> dict[str, Any]:

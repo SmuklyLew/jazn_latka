@@ -23,6 +23,10 @@ import secrets
 import sqlite3
 
 from latka_jazn.core.runtime_root import workspace_runtime_path
+from latka_jazn.core.admission_owner_context import (
+    AUTHENTICATED_HTTP_OWNER, public_owner_digest, public_private_context_authorized,
+)
+from latka_jazn.core.runtime_daemon import durable_admission_owner_matches
 from latka_jazn.db.runtime_sqlite import connect_runtime_writable
 from latka_jazn.mcp.tools import jazn_resume_visible_reply
 from latka_jazn.mcp.task_input_delivery import TaskInputDelivery
@@ -394,6 +398,26 @@ class McpTaskStore:
             self._upsert(conn, legacy)
             return legacy
 
+    def public_request_authorized(self, request_id: str, owner_subject: str, owner_transport: str | None) -> bool:
+        if owner_transport != "public_http" or not owner_subject.strip():
+            return False
+        owner = public_owner_digest(owner_subject)
+        return (public_private_context_authorized(self.runtime_root, owner)
+                and durable_admission_owner_matches(self.runtime_root, request_id, owner))
+
+    def get_protocol_record(
+        self, task_id: str, *, owner_subject: str | None = None, owner_transport: str | None = None,
+    ) -> McpTaskRecord | None:
+        """All protocol/resource delivery, including terminal cache, needs admission authority."""
+        record = self.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
+        if record is None:
+            return None
+        if owner_subject is None:
+            return record if record.owner_subject is None and owner_transport is None else None
+        if not self.public_request_authorized(record.daemon_request_id, owner_subject, owner_transport):
+            return None
+        return record
+
     def list_recent(self, *, limit: int = 50) -> list[McpTaskRecord]:
         bounded = max(1, min(int(limit), 200))
         with self._lock, self._connect() as conn:
@@ -635,11 +659,13 @@ class McpTaskResumeAdapter:
         *,
         root: Path | str,
         gateway: TaskGateway,
+        daemon_url: str | None = None,
         ttl_ms: int | None = DEFAULT_TASK_TTL_MS,
         poll_interval_ms: int = DEFAULT_POLL_INTERVAL_MS,
     ) -> None:
         self.root = Path(root).expanduser().resolve()
         self.gateway = gateway
+        self.daemon_url = daemon_url
         self.store = McpTaskStore(self.root)
         self.ttl_ms = ttl_ms
         self.poll_interval_ms = poll_interval_ms
@@ -665,6 +691,12 @@ class McpTaskResumeAdapter:
         request_id = self.pending_daemon_request_id(tool_result)
         if not request_id:
             return None
+        if owner_subject is not None and not self.store.public_request_authorized(
+            request_id, owner_subject, owner_transport,
+        ):
+            # Ambiguous transport can still return the original text-free
+            # poll receipt. Never reserve a task on unproven admission.
+            return None
         structured = tool_result.get("structuredContent")
         structured_map = structured if isinstance(structured, Mapping) else {}
         record = self.store.create_or_get(
@@ -680,17 +712,16 @@ class McpTaskResumeAdapter:
                 str(structured_map.get("host_request_contract_hash") or "") or None
             ),
         )
-        if owner_subject is None and record.owner_subject is not None:
+        if self.store.get_protocol_record(record.task_id, owner_subject=owner_subject,
+                                          owner_transport=owner_transport) is None:
             raise KeyError("unknown_task")
         return record.to_task_result(creation=True)
 
     def _protocol_record(
         self, task_id: str, *, owner_subject: str | None, owner_transport: str | None,
     ) -> McpTaskRecord:
-        record = self.store.get(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
-        # The store retains an explicitly trusted operator read seam. A protocol
-        # adapter (including legacy stdio) must never inherit that authority.
-        if record is None or (owner_subject is None and record.owner_subject is not None):
+        record = self.store.get_protocol_record(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
+        if record is None:
             raise KeyError("unknown_task")
         return record
 
@@ -721,11 +752,23 @@ class McpTaskResumeAdapter:
             return record.to_task_result()
 
         try:
-            resumed = jazn_resume_visible_reply.run(
-                root=self.root,
-                gateway=self.gateway,
-                daemon_request_id=record.daemon_request_id,
-            )
+            if owner_subject is None:
+                resumed = jazn_resume_visible_reply.run(
+                    root=self.root, gateway=self.gateway,
+                    daemon_request_id=record.daemon_request_id,
+                )
+            else:
+                if not self.daemon_url:
+                    raise RuntimeError("public_task_daemon_endpoint_unverified")
+                token = AUTHENTICATED_HTTP_OWNER.set(owner_subject)
+                try:
+                    resumed = jazn_resume_visible_reply.run_public(
+                        root=self.root, gateway=self.gateway, daemon_url=self.daemon_url,
+                        daemon_request_id=record.daemon_request_id,
+                        turn_id=record.turn_id, host_request_contract_hash=record.host_request_contract_hash,
+                    )
+                finally:
+                    AUTHENTICATED_HTTP_OWNER.reset(token)
         except Exception as exc:
             # Do not reflect exception text across the public task boundary:
             # transport/internal exceptions can contain paths, URLs or other
@@ -738,6 +781,7 @@ class McpTaskResumeAdapter:
             )
             return failed.to_task_result()
 
+        self._protocol_record(task_id, owner_subject=owner_subject, owner_transport=owner_transport)
         structured = resumed.get("structuredContent")
         structured_map = structured if isinstance(structured, Mapping) else {}
         action = str(structured_map.get("action") or "").strip()

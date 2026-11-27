@@ -10,6 +10,8 @@ from contextvars import ContextVar
 import hashlib
 import json
 import re
+import secrets
+from pathlib import Path
 
 AUTHENTICATED_HTTP_OWNER: ContextVar[str | None] = ContextVar(
     "jazn_authenticated_http_owner", default=None,
@@ -64,3 +66,47 @@ def admission_session_id(
         ensure_ascii=False, separators=(",", ":"),
     ).encode("utf-8")
     return PUBLIC_SESSION_PREFIX + hashlib.sha256(material).hexdigest()
+
+# The current engine has shared autobiographical MEMORY, retrieval, wake-state
+# and global runtime_state. A session namespace is not a tenant data boundary.
+# This is an operator-owned, local-only binding, never created by first use.
+PRIVATE_CONTEXT_OWNER_FILE = Path(".settings_local/public_private_context_owner.json")
+PRIVATE_CONTEXT_OWNER_SCHEMA = "public_private_context_owner/v1"
+
+
+def public_private_context_authorized(root: Path, owner_sha256: str | None) -> bool:
+    """Fail closed for public use of the existing single-owner private context.
+
+    The operator must explicitly attest the existing context belongs to the
+    selected verified principal. Never infer ownership from a token, a task
+    row, the first caller, memory_mode, or the absence of a private archive.
+    A trusted operator must not reassign this file to another tenant on an
+    existing installation; a different tenant needs independently scoped data.
+    """
+    if not isinstance(owner_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", owner_sha256) is None:
+        return False
+    try:
+        base = Path(root).resolve(strict=True)
+        binding = base / PRIVATE_CONTEXT_OWNER_FILE
+        resolved = binding.resolve(strict=True)
+        if resolved != binding or not resolved.is_file():
+            return False
+        with resolved.open("rb") as stream:
+            raw = stream.read(4097)
+        if len(raw) > 4096:
+            return False
+        payload = json.loads(raw)
+        if not isinstance(payload, dict) or set(payload) != {
+            "schema_version", "owner_sha256", "existing_shared_context_reviewed",
+        }:
+            return False
+        configured = payload.get("owner_sha256")
+        return (
+            payload.get("schema_version") == PRIVATE_CONTEXT_OWNER_SCHEMA
+            and payload.get("existing_shared_context_reviewed") is True
+            and isinstance(configured, str)
+            and re.fullmatch(r"[0-9a-f]{64}", configured) is not None
+            and secrets.compare_digest(configured, owner_sha256)
+        )
+    except (OSError, ValueError, TypeError, RecursionError):
+        return False

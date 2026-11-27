@@ -95,7 +95,8 @@ async def test_http_gateway_exposes_redacted_runtime_and_memory_resources(tmp_pa
 
 
 @pytest.mark.anyio
-async def test_http_gateway_task_resource_reads_same_durable_registry(tmp_path: Path) -> None:
+async def test_http_gateway_task_resource_reads_same_durable_registry(tmp_path: Path, stage05_public_context: Any) -> None:
+    stage05_public_context(tmp_path, "loopback-development", "req-resource-durable")
     task = McpTaskStore(tmp_path).create_or_get(
         daemon_request_id="req-resource-durable",
         request_id="req-resource-durable",
