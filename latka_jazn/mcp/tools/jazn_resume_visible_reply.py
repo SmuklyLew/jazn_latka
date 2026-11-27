@@ -8,6 +8,8 @@ from urllib.parse import urlsplit
 from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.runtime.turn_runtime import TurnProtocolViolation
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError
+from latka_jazn.core.admission_owner_context import current_admission_owner
+from latka_jazn.core.runtime_daemon import durable_admission_owner_matches
 from latka_jazn.core.chatgpt_host_recovery import (
     recover_pending_host_request,
     recover_committed_host_presentation,
@@ -211,6 +213,12 @@ def run(
     request_id = str(daemon_request_id or "").strip()
     if not request_id:
         return _tool_error("daemon_request_id_missing")
+
+    # Never open the committed response store on public reservation authority
+    # alone. This also covers a direct recovery call within verified ingress.
+    owner = current_admission_owner()
+    if owner is not None and not durable_admission_owner_matches(root, request_id, owner):
+        return _tool_error("public_turn_admission_owner_unverified")
 
     # Local, read-only recovery is independent of the daemon result transport.
     # It requires the original phase-1 contract hash, and never calls finalize.

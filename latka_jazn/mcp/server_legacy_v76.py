@@ -17,7 +17,8 @@ from latka_jazn.bridge.secure_host_runtime_gateway import (
     SecureHostRuntimeGateway,
 )
 from latka_jazn.config import JaznConfig
-from latka_jazn.core.runtime_daemon import normalize_daemon_request_id
+from latka_jazn.core.runtime_daemon import durable_admission_owner_matches, normalize_daemon_request_id
+from latka_jazn.core.admission_owner_context import public_owner_digest
 from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, resolve_continuation_token
 from latka_jazn.mcp.public_turn_owners import PublicTurnOwnerStore
 from latka_jazn.mcp.task_resume import McpTaskResumeAdapter, TASK_EXTENSION_ID
@@ -319,7 +320,8 @@ class JaznMcpServer:
         if not request_id or normalize_daemon_request_id(request_id) != request_id:
             return False
         existing = store.lookup(request_id)
-        return existing is not None and store.matches(existing, owner)
+        return (existing is not None and store.matches(existing, owner)
+                and durable_admission_owner_matches(self.root, request_id, public_owner_digest(owner)))
 
     @staticmethod
     def _approval_state(name: str, metadata: dict[str, Any]) -> str:
@@ -637,6 +639,13 @@ class JaznMcpServer:
                     audit_id=audit_id,
                 )
             if decision.state == "replay":
+                if public_owner is not None and (
+                    not request_id or not durable_admission_owner_matches(
+                        self.root, request_id, public_owner_digest(public_owner),
+                    )
+                ):
+                    return _tool_error("public_turn_admission_owner_unverified",
+                                       must_not_replay=True, must_not_claim_runtime_voice=True)
                 cached = decision.result
                 # A cached poll_runtime is not a terminal tool result. Recover
                 # the same daemon request rather than replaying stale pending
@@ -682,6 +691,16 @@ class JaznMcpServer:
         except (GatewayError, KeyError, TypeError, ValueError, PermissionError) as exc:
             result = _tool_error(f"{type(exc).__name__}:{exc}")
 
+        # A fresh dispatch may legitimately return an ambiguous, text-free
+        # poll before the daemon has persisted admission. It may not deliver a
+        # generation lease or visible answer on reservation/cache authority alone.
+        if (public_owner is not None and name == "jazn_generate_visible_reply"
+                and _result_action(result) in {"display_exact", "generate_then_finalize"}
+                and (not request_id or not durable_admission_owner_matches(
+                    self.root, request_id, public_owner_digest(public_owner),
+                ))):
+            result = _tool_error("public_turn_admission_owner_unverified",
+                                 must_not_replay=True, must_not_claim_runtime_voice=True)
         is_error = bool(result.get("isError"))
         host_audit_id = None
         if name == "jazn_finalize_reply":

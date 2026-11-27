@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+import json
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,9 @@ from latka_jazn.bridge.secure_host_runtime_gateway import GatewayError
 from latka_jazn.mcp import server_legacy_v76 as legacy
 from latka_jazn.mcp.server import JaznMcpServer
 from latka_jazn.mcp.public_turn_owners import PublicTurnOwnerStore
+from latka_jazn.config import JaznConfig
+from latka_jazn.core import runtime_daemon as daemon
+from latka_jazn.core.admission_owner_context import public_owner_digest
 
 
 def _root(tmp_path: Path) -> Path:
@@ -35,6 +39,25 @@ def test_public_owner_gate_across_restart_and_token_resolution(
 
     def dispatch(name: str, args: dict[str, Any], *, request_id: str | None = None) -> dict[str, Any]:
         calls.append(name)
+        if name == "jazn_generate_visible_reply":
+            runtime = daemon.JaznDaemonServer(
+                ("127.0.0.1", 0), daemon.JaznDaemonHandler,
+                config=JaznConfig(root=root, memory_mode="off"),
+                marker_path=daemon.resolve_active_runtime_marker_path(root),
+                hard_worker_process_isolation=False,
+            )
+            monkeypatch.setattr(runtime, "start_chat_worker", lambda: None)
+            monkeypatch.setattr(runtime, "start_chat_watchdog", lambda: None)
+            try:
+                job, created, error = runtime.submit_chat_job(
+                    request_id=request_id, user_text=str(args["message"]),
+                    input_field="message", session_id=None, no_carryover=False,
+                    client="secure_mcp_gateway", admission_owner_sha256=public_owner_digest("alice"),
+                )
+                assert job is not None and created and error is None
+            finally:
+                runtime.close_sessions()
+                runtime.server_close()
         return {
             "content": [{"type": "text", "text": "CANARY_RESULT"}],
             "structuredContent": {"ok": True, "action": "display_exact",
@@ -75,6 +98,22 @@ def test_public_owner_gate_across_restart_and_token_resolution(
     assert not _invoke(other, "jazn_finalize_reply", finalize, "alice")["isError"]
     assert calls == ["jazn_generate_visible_reply", "jazn_resume_visible_reply", "jazn_finalize_reply"]
     assert polls == ["request-1"]
+
+    ledger = daemon.resolve_active_runtime_marker_path(root).parent / "daemon_chat_jobs.json"
+    before = ledger.read_bytes()
+    damaged = json.loads(before)
+    damaged["jobs"][0]["admission_owner_sha256"] = public_owner_digest("bob")
+    ledger.write_text(json.dumps(damaged), encoding="utf-8")
+    for name, args in (
+        ("jazn_generate_visible_reply", generate),
+        ("jazn_resume_visible_reply", resume),
+        ("jazn_finalize_reply", finalize),
+    ):
+        result = _invoke(instance(), name, args, "alice")
+        assert result["isError"] is True
+        assert "CANARY_RESULT" not in repr(result)
+    assert calls == ["jazn_generate_visible_reply", "jazn_resume_visible_reply", "jazn_finalize_reply"]
+    ledger.write_bytes(before)
 
 
 @pytest.mark.parametrize("reason", ["daemon_unavailable:TimeoutError", "daemon_rejected:daemon_chat_ledger_unresolved_record", "existing"])

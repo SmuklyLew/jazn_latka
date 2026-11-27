@@ -984,6 +984,52 @@ class _ChatAdmissionLedgerError(ValueError):
     """The earlier admission history cannot safely be classified as absent."""
 
 
+def durable_admission_owner_matches(root: Path, request_id: str, owner_sha256: str) -> bool:
+    """Read-only proof for public delivery when the owning daemon is offline.
+
+    The canonical v2 identity witness is shared with live admission. A missing,
+    inconsistent or concurrently changed snapshot grants no authority.
+    This is not a MAC against an operator able to rewrite both files.
+    """
+    if not request_id or owner_sha256 is None or not _valid_admission_owner(owner_sha256):
+        return False
+    try:
+        if normalize_daemon_request_id(request_id) != request_id:
+            return False
+        ledger_path = resolve_active_runtime_marker_path(root).parent / "daemon_chat_jobs.json"
+        guard_path = ledger_path.with_name("daemon_chat_jobs.admission-established")
+        before = guard_path.read_bytes()
+        payload = json.loads(ledger_path.read_text(encoding="utf-8"))
+        after = guard_path.read_bytes()
+        if before != after:
+            return False
+        witness = json.loads(before)
+        rows = payload.get("jobs") if isinstance(payload, dict) else None
+        if not isinstance(rows, list) or not isinstance(witness, dict):
+            return False
+        seen: set[str] = set()
+        matched_owner: str | None = None
+        for row in rows:
+            if not isinstance(row, dict):
+                return False
+            identity = row.get("request_id")
+            owner = row.get("admission_owner_sha256")
+            fingerprint = row.get("request_fingerprint")
+            if (not isinstance(identity, str) or not identity or identity in seen
+                    or "user_text" in row or not _valid_admission_owner(owner)
+                    or (owner is not None and (not isinstance(fingerprint, str)
+                        or re.fullmatch(r"[0-9a-f]{64}", fingerprint) is None))):
+                return False
+            seen.add(identity)
+            if identity == request_id:
+                matched_owner = owner
+        if witness != JaznDaemonServer._chat_admission_identity_witness(rows):
+            return False
+        return isinstance(matched_owner, str) and secrets.compare_digest(matched_owner, owner_sha256)
+    except (OSError, ValueError, TypeError, RecursionError):
+        return False
+
+
 class JaznDaemonServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
