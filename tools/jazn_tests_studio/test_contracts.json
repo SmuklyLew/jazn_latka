@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.16",
-  "active_definition_count": 3770,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.17",
+  "active_definition_count": 3774,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71138,6 +71138,25 @@
       "description_source": "source_identity",
       "line": 77
     },
+    "tests/test_stage05_f01_subject_bound_idempotency.py::test_cached_generate_is_subject_bound_across_server_reopen": {
+      "path": "tests/test_stage05_f01_subject_bound_idempotency.py",
+      "name": "test_cached_generate_is_subject_bound_across_server_reopen",
+      "purpose": "Cached generate is subject bound across server reopen",
+      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 9,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.mcp.server_legacy_v76"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 13
+    },
     "tests/test_stage05_f01_terminal_request_retention.py::test_terminal_identity_survives_restart_eviction_and_snapshot_merge": {
       "path": "tests/test_stage05_f01_terminal_request_retention.py",
       "name": "test_terminal_identity_survives_restart_eviction_and_snapshot_merge",
@@ -71667,6 +71686,75 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 27
+    },
+    "tests/test_stage05_f06_maintenance_transition.py::test_maintenance_lock_is_cross_process_and_released": {
+      "path": "tests/test_stage05_f06_maintenance_transition.py",
+      "name": "test_maintenance_lock_is_cross_process_and_released",
+      "purpose": "Maintenance lock is cross process and released",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
+    },
+    "tests/test_stage05_f06_maintenance_transition.py::test_busy_maintenance_prevents_daemon_boot_and_supervisor_claim": {
+      "path": "tests/test_stage05_f06_maintenance_transition.py",
+      "name": "test_busy_maintenance_prevents_daemon_boot_and_supervisor_claim",
+      "purpose": "Busy maintenance prevents daemon boot and supervisor claim",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 40
+    },
+    "tests/test_stage05_f06_maintenance_transition.py::test_prepare_holds_lock_through_backup_publish_and_rollback": {
+      "path": "tests/test_stage05_f06_maintenance_transition.py",
+      "name": "test_prepare_holds_lock_through_backup_publish_and_rollback",
+      "purpose": "Prepare holds lock through backup publish and rollback",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "repository"
+      ],
+      "markers": [],
+      "assertion_count": 2,
+      "expected_exceptions": [
+        "RuntimeWorkspaceBusyError",
+        "VerifiedMemoryRestoreError"
+      ],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.runtime_root",
+        "latka_jazn.tools"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 58
     },
     "tests/test_stage05_f06_portable_restore.py::test_new_portable_database_is_delete_and_source_health_handles_encoded_path": {
       "path": "tests/test_stage05_f06_portable_restore.py",
