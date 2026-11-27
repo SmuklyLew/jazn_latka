@@ -7,7 +7,7 @@ import errno
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import shutil
 import time
 from typing import Any, Iterator
@@ -72,6 +72,51 @@ def find_runtime_root(start: Path | None = None) -> Path:
     )
 
 
+def _windows_dos_comparison_path(path: PureWindowsPath) -> PureWindowsPath | None:
+    """Compare only ordinary drive-letter paths and their extended DOS aliases.
+
+    Keep the actual resolved filesystem path untouched. Other device namespaces,
+    UNC aliases and names with different Win32 normalization rules fail closed.
+    """
+    if not path.is_absolute():
+        return None
+    drive = path.drive
+    if drive.startswith("\\\\?\\"):
+        drive = drive[4:]
+    if len(drive) != 2 or drive[1] != ":" or drive[0] not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        return None
+    components = path.parts[1:]
+    if any(part in {".", ".."} or part.endswith((" ", ".")) or ":" in part
+           or PureWindowsPath(part).is_reserved() for part in components):
+        return None
+    return PureWindowsPath(drive + "\\", *components)
+
+
+def _is_workspace_descendant(candidate: Path, root: Path) -> bool:
+    """Strict containment of resolved paths, with a verified Windows alias case."""
+    if candidate == root:
+        return False
+    if candidate.is_relative_to(root):
+        return True
+    if os.name != "nt":
+        return False
+    # Path.resolve() can return an extended DOS spelling for one of the
+    # paths under concurrent filesystem activity. A differing spelling alone
+    # is not evidence that the workspace escaped the installation.
+    candidate_key = _windows_dos_comparison_path(PureWindowsPath(candidate))
+    root_key = _windows_dos_comparison_path(PureWindowsPath(root))
+    if (candidate_key is None or root_key is None or candidate_key == root_key
+            or not candidate_key.is_relative_to(root_key)):
+        return False
+    # Verify the actual ancestor against the existing ROOT; do not authorize
+    # a lexical alias alone or drop the extended prefix from paths used for I/O.
+    distance = len(candidate_key.parts) - len(root_key.parts)
+    try:
+        return candidate.parents[distance - 1].samefile(root)
+    except OSError:
+        return False
+
+
 def default_runtime_workspace_path(root: Path) -> Path:
     """Choose ROOT/workspace_runtime for a prepared SYSTEM, without any migration.
 
@@ -87,7 +132,7 @@ def default_runtime_workspace_path(root: Path) -> Path:
         raise ValueError("unsafe_root_local_resources_link")
     if resources.is_dir():
         candidate = (runtime_root / WORKSPACE_RUNTIME_DIR_NAME).resolve()
-        if candidate == runtime_root or not candidate.is_relative_to(runtime_root):
+        if not _is_workspace_descendant(candidate, runtime_root):
             raise ValueError("workspace_escapes_root")
         return candidate
     # Bare historical roots retain their legacy resolution until an explicit,
@@ -145,7 +190,7 @@ def workspace_runtime_path(
                 or ":" in portable[len(prefix):]):
             raise ValueError("unsafe_root_relative_workspace")
         candidate = (runtime_root / relative).resolve()
-        if not candidate.is_relative_to(runtime_root):
+        if not _is_workspace_descendant(candidate, runtime_root):
             raise ValueError("workspace_escapes_root")
         return candidate
     candidate = Path(raw_text).expanduser()
@@ -157,7 +202,7 @@ def workspace_runtime_path(
     if resources.is_symlink() or (hasattr(resources, "is_junction") and resources.is_junction()):
         raise ValueError("unsafe_root_local_resources_link")
     if resources.is_dir():
-        if resolved == runtime_root or not resolved.is_relative_to(runtime_root):
+        if not _is_workspace_descendant(resolved, runtime_root):
             raise ValueError("workspace_escapes_root")
     return resolved
 
