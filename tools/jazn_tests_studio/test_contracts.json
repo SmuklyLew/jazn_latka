@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.9",
-  "active_definition_count": 3753,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.10",
+  "active_definition_count": 3756,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -71322,6 +71322,86 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 112
+    },
+    "tests/test_stage05_f02_null_executor_failure.py::test_null_executor_has_bounded_non_transport_evidence": {
+      "path": "tests/test_stage05_f02_null_executor_failure.py",
+      "name": "test_null_executor_has_bounded_non_transport_evidence",
+      "purpose": "Null executor has bounded non transport evidence",
+      "expected": "Pytest completes this contract cleanly and all 10 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 10,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
+    },
+    "tests/test_stage05_f02_null_executor_failure.py::test_null_classifier_requires_consistent_runtime_evidence": {
+      "path": "tests/test_stage05_f02_null_executor_failure.py",
+      "name": "test_null_classifier_requires_consistent_runtime_evidence",
+      "purpose": "Null classifier requires consistent runtime evidence",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [
+        "runtime"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 90
+    },
+    "tests/test_stage05_f02_null_executor_failure.py::test_null_route_cannot_create_host_generation_contract": {
+      "path": "tests/test_stage05_f02_null_executor_failure.py",
+      "name": "test_null_route_cannot_create_host_generation_contract",
+      "purpose": "Null route cannot create host generation contract",
+      "expected": "Pytest completes this contract cleanly and all 17 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 17,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.core.model_guided_response_synthesizer",
+        "latka_jazn.core.model_guided_speech_runtime",
+        "latka_jazn.core.model_transport_failure",
+        "latka_jazn.model_adapters.null_model_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 101
     },
     "tests/test_stage05_f03_runtime_poll_completion.py::test_completed_poll_projects_runtime_owned_evidence_without_mutation": {
       "path": "tests/test_stage05_f03_runtime_poll_completion.py",
