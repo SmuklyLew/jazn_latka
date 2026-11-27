@@ -3,11 +3,11 @@ from __future__ import annotations
 """Public HTTP resource authorization only; not a turn lifecycle or result store."""
 
 from contextlib import closing
-import hashlib
 import hmac
 from pathlib import Path
 import re
 
+from latka_jazn.core.admission_owner_context import public_owner_digest as _owner_digest
 from latka_jazn.core.runtime_root import workspace_runtime_path
 from latka_jazn.db.runtime_sqlite import (
     connect_runtime_readonly, connect_runtime_writable, runtime_sqlite_write_guard,
@@ -18,12 +18,6 @@ _DDL = """CREATE TABLE IF NOT EXISTS public_turn_owners (
     owner_sha256 TEXT NOT NULL,
     payload_sha256 TEXT NOT NULL
 )"""
-
-
-def _owner_digest(subject: str) -> str:
-    if not subject or not subject.strip():
-        raise ValueError("public_turn_owner_missing")
-    return hashlib.sha256(("public_http\0" + subject).encode("utf-8")).hexdigest()
 
 
 class PublicTurnOwnerStore:

@@ -31,6 +31,9 @@ import urllib.request
 import uuid
 
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.admission_owner_context import (
+    ADMISSION_OWNER_HEADER, current_admission_owner, is_admission_owner_endpoint,
+)
 from latka_jazn.core.runtime_root import (
     RuntimeWorkspaceBusyError,
     active_runtime_marker_path,
@@ -971,6 +974,10 @@ def daemon_chat_request_fingerprint(
         separators=(",", ":"),
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+class _ChatAdmissionOwnerError(PermissionError):
+    """An authenticated transport is not the owner of the requested admission."""
 
 
 class _ChatAdmissionLedgerError(ValueError):
@@ -2475,8 +2482,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
         request_id: str | None = None,
         admission_owner_sha256: str | None = None,
     ) -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
-        # Internal trusted caller seam only. HTTP payloads do not supply this
-        # value until the authenticated transport is wired end to end.
+        # Trusted caller seam. HTTP obtains the digest only from the
+        # authenticated loopback gateway/operator, never from the JSON body.
         if not _valid_admission_owner(admission_owner_sha256):
             return None, False, {"ok": False, "error_code": "invalid_admission_owner"}
         if self.shutdown_requested.is_set():
@@ -2769,7 +2776,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
             return job
         return None
 
-    def get_chat_job(self, request_id: str) -> DaemonChatJob | None:
+    def get_chat_job(
+        self, request_id: str, *, admission_owner_sha256: str | None = None,
+    ) -> DaemonChatJob | None:
+        if not _valid_admission_owner(admission_owner_sha256):
+            raise _ChatAdmissionOwnerError("invalid_admission_owner")
         with self._chat_jobs_lock:
             self._cleanup_chat_jobs_locked()
             job = self.chat_jobs.get(str(request_id))
@@ -2780,6 +2791,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     self.chat_jobs[job.request_id] = job
                 elif any(row.get("request_id") == str(request_id) for row in rows):
                     raise _ChatAdmissionLedgerError("daemon_chat_ledger_unresolved_record")
+            if job is not None and job.admission_owner_sha256 != admission_owner_sha256:
+                # Do not return or reconcile another principal's job.
+                raise _ChatAdmissionOwnerError("daemon_chat_owner_mismatch")
             changed = False
             if job is not None and self._reconcile_host_finalization_job_locked(job):
                 changed = True
@@ -3106,6 +3120,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         self, *, authority: dict[str, Any], candidate: dict[str, Any],
         chat_bridge_meta: dict[str, Any], contract: dict[str, Any],
         host_action_evidence: Any,
+        admission_owner_sha256: str | None = None,
     ) -> dict[str, Any]:
         """The owning daemon serializes authority, claim, commit and lifecycle ACK.
 
@@ -3147,6 +3162,9 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     or authority.get("host_request_contract_hash") != digest):
                 return deny("phase2_authority_binding_mismatch")
             job = self.chat_jobs.get(request_id)
+            if (not _valid_admission_owner(admission_owner_sha256)
+                    or (job is not None and job.admission_owner_sha256 != admission_owner_sha256)):
+                return deny("daemon_chat_owner_mismatch")
             if (job is None or job.status != DAEMON_CHAT_JOB_HOST_PENDING_STATE
                     or not job.phase_result_ready()
                     or job.host_turn_id != turn_id or job.host_trace_id != trace_id
@@ -3233,6 +3251,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
         outcome: str,
         reason: str,
         terminal: bool = False,
+        admission_owner_sha256: str | None = None,
     ) -> tuple[DaemonChatJob | None, dict[str, Any] | None]:
         """A public ACK cannot manufacture an accepted finalization.
 
@@ -3245,10 +3264,14 @@ class JaznDaemonServer(ThreadingHTTPServer):
         )
 
         with self._chat_jobs_lock:
+            job = self.chat_jobs.get(str(request_id))
+            if job is None:
+                return None, {"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}
+            if (not _valid_admission_owner(admission_owner_sha256)
+                    or job.admission_owner_sha256 != admission_owner_sha256):
+                return None, {"ok": False, "error_code": "daemon_chat_owner_mismatch",
+                              "request_id": request_id, "must_not_replay": True}
             if str(outcome or "").strip().lower() == "accepted":
-                job = self.chat_jobs.get(str(request_id))
-                if job is None:
-                    return None, {"ok": False, "error_code": "chat_job_not_found", "request_id": request_id}
                 try:
                     record = read_committed_host_request(self.config.root, turn_id=turn_id)
                 except (HostRequestStoreError, OSError, RuntimeError, ValueError, TypeError):
@@ -4365,7 +4388,21 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             ),
         )
 
-    def _submit_chat_job_from_payload(self, payload: Any) -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
+    def _admission_owner_header(self) -> str | None:
+        # Called only after loopback and daemon-token checks. Duplicate,
+        # empty and malformed headers never degrade to the ownerless route.
+        values = self.headers.get_all(ADMISSION_OWNER_HEADER) or []
+        if not values:
+            return None
+        if len(values) != 1 or not values[0] or not _valid_admission_owner(values[0]):
+            raise _ChatAdmissionOwnerError("invalid_admission_owner")
+        return str(values[0])
+
+    def _submit_chat_job_from_payload(
+        self, payload: Any, *, admission_owner_sha256: str | None = None,
+    ) -> tuple[DaemonChatJob | None, bool, dict[str, Any] | None]:
+        if isinstance(payload, dict) and "admission_owner_sha256" in payload:
+            return None, False, {"ok": False, "error_code": "admission_owner_body_not_allowed"}
         if isinstance(payload, dict) and payload.get("__daemon_error__"):
             error_code = str(payload.get("__daemon_error__"))
             return None, False, {"ok": False, "error_code": error_code, **payload}
@@ -4411,6 +4448,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             model_channel_config=model_channel_config,
             reset_session=reset_session,
             request_id=str(request_id).strip() if request_id else None,
+            admission_owner_sha256=admission_owner_sha256,
         )
 
     def do_GET(self) -> None:
@@ -4429,7 +4467,13 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 return
             server = self._daemon_server()
             try:
-                job = server.get_chat_job(request_id)
+                owner = self._admission_owner_header()
+                job = server.get_chat_job(request_id, admission_owner_sha256=owner)
+            except _ChatAdmissionOwnerError as exc:
+                self._json_response({"ok": False, "error_code": str(exc),
+                                     "must_not_resubmit_user_message": True},
+                                    status=HTTPStatus.FORBIDDEN)
+                return
             except _ChatAdmissionLedgerError as exc:
                 # Absence is not proven. Return no result or new authority.
                 self._json_response({
@@ -4510,6 +4554,15 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
         if not self._authenticated(mutating=True):
             return
         self._daemon_server().state.note_request()
+        owner: str | None = None
+        if is_admission_owner_endpoint(path):
+            try:
+                owner = self._admission_owner_header()
+            except _ChatAdmissionOwnerError as exc:
+                self._drain_bounded_request_body()
+                self._json_response({"ok": False, "error_code": str(exc)},
+                                    status=HTTPStatus.FORBIDDEN)
+                return
         if path == "/host-finalize":
             payload_in = self._read_json_or_text()
             if (not isinstance(payload_in, dict)
@@ -4523,6 +4576,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 authority=payload_in["authority"], candidate=payload_in["candidate"],
                 chat_bridge_meta=payload_in["chat_bridge_meta"], contract=payload_in["contract"],
                 host_action_evidence=payload_in.get("host_action_evidence"),
+                admission_owner_sha256=owner,
             )
             self._json_response(response)
             return
@@ -4549,6 +4603,7 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
                 outcome=str(payload_in["outcome"]),
                 reason=str(payload_in["reason"]),
                 terminal=bool(payload_in.get("terminal")),
+                admission_owner_sha256=owner,
             )
             if error is not None:
                 status = HTTPStatus.NOT_FOUND if error.get("error_code") == "chat_job_not_found" else HTTPStatus.CONFLICT
@@ -4576,7 +4631,9 @@ class JaznDaemonHandler(BaseHTTPRequestHandler):
             return
         if path in {"/chat", "/message", "/chat-submit"}:
             payload = self._read_json_or_text()
-            job, created, error = self._submit_chat_job_from_payload(payload)
+            job, created, error = self._submit_chat_job_from_payload(
+                payload, admission_owner_sha256=owner,
+            )
             if error is not None:
                 status = (
                     HTTPStatus.REQUEST_ENTITY_TOO_LARGE
@@ -4708,11 +4765,17 @@ def http_json(
     if payload is not None:
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         headers["Content-Type"] = "application/json; charset=utf-8"
+    target = urllib.parse.urlsplit(url)
+    owner = current_admission_owner()
+    if owner is not None and token and is_admission_owner_endpoint(target.path):
+        if (target.scheme != "http" or target.hostname not in LOOPBACK_CLIENTS
+                or target.username is not None or target.password is not None):
+            raise ValueError("admission_owner_requires_trusted_loopback")
+        headers[ADMISSION_OWNER_HEADER] = owner
     req = urllib.request.Request(url, data=data, method=method.upper(), headers=headers)
     # A daemon loopback probe must never inherit HTTP_PROXY/HTTPS_PROXY. Desktop
     # environments can carry a proxy even while connecting to 127.0.0.1.
     # Preserve the existing opener for non-loopback requests.
-    target = urllib.parse.urlsplit(url)
     open_url = (
         urllib.request.build_opener(urllib.request.ProxyHandler({}), _DenyDaemonRedirect()).open
         if target.scheme == "http" and target.hostname in LOOPBACK_CLIENTS

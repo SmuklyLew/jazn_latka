@@ -9,9 +9,13 @@ from typing import Any, Mapping
 from urllib import error, parse, request
 
 from latka_jazn.bridge.auth_policy import AuthPolicy, SlidingWindowRateLimiter
+from latka_jazn.core.admission_owner_context import (
+    ADMISSION_OWNER_HEADER, current_admission_owner, is_admission_owner_endpoint,
+)
 from latka_jazn.core.chatgpt_host_pending_store import issue_continuation_token
 from latka_jazn.core.runtime_daemon import (
     DAEMON_AUTH_HEADER,
+    _DenyDaemonRedirect,
     normalize_daemon_request_id,
     read_daemon_auth_token,
 )
@@ -271,14 +275,19 @@ class SecureHostRuntimeGateway:
             "Content-Type": "application/json",
             DAEMON_AUTH_HEADER: self._daemon_token(),
         }
-        req = request.Request(
-            self.config.daemon_url.rstrip("/") + path,
-            data=body,
-            method=method,
-            headers=headers,
-        )
+        url = self.config.daemon_url.rstrip("/") + path
+        target = parse.urlsplit(url)
+        owner = current_admission_owner()
+        open_url = request.urlopen
+        if owner is not None and is_admission_owner_endpoint(target.path):
+            if (target.scheme != "http" or target.hostname not in {"127.0.0.1", "::1", "localhost"}
+                    or target.username is not None or target.password is not None):
+                raise GatewayError("admission_owner_requires_trusted_loopback")
+            headers[ADMISSION_OWNER_HEADER] = owner
+            open_url = request.build_opener(request.ProxyHandler({}), _DenyDaemonRedirect()).open
+        req = request.Request(url, data=body, method=method, headers=headers)
         try:
-            with request.urlopen(req, timeout=self.config.timeout_seconds) as response:
+            with open_url(req, timeout=self.config.timeout_seconds) as response:
                 data = response.read(self.config.max_request_bytes + 1)
         except error.HTTPError as exc:
             try:
@@ -405,7 +414,10 @@ class SecureHostRuntimeGateway:
             record = self.operations.claim(
                 operation_id=daemon_request_id,
                 operation_kind="chat_turn",
-                payload=payload,
+                payload={
+                    **payload,
+                    **({"admission_owner_sha256": owner} if (owner := current_admission_owner()) is not None else {}),
+                },
                 relation={"session_id": str(session_id or "")},
             )
         except OperationConflictError as exc:
