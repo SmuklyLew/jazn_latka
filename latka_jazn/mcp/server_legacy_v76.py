@@ -4,6 +4,7 @@ import argparse
 from copy import deepcopy
 import hashlib
 import json
+import sqlite3
 from pathlib import Path
 import sys
 from typing import Any, Mapping
@@ -16,6 +17,9 @@ from latka_jazn.bridge.secure_host_runtime_gateway import (
     SecureHostRuntimeGateway,
 )
 from latka_jazn.config import JaznConfig
+from latka_jazn.core.runtime_daemon import normalize_daemon_request_id
+from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, resolve_continuation_token
+from latka_jazn.mcp.public_turn_owners import PublicTurnOwnerStore
 from latka_jazn.mcp.task_resume import McpTaskResumeAdapter, TASK_EXTENSION_ID
 from latka_jazn.mcp.tools import (
     jazn_audit_lookup,
@@ -270,6 +274,53 @@ class JaznMcpServer:
         self.gateway.authorize(tool_name=name, token=token, subject=subject)
         return subject
 
+    def _verified_public_owner(self) -> str | None:
+        # Legacy/private callers have no independently verified HTTP subject.
+        return None
+
+    def _authorize_public_turn_resource(
+        self, name: str, args: dict[str, Any], request_id: str | None, owner: str,
+    ) -> bool:
+        store = PublicTurnOwnerStore(self.root)
+        if name == "jazn_generate_visible_reply":
+            if not request_id:
+                return False
+            request_id = normalize_daemon_request_id(request_id)
+            digest = payload_hash(args)
+            existing = store.lookup(request_id)
+            if existing is not None:
+                return store.matches(existing, owner, digest)
+            # Do not adopt a historical operation or a request whose absence
+            # has not been confirmed by the owning daemon. This GET has no
+            # user message and cannot execute a turn.
+            if self.gateway.operations.get(request_id) is not None:
+                return False
+            try:
+                self.gateway.result(request_id)
+            except GatewayError as exc:
+                if str(exc) != "daemon_rejected:chat_job_not_found":
+                    return False
+            else:
+                return False
+            return store.reserve(request_id, owner, digest)
+        if name == "jazn_resume_visible_reply":
+            request_id = str(args.get("daemon_request_id") or "").strip()
+        elif name == "jazn_finalize_reply":
+            try:
+                pending = resolve_continuation_token(self.root, str(args.get("continuation_token") or ""))
+            except HostRequestStoreError as exc:
+                # The canonical finalizer owns expiry/replay diagnostics, but
+                # only after the owner of the recorded request is confirmed.
+                pending = exc.record
+            binding = pending.get("binding")
+            request_id = str(binding.get("daemon_request_id") or "").strip() if isinstance(binding, Mapping) else ""
+        else:
+            return True
+        if not request_id or normalize_daemon_request_id(request_id) != request_id:
+            return False
+        existing = store.lookup(request_id)
+        return existing is not None and store.matches(existing, owner)
+
     @staticmethod
     def _approval_state(name: str, metadata: dict[str, Any]) -> str:
         declared = str(metadata.get("approval_state") or "").strip().lower()
@@ -494,6 +545,19 @@ class JaznMcpServer:
             metadata=metadata,
             subject=subject,
         )
+        public_owner = self._verified_public_owner()
+        if public_owner is not None:
+            if public_owner != subject:
+                return _tool_error("public_turn_owner_unverified", must_not_replay=True)
+            if name == "jazn_generate_visible_reply":
+                # Public tools use the server's canonical key, not an
+                # alternative caller-supplied cache identity.
+                if explicit_key is not None:
+                    return _tool_error("public_turn_idempotency_key_not_allowed", must_not_replay=True)
+                try:
+                    request_id = normalize_daemon_request_id(request_id)
+                except ValueError:
+                    return _tool_error("public_turn_owner_unverified", must_not_replay=True)
         turn_id, trace_id, contract_hash = self._request_identity(
             name,
             args,
@@ -512,7 +576,12 @@ class JaznMcpServer:
         # part of its key. A second subject with the same request/key must
         # conflict instead of receiving the first subject's cached result.
         payload_digest = payload_hash(
-            {"authenticated_subject": subject, "arguments": args}
+            {
+                "authenticated_subject": subject,
+                "arguments": args,
+                **({"verified_transport": "public_http", "request_id": request_id}
+                   if public_owner is not None else {}),
+            }
             if name in IDEMPOTENT_SIDE_EFFECT_TOOLS else args
         )
 
@@ -532,6 +601,15 @@ class JaznMcpServer:
                 approval_state=approval_state,
                 audit_id=audit_id,
             )
+
+        if public_owner is not None:
+            try:
+                permitted = self._authorize_public_turn_resource(name, args, request_id, public_owner)
+            except (OSError, sqlite3.Error, RuntimeError, TypeError, ValueError):
+                permitted = False
+            if not permitted:
+                return _tool_error("public_turn_owner_unverified", must_not_replay=True,
+                                   must_not_claim_runtime_voice=True)
 
         if name in IDEMPOTENT_SIDE_EFFECT_TOOLS:
             decision = self.idempotency.claim(

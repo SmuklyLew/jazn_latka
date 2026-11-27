@@ -1507,95 +1507,98 @@ def apply_l2_review(
     reviewed_by: str,
     l3_limit: int,
 ) -> dict[str, Any]:
-    from latka_jazn.config import JaznConfig
-    from latka_jazn.memory.memory_recovery_pipeline import (
-        MemoryRecoveryPipeline,
-        _kind,
-        _truth,
-    )
-    from latka_jazn.memory.memory_tier_store import MemoryTierStore
-    from latka_jazn.memory.memory_tiers import ShortTermMemoryPolicy
+    root = root.expanduser().resolve()
+    with _exclusive_memory_maintenance(root):
+        _require_quiescent_runtime(root)
+        from latka_jazn.config import JaznConfig
+        from latka_jazn.memory.memory_recovery_pipeline import (
+            MemoryRecoveryPipeline,
+            _kind,
+            _truth,
+        )
+        from latka_jazn.memory.memory_tier_store import MemoryTierStore
+        from latka_jazn.memory.memory_tiers import ShortTermMemoryPolicy
 
-    manifest = _verify_l2_manifest(
-        manifest_path,
-        expected_sha256=expected_sha256,
-        reviewed_by=reviewed_by,
-    )
-    approved = [
-        item
-        for item in manifest.get("candidates") or []
-        if isinstance(item, dict) and item.get("decision") == "approved"
-    ]
-    config = JaznConfig(root=root)
-    pipeline = MemoryRecoveryPipeline(root)
-    sidecar = connect_runtime_readonly(config.normalization_sidecar_db_path, timeout_ms=30_000)
-    policy = ShortTermMemoryPolicy()
-    written = skipped = 0
-    memory_ids: list[str] = []
-    try:
-        with MemoryTierStore(config.memory_tier_db_path) as store:
-            for item in approved:
-                row = sidecar.execute(
-                    "SELECT * FROM normalized_memory_items WHERE item_id=?",
-                    (str(item.get("item_id") or ""),),
-                ).fetchone()
-                if row is None:
-                    raise VerifiedMemoryRestoreError(
-                        f"Kandydat L2 zniknął z sidecara: {item.get('item_id')}"
+        manifest = _verify_l2_manifest(
+            manifest_path,
+            expected_sha256=expected_sha256,
+            reviewed_by=reviewed_by,
+        )
+        approved = [
+            item
+            for item in manifest.get("candidates") or []
+            if isinstance(item, dict) and item.get("decision") == "approved"
+        ]
+        config = JaznConfig(root=root)
+        pipeline = MemoryRecoveryPipeline(root)
+        sidecar = connect_runtime_readonly(config.normalization_sidecar_db_path, timeout_ms=30_000)
+        policy = ShortTermMemoryPolicy()
+        written = skipped = 0
+        memory_ids: list[str] = []
+        try:
+            with MemoryTierStore(config.memory_tier_db_path) as store:
+                for item in approved:
+                    row = sidecar.execute(
+                        "SELECT * FROM normalized_memory_items WHERE item_id=?",
+                        (str(item.get("item_id") or ""),),
+                    ).fetchone()
+                    if row is None:
+                        raise VerifiedMemoryRestoreError(
+                            f"Kandydat L2 zniknął z sidecara: {item.get('item_id')}"
+                        )
+                    content = str(row["content_excerpt"] or "")
+                    if item.get("content_excerpt_sha256") != _sha256_text(content):
+                        raise VerifiedMemoryRestoreError(
+                            f"Treść kandydata L2 zmieniła się: {item.get('item_id')}"
+                        )
+                    evidence = pipeline._evidence(row)
+                    truth = _truth(str(row["truth_status"] or ""))
+                    if truth.value not in {"source_recorded", "user_confirmed"}:
+                        skipped += 1
+                        continue
+                    record = policy.create(
+                        kind=_kind(str(row["memory_type"])),
+                        content=content,
+                        domain=str(row["memory_namespace"] or "recovered_memory"),
+                        mode="verified_memory_restore_manual_l2",
+                        truth_status=truth,
+                        confidence=float(row["confidence"] or 0.0),
+                        importance=float(row["importance"] or 0.0),
+                        evidence=(evidence,),
+                        created_at_utc=datetime.now(timezone.utc),
+                        tags=(
+                            "verified_memory_restore",
+                            "manual_l2_review",
+                            str(row["memory_type"]),
+                            f"reviewed_by:{reviewed_by.strip()}",
+                        ),
                     )
-                content = str(row["content_excerpt"] or "")
-                if item.get("content_excerpt_sha256") != _sha256_text(content):
-                    raise VerifiedMemoryRestoreError(
-                        f"Treść kandydata L2 zmieniła się: {item.get('item_id')}"
+                    record = replace(
+                        record,
+                        reinforcement_count=1,
+                        last_reinforced_at_utc=datetime.now(timezone.utc),
+                        reinforcement_evidence_keys=(evidence.evidence_key,),
                     )
-                evidence = pipeline._evidence(row)
-                truth = _truth(str(row["truth_status"] or ""))
-                if truth.value not in {"source_recorded", "user_confirmed"}:
-                    skipped += 1
-                    continue
-                record = policy.create(
-                    kind=_kind(str(row["memory_type"])),
-                    content=content,
-                    domain=str(row["memory_namespace"] or "recovered_memory"),
-                    mode="verified_memory_restore_manual_l2",
-                    truth_status=truth,
-                    confidence=float(row["confidence"] or 0.0),
-                    importance=float(row["importance"] or 0.0),
-                    evidence=(evidence,),
-                    created_at_utc=datetime.now(timezone.utc),
-                    tags=(
-                        "verified_memory_restore",
-                        "manual_l2_review",
-                        str(row["memory_type"]),
-                        f"reviewed_by:{reviewed_by.strip()}",
-                    ),
-                )
-                record = replace(
-                    record,
-                    reinforcement_count=1,
-                    last_reinforced_at_utc=datetime.now(timezone.utc),
-                    reinforcement_evidence_keys=(evidence.evidence_key,),
-                )
-                store.save_record(record)
-                written += 1
-                memory_ids.append(record.memory_id)
-    finally:
-        sidecar.close()
+                    store.save_record(record)
+                    written += 1
+                    memory_ids.append(record.memory_id)
+        finally:
+            sidecar.close()
 
-    l3_manifest = pipeline.build_l3_manifest(limit=max(0, int(l3_limit)))
-    return {
-        "status": "l2_applied_l3_manifest_ready",
-        "manifest_sha256": expected_sha256,
-        "reviewed_by": reviewed_by,
-        "approved": len(approved),
-        "written": written,
-        "skipped": skipped,
-        "memory_ids": memory_ids,
-        "memory_tier_database": str(config.memory_tier_db_path),
-        "l3_manifest": l3_manifest,
-        "automatic_l3": False,
-        "truth_boundary": TRUTH_BOUNDARY,
-    }
+        l3_manifest = pipeline.build_l3_manifest(limit=max(0, int(l3_limit)))
+        return {
+            "status": "l2_applied_l3_manifest_ready",
+            "manifest_sha256": expected_sha256,
+            "reviewed_by": reviewed_by,
+            "approved": len(approved),
+            "written": written,
+            "skipped": skipped,
+            "memory_ids": memory_ids,
+            "memory_tier_database": str(config.memory_tier_db_path),
+            "l3_manifest": l3_manifest,
+            "automatic_l3": False,
+            "truth_boundary": TRUTH_BOUNDARY,
+        }
 
 
 @contextmanager
@@ -1737,53 +1740,55 @@ def activate(
         raise VerifiedMemoryRestoreError(
             "Aktywacja wymaga jawnego --start-daemon."
         )
-    from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
-    from latka_jazn.tools.memory_validation import validate_large_memory
+    with _exclusive_memory_maintenance(root):
+        _require_quiescent_runtime(root)
+        from latka_jazn.memory.memory_recovery_pipeline import MemoryRecoveryPipeline
+        from latka_jazn.tools.memory_validation import validate_large_memory
 
-    pipeline = MemoryRecoveryPipeline(root)
-    canonical_l3 = pipeline.manifest_path.resolve()
-    supplied_l3 = l3_manifest_path.expanduser().resolve()
-    if supplied_l3 != canonical_l3:
-        raise VerifiedMemoryRestoreError(
-            f"Manifest L3 musi być kanoniczny: {canonical_l3}"
+        pipeline = MemoryRecoveryPipeline(root)
+        canonical_l3 = pipeline.manifest_path.resolve()
+        supplied_l3 = l3_manifest_path.expanduser().resolve()
+        if supplied_l3 != canonical_l3:
+            raise VerifiedMemoryRestoreError(
+                f"Manifest L3 musi być kanoniczny: {canonical_l3}"
+            )
+        apply_report = pipeline.apply_l3_manifest(
+            expected_sha256=expected_sha256,
+            approved_by=approved_by,
         )
-    apply_report = pipeline.apply_l3_manifest(
-        expected_sha256=expected_sha256,
-        approved_by=approved_by,
-    )
-    if apply_report.get("status") not in {"ready", "completed_with_warnings"}:
-        raise VerifiedMemoryRestoreError(
-            "Nie udało się zastosować manifestu L3: " + _canonical_json(apply_report)
-        )
-    if apply_report.get("errors"):
-        raise VerifiedMemoryRestoreError(
-            "Manifest L3 zakończył się błędami: "
-            + _canonical_json(apply_report.get("errors"))
-        )
+        if apply_report.get("status") not in {"ready", "completed_with_warnings"}:
+            raise VerifiedMemoryRestoreError(
+                "Nie udało się zastosować manifestu L3: " + _canonical_json(apply_report)
+            )
+        if apply_report.get("errors"):
+            raise VerifiedMemoryRestoreError(
+                "Manifest L3 zakończył się błędami: "
+                + _canonical_json(apply_report.get("errors"))
+            )
 
-    validation = validate_large_memory(
-        root,
-        full=True,
-        include_all_sqlite=True,
-        max_errors=100,
-        table_counts=True,
-        hash_files=True,
-        output=workspace_runtime_path(root)
-        / "memory_validation"
-        / "before_activation.json",
-    )
-    if not validation.get("ok"):
-        raise VerifiedMemoryRestoreError(
-            "Końcowa walidacja pamięci przed doctor nie przeszła."
+        validation = validate_large_memory(
+            root,
+            full=True,
+            include_all_sqlite=True,
+            max_errors=100,
+            table_counts=True,
+            hash_files=True,
+            output=workspace_runtime_path(root)
+            / "memory_validation"
+            / "before_activation.json",
         )
+        if not validation.get("ok"):
+            raise VerifiedMemoryRestoreError(
+                "Końcowa walidacja pamięci przed doctor nie przeszła."
+            )
 
-    doctor = _run_json(root, ["doctor", "--json"], timeout=600.0)
-    if not doctor.get("ok"):
-        raise VerifiedMemoryRestoreError("Końcowy doctor nie jest zielony.")
-    if doctor.get("activation_prerequisites_ready") is False:
-        raise VerifiedMemoryRestoreError(
-            "Doctor zgłasza activation_prerequisites_ready=false."
-        )
+        doctor = _run_json(root, ["doctor", "--json"], timeout=600.0)
+        if not doctor.get("ok"):
+            raise VerifiedMemoryRestoreError("Końcowy doctor nie jest zielony.")
+        if doctor.get("activation_prerequisites_ready") is False:
+            raise VerifiedMemoryRestoreError(
+                "Doctor zgłasza activation_prerequisites_ready=false."
+            )
 
     start = _run_plain(root, ["start"], timeout=300.0)
     if start["exit_code"] != 0:
@@ -1791,17 +1796,18 @@ def activate(
             f"Start daemona nie powiódł się: {start['stderr'][-2000:]}"
         )
     status = _run_json(root, ["status", "--json"], timeout=300.0)
-    status_text = _canonical_json(status).lower()
+    daemon = status.get("daemon")
     active_trusted = (
-        "active_trusted" in status_text
-        or (
-            bool(status.get("ok"))
-            and (
-                status.get("active") is True
-                or status.get("daemon_active") is True
-                or status.get("runtime_active") is True
-            )
-        )
+        status.get("_exit_code") == 0
+        and status.get("ok") is True
+        and status.get("status_scope") == "live_endpoint"
+        and _same_runtime_root(status.get("root"), root)
+        and isinstance(daemon, dict)
+        and _same_runtime_root(daemon.get("active_root"), root)
+        and daemon.get("active_state") == "active_trusted"
+        and daemon.get("endpoint_probe_performed") is True
+        and daemon.get("endpoint_reachable") is True
+        and daemon.get("heartbeat_fresh") is True
     )
     if not active_trusted:
         raise VerifiedMemoryRestoreError(

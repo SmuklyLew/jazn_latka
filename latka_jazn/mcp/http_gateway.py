@@ -424,15 +424,19 @@ class PublicMcpGateway:
                 request_id=request_id,
             )
 
-        value = self._backend.call_tool(
-            canonical_name,
-            canonical_args,
-            meta={
-                "authorization": self._internal_token,
-                "subject": principal.subject,
-                "openai/subject": principal.subject,
-            },
-        )
+        verified_meta = {
+            "authorization": self._internal_token,
+            "subject": principal.subject,
+            "openai/subject": principal.subject,
+        }
+        if isinstance(self._backend, JaznMcpServer):
+            value = self._backend.call_public_authenticated(
+                canonical_name, canonical_args, meta=verified_meta,
+                owner_subject=principal.subject,
+            )
+        else:
+            # Explicitly injected adapter/test backend owns its own auth contract.
+            value = self._backend.call_tool(canonical_name, canonical_args, meta=verified_meta)
         if not isinstance(value, Mapping):
             return _public_error("backend_result_not_object", request_id=request_id)
         try:

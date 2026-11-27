@@ -388,6 +388,23 @@ class JaznMcpServer(_V76JaznMcpServer):
             return {}
         return {"owner_subject": subject, "owner_transport": "public_http"}
 
+    def _verified_public_owner(self) -> str | None:
+        return _AUTHENTICATED_HTTP_OWNER.get()
+
+    def call_public_authenticated(
+        self, name: str, arguments: dict[str, Any], *, meta: dict[str, Any],
+        owner_subject: str,
+    ) -> dict[str, Any]:
+        """Only the verified gateway supplies this context, never tool arguments."""
+        subject = str(owner_subject or "").strip()
+        if not subject:
+            raise ValueError("mcp_verified_principal_required")
+        token = _AUTHENTICATED_HTTP_OWNER.set(subject)
+        try:
+            return self.call_tool(name, arguments, meta=meta)
+        finally:
+            _AUTHENTICATED_HTTP_OWNER.reset(token)
+
     def handle_public_authenticated(
         self, request_value: dict[str, Any], *, owner_subject: str, owner_transport: str
     ) -> dict[str, Any] | None:
