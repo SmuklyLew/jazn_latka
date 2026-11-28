@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.33",
-  "active_definition_count": 3837,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.34",
+  "active_definition_count": 3839,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -21504,7 +21504,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 143
+      "line": 148
     },
     "tests/test_hard_process_isolation.py::test_killed_precommit_turn_leaves_no_partial_state_and_next_worker_succeeds": {
       "path": "tests/test_hard_process_isolation.py",
@@ -21526,7 +21526,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 165
+      "line": 170
     },
     "tests/test_hard_process_isolation.py::test_daemon_status_claims_hard_isolation_only_when_really_active": {
       "path": "tests/test_hard_process_isolation.py",
@@ -21546,7 +21546,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 194
+      "line": 199
     },
     "tests/test_hard_process_isolation.py::test_daemon_parent_survives_timeout_and_next_job_uses_fresh_process": {
       "path": "tests/test_hard_process_isolation.py",
@@ -21566,7 +21566,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 229
+      "line": 234
     },
     "tests/test_hard_process_isolation.py::test_pending_host_continuation_survives_worker_replacement_and_daemon_restart": {
       "path": "tests/test_hard_process_isolation.py",
@@ -21588,7 +21588,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 282
+      "line": 287
     },
     "tests/test_header_envelope_intent_routing_convergence.py::test_header_loss_is_runtime_diagnostic_not_practical_repair": {
       "path": "tests/test_header_envelope_intent_routing_convergence.py",
@@ -37067,33 +37067,35 @@
         "latka_jazn.config",
         "latka_jazn.core.conversation",
         "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.runtime_composition",
         "latka_jazn.core.turn_execution"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 13
+      "line": 14
     },
     "tests/test_legacy_dialogue_cutover.py::test_canonical_turn_never_calls_legacy_compose_or_ordinary_template": {
       "path": "tests/test_legacy_dialogue_cutover.py",
       "name": "test_canonical_turn_never_calls_legacy_compose_or_ordinary_template",
       "purpose": "Canonical turn never calls legacy compose or ordinary template",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 12 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [],
-      "assertion_count": 9,
+      "assertion_count": 12,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.config",
         "latka_jazn.core.conversation",
         "latka_jazn.core.handlers.ordinary_dialogue_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.runtime_composition",
         "latka_jazn.core.turn_execution"
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 27
+      "line": 28
     },
     "tests/test_legacy_fanout_migration.py::test_scan_stages_review_candidates_without_creating_memory": {
       "path": "tests/test_legacy_fanout_migration.py",
@@ -53697,6 +53699,7 @@
       "targets": [
         "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
@@ -53706,7 +53709,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 62
+      "line": 67
     },
     "tests/test_ollama_self_state_validated_retry.py::test_retry_restores_validated_runtime_handler_and_feedback": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -53723,6 +53726,7 @@
       "targets": [
         "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
@@ -53732,7 +53736,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 77
+      "line": 82
     },
     "tests/test_ollama_self_state_validated_retry.py::test_retry_refuses_unvalidated_handler_draft": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -53747,6 +53751,7 @@
       "targets": [
         "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
@@ -53756,7 +53761,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 90
+      "line": 95
     },
     "tests/test_ollama_self_state_validated_retry.py::test_repair_instructions_are_allowlisted_not_derived_from_untrusted_text": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
@@ -53771,6 +53776,7 @@
       "targets": [
         "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
@@ -53780,23 +53786,24 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 98
+      "line": 103
     },
     "tests/test_ollama_self_state_validated_retry.py::test_bounded_retry_never_accepts_unvalidated_fallback": {
       "path": "tests/test_ollama_self_state_validated_retry.py",
       "name": "test_bounded_retry_never_accepts_unvalidated_fallback",
       "purpose": "Bounded retry never accepts unvalidated fallback",
-      "expected": "Pytest completes this contract cleanly and all 9 explicit assertion(s) plus declared expected exceptions hold.",
+      "expected": "Pytest completes this contract cleanly and all 11 explicit assertion(s) plus declared expected exceptions hold.",
       "category": "unit",
       "tags": [],
       "markers": [
         "parametrize"
       ],
-      "assertion_count": 9,
+      "assertion_count": 11,
       "expected_exceptions": [],
       "targets": [
         "latka_jazn.core.engine",
         "latka_jazn.core.handlers.self_state_handler",
+        "latka_jazn.core.model_executor_preflight",
         "latka_jazn.core.model_guided_response_synthesizer",
         "latka_jazn.core.recovery_policy",
         "latka_jazn.core.route_registry",
@@ -53806,7 +53813,7 @@
       ],
       "status": "current",
       "description_source": "source_identity",
-      "line": 127
+      "line": 132
     },
     "tests/test_ollama_transport_disconnect.py::test_interrupted_chat_issues_one_post_and_preserves_failure": {
       "path": "tests/test_ollama_transport_disconnect.py",
@@ -74153,6 +74160,50 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 112
+    },
+    "tests/test_stage05_modern_executor_authority.py::test_modern_generation_need_does_not_authorize_host": {
+      "path": "tests/test_stage05_modern_executor_authority.py",
+      "name": "test_modern_generation_need_does_not_authorize_host",
+      "purpose": "Modern generation need does not authorize host",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_executor_preflight"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 16
+    },
+    "tests/test_stage05_modern_executor_authority.py::test_modern_explicit_host_executor_is_eligible_for_existing_contract_gate": {
+      "path": "tests/test_stage05_modern_executor_authority.py",
+      "name": "test_modern_explicit_host_executor_is_eligible_for_existing_contract_gate",
+      "purpose": "Modern explicit host executor is eligible for existing contract gate",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_executor_preflight"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 29
     },
     "tests/test_stage05_monitor_settlement.py::test_effective_endpoint_precedence": {
       "path": "tests/test_stage05_monitor_settlement.py",
