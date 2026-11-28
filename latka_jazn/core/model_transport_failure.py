@@ -106,6 +106,10 @@ def ollama_context_rejection(response: object) -> dict[str, Any] | None:
         ),
         "automatic_retry_allowed": False,
         "host_generation_authorized": False,
+        # Keep the canonical pre-dispatch failure and both runtime projections
+        # identical while retaining only bounded, non-content attempt evidence.
+        "adapter_status": "context_rejected",
+        "attempts": _attempt_metadata(value),
     }
 
 
@@ -186,6 +190,8 @@ def terminal_local_model_failure(decision: object) -> dict[str, Any] | None:
     response = json_object(synthesis.get("adapter_response"))
     failure = ollama_terminal_attempt_failure(response)
     if failure is not None:
+        if failure.get("failure_kind") == "context_rejection":
+            return failure
         return {**failure, "adapter_status": response.get("status"), "attempts": _attempt_metadata(response)}
     if (value.get("fallback_classification") != "cannot_answer_directly"
             or response.get("adapter_id") != "local_llm_adapter" or response.get("provider") != "ollama"):

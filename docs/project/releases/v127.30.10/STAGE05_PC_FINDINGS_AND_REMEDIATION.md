@@ -139,3 +139,16 @@ Operator potwierdził kanoniczny stop izolowanego daemona: `stopped=true`, `shut
 ### 6.3 Stan środowiska implementacyjnego
 
 GitHub API dostępne. Próba odczytu refu przez terminal Git zakończyła się błędem DNS (Could not resolve host: github.com); brak dostępnego checkout tego SHA w tej próbie. Handoff do środowiska roboczego nie został przyjęty. Nie wykonano pytest, nie zmieniono kodu runtime ani wersji i nie synchronizowano ręcznie metadanych. Lokalny worktree niezweryfikowany; limit hosta: usage_unknown. Następna bezpieczna operacja: zweryfikowany osobny checkout aktualnej gałęzi, pełny odczyt właściwych zależności/kontraktów i uruchomienie testu odtwarzającego F01 przed poprawką. Nie przechodzić do etapu 06.
+
+## 7. Checkpoint po odzyskaniu Codexa i CI .32 (2026-11-28)
+
+**Stage 05: WIP_NOT_ACCEPTED / RELEASE BLOCKED.** Zachowano poprawki `cda500b2fe1d3581b2d947316557734c75034282`, automatyczny katalog testów `3107bd3fae085f6089c6548211f1ded739021a13` i metadane `34159fb1114d164fd9be8d42c853d147c0b871e8`. Nie zmieniano instalacji PC ani MEMORY. Nie odtwarzano historycznych requestów. Nazwy obszarów najnowszego odbioru nie zastępują pierwotnego katalogu F01–F08.
+
+Dowody CI `cda500b2`: 7/9 workflow success; persistent-runtime-e2e (Windows/Ubuntu) 95 passed + 1 failed na platformę (deployment .31 vs runtime .32); release-hardening Windows Stage 05 315 passed + 3 failed (canonical context rejection vs rozszerzona projekcja), Ubuntu zatrzymany na deployment_runtime_version_mismatch przed pełną regresją. Wszystkie sześć zadań dependency matrix success. Lokalna szersza regresja Codexa 581 passed, 55 failed, 11 skipped dotyczy innego zakresu; nie utożsamiać wyników. `active_degraded` na bazowej .31 i po zmianach pozostaje otwarte.
+
+- .33: wspólne źródło bounded context refusal, zachowujące dotychczasowe pola i dodatkowe bezpieczne metadane Codexa; nie zmieniono istniejących asercji. Dodano syntetyczny test dokładnej zgodności klasyfikatorów, ograniczenia attempts i braku prywatnej treści.
+- .33: kontrakt deployment wyrównany do kanonicznego PACKAGE_VERSION_FULL bez zmiany wymagań readiness, MCP lub supervision.
+- Kontrole w tym środowisku: statyczny przegląd zmienianych plików i istniejących testów; wykonanie pytest i canonical metadata sync pozostają do potwierdzenia przez CI. Nie deklarować PASS dla .33 z wyników .32. Nie edytować ręcznie manifestu/provenance.
+- Następne kroki: potwierdzić CI nowego SHA, porównać pozostałe regresje z .31, dokończyć fail-closed executor authority (także legacy), zachować rzeczywiste błędy adaptera, sprawdzić endpoint JSS/Monitor i audyt, niezależne dowody finalizacji, readiness oraz kontrolowane idle CPU. Pełny gate Windows/Ubuntu i niezależny odbiór PC nadal obowiązują; nie rozpoczynać Stage 06.
+
+Źródła: https://github.com/SmuklyLew/jazn_latka/actions/runs/46176273981 ; https://github.com/SmuklyLew/jazn_latka/actions/runs/46176273832 ; https://docs.pytest.org/en/stable/how-to/assert.html ; https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database .
