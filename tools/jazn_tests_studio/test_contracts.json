@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.34",
-  "active_definition_count": 3839,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.35",
+  "active_definition_count": 3846,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70817,6 +70817,144 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_adapter_request_flag_cannot_override_executor_evidence": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_adapter_request_flag_cannot_override_executor_evidence",
+      "purpose": "Adapter request flag cannot override executor evidence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 28
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_canonical_host_and_name_only_legacy_adapter_remain_eligible": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_canonical_host_and_name_only_legacy_adapter_remain_eligible",
+      "purpose": "Canonical host and name only legacy adapter remain eligible",
+      "expected": "Pytest completes this contract cleanly and all 3 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 3,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 36
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_other_contract_projection_cannot_override_negative_executor_evidence": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_other_contract_projection_cannot_override_negative_executor_evidence",
+      "purpose": "Other contract projection cannot override negative executor evidence",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "contract",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 56
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_legacy_projection_with_explicit_non_host_evidence_is_refused": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_legacy_projection_with_explicit_non_host_evidence_is_refused",
+      "purpose": "Legacy projection with explicit non host evidence is refused",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 70
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_legacy_host_without_executor_evidence_retains_existing_compatibility": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_legacy_host_without_executor_evidence_retains_existing_compatibility",
+      "purpose": "Legacy host without executor evidence retains existing compatibility",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 80
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_modern_result_cannot_replace_missing_decision_with_positive_projection": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_modern_result_cannot_replace_missing_decision_with_positive_projection",
+      "purpose": "Modern result cannot replace missing decision with positive projection",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 84
+    },
+    "tests/test_stage05_conflicting_executor_evidence.py::test_consistent_explicit_host_projections_remain_eligible": {
+      "path": "tests/test_stage05_conflicting_executor_evidence.py",
+      "name": "test_consistent_explicit_host_projections_remain_eligible",
+      "purpose": "Consistent explicit host projections remain eligible",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [
+        "host"
+      ],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_executor_preflight",
+        "latka_jazn.model_adapters.chatgpt_runtime_adapter"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 94
     },
     "tests/test_stage05_context_rejection_diagnostics.py::test_context_refusal_is_one_canonical_bounded_failure": {
       "path": "tests/test_stage05_context_rejection_diagnostics.py",
