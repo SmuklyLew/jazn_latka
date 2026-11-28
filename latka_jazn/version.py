@@ -324,7 +324,8 @@ from typing import Any
 # v127.23.5: identify Python dev Monitor in Qt and Windows taskbar; CI tests Windows/Ubuntu without EXE.
 # v127.23.4: preserve canonical SHA-256 checks for Git CRLF scripts in dirty Windows worktrees.
 # v127.30.10.34 Stage 05: explicit executor fixtures, fail-closed modern results and bounded recovery.
-PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.34"
+# v127.30.10.35 Stage 05: reject contradictory host executor evidence.
+PACKAGE_VERSION = "16.3.25.5.116.0.34.94.6.127.30.10.35"
 DISTRIBUTION_VERSION = PACKAGE_VERSION
 PACKAGE_RELEASE_NAME = "jss-v104-v80-convergence"
 PACKAGE_VERSION_FULL = (

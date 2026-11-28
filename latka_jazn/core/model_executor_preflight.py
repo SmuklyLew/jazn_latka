@@ -27,11 +27,22 @@ def host_generation_requested(result: dict[str, Any]) -> bool:
     decision = json_object(result.get("conversation_decision"))
     runtime = json_object(result.get("runtime_turn_contract"))
     final = json_object(result.get("final_response_contract"))
-    if "model_executor_preflight" in decision:
-        executor = json_object(decision["model_executor_preflight"])
-        if executor.get("executor") != "host_bridge" or executor.get("available") is not True:
+    contracts = (decision, runtime, final)
+    # A contradictory projection is negative evidence, even for legacy results.
+    # Only the decision can supply positive modern executor evidence.
+    for contract in contracts:
+        if "model_executor_preflight" not in contract:
+            continue
+        executor = json_object(contract["model_executor_preflight"])
+        if (
+            executor.get("executor") != "host_bridge"
+            or executor.get("available") is not True
+            or executor.get("adapter_id", "chatgpt_runtime_adapter") != "chatgpt_runtime_adapter"
+        ):
             return False
-    elif any("model_generation_required" in contract for contract in (decision, runtime, final)):
+    if "model_executor_preflight" not in decision and any(
+        "model_generation_required" in contract for contract in contracts
+    ):
         # A modern result has separate need and authorization semantics.
         # Missing executor evidence is not a legacy host request.
         return False
@@ -75,6 +86,23 @@ def resolve_model_executor(adapter: Any) -> ModelExecutorPreflight:
     endpoint = status.get("api_base") or status.get("endpoint") or contract.get("endpoint")
 
     if adapter_id == "chatgpt_runtime_adapter" or bool(status.get("host_visible_generation_required")):
+        # A request flag is not an adapter identity or authorization. Retain
+        # legacy canonical host identity, but never override negative evidence.
+        if (
+            adapter_id != "chatgpt_runtime_adapter"
+            or status.get("host_visible_generation_required", True) is not True
+            or any(
+                item.get("adapter_id", "chatgpt_runtime_adapter") != "chatgpt_runtime_adapter"
+                or item.get("available", True) is not True
+                or item.get("configured", True) is not True
+                for item in (status, contract)
+            )
+        ):
+            return ModelExecutorPreflight(
+                executor="unavailable", available=False, retry_allowed=False,
+                adapter_id=adapter_id, provider=provider, model=model,
+                reason="conflicting_host_executor_evidence",
+            )
         return ModelExecutorPreflight(
             executor="host_bridge",
             available=True,
