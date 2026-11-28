@@ -31,6 +31,10 @@ def host_generation_requested(result: dict[str, Any]) -> bool:
         executor = json_object(decision["model_executor_preflight"])
         if executor.get("executor") != "host_bridge" or executor.get("available") is not True:
             return False
+    elif any("model_generation_required" in contract for contract in (decision, runtime, final)):
+        # A modern result has separate need and authorization semantics.
+        # Missing executor evidence is not a legacy host request.
+        return False
     return any(contract.get("requires_host_model") is True for contract in (decision, runtime, final))
 
 

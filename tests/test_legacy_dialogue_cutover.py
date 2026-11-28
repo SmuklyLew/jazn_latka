@@ -4,6 +4,7 @@ import pytest
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.conversation import ConversationResponder
 from latka_jazn.core.handlers.ordinary_dialogue_handler import OrdinaryDialogueHandler
+from latka_jazn.core.model_executor_preflight import host_generation_requested
 from latka_jazn.core.runtime_composition import RuntimeCompositionRoot
 from latka_jazn.core.turn_execution import TurnExecutionContext
 
@@ -28,6 +29,7 @@ def test_canonical_turn_never_calls_legacy_compose_or_ordinary_template(tmp_path
     for name in ("JAZN_NETWORK_TIME_FIRST", "JAZN_NETWORK_TIME_IN_TURN", "JAZN_ALLOW_NETWORK", "JAZN_DICTIONARY_ALLOW_NETWORK"):
         monkeypatch.setenv(name, "0")
     monkeypatch.setenv("JAZN_MODEL_ADAPTER", "null")
+    monkeypatch.setenv("JAZN_LLM_ROUTE", "off")
     monkeypatch.setenv("JAZN_LLM_ROUTE_SKIP_LOCAL_PROBE", "1")
     monkeypatch.delenv("JAZN_OLLAMA_MODEL", raising=False)
     monkeypatch.delenv("JAZN_LOCAL_LLM_MODEL", raising=False)
@@ -45,10 +47,13 @@ def test_canonical_turn_never_calls_legacy_compose_or_ordinary_template(tmp_path
         assert decision["handler_result"]["generation_mode"] == "structured_candidate"
         assert decision["model_generated"] is False
         assert decision["fallback_classification"] == "cannot_answer_directly"
-        assert decision["requires_host_model"] is True
+        assert decision["model_generation_required"] is True
+        assert decision["model_executor_preflight"]["executor"] == "unavailable"
+        assert decision["requires_host_model"] is False
+        assert host_generation_requested(result) is False
         assert decision["origin_truth_valid"] is False
         assert "classified_fallback" in decision["origin_truth_errors"]
-        assert result["final_response_contract"]["requires_host_model"] is True
+        assert result["final_response_contract"]["requires_host_model"] is False
         assert not context._canonical_committed
     finally:
         root.close()

@@ -152,3 +152,21 @@ Dowody CI `cda500b2`: 7/9 workflow success; persistent-runtime-e2e (Windows/Ubun
 - Następne kroki: potwierdzić CI nowego SHA, porównać pozostałe regresje z .31, dokończyć fail-closed executor authority (także legacy), zachować rzeczywiste błędy adaptera, sprawdzić endpoint JSS/Monitor i audyt, niezależne dowody finalizacji, readiness oraz kontrolowane idle CPU. Pełny gate Windows/Ubuntu i niezależny odbiór PC nadal obowiązują; nie rozpoczynać Stage 06.
 
 Źródła: https://github.com/SmuklyLew/jazn_latka/actions/runs/46176273981 ; https://github.com/SmuklyLew/jazn_latka/actions/runs/46176273832 ; https://docs.pytest.org/en/stable/how-to/assert.html ; https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database .
+
+## 8. Checkpoint .34 — executor contract convergence (2026-11-28)
+
+**Stage 05: WIP_NOT_ACCEPTED / RELEASE BLOCKED.** Base `b033241046a9e4b1a532a26a4f96fcc3502762bc`; Codex .32 and .33 changes preserved. No local PC or private MEMORY touched. No historical request replay. Usage: usage_unknown.
+
+Evidence at .33 implementation SHA `16b60d7799c09c23fa3157f043354bf2e638bf8f`: 8/10 workflows success; Windows Stage 05 F01–F06 318 passed; full Ubuntu suite 5112 passed, 17 failed, 28 skipped, 6 subtests passed. The 17 failures group into 12 startup version mismatches, one MEMORY E2E (also failing on Windows), one pending host restart, one legacy dialogue assertion, one bounded Ollama retry fixture, and one function-budget violation. See release-hardening run 46177740996 and persistent E2E 46177741040.
+
+Changes in this .34 checkpoint (runtime correctness still pending CI):
+- Modern result with generation-need field and missing executor evidence is not an implicit legacy host request; explicit non-host or unavailable executor remains refused. Old wire compatibility without modern generation-need field is unchanged and remains subject to further admission-authority audit.
+- RecoveryPolicy extracts the bounded semantic retry block without changing candidate validation, provenance or retry count. Host request needs selected available host bridge; missing executor metadata cannot authorize it.
+- E2E fixtures explicitly select the host command and route rather than expecting host generation from the null executor or a generic process job. Existing memory grounding, session reuse, lineage, pending/restart persistence and phase-2 assertions are retained. The null legacy-dialogue case now asserts both need and absence of host authority; ordinary-handler cutover and rejected persistence assertions retained. Retry fixture uses real ModelExecutorPreflight shape. Prior four test blobs archived exactly in tests/archive/v12730-10-33-before-executor-contract-migration with provenance.
+- Startup contract and deployment contract aligned to .34; version source remains version.py. Canonical metadata sync is not executed locally; CI must generate manifest/provenance. No manual edit to either generated file.
+- New negative modern executor regressions: missing/malformed/unavailable/local/external preflight cannot authorize a host; valid host selection still cannot bypass an incomplete phase-1 contract.
+- Verification: GitHub API source/ref and static transformation only; no local pytest, compileall, or cleanroom package. Test fixtures migrated to preserve intended semantics, not to assert failure as success. All E2E/runtime results for .34 remain NOT_RUN until CI evidence.
+
+Remaining: full executor admission/legacy compatibility audit (including conflicts between command and configured adapter), failure diagnostics across fallback/retry, root cause of active_degraded, Monitor/JSS effective endpoint/audit validation, idle CPU measurement, full regression and actual Windows acceptance. Do not mark Stage 05 accepted on fixture or CI success alone.
+
+Sources: https://github.com/SmuklyLew/jazn_latka/actions/runs/46177740996 ; https://github.com/SmuklyLew/jazn_latka/actions/runs/46177741040 ; https://docs.pytest.org/en/stable/how-to/monkeypatch.html ; https://docs.python.org/3/library/dataclasses.html .

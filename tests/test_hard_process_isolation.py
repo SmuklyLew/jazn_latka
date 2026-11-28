@@ -102,6 +102,11 @@ class _ProcessScenarioSession:
             return {
                 "ok": True,
                 "host_finalization_pending": True,
+                "conversation_decision": {
+                    "model_executor_preflight": {"executor": "host_bridge", "available": True},
+                    "model_generation_required": True,
+                    "requires_host_model": True,
+                },
                 "chatgpt_host_bridge": bridge,
                 "worker_pid": os.getpid(),
             }
@@ -300,11 +305,13 @@ def test_pending_host_continuation_survives_worker_replacement_and_daemon_restar
         session_id="pending-process-session",
         no_carryover=False,
         client="process-test",
+        command="--chat-gpt",
         request_fingerprint=daemon_chat_request_fingerprint(
             user_text="pending-host",
             session_id="pending-process-session",
             no_carryover=False,
             client="process-test",
+            command="--chat-gpt",
         ),
         execution_timeout_seconds=2.0,
     )

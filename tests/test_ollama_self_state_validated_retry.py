@@ -8,6 +8,7 @@ import pytest
 
 from latka_jazn.core.handlers.self_state_handler import SelfStateHandler
 from latka_jazn.core.model_guided_response_synthesizer import ModelGuidedResponseSynthesizer, ModelGuidedSynthesis
+from latka_jazn.core.model_executor_preflight import ModelExecutorPreflight
 from latka_jazn.core.recovery_policy import RecoveryPolicy, _validated_self_state_retry
 from latka_jazn.core.route_registry import RouteRegistry
 from latka_jazn.core.runtime_answer_validator import RuntimeAnswerValidator
@@ -48,7 +49,11 @@ def make_state():
             True, "Wszystko dobrze.", "completed", "ollama", "gemma3", "candidate",
             [], adapter_response={"status": "completed", "provider": "ollama", "model": "gemma3"},
         ),
-        model_executor=SimpleNamespace(retry_allowed=True),
+        model_executor=ModelExecutorPreflight(
+            executor="local_model", available=True, retry_allowed=True,
+            adapter_id="local_llm_adapter", provider="ollama", model="gemma3",
+            reason="synthetic_local_executor",
+        ),
         speech_adapter=object(),
         template_origin={},
         adapter_status={},
@@ -169,4 +174,6 @@ def test_bounded_retry_never_accepts_unvalidated_fallback(retry_success):
     else:
         assert state.decision_dict["fallback_classification"] == "cannot_answer_directly"
         assert state.decision_dict["handler_name"] == "RuntimeTurnTruthGate"
+        assert state.decision_dict["model_generation_required"] is True
+        assert state.decision_dict["requires_host_model"] is False
         assert state.body != state.handler_result.body

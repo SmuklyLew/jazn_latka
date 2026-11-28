@@ -146,6 +146,55 @@ def _semantic_retry_allowed(state: TurnPipelineState) -> bool:
     return True
 
 
+def _run_semantic_retry(state: TurnPipelineState, engine: JaznEngine) -> None:
+    """One bounded retry; preserve the existing candidate validation and provenance gates."""
+    retry_draft, retry_policy = _validated_self_state_retry(state, engine)
+    state.retry_synthesis = engine.model_guided_response_synthesizer.synthesize(
+        adapter=state.speech_adapter or engine.model_adapter,
+        user_text=state.request.text,
+        draft_body=retry_draft,
+        detected_intent=str(state.detected_dialogue_intent),
+        route=str(state.decision_dict.get("route") or state.route_entry.route),
+        cognitive_frame=state.frame,
+        response_policy=retry_policy,
+        executor_preflight=state.model_executor,
+    )
+    state.decision_dict["model_guided_retry_count"] = 1
+    state.decision_dict["model_guided_retry_synthesis"] = state.retry_synthesis.to_dict()
+    engine._record_model_retry_diagnostic(state.turn_context)
+    if state.retry_synthesis.used:
+        state.retry_body = engine.guard.enforce(state.retry_synthesis.body.strip())
+        state.retry_template = engine.template_registry.classify_body(
+            state.retry_body, detected_intent=str(state.detected_dialogue_intent)
+        )
+        if state.retry_synthesis.adapter_response:
+            state.retry_validation = engine.runtime_answer_validator.validate_model_candidate(
+                user_text=state.request.text,
+                response={**state.retry_synthesis.adapter_response, "text": state.retry_body},
+                route=str(state.decision_dict.get("route") or ""),
+                detected_intent=str(state.detected_dialogue_intent),
+                conversation_history=state.request.client_context.get("conversation_history"),
+                template_origin=state.retry_template,
+            )
+        else:
+            state.retry_validation = engine.runtime_answer_validator.validate(
+                user_text=state.request.text,
+                body=state.retry_body,
+                route=str(state.decision_dict.get("route") or ""),
+                detected_intent=str(state.detected_dialogue_intent),
+                conversation_history=state.request.client_context.get("conversation_history"),
+            )
+        if state.retry_validation.accepted and not state.retry_template.get("template_id"):
+            state.body = state.retry_body
+            state.template_origin = state.retry_template
+            state.first_validation = state.retry_validation
+            state.candidate_valid = True
+            state.decision_dict["model_generated"] = True
+            state.decision_dict["handler_name"] = "ModelGuidedResponseSynthesizer"
+            state.decision_dict["handler_generation_mode"] = "runtime_model_guided"
+            state.decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis_retry"
+
+
 class RecoveryPolicy:
     """Turn-local recovery policy over the existing runtime services."""
 
@@ -159,51 +208,7 @@ class RecoveryPolicy:
         if state.speech_truth_gate_required:
             state.candidate_valid = bool(state.model_synthesis.used and state.first_validation.accepted and not state.template_origin.get("template_id"))
             if _semantic_retry_allowed(state):
-                retry_draft, retry_policy = _validated_self_state_retry(state, engine)
-                state.retry_synthesis = engine.model_guided_response_synthesizer.synthesize(
-                    adapter=state.speech_adapter or engine.model_adapter,
-                    user_text=state.request.text,
-                    draft_body=retry_draft,
-                    detected_intent=str(state.detected_dialogue_intent),
-                    route=str(state.decision_dict.get("route") or state.route_entry.route),
-                    cognitive_frame=state.frame,
-                    response_policy=retry_policy,
-                    executor_preflight=state.model_executor,
-                )
-                state.decision_dict["model_guided_retry_count"] = 1
-                state.decision_dict["model_guided_retry_synthesis"] = state.retry_synthesis.to_dict()
-                engine._record_model_retry_diagnostic(state.turn_context)
-                if state.retry_synthesis.used:
-                    state.retry_body = engine.guard.enforce(state.retry_synthesis.body.strip())
-                    state.retry_template = engine.template_registry.classify_body(
-                        state.retry_body, detected_intent=str(state.detected_dialogue_intent)
-                    )
-                    if state.retry_synthesis.adapter_response:
-                        state.retry_validation = engine.runtime_answer_validator.validate_model_candidate(
-                            user_text=state.request.text,
-                            response={**state.retry_synthesis.adapter_response, "text": state.retry_body},
-                            route=str(state.decision_dict.get("route") or ""),
-                            detected_intent=str(state.detected_dialogue_intent),
-                            conversation_history=state.request.client_context.get("conversation_history"),
-                            template_origin=state.retry_template,
-                        )
-                    else:
-                        state.retry_validation = engine.runtime_answer_validator.validate(
-                            user_text=state.request.text,
-                            body=state.retry_body,
-                            route=str(state.decision_dict.get("route") or ""),
-                            detected_intent=str(state.detected_dialogue_intent),
-                            conversation_history=state.request.client_context.get("conversation_history"),
-                        )
-                    if state.retry_validation.accepted and not state.retry_template.get("template_id"):
-                        state.body = state.retry_body
-                        state.template_origin = state.retry_template
-                        state.first_validation = state.retry_validation
-                        state.candidate_valid = True
-                        state.decision_dict["model_generated"] = True
-                        state.decision_dict["handler_name"] = "ModelGuidedResponseSynthesizer"
-                        state.decision_dict["handler_generation_mode"] = "runtime_model_guided"
-                        state.decision_dict["source_origin_detail"] = "runtime_model_guided_synthesis_retry"
+                _run_semantic_retry(state, engine)
             if not state.candidate_valid:
                 state.host_bridge_accepts_handler = _handler_body_can_cross_chatgpt_host_bridge(
                     adapter_status=state.adapter_status,
@@ -250,7 +255,10 @@ class RecoveryPolicy:
                     state.decision_dict["source_origin_detail"] = state.source_origin_detail
                     state.decision_dict["fallback_classification"] = "cannot_answer_directly"
                     state.decision_dict["model_generation_required"] = True
-                    state.decision_dict["requires_host_model"] = state.model_executor.executor == "host_bridge"
+                    state.decision_dict["requires_host_model"] = (
+                        getattr(state.model_executor, "executor", None) == "host_bridge"
+                        and getattr(state.model_executor, "available", False) is True
+                    )
                     validation = getattr(state, "retry_validation", None) or state.first_validation
                     state.decision_dict["rejected_candidate_validation"] = {
                         "accepted": validation.accepted,

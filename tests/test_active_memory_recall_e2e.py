@@ -485,7 +485,9 @@ def test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall(
     for name, value in {
         "JAZN_TEST_MODE": "1",
         "JAZN_MODEL_ADAPTER": "null",
-        "JAZN_LLM_ROUTE": "off",
+        # This E2E exercises host phase-2, not generation with a null executor.
+        "JAZN_LLM_ROUTE": "chatgpt_bridge",
+        "JAZN_LLM_ROUTE_SKIP_LOCAL_PROBE": "1",
         "JAZN_ALLOW_NETWORK": "0",
         "JAZN_DICTIONARY_ALLOW_NETWORK": "0",
         "JAZN_NETWORK_TIME_FIRST": "0",
@@ -601,6 +603,7 @@ def test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall(
             host="127.0.0.1",
             port=port,
             session_id="session-v16323-e2e",
+            command="--chat-gpt",
             request_id="trace-v16323-first",
             timeout=90.0,
             poll_interval=0.02,
@@ -704,6 +707,7 @@ def test_two_turn_persistent_subject_b_executes_grounded_active_memory_recall(
             host="127.0.0.1",
             port=port,
             session_id="session-v16323-e2e",
+            command="--chat-gpt",
             request_id="trace-v16323-second",
             timeout=90.0,
             poll_interval=0.02,
