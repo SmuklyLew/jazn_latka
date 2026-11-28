@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.32",
-  "active_definition_count": 3836,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.33",
+  "active_definition_count": 3837,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70810,6 +70810,23 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 39
+    },
+    "tests/test_stage05_context_rejection_diagnostics.py::test_context_refusal_is_one_canonical_bounded_failure": {
+      "path": "tests/test_stage05_context_rejection_diagnostics.py",
+      "name": "test_context_refusal_is_one_canonical_bounded_failure",
+      "purpose": "Context refusal is one canonical bounded failure",
+      "expected": "Pytest completes this contract cleanly and all 7 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 7,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.core.model_transport_failure"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
     },
     "tests/test_stage05_conversation_projection_crash.py::test_terminated_writer_releases_os_lock_and_allows_exact_projection": {
       "path": "tests/test_stage05_conversation_projection_crash.py",
